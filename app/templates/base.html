@@ -46,52 +46,21 @@
                         </a>
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{{ url_for('main.index') }}" 
+                        <a href="{{ url_for('blog.latest') }}" 
                            class="border-transparent text-gray-500 hover:border-tartan-blue hover:text-tartan-blue inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Home
+                            Posts
                         </a>
-                        {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('blog.posts') }}" 
-                               class="border-transparent text-gray-500 hover:border-tartan-blue hover:text-tartan-blue inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                                Posts
-                            </a>
-                            {% if current_user.is_admin %}
-                                <a href="{{ url_for('admin.dashboard') }}"
-                                   class="border-transparent text-gray-500 hover:border-tartan-blue hover:text-tartan-blue inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                                    Admin
-                                </a>
-                            {% endif %}
-                        {% endif %}
+                        <a href="#" 
+                           class="border-transparent text-gray-500 hover:border-tartan-blue hover:text-tartan-blue inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            LLMs
+                        </a>
+                        <a href="#" 
+                           class="border-transparent text-gray-500 hover:border-tartan-blue hover:text-tartan-blue inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Preview
+                        </a>
                     </div>
                 </div>
-                <div class="hidden sm:ml-6 sm:flex sm:items-center">
-                    {% if current_user.is_authenticated %}
-                        <div class="ml-3 relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tartan-blue">
-                                <span class="sr-only">Open user menu</span>
-                                <img class="h-8 w-8 rounded-full" src="{{ current_user.avatar_url|default(url_for('static', filename='images/default-avatar.png')) }}" alt="">
-                            </button>
-                            <div x-show="open" 
-                                 @click.away="open = false"
-                                 class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5">
-                                <a href="{{ url_for('auth.profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
-                                <a href="{{ url_for('auth.settings') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
-                                <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</a>
-                            </div>
-                        </div>
-                    {% else %}
-                        <div class="flex space-x-4">
-                            <a href="{{ url_for('auth.login') }}" 
-                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-tartan-blue hover:bg-tartan-blue-700">
-                                Sign in
-                            </a>
-                            <a href="{{ url_for('auth.register') }}"
-                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-tartan-blue bg-white hover:bg-gray-50">
-                                Register
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
+                
                 <!-- Mobile menu button -->
                 <div class="-mr-2 flex items-center sm:hidden">
                     <button @click="isOpen = !isOpen" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-tartan-blue">
@@ -109,13 +78,18 @@
         <!-- Mobile menu -->
         <div x-show="isOpen" class="sm:hidden">
             <div class="pt-2 pb-3 space-y-1">
-                <a href="{{ url_for('main.index') }}" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium border-transparent text-gray-600 hover:bg-gray-50 hover:border-tartan-blue">Home</a>
-                {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('blog.posts') }}" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium border-transparent text-gray-600 hover:bg-gray-50 hover:border-tartan-blue">Posts</a>
-                    {% if current_user.is_admin %}
-                        <a href="{{ url_for('admin.dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium border-transparent text-gray-600 hover:bg-gray-50 hover:border-tartan-blue">Admin</a>
-                    {% endif %}
-                {% endif %}
+                <a href="{{ url_for('blog.latest') }}" 
+                   class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium border-transparent text-gray-600 hover:bg-gray-50 hover:border-tartan-blue">
+                    Posts
+                </a>
+                <a href="#" 
+                   class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium border-transparent text-gray-600 hover:bg-gray-50 hover:border-tartan-blue">
+                    LLMs
+                </a>
+                <a href="#" 
+                   class="block pl-3 pr-4 py-2 border-l-4 text-base font-medium border-transparent text-gray-600 hover:bg-gray-50 hover:border-tartan-blue">
+                    Preview
+                </a>
             </div>
         </div>
     </nav>
@@ -125,33 +99,27 @@
         {% if messages %}
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
                 {% for category, message in messages %}
-                    <div class="rounded-md p-4 {% if category == 'error' %}bg-red-50 text-red-700{% elif category == 'success' %}bg-green-50 text-green-700{% else %}bg-blue-50 text-blue-700{% endif %}"
-                         x-data="{ show: true }" 
-                         x-show="show"
-                         x-transition:enter="transition ease-out duration-300"
-                         x-transition:enter-start="opacity-0 transform scale-95"
-                         x-transition:enter-end="opacity-100 transform scale-100"
-                         x-transition:leave="transition ease-in duration-200"
-                         x-transition:leave-start="opacity-100 transform scale-100"
-                         x-transition:leave-end="opacity-0 transform scale-95">
+                    <div x-data="{ show: true }" x-show="show" class="rounded-md p-4 {% if category == 'error' %}bg-red-50{% elif category == 'success' %}bg-green-50{% else %}bg-blue-50{% endif %} mb-4">
                         <div class="flex">
                             <div class="flex-shrink-0">
                                 {% if category == 'error' %}
-                                    <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                                     </svg>
                                 {% elif category == 'success' %}
-                                    <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                     </svg>
                                 {% else %}
-                                    <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                                     </svg>
                                 {% endif %}
                             </div>
                             <div class="ml-3">
-                                <p class="text-sm">{{ message }}</p>
+                                <p class="text-sm font-medium {% if category == 'error' %}text-red-800{% elif category == 'success' %}text-green-800{% else %}text-blue-800{% endif %}">
+                                    {{ message }}
+                                </p>
                             </div>
                             <div class="ml-auto pl-3">
                                 <div class="-mx-1.5 -my-1.5">

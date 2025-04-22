@@ -200,10 +200,10 @@ def edit(post_id):
         )
         db.session.add(workflow_status)
         
-        # Create initial workflow history - use the same stage for from/to since this is initialization
+        # Create initial workflow history
         history = WorkflowStatusHistory(
             workflow_status=workflow_status,
-            from_stage=WorkflowStage.CONCEPTUALIZATION,  # Initialize with the same stage
+            from_stage=WorkflowStage.CONCEPTUALIZATION,
             to_stage=WorkflowStage.CONCEPTUALIZATION,
             user_id=current_user.id,
             notes="Workflow status initialized for existing post"
@@ -224,68 +224,123 @@ def edit(post_id):
     if request.method == 'GET':
         form.categories.data = [c.id for c in post.categories]
         form.tags.data = ', '.join(tag.name for tag in post.tags)
+        if post.seo_metadata:
+            form.seo_title.data = post.seo_metadata.get('title', '')
+            form.seo_description.data = post.seo_metadata.get('description', '')
+        if post.header_image:
+            form.header_image_alt.data = post.header_image.alt_text
     
     if form.validate_on_submit():
         try:
             # Update basic fields
-            form.populate_obj(post)
+            post.title = form.title.data
+            post.content = form.content.data
+            post.summary = form.summary.data
+            post.concept = form.concept.data
             
             # Handle categories
-            post.categories = []
-            categories = Category.query.filter(Category.id.in_(form.categories.data)).all()
-            post.categories.extend(categories)
+            post.categories = Category.query.filter(Category.id.in_(form.categories.data)).all()
             
             # Handle tags
-            post.tags = []
             if form.tags.data:
                 tag_names = [t.strip() for t in form.tags.data.split(',')]
+                post.tags = []
                 for tag_name in tag_names:
                     tag = Tag.query.filter_by(name=tag_name).first()
                     if not tag:
-                        tag = Tag(name=tag_name, slug=tag_name.lower().replace(' ', '-'))
+                        tag = Tag(name=tag_name)
                         db.session.add(tag)
                     post.tags.append(tag)
             
             # Handle header image
             if form.header_image.data:
+                if post.header_image:
+                    # Delete old image file
+                    old_path = os.path.join(current_app.root_path, 'static', post.header_image.path)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+                
                 filename = secure_filename(form.header_image.data.filename)
-                file_path = os.path.join('uploads', 'headers', filename)
+                filepath = os.path.join('uploads', filename)
+                full_path = os.path.join(current_app.root_path, 'static', filepath)
+                os.makedirs(os.path.dirname(full_path), exist_ok=True)
+                form.header_image.data.save(full_path)
                 
-                # Ensure upload directory exists
-                os.makedirs(os.path.join(current_app.static_folder, 'uploads', 'headers'), exist_ok=True)
-                
-                # Save file
-                form.header_image.data.save(os.path.join(current_app.static_folder, file_path))
-                
-                # Create image record
-                image = Image(
-                    path=file_path,
-                    alt_text=form.title.data,
-                    uploaded_by=current_user.id
-                )
-                db.session.add(image)
-                post.header_image = image
+                if post.header_image:
+                    post.header_image.path = filepath
+                    post.header_image.alt_text = form.header_image_alt.data
+                else:
+                    image = Image(
+                        path=filepath,
+                        alt_text=form.header_image_alt.data,
+                        caption=post.title
+                    )
+                    db.session.add(image)
+                    post.header_image = image
+            elif form.header_image_alt.data and post.header_image:
+                post.header_image.alt_text = form.header_image_alt.data
             
-            # Update workflow status if needed and exists
-            if post.workflow_status and post.workflow_status.current_stage == WorkflowStage.CONCEPTUALIZATION:
-                history = WorkflowStatusHistory(
-                    workflow_status=post.workflow_status,
-                    from_stage=WorkflowStage.CONCEPTUALIZATION,
-                    to_stage=WorkflowStage.AUTHORING,
-                    user_id=current_user.id,
-                    notes="Post content updated"
-                )
-                post.workflow_status.current_stage = WorkflowStage.AUTHORING
-                db.session.add(history)
+            # Update SEO metadata
+            post.seo_metadata = {
+                'title': form.seo_title.data,
+                'description': form.seo_description.data
+            }
             
+            # Handle workflow stage transitions
+            current_stage = post.workflow_status.current_stage
+            
+            if 'next_stage' in request.form and request.form['next_stage'] == 'next':
+                # Validate current stage
+                if not form.validate_for_stage(current_stage):
+                    flash(f'Please complete all required fields for the {current_stage.value} stage.', 'error')
+                    return render_template('blog/edit.html', title='Edit Post', form=form, post=post)
+                
+                # Get next stage
+                stages = list(WorkflowStage)
+                current_index = stages.index(current_stage)
+                if current_index < len(stages) - 1:
+                    next_stage = stages[current_index + 1]
+                    
+                    # Create workflow history
+                    history = WorkflowStatusHistory(
+                        workflow_status=post.workflow_status,
+                        from_stage=current_stage,
+                        to_stage=next_stage,
+                        user_id=current_user.id,
+                        notes=f"Advanced from {current_stage.value} to {next_stage.value}"
+                    )
+                    db.session.add(history)
+                    
+                    # Update current stage
+                    post.workflow_status.current_stage = next_stage
+            
+            # Handle publishing
+            if 'publish' in request.form and request.form['publish'] == 'true':
+                if form.schedule_publish.data:
+                    try:
+                        publish_at = datetime.fromisoformat(form.schedule_publish.data)
+                        schedule_post_publishing(post, publish_at)
+                        flash('Post scheduled for publishing!', 'success')
+                    except (ValueError, PublishingError) as e:
+                        flash(str(e), 'error')
+                else:
+                    try:
+                        publish_post(post)
+                        flash('Post published successfully!', 'success')
+                    except PublishingError as e:
+                        flash(str(e), 'error')
+            
+            post.updated_at = datetime.utcnow()
             db.session.commit()
-            flash('Post updated successfully!', 'success')
             
             if 'save_draft' in request.form:
+                flash('Draft saved successfully!', 'success')
                 return redirect(url_for('blog.edit', post_id=post.id))
+            
+            flash('Post updated successfully!', 'success')
             return redirect(url_for('blog.post', post_id=post.id))
             
-        except SQLAlchemyError as e:
+        except Exception as e:
             db.session.rollback()
             current_app.logger.error(f"Error updating post: {str(e)}")
             flash('An error occurred while updating the post. Please try again.', 'error')

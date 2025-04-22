@@ -124,3 +124,4 @@ app/static/uploads/*
 !app/static/uploads/.gitkeep
 app/static/cache/*
 !app/static/cache/.gitkeep
+.qodo

@@ -10,108 +10,237 @@
             </p>
         </div>
 
+        <!-- Workflow Progress -->
+        <div class="mt-8 max-w-4xl mx-auto">
+            <nav aria-label="Progress">
+                <ol role="list" class="flex items-center">
+                    {% set stages = ['CONCEPTUALIZATION', 'AUTHORING', 'METADATA', 'IMAGES', 'VALIDATION', 'PUBLISHING', 'SYNDICATION'] %}
+                    {% for stage in stages %}
+                        {% set is_current = post.workflow_status.current_stage.value == stage.lower() %}
+                        {% set is_complete = post.workflow_status.current_stage.value in stages[stages.index(stage)+1:] | map('lower') %}
+                        <li class="relative {% if not loop.last %}pr-8 sm:pr-20{% endif %}">
+                            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                                <div class="h-0.5 w-full {% if is_complete %}bg-tartan-blue{% else %}bg-gray-200{% endif %}"></div>
+                            </div>
+                            <div class="relative flex items-center justify-center">
+                                <span class="h-6 w-6 rounded-full {% if is_complete %}bg-tartan-blue{% elif is_current %}border-2 border-tartan-blue bg-white{% else %}bg-gray-200{% endif %} flex items-center justify-center">
+                                    {% if is_complete %}
+                                        <svg class="h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    {% elif is_current %}
+                                        <span class="h-2.5 w-2.5 rounded-full bg-tartan-blue"></span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="mt-2 text-xs text-center {% if is_current %}text-tartan-blue font-medium{% else %}text-gray-500{% endif %}">
+                                {{ stage.title() }}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </nav>
+        </div>
+
         <div class="mt-12 max-w-3xl mx-auto">
             <form method="POST" enctype="multipart/form-data" class="space-y-8">
                 {{ form.hidden_tag() }}
                 
                 <div class="space-y-6">
-                    <!-- Title -->
-                    <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-                        <div class="mt-1">
-                            {{ form.title(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                    <!-- Conceptualization Stage -->
+                    <div class="{% if post.workflow_status.current_stage.value != 'conceptualization' %}hidden{% endif %}">
+                        <div class="bg-white shadow sm:rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Concept Development
+                                </h3>
+                                <div class="mt-2 max-w-xl text-sm text-gray-500">
+                                    <p>Outline your post concept and main ideas.</p>
+                                </div>
+                                <div class="mt-5">
+                                    {{ form.concept(rows=5, class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                                </div>
+                            </div>
                         </div>
-                        {% if form.title.errors %}
-                        <div class="mt-1 text-red-600 text-sm">
-                            {% for error in form.title.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
                     </div>
 
-                    <!-- Summary -->
-                    <div>
-                        <label for="summary" class="block text-sm font-medium text-gray-700">Summary</label>
-                        <div class="mt-1">
-                            {{ form.summary(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                    <!-- Authoring Stage -->
+                    <div class="{% if post.workflow_status.current_stage.value != 'authoring' %}hidden{% endif %}">
+                        <!-- Title -->
+                        <div>
+                            <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                            <div class="mt-1">
+                                {{ form.title(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                            </div>
+                            {% if form.title.errors %}
+                            <div class="mt-1 text-red-600 text-sm">
+                                {% for error in form.title.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
-                        {% if form.summary.errors %}
-                        <div class="mt-1 text-red-600 text-sm">
-                            {% for error in form.summary.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
+
+                        <!-- Summary -->
+                        <div>
+                            <label for="summary" class="block text-sm font-medium text-gray-700">Summary</label>
+                            <div class="mt-1">
+                                {{ form.summary(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                            </div>
+                            {% if form.summary.errors %}
+                            <div class="mt-1 text-red-600 text-sm">
+                                {% for error in form.summary.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
+
+                        <!-- Content -->
+                        <div>
+                            <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+                            <div class="mt-1">
+                                {{ form.content(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md", rows="15") }}
+                            </div>
+                            {% if form.content.errors %}
+                            <div class="mt-1 text-red-600 text-sm">
+                                {% for error in form.content.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
 
-                    <!-- Categories -->
-                    <div>
-                        <label for="categories" class="block text-sm font-medium text-gray-700">Categories</label>
-                        <div class="mt-1">
-                            {{ form.categories(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                    <!-- Metadata Stage -->
+                    <div class="{% if post.workflow_status.current_stage.value != 'metadata' %}hidden{% endif %}">
+                        <!-- Categories -->
+                        <div>
+                            <label for="categories" class="block text-sm font-medium text-gray-700">Categories</label>
+                            <div class="mt-1">
+                                {{ form.categories(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                            </div>
+                            {% if form.categories.errors %}
+                            <div class="mt-1 text-red-600 text-sm">
+                                {% for error in form.categories.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
-                        {% if form.categories.errors %}
-                        <div class="mt-1 text-red-600 text-sm">
-                            {% for error in form.categories.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
+
+                        <!-- Tags -->
+                        <div>
+                            <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
+                            <div class="mt-1">
+                                {{ form.tags(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                            </div>
+                            <p class="mt-1 text-sm text-gray-500">Separate tags with commas</p>
+                            {% if form.tags.errors %}
+                            <div class="mt-1 text-red-600 text-sm">
+                                {% for error in form.tags.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
+
+                        <!-- SEO Fields -->
+                        <div>
+                            <label for="seo_title" class="block text-sm font-medium text-gray-700">SEO Title</label>
+                            <div class="mt-1">
+                                {{ form.seo_title(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="seo_description" class="block text-sm font-medium text-gray-700">SEO Description</label>
+                            <div class="mt-1">
+                                {{ form.seo_description(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Header Image -->
-                    <div>
-                        <label for="header_image" class="block text-sm font-medium text-gray-700">Header Image</label>
-                        {% if post.header_image %}
-                        <div class="mt-2 mb-4">
-                            <img src="{{ url_for('static', filename=post.header_image.path) }}" 
-                                 alt="{{ post.header_image.alt_text }}"
-                                 class="h-32 w-full object-cover rounded-lg">
+                    <!-- Images Stage -->
+                    <div class="{% if post.workflow_status.current_stage.value != 'images' %}hidden{% endif %}">
+                        <!-- Header Image -->
+                        <div>
+                            <label for="header_image" class="block text-sm font-medium text-gray-700">Header Image</label>
+                            {% if post.header_image %}
+                            <div class="mt-2 mb-4">
+                                <img src="{{ url_for('static', filename=post.header_image.path) }}" 
+                                     alt="{{ post.header_image.alt_text }}"
+                                     class="h-32 w-full object-cover rounded-lg">
+                            </div>
+                            {% endif %}
+                            <div class="mt-1">
+                                {{ form.header_image(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300") }}
+                            </div>
+                            <p class="mt-1 text-sm text-gray-500">Upload a new image to replace the current one</p>
+                            {% if form.header_image.errors %}
+                            <div class="mt-1 text-red-600 text-sm">
+                                {% for error in form.header_image.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
-                        <div class="mt-1">
-                            {{ form.header_image(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300") }}
+
+                        <!-- Header Image Alt Text -->
+                        <div>
+                            <label for="header_image_alt" class="block text-sm font-medium text-gray-700">Image Alt Text</label>
+                            <div class="mt-1">
+                                {{ form.header_image_alt(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                            </div>
                         </div>
-                        <p class="mt-1 text-sm text-gray-500">Upload a new image to replace the current one</p>
-                        {% if form.header_image.errors %}
-                        <div class="mt-1 text-red-600 text-sm">
-                            {% for error in form.header_image.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
                     </div>
 
-                    <!-- Content -->
-                    <div>
-                        <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-                        <div class="mt-1">
-                            {{ form.content(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md", rows="15") }}
+                    <!-- Validation Stage -->
+                    <div class="{% if post.workflow_status.current_stage.value != 'validation' %}hidden{% endif %}">
+                        <div class="bg-white shadow sm:rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Content Validation
+                                </h3>
+                                <div class="mt-2 max-w-xl text-sm text-gray-500">
+                                    <p>Review and validate your content before publishing.</p>
+                                </div>
+                                <div class="mt-5">
+                                    {{ form.validation_notes(rows=3, class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                                </div>
+                            </div>
                         </div>
-                        {% if form.content.errors %}
-                        <div class="mt-1 text-red-600 text-sm">
-                            {% for error in form.content.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
                     </div>
 
-                    <!-- Tags -->
-                    <div>
-                        <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
-                        <div class="mt-1">
-                            {{ form.tags(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                    <!-- Publishing Stage -->
+                    <div class="{% if post.workflow_status.current_stage.value != 'publishing' %}hidden{% endif %}">
+                        <div class="bg-white shadow sm:rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Publishing Options
+                                </h3>
+                                <div class="mt-2">
+                                    <label for="schedule_publish" class="block text-sm font-medium text-gray-700">Schedule Publication</label>
+                                    <div class="mt-1">
+                                        {{ form.schedule_publish(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md", type="datetime-local") }}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <p class="mt-1 text-sm text-gray-500">Separate tags with commas</p>
-                        {% if form.tags.errors %}
-                        <div class="mt-1 text-red-600 text-sm">
-                            {% for error in form.tags.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
+                    </div>
+
+                    <!-- Syndication Stage -->
+                    <div class="{% if post.workflow_status.current_stage.value != 'syndication' %}hidden{% endif %}">
+                        <div class="bg-white shadow sm:rounded-lg">
+                            <div class="px-4 py-5 sm:p-6">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                    Content Syndication
+                                </h3>
+                                <div class="mt-2">
+                                    {{ form.syndication_platforms(class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-tartan-blue focus:border-tartan-blue sm:text-sm rounded-md") }}
+                                </div>
+                            </div>
                         </div>
-                        {% endif %}
                     </div>
 
                     <!-- Workflow Status -->
@@ -143,13 +272,13 @@
                             <button type="submit" name="save_draft" value="true" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                                 Save Draft
                             </button>
-                            {% if not post.published %}
-                            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-tartan-blue hover:bg-tartan-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tartan-blue">
-                                Update & Preview
+                            {% if post.workflow_status.current_stage.value != 'publishing' %}
+                            <button type="submit" name="next_stage" value="next" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-tartan-blue hover:bg-tartan-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tartan-blue">
+                                Next Stage
                             </button>
                             {% else %}
-                            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-tartan-blue hover:bg-tartan-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tartan-blue">
-                                Update Post
+                            <button type="submit" name="publish" value="true" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                Publish
                             </button>
                             {% endif %}
                         </div>
@@ -163,9 +292,16 @@
 
 {% block scripts %}
 <script>
-    // Initialize any JavaScript enhancements (e.g., rich text editor, tag input)
+    // Initialize any JavaScript enhancements
     document.addEventListener('DOMContentLoaded', function() {
-        // Add any JavaScript initialization here
+        // Add datetime picker for schedule_publish field if needed
+        const schedulePicker = document.getElementById('schedule_publish');
+        if (schedulePicker) {
+            // Set min date to now
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            schedulePicker.min = now.toISOString().slice(0, 16);
+        }
     });
 </script>
 {% endblock %} 
