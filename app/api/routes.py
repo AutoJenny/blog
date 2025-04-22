@@ -108,68 +108,75 @@ def check_ollama_performance():
     return performance
 
 def check_openai_performance():
-    """Check OpenAI's performance for different operations."""
-    if not current_app.config.get('OPENAI_API_KEY'):
-        return {'status': 'unconfigured'}
-
-    performance = {
-        'status': 'healthy',
-        'operations': {},
-        'benchmarks': {}
-    }
-
+    """Check OpenAI's performance and availability."""
     try:
         client = openai.OpenAI(api_key=current_app.config['OPENAI_API_KEY'])
-
-        # Test model listing
         start_time = time.time()
-        models = client.models.list(limit=5)
-        list_time = time.time() - start_time
-        
-        performance['operations']['list_models'] = {
-            'latency': round(list_time * 1000, 2),
-            'status': 'success'
-        }
-        performance['available_models'] = [model.id for model in models.data]
-
-        # Test completion performance
-        for length in ['short', 'medium']:
-            prompt = "Hi" if length == 'short' else "Write a brief paragraph about performance testing."
-            start_time = time.time()
-            completion = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=50 if length == 'short' else 200
-            )
-            complete_time = time.time() - start_time
-            
-            performance['benchmarks'][f'{length}_completion'] = {
-                'model': "gpt-3.5-turbo",
-                'prompt_length': len(prompt),
-                'latency': round(complete_time * 1000, 2),
-                'status': 'success'
-            }
-
-        # Test embedding performance
-        start_time = time.time()
-        embedding = client.embeddings.create(
-            model="text-embedding-3-small",
-            input="Test embedding performance"
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": "test"}],
+            max_tokens=5
         )
-        embed_time = time.time() - start_time
+        latency = (time.time() - start_time) * 1000  # Convert to ms
         
-        performance['benchmarks']['embedding'] = {
-            'model': "text-embedding-3-small",
-            'latency': round(embed_time * 1000, 2),
-            'dimensions': len(embedding.data[0].embedding),
-            'status': 'success'
+        return {
+            'status': 'healthy',
+            'latency_ms': round(latency, 2),
+            'model': 'gpt-3.5-turbo'
+        }
+    except Exception as e:
+        current_app.logger.error(f"OpenAI health check failed: {str(e)}")
+        return {
+            'status': 'unhealthy',
+            'error': str(e),
+            'model': 'gpt-3.5-turbo'
         }
 
+def check_dependencies():
+    """Check for outdated or deprecated dependencies."""
+    try:
+        import pkg_resources
+        from packaging import version
+        
+        critical_packages = {
+            'langchain': '0.3.23',
+            'langchain-community': '0.3.21',
+            'langchain-core': '0.3.55',
+            'openai': '1.12.0'
+        }
+        
+        dependency_status = {
+            'status': 'healthy',
+            'outdated_packages': [],
+            'deprecated_packages': []
+        }
+        
+        for package, min_version in critical_packages.items():
+            try:
+                installed = pkg_resources.get_distribution(package)
+                if version.parse(installed.version) < version.parse(min_version):
+                    dependency_status['outdated_packages'].append({
+                        'package': package,
+                        'installed': installed.version,
+                        'required': min_version
+                    })
+            except pkg_resources.DistributionNotFound:
+                dependency_status['outdated_packages'].append({
+                    'package': package,
+                    'installed': 'not found',
+                    'required': min_version
+                })
+        
+        if dependency_status['outdated_packages']:
+            dependency_status['status'] = 'degraded'
+            
+        return dependency_status
     except Exception as e:
-        performance['status'] = 'unhealthy'
-        performance['error'] = str(e)
-    
-    return performance
+        current_app.logger.error(f"Dependency check failed: {str(e)}")
+        return {
+            'status': 'error',
+            'error': str(e)
+        }
 
 @bp.route('/health')
 def health_check():
@@ -185,7 +192,7 @@ def health_check():
             'timestamp': datetime.datetime.utcnow().isoformat()
         })
 
-    # Full health check for /api/health
+    # Full health check
     health_status = {
         'status': 'healthy',
         'database': 'healthy',
@@ -197,6 +204,7 @@ def health_check():
             'memory': psutil.virtual_memory()._asdict(),
             'disk': psutil.disk_usage('/')._asdict()
         },
+        'dependencies': check_dependencies(),
         'llm_services': {}
     }
     
@@ -223,5 +231,10 @@ def health_check():
     if health_status['llm_services']['openai'].get('status') == 'unhealthy':
         health_status['status'] = 'degraded'
     
-    status_code = 200 if health_status['status'] == 'healthy' else 503
-    return jsonify(health_status), status_code 
+    # Overall status determination
+    if health_status['dependencies']['status'] == 'degraded':
+        health_status['status'] = 'degraded'
+    
+    response = jsonify(health_status)
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return response 

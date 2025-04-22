@@ -95,7 +95,7 @@ def create_app(config_name=None):
     app.register_blueprint(api_bp, url_prefix='/api')
     
     from app.llm import bp as llm_bp
-    app.register_blueprint(llm_bp, url_prefix='/llm')
+    app.register_blueprint(llm_bp)
     
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)

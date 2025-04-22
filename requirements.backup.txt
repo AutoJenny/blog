@@ -53,4 +53,3 @@ python-frontmatter==1.1.0
 
 # Dependencies for dependency checking
 setuptools>=79.0.0
-
