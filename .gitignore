@@ -59,6 +59,7 @@ logs/
 app/static/uploads/
 app/static/cache/
 tmp/
+__blog_old/
 
 # Testing
 .coverage
@@ -98,3 +99,28 @@ wheels/
 .codeium/
 .copilot/
 .copilot-*/
+
+# LLM specific
+.qodo/
+app/llm/cache/
+app/llm/models/
+*.gguf
+*.bin
+*.pt
+*.pth
+
+# Migration specific
+migrations/versions/*.py
+!migrations/versions/__init__.py
+
+# Temporary files
+*.bak
+*.tmp
+*.temp
+*~
+
+# Media and uploads
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+app/static/cache/*
+!app/static/cache/.gitkeep

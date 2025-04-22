@@ -1,7 +1,71 @@
-from flask import render_template, current_app
+from flask import render_template, current_app, jsonify
 from app.main import bp
+import psutil
+import time
+import sqlalchemy
+from sqlalchemy import create_engine
+import redis
 
 @bp.route('/')
 def index():
     current_app.logger.info('Home page accessed')
-    return render_template('main/index.html', title='Home') 
+    return render_template('main/index.html', title='Home')
+
+@bp.route('/health')
+def health_check():
+    """Basic health check endpoint."""
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': time.time(),
+        'uptime': time.time() - psutil.boot_time()
+    })
+
+@bp.route('/health/detailed')
+def detailed_health_check():
+    """Detailed health check including all system components."""
+    health_status = {
+        'status': 'healthy',
+        'timestamp': time.time(),
+        'components': {}
+    }
+    
+    # Check database connection
+    try:
+        engine = create_engine(current_app.config['SQLALCHEMY_DATABASE_URI'])
+        engine.connect()
+        health_status['components']['database'] = {
+            'status': 'healthy',
+            'type': engine.name
+        }
+    except Exception as e:
+        current_app.logger.error(f"Database health check failed: {e}")
+        health_status['components']['database'] = {
+            'status': 'unhealthy',
+            'error': str(e)
+        }
+        health_status['status'] = 'degraded'
+
+    # Check Redis connection if configured
+    if current_app.config.get('REDIS_URL'):
+        try:
+            redis_client = redis.from_url(current_app.config['REDIS_URL'])
+            redis_client.ping()
+            health_status['components']['redis'] = {
+                'status': 'healthy'
+            }
+        except Exception as e:
+            current_app.logger.error(f"Redis health check failed: {e}")
+            health_status['components']['redis'] = {
+                'status': 'unhealthy',
+                'error': str(e)
+            }
+            health_status['status'] = 'degraded'
+
+    # System resources
+    health_status['components']['system'] = {
+        'cpu_usage': psutil.cpu_percent(),
+        'memory_usage': psutil.virtual_memory().percent,
+        'disk_usage': psutil.disk_usage('/').percent
+    }
+
+    return jsonify(health_status) 

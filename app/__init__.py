@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_caching import Cache
 from flask_login import LoginManager
+from flask_mail import Mail
 from celery import Celery
 from flasgger import Swagger
 from config import get_config
@@ -21,6 +22,7 @@ cache = Cache()
 celery = Celery()
 swagger = Swagger()
 login = LoginManager()
+mail = Mail()
 login.login_view = 'auth.login'
 
 def create_app(config_name=None):
@@ -35,6 +37,7 @@ def create_app(config_name=None):
     cache.init_app(app)
     swagger.init_app(app)
     login.init_app(app)
+    mail.init_app(app)
     
     # Configure Celery
     celery.conf.update(app.config)
