@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Edit Post</h1>
+            <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
+                Edit your blog post about Scottish heritage and culture
+            </p>
+        </div>
+
+        <div class="mt-12 max-w-3xl mx-auto">
+            <form method="POST" enctype="multipart/form-data" class="space-y-8">
+                {{ form.hidden_tag() }}
+                
+                <div class="space-y-6">
+                    <!-- Title -->
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                        <div class="mt-1">
+                            {{ form.title(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                        </div>
+                        {% if form.title.errors %}
+                        <div class="mt-1 text-red-600 text-sm">
+                            {% for error in form.title.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Summary -->
+                    <div>
+                        <label for="summary" class="block text-sm font-medium text-gray-700">Summary</label>
+                        <div class="mt-1">
+                            {{ form.summary(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                        </div>
+                        {% if form.summary.errors %}
+                        <div class="mt-1 text-red-600 text-sm">
+                            {% for error in form.summary.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Categories -->
+                    <div>
+                        <label for="categories" class="block text-sm font-medium text-gray-700">Categories</label>
+                        <div class="mt-1">
+                            {{ form.categories(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                        </div>
+                        {% if form.categories.errors %}
+                        <div class="mt-1 text-red-600 text-sm">
+                            {% for error in form.categories.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Header Image -->
+                    <div>
+                        <label for="header_image" class="block text-sm font-medium text-gray-700">Header Image</label>
+                        {% if post.header_image %}
+                        <div class="mt-2 mb-4">
+                            <img src="{{ url_for('static', filename=post.header_image.path) }}" 
+                                 alt="{{ post.header_image.alt_text }}"
+                                 class="h-32 w-full object-cover rounded-lg">
+                        </div>
+                        {% endif %}
+                        <div class="mt-1">
+                            {{ form.header_image(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300") }}
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">Upload a new image to replace the current one</p>
+                        {% if form.header_image.errors %}
+                        <div class="mt-1 text-red-600 text-sm">
+                            {% for error in form.header_image.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Content -->
+                    <div>
+                        <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+                        <div class="mt-1">
+                            {{ form.content(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md", rows="15") }}
+                        </div>
+                        {% if form.content.errors %}
+                        <div class="mt-1 text-red-600 text-sm">
+                            {% for error in form.content.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tags -->
+                    <div>
+                        <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
+                        <div class="mt-1">
+                            {{ form.tags(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">Separate tags with commas</p>
+                        {% if form.tags.errors %}
+                        <div class="mt-1 text-red-600 text-sm">
+                            {% for error in form.tags.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Workflow Status -->
+                    <div class="rounded-md bg-gray-50 p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-gray-800">Current Stage: {{ post.workflow_status.current_stage.value }}</h3>
+                                <div class="mt-2 text-sm text-gray-600">
+                                    <p>Last updated: {{ post.workflow_status.last_updated.strftime('%B %d, %Y at %H:%M') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-5 border-t border-gray-200">
+                    <div class="flex justify-between">
+                        <div>
+                            <a href="{{ url_for('blog.post', post_id=post.id) }}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tartan-blue">
+                                Cancel
+                            </a>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button type="submit" name="save_draft" value="true" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                Save Draft
+                            </button>
+                            {% if not post.published %}
+                            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-tartan-blue hover:bg-tartan-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tartan-blue">
+                                Update & Preview
+                            </button>
+                            {% else %}
+                            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-tartan-blue hover:bg-tartan-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tartan-blue">
+                                Update Post
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize any JavaScript enhancements (e.g., rich text editor, tag input)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add any JavaScript initialization here
+    });
+</script>
+{% endblock %} 

@@ -1,4 +1,4 @@
-from flask import Flask, make_response, send_from_directory, jsonify
+from flask import Flask, make_response, send_from_directory, jsonify, redirect, url_for
 import os
 from dotenv import load_dotenv
 import logging
@@ -35,6 +35,10 @@ def create_app():
     app.logger.setLevel(logging.INFO)
     app.logger.info('Application startup')
 
+    # Register blueprints
+    from app.blog import bp as blog_bp
+    app.register_blueprint(blog_bp, url_prefix='/blog')
+
     @app.route('/health')
     def health_check():
         return jsonify({'status': 'healthy'}), 200
@@ -55,38 +59,8 @@ def create_app():
                                 'apple-touch-icon.png', mimetype='image/png')
 
     @app.route('/')
-    def hello():
-        app.logger.info('Home page accessed')
-        html_content = '''
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <title>Test Page</title>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-                <link rel="icon" type="image/x-icon" href="/favicon.ico">
-                <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-            </head>
-            <body>
-                <h1>Test Page</h1>
-                <p>This is a different test page served by Flask + Gunicorn</p>
-            </body>
-        </html>
-        '''
-        
-        response = make_response(html_content)
-        response.headers['Content-Type'] = 'text/html; charset=utf-8'
-        response.headers['Content-Length'] = str(len(html_content))
-        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-        response.headers['X-XSS-Protection'] = '1; mode=block'
-        response.headers['Accept-Ranges'] = 'bytes'
-        response.headers['Connection'] = 'keep-alive'
-        
-        return response
+    def index():
+        return redirect(url_for('blog.latest'))
 
     # Error handlers
     @app.errorhandler(404)

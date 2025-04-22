@@ -1,8 +1,40 @@
 {% extends "base.html" %}
 
+{% block title %}Create Post{% endblock %}
+
 {% block content %}
-    <div class="container">
-        <h1>Create New Post</h1>
-        <p>This feature will be implemented soon.</p>
-    </div>
+<div class="max-w-3xl mx-auto py-6">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Create New Post</h1>
+    
+    <form method="POST" class="space-y-6">
+        <div>
+            <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+            <input type="text" name="title" id="title" required
+                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-tartan-blue focus:ring-tartan-blue">
+        </div>
+        
+        <div>
+            <label for="summary" class="block text-sm font-medium text-gray-700">Summary</label>
+            <textarea name="summary" id="summary" rows="3" required
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-tartan-blue focus:ring-tartan-blue"></textarea>
+        </div>
+        
+        <div>
+            <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+            <textarea name="content" id="content" rows="10" required
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-tartan-blue focus:ring-tartan-blue"></textarea>
+        </div>
+        
+        <div class="flex justify-end space-x-4">
+            <a href="{{ url_for('blog.latest') }}"
+               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                Cancel
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-tartan-blue hover:bg-tartan-blue-700">
+                Create Post
+            </button>
+        </div>
+    </form>
+</div>
 {% endblock %} 

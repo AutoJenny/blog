@@ -1,4 +1,4 @@
-from flask import render_template, current_app, jsonify
+from flask import render_template, current_app, jsonify, redirect, url_for
 from app.main import bp
 from app.models import Post, Category
 import psutil
@@ -6,17 +6,13 @@ import time
 import sqlalchemy
 from sqlalchemy import create_engine
 import redis
+# from flask_login import login_required  # Temporarily disabled
 
 @bp.route('/')
 def index():
-    """Home page with featured posts and categories."""
-    current_app.logger.info('Home page accessed')
-    
-    # Get featured posts
-    featured_posts = Post.query.filter_by(
-        published=True,
-        deleted=False
-    ).order_by(Post.created_at.desc()).limit(3).all()
+    """Home page with direct access to admin features."""
+    # Get all posts without filtering
+    posts = Post.query.order_by(Post.created_at.desc()).all()
     
     # Get all categories
     categories = Category.query.order_by(Category.name).all()
@@ -24,8 +20,9 @@ def index():
     return render_template(
         'main/index.html',
         title='Home',
-        featured_posts=featured_posts,
-        categories=categories
+        posts=posts,
+        categories=categories,
+        show_admin=True  # Always show admin features
     )
 
 @bp.route('/health')
@@ -85,4 +82,9 @@ def detailed_health_check():
         'disk_usage': psutil.disk_usage('/').percent
     }
 
-    return jsonify(health_status) 
+    return jsonify(health_status)
+
+@bp.route('/dashboard')
+# @login_required  # Temporarily disabled
+def dashboard():
+    return render_template('main/dashboard.html') 

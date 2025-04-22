@@ -1,92 +1,77 @@
 {% extends "base.html" %}
 
+{% block title %}Latest Posts{% endblock %}
+
 {% block content %}
-<div class="bg-white py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-            <h1 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Latest Articles</h1>
-            <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-                Stay up to date with our newest content about Scottish heritage and culture.
-            </p>
-        </div>
-        
-        <div class="mt-12 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">
-            {% for post in posts.items %}
-            <div class="flex flex-col rounded-lg shadow-lg overflow-hidden">
-                <div class="flex-shrink-0">
-                    <img class="h-48 w-full object-cover" src="{{ post.image_url }}" alt="{{ post.title }}">
-                </div>
-                <div class="flex-1 bg-white p-6 flex flex-col justify-between">
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-tartan-blue">
-                            <a href="{{ url_for('blog.category', category=post.category.slug) }}" class="hover:underline">
-                                {{ post.category.name }}
-                            </a>
-                        </p>
-                        <a href="{{ url_for('blog.post', post_id=post.id) }}" class="block mt-2">
-                            <p class="text-xl font-semibold text-gray-900">{{ post.title }}</p>
-                            <p class="mt-3 text-base text-gray-500">{{ post.summary }}</p>
-                        </a>
-                    </div>
-                    <div class="mt-6 flex items-center">
-                        <div class="flex-shrink-0">
-                            <a href="#">
-                                <img class="h-10 w-10 rounded-full" src="{{ post.author.avatar_url }}" alt="{{ post.author.name }}">
-                            </a>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-gray-900">
-                                <a href="#" class="hover:underline">{{ post.author.name }}</a>
-                            </p>
-                            <div class="flex space-x-1 text-sm text-gray-500">
-                                <time datetime="{{ post.created_at.isoformat() }}">{{ post.created_at.strftime('%B %d, %Y') }}</time>
-                                <span aria-hidden="true">&middot;</span>
-                                <span>{{ post.read_time }} min read</span>
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900">Latest Posts</h1>
+        <a href="{{ url_for('blog.create') }}" 
+           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-tartan-blue hover:bg-tartan-blue-700">
+            Create New Post
+        </a>
+    </div>
+    
+    {% if posts %}
+        <div class="grid gap-6 lg:grid-cols-2">
+            {% for post in posts %}
+                <article class="bg-white shadow rounded-lg overflow-hidden">
+                    {% if post.header_image %}
+                        <img src="{{ url_for('static', filename=post.header_image.path) }}" 
+                             alt="{{ post.header_image.alt_text }}"
+                             class="w-full h-48 object-cover">
+                    {% endif %}
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <h2 class="text-xl font-semibold text-gray-900">
+                                <a href="{{ url_for('blog.post', post_id=post.id) }}" class="hover:text-tartan-blue">
+                                    {{ post.title }}
+                                </a>
+                            </h2>
+                            <div class="flex space-x-2">
+                                <a href="{{ url_for('blog.edit', post_id=post.id) }}" 
+                                   class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-tartan-blue hover:bg-tartan-blue-700">
+                                    Edit
+                                </a>
+                                {% if not post.published %}
+                                    <form action="{{ url_for('blog.publish', post_id=post.id) }}" method="POST" class="inline">
+                                        <button type="submit" 
+                                                class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                                            Publish
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <form action="{{ url_for('blog.unpublish', post_id=post.id) }}" method="POST" class="inline">
+                                        <button type="submit"
+                                                class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700">
+                                            Unpublish
+                                        </button>
+                                    </form>
+                                {% endif %}
                             </div>
                         </div>
+                        <p class="mt-2 text-gray-600">{{ post.summary }}</p>
+                        <div class="mt-4 flex justify-between items-center">
+                            <a href="{{ url_for('blog.post', post_id=post.id) }}" 
+                               class="text-tartan-blue hover:text-tartan-blue-700">
+                                Read more →
+                            </a>
+                            <span class="text-sm text-gray-500">
+                                Status: {{ "Published" if post.published else "Draft" }}
+                            </span>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </article>
             {% endfor %}
         </div>
-
-        {% if posts.pages > 1 %}
-        <div class="mt-8 flex justify-center">
-            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                {% if posts.has_prev %}
-                <a href="{{ url_for('blog.latest', page=posts.prev_num) }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    <span class="sr-only">Previous</span>
-                    &larr;
-                </a>
-                {% endif %}
-                
-                {% for page_num in posts.iter_pages() %}
-                    {% if page_num %}
-                        {% if page_num == posts.page %}
-                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-tartan-blue text-sm font-medium text-white">
-                            {{ page_num }}
-                        </span>
-                        {% else %}
-                        <a href="{{ url_for('blog.latest', page=page_num) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            {{ page_num }}
-                        </a>
-                        {% endif %}
-                    {% else %}
-                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                            ...
-                        </span>
-                    {% endif %}
-                {% endfor %}
-
-                {% if posts.has_next %}
-                <a href="{{ url_for('blog.latest', page=posts.next_num) }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    <span class="sr-only">Next</span>
-                    &rarr;
-                </a>
-                {% endif %}
-            </nav>
+    {% else %}
+        <div class="text-center py-12">
+            <p class="text-gray-600 mb-4">No posts found.</p>
+            <a href="{{ url_for('blog.create') }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-tartan-blue hover:bg-tartan-blue-700">
+                Create Your First Post
+            </a>
         </div>
-        {% endif %}
-    </div>
+    {% endif %}
 </div>
 {% endblock %} 

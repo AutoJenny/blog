@@ -11,6 +11,7 @@ import logging
 from logging.handlers import RotatingFileHandler, SMTPHandler
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Load environment variables
 load_dotenv()
@@ -19,7 +20,7 @@ load_dotenv()
 db = SQLAlchemy()
 migrate = Migrate()
 cache = Cache()
-celery = Celery()
+celery = Celery(__name__)
 swagger = Swagger()
 login = LoginManager()
 mail = Mail()
@@ -41,6 +42,17 @@ def create_app(config_name=None):
     
     # Configure Celery
     celery.conf.update(app.config)
+    celery.conf.beat_schedule = {
+        'check-scheduled-posts': {
+            'task': 'app.tasks.check_scheduled_posts',
+            'schedule': timedelta(minutes=1),  # Check every minute
+        },
+        'cleanup-old-drafts': {
+            'task': 'app.tasks.cleanup_old_drafts',
+            'schedule': timedelta(days=1),  # Run daily
+            'kwargs': {'days': 30}  # Keep drafts for 30 days
+        }
+    }
     
     # Ensure required directories exist
     for directory in ['logs', 'static/uploads', 'static/cache']:
