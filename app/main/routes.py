@@ -1,5 +1,6 @@
 from flask import render_template, current_app, jsonify
 from app.main import bp
+from app.models import Post, Category
 import psutil
 import time
 import sqlalchemy
@@ -8,8 +9,24 @@ import redis
 
 @bp.route('/')
 def index():
+    """Home page with featured posts and categories."""
     current_app.logger.info('Home page accessed')
-    return render_template('main/index.html', title='Home')
+    
+    # Get featured posts
+    featured_posts = Post.query.filter_by(
+        published=True,
+        deleted=False
+    ).order_by(Post.created_at.desc()).limit(3).all()
+    
+    # Get all categories
+    categories = Category.query.order_by(Category.name).all()
+    
+    return render_template(
+        'main/index.html',
+        title='Home',
+        featured_posts=featured_posts,
+        categories=categories
+    )
 
 @bp.route('/health')
 def health_check():

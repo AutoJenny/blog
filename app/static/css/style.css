@@ -73,4 +73,77 @@ body {
     background-color: #f8f9fa;
     padding: 1rem 0;
     text-align: center;
+}
+
+/* Custom styles for Scottish Heritage Blog */
+
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* Custom properties */
+:root {
+    --tartan-red: #C41E3A;
+    --tartan-green: #006B54;
+    --tartan-blue: #1B4B73;
+    --highland-stone: #8B8680;
+}
+
+/* Typography */
+.font-heading {
+    font-family: 'Playfair Display', serif;
+}
+
+.font-body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Custom utilities */
+.text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hover-lift {
+    transition: transform 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+
+/* Custom components */
+.hero-gradient {
+    background: linear-gradient(135deg, var(--tartan-blue), var(--tartan-green));
+}
+
+.category-card {
+    transition: all 0.3s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .hero-text {
+        font-size: 2.5rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none;
+    }
 } 
