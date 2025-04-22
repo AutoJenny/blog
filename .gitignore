@@ -46,7 +46,11 @@ logs/
 
 # IDE specific files
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
 *.swp
 *.swo
 .DS_Store
@@ -85,3 +89,12 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# AI Assistant specific
+.tabby/
+.tabby-*/
+.tabby_*/
+.tabbyml/
+.codeium/
+.copilot/
+.copilot-*/
