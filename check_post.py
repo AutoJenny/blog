@@ -4,7 +4,7 @@ from app.models import Post, PostSection
 app = create_app()
 
 with app.app_context():
-    post = Post.query.filter_by(slug="quaich-traditions").first()
+    post = Post.query.filter_by(slug="kilt-evolution").first()
     if post:
         print(f"\nPost details:")
         print(f"Title: {post.title}")
