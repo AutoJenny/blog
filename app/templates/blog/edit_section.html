@@ -26,6 +26,44 @@
         </div>
 
         <div class="mb-3">
+            <label for="position" class="form-label">Position</label>
+            <input type="number" class="form-control" id="position" name="position" value="{{ section.position }}"
+                required>
+        </div>
+
+        <div class="mb-3">
+            <label for="video_url" class="form-label">Video URL</label>
+            <input type="url" class="form-control" id="video_url" name="video_url" value="{{ section.video_url }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="audio_url" class="form-label">Audio URL</label>
+            <input type="url" class="form-control" id="audio_url" name="audio_url" value="{{ section.audio_url }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="duration" class="form-label">Duration (seconds)</label>
+            <input type="number" class="form-control" id="duration" name="duration" value="{{ section.duration }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="keywords" class="form-label">Keywords (comma-separated)</label>
+            <input type="text" class="form-control" id="keywords" name="keywords" value="{{ section.keywords }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="social_media_snippets" class="form-label">Social Media Snippets (JSON)</label>
+            <textarea class="form-control" id="social_media_snippets" name="social_media_snippets"
+                rows="3">{{ section.social_media_snippets | tojson(indent=2) if section.social_media_snippets else '' }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="section_metadata" class="form-label">Section Metadata (JSON)</label>
+            <textarea class="form-control" id="section_metadata" name="section_metadata"
+                rows="3">{{ section.section_metadata | tojson(indent=2) if section.section_metadata else '' }}</textarea>
+        </div>
+
+        <div class="mb-3">
             <label for="content" class="form-label">Content</label>
             <textarea class="form-control" id="content" name="content" rows="10"
                 required>{{ section.content }}</textarea>
@@ -37,4 +75,11 @@
         </div>
     </form>
 </div>
+
+<style>
+    textarea.form-control {
+        font-family: monospace;
+        white-space: pre;
+    }
+</style>
 {% endblock %}

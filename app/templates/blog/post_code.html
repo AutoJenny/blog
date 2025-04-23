@@ -15,9 +15,18 @@
             </h2>
             <div id="navigationCollapse" class="accordion-collapse collapse show" aria-labelledby="navigationHeading">
                 <div class="accordion-body">
-                    <p><strong>Slug:</strong> {{ post.slug }}</p>
-                    <p><strong>Categories:</strong> {{ post.categories|map(attribute='name')|join(', ') }}</p>
-                    <p><strong>Tags:</strong> {{ post.tags|map(attribute='name')|join(', ') }}</p>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <p><strong>Slug:</strong> {{ post.slug }}</p>
+                            <p><strong>Categories:</strong> {{ post.categories|map(attribute='name')|join(', ') }}</p>
+                            <p><strong>Tags:</strong> {{ post.tags|map(attribute='name')|join(', ') }}</p>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('blog.edit', slug=post.slug) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit"></i> Edit Post
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -32,11 +41,22 @@
             </h2>
             <div id="headerCollapse" class="accordion-collapse collapse" aria-labelledby="headerHeading">
                 <div class="accordion-body">
-                    <p><strong>Header Image:</strong> {{ post.header_image.path if post.header_image else 'None' }}</p>
-                    <p><strong>Title:</strong> {{ post.title }}</p>
-                    <p><strong>Subtitle:</strong> {{ post.subtitle if post.subtitle else 'None' }}</p>
-                    <p><strong>Author:</strong> {{ post.author.username if post.author else 'Unknown' }}</p>
-                    <p><strong>Time to Read:</strong> {{ post.reading_time }} minutes</p>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <p><strong>Header Image:</strong> {{ post.header_image.path if post.header_image else 'None'
+                                }}</p>
+                            <p><strong>Title:</strong> {{ post.title }}</p>
+                            <p><strong>Subtitle:</strong> {{ post.subtitle if post.subtitle else 'None' }}</p>
+                            <p><strong>Author:</strong> {{ post.author.username if post.author else 'Unknown' }}</p>
+                            <p><strong>Time to Read:</strong> {{ post.reading_time }} minutes</p>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('blog.edit', slug=post.slug) }}#header"
+                                class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit"></i> Edit Header
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,10 +137,22 @@ WHERE id = {{ section.id }};</textarea>
             </h2>
             <div id="metaCollapse" class="accordion-collapse collapse" aria-labelledby="metaHeading">
                 <div class="accordion-body">
-                    <p><strong>SEO Metadata:</strong><br>{{ post.seo_metadata|tojson(indent=2) if post.seo_metadata else
-                        'None' }}</p>
-                    <p><strong>LLM Metadata:</strong><br>{{ post.llm_metadata|tojson(indent=2) if post.llm_metadata else
-                        'None' }}</p>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <p><strong>SEO Metadata:</strong><br>{{ post.seo_metadata|tojson(indent=2) if
+                                post.seo_metadata else
+                                'None' }}</p>
+                            <p><strong>LLM Metadata:</strong><br>{{ post.llm_metadata|tojson(indent=2) if
+                                post.llm_metadata else
+                                'None' }}</p>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('blog.edit', slug=post.slug) }}#meta"
+                                class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit"></i> Edit Meta
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -135,16 +167,27 @@ WHERE id = {{ section.id }};</textarea>
             </h2>
             <div id="publicationCollapse" class="accordion-collapse collapse" aria-labelledby="publicationHeading">
                 <div class="accordion-body">
-                    <p><strong>Created Date:</strong> {{ post.created_at.strftime('%Y-%m-%d %H:%M:%S') if
-                        post.created_at else 'None' }}</p>
-                    <p><strong>Updated Date:</strong> {{ post.updated_at.strftime('%Y-%m-%d %H:%M:%S') if
-                        post.updated_at else 'None' }}</p>
-                    <p><strong>Publication Date:</strong> {{ post.published_at.strftime('%Y-%m-%d %H:%M:%S') if
-                        post.published_at else 'Not published' }}</p>
-                    <p><strong>Status:</strong> {{ post.workflow_status.current_stage if post.workflow_status else
-                        'Draft' }}</p>
-                    <p><strong>Clan.com ID:</strong> {{ post.clan_com_post_id if post.clan_com_post_id else 'Not
-                        published' }}</p>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <p><strong>Created Date:</strong> {{ post.created_at.strftime('%Y-%m-%d %H:%M:%S') if
+                                post.created_at else 'None' }}</p>
+                            <p><strong>Updated Date:</strong> {{ post.updated_at.strftime('%Y-%m-%d %H:%M:%S') if
+                                post.updated_at else 'None' }}</p>
+                            <p><strong>Publication Date:</strong> {{ post.published_at.strftime('%Y-%m-%d %H:%M:%S') if
+                                post.published_at else 'Not published' }}</p>
+                            <p><strong>Status:</strong> {{ post.workflow_status.current_stage if post.workflow_status
+                                else
+                                'Draft' }}</p>
+                            <p><strong>Clan.com ID:</strong> {{ post.clan_com_post_id if post.clan_com_post_id else 'Not
+                                published' }}</p>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('blog.edit', slug=post.slug) }}#publication"
+                                class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit"></i> Edit Status
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

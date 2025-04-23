@@ -34,6 +34,7 @@ import os
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import SQLAlchemyError
 import re
+import json
 
 
 def slugify(text):
@@ -478,6 +479,21 @@ def edit_section(section_id):
         section.subtitle = request.form.get("subtitle", section.subtitle)
         section.content = request.form.get("content", section.content)
         section.content_type = request.form.get("content_type", section.content_type)
+        section.position = int(request.form.get("position", section.position))
+        section.video_url = request.form.get("video_url") or None
+        section.audio_url = request.form.get("audio_url") or None
+        section.duration = int(request.form.get("duration", 0)) or None
+        section.keywords = request.form.get("keywords") or None
+
+        # Handle JSON fields
+        try:
+            if social_snippets := request.form.get("social_media_snippets"):
+                section.social_media_snippets = json.loads(social_snippets)
+            if metadata := request.form.get("section_metadata"):
+                section.section_metadata = json.loads(metadata)
+        except json.JSONDecodeError as e:
+            flash(f"Error parsing JSON: {str(e)}", "error")
+            return render_template("blog/edit_section.html", section=section)
 
         try:
             db.session.commit()
