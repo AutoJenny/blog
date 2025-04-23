@@ -1,276 +1,115 @@
-{% extends "blog/post_base.html" %}
+{% extends "base.html" %}
 
-{% block post_content %}
-<div class="code-view">
-    <!-- Header Content -->
-    <div class="accordion mb-4" id="headerAccordion">
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">{{ post.title }}</h1>
+
+    <div class="accordion" id="postAccordion">
+        <!-- Navigation -->
         <div class="accordion-item">
-            <h2 class="accordion-header" id="headerHeader">
+            <h2 class="accordion-header" id="navigationHeading">
                 <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#headerCollapse">
-                    Header Content
+                    data-bs-target="#navigationCollapse" aria-expanded="true" aria-controls="navigationCollapse">
+                    Navigation
                 </button>
             </h2>
-            <div id="headerCollapse" class="accordion-collapse collapse show" data-bs-parent="#headerAccordion">
+            <div id="navigationCollapse" class="accordion-collapse collapse show" aria-labelledby="navigationHeading">
                 <div class="accordion-body">
-                    <div class="code-grid">
-                        <div class="code-row">
-                            <div class="code-label">title</div>
-                            <div class="code-value">{{ post.title }}</div>
-                        </div>
-                        <div class="code-row">
-                            <div class="code-label">summary</div>
-                            <div class="code-value">{{ post.summary }}</div>
-                        </div>
-                        <div class="code-row">
-                            <div class="code-label">author</div>
-                            <div class="code-value">
-                                {% if post.author %}
-                                {{ post.author.username }} ({{ post.author.email }})
-                                {% else %}
-                                <span class="text-muted">None</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="code-row">
-                            <div class="code-label">categories</div>
-                            <div class="code-value">
-                                {% if post.categories %}
-                                <ul class="list-unstyled mb-0">
-                                    {% for category in post.categories %}
-                                    <li>{{ category.name }}</li>
-                                    {% endfor %}
-                                </ul>
-                                {% else %}
-                                <span class="text-muted">None</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="code-row">
-                            <div class="code-label">tags</div>
-                            <div class="code-value">
-                                {% if post.tags %}
-                                <ul class="list-unstyled mb-0">
-                                    {% for tag in post.tags %}
-                                    <li>{{ tag.name }}</li>
-                                    {% endfor %}
-                                </ul>
-                                {% else %}
-                                <span class="text-muted">None</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% if post.header_image %}
-                        <div class="code-row">
-                            <div class="code-label">header_image</div>
-                            <div class="code-value">
-                                <div>{{ post.header_image.filename }}</div>
-                                <small class="text-muted">{{ post.header_image.path }}</small>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
+                    <p><strong>Slug:</strong> {{ post.slug }}</p>
+                    <p><strong>Categories:</strong> {{ post.categories|join(', ') }}</p>
+                    <p><strong>Tags:</strong> {{ post.tags|join(', ') }}</p>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Meta Information -->
-    <div class="accordion mb-4" id="metaAccordion">
+        <!-- Header -->
         <div class="accordion-item">
-            <h2 class="accordion-header" id="metaHeader">
+            <h2 class="accordion-header" id="headerHeading">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#metaCollapse">
-                    Meta Information
+                    data-bs-target="#headerCollapse" aria-expanded="false" aria-controls="headerCollapse">
+                    Header
                 </button>
             </h2>
-            <div id="metaCollapse" class="accordion-collapse collapse" data-bs-parent="#metaAccordion">
+            <div id="headerCollapse" class="accordion-collapse collapse" aria-labelledby="headerHeading">
                 <div class="accordion-body">
-                    <div class="code-grid">
-                        <div class="code-row">
-                            <div class="code-label">id</div>
-                            <div class="code-value">{{ post.id }}</div>
-                        </div>
-                        <div class="code-row">
-                            <div class="code-label">slug</div>
-                            <div class="code-value">{{ post.slug }}</div>
-                        </div>
-                        <div class="code-row">
-                            <div class="code-label">published</div>
-                            <div class="code-value">{{ post.published }}</div>
-                        </div>
-                        <div class="code-row">
-                            <div class="code-label">created_at</div>
-                            <div class="code-value">{{ post.created_at.isoformat() if post.created_at }}</div>
-                        </div>
-                        <div class="code-row">
-                            <div class="code-label">updated_at</div>
-                            <div class="code-value">{{ post.updated_at.isoformat() if post.updated_at }}</div>
-                        </div>
-                        <div class="code-row">
-                            <div class="code-label">published_at</div>
-                            <div class="code-value">{{ post.published_at.isoformat() if post.published_at }}</div>
-                        </div>
-                        <div class="code-row">
-                            <div class="code-label">reading_time</div>
-                            <div class="code-value">{{ post.reading_time }} minutes</div>
-                        </div>
-                    </div>
+                    <p><strong>Header Image:</strong> {{ post.header_image.path if post.header_image else 'None' }}</p>
+                    <p><strong>Title:</strong> {{ post.title }}</p>
+                    <p><strong>Subtitle:</strong> {{ post.subtitle if post.subtitle else 'None' }}</p>
+                    <p><strong>Author:</strong> {{ post.author.username if post.author else 'Unknown' }}</p>
+                    <p><strong>Time to Read:</strong> {{ post.reading_time }} minutes</p>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Sections -->
-    {% if post.sections %}
-    <div class="accordion mb-4" id="sectionsAccordion">
+        <!-- Sections -->
         <div class="accordion-item">
-            <h2 class="accordion-header" id="sectionsHeader">
+            <h2 class="accordion-header" id="sectionsHeading">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#sectionsCollapse">
-                    Sections ({{ post.sections|length }})
+                    data-bs-target="#sectionsCollapse" aria-expanded="false" aria-controls="sectionsCollapse">
+                    Sections
                 </button>
             </h2>
-            <div id="sectionsCollapse" class="accordion-collapse collapse" data-bs-parent="#sectionsAccordion">
+            <div id="sectionsCollapse" class="accordion-collapse collapse" aria-labelledby="sectionsHeading">
                 <div class="accordion-body">
                     {% for section in post.sections %}
-                    <div class="card mb-3">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Section {{ loop.index }}</h5>
-                            <span class="badge bg-secondary">{{ section.content_type }}</span>
-                        </div>
-                        <div class="card-body">
-                            <div class="code-grid">
-                                <div class="code-row">
-                                    <div class="code-label">title</div>
-                                    <div class="code-value">{{ section.title }}</div>
-                                </div>
-                                <div class="code-row">
-                                    <div class="code-label">subtitle</div>
-                                    <div class="code-value">{{ section.subtitle }}</div>
-                                </div>
-                                <div class="code-row">
-                                    <div class="code-label">content</div>
-                                    <div class="code-value">
-                                        <pre class="mb-0"><code>{{ section.content }}</code></pre>
-                                    </div>
-                                </div>
-                                {% if section.image %}
-                                <div class="code-row">
-                                    <div class="code-label">image</div>
-                                    <div class="code-value">{{ section.image.filename }}</div>
-                                </div>
-                                {% endif %}
-                                {% if section.video_url %}
-                                <div class="code-row">
-                                    <div class="code-label">video_url</div>
-                                    <div class="code-value">{{ section.video_url }}</div>
-                                </div>
-                                {% endif %}
-                                {% if section.audio_url %}
-                                <div class="code-row">
-                                    <div class="code-label">audio_url</div>
-                                    <div class="code-value">{{ section.audio_url }}</div>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
+                    <div class="section-block mb-4">
+                        <h4>Section {{ loop.index }}</h4>
+                        <p><strong>Heading:</strong> {{ section.title }}</p>
+                        <p><strong>Content:</strong><br>{{ section.content }}</p>
+                        <p><strong>Image:</strong> {{ section.image.path if section.image else 'None' }}</p>
+                        <p><strong>Image Description:</strong> {{ section.image.alt_text if section.image else 'None' }}
+                        </p>
+                        <p><strong>Image Caption:</strong> {{ section.image.caption if section.image else 'None' }}</p>
+                        {% if section.section_metadata %}
+                        <p><strong>Section Metadata:</strong><br>{{ section.section_metadata|tojson(indent=2) }}</p>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
             </div>
         </div>
-    </div>
-    {% endif %}
 
-    <!-- Additional Metadata -->
-    <div class="accordion mb-4" id="additionalAccordion">
+        <!-- Meta -->
         <div class="accordion-item">
-            <h2 class="accordion-header" id="additionalHeader">
+            <h2 class="accordion-header" id="metaHeading">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#additionalCollapse">
-                    Additional Metadata
+                    data-bs-target="#metaCollapse" aria-expanded="false" aria-controls="metaCollapse">
+                    Meta
                 </button>
             </h2>
-            <div id="additionalCollapse" class="accordion-collapse collapse" data-bs-parent="#additionalAccordion">
+            <div id="metaCollapse" class="accordion-collapse collapse" aria-labelledby="metaHeading">
                 <div class="accordion-body">
-                    <div class="code-grid">
-                        {% if post.workflow_status %}
-                        <div class="code-row">
-                            <div class="code-label">workflow_status</div>
-                            <div class="code-value">{{ post.workflow_status.current_stage.value }}</div>
-                        </div>
-                        {% endif %}
-                        {% if post.clan_com_post_id %}
-                        <div class="code-row">
-                            <div class="code-label">clan_com_post_id</div>
-                            <div class="code-value">{{ post.clan_com_post_id }}</div>
-                        </div>
-                        {% endif %}
-                        {% if post.llm_metadata %}
-                        <div class="code-row">
-                            <div class="code-label">llm_metadata</div>
-                            <div class="code-value">
-                                <pre class="mb-0"><code>{{ post.llm_metadata | tojson(indent=2) }}</code></pre>
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% if post.syndication_status %}
-                        <div class="code-row">
-                            <div class="code-label">syndication_status</div>
-                            <div class="code-value">
-                                <pre class="mb-0"><code>{{ post.syndication_status | tojson(indent=2) }}</code></pre>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
+                    <p><strong>SEO Metadata:</strong><br>{{ post.seo_metadata|tojson(indent=2) if post.seo_metadata else
+                        'None' }}</p>
+                    <p><strong>LLM Metadata:</strong><br>{{ post.llm_metadata|tojson(indent=2) if post.llm_metadata else
+                        'None' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Publication -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="publicationHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#publicationCollapse" aria-expanded="false" aria-controls="publicationCollapse">
+                    Publication
+                </button>
+            </h2>
+            <div id="publicationCollapse" class="accordion-collapse collapse" aria-labelledby="publicationHeading">
+                <div class="accordion-body">
+                    <p><strong>Created Date:</strong> {{ post.created_at.strftime('%Y-%m-%d %H:%M:%S') if
+                        post.created_at else 'None' }}</p>
+                    <p><strong>Updated Date:</strong> {{ post.updated_at.strftime('%Y-%m-%d %H:%M:%S') if
+                        post.updated_at else 'None' }}</p>
+                    <p><strong>Publication Date:</strong> {{ post.published_at.strftime('%Y-%m-%d %H:%M:%S') if
+                        post.published_at else 'Not published' }}</p>
+                    <p><strong>Status:</strong> {{ post.workflow_status.current_stage if post.workflow_status else
+                        'Draft' }}</p>
+                    <p><strong>Clan.com ID:</strong> {{ post.clan_com_post_id if post.clan_com_post_id else 'Not
+                        published' }}</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    .code-grid {
-        display: grid;
-        gap: 0.5rem;
-    }
-
-    .code-row {
-        display: grid;
-        grid-template-columns: 200px 1fr;
-        gap: 1rem;
-        padding: 0.5rem;
-        border-bottom: 1px solid #eee;
-    }
-
-    .code-row:last-child {
-        border-bottom: none;
-    }
-
-    .code-label {
-        font-family: monospace;
-        font-weight: bold;
-        color: #666;
-    }
-
-    .code-value {
-        font-family: monospace;
-        white-space: pre-wrap;
-        word-break: break-word;
-    }
-
-    .code-value pre {
-        margin: 0;
-        padding: 0.5rem;
-        background: #f8f9fa;
-        border-radius: 4px;
-    }
-
-    .code-value ul {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-</style>
 {% endblock %}
