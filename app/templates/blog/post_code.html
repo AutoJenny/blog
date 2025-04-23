@@ -16,8 +16,8 @@
             <div id="navigationCollapse" class="accordion-collapse collapse show" aria-labelledby="navigationHeading">
                 <div class="accordion-body">
                     <p><strong>Slug:</strong> {{ post.slug }}</p>
-                    <p><strong>Categories:</strong> {{ post.categories|join(', ') }}</p>
-                    <p><strong>Tags:</strong> {{ post.tags|join(', ') }}</p>
+                    <p><strong>Categories:</strong> {{ post.categories|map(attribute='name')|join(', ') }}</p>
+                    <p><strong>Tags:</strong> {{ post.tags|map(attribute='name')|join(', ') }}</p>
                 </div>
             </div>
         </div>
