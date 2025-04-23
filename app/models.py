@@ -1,5 +1,5 @@
 from datetime import datetime
-from app import db
+from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -8,6 +8,7 @@ from time import time
 from flask import current_app
 import json
 from enum import Enum
+from flask_login import UserMixin
 
 
 class WorkflowStage(Enum):
@@ -20,13 +21,18 @@ class WorkflowStage(Enum):
     SYNDICATION = "syndication"
 
 
-class User(db.Model):
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
+
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
-    posts = relationship("app.models.Post", backref="author", lazy="dynamic")
+    posts = relationship("Post", backref="author", lazy="dynamic")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def set_password(self, password):
@@ -81,6 +87,7 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     summary = db.Column(db.String(500))
     concept = db.Column(db.Text)
+    description = db.Column(db.Text)
     published = db.Column(db.Boolean, default=False)
     deleted = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -197,6 +204,7 @@ class PostSection(db.Model):
     keywords = db.Column(db.JSON)
     social_media_snippets = db.Column(db.JSON)
     section_metadata = db.Column(db.JSON)
+    is_conclusion = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
