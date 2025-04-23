@@ -22,6 +22,7 @@ from app.models import (
     PostSection,
     Image,
     WorkflowStatus,
+    WorkflowStatusHistory,
     WorkflowStage,
 )
 
@@ -91,18 +92,19 @@ def get_or_create_image(image_data):
 
     image = Image.query.filter_by(filename=filename).first()
     if not image:
-        image = Image(
-            filename=filename,
-            original_filename=image_data.get("original_filename", filename),
-            path=image_data.get("path", ""),
-            alt_text=image_data.get("alt_text", ""),
-            caption=image_data.get("caption", ""),
-            image_prompt=image_data.get("image_prompt", ""),
-            notes=image_data.get("notes", ""),
-            image_metadata=image_data.get("metadata", {}),
-            watermarked=image_data.get("watermarked", False),
-            watermarked_path=image_data.get("watermarked_path", ""),
-        )
+        # Create new image instance and set attributes directly
+        image = Image()
+        image.filename = filename
+        image.original_filename = image_data.get("original_filename", filename)
+        image.path = image_data.get("path", "")
+        image.alt_text = image_data.get("alt_text", "")
+        image.caption = image_data.get("caption", "")
+        image.image_prompt = image_data.get("image_prompt", "")
+        image.notes = image_data.get("notes", "")
+        image.image_metadata = image_data.get("metadata", {})
+        image.watermarked = image_data.get("watermarked", False)
+        image.watermarked_path = image_data.get("watermarked_path", "")
+
         db.session.add(image)
         db.session.commit()
     return image
@@ -112,7 +114,9 @@ def get_or_create_category(name):
     """Get or create a category by name."""
     category = Category.query.filter_by(name=name).first()
     if not category:
-        category = Category(name=name, slug=slugify(name))
+        category = Category()
+        category.name = name
+        category.slug = slugify(name)
         db.session.add(category)
         db.session.commit()
     return category
@@ -122,7 +126,9 @@ def get_or_create_tag(name):
     """Get or create a tag by name."""
     tag = Tag.query.filter_by(name=name).first()
     if not tag:
-        tag = Tag(name=name, slug=slugify(name))
+        tag = Tag()
+        tag.name = name
+        tag.slug = slugify(name)
         db.session.add(tag)
         db.session.commit()
     return tag
@@ -166,7 +172,7 @@ def process_image_by_id(image_id, image_info, db_session):
         # Create a new Image instance
         image = Image()
 
-        # Set attributes directly
+        # Set attributes directly on the instance
         image.filename = image_info.get("filename")
         image.original_filename = image_info.get(
             "original_filename", image_info.get("filename")
@@ -192,102 +198,182 @@ def process_image_by_id(image_id, image_info, db_session):
         return None
 
 
-def create_or_update_post(frontmatter_data, content, post_slug):
-    """Create or update a blog post with the given data."""
+def create_or_update_post(metadata, content, post_slug):
+    """Create or update a blog post with the given metadata and content."""
     try:
-        # Get or create the post
+        # Get or create default user
+        user = get_or_create_user()
+
+        # Find existing post or create new one
         post = Post.query.filter_by(slug=post_slug).first()
         if not post:
             post = Post()
+            post.slug = post_slug
+            db.session.add(post)
 
-        # Update basic post information
-        post.title = frontmatter_data.get("title", "")
-        post.slug = post_slug
+        # Update post attributes from metadata
+        post.title = metadata.get("title", "")
         post.content = content
-        post.draft = frontmatter_data.get("draft", True)
-        post.published_date = frontmatter_data.get("date")
-        post.last_modified_date = frontmatter_data.get("last_modified")
-        post.seo_metadata = frontmatter_data.get("seo", {})
-        post.syndication_status = frontmatter_data.get("syndication_status", {})
-        post.llm_metadata = frontmatter_data.get("llm_metadata", {})
-
-        # Clear existing relationships
-        post.categories = []
-        post.tags = []
-        if hasattr(post, "sections"):
-            for section in post.sections:
-                db.session.delete(section)
-            db.session.flush()
+        post.author_id = user.id  # Set author_id instead of user_id
+        post.seo_metadata = metadata.get("seo_metadata", {})
+        post.syndication_status = metadata.get("syndication_status", {})
+        post.llm_metadata = metadata.get("llm_metadata", {})
+        post.published = metadata.get("published", False)
+        post.published_at = metadata.get("publish_date")
 
         # Process categories
-        categories = frontmatter_data.get("categories", [])
-        for category_name in categories:
-            category = get_or_create_category(category_name)
-            if category:
+        if "categories" in metadata:
+            # Clear existing categories
+            post.categories = []  # This uses the backref defined in Category model
+            for cat_name in metadata["categories"]:
+                category = get_or_create_category(cat_name)
                 post.categories.append(category)
 
         # Process tags
-        tags = frontmatter_data.get("tags", [])
-        for tag_name in tags:
-            tag = get_or_create_tag(tag_name)
-            if tag:
+        if "tags" in metadata:
+            # Clear existing tags
+            post.tags = []  # This uses the relationship defined in Post model
+            for tag_name in metadata["tags"]:
+                tag = get_or_create_tag(tag_name)
                 post.tags.append(tag)
 
-        # Process sections
-        sections_data = frontmatter_data.get("sections", [])
-        for idx, section_data in enumerate(sections_data):
-            section = PostSection(
-                post=post,
-                position=idx,
-                title=section_data.get("title", ""),
-                content=section_data.get("content", ""),
-                metadata=section_data.get("metadata", {}),
-            )
+        # Process images
+        if "images" in metadata:
+            # Clear existing images
+            post.header_image = None  # Reset header image
+            for image_id in metadata["images"]:
+                # Get the mapped filename from IMAGE_ID_MAP
+                base_filename = IMAGE_ID_MAP.get(image_id)
+                if base_filename:
+                    # Prepare image info
+                    image_info = {
+                        "filename": f"{base_filename}.jpg",  # Assuming jpg for now
+                        "original_filename": f"{base_filename}.jpg",
+                        "path": f"images/posts/{post_slug}/{base_filename}.jpg",
+                        "alt_text": base_filename.replace("_", " ").title(),
+                        "caption": "",
+                        "image_prompt": "",
+                        "notes": f"Imported from old blog - ID: {image_id}",
+                        "image_metadata": {},
+                        "watermarked": False,
+                        "watermarked_path": "",
+                    }
+                    image = process_image_by_id(image_id, image_info, db.session)
+                    if image and not post.header_image:
+                        post.header_image = image  # Set first image as header image
+                else:
+                    print(f"Warning: No mapping found for image ID {image_id}")
 
-            # Process section images
-            image_id = section_data.get("image_id")
-            if image_id:
-                image = process_image_by_id(
-                    image_id, section_data.get("image_info", {}), db.session
-                )
-                if image:
-                    section.image = image
+        # Clear existing sections and commit to avoid constraint errors
+        if post.sections:
+            for section in post.sections:
+                db.session.delete(section)
+            db.session.commit()
 
-            db.session.add(section)
+        # Create new sections from content
+        sections = process_content_sections(content)
+        for position, section_data in enumerate(sections):
+            section_content = section_data.get("content", "")
+            section_title = section_data.get("title", "")
+
+            post_section = PostSection()
+            post_section.post = post
+            post_section.content = section_content
+            post_section.title = section_title
+            post_section.position = position
+            post_section.content_type = "text"
+            db.session.add(post_section)
 
         # Set workflow status if not already set
-        if not post.current_status:
-            status = WorkflowStatusHistory(
-                post=post,
-                status="draft",
-                user=get_or_create_user(),
-                notes="Initial import",
-            )
-            db.session.add(status)
+        if not post.workflow_status:
+            # Create workflow status
+            workflow_status = WorkflowStatus()
+            workflow_status.post = post
+            workflow_status.current_stage = WorkflowStage.CONCEPTUALIZATION
+            workflow_status.stage_data = {}
+            db.session.add(workflow_status)
+            db.session.flush()  # Get the ID
 
-        db.session.add(post)
+            # Create workflow history
+            history = WorkflowStatusHistory()
+            history.workflow_status = workflow_status
+            history.from_stage = WorkflowStage.CONCEPTUALIZATION
+            history.to_stage = WorkflowStage.CONCEPTUALIZATION
+            history.user_id = user.id
+            history.notes = "Post imported from old blog"
+            db.session.add(history)
+
         db.session.commit()
-        logger.info(f"Successfully processed post: {post_slug}")
         return post
 
     except Exception as e:
         db.session.rollback()
-        logger.error(f"Error processing post {post_slug}: {str(e)}")
-        raise
+        print(f"Error creating/updating post {post_slug}: {str(e)}")
+        return None
+
+
+def process_content_sections(content):
+    """Split content into sections based on ## headers."""
+    sections = []
+    current_section = {"title": "", "content": []}
+    lines = content.split("\n")
+
+    for line in lines:
+        if line.startswith("## "):
+            # If we have content in the current section, save it
+            if current_section["content"]:
+                sections.append(
+                    {
+                        "title": current_section["title"],
+                        "content": "\n".join(current_section["content"]).strip(),
+                    }
+                )
+            # Start a new section
+            current_section = {
+                "title": line[3:].strip(),  # Remove "## " prefix
+                "content": [],
+            }
+        else:
+            current_section["content"].append(line)
+
+    # Add the last section if it has content
+    if current_section["content"]:
+        sections.append(
+            {
+                "title": current_section["title"],
+                "content": "\n".join(current_section["content"]).strip(),
+            }
+        )
+
+    # If no sections were created, use the entire content as one section
+    if not sections:
+        sections = [{"title": "Main Content", "content": content.strip()}]
+
+    return sections
 
 
 def import_posts(posts_dir):
     """Import all markdown posts from a directory."""
     app = create_app()
     with app.app_context():
-        user = get_or_create_user()
-
         # Process all markdown files in the directory
         for filename in os.listdir(posts_dir):
             if filename.endswith(".md"):
                 md_file = os.path.join(posts_dir, filename)
                 try:
-                    post = create_or_update_post(md_file, user)
+                    # Read and parse the markdown file
+                    with open(md_file, "r", encoding="utf-8") as f:
+                        post_data = frontmatter.load(f)
+
+                    # Extract frontmatter and content
+                    metadata = post_data.metadata
+                    content = post_data.content
+
+                    # Get post slug from filename
+                    post_slug = os.path.splitext(filename)[0]
+
+                    # Create or update the post
+                    post = create_or_update_post(metadata, content, post_slug)
                     print(f"Successfully imported/updated post: {post.title}")
                 except Exception as e:
                     print(f"Error processing {filename}: {str(e)}")

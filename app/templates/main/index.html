@@ -8,8 +8,10 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="relative shadow-xl sm:rounded-2xl sm:overflow-hidden">
                 <div class="absolute inset-0">
-                    <img class="h-full w-full object-cover" src="{{ url_for('static', filename='images/hero-scotland.jpg') }}" alt="Scottish Highlands">
-                    <div class="absolute inset-0 bg-gradient-to-r from-tartan-blue to-tartan-green mix-blend-multiply"></div>
+                    <img class="h-full w-full object-cover"
+                        src="{{ url_for('static', filename='images/hero-scotland.jpg') }}" alt="Scottish Highlands">
+                    <div class="absolute inset-0 bg-gradient-to-r from-tartan-blue to-tartan-green mix-blend-multiply">
+                    </div>
                 </div>
                 <div class="relative px-4 py-16 sm:px-6 sm:py-24 lg:py-32 lg:px-8">
                     <h1 class="text-center text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
@@ -17,14 +19,17 @@
                         <span class="block text-highland-stone">Rich Heritage</span>
                     </h1>
                     <p class="mt-6 max-w-lg mx-auto text-center text-xl text-white sm:max-w-3xl">
-                        Explore the fascinating world of Scottish culture, from ancient traditions to modern celebrations.
+                        Explore the fascinating world of Scottish culture, from ancient traditions to modern
+                        celebrations.
                     </p>
                     <div class="mt-10 max-w-sm mx-auto sm:max-w-none sm:flex sm:justify-center">
                         <div class="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5">
-                            <a href="{{ url_for('blog.latest') }}" class="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-tartan-blue hover:bg-tartan-blue-700 sm:px-8">
+                            <a href="{{ url_for('blog.latest') }}"
+                                class="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-tartan-blue hover:bg-tartan-blue-700 sm:px-8">
                                 Latest Articles
                             </a>
-                            <a href="{{ url_for('blog.categories') }}" class="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-tartan-blue bg-white hover:bg-gray-50 sm:px-8">
+                            <a href="{{ url_for('blog.categories') }}"
+                                class="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-tartan-blue bg-white hover:bg-gray-50 sm:px-8">
                                 Browse Categories
                             </a>
                         </div>
@@ -52,11 +57,12 @@
                     <div class="flex-1 bg-white p-6 flex flex-col justify-between">
                         <div class="flex-1">
                             <p class="text-sm font-medium text-tartan-blue">
-                                <a href="{{ url_for('blog.category', category=post.category) }}" class="hover:underline">
+                                <a href="{{ url_for('blog.category', category=post.category) }}"
+                                    class="hover:underline">
                                     {{ post.category }}
                                 </a>
                             </p>
-                            <a href="{{ url_for('blog.post', post_id=post.id) }}" class="block mt-2">
+                            <a href="{{ url_for('blog.post', slug=post.slug) }}" class="block mt-2">
                                 <p class="text-xl font-semibold text-gray-900">{{ post.title }}</p>
                                 <p class="mt-3 text-base text-gray-500">{{ post.summary }}</p>
                             </a>
@@ -64,7 +70,8 @@
                         <div class="mt-6 flex items-center">
                             <div class="flex-shrink-0">
                                 <a href="#">
-                                    <img class="h-10 w-10 rounded-full" src="{{ post.author.avatar_url }}" alt="{{ post.author.name }}">
+                                    <img class="h-10 w-10 rounded-full" src="{{ post.author.avatar_url }}"
+                                        alt="{{ post.author.name }}">
                                 </a>
                             </div>
                             <div class="ml-3">
@@ -72,7 +79,8 @@
                                     <a href="#" class="hover:underline">{{ post.author.name }}</a>
                                 </p>
                                 <div class="flex space-x-1 text-sm text-gray-500">
-                                    <time datetime="{{ post.created_at.isoformat() }}">{{ post.created_at.strftime('%B %d, %Y') }}</time>
+                                    <time datetime="{{ post.created_at.isoformat() }}">{{ post.created_at.strftime('%B
+                                        %d, %Y') }}</time>
                                     <span aria-hidden="true">&middot;</span>
                                     <span>{{ post.read_time }} min read</span>
                                 </div>
@@ -105,7 +113,8 @@
                             </a>
                         </div>
                         <div class="mt-6">
-                            <a href="{{ url_for('blog.category', category=category.slug) }}" class="text-base font-semibold text-tartan-blue hover:text-tartan-blue-700">
+                            <a href="{{ url_for('blog.category', category=category.slug) }}"
+                                class="text-base font-semibold text-tartan-blue hover:text-tartan-blue-700">
                                 View articles &rarr;
                             </a>
                         </div>
@@ -123,12 +132,14 @@
     .bg-gradient-to-r {
         background-image: linear-gradient(to right, var(--tw-gradient-stops));
     }
+
     .from-tartan-blue {
         --tw-gradient-from: #1B4B73;
         --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(27, 75, 115, 0));
     }
+
     .to-tartan-green {
         --tw-gradient-to: #006B54;
     }
 </style>
-{% endblock %} 
+{% endblock %}

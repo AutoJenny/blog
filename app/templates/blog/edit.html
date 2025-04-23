@@ -27,7 +27,7 @@
         </nav>
     </div>
 
-    <form method="POST" action="{{ url_for('blog.edit', post_id=post.id) }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ url_for('blog.edit', slug=post.slug) }}" enctype="multipart/form-data">
         {{ form.csrf_token }}
 
         <!-- Conceptualization Stage -->

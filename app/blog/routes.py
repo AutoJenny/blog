@@ -116,7 +116,7 @@ def create():
             db.session.commit()
 
             flash("Post created successfully!", "success")
-            return redirect(url_for("blog.edit", post_id=post.id))
+            return redirect(url_for("blog.edit", slug=post.slug))
 
         except Exception as e:
             db.session.rollback()
@@ -156,87 +156,17 @@ def category(category):
     )
 
 
-@bp.route("/post/<int:post_id>/publish", methods=["POST"])
-def publish(post_id):
-    """Publish a post immediately."""
-    post = Post.query.get_or_404(post_id)
-
-    try:
-        publish_post(post)
-        flash("Post published successfully!", "success")
-        return jsonify({"status": "success", "message": "Post published successfully"})
-    except PublishingError as e:
-        flash(str(e), "error")
-        return jsonify({"status": "error", "message": str(e)}), 400
-
-
-@bp.route("/post/<int:post_id>/schedule", methods=["POST"])
-def schedule(post_id):
-    """Schedule a post for future publishing."""
-    post = Post.query.get_or_404(post_id)
-
-    try:
-        publish_at = datetime.fromisoformat(request.form["publish_at"])
-        schedule_post_publishing(post, publish_at)
-        flash("Post scheduled for publishing!", "success")
-        return jsonify(
-            {
-                "status": "success",
-                "message": f"Post scheduled for publishing at {publish_at.isoformat()}",
-            }
-        )
-    except (ValueError, KeyError):
-        flash("Invalid publishing date format", "error")
-        return (
-            jsonify({"status": "error", "message": "Invalid publishing date format"}),
-            400,
-        )
-    except PublishingError as e:
-        flash(str(e), "error")
-        return jsonify({"status": "error", "message": str(e)}), 400
-
-
-@bp.route("/post/<int:post_id>/unpublish", methods=["POST"])
-def unpublish(post_id):
-    """Unpublish a post (revert to draft)."""
-    post = Post.query.get_or_404(post_id)
-
-    try:
-        unpublish_post(post)
-        flash("Post unpublished successfully!", "success")
-        return jsonify(
-            {"status": "success", "message": "Post unpublished successfully"}
-        )
-    except PublishingError as e:
-        flash(str(e), "error")
-        return jsonify({"status": "error", "message": str(e)}), 400
-
-
-@bp.route("/scheduled")
-def scheduled_posts():
-    """View all scheduled posts."""
-    posts = get_scheduled_posts()
-    return render_template("blog/scheduled.html", title="Scheduled Posts", posts=posts)
-
-
-@bp.route("/published")
-def published_posts():
-    """View all published posts."""
-    posts = get_published_posts()
-    return render_template("blog/published.html", title="Published Posts", posts=posts)
-
-
-@bp.route("/post/<int:post_id>")
-def post(post_id):
+@bp.route("/post/<string:slug>")
+def post(slug):
     """Display a blog post."""
-    post = Post.query.get_or_404(post_id)
+    post = Post.query.filter_by(slug=slug).first_or_404()
     return render_template("blog/post.html", post=post, active_tab="preview")
 
 
-@bp.route("/post/<int:post_id>/edit", methods=["GET", "POST"])
-def edit(post_id):
+@bp.route("/post/<string:slug>/edit", methods=["GET", "POST"])
+def edit(slug):
     """Edit an existing blog post."""
-    post = Post.query.get_or_404(post_id)
+    post = Post.query.filter_by(slug=slug).first_or_404()
 
     # Check if user has permission to edit
     if post.author_id != current_user.id and not current_user.is_admin:
@@ -392,10 +322,10 @@ def edit(post_id):
 
             if "save_draft" in request.form:
                 flash("Draft saved successfully!", "success")
-                return redirect(url_for("blog.edit", post_id=post.id))
+                return redirect(url_for("blog.edit", slug=post.slug))
 
             flash("Post updated successfully!", "success")
-            return redirect(url_for("blog.post", post_id=post.id))
+            return redirect(url_for("blog.post", slug=post.slug))
 
         except Exception as e:
             db.session.rollback()
@@ -409,17 +339,17 @@ def edit(post_id):
     )
 
 
-@bp.route("/post/<int:post_id>/code")
-def post_code(post_id):
+@bp.route("/post/<string:slug>/code")
+def post_code(slug):
     """Display the code/data view of a blog post."""
-    post = Post.query.get_or_404(post_id)
+    post = Post.query.filter_by(slug=slug).first_or_404()
     return render_template("blog/post_code.html", post=post, active_tab="code")
 
 
-@bp.route("/post/<int:post_id>/delete", methods=["POST"])
-def delete(post_id):
+@bp.route("/post/<string:slug>/delete", methods=["POST"])
+def delete(slug):
     """Delete a blog post (soft delete)."""
-    post = Post.query.get_or_404(post_id)
+    post = Post.query.filter_by(slug=slug).first_or_404()
 
     # Only admin can delete posts
     if not current_user.is_admin:
@@ -457,3 +387,73 @@ def delete(post_id):
             ),
             500,
         )
+
+
+@bp.route("/post/<string:slug>/publish", methods=["POST"])
+def publish(slug):
+    """Publish a post immediately."""
+    post = Post.query.filter_by(slug=slug).first_or_404()
+
+    try:
+        publish_post(post)
+        flash("Post published successfully!", "success")
+        return jsonify({"status": "success", "message": "Post published successfully"})
+    except PublishingError as e:
+        flash(str(e), "error")
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@bp.route("/post/<string:slug>/schedule", methods=["POST"])
+def schedule(slug):
+    """Schedule a post for future publishing."""
+    post = Post.query.filter_by(slug=slug).first_or_404()
+
+    try:
+        publish_at = datetime.fromisoformat(request.form["publish_at"])
+        schedule_post_publishing(post, publish_at)
+        flash("Post scheduled for publishing!", "success")
+        return jsonify(
+            {
+                "status": "success",
+                "message": f"Post scheduled for publishing at {publish_at.isoformat()}",
+            }
+        )
+    except (ValueError, KeyError):
+        flash("Invalid publishing date format", "error")
+        return (
+            jsonify({"status": "error", "message": "Invalid publishing date format"}),
+            400,
+        )
+    except PublishingError as e:
+        flash(str(e), "error")
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@bp.route("/post/<string:slug>/unpublish", methods=["POST"])
+def unpublish(slug):
+    """Unpublish a post (revert to draft)."""
+    post = Post.query.filter_by(slug=slug).first_or_404()
+
+    try:
+        unpublish_post(post)
+        flash("Post unpublished successfully!", "success")
+        return jsonify(
+            {"status": "success", "message": "Post unpublished successfully"}
+        )
+    except PublishingError as e:
+        flash(str(e), "error")
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@bp.route("/scheduled")
+def scheduled_posts():
+    """View all scheduled posts."""
+    posts = get_scheduled_posts()
+    return render_template("blog/scheduled.html", title="Scheduled Posts", posts=posts)
+
+
+@bp.route("/published")
+def published_posts():
+    """View all published posts."""
+    posts = get_published_posts()
+    return render_template("blog/published.html", title="Published Posts", posts=posts)
