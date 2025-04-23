@@ -47,6 +47,7 @@
                                 }}</p>
                             <p><strong>Title:</strong> {{ post.title }}</p>
                             <p><strong>Subtitle:</strong> {{ post.subtitle if post.subtitle else 'None' }}</p>
+                            <p><strong>Description:</strong> {{ post.description if post.description else 'None' }}</p>
                             <p><strong>Author:</strong> {{ post.author.username if post.author else 'Unknown' }}</p>
                             <p><strong>Time to Read:</strong> {{ post.reading_time }} minutes</p>
                         </div>
