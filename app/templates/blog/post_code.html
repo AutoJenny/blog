@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "blog/post_base.html" %}
 
-{% block content %}
+{% block post_content %}
 <div class="container mt-4">
     <h1 class="text-center mb-4">{{ post.title }}</h1>
 
@@ -53,16 +53,54 @@
                 <div class="accordion-body">
                     {% for section in post.sections %}
                     <div class="section-block mb-4">
-                        <h4>Section {{ loop.index }}</h4>
-                        <p><strong>Heading:</strong> {{ section.title }}</p>
-                        <p><strong>Content:</strong><br>{{ section.content }}</p>
-                        <p><strong>Image:</strong> {{ section.image.path if section.image else 'None' }}</p>
-                        <p><strong>Image Description:</strong> {{ section.image.alt_text if section.image else 'None' }}
-                        </p>
-                        <p><strong>Image Caption:</strong> {{ section.image.caption if section.image else 'None' }}</p>
-                        {% if section.section_metadata %}
-                        <p><strong>Section Metadata:</strong><br>{{ section.section_metadata|tojson(indent=2) }}</p>
-                        {% endif %}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0">Section {{ loop.index }}</h4>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('blog.edit_section', section_id=section.id) }}"
+                                    class="btn btn-outline-primary btn-sm me-2">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="{{ url_for('blog.edit_section_sql', section_id=section.id) }}"
+                                    class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-database"></i> SQL
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- SQL Editor -->
+                        <div class="sql-editor mb-3">
+                            <form method="POST" action="{{ url_for('blog.update_section_sql', section_id=section.id) }}"
+                                class="mb-3">
+                                <div class="form-group">
+                                    <textarea name="sql_query" class="form-control font-monospace" rows="6">UPDATE post_section 
+SET title = '{{ section.title }}',
+    subtitle = '{{ section.subtitle }}',
+    content = '{{ section.content | replace("'", "''") }}',
+    position = {{ section.position }},
+    content_type = '{{ section.content_type }}'
+WHERE id = {{ section.id }};</textarea>
+                                </div>
+                                <div class="alert alert-warning my-2">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Warning: Be careful with SQL queries. Incorrect queries may damage your data.
+                                </div>
+                                <button type="submit" class="btn btn-primary">Execute SQL</button>
+                            </form>
+                        </div>
+
+                        <!-- Section Data -->
+                        <div class="section-data">
+                            <p><strong>Heading:</strong> {{ section.title }}</p>
+                            <p><strong>Content:</strong><br>{{ section.content }}</p>
+                            <p><strong>Image:</strong> {{ section.image.path if section.image else 'None' }}</p>
+                            <p><strong>Image Description:</strong> {{ section.image.alt_text if section.image else
+                                'None' }}</p>
+                            <p><strong>Image Caption:</strong> {{ section.image.caption if section.image else 'None' }}
+                            </p>
+                            {% if section.section_metadata %}
+                            <p><strong>Section Metadata:</strong><br>{{ section.section_metadata|tojson(indent=2) }}</p>
+                            {% endif %}
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
@@ -112,4 +150,23 @@
         </div>
     </div>
 </div>
+
+<script>
+    function toggleSqlEditor(sectionId) {
+        const editor = document.getElementById('sql-editor-' + sectionId);
+        if (editor.style.display === 'none') {
+            editor.style.display = 'block';
+        } else {
+            editor.style.display = 'none';
+        }
+    }
+</script>
+
+<style>
+    .sql-editor textarea {
+        font-family: monospace;
+        font-size: 14px;
+        tab-size: 4;
+    }
+</style>
 {% endblock %}

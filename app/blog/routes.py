@@ -17,6 +17,7 @@ from app.models import (
     WorkflowStatus,
     WorkflowStatusHistory,
     Image,
+    PostSection,
 )
 from app import db
 from app.blog.publishing import (
@@ -28,23 +29,11 @@ from app.blog.publishing import (
     PublishingError,
 )
 from app.blog.forms import PostForm
-
-# from flask_login import login_required, current_user  # Temporarily disabled
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import SQLAlchemyError
 import re
-
-
-# Temporary development user context
-class DevUser:
-    id = 1
-    is_authenticated = True
-    is_admin = True
-
-
-current_user = DevUser()  # Temporary development user
 
 
 def slugify(text):
@@ -96,18 +85,18 @@ def create():
                 content=request.form.get("content"),
                 summary=request.form.get("summary"),
                 published=False,
-                author_id=current_user.id,  # Set the author_id
+                author_id=1,  # Default author ID
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
                 workflow_status=workflow_status,  # Link the workflow status
             )
 
-            # Create initial workflow history - use the same stage for from/to since this is initialization
+            # Create initial workflow history
             history = WorkflowStatusHistory(
                 workflow_status=workflow_status,
-                from_stage=WorkflowStage.CONCEPTUALIZATION,  # Initialize with the same stage
+                from_stage=WorkflowStage.CONCEPTUALIZATION,
                 to_stage=WorkflowStage.CONCEPTUALIZATION,
-                user_id=current_user.id,
+                user_id=1,  # Default user ID
                 notes="Post created",
             )
             db.session.add(history)
@@ -168,11 +157,6 @@ def edit(slug):
     """Edit an existing blog post."""
     post = Post.query.filter_by(slug=slug).first_or_404()
 
-    # Check if user has permission to edit
-    if post.author_id != current_user.id and not current_user.is_admin:
-        flash("You do not have permission to edit this post.", "error")
-        return redirect(url_for("blog.latest"))
-
     # Ensure post has a workflow status
     if not post.workflow_status:
         workflow_status = WorkflowStatus(current_stage=WorkflowStage.CONCEPTUALIZATION)
@@ -183,7 +167,7 @@ def edit(slug):
             workflow_status=workflow_status,
             from_stage=WorkflowStage.CONCEPTUALIZATION,
             to_stage=WorkflowStage.CONCEPTUALIZATION,
-            user_id=current_user.id,
+            user_id=1,  # Default user ID
             notes="Workflow status initialized for existing post",
         )
         db.session.add(history)
@@ -293,7 +277,7 @@ def edit(slug):
                         workflow_status=post.workflow_status,
                         from_stage=current_stage,
                         to_stage=next_stage,
-                        user_id=current_user.id,
+                        user_id=1,  # Default user ID
                         notes=f"Advanced from {current_stage.value} to {next_stage.value}",
                     )
                     db.session.add(history)
@@ -351,16 +335,11 @@ def delete(slug):
     """Delete a blog post (soft delete)."""
     post = Post.query.filter_by(slug=slug).first_or_404()
 
-    # Only admin can delete posts
-    if not current_user.is_admin:
-        flash("You do not have permission to delete posts.", "error")
-        return jsonify({"status": "error", "message": "Permission denied"}), 403
-
     try:
         # Soft delete
         post.deleted = True
         post.deleted_at = datetime.utcnow()
-        post.deleted_by = current_user.id
+        post.deleted_by = 1  # Default user ID
 
         # If published, unpublish first
         if post.published:
@@ -387,6 +366,37 @@ def delete(slug):
             ),
             500,
         )
+
+
+@bp.route("/section/<int:section_id>/sql", methods=["GET"])
+def edit_section_sql(section_id):
+    """Edit a section using direct SQL."""
+    section = PostSection.query.get_or_404(section_id)
+    return render_template("blog/section_sql.html", section=section)
+
+
+@bp.route("/section/<int:section_id>/sql/update", methods=["POST"])
+def update_section_sql(section_id):
+    """Execute SQL query to update a section."""
+    section = PostSection.query.get_or_404(section_id)
+
+    sql_query = request.form.get("sql_query")
+    if not sql_query:
+        flash("SQL query is required.", "error")
+        return redirect(url_for("blog.edit_section_sql", section_id=section_id))
+
+    try:
+        # Execute the SQL query
+        db.session.execute(db.text(sql_query))
+        db.session.commit()
+        flash("SQL query executed successfully.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error executing SQL query: {str(e)}", "error")
+        current_app.logger.error(f"SQL Error for section {section_id}: {str(e)}")
+        return redirect(url_for("blog.edit_section_sql", section_id=section_id))
+
+    return redirect(url_for("blog.edit", slug=section.post.slug))
 
 
 @bp.route("/post/<string:slug>/publish", methods=["POST"])
@@ -457,3 +467,25 @@ def published_posts():
     """View all published posts."""
     posts = get_published_posts()
     return render_template("blog/published.html", title="Published Posts", posts=posts)
+
+
+@bp.route("/section/<int:section_id>/edit", methods=["GET", "POST"])
+def edit_section(section_id):
+    """Edit a section."""
+    section = PostSection.query.get_or_404(section_id)
+    if request.method == "POST":
+        section.title = request.form.get("title", section.title)
+        section.subtitle = request.form.get("subtitle", section.subtitle)
+        section.content = request.form.get("content", section.content)
+        section.content_type = request.form.get("content_type", section.content_type)
+
+        try:
+            db.session.commit()
+            flash("Section updated successfully.", "success")
+            return redirect(url_for("blog.edit", slug=section.post.slug))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating section: {str(e)}", "error")
+            current_app.logger.error(f"Error updating section {section_id}: {str(e)}")
+
+    return render_template("blog/edit_section.html", section=section)

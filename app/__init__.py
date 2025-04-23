@@ -2,11 +2,10 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_caching import Cache
-from flask_login import LoginManager
 from flask_mail import Mail
+from config import Config
 from celery import Celery
 from flasgger import Swagger
-from config import get_config
 import logging
 from logging.handlers import RotatingFileHandler, SMTPHandler
 import os
@@ -20,27 +19,18 @@ load_dotenv()
 db = SQLAlchemy()
 migrate = Migrate()
 cache = Cache()
+mail = Mail()
 celery = Celery(__name__)
 swagger = Swagger()
-login = LoginManager()
-mail = Mail()
-
-# Configure login manager
-login.login_view = "auth.login"  # type: ignore
 
 
-def create_app(config_name=None):
+def create_app(config_class=Config):
     app = Flask(__name__)
+    app.config.from_object(config_class)
 
-    # Load config
-    app.config.from_object(get_config(config_name))
-
-    # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
     cache.init_app(app)
-    swagger.init_app(app)
-    login.init_app(app)
     mail.init_app(app)
 
     # Configure Celery
@@ -123,17 +113,13 @@ def create_app(config_name=None):
 
     app.register_blueprint(blog_bp, url_prefix="/blog")
 
-    from app.auth import bp as auth_bp
-
-    app.register_blueprint(auth_bp, url_prefix="/auth")
-
     from app.api import bp as api_bp
 
     app.register_blueprint(api_bp, url_prefix="/api")
 
     from app.llm import bp as llm_bp
 
-    app.register_blueprint(llm_bp)
+    app.register_blueprint(llm_bp, url_prefix="/llm")
 
     from app.errors import bp as errors_bp
 
@@ -156,9 +142,4 @@ def create_app(config_name=None):
     return app
 
 
-# User loader callback
-@login.user_loader
-def load_user(id):
-    from app.models import User
-
-    return User.query.get(int(id))
+from app import models

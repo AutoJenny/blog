@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Edit Section SQL</h1>
+
+    <!-- Current Section Data -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Current Section Data</h5>
+        </div>
+        <div class="card-body">
+            <pre class="bg-light p-3 rounded"><code>{{ section | tojson(indent=2) }}</code></pre>
+        </div>
+    </div>
+
+    <!-- SQL Editor Form -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">SQL Editor</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('blog.update_section_sql', section_id=section.id) }}">
+                <div class="form-group mb-3">
+                    <label for="sql_query" class="form-label">SQL Query</label>
+                    <textarea id="sql_query" name="sql_query" class="form-control font-monospace" rows="10" required>UPDATE post_section 
+SET title = '{{ section.title }}',
+    subtitle = '{{ section.subtitle }}',
+    content = '{{ section.content | replace("'", "''") }}',
+    position = {{ section.position }},
+    content_type = '{{ section.content_type }}'
+WHERE id = {{ section.id }};</textarea>
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Warning: Be careful with SQL queries. Incorrect queries may damage your data.
+                </div>
+                <button type="submit" class="btn btn-primary">Execute SQL</button>
+                <a href="{{ url_for('blog.edit', slug=section.post.slug) }}" class="btn btn-secondary">Back to Post</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -64,30 +64,42 @@
             </div>
 
             {% if post.sections %}
-            <h3 class="mt-5 mb-3">Sections</h3>
-            {% for section in post.sections %}
             <div class="card mb-4">
-                <div class="card-body">
-                    <div class="form-group mb-3">
-                        <label class="form-label">Section Title</label>
-                        <input type="text" name="section_title_{{ section.id }}" class="form-control"
-                            value="{{ section.title }}">
-                    </div>
+                <div class="card-header">
+                    <h3 class="mb-0">Sections</h3>
+                </div>
+                <div class="card-body p-0">
+                    {% for section in post.sections %}
+                    <div class="section-card p-4 {% if not loop.last %}border-bottom{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="card-title mb-0">Section {{ loop.index }}</h4>
+                            <a href="{{ url_for('blog.edit_section_sql', section_id=section.id) }}"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-database"></i> Edit SQL
+                            </a>
+                        </div>
 
-                    <div class="form-group mb-3">
-                        <label class="form-label">Section Subtitle</label>
-                        <input type="text" name="section_subtitle_{{ section.id }}" class="form-control"
-                            value="{{ section.subtitle }}">
-                    </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label">Section Title</label>
+                            <input type="text" name="section_title_{{ section.id }}" class="form-control"
+                                value="{{ section.title }}">
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Section Content</label>
-                        <textarea name="section_content_{{ section.id }}" class="form-control"
-                            rows="5">{{ section.content }}</textarea>
+                        <div class="form-group mb-3">
+                            <label class="form-label">Section Subtitle</label>
+                            <input type="text" name="section_subtitle_{{ section.id }}" class="form-control"
+                                value="{{ section.subtitle }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Section Content</label>
+                            <textarea name="section_content_{{ section.id }}" class="form-control"
+                                rows="5">{{ section.content }}</textarea>
+                        </div>
                     </div>
+                    {% endfor %}
                 </div>
             </div>
-            {% endfor %}
             {% endif %}
         </div>
 
