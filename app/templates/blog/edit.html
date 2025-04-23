@@ -1,307 +1,304 @@
-{% extends "base.html" %}
+{% extends "blog/post_base.html" %}
 
-{% block content %}
-<div class="bg-white py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-            <h1 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Edit Post</h1>
-            <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-                Edit your blog post about Scottish heritage and culture
-            </p>
-        </div>
-
-        <!-- Workflow Progress -->
-        <div class="mt-8 max-w-4xl mx-auto">
-            <nav aria-label="Progress">
-                <ol role="list" class="flex items-center">
-                    {% set stages = ['CONCEPTUALIZATION', 'AUTHORING', 'METADATA', 'IMAGES', 'VALIDATION', 'PUBLISHING', 'SYNDICATION'] %}
-                    {% for stage in stages %}
-                        {% set is_current = post.workflow_status.current_stage.value == stage.lower() %}
-                        {% set is_complete = post.workflow_status.current_stage.value in stages[stages.index(stage)+1:] | map('lower') %}
-                        <li class="relative {% if not loop.last %}pr-8 sm:pr-20{% endif %}">
-                            <div class="absolute inset-0 flex items-center" aria-hidden="true">
-                                <div class="h-0.5 w-full {% if is_complete %}bg-tartan-blue{% else %}bg-gray-200{% endif %}"></div>
-                            </div>
-                            <div class="relative flex items-center justify-center">
-                                <span class="h-6 w-6 rounded-full {% if is_complete %}bg-tartan-blue{% elif is_current %}border-2 border-tartan-blue bg-white{% else %}bg-gray-200{% endif %} flex items-center justify-center">
-                                    {% if is_complete %}
-                                        <svg class="h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                        </svg>
-                                    {% elif is_current %}
-                                        <span class="h-2.5 w-2.5 rounded-full bg-tartan-blue"></span>
-                                    {% endif %}
-                                </span>
-                            </div>
-                            <div class="mt-2 text-xs text-center {% if is_current %}text-tartan-blue font-medium{% else %}text-gray-500{% endif %}">
-                                {{ stage.title() }}
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ol>
-            </nav>
-        </div>
-
-        <div class="mt-12 max-w-3xl mx-auto">
-            <form method="POST" enctype="multipart/form-data" class="space-y-8">
-                {{ form.hidden_tag() }}
-                
-                <div class="space-y-6">
-                    <!-- Conceptualization Stage -->
-                    <div class="{% if post.workflow_status.current_stage.value != 'conceptualization' %}hidden{% endif %}">
-                        <div class="bg-white shadow sm:rounded-lg">
-                            <div class="px-4 py-5 sm:p-6">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900">
-                                    Concept Development
-                                </h3>
-                                <div class="mt-2 max-w-xl text-sm text-gray-500">
-                                    <p>Outline your post concept and main ideas.</p>
-                                </div>
-                                <div class="mt-5">
-                                    {{ form.concept(rows=5, class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
-                                </div>
-                            </div>
-                        </div>
+{% block post_content %}
+<div class="edit-form">
+    <!-- Workflow Progress -->
+    <div class="workflow-progress mb-4">
+        <nav aria-label="Progress">
+            <ol class="progress-steps">
+                {% set stages = ['CONCEPTUALIZATION', 'AUTHORING', 'METADATA', 'IMAGES', 'VALIDATION', 'PUBLISHING',
+                'SYNDICATION'] %}
+                {% for stage in stages %}
+                {% set is_current = post.workflow_status.current_stage.value == stage.lower() %}
+                {% set is_complete = post.workflow_status.current_stage.value in stages[stages.index(stage)+1:] |
+                map('lower') %}
+                <li class="progress-step {% if is_current %}current{% elif is_complete %}complete{% endif %}">
+                    <div class="step-indicator">
+                        {% if is_complete %}
+                        <span class="step-check">✓</span>
+                        {% else %}
+                        <span class="step-number">{{ loop.index }}</span>
+                        {% endif %}
                     </div>
-
-                    <!-- Authoring Stage -->
-                    <div class="{% if post.workflow_status.current_stage.value != 'authoring' %}hidden{% endif %}">
-                        <!-- Title -->
-                        <div>
-                            <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-                            <div class="mt-1">
-                                {{ form.title(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
-                            </div>
-                            {% if form.title.errors %}
-                            <div class="mt-1 text-red-600 text-sm">
-                                {% for error in form.title.errors %}
-                                <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Summary -->
-                        <div>
-                            <label for="summary" class="block text-sm font-medium text-gray-700">Summary</label>
-                            <div class="mt-1">
-                                {{ form.summary(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
-                            </div>
-                            {% if form.summary.errors %}
-                            <div class="mt-1 text-red-600 text-sm">
-                                {% for error in form.summary.errors %}
-                                <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Content -->
-                        <div>
-                            <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-                            <div class="mt-1">
-                                {{ form.content(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md", rows="15") }}
-                            </div>
-                            {% if form.content.errors %}
-                            <div class="mt-1 text-red-600 text-sm">
-                                {% for error in form.content.errors %}
-                                <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Metadata Stage -->
-                    <div class="{% if post.workflow_status.current_stage.value != 'metadata' %}hidden{% endif %}">
-                        <!-- Categories -->
-                        <div>
-                            <label for="categories" class="block text-sm font-medium text-gray-700">Categories</label>
-                            <div class="mt-1">
-                                {{ form.categories(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
-                            </div>
-                            {% if form.categories.errors %}
-                            <div class="mt-1 text-red-600 text-sm">
-                                {% for error in form.categories.errors %}
-                                <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Tags -->
-                        <div>
-                            <label for="tags" class="block text-sm font-medium text-gray-700">Tags</label>
-                            <div class="mt-1">
-                                {{ form.tags(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
-                            </div>
-                            <p class="mt-1 text-sm text-gray-500">Separate tags with commas</p>
-                            {% if form.tags.errors %}
-                            <div class="mt-1 text-red-600 text-sm">
-                                {% for error in form.tags.errors %}
-                                <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- SEO Fields -->
-                        <div>
-                            <label for="seo_title" class="block text-sm font-medium text-gray-700">SEO Title</label>
-                            <div class="mt-1">
-                                {{ form.seo_title(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label for="seo_description" class="block text-sm font-medium text-gray-700">SEO Description</label>
-                            <div class="mt-1">
-                                {{ form.seo_description(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Images Stage -->
-                    <div class="{% if post.workflow_status.current_stage.value != 'images' %}hidden{% endif %}">
-                        <!-- Header Image -->
-                        <div>
-                            <label for="header_image" class="block text-sm font-medium text-gray-700">Header Image</label>
-                            {% if post.header_image %}
-                            <div class="mt-2 mb-4">
-                                <img src="{{ url_for('static', filename=post.header_image.path) }}" 
-                                     alt="{{ post.header_image.alt_text }}"
-                                     class="h-32 w-full object-cover rounded-lg">
-                            </div>
-                            {% endif %}
-                            <div class="mt-1">
-                                {{ form.header_image(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300") }}
-                            </div>
-                            <p class="mt-1 text-sm text-gray-500">Upload a new image to replace the current one</p>
-                            {% if form.header_image.errors %}
-                            <div class="mt-1 text-red-600 text-sm">
-                                {% for error in form.header_image.errors %}
-                                <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Header Image Alt Text -->
-                        <div>
-                            <label for="header_image_alt" class="block text-sm font-medium text-gray-700">Image Alt Text</label>
-                            <div class="mt-1">
-                                {{ form.header_image_alt(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Validation Stage -->
-                    <div class="{% if post.workflow_status.current_stage.value != 'validation' %}hidden{% endif %}">
-                        <div class="bg-white shadow sm:rounded-lg">
-                            <div class="px-4 py-5 sm:p-6">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900">
-                                    Content Validation
-                                </h3>
-                                <div class="mt-2 max-w-xl text-sm text-gray-500">
-                                    <p>Review and validate your content before publishing.</p>
-                                </div>
-                                <div class="mt-5">
-                                    {{ form.validation_notes(rows=3, class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md") }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Publishing Stage -->
-                    <div class="{% if post.workflow_status.current_stage.value != 'publishing' %}hidden{% endif %}">
-                        <div class="bg-white shadow sm:rounded-lg">
-                            <div class="px-4 py-5 sm:p-6">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900">
-                                    Publishing Options
-                                </h3>
-                                <div class="mt-2">
-                                    <label for="schedule_publish" class="block text-sm font-medium text-gray-700">Schedule Publication</label>
-                                    <div class="mt-1">
-                                        {{ form.schedule_publish(class="shadow-sm focus:ring-tartan-blue focus:border-tartan-blue block w-full sm:text-sm border-gray-300 rounded-md", type="datetime-local") }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Syndication Stage -->
-                    <div class="{% if post.workflow_status.current_stage.value != 'syndication' %}hidden{% endif %}">
-                        <div class="bg-white shadow sm:rounded-lg">
-                            <div class="px-4 py-5 sm:p-6">
-                                <h3 class="text-lg leading-6 font-medium text-gray-900">
-                                    Content Syndication
-                                </h3>
-                                <div class="mt-2">
-                                    {{ form.syndication_platforms(class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-tartan-blue focus:border-tartan-blue sm:text-sm rounded-md") }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Workflow Status -->
-                    <div class="rounded-md bg-gray-50 p-4">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h3 class="text-sm font-medium text-gray-800">Current Stage: {{ post.workflow_status.current_stage.value }}</h3>
-                                <div class="mt-2 text-sm text-gray-600">
-                                    <p>Last updated: {{ post.workflow_status.last_updated.strftime('%B %d, %Y at %H:%M') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pt-5 border-t border-gray-200">
-                    <div class="flex justify-between">
-                        <div>
-                            <a href="{{ url_for('blog.post', post_id=post.id) }}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tartan-blue">
-                                Cancel
-                            </a>
-                        </div>
-                        <div class="flex space-x-3">
-                            <button type="submit" name="save_draft" value="true" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                                Save Draft
-                            </button>
-                            {% if post.workflow_status.current_stage.value != 'publishing' %}
-                            <button type="submit" name="next_stage" value="next" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-tartan-blue hover:bg-tartan-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tartan-blue">
-                                Next Stage
-                            </button>
-                            {% else %}
-                            <button type="submit" name="publish" value="true" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                Publish
-                            </button>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
+                    <span class="step-label">{{ stage.title() }}</span>
+                </li>
+                {% endfor %}
+            </ol>
+        </nav>
     </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-    // Initialize any JavaScript enhancements
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add datetime picker for schedule_publish field if needed
-        const schedulePicker = document.getElementById('schedule_publish');
-        if (schedulePicker) {
-            // Set min date to now
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            schedulePicker.min = now.toISOString().slice(0, 16);
-        }
-    });
-</script>
-{% endblock %} 
+    <form method="POST" action="{{ url_for('blog.edit', post_id=post.id) }}" enctype="multipart/form-data">
+        {{ form.csrf_token }}
+
+        <!-- Conceptualization Stage -->
+        <div
+            class="stage-content {% if post.workflow_status.current_stage.value != 'conceptualization' %}d-none{% endif %}">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Concept Development</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        {{ form.concept.label(class="form-label") }}
+                        {{ form.concept(class="form-control", rows=5) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authoring Stage -->
+        <div class="stage-content {% if post.workflow_status.current_stage.value != 'authoring' %}d-none{% endif %}">
+            <div class="form-group mb-4">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control", value=post.title) }}
+            </div>
+
+            <div class="form-group mb-4">
+                {{ form.summary.label(class="form-label") }}
+                {{ form.summary(class="form-control", rows=3) }}
+            </div>
+
+            <div class="form-group mb-4">
+                {{ form.content.label(class="form-label") }}
+                {{ form.content(class="form-control", rows=10) }}
+            </div>
+
+            {% if post.sections %}
+            <h3 class="mt-5 mb-3">Sections</h3>
+            {% for section in post.sections %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Section Title</label>
+                        <input type="text" name="section_title_{{ section.id }}" class="form-control"
+                            value="{{ section.title }}">
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Section Subtitle</label>
+                        <input type="text" name="section_subtitle_{{ section.id }}" class="form-control"
+                            value="{{ section.subtitle }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Section Content</label>
+                        <textarea name="section_content_{{ section.id }}" class="form-control"
+                            rows="5">{{ section.content }}</textarea>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Metadata Stage -->
+        <div class="stage-content {% if post.workflow_status.current_stage.value != 'metadata' %}d-none{% endif %}">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Categories & Tags</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        {{ form.categories.label(class="form-label") }}
+                        {{ form.categories(class="form-select") }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.tags.label(class="form-label") }}
+                        {{ form.tags(class="form-control") }}
+                        <div class="form-text">Separate tags with commas</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">SEO Settings</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        {{ form.seo_title.label(class="form-label") }}
+                        {{ form.seo_title(class="form-control") }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.seo_description.label(class="form-label") }}
+                        {{ form.seo_description(class="form-control", rows=3) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Images Stage -->
+        <div class="stage-content {% if post.workflow_status.current_stage.value != 'images' %}d-none{% endif %}">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Header Image</h3>
+                </div>
+                <div class="card-body">
+                    {% if post.header_image %}
+                    <div class="mb-3">
+                        <img src="{{ url_for('static', filename=post.header_image.path) }}"
+                            alt="{{ post.header_image.alt_text }}" class="img-fluid rounded">
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group mb-3">
+                        {{ form.header_image.label(class="form-label") }}
+                        {{ form.header_image(class="form-control") }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.header_image_alt.label(class="form-label") }}
+                        {{ form.header_image_alt(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Validation Stage -->
+        <div class="stage-content {% if post.workflow_status.current_stage.value != 'validation' %}d-none{% endif %}">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Content Validation</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        {{ form.validation_notes.label(class="form-label") }}
+                        {{ form.validation_notes(class="form-control", rows=5) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Publishing Stage -->
+        <div class="stage-content {% if post.workflow_status.current_stage.value != 'publishing' %}d-none{% endif %}">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Publishing Options</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        {{ form.schedule_publish.label(class="form-label") }}
+                        {{ form.schedule_publish(class="form-control", type="datetime-local") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Syndication Stage -->
+        <div class="stage-content {% if post.workflow_status.current_stage.value != 'syndication' %}d-none{% endif %}">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Content Syndication</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        {{ form.syndication_platforms.label(class="form-label") }}
+                        {{ form.syndication_platforms(class="form-select") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workflow Status -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h4 class="mb-1">Current Stage: {{ post.workflow_status.current_stage.value.title() }}</h4>
+                        <div class="text-muted">
+                            Last updated: {{ post.workflow_status.last_updated.strftime('%B %d, %Y at %H:%M') }}
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="save_draft" value="true" class="btn btn-secondary">
+                            Save Draft
+                        </button>
+                        {% if post.workflow_status.current_stage.value != 'publishing' %}
+                        <button type="submit" name="next_stage" value="next" class="btn btn-primary">
+                            Next Stage
+                        </button>
+                        {% else %}
+                        <button type="submit" name="publish" value="true" class="btn btn-success">
+                            Publish
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .progress-steps {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        position: relative;
+    }
+
+    .progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e9ecef;
+        z-index: 0;
+    }
+
+    .progress-step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+        padding-top: 30px;
+    }
+
+    .step-indicator {
+        width: 30px;
+        height: 30px;
+        background: #fff;
+        border: 2px solid #e9ecef;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1;
+    }
+
+    .progress-step.complete .step-indicator {
+        background: #28a745;
+        border-color: #28a745;
+        color: #fff;
+    }
+
+    .progress-step.current .step-indicator {
+        border-color: #007bff;
+        background: #fff;
+        color: #007bff;
+    }
+
+    .step-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .progress-step.current .step-label {
+        color: #007bff;
+        font-weight: 600;
+    }
+
+    .progress-step.complete .step-label {
+        color: #28a745;
+    }
+</style>
+{% endblock %}

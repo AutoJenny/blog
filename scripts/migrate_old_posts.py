@@ -3,7 +3,7 @@ import os
 import sys
 import yaml
 import shutil
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 
 # Add the application root to the Python path
@@ -119,18 +119,42 @@ def find_image_file(image_id, post_slug, old_images_dir):
     """Find the corresponding image file for an image ID."""
     post_images_dir = os.path.join(old_images_dir, "posts", post_slug)
     if not os.path.exists(post_images_dir):
+        print(f"Warning: Post images directory not found at {post_images_dir}")
         return None
 
-    # Look for any image file that matches the pattern
-    for file in os.listdir(post_images_dir):
-        # Skip raw files and look for processed images
-        if (
-            file.endswith((".jpg", ".png", ".webp"))
-            and not file.endswith("_raw.jpg")
-            and not file.endswith("_raw.png")
-        ):
-            return os.path.join(post_images_dir, file)
+    # For header image
+    if image_id == "IMG00001":
+        # Try different formats for header image
+        for ext in [".jpg", ".png", ".webp"]:
+            header_file = os.path.join(post_images_dir, f"{post_slug}_header{ext}")
+            if os.path.exists(header_file):
+                return header_file
+        print(f"Warning: Header image not found for {post_slug} in any format")
+        return None
 
+    # For section images, try to find by scanning directory
+    processed_images = []
+    for file in os.listdir(post_images_dir):
+        # Skip raw files
+        if any(f"_raw.{ext}" in file.lower() for ext in ["jpg", "png", "webp"]):
+            continue
+        # Skip header
+        if any(f"_header.{ext}" in file.lower() for ext in ["jpg", "png", "webp"]):
+            continue
+        # Found a processed image file
+        if any(file.lower().endswith(ext) for ext in [".jpg", ".png", ".webp"]):
+            processed_images.append(os.path.join(post_images_dir, file))
+
+    if processed_images:
+        # If multiple processed images found, prefer jpg > png > webp
+        for ext in [".jpg", ".png", ".webp"]:
+            for img in processed_images:
+                if img.lower().endswith(ext):
+                    return img
+        # If no preferred format found, return the first one
+        return processed_images[0]
+
+    print(f"Warning: No suitable image found for ID {image_id} in {post_images_dir}")
     return None
 
 
@@ -142,29 +166,48 @@ def migrate_image(image_id, post_slug, static_dir, old_images_dir, session):
         return None
 
     filename = os.path.basename(image_file)
-    new_path = f"/static/images/posts/{post_slug}/{filename}"
+    original_filename = filename.replace(".jpg", "_raw.jpg")
+    new_path = f"images/posts/{post_slug}/{filename}"  # Remove leading /static/ as it's added by url_for
+
+    # Check if image already exists
+    existing_image = Image.query.filter_by(path=new_path).first()
+    if existing_image:
+        print(f"Image already exists with path {new_path}")
+        return existing_image
 
     image = Image()
     image.filename = filename
-    image.original_filename = filename
+    image.original_filename = original_filename
     image.path = new_path
     image.alt_text = ""  # Can be updated later
     image.caption = ""  # Can be updated later
     image.image_prompt = ""  # No prompt for migrated images
-    image.notes = "Migrated from old blog"
-    image.image_metadata = {}
+    image.notes = f"Migrated from old blog - ID: {image_id}"
+    image.image_metadata = {
+        "original_id": image_id,
+        "has_raw_version": os.path.exists(
+            os.path.join(os.path.dirname(image_file), original_filename)
+        ),
+    }
     image.watermarked = False
     image.watermarked_path = None
-    image.created_at = datetime.utcnow()
-    image.updated_at = datetime.utcnow()
+    image.created_at = datetime.now(UTC)  # Use timezone-aware datetime
+    image.updated_at = datetime.now(UTC)  # Use timezone-aware datetime
 
     session.add(image)
     session.flush()
 
-    # Copy the file to the new location
+    # Copy both processed and raw files if they exist
     target_dir = os.path.join(static_dir, "images", "posts", post_slug)
     os.makedirs(target_dir, exist_ok=True)
+
+    # Copy processed image
     shutil.copy2(image_file, os.path.join(target_dir, filename))
+
+    # Copy raw image if it exists
+    raw_file = os.path.join(os.path.dirname(image_file), original_filename)
+    if os.path.exists(raw_file):
+        shutil.copy2(raw_file, os.path.join(target_dir, original_filename))
 
     return image
 
@@ -211,14 +254,14 @@ def migrate_post(file_path, app):
             post = Post.query.filter_by(slug=slug).first()
             is_update = post is not None
 
-            if not post:
-                post = Post()
-                print(f"Creating new post: {title} (slug: {slug})")
-            else:
-                print(f"Updating existing post: {title} (slug: {slug})")
+            if is_update:
+                print(f"Post with slug '{slug}' already exists, updating...")
                 # Delete existing sections to recreate them
                 PostSection.query.filter_by(post_id=post.id).delete()
                 db.session.flush()
+            else:
+                post = Post()
+                print(f"Creating new post: {title} (slug: {slug})")
 
             # Create or get the author
             author = ensure_user(metadata.get("author", "admin"), db.session)
@@ -228,14 +271,13 @@ def migrate_post(file_path, app):
 
             # Handle header image if present
             header_image = None
-            header_image_id = metadata.get("headerImageId")
-            if header_image_id:
-                print(f"Found header image ID: {header_image_id}")
+            if "headerImage" in metadata and metadata["headerImage"].get("src"):
+                print("Found header image in metadata")
                 header_image = migrate_image(
-                    header_image_id,
+                    "IMG00001",
                     slug,
                     os.path.join(app.root_path, "static"),
-                    os.path.join(app.root_path, "..", "__blog_old", "images"),
+                    os.path.join(app.root_path, "..", "images"),
                     db.session,
                 )
 
@@ -248,9 +290,9 @@ def migrate_post(file_path, app):
                     print(
                         f"Warning: Invalid date format in {file_path}, using current time"
                     )
-                    post_date = datetime.now()
+                    post_date = datetime.now(UTC)
             elif not isinstance(post_date, datetime):
-                post_date = datetime.now()
+                post_date = datetime.now(UTC)
 
             # Update post
             post.title = title
@@ -260,9 +302,10 @@ def migrate_post(file_path, app):
             post.concept = metadata.get("concept", "")
             post.published = True
             post.deleted = False
-            post.created_at = post_date if not is_update else post.created_at
-            post.updated_at = datetime.now()
-            post.published_at = post_date if not is_update else post.published_at
+            if not is_update:
+                post.created_at = post_date
+                post.published_at = post_date
+            post.updated_at = datetime.now(UTC)
             post.author_id = author.id
             if header_image:
                 post.header_image = header_image
@@ -282,7 +325,7 @@ def migrate_post(file_path, app):
                 workflow_status.post_id = post.id
                 workflow_status.current_stage = WorkflowStage.PUBLISHING
                 workflow_status.stage_data = {}
-                workflow_status.last_updated = datetime.now()
+                workflow_status.last_updated = datetime.now(UTC)
                 db.session.add(workflow_status)
                 db.session.flush()
 
@@ -318,7 +361,7 @@ def migrate_post(file_path, app):
                         section["imageId"],
                         slug,
                         os.path.join(app.root_path, "static"),
-                        os.path.join(app.root_path, "..", "__blog_old", "images"),
+                        os.path.join(app.root_path, "..", "images"),
                         db.session,
                     )
 
@@ -385,7 +428,7 @@ def migrate_post(file_path, app):
                         conclusion["imageId"],
                         slug,
                         os.path.join(app.root_path, "static"),
-                        os.path.join(app.root_path, "..", "__blog_old", "images"),
+                        os.path.join(app.root_path, "..", "images"),
                         db.session,
                     )
 
