@@ -1,159 +1,194 @@
 # Database Documentation
 
 ## Overview
-The blog uses SQLAlchemy with PostgreSQL for data storage. The schema is designed around content reusability, workflow management, and multi-platform content optimization.
+The blog uses SQLAlchemy with SQLite/PostgreSQL for data storage. The schema is designed around content management, LLM integration, and media handling.
 
 ## Core Models
 
 ### Content Models
 1. **[Post](post.md)**
-   - Main container for blog content
-   - Workflow and publishing status
-   - SEO and LLM metadata
-   - Syndication tracking
+   - Title and subtitle
+   - Slug-based URLs
+   - Content and summary
+   - Author attribution
+   - Publishing status
+   - LLM metadata
+   - Created/updated timestamps
 
 2. **[Section](section.md)**
-   - Reusable content blocks
-   - Multi-platform content versions
+   - Title and subtitle
+   - Content with position
+   - Content type (text, image, video, audio)
    - Media attachments
-   - Position management
+   - Keywords and social snippets
+   - Section metadata
+   - Created/updated timestamps
 
 3. **[Image](media.md)**
-   - Media asset management
+   - Original and system filenames
+   - File path management
+   - Alt text and captions
+   - Image prompts and notes
    - Watermarking support
-   - AI generation metadata
-   - Technical metadata (EXIF)
+   - Image metadata
+   - Created/updated timestamps
 
 ### Organization Models
-1. **Category**
-   - Hierarchical categories
-   - Slug-based URLs
-   - Optional descriptions
-   - Parent-child relationships
+1. **Tag**
+   - Name and slug
+   - Many-to-many with posts
 
-2. **Tag**
-   - Flat taxonomy
-   - Slug-based URLs
-   - Optional descriptions
-
-### Workflow Models
-1. **WorkflowStatus**
-   - Current stage tracking
-   - Stage-specific data
-   - History tracking
-   - Stage validation
-
-2. **WorkflowStatusHistory**
-   - Stage transitions
-   - User attribution
-   - Timestamp tracking
-   - Transition notes
+### User Models
+1. **User**
+   - Username and email
+   - Password authentication
+   - Admin status
+   - Created timestamp
 
 ### LLM Integration Models
 1. **LLMPrompt**
-   - Named prompt templates
-   - Parameter definitions
-   - Versioning support
+   - Name and description
+   - Prompt template
+   - Parameters (JSON)
+   - Created/updated timestamps
 
 2. **LLMInteraction**
-   - Prompt/response tracking
-   - Token usage monitoring
-   - Performance metrics
+   - Link to prompt and post
+   - Input and output text
+   - Model information
+   - Parameters (JSON)
+   - Token usage and duration
+   - Created timestamp
 
 ## Entity Relationships
 
 ```mermaid
 erDiagram
     Post ||--o{ PostSection : contains
-    Post ||--o{ PostCategories : has
     Post ||--o{ PostTags : has
-    Post ||--o| WorkflowStatus : tracks
     Post ||--o| User : authored_by
-    Post ||--o| Image : header_image
     
     PostSection ||--o| Image : has
     PostSection }|--|| Post : belongs_to
     
-    Category ||--o{ PostCategories : in
     Tag ||--o{ PostTags : in
-    
-    WorkflowStatus ||--o{ WorkflowStatusHistory : tracks
-    WorkflowStatusHistory ||--o| User : created_by
     
     LLMInteraction }o--|| LLMPrompt : uses
     LLMInteraction }o--|| Post : relates_to
 ```
 
-## Key Features
+## Table Schemas
 
-### Content Management
-- Hierarchical content structure (Post > Section)
-- Flexible content types (text, image, video, audio)
-- Position-based ordering
-- Rich metadata support
-
-### Media Handling
-- Centralized media library
-- Watermarking support
-- AI image generation integration
-- Metadata preservation
-
-### Workflow System
-- Stage-based workflow
-  - Conceptualization
-  - Authoring
-  - Metadata
-  - Images
-  - Validation
-  - Publishing
-  - Syndication
-- History tracking
-- User attribution
-
-### LLM Integration
-- Prompt template management
-- Interaction tracking
-- Performance monitoring
-- Token usage tracking
-
-## Common Queries
-
-### Post Management
+### Post
 ```sql
--- Get post with sections
-SELECT p.*, s.* 
-FROM post p 
-LEFT JOIN post_section s ON p.id = s.post_id 
-WHERE p.slug = :slug 
-ORDER BY s.position;
-
--- Get post categories
-SELECT c.* 
-FROM category c 
-JOIN post_categories pc ON c.id = pc.category_id 
-WHERE pc.post_id = :post_id;
-
--- Get workflow history
-SELECT h.* 
-FROM workflow_status_history h 
-JOIN workflow_status w ON h.workflow_status_id = w.id 
-WHERE w.post_id = :post_id 
-ORDER BY h.created_at DESC;
+CREATE TABLE post (
+    id INTEGER PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    subtitle VARCHAR(200),
+    slug VARCHAR(200) NOT NULL UNIQUE,
+    content TEXT NOT NULL,
+    summary VARCHAR(500),
+    published BOOLEAN,
+    created_at DATETIME,
+    updated_at DATETIME,
+    author_id INTEGER NOT NULL REFERENCES user(id),
+    llm_metadata JSON
+);
 ```
 
-### Content Organization
+### PostSection
 ```sql
--- Get category tree
-WITH RECURSIVE category_tree AS (
-    SELECT id, name, parent_id, 0 as level
-    FROM category
-    WHERE parent_id IS NULL
-    UNION ALL
-    SELECT c.id, c.name, c.parent_id, ct.level + 1
-    FROM category c
-    JOIN category_tree ct ON c.parent_id = ct.id
-)
-SELECT * FROM category_tree;
+CREATE TABLE post_section (
+    id INTEGER PRIMARY KEY,
+    post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE,
+    title VARCHAR(200),
+    subtitle VARCHAR(200),
+    content TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    image_id INTEGER REFERENCES image(id) ON DELETE SET NULL,
+    video_url VARCHAR(500),
+    audio_url VARCHAR(500),
+    content_type VARCHAR(50) NOT NULL DEFAULT 'text',
+    duration INTEGER,
+    keywords JSON,
+    social_media_snippets JSON,
+    section_metadata JSON,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(post_id, position)
+);
+```
+
+### Image
+```sql
+CREATE TABLE image (
+    id INTEGER PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL,
+    original_filename VARCHAR(255) NOT NULL,
+    path VARCHAR(500) NOT NULL,
+    alt_text VARCHAR(500),
+    caption TEXT,
+    image_prompt TEXT,
+    notes TEXT,
+    image_metadata JSON,
+    watermarked BOOLEAN DEFAULT FALSE,
+    watermarked_path VARCHAR(500),
+    created_at DATETIME,
+    updated_at DATETIME
+);
+```
+
+### Tag and PostTags
+```sql
+CREATE TABLE tag (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    slug VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE post_tags (
+    post_id INTEGER NOT NULL REFERENCES post(id),
+    tag_id INTEGER NOT NULL REFERENCES tag(id),
+    PRIMARY KEY (post_id, tag_id)
+);
+```
+
+### User
+```sql
+CREATE TABLE user (
+    id INTEGER PRIMARY KEY,
+    username VARCHAR(64) NOT NULL UNIQUE,
+    email VARCHAR(120) NOT NULL UNIQUE,
+    password_hash VARCHAR(128),
+    is_admin BOOLEAN,
+    created_at DATETIME
+);
+```
+
+### LLM Tables
+```sql
+CREATE TABLE llm_prompt (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    prompt_template TEXT NOT NULL,
+    parameters JSON,
+    created_at DATETIME,
+    updated_at DATETIME
+);
+
+CREATE TABLE llm_interaction (
+    id INTEGER PRIMARY KEY,
+    prompt_id INTEGER REFERENCES llm_prompt(id),
+    post_id INTEGER REFERENCES post(id),
+    input_text TEXT NOT NULL,
+    output_text TEXT NOT NULL,
+    model_used VARCHAR(50) NOT NULL,
+    parameters JSON,
+    tokens_used INTEGER,
+    duration FLOAT,
+    created_at DATETIME
+);
 ```
 
 ## Best Practices
@@ -162,10 +197,13 @@ SELECT * FROM category_tree;
 1. Use transactions for multi-table updates
 2. Maintain referential integrity
 3. Handle soft deletes appropriately
-4. Validate workflow transitions
+4. Validate content types
 
 ### Performance
 1. Use appropriate indexes
+   - `post_section_position` (post_id, position)
+   - `post_section_content_type` (content_type)
+   - `post_section_created` (created_at)
 2. Optimize JSON queries
 3. Implement caching
 4. Monitor query performance
