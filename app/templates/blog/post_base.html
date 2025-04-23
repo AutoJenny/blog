@@ -1,29 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <!-- Post title and navigation -->
-    <div class="text-center mb-4">
-        <h2 class="h3 fw-bold mb-4">{{ post.title }}</h2>
-        <div class="d-flex justify-content-center">
-            <div class="btn-group" role="group" aria-label="Post navigation">
-                <a class="btn {% if active_tab == 'preview' %}btn-primary{% else %}btn-outline-primary{% endif %}"
-                    href="{{ url_for('blog.post', slug=post.slug) }}">Preview</a>
-                <a class="btn {% if active_tab == 'edit' %}btn-primary{% else %}btn-outline-primary{% endif %}"
-                    href="{{ url_for('blog.edit', slug=post.slug) }}">Edit</a>
-                <a class="btn {% if active_tab == 'code' %}btn-primary{% else %}btn-outline-primary{% endif %}"
-                    href="{{ url_for('blog.post_code', slug=post.slug) }}">Code</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Content area -->
-    <div class="card">
-        <div class="card-body">
-            {% block post_content %}{% endblock %}
-        </div>
+<!-- Post navigation tabs -->
+<div class="post-tabs">
+    <div class="btn-group" role="group" aria-label="Post navigation">
+        <a class="btn {% if active_tab == 'preview' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+            href="{{ url_for('blog.post', slug=post.slug) }}">Preview</a>
+        <a class="btn {% if active_tab == 'edit' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+            href="{{ url_for('blog.edit', slug=post.slug) }}">Edit</a>
+        <a class="btn {% if active_tab == 'code' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+            href="{{ url_for('blog.post_code', slug=post.slug) }}">Code</a>
     </div>
 </div>
+
+<!-- Content area -->
+{% block post_content %}{% endblock %}
 
 <!-- Suppress Tailwind CDN warning -->
 <script>

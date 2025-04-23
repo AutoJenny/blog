@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Posts tagged with {{ tag.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Posts tagged with "{{ tag.name }}"</h1>
+
+    {% if posts %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for post in posts %}
+        <div class="col">
+            <div class="card h-100">
+                {% if post.header_image %}
+                <img src="{{ url_for('static', filename=post.header_image.path) }}" class="card-img-top"
+                    alt="{{ post.header_image.alt_text }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ post.title }}</h5>
+                    {% if post.description %}
+                    <p class="card-text">{{ post.description | truncate(150) }}</p>
+                    {% endif %}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            {{ post.published_at.strftime('%B %d, %Y') if post.published_at else
+                            post.created_at.strftime('%B %d, %Y') }}
+                        </small>
+                        <a href="{{ url_for('blog.post', slug=post.slug) }}" class="btn btn-primary btn-sm">Read
+                            More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No posts found with this tag.</p>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ url_for('blog.latest') }}" class="btn btn-outline-primary">← Back to All Posts</a>
+    </div>
+</div>
+{% endblock %}

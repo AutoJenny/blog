@@ -505,3 +505,16 @@ def edit_section(section_id):
             current_app.logger.error(f"Error updating section {section_id}: {str(e)}")
 
     return render_template("blog/edit_section.html", section=section)
+
+
+@bp.route("/tag/<string:tag>")
+def tag(tag):
+    """Display posts with a specific tag."""
+    tag_obj = Tag.query.filter_by(slug=tag).first_or_404()
+    posts = (
+        Post.query.join(Post.tags)
+        .filter(Tag.id == tag_obj.id)
+        .order_by(Post.published_at.desc())
+        .all()
+    )
+    return render_template("blog/tag.html", tag=tag_obj, posts=posts)
