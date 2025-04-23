@@ -46,36 +46,26 @@ flask db upgrade
 
 Visit `http://localhost:5000` to start creating content.
 
-## Configuration
-
-Key environment variables to configure:
-
-```bash
-# Core Settings
-FLASK_ENV=development
-SECRET_KEY=your-secret-key
-
-# Database (for local content storage)
-DATABASE_URL=sqlite:///instance/blog.db
-
-# AI Features (Optional)
-OPENAI_API_KEY=your-api-key
-
-# Clan.com Integration
-CLAN_API_KEY=your-clan-api-key
-CLAN_API_ENDPOINT=https://api.clan.com/v1/blog
-```
-
-See `docs/configuration.md` for detailed configuration options.
-
 ## Documentation
 
-Detailed documentation is available in the `/docs` directory:
+Our documentation is organized by user role and topic:
 
-- 📖 [Content Creation Guide](docs/user_guide.md) - Writing and preview workflow
-- ⚙️ [Technical Setup](docs/technical_setup.md) - Local environment setup
-- 🔧 [Development Guide](docs/development.md) - Contributing and extending
-- 📊 [API Documentation](docs/api.md) - Integration with clan.com
+### For Content Creators
+- 📖 [User Guide](docs/guides/user_guide.md) - Content creation and management
+- 🖼️ [Media Guide](docs/api/media.md) - Image and file management
+- 🤖 [LLM Features](docs/api/llm.md) - AI-assisted content creation
+
+### For Developers
+- ⚙️ [Technical Setup](docs/guides/technical_setup.md) - Development environment setup
+- 🔌 [API Documentation](docs/api/README.md) - Complete API reference
+- 💾 [Database Models](docs/database/README.md) - Data structure documentation
+
+### For System Administrators
+- 📊 [Monitoring](docs/api/monitoring.md) - System health and metrics
+- 🔄 [Migration Guide](docs/guides/migration.md) - Data migration procedures
+- 🏗️ [Architecture](docs/project/architecture.md) - System architecture
+
+See the [documentation index](docs/README.md) for a complete overview of all available documentation.
 
 ## Core Operations
 
@@ -93,48 +83,4 @@ Detailed documentation is available in the `/docs` directory:
 
 ## License
 
-[Add your license information here]
-
-## Environment Variables
-
-The application uses environment variables for configuration. Create a `.env` file in the root directory based on `.env.example` with your specific values. The following variables are supported:
-
-### Flask Configuration
-- `FLASK_APP`: Set to `run.py` (default)
-- `FLASK_ENV`: Set to `development`, `testing`, or `production`
-- `SECRET_KEY`: Flask secret key for session security
-
-### Database Configuration
-- `DATABASE_URL`: SQLAlchemy database URL (defaults to SQLite: `sqlite:///instance/blog.db`)
-
-### Email Configuration
-- `MAIL_SERVER`: SMTP server hostname
-- `MAIL_PORT`: SMTP server port (default: 25)
-- `MAIL_USE_TLS`: Enable TLS (set to any value to enable)
-- `MAIL_USERNAME`: SMTP authentication username
-- `MAIL_PASSWORD`: SMTP authentication password
-- `MAIL_DEFAULT_SENDER`: Default email sender address
-- `ADMIN_EMAIL`: Administrator email address
-
-### OpenAI Integration
-- `OPENAI_API_KEY`: Your OpenAI API key (required for LLM features)
-- `OPENAI_ORG_ID`: Your OpenAI organization ID (optional)
-- `OPENAI_API_BASE`: API base URL (default: https://api.openai.com/v1)
-- `OPENAI_DEFAULT_MODEL`: Default chat model (default: gpt-3.5-turbo)
-- `OPENAI_EMBEDDING_MODEL`: Model for embeddings (default: text-embedding-3-small)
-
-### Celery and Redis Configuration
-- `CELERY_BROKER_URL`: Redis URL for Celery broker (default: redis://localhost:6379/0)
-- `CELERY_RESULT_BACKEND`: Redis URL for Celery results (default: redis://localhost:6379/0)
-
-### File Upload Configuration
-The following settings are configured in `config.py`:
-- Maximum file size: 16MB
-- Allowed file extensions: .txt, .pdf, .png, .jpg, .jpeg, .gif
-- Upload directory: `app/static/uploads`
-
-### Production Settings
-- `DYNO`: Set by Heroku, enables SSL redirect if present
-- Additional production configurations are automatically applied when `FLASK_ENV=production`
-
-For security reasons, the `.env` file is excluded from version control. Make sure to keep your environment variables secure and never commit them to the repository. 
+[Add your license information here] 
