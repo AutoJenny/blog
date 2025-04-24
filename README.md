@@ -48,7 +48,7 @@ Visit `http://localhost:5000` to start creating content.
 
 ## Documentation
 
-Our documentation is organized by user role and topic:
+Our documentation is organized by topic:
 
 ### For Content Creators
 - 📖 [User Guide](docs/guides/user_guide.md) - Content creation and management
@@ -85,8 +85,27 @@ See the [documentation index](docs/README.md) for a complete overview of all ava
 
 [Add your license information here]
 
-## ⚠️ IMPORTANT NOTE ⚠️
+## ⚠️ IMPORTANT NOTES ⚠️
 
-**NO LOGIN FUNCTIONALITY SHOULD BE IMPLEMENTED**
+### No Authentication
 
-This blog is intentionally designed to operate WITHOUT any authentication or login system. Do not attempt to add or fix any login-related features. The application should remain publicly accessible without any user authentication. 
+This blog is intentionally designed to operate WITHOUT any authentication or login system. The application is publicly accessible and does not require any user authentication. The following features have been removed:
+
+- User accounts and login
+- User management
+- Password protection
+- Access control
+- Session management
+
+### No Database Management UI
+
+The database management interface has been removed. Database operations should be performed using command-line tools or direct database access. The following features are not available:
+
+- Database web interface
+- Online database management
+- User interface for database operations
+
+All database operations should be performed using:
+- Flask CLI commands
+- Direct database access
+- Migration scripts 

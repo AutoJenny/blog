@@ -4,112 +4,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %} - Blog</title>
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-    <!-- Blog CSS -->
-    <link href="{{ url_for('static', filename='css/blog.css') }}" rel="stylesheet">
-
-    <!-- Custom CSS -->
-    <style>
-        /* Custom styles */
-        .bg-gradient-dark {
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9));
+    <title>{% block title %}Blog CMS{% endblock %}</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Heroicons via CDN -->
+    <script src="https://unpkg.com/@heroicons/v2@1.0.0/24/solid/index.min.js"></script>
+    <!-- Custom Tailwind configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#1a1a1a',
+                        'dark-surface': '#2d2d2d',
+                        'dark-border': '#404040',
+                        'dark-text': '#e0e0e0',
+                        'dark-accent': '#6366f1'
+                    }
+                }
+            }
         }
-
-        .text-shadow {
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .article-header {
-            position: relative;
-            background-size: cover;
-            background-position: center;
-            min-height: 400px;
-        }
-
-        .toc-link {
-            color: inherit;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .toc-link:hover {
-            color: var(--bs-primary);
-        }
-
-        .tag {
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .tag:hover {
-            transform: translateY(-2px);
-        }
-    </style>
-
-    {% block extra_head %}{% endblock %}
+    </script>
+    {% block styles %}{% endblock %}
 </head>
 
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">Blog</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('main.') %}active{% endif %}"
-                            href="{{ url_for('main.index') }}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('blog.') %}active{% endif %}"
-                            href="{{ url_for('blog.latest') }}">Posts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/db">DB</a>
-                    </li>
-                </ul>
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    <!-- Header -->
+    <header class="bg-dark-surface border-b border-dark-border">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <!-- Home Icon -->
+                    <a href="{{ url_for('main.index') }}" class="text-dark-text hover:text-dark-accent">
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                    </a>
+                    <!-- Navigation Links -->
+                    <div class="flex space-x-4">
+                        <a href="{{ url_for('blog.index') }}"
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium">Posts</a>
+                        <a href="{{ url_for('llm.index') }}"
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium">LLMs</a>
+                    </div>
+                </div>
             </div>
-        </div>
-    </nav>
-
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="container mt-3">
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% endwith %}
+        </nav>
+    </header>
 
     <!-- Main Content -->
-    {% block content %}{% endblock %}
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
 
     <!-- Footer -->
-    <footer class="bg-light mt-5 py-3">
-        <div class="container text-center">
-            <p class="text-muted mb-0">&copy; {{ current_year }} Blog. All rights reserved.</p>
+    <footer class="bg-dark-surface border-t border-dark-border py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">&copy; {{ year }} Blog CMS. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Additional Scripts -->
     {% block scripts %}{% endblock %}
 </body>
 

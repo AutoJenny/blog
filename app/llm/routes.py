@@ -1,6 +1,6 @@
 """Routes for LLM-powered content generation and enhancement."""
 
-from flask import Blueprint, jsonify, request, current_app
+from flask import jsonify, request, current_app, render_template
 import logging
 from app.models import Post, PostSection, LLMPrompt, LLMInteraction, db
 from .chains import (
@@ -10,9 +10,14 @@ from .chains import (
     generate_social_media_content,
 )
 from datetime import datetime
+from app.llm import bp
 
-bp = Blueprint("llm", __name__)
 logger = logging.getLogger(__name__)
+
+
+@bp.route("/")
+def index():
+    return render_template("llm/index.html")
 
 
 @bp.route("/api/llm/generate-idea", methods=["POST"])

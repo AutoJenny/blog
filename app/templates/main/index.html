@@ -1,145 +1,28 @@
 {% extends "base.html" %}
 
+{% block title %}Welcome{% endblock %}
+
 {% block content %}
-<div class="relative bg-white">
-    <!-- Hero section -->
-    <div class="relative">
-        <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gray-100"></div>
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="relative shadow-xl sm:rounded-2xl sm:overflow-hidden">
-                <div class="absolute inset-0">
-                    <img class="h-full w-full object-cover"
-                        src="{{ url_for('static', filename='images/hero-scotland.jpg') }}" alt="Scottish Highlands">
-                    <div class="absolute inset-0 bg-gradient-to-r from-tartan-blue to-tartan-green mix-blend-multiply">
-                    </div>
-                </div>
-                <div class="relative px-4 py-16 sm:px-6 sm:py-24 lg:py-32 lg:px-8">
-                    <h1 class="text-center text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-                        <span class="block text-white">Discover Scotland's</span>
-                        <span class="block text-highland-stone">Rich Heritage</span>
-                    </h1>
-                    <p class="mt-6 max-w-lg mx-auto text-center text-xl text-white sm:max-w-3xl">
-                        Explore the fascinating world of Scottish culture, from ancient traditions to modern
-                        celebrations.
-                    </p>
-                    <div class="mt-10 max-w-sm mx-auto sm:max-w-none sm:flex sm:justify-center">
-                        <div class="space-y-4 sm:space-y-0 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5">
-                            <a href="{{ url_for('blog.latest') }}"
-                                class="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-tartan-blue hover:bg-tartan-blue-700 sm:px-8">
-                                Latest Articles
-                            </a>
-                            <a href="{{ url_for('blog.categories') }}"
-                                class="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-tartan-blue bg-white hover:bg-gray-50 sm:px-8">
-                                Browse Categories
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Featured Posts -->
-    <div class="relative pt-16 pb-20 px-4 sm:px-6 lg:pt-24 lg:pb-28 lg:px-8">
-        <div class="relative max-w-7xl mx-auto">
-            <div class="text-center">
-                <h2 class="text-3xl tracking-tight font-extrabold text-gray-900 sm:text-4xl">Featured Articles</h2>
-                <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-                    Dive into our most popular stories about Scottish heritage and culture.
-                </p>
-            </div>
-            <div class="mt-12 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">
-                {% for post in featured_posts %}
-                <div class="flex flex-col rounded-lg shadow-lg overflow-hidden">
-                    <div class="flex-shrink-0">
-                        <img class="h-48 w-full object-cover" src="{{ post.image_url }}" alt="{{ post.title }}">
-                    </div>
-                    <div class="flex-1 bg-white p-6 flex flex-col justify-between">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-tartan-blue">
-                                <a href="{{ url_for('blog.category', category=post.category) }}"
-                                    class="hover:underline">
-                                    {{ post.category }}
-                                </a>
-                            </p>
-                            <a href="{{ url_for('blog.post', slug=post.slug) }}" class="block mt-2">
-                                <p class="text-xl font-semibold text-gray-900">{{ post.title }}</p>
-                                <p class="mt-3 text-base text-gray-500">{{ post.summary }}</p>
-                            </a>
-                        </div>
-                        <div class="mt-6 flex items-center">
-                            <div class="flex-shrink-0">
-                                <a href="#">
-                                    <img class="h-10 w-10 rounded-full" src="{{ post.author.avatar_url }}"
-                                        alt="{{ post.author.name }}">
-                                </a>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm font-medium text-gray-900">
-                                    <a href="#" class="hover:underline">{{ post.author.name }}</a>
-                                </p>
-                                <div class="flex space-x-1 text-sm text-gray-500">
-                                    <time datetime="{{ post.created_at.isoformat() }}">{{ post.created_at.strftime('%B
-                                        %d, %Y') }}</time>
-                                    <span aria-hidden="true">&middot;</span>
-                                    <span>{{ post.read_time }} min read</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Categories -->
-    <div class="bg-gray-100">
-        <div class="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
-            <div class="text-center">
-                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Explore by Category</h2>
-                <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-                    Discover articles across various aspects of Scottish heritage.
-                </p>
-            </div>
-            <div class="mt-12 grid gap-5 max-w-lg mx-auto lg:grid-cols-4 lg:max-w-none">
-                {% for category in categories %}
-                <div class="flex flex-col rounded-lg shadow-lg overflow-hidden">
-                    <div class="flex-1 bg-white p-6 flex flex-col justify-between">
-                        <div class="flex-1">
-                            <a href="{{ url_for('blog.category', category=category.slug) }}" class="block">
-                                <p class="text-xl font-semibold text-gray-900">{{ category.name }}</p>
-                                <p class="mt-3 text-base text-gray-500">{{ category.description }}</p>
-                            </a>
-                        </div>
-                        <div class="mt-6">
-                            <a href="{{ url_for('blog.category', category=category.slug) }}"
-                                class="text-base font-semibold text-tartan-blue hover:text-tartan-blue-700">
-                                View articles &rarr;
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+<div class="max-w-4xl mx-auto">
+    <div class="bg-dark-surface rounded-lg shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-dark-text mb-6">Welcome to Blog CMS</h1>
+        <p class="text-dark-text text-lg mb-8">
+            A modern content management system for creating and managing blog posts with AI assistance.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <a href="{{ url_for('blog.index') }}" class="block p-6 bg-dark-bg rounded-lg border border-dark-border hover:border-dark-accent transition-colors">
+                <h2 class="text-xl font-semibold mb-2">Posts</h2>
+                <p class="text-sm text-gray-400">Create and manage your blog posts</p>
+            </a>
+            <a href="{{ url_for('llm.index') }}" class="block p-6 bg-dark-bg rounded-lg border border-dark-border hover:border-dark-accent transition-colors">
+                <h2 class="text-xl font-semibold mb-2">LLMs</h2>
+                <p class="text-sm text-gray-400">AI-powered content assistance</p>
+            </a>
+            <a href="{{ url_for('db.index') }}" class="block p-6 bg-dark-bg rounded-lg border border-dark-border hover:border-dark-accent transition-colors">
+                <h2 class="text-xl font-semibold mb-2">Database</h2>
+                <p class="text-sm text-gray-400">Manage your content database</p>
+            </a>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block head %}
-<style>
-    .bg-gradient-to-r {
-        background-image: linear-gradient(to right, var(--tw-gradient-stops));
-    }
-
-    .from-tartan-blue {
-        --tw-gradient-from: #1B4B73;
-        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(27, 75, 115, 0));
-    }
-
-    .to-tartan-green {
-        --tw-gradient-to: #006B54;
-    }
-</style>
 {% endblock %}

@@ -2,89 +2,148 @@
 
 {% block title %}Blog Posts{% endblock %}
 
-{% block content %}
-<div class="space-y-6">
-    <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900">Blog Posts</h1>
-        <a href="{{ url_for('blog.create') }}"
-            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-tartan-blue hover:bg-tartan-blue-700">
-            Create New Post
-        </a>
-    </div>
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
 
-    {% if posts %}
-    <div class="grid gap-6 lg:grid-cols-2">
-        {% for post in posts %}
-        <article class="bg-white shadow rounded-lg overflow-hidden">
-            {% if post.header_image %}
-            <img src="{{ url_for('static', filename=post.header_image.path) }}" alt="{{ post.header_image.alt_text }}"
-                class="w-full h-48 object-cover">
-            {% endif %}
-            <div class="p-6">
-                <div class="flex justify-between items-start">
-                    <h2 class="text-xl font-semibold text-gray-900">
-                        <a href="{{ url_for('blog.post', slug=post.slug) }}" class="hover:text-tartan-blue">
-                            {{ post.title }}
+{% block content %}
+<div class="admin-content">
+    <div class="admin-card">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="admin-title">Blog Posts</h1>
+            <button class="admin-button" id="newPostBtn">
+                <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                New Post
+            </button>
+        </div>
+
+        <!-- Secondary Navigation -->
+        <div class="border-t border-b border-dark-border py-4 mb-8">
+            <div class="flex justify-center space-x-8">
+                <a href="{{ url_for('blog.develop', slug=posts[0].slug) if posts else '#' }}"
+                    class="admin-nav-link {% if not posts %}disabled{% endif %}">
+                    <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>Develop</span>
+                </a>
+                <a href="#" class="admin-nav-link">
+                    <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span>Preview</span>
+                </a>
+                <a href="#" class="admin-nav-link">
+                    <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Edit</span>
+                </a>
+                <a href="#" class="admin-nav-link">
+                    <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    <span>Raw</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="admin-grid">
+            <div class="admin-item">
+                <h2 class="admin-item-title">Draft Posts</h2>
+                <p class="admin-item-description">View and edit your unpublished posts</p>
+                <div class="mt-4">
+                    {% for post in posts if not post.published %}
+                    <div class="post-item">
+                        <a href="{{ url_for('blog.develop', slug=post.slug) }}"
+                            class="text-dark-text hover:text-primary">
+                            {{ post.title or 'Untitled Post' }}
                         </a>
-                    </h2>
-                    <div class="flex space-x-2">
-                        <a href="{{ url_for('blog.edit', slug=post.slug) }}"
-                            class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-tartan-blue hover:bg-tartan-blue-700">
-                            Edit
-                        </a>
-                        {% if not post.published %}
-                        <form action="{{ url_for('blog.publish', slug=post.slug) }}" method="POST" class="inline">
-                            <button type="submit"
-                                class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
-                                Publish
-                            </button>
-                        </form>
-                        {% else %}
-                        <form action="{{ url_for('blog.unpublish', slug=post.slug) }}" method="POST" class="inline">
-                            <button type="submit"
-                                class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700">
-                                Unpublish
-                            </button>
-                        </form>
-                        {% endif %}
                     </div>
-                </div>
-                <p class="mt-2 text-gray-600">{{ post.summary }}</p>
-                <div class="mt-4 flex justify-between items-center">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <img class="h-8 w-8 rounded-full" src="{{ post.author.avatar_url }}"
-                                alt="{{ post.author.name }}">
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-gray-900">{{ post.author.name }}</p>
-                            <div class="flex space-x-1 text-sm text-gray-500">
-                                <time
-                                    datetime="{{ post.published_at.isoformat() if post.published_at else post.created_at.isoformat() }}">
-                                    {{ post.published_at.strftime('%B %d, %Y') if post.published_at else
-                                    post.created_at.strftime('%B %d, %Y') }}
-                                </time>
-                                <span aria-hidden="true">&middot;</span>
-                                <span>{{ post.reading_time }} min read</span>
-                            </div>
-                        </div>
-                    </div>
-                    <span class="text-sm text-gray-500">
-                        Status: {{ "Published" if post.published else "Draft" }}
-                    </span>
+                    {% else %}
+                    <p class="text-gray-400">No draft posts</p>
+                    {% endfor %}
                 </div>
             </div>
-        </article>
-        {% endfor %}
+            <div class="admin-item">
+                <h2 class="admin-item-title">Published Posts</h2>
+                <p class="admin-item-description">Manage your live blog posts</p>
+                <div class="mt-4">
+                    {% for post in posts if post.published %}
+                    <div class="post-item">
+                        <a href="{{ url_for('blog.develop', slug=post.slug) }}"
+                            class="text-dark-text hover:text-primary">
+                            {{ post.title }}
+                        </a>
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400">No published posts</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="admin-item">
+                <h2 class="admin-item-title">Categories</h2>
+                <p class="admin-item-description">Organize your content</p>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold text-dark-text mb-4">Recent Posts</h2>
+            <div class="space-y-4">
+                {% for post in posts[:5] %}
+                <div class="post-item">
+                    <a href="{{ url_for('blog.develop', slug=post.slug) }}" class="text-dark-text hover:text-primary">
+                        {{ post.title or 'Untitled Post' }}
+                    </a>
+                    <span class="text-sm text-gray-400">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
+                </div>
+                {% else %}
+                <p class="text-gray-400">No posts yet</p>
+                {% endfor %}
+            </div>
+        </div>
     </div>
-    {% else %}
-    <div class="text-center py-12">
-        <p class="text-gray-600 mb-4">No posts found.</p>
-        <a href="{{ url_for('blog.create') }}"
-            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-tartan-blue hover:bg-tartan-blue-700">
-            Create Your First Post
-        </a>
-    </div>
-    {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('newPostBtn').addEventListener('click', async () => {
+        const basicIdea = prompt('Enter your basic idea for the post:');
+        if (!basicIdea) return;
+
+        try {
+            const response = await fetch("{{ url_for('blog.new_post') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ basic_idea: basicIdea })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                window.location.href = "{{ url_for('blog.develop', slug='SLUG') }}".replace('SLUG', data.slug);
+            } else {
+                alert(data.error || 'Failed to create post');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to create post');
+        }
+    });
+</script>
 {% endblock %}

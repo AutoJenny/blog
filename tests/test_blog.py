@@ -27,7 +27,7 @@ def test_tag(db):
 
 
 @pytest.fixture
-def test_post(db, test_user, test_category, test_tag):
+def test_post(db, test_category, test_tag):
     """Create a test post with category and tag."""
     post = Post(
         title="Test Post",
@@ -62,9 +62,8 @@ def test_blog_index(client):
 
 
 @pytest.mark.api
-def test_create_post(client, auth):
+def test_create_post(client):
     """Test post creation."""
-    auth.login()
     response = client.post("/blog/new", json={"basic_idea": "Test post creation"})
     assert response.status_code == 200
     data = response.get_json()
@@ -85,9 +84,8 @@ def test_view_post(client, test_post):
 
 
 @pytest.mark.api
-def test_update_post(client, auth, test_post):
+def test_update_post(client, test_post):
     """Test post update."""
-    auth.login()
     new_title = "Updated Test Post"
     response = client.post(
         f"/blog/update/{test_post.id}",
@@ -102,9 +100,8 @@ def test_update_post(client, auth, test_post):
 
 
 @pytest.mark.api
-def test_delete_post(client, auth, test_post):
+def test_delete_post(client, test_post):
     """Test post deletion."""
-    auth.login()
     response = client.post(f"/blog/delete/{test_post.id}")
     assert response.status_code == 200
 
@@ -114,24 +111,8 @@ def test_delete_post(client, auth, test_post):
 
 
 @pytest.mark.api
-def test_unauthorized_post_operations(client, test_post):
-    """Test unauthorized post operations."""
-    # Try operations without login
-    endpoints = [
-        ("post", "/blog/new"),
-        ("post", f"/blog/update/{test_post.id}"),
-        ("post", f"/blog/delete/{test_post.id}"),
-    ]
-
-    for method, endpoint in endpoints:
-        response = getattr(client, method)(endpoint, json={})
-        assert response.status_code == 401  # Unauthorized
-
-
-@pytest.mark.api
-def test_workflow_transition(client, auth, test_post):
+def test_workflow_transition(client, test_post):
     """Test workflow stage transition."""
-    auth.login()
     response = client.post(
         f"/blog/workflow/{test_post.id}",
         json={"stage": WorkflowStage.RESEARCH.value, "notes": "Moving to research"},

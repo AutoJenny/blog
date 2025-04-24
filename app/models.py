@@ -6,13 +6,19 @@ import enum
 
 
 class WorkflowStage(str, enum.Enum):
-    CONCEPTUALIZATION = "conceptualization"
-    DRAFTING = "drafting"
-    EDITING = "editing"
+    IDEA = "idea"
+    RESEARCH = "research"
+    OUTLINING = "outlining"
+    AUTHORING = "authoring"
+    IMAGES = "images"
+    METADATA = "metadata"
     REVIEW = "review"
     PUBLISHING = "publishing"
-    PUBLISHED = "published"
-    ARCHIVED = "archived"
+    UPDATES = "updates"
+    SYNDICATION = "syndication"
+
+    def __str__(self):
+        return self.value
 
 
 class Category(db.Model):
@@ -30,7 +36,7 @@ class Tag(db.Model):
 
 
 class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(200), nullable=False)
     slug = db.Column(db.String(200), unique=True, nullable=False)
     content = db.Column(db.Text)
@@ -124,7 +130,13 @@ post_tags = db.Table(
 class WorkflowStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"), unique=True)
-    current_stage = db.Column(Enum(WorkflowStage))
+    current_stage = db.Column(
+        Enum(
+            WorkflowStage,
+            name="workflowstage",
+            values_callable=lambda obj: [e.value for e in obj],
+        )
+    )
     stage_data = db.Column(JSON)
     last_updated = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
@@ -159,8 +171,20 @@ class PostSection(db.Model):
 class WorkflowStatusHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     workflow_status_id = db.Column(db.Integer, db.ForeignKey("workflow_status.id"))
-    from_stage = db.Column(Enum(WorkflowStage))
-    to_stage = db.Column(Enum(WorkflowStage))
+    from_stage = db.Column(
+        Enum(
+            WorkflowStage,
+            name="workflowstage",
+            values_callable=lambda obj: [e.value for e in obj],
+        )
+    )
+    to_stage = db.Column(
+        Enum(
+            WorkflowStage,
+            name="workflowstage",
+            values_callable=lambda obj: [e.value for e in obj],
+        )
+    )
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

@@ -10,7 +10,6 @@ The blog uses PostgreSQL with SQLAlchemy ORM for data storage. The schema is des
    - Title and subtitle
    - Slug-based URLs
    - Content and summary
-   - Author attribution
    - Publishing status
    - LLM metadata
    - Created/updated timestamps
@@ -38,13 +37,6 @@ The blog uses PostgreSQL with SQLAlchemy ORM for data storage. The schema is des
    - Name and slug
    - Many-to-many with posts
 
-### User Models
-1. **User**
-   - Username and email
-   - Password authentication
-   - Admin status
-   - Created timestamp
-
 ### LLM Integration Models
 1. **LLMPrompt**
    - Name and description
@@ -66,7 +58,6 @@ The blog uses PostgreSQL with SQLAlchemy ORM for data storage. The schema is des
 erDiagram
     Post ||--o{ PostSection : contains
     Post ||--o{ PostTags : has
-    Post ||--o| User : authored_by
     
     PostSection ||--o| Image : has
     PostSection }|--|| Post : belongs_to
@@ -91,7 +82,6 @@ CREATE TABLE post (
     published BOOLEAN,
     created_at DATETIME,
     updated_at DATETIME,
-    author_id INTEGER NOT NULL REFERENCES user(id),
     llm_metadata JSON
 );
 ```
@@ -153,18 +143,6 @@ CREATE TABLE post_tags (
 );
 ```
 
-### User
-```sql
-CREATE TABLE user (
-    id INTEGER PRIMARY KEY,
-    username VARCHAR(64) NOT NULL UNIQUE,
-    email VARCHAR(120) NOT NULL UNIQUE,
-    password_hash VARCHAR(128),
-    is_admin BOOLEAN,
-    created_at DATETIME
-);
-```
-
 ### LLM Tables
 ```sql
 CREATE TABLE llm_prompt (
@@ -213,5 +191,13 @@ CREATE TABLE llm_interaction (
 2. Maintain position ordering
 3. Handle media references
 4. Track content changes
+
+### Database Operations
+All database operations should be performed using:
+1. Flask CLI commands for common operations
+2. Direct database access for advanced operations
+3. Migration scripts for schema changes
+
+Note: The web interface for database management has been removed. Use the command line tools or direct database access instead.
 
 See individual model documentation for detailed field descriptions and usage examples. 
