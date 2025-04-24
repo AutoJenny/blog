@@ -18,12 +18,33 @@ class PostForm(FlaskForm):
     # Hidden field for workflow stage transitions
     next_stage = HiddenField("Next Stage")
 
-    # Conceptualization Stage
+    # Idea Stage
     concept = TextAreaField(
-        "Concept",
+        "Initial Idea",
         validators=[
             Optional(),
             Length(max=2000, message="Concept must be less than 2000 characters"),
+        ],
+    )
+
+    # Brainstorm Stage
+    brainstorm = TextAreaField(
+        "Brainstorming Notes",
+        validators=[
+            Optional(),
+            Length(
+                max=5000,
+                message="Brainstorming notes must be less than 5000 characters",
+            ),
+        ],
+    )
+
+    # Sections Stage
+    sections_plan = TextAreaField(
+        "Section Plan",
+        validators=[
+            Optional(),
+            Length(max=5000, message="Section plan must be less than 5000 characters"),
         ],
     )
 
@@ -115,8 +136,14 @@ class PostForm(FlaskForm):
 
     def validate_for_stage(self, stage):
         """Validate form data for a specific workflow stage."""
-        if stage == WorkflowStage.CONCEPTUALIZATION:
+        if stage == WorkflowStage.IDEA:
             return bool(self.concept.data)
+
+        elif stage == WorkflowStage.BRAINSTORM:
+            return bool(self.brainstorm.data)
+
+        elif stage == WorkflowStage.SECTIONS:
+            return bool(self.sections_plan.data)
 
         elif stage == WorkflowStage.AUTHORING:
             return bool(self.title.data and self.content.data and self.summary.data)
@@ -136,7 +163,9 @@ class PostForm(FlaskForm):
             # All previous stages must be valid
             return all(
                 [
-                    self.validate_for_stage(WorkflowStage.CONCEPTUALIZATION),
+                    self.validate_for_stage(WorkflowStage.IDEA),
+                    self.validate_for_stage(WorkflowStage.BRAINSTORM),
+                    self.validate_for_stage(WorkflowStage.SECTIONS),
                     self.validate_for_stage(WorkflowStage.AUTHORING),
                     self.validate_for_stage(WorkflowStage.METADATA),
                     self.validate_for_stage(WorkflowStage.IMAGES),

@@ -2,182 +2,167 @@
 
 {% block post_content %}
 <article class="blog-post">
-    <!-- Navigation -->
-    <nav class="post-navigation">
-        <a href="{{ url_for('blog.latest') }}" class="back-link">← Back to Blog Index</a>
+    <nav class="blog-nav">
+        <a href="{{ url_for('blog.latest') }}" class="nav-link">← Back to All Posts</a>
     </nav>
 
-    <!-- Header -->
     <header class="blog-post__header">
         <h1 class="blog-post__title">{{ post.title }}</h1>
         {% if post.subtitle %}
-        <p class="blog-post__subtitle">{{ post.subtitle }}</p>
+        <h2 class="blog-post__subtitle">{{ post.subtitle }}</h2>
         {% endif %}
 
         <div class="blog-post__meta">
-            <span class="meta-item">
-                <time
-                    datetime="{{ post.published_at.isoformat() if post.published_at else post.created_at.isoformat() }}">
-                    {{ post.published_at.strftime('%B %d, %Y') if post.published_at else post.created_at.strftime('%B
-                    %d, %Y') }}
-                </time>
-            </span>
-            <span class="meta-separator">•</span>
-            <span class="meta-item">By {{ post.author.name }}</span>
+            <time datetime="{{ post.published_at or post.created_at }}">
+                {{ post.published_at.strftime('%B %d, %Y') if post.published_at else post.created_at.strftime('%B %d,
+                %Y') }}
+            </time>
+            {% if post.author %}
+            <span class="meta-separator">·</span>
+            <span class="author">{{ post.author.name }}</span>
+            {% endif %}
+            {% if post.reading_time %}
+            <span class="meta-separator">·</span>
+            <span class="reading-time">{{ post.reading_time }} min read</span>
+            {% endif %}
         </div>
 
         {% if post.description %}
-        <div class="blog-post__description">
-            <p>{{ post.description }}</p>
-        </div>
+        <p class="blog-post__description">{{ post.description }}</p>
         {% endif %}
 
         {% if post.header_image %}
         <figure class="blog-post__image">
-            <img src="{{ url_for('static', filename=post.header_image.path) }}" alt="{{ post.header_image.alt_text }}"
-                class="featured-image">
+            <img src="{{ url_for('static', filename=post.header_image.path) }}" alt="{{ post.header_image.alt_text }}">
             {% if post.header_image.caption %}
-            <figcaption class="image-caption">{{ post.header_image.caption }}</figcaption>
+            <figcaption>{{ post.header_image.caption }}</figcaption>
             {% endif %}
         </figure>
         {% endif %}
     </header>
 
     {% if post.sections %}
-    <!-- Table of Contents -->
     <nav class="blog-post__toc">
-        <h2 class="toc-title">Table of Contents</h2>
-        <ul class="toc-list">
+        <h2>Table of Contents</h2>
+        <ul>
             {% for section in post.sections %}
-            {% if section.title %}
-            <li><a href="#section-{{ loop.index }}" class="toc-link">{{ section.title }}</a></li>
-            {% endif %}
+            <li><a href="#section-{{ loop.index }}">{{ section.title }}</a></li>
             {% endfor %}
         </ul>
     </nav>
+    {% endif %}
 
-    <!-- Post sections -->
     <div class="blog-post__content">
         {% for section in post.sections %}
-        <section id="section-{{ loop.index }}" class="content-section">
-            {% if section.title %}
-            <h2 class="section-title">{{ section.title }}</h2>
-            {% endif %}
-
+        <section id="section-{{ loop.index }}" class="blog-section">
+            <h2 class="blog-section__title">{{ section.title }}</h2>
             {% if section.subtitle %}
-            <p class="section-subtitle">{{ section.subtitle }}</p>
+            <h3 class="blog-section__subtitle">{{ section.subtitle }}</h3>
             {% endif %}
-
-            <div class="section-content">
-                {{ section.content | safe }}
-            </div>
-
             {% if section.image %}
-            <figure class="section-image">
-                <img src="{{ url_for('static', filename=section.image.path) }}" alt="{{ section.image.alt_text }}"
-                    class="content-image">
+            <figure class="blog-section__image">
+                <img src="{{ url_for('static', filename=section.image.path) }}" alt="{{ section.image.alt_text }}">
                 {% if section.image.caption %}
-                <figcaption class="image-caption">{{ section.image.caption }}</figcaption>
+                <figcaption>{{ section.image.caption }}</figcaption>
                 {% endif %}
             </figure>
             {% endif %}
+            <div class="blog-section__content">
+                {{ section.content | safe }}
+            </div>
         </section>
         {% endfor %}
     </div>
-    {% endif %}
 
-    <!-- Tags -->
     {% if post.tags %}
-    <div class="blog-post__tags">
-        <span class="tags-label">Tags:</span>
-        {% for tag in post.tags %}
-        <a href="{{ url_for('blog.tag', tag=tag.slug) }}" class="tag-link">{{ tag.name }}</a>
-        {% endfor %}
-    </div>
+    <footer class="blog-post__footer">
+        <div class="blog-post__tags">
+            {% for tag in post.tags %}
+            <a href="{{ url_for('blog.tag', tag=tag.slug) }}" class="blog-tag">{{ tag.name }}</a>
+            {% endfor %}
+        </div>
+    </footer>
     {% endif %}
 
-    <!-- Action buttons for author/admin -->
-    {% if current_user.is_authenticated and (current_user.id == post.author_id or current_user.is_admin) %}
+    {% if current_user.is_authenticated and current_user.is_author %}
     <div class="blog-post__actions">
-        {% if not post.published %}
-        <button onclick="publishPost('{{ post.slug }}')" class="action-button publish-button">
+        <button onclick="publishPost('{{ post.slug }}')" class="action-btn publish-btn" {% if post.published
+            %}disabled{% endif %}>
             Publish
         </button>
-        {% else %}
-        <button onclick="unpublishPost('{{ post.slug }}')" class="action-button unpublish-button">
+        <button onclick="unpublishPost('{{ post.slug }}')" class="action-btn unpublish-btn" {% if not post.published
+            %}disabled{% endif %}>
             Unpublish
         </button>
-        {% endif %}
-        {% if current_user.is_admin %}
-        <button onclick="deletePost('{{ post.slug }}')" class="action-button delete-button">
+        <button onclick="deletePost('{{ post.slug }}')" class="action-btn delete-btn">
             Delete
         </button>
-        {% endif %}
     </div>
     {% endif %}
 </article>
-{% endblock %}
 
-{% block scripts %}
 <script>
-    function publishPost(slug) {
-        if (!confirm('Are you sure you want to publish this post?')) return;
-        fetch(`/blog/post/${slug}/publish`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
+    async function publishPost(slug) {
+        if (confirm('Are you sure you want to publish this post?')) {
+            try {
+                const response = await fetch(`/blog/post/${slug}/publish`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert(data.message);
+                    alert('Failed to publish post');
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error:', error);
                 alert('An error occurred while publishing the post');
-            });
+            }
+        }
     }
 
-    function unpublishPost(slug) {
-        if (!confirm('Are you sure you want to unpublish this post?')) return;
-        fetch(`/blog/post/${slug}/unpublish`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
+    async function unpublishPost(slug) {
+        if (confirm('Are you sure you want to unpublish this post?')) {
+            try {
+                const response = await fetch(`/blog/post/${slug}/unpublish`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert(data.message);
+                    alert('Failed to unpublish post');
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error:', error);
                 alert('An error occurred while unpublishing the post');
-            });
+            }
+        }
     }
 
-    function deletePost(slug) {
-        if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
-        fetch(`/blog/post/${slug}/delete`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    window.location.href = '{{ url_for("blog.latest") }}';
+    async function deletePost(slug) {
+        if (confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+            try {
+                const response = await fetch(`/blog/post/${slug}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    window.location.href = "{{ url_for('blog.latest') }}";
                 } else {
-                    alert(data.message);
+                    alert('Failed to delete post');
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error:', error);
                 alert('An error occurred while deleting the post');
-            });
+            }
+        }
     }
 </script>
 {% endblock %}

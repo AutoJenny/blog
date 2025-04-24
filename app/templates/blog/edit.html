@@ -6,8 +6,8 @@
     <div class="workflow-progress mb-4">
         <nav aria-label="Progress">
             <ol class="progress-steps">
-                {% set stages = ['CONCEPTUALIZATION', 'AUTHORING', 'METADATA', 'IMAGES', 'VALIDATION', 'PUBLISHING',
-                'SYNDICATION'] %}
+                {% set stages = ['IDEA', 'BRAINSTORM', 'SECTIONS', 'AUTHORING', 'METADATA', 'IMAGES', 'VALIDATION',
+                'PUBLISHING', 'SYNDICATION'] %}
                 {% for stage in stages %}
                 {% set is_current = post.workflow_status.current_stage.value == stage.lower() %}
                 {% set is_complete = post.workflow_status.current_stage.value in stages[stages.index(stage)+1:] |
@@ -30,17 +30,46 @@
     <form method="POST" action="{{ url_for('blog.edit', slug=post.slug) }}" enctype="multipart/form-data">
         {{ form.csrf_token }}
 
-        <!-- Conceptualization Stage -->
-        <div
-            class="stage-content {% if post.workflow_status.current_stage.value != 'conceptualization' %}d-none{% endif %}">
+        <!-- Idea Stage -->
+        <div class="stage-content {% if post.workflow_status.current_stage.value != 'idea' %}d-none{% endif %}">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h3 class="card-title mb-0">Concept Development</h3>
+                    <h3 class="card-title mb-0">Initial Idea</h3>
                 </div>
                 <div class="card-body">
                     <div class="form-group">
                         {{ form.concept.label(class="form-label") }}
                         {{ form.concept(class="form-control", rows=5) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Brainstorm Stage -->
+        <div class="stage-content {% if post.workflow_status.current_stage.value != 'brainstorm' %}d-none{% endif %}">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Brainstorming</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        {{ form.brainstorm.label(class="form-label") }}
+                        {{ form.brainstorm(class="form-control", rows=10) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sections Stage -->
+        <div class="stage-content {% if post.workflow_status.current_stage.value != 'sections' %}d-none{% endif %}">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Section Planning</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        {{ form.sections_plan.label(class="form-label") }}
+                        {{ form.sections_plan(class="form-control", rows=10) }}
                     </div>
                 </div>
             </div>

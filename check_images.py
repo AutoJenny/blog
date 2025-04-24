@@ -42,16 +42,23 @@ def main():
         # Process quaich-traditions post
         post = Post.query.filter_by(slug="quaich-traditions").first()
         if post:
-            # Set header image
+            # Set header image by adding it first to the images relationship
             header_image = create_image(
-                "quaich-traditions_header.jpg", "quaich-traditions"
+                "quaich-traditions_header-collage.jpg", "quaich-traditions"
             )
-            post.header_image = header_image
+            if header_image not in post.images.all():
+                post.images.append(header_image)
 
             # Process section images
             for section in post.sections:
                 if section.title:
-                    section_slug = section.title.lower().replace(" ", "-")
+                    # Convert section title to filename format
+                    section_slug = (
+                        section.title.lower()
+                        .replace(":", "")
+                        .replace(" and ", "-")
+                        .replace(" ", "-")
+                    )
                     image_filename = f"quaich-traditions_{section_slug}.jpg"
                     if os.path.exists(
                         os.path.join(
@@ -70,14 +77,21 @@ def main():
         # Process kilt-evolution post
         post = Post.query.filter_by(slug="kilt-evolution").first()
         if post:
-            # Set header image
+            # Set header image by adding it first to the images relationship
             header_image = create_image("kilt-evolution_header.jpg", "kilt-evolution")
-            post.header_image = header_image
+            if header_image not in post.images.all():
+                post.images.append(header_image)
 
             # Process section images
             for section in post.sections:
                 if section.title:
-                    section_slug = section.title.lower().replace(" ", "-")
+                    # Convert section title to filename format
+                    section_slug = (
+                        section.title.lower()
+                        .replace(":", "")
+                        .replace(" and ", "-")
+                        .replace(" ", "-")
+                    )
                     image_filename = f"kilt-evolution_{section_slug}.jpg"
                     if os.path.exists(
                         os.path.join(

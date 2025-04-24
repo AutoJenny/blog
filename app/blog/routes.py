@@ -35,9 +35,13 @@ from werkzeug.utils import secure_filename
 from sqlalchemy.exc import SQLAlchemyError
 import re
 import json
+from flask_login import current_user, login_required
+from typing import Dict, Any, Optional
+from sqlalchemy.orm import Mapped
+from slugify import slugify as text_slugify
 
 
-def slugify(text):
+def create_slug(text):
     """Convert text to a URL-friendly slug."""
     # Convert to lowercase
     text = text.lower()
@@ -67,55 +71,71 @@ def latest():
         return render_template("blog/latest.html", posts=[])
 
 
-@bp.route("/create", methods=["GET", "POST"])
+@bp.route("/post/create", methods=["POST"])
 def create():
     """Create a new blog post."""
-    if request.method == "POST":
-        try:
-            title = request.form.get("title")
-            # Create workflow status
-            workflow_status = WorkflowStatus(
-                current_stage=WorkflowStage.CONCEPTUALIZATION
-            )
-            db.session.add(workflow_status)
+    try:
+        data = request.get_json()
+        title = data.get("title")
+        content = data.get("content")
+        description = data.get("description", "")
+        concept = data.get("concept", "")
 
-            # Create new post with basic fields
-            post = Post(
-                title=title,
-                slug=slugify(title),  # Generate slug from title
-                content=request.form.get("content"),
-                summary=request.form.get("summary"),
-                published=False,
-                author_id=1,  # Default author ID
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
-                workflow_status=workflow_status,  # Link the workflow status
-            )
+        # Create slug from title
+        base_slug = text_slugify(title)
+        slug = base_slug
+        counter = 1
 
-            # Create initial workflow history
-            history = WorkflowStatusHistory(
-                workflow_status=workflow_status,
-                from_stage=WorkflowStage.CONCEPTUALIZATION,
-                to_stage=WorkflowStage.CONCEPTUALIZATION,
-                user_id=1,  # Default user ID
-                notes="Post created",
-            )
-            db.session.add(history)
+        # Ensure unique slug
+        while Post.query.filter_by(slug=slug).first() is not None:
+            slug = f"{base_slug}-{counter}"
+            counter += 1
 
-            db.session.add(post)
-            db.session.commit()
+        # Create new post
+        post = Post(
+            title=title,
+            slug=slug,
+            content=content,
+            description=description,
+            concept=concept,
+            author_id=current_user.id,
+            published=False,
+            workflow_status=WorkflowStage.DRAFT.value,
+            llm_metadata={},
+            seo_metadata={},
+            syndication_status={},
+        )
 
-            flash("Post created successfully!", "success")
-            return redirect(url_for("blog.edit", slug=post.slug))
+        db.session.add(post)
+        db.session.commit()
 
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Error creating post: {str(e)}")
-            flash(
-                "An error occurred while creating the post. Please try again.", "error"
-            )
+        # Create initial workflow status
+        workflow_status = WorkflowStatus(
+            post_id=post.id,
+            current_stage=WorkflowStage.DRAFT.value,
+            stage_data={},
+            last_updated=datetime.utcnow(),
+        )
+        db.session.add(workflow_status)
 
-    return render_template("blog/create.html")
+        # Record workflow history
+        workflow_history = WorkflowStatusHistory(
+            workflow_status_id=workflow_status.id,
+            from_stage=None,
+            to_stage=WorkflowStage.DRAFT.value,
+            user_id=current_user.id,
+            notes="Initial draft created",
+            created_at=datetime.utcnow(),
+        )
+        db.session.add(workflow_history)
+        db.session.commit()
+
+        return jsonify({"message": "Post created successfully", "slug": post.slug}), 201
+
+    except Exception as e:
+        current_app.logger.error(f"Error creating post: {str(e)}")
+        db.session.rollback()
+        return jsonify({"error": "Failed to create post"}), 500
 
 
 @bp.route("/categories")
@@ -160,14 +180,14 @@ def edit(slug):
 
     # Ensure post has a workflow status
     if not post.workflow_status:
-        workflow_status = WorkflowStatus(current_stage=WorkflowStage.CONCEPTUALIZATION)
+        workflow_status = WorkflowStatus(current_stage=WorkflowStage.IDEA)
         db.session.add(workflow_status)
 
         # Create initial workflow history
         history = WorkflowStatusHistory(
             workflow_status=workflow_status,
-            from_stage=WorkflowStage.CONCEPTUALIZATION,
-            to_stage=WorkflowStage.CONCEPTUALIZATION,
+            from_stage=WorkflowStage.IDEA,
+            to_stage=WorkflowStage.IDEA,
             user_id=1,  # Default user ID
             notes="Workflow status initialized for existing post",
         )
@@ -514,7 +534,13 @@ def tag(tag):
     posts = (
         Post.query.join(Post.tags)
         .filter(Tag.id == tag_obj.id)
+        .filter(Post.published == True)
+        .filter(Post.deleted == False)
         .order_by(Post.published_at.desc())
-        .all()
+        .paginate(
+            page=request.args.get("page", 1, type=int), per_page=10, error_out=False
+        )
     )
-    return render_template("blog/tag.html", tag=tag_obj, posts=posts)
+    return render_template(
+        "blog/tag.html", title=f"Tag: {tag_obj.name}", tag=tag_obj, posts=posts
+    )

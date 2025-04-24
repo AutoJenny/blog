@@ -287,20 +287,19 @@ def create_or_update_post(metadata, content, post_slug):
         # Set workflow status if not already set
         if not post.workflow_status:
             # Create workflow status
-            workflow_status = WorkflowStatus()
-            workflow_status.post = post
-            workflow_status.current_stage = WorkflowStage.CONCEPTUALIZATION
-            workflow_status.stage_data = {}
+            workflow_status = WorkflowStatus(
+                post=post, current_stage=WorkflowStage.IDEA
+            )
             db.session.add(workflow_status)
-            db.session.flush()  # Get the ID
 
-            # Create workflow history
-            history = WorkflowStatusHistory()
-            history.workflow_status = workflow_status
-            history.from_stage = WorkflowStage.CONCEPTUALIZATION
-            history.to_stage = WorkflowStage.CONCEPTUALIZATION
-            history.user_id = user.id
-            history.notes = "Post imported from old blog"
+            # Add initial workflow history entry
+            history = WorkflowStatusHistory(
+                workflow_status=workflow_status,
+                from_stage=WorkflowStage.IDEA,
+                to_stage=WorkflowStage.IDEA,
+                user=user,
+                notes="Post imported from old blog",
+            )
             db.session.add(history)
 
         db.session.commit()

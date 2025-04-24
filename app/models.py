@@ -11,14 +11,49 @@ from enum import Enum
 from flask_login import UserMixin
 
 
-class WorkflowStage(Enum):
-    CONCEPTUALIZATION = "conceptualization"
-    AUTHORING = "authoring"
-    METADATA = "metadata"
-    IMAGES = "images"
-    VALIDATION = "validation"
-    PUBLISHING = "publishing"
-    SYNDICATION = "syndication"
+class WorkflowStage(str, Enum):
+    """Enum for blog post workflow stages."""
+
+    IDEA = "IDEA"
+    BRAINSTORM = "BRAINSTORM"
+    SECTIONS = "SECTIONS"
+    AUTHORING = "AUTHORING"
+    METADATA = "METADATA"
+    IMAGES = "IMAGES"
+    VALIDATION = "VALIDATION"
+    PUBLISHING = "PUBLISHING"
+    SYNDICATION = "SYNDICATION"
+
+    @classmethod
+    def get_stage_order(cls) -> list[str]:
+        """Return the workflow stages in order."""
+        return [
+            cls.IDEA,
+            cls.BRAINSTORM,
+            cls.SECTIONS,
+            cls.AUTHORING,
+            cls.METADATA,
+            cls.IMAGES,
+            cls.VALIDATION,
+            cls.PUBLISHING,
+            cls.SYNDICATION,
+        ]
+
+    @classmethod
+    def get_stage_display_name(cls, stage: "WorkflowStage") -> str:
+        """Return a human-readable name for a workflow stage."""
+        display_names = {
+            cls.IDEA: "Initial Idea",
+            cls.BRAINSTORM: "Brainstorming",
+            cls.SECTIONS: "Section Planning",
+            cls.AUTHORING: "Content Authoring",
+            cls.METADATA: "Metadata",
+            cls.IMAGES: "Image Management",
+            cls.VALIDATION: "Content Validation",
+            cls.PUBLISHING: "Publishing",
+            cls.SYNDICATION: "Syndication",
+        }
+        return display_names.get(stage, stage)
 
 
 @login.user_loader
@@ -65,11 +100,12 @@ class Category(db.Model):
     slug = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.Text)
     parent_id = db.Column(db.Integer, db.ForeignKey("category.id"))
-    children = relationship(
-        "app.models.Category", backref=db.backref("parent", remote_side=[id])
-    )
+    children = relationship("Category", backref=db.backref("parent", remote_side=[id]))
     posts = relationship(
-        "app.models.Post", secondary="post_categories", backref="categories"
+        "Post",
+        secondary="post_categories",
+        backref=db.backref("categories", lazy="dynamic"),
+        lazy="dynamic",
     )
 
 
@@ -84,8 +120,8 @@ class Post(db.Model):
     title = db.Column(db.String(200), nullable=False)
     subtitle = db.Column(db.String(200))
     slug = db.Column(db.String(200), unique=True, nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    summary = db.Column(db.String(500))
+    content = db.Column(db.Text)
+    summary = db.Column(db.Text)
     concept = db.Column(db.Text)
     description = db.Column(db.Text)
     published = db.Column(db.Boolean, default=False)
@@ -97,18 +133,22 @@ class Post(db.Model):
     published_at = db.Column(db.DateTime)
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     tags = relationship("Tag", secondary="post_tags", backref="posts")
-    sections = relationship(
-        "app.models.PostSection", backref="post", order_by="PostSection.position"
+    sections = relationship("PostSection", backref="post", cascade="all, delete-orphan")
+    images = relationship(
+        "Image", backref="post", cascade="all, delete-orphan", lazy="dynamic"
     )
-    header_image_id = db.Column(db.Integer, db.ForeignKey("image.id"))
-    header_image = relationship("app.models.Image", foreign_keys=[header_image_id])
-    clan_com_post_id = db.Column(db.String(100))  # ID on clan.com when published
     workflow_status = relationship(
-        "app.models.WorkflowStatus", backref="post", uselist=False
+        "WorkflowStatus", backref="post", uselist=False, cascade="all, delete-orphan"
     )
+    clan_com_post_id = db.Column(db.String(100))  # ID on clan.com when published
     llm_metadata = db.Column(db.JSON)
     seo_metadata = db.Column(db.JSON)
     syndication_status = db.Column(db.JSON)
+
+    @property
+    def header_image(self):
+        """Get the first image associated with the post (header image)."""
+        return self.images.first()
 
     @hybrid_property
     def reading_time(self):
@@ -303,6 +343,7 @@ class Image(db.Model):
     image_metadata = db.Column(db.JSON)  # For EXIF and other technical metadata
     watermarked = db.Column(db.Boolean, default=False)
     watermarked_path = db.Column(db.String(500))
+    post_id = db.Column(db.Integer, db.ForeignKey("post.id", ondelete="CASCADE"))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
@@ -327,16 +368,16 @@ class WorkflowStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"), nullable=False)
     current_stage = db.Column(
-        db.Enum(WorkflowStage), nullable=False, default=WorkflowStage.CONCEPTUALIZATION
+        db.Enum(WorkflowStage), nullable=False, default=WorkflowStage.IDEA
     )
     stage_data = db.Column(db.JSON)  # Stores stage-specific data
     last_updated = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
     history = relationship(
-        "app.models.WorkflowStatusHistory",
+        "WorkflowStatusHistory",
         backref="workflow_status",
-        order_by="WorkflowStatusHistory.created_at.desc()",
+        cascade="all, delete-orphan",
     )
 
     def to_dict(self):
@@ -358,7 +399,7 @@ class WorkflowStatusHistory(db.Model):
     from_stage = db.Column(db.Enum(WorkflowStage), nullable=False)
     to_stage = db.Column(db.Enum(WorkflowStage), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    user = relationship("app.models.User")
+    user = relationship("User")
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
