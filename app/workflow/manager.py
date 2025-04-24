@@ -150,9 +150,13 @@ class WorkflowManager:
         db.session.commit()
 
     def update_sub_stage(
-        self, sub_stage: str, status: SubStageStatus, note: Optional[str] = None
+        self,
+        sub_stage: str,
+        status: Optional[SubStageStatus] = None,
+        note: Optional[str] = None,
+        content: Optional[str] = None,
     ) -> None:
-        """Update the status of a sub-stage"""
+        """Update the status and/or content of a sub-stage"""
         current_stage = self.workflow_status.current_stage
         if current_stage not in self.workflow_status.stage_data:
             raise WorkflowError(f"Stage data not initialized for {current_stage}")
@@ -162,30 +166,39 @@ class WorkflowManager:
             raise WorkflowError(f"Invalid sub-stage: {sub_stage}")
 
         sub_stage_data = stage_data["sub_stages"][sub_stage]
-        old_status = sub_stage_data.get("status")
 
-        # Update status
-        sub_stage_data["status"] = status
-        if (
-            status == SubStageStatus.IN_PROGRESS
-            and old_status == SubStageStatus.NOT_STARTED
-        ):
-            sub_stage_data["started_at"] = datetime.utcnow().isoformat()
-        elif (
-            status == SubStageStatus.COMPLETED
-            and old_status != SubStageStatus.COMPLETED
-        ):
-            sub_stage_data["completed_at"] = datetime.utcnow().isoformat()
+        # Update content if provided
+        if content is not None:
+            sub_stage_data["content"] = content
+            sub_stage_data["content_updated_at"] = datetime.utcnow().isoformat()
+
+        # Update status if provided
+        if status is not None:
+            old_status = sub_stage_data.get("status")
+            sub_stage_data["status"] = status
+
+            if (
+                status == SubStageStatus.IN_PROGRESS
+                and old_status == SubStageStatus.NOT_STARTED
+            ):
+                sub_stage_data["started_at"] = datetime.utcnow().isoformat()
+            elif (
+                status == SubStageStatus.COMPLETED
+                and old_status != SubStageStatus.COMPLETED
+            ):
+                sub_stage_data["completed_at"] = datetime.utcnow().isoformat()
 
         # Add note if provided
         if note:
+            if "notes" not in sub_stage_data:
+                sub_stage_data["notes"] = []
             sub_stage_data["notes"].append(
                 {"text": note, "timestamp": datetime.utcnow().isoformat()}
             )
 
-        # Validate dependencies
-        stage_config = WORKFLOW_STAGES[current_stage]["sub_stages"][sub_stage]
+        # Validate if completing the stage
         if status == SubStageStatus.COMPLETED:
+            stage_config = WORKFLOW_STAGES[current_stage]["sub_stages"][sub_stage]
             validate_stage(
                 self.post, current_stage, sub_stage, stage_config["validation_rules"]
             )

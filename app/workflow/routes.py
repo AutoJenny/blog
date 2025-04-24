@@ -62,21 +62,32 @@ def transition_stage(slug):
 
 @bp.route("/posts/<slug>/workflow/sub-stage", methods=["POST"])
 def update_sub_stage(slug):
-    """Update a sub-stage status"""
+    """Update a sub-stage status, content, or add a note"""
     data = request.get_json()
-    if not data or "sub_stage" not in data or "status" not in data:
-        return jsonify({"error": "sub_stage and status are required"}), 400
+    if not data or "sub_stage" not in data:
+        return jsonify({"error": "sub_stage is required"}), 400
 
-    try:
-        status = SubStageStatus(data["status"])
-    except ValueError:
-        return jsonify({"error": "Invalid status value"}), 400
+    # Get optional parameters
+    status = SubStageStatus(data["status"]) if "status" in data else None
+    note = data.get("note")
+    content = data.get("content")
+
+    # Validate that at least one update parameter is provided
+    if status is None and note is None and content is None:
+        return (
+            jsonify(
+                {"error": "At least one of status, note, or content must be provided"}
+            ),
+            400,
+        )
 
     post = Post.query.filter_by(slug=slug).first_or_404()
     manager = WorkflowManager(post)
 
     try:
-        manager.update_sub_stage(data["sub_stage"], status, data.get("note"))
+        manager.update_sub_stage(
+            data["sub_stage"], status=status, note=note, content=content
+        )
         return jsonify({"message": "Sub-stage updated successfully"})
     except ValidationError as e:
         return jsonify({"error": str(e)}), 400
