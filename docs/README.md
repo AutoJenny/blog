@@ -1,5 +1,86 @@
 # Blog Documentation
 
+## Overview
+This is a Flask-based blog system with integrated AI assistance, workflow management, and clan.com integration. The system supports rich content management, media handling, and automated content generation.
+
+## Documentation Sections
+
+### [Project Setup](project/README.md)
+- Installation and dependencies
+- Configuration guide
+- Development setup
+- Deployment procedures
+- Testing guide
+
+### [Database](database/README.md)
+- Schema and models
+- Relationships
+- Migrations
+- Backup and replication
+- Best practices
+
+### [API Reference](api/README.md)
+- Endpoints
+- Authentication
+- Request/Response formats
+- Error handling
+- Integration examples
+
+### [Models](models/README.md)
+- Data models
+- Relationships
+- Validation
+- Usage examples
+
+### [User Guides](guides/README.md)
+- Content creation workflow
+- Media management
+- AI assistance
+- Publishing process
+- System administration
+
+## Quick Start
+
+1. Clone the repository
+2. Create and activate virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Copy `.env.example` to `.env` and configure:
+   ```bash
+   cp .env.example .env
+   ```
+5. Initialize database:
+   ```bash
+   flask db upgrade
+   ```
+6. Run development server:
+   ```bash
+   ./run_server.sh
+   ```
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| FLASK_ENV | Environment (development/production) | development |
+| DATABASE_URL | PostgreSQL connection URL | postgresql://postgres:postgres@localhost/blog |
+| SECRET_KEY | Flask secret key | hard-to-guess-string |
+| OPENAI_API_KEY | OpenAI API key | None |
+| MAIL_SERVER | SMTP server | None |
+| CELERY_BROKER_URL | Redis URL for Celery | redis://localhost:6379/0 |
+
+## System Requirements
+- Python 3.12+
+- PostgreSQL 14+
+- Redis (for Celery)
+- Node.js 18+ (for frontend builds)
+
 ## Documentation Structure
 
 ```

@@ -1,7 +1,7 @@
 # Database Documentation
 
 ## Overview
-The blog uses SQLAlchemy with SQLite/PostgreSQL for data storage. The schema is designed around content management, LLM integration, and media handling.
+The blog uses PostgreSQL with SQLAlchemy ORM for data storage. The schema is designed around content management, LLM integration, and media handling. SQLite is used only in the test environment.
 
 ## Core Models
 
