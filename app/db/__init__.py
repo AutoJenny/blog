@@ -7,7 +7,6 @@ from flask import (
     request,
     current_app,
 )
-from flask_login import login_required
 from app import db
 from sqlalchemy import text
 import subprocess
@@ -22,13 +21,11 @@ replicator = None
 
 
 @bp.route("/")
-@login_required
 def index():
     return render_template("db/index.html")
 
 
 @bp.route("/backup")
-@login_required
 def backup():
     try:
         subprocess.run(["python", "scripts/db_backup.py"], check=True)
@@ -39,13 +36,11 @@ def backup():
 
 
 @bp.route("/restore")
-@login_required
 def restore():
     return render_template("db/restore.html")
 
 
 @bp.route("/vacuum")
-@login_required
 def vacuum():
     try:
         db.session.execute(text("VACUUM"))
@@ -57,7 +52,6 @@ def vacuum():
 
 
 @bp.route("/check_integrity")
-@login_required
 def check_integrity():
     try:
         result = db.session.execute(text("PRAGMA integrity_check")).scalar()
@@ -71,25 +65,21 @@ def check_integrity():
 
 
 @bp.route("/stats")
-@login_required
 def stats():
     return render_template("db/stats.html")
 
 
 @bp.route("/logs")
-@login_required
 def logs():
     return render_template("db/logs.html")
 
 
 @bp.route("/migrations")
-@login_required
 def migrations():
     return render_template("db/migrations.html")
 
 
 @bp.route("/replication")
-@login_required
 def replication():
     status_file = Path(current_app.instance_path) / "replication_status.json"
     status = {}
@@ -114,7 +104,6 @@ def replication():
 
 
 @bp.route("/replication/start")
-@login_required
 def start_replication():
     global replicator
     try:
@@ -134,7 +123,6 @@ def start_replication():
 
 
 @bp.route("/replication/stop")
-@login_required
 def stop_replication():
     global replicator
     try:
@@ -150,7 +138,6 @@ def stop_replication():
 
 
 @bp.route("/replication/force")
-@login_required
 def force_sync():
     global replicator
     try:
@@ -165,7 +152,6 @@ def force_sync():
 
 
 @bp.route("/replication/config", methods=["POST"])
-@login_required
 def update_replication_config():
     try:
         check_interval = int(request.form.get("check_interval", 60))
