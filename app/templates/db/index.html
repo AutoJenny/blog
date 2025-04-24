@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Database Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Database Management</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Backup & Restore</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{{ url_for('db.backup') }}" class="text-decoration-none">
+                                <i class="fas fa-download me-2"></i>Create Backup
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('db.restore') }}" class="text-decoration-none">
+                                <i class="fas fa-upload me-2"></i>Restore from Backup
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Maintenance</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{{ url_for('db.vacuum') }}" class="text-decoration-none">
+                                <i class="fas fa-broom me-2"></i>Vacuum Database
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('db.check_integrity') }}" class="text-decoration-none">
+                                <i class="fas fa-check-circle me-2"></i>Check Integrity
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Monitoring</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{{ url_for('db.stats') }}" class="text-decoration-none">
+                                <i class="fas fa-chart-bar me-2"></i>Database Statistics
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('db.logs') }}" class="text-decoration-none">
+                                <i class="fas fa-list me-2"></i>View Logs
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Advanced</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{{ url_for('db.migrations') }}" class="text-decoration-none">
+                                <i class="fas fa-code-branch me-2"></i>Manage Migrations
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('db.replication') }}" class="text-decoration-none">
+                                <i class="fas fa-sync me-2"></i>Replication Status
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

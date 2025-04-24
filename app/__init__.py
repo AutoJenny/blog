@@ -117,6 +117,10 @@ def create_app(config_class=Config):
 
     app.register_blueprint(blog_bp, url_prefix="/blog")
 
+    from app.db import bp as db_bp
+
+    app.register_blueprint(db_bp)
+
     from app.api import bp as api_bp
 
     app.register_blueprint(api_bp, url_prefix="/api")

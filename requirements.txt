@@ -102,3 +102,6 @@ WTForms==3.2.1
 yarl==1.20.0
 zstandard==0.23.0
 python-slugify==8.0.4
+
+# Database
+psycopg2-binary==2.9.10
