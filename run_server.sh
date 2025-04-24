@@ -8,11 +8,11 @@ echo "Creating database backup..."
 ./scripts/db_backup.py
 
 # Start the Flask development server
-echo "Server starting on http://127.0.0.1:5000"
+echo "Server starting on http://127.0.0.1:3000"
 echo "Check logs/flask.log for details"
 
 # Start the server with the specified port
-FLASK_APP=app FLASK_DEBUG=1 python3 -m flask run --port 5000 2>&1 | tee logs/flask.log
+FLASK_APP=app FLASK_DEBUG=1 python3 -m flask run --port 3000 2>&1 | tee logs/flask.log
 
 # Check if server started successfully
 if [ $? -eq 0 ]; then

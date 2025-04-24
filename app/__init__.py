@@ -132,11 +132,10 @@ def create_app(config_class=Config):
     # Register shell context
     @app.shell_context_processor
     def make_shell_context():
-        from app.models import User, Post, Tag, LLMPrompt, LLMInteraction
+        from app.models import Post, Tag, LLMPrompt, LLMInteraction
 
         return {
             "db": db,
-            "User": User,
             "Post": Post,
             "Tag": Tag,
             "LLMPrompt": LLMPrompt,

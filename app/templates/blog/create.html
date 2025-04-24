@@ -3,38 +3,81 @@
 {% block title %}Create Post{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto py-6">
-    <h1 class="text-3xl font-bold text-gray-900 mb-6">Create New Post</h1>
-    
-    <form method="POST" class="space-y-6">
-        <div>
-            <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-            <input type="text" name="title" id="title" required
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-tartan-blue focus:ring-tartan-blue">
-        </div>
-        
-        <div>
-            <label for="summary" class="block text-sm font-medium text-gray-700">Summary</label>
-            <textarea name="summary" id="summary" rows="3" required
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-tartan-blue focus:ring-tartan-blue"></textarea>
-        </div>
-        
-        <div>
-            <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-            <textarea name="content" id="content" rows="10" required
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-tartan-blue focus:ring-tartan-blue"></textarea>
-        </div>
-        
-        <div class="flex justify-end space-x-4">
-            <a href="{{ url_for('blog.latest') }}"
-               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                Cancel
-            </a>
-            <button type="submit"
-                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-tartan-blue hover:bg-tartan-blue-700">
-                Create Post
-            </button>
-        </div>
-    </form>
+<!-- Modal trigger button -->
+<div class="fixed bottom-4 right-4">
+    <button onclick="openModal()"
+        class="bg-tartan-blue text-white rounded-full p-4 shadow-lg hover:bg-tartan-blue-700 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+    </button>
 </div>
-{% endblock %} 
+
+<!-- Modal -->
+<div id="createPostModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">New Blog Post Idea</h3>
+            <div class="mt-2 px-7 py-3">
+                <textarea id="basic-idea"
+                    class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-tartan-blue"
+                    rows="4" placeholder="What's your blog post idea?"></textarea>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="createButton"
+                    class="px-4 py-2 bg-tartan-blue text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-tartan-blue-700 focus:outline-none focus:ring-2 focus:ring-tartan-blue">
+                    Create Post
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openModal() {
+        document.getElementById('createPostModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('createPostModal').classList.add('hidden');
+        document.getElementById('basic-idea').value = '';
+    }
+
+    document.getElementById('createPostModal').addEventListener('click', function (e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    document.getElementById('createButton').addEventListener('click', function () {
+        const basicIdea = document.getElementById('basic-idea').value.trim();
+
+        if (!basicIdea) {
+            alert('Please enter your blog post idea');
+            return;
+        }
+
+        fetch('{{ url_for("blog.create") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                basic_idea: basicIdea
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    window.location.href = '{{ url_for("blog.latest") }}';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to create post. Please try again.');
+            });
+    });
+</script>
+{% endblock %}

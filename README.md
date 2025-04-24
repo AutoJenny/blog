@@ -83,4 +83,10 @@ See the [documentation index](docs/README.md) for a complete overview of all ava
 
 ## License
 
-[Add your license information here] 
+[Add your license information here]
+
+## ⚠️ IMPORTANT NOTE ⚠️
+
+**NO LOGIN FUNCTIONALITY SHOULD BE IMPLEMENTED**
+
+This blog is intentionally designed to operate WITHOUT any authentication or login system. Do not attempt to add or fix any login-related features. The application should remain publicly accessible without any user authentication. 

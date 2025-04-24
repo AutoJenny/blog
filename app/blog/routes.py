@@ -35,7 +35,6 @@ from werkzeug.utils import secure_filename
 from sqlalchemy.exc import SQLAlchemyError
 import re
 import json
-from flask_login import current_user, login_required
 from typing import Dict, Any, Optional
 from sqlalchemy.orm import Mapped
 from slugify import slugify as text_slugify
@@ -71,15 +70,21 @@ def latest():
         return render_template("blog/latest.html", posts=[])
 
 
-@bp.route("/post/create", methods=["POST"])
+@bp.route("/post/create", methods=["GET", "POST"])
 def create():
     """Create a new blog post."""
+    if request.method == "GET":
+        return render_template("blog/create.html")
+
     try:
         data = request.get_json()
-        title = data.get("title")
-        content = data.get("content")
-        description = data.get("description", "")
-        concept = data.get("concept", "")
+        basic_idea = data.get("basic_idea")
+
+        if not basic_idea:
+            return jsonify({"error": "Basic idea is required"}), 400
+
+        # Create a temporary title from the first few words
+        title = " ".join(basic_idea.split()[:5]) + "..."
 
         # Create slug from title
         base_slug = text_slugify(title)
@@ -95,12 +100,8 @@ def create():
         post = Post(
             title=title,
             slug=slug,
-            content=content,
-            description=description,
-            concept=concept,
-            author_id=current_user.id,
+            basic_idea=basic_idea,
             published=False,
-            workflow_status=WorkflowStage.DRAFT.value,
             llm_metadata={},
             seo_metadata={},
             syndication_status={},
@@ -112,7 +113,7 @@ def create():
         # Create initial workflow status
         workflow_status = WorkflowStatus(
             post_id=post.id,
-            current_stage=WorkflowStage.DRAFT.value,
+            current_stage=WorkflowStage.CONCEPTUALIZATION,
             stage_data={},
             last_updated=datetime.utcnow(),
         )
@@ -122,9 +123,8 @@ def create():
         workflow_history = WorkflowStatusHistory(
             workflow_status_id=workflow_status.id,
             from_stage=None,
-            to_stage=WorkflowStage.DRAFT.value,
-            user_id=current_user.id,
-            notes="Initial draft created",
+            to_stage=WorkflowStage.CONCEPTUALIZATION,
+            notes="Initial idea created",
             created_at=datetime.utcnow(),
         )
         db.session.add(workflow_history)
