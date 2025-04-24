@@ -94,9 +94,9 @@ def create_app(config_class=Config):
                 "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
             )
         )
-        file_handler.setLevel(logging.INFO)
+        file_handler.setLevel(logging.DEBUG)
         app.logger.addHandler(file_handler)
-        app.logger.setLevel(logging.INFO)
+        app.logger.setLevel(logging.DEBUG)
         app.logger.info("Blog startup")
 
     # Register context processors
@@ -106,28 +106,18 @@ def create_app(config_class=Config):
 
     # Register blueprints
     from app.main import bp as main_bp
-
-    app.register_blueprint(main_bp)
-
     from app.blog import bp as blog_bp
-
-    app.register_blueprint(blog_bp, url_prefix="/blog")
-
+    from app.api import bp as api_bp
+    from app.workflow import bp as workflow_bp
+    from app.llm import bp as llm_bp
     from app.db import bp as db_bp
 
-    app.register_blueprint(db_bp)
-
-    from app.api import bp as api_bp
-
+    app.register_blueprint(main_bp)
+    app.register_blueprint(blog_bp, url_prefix="/blog")
     app.register_blueprint(api_bp, url_prefix="/api")
-
-    from app.llm import bp as llm_bp
-
+    app.register_blueprint(workflow_bp, url_prefix="/workflow")
     app.register_blueprint(llm_bp, url_prefix="/llm")
-
-    from app.errors import bp as errors_bp
-
-    app.register_blueprint(errors_bp)
+    app.register_blueprint(db_bp)
 
     # Register shell context
     @app.shell_context_processor
