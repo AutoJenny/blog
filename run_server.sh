@@ -1,39 +1,23 @@
 #!/bin/bash
 
-# Kill any existing processes
-pkill -f flask
-
-# Ensure logs directory exists
+# Create logs directory if it doesn't exist
 mkdir -p logs
 
-# Backup database before starting
+# Create a database backup before starting
 echo "Creating database backup..."
-if ! ./scripts/db_backup.py; then
-    echo "Warning: Database backup failed!"
-    read -p "Continue anyway? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
-fi
+./scripts/db_backup.py
 
-# Set default port if not specified in environment
-export PORT=${PORT:-5000}
-export HOST=${HOST:-127.0.0.1}
-
-# Start Flask in the background
-echo "Server starting on http://$HOST:$PORT"
+# Start the Flask development server
+echo "Server starting on http://127.0.0.1:5000"
 echo "Check logs/flask.log for details"
-nohup python3 run.py > logs/flask.log 2>&1 &
 
-# Wait a moment for the server to start
-sleep 2
+# Start the server with the specified port
+FLASK_APP=app FLASK_DEBUG=1 python3 -m flask run --port 5000 2>&1 | tee logs/flask.log
 
 # Check if server started successfully
-if ! curl -s "http://$HOST:$PORT/health" > /dev/null; then
-    echo "Warning: Server may not have started properly. Checking logs:"
-    tail -n 20 logs/flask.log
-else
+if [ $? -eq 0 ]; then
     echo "Server started successfully!"
-    tail -n 10 logs/flask.log
+else
+    echo "Failed to start server. Check logs/flask.log for details."
+    exit 1
 fi 
