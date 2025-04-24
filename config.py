@@ -27,7 +27,7 @@ class Config:
     ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
 
     # OpenAI
-    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+    OPENAI_AUTH_TOKEN = os.environ.get("OPENAI_AUTH_TOKEN")
     OPENAI_ORG_ID = os.environ.get("OPENAI_ORG_ID")  # Optional
     OPENAI_API_BASE = os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1")
     OPENAI_DEFAULT_MODEL = os.environ.get("OPENAI_DEFAULT_MODEL", "gpt-3.5-turbo")
@@ -51,6 +51,9 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     UPLOAD_FOLDER = os.path.join(basedir, "app", "static", "uploads")
     ALLOWED_EXTENSIONS = {"txt", "pdf", "png", "jpg", "jpeg", "gif"}
+
+    # LLM Service settings
+    COMPLETION_SERVICE_TOKEN = os.environ.get("COMPLETION_SERVICE_TOKEN")
 
 
 class DevelopmentConfig(Config):

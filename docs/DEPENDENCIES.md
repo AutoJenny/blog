@@ -12,11 +12,6 @@
 - Flask-Migrate (4.1.0): Database migration support
 - psycopg2-binary (2.9.10): PostgreSQL adapter
 
-### Authentication & Security
-- Flask-Login (0.6.3): User session management
-- bcrypt (4.3.0): Password hashing
-- PyJWT (2.10.1): JSON Web Token implementation
-
 ### Task Queue
 - Celery (5.5.1): Distributed task queue
 - Redis (5.2.1): Message broker and result backend

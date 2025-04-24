@@ -55,20 +55,6 @@ IMAGE_ID_MAP = {
 }
 
 
-def get_or_create_user():
-    """Get or create the default user for imported posts."""
-    user = User.query.filter_by(username="admin").first()
-    if not user:
-        user = User()
-        user.username = "admin"
-        user.email = "admin@example.com"
-        user.is_admin = True
-        user.set_password("changeme123")
-        db.session.add(user)
-        db.session.commit()
-    return user
-
-
 def find_image_file(base_name, posts_dir):
     """Find an image file by its base name in the posts directory."""
     # Check in the posts directory and its subdirectories
@@ -201,9 +187,6 @@ def process_image_by_id(image_id, image_info, db_session):
 def create_or_update_post(metadata, content, post_slug):
     """Create or update a blog post with the given metadata and content."""
     try:
-        # Get or create default user
-        user = get_or_create_user()
-
         # Find existing post or create new one
         post = Post.query.filter_by(slug=post_slug).first()
         if not post:
@@ -214,7 +197,6 @@ def create_or_update_post(metadata, content, post_slug):
         # Update post attributes from metadata
         post.title = metadata.get("title", "")
         post.content = content
-        post.author_id = user.id  # Set author_id instead of user_id
         post.seo_metadata = metadata.get("seo_metadata", {})
         post.syndication_status = metadata.get("syndication_status", {})
         post.llm_metadata = metadata.get("llm_metadata", {})

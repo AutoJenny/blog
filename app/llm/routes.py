@@ -2,7 +2,7 @@
 
 from flask import jsonify, request, current_app, render_template
 import logging
-from app.models import Post, PostSection, LLMPrompt, LLMInteraction, db
+from app.models import Post, PostSection, LLMPrompt, LLMInteraction, LLMConfig, db
 from .chains import (
     create_idea_generation_chain,
     create_content_expansion_chain,
@@ -17,7 +17,10 @@ logger = logging.getLogger(__name__)
 
 @bp.route("/")
 def index():
-    return render_template("llm/index.html")
+    """LLM management interface."""
+    config = LLMConfig.query.first()
+    prompts = {template.name: template.content for template in LLMPrompt.query.all()}
+    return render_template("llm/index.html", config=config, prompts=prompts)
 
 
 @bp.route("/api/llm/generate-idea", methods=["POST"])

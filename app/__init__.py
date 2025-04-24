@@ -10,7 +10,7 @@ import logging
 from logging.handlers import RotatingFileHandler, SMTPHandler
 import os
 from dotenv import load_dotenv
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 # Load environment variables
 load_dotenv()
@@ -99,10 +99,10 @@ def create_app(config_class=Config):
         app.logger.setLevel(logging.DEBUG)
         app.logger.info("Blog startup")
 
-    # Register context processors
-    from app.main.context_processors import inject_year
-
-    app.context_processor(inject_year)
+    # Register template context processors
+    @app.context_processor
+    def utility_processor():
+        return {"year": datetime.utcnow().year}
 
     # Register blueprints
     from app.main import bp as main_bp
@@ -116,6 +116,22 @@ def create_app(config_class=Config):
     from app.llm import bp as llm_bp
 
     app.register_blueprint(llm_bp, url_prefix="/llm")
+
+    from app.api import bp as api_bp
+
+    app.register_blueprint(api_bp, url_prefix="/api/v1")
+
+    from app.api.llm import bp as llm_api_bp
+
+    app.register_blueprint(llm_api_bp, url_prefix="/api/v1/llm")
+
+    from app.errors import bp as errors_bp
+
+    app.register_blueprint(errors_bp)
+
+    from app.db import bp as db_bp
+
+    app.register_blueprint(db_bp)
 
     return app
 

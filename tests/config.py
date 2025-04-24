@@ -16,8 +16,8 @@ class TestConfig:
     SECRET_KEY = os.environ.get("TEST_SECRET_KEY") or secrets.token_hex(32)
     WTF_CSRF_ENABLED = False
 
-    # API keys - must be provided via environment variables
-    OPENAI_API_KEY = os.environ.get("TEST_OPENAI_API_KEY")
+    # OpenAI settings
+    OPENAI_AUTH_TOKEN = os.environ.get("TEST_OPENAI_AUTH_TOKEN")
 
     # Session configuration
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
@@ -37,6 +37,9 @@ class TestConfig:
     # Celery configuration for testing
     CELERY_BROKER_URL = "memory://"
     CELERY_RESULT_BACKEND = "memory://"
+
+    # LLM Service settings
+    COMPLETION_SERVICE_TOKEN = os.environ.get("TEST_COMPLETION_SERVICE_TOKEN")
 
     @classmethod
     def init_app(cls, app):

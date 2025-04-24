@@ -1,26 +1,359 @@
 {% extends "base.html" %}
 
-{% block title %}LLM Tools{% endblock %}
+{% block title %}LLM Management{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .config-card {
+        background: var(--dark-bg-secondary);
+        border: 1px solid var(--dark-border);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .config-section {
+        margin-bottom: 2rem;
+        background: var(--dark-bg-primary);
+        padding: 1.5rem;
+        border-radius: 6px;
+    }
+
+    .config-form {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        color: var(--dark-text-primary);
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .form-input,
+    .form-select {
+        background: var(--dark-bg-secondary);
+        border: 1px solid var(--dark-border);
+        color: var(--dark-text-primary);
+        padding: 0.75rem;
+        border-radius: 6px;
+        width: 100%;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        border-color: var(--dark-accent);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+    }
+
+    .form-select option {
+        background: var(--dark-bg-secondary);
+        color: var(--dark-text-primary);
+    }
+
+    .test-prompt {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .result-container {
+        background: var(--dark-bg-secondary);
+        border: 1px solid var(--dark-border);
+        border-radius: 6px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .result-pre {
+        color: var(--dark-text-primary);
+        white-space: pre-wrap;
+        font-family: monospace;
+        margin: 0;
+        background: var(--dark-bg-primary);
+        padding: 1rem;
+        border-radius: 4px;
+    }
+
+    .template-card {
+        background: var(--dark-bg-secondary);
+        border: 1px solid var(--dark-border);
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .template-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .template-title {
+        color: var(--dark-text-primary);
+        font-weight: 600;
+        font-size: 1.125rem;
+    }
+
+    .template-content {
+        color: var(--dark-text-primary);
+        font-family: monospace;
+        white-space: pre-wrap;
+        background: var(--dark-bg-primary);
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+
+    .btn {
+        background: var(--dark-accent);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 120px;
+    }
+
+    .btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: var(--dark-bg-primary);
+        border: 1px solid var(--dark-border);
+        color: var(--dark-text-primary);
+    }
+
+    .btn-secondary:hover {
+        background: var(--dark-bg-hover);
+    }
+
+    .section-title {
+        color: var(--dark-text-primary);
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid var(--dark-accent);
+        padding-bottom: 0.5rem;
+    }
+
+    .subsection-title {
+        color: var(--dark-text-primary);
+        font-size: 1.25rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <div class="bg-dark-surface rounded-lg shadow-lg p-8">
-        <h1 class="text-3xl font-bold text-dark-text mb-6">LLM Tools</h1>
-        <p class="text-dark-text text-lg mb-8">
-            AI-powered tools to assist with content creation and enhancement.
-        </p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="p-6 bg-dark-bg rounded-lg border border-dark-border">
-                <h2 class="text-xl font-semibold mb-2">Content Generation</h2>
-                <p class="text-sm text-gray-400 mb-4">Generate ideas and expand content using AI assistance.</p>
-                <p class="text-dark-accent">Coming soon...</p>
+<div class="admin-content">
+    <div class="admin-card">
+        <h1 class="admin-title mb-6">LLM Management</h1>
+
+        <!-- Configuration Section -->
+        <div class="config-card">
+            <h2 class="text-xl font-semibold text-dark-text mb-4">Configuration</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="config-section">
+                    <h3 class="text-lg font-medium text-dark-text mb-3">Current Settings</h3>
+                    <div class="result-container">
+                        <p class="mb-2"><strong>Provider:</strong> <span id="current-provider">{{
+                                config.provider_type|default('ollama') }}</span></p>
+                        <p class="mb-2"><strong>Model:</strong> <span id="current-model">{{
+                                config.model_name|default('mistral') }}</span></p>
+                        <p class="mb-0"><strong>API Base:</strong> <span id="current-api-base">{{
+                                config.api_base|default('http://localhost:11434') }}</span></p>
+                    </div>
+                </div>
+                <div class="config-section">
+                    <h3 class="text-lg font-medium text-dark-text mb-3">Update Settings</h3>
+                    <form id="config-form" class="config-form">
+                        <div class="form-group">
+                            <label class="form-label">Provider Type</label>
+                            <select name="provider_type" class="form-select">
+                                <option value="ollama" {% if config.provider_type=='ollama' %}selected{% endif %}>Ollama
+                                </option>
+                                <option value="openai" {% if config.provider_type=='openai' %}selected{% endif %}>OpenAI
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Model Name</label>
+                            <input type="text" name="model_name" class="form-input"
+                                value="{{ config.model_name|default('mistral') }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">API Base URL</label>
+                            <input type="text" name="api_base" class="form-input"
+                                value="{{ config.api_base|default('http://localhost:11434') }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Authentication Token</label>
+                            <input type="password" name="auth_token" class="form-input"
+                                placeholder="Leave blank to keep current">
+                            <small class="text-muted">Provider authentication token for API access</small>
+                        </div>
+                        <button type="submit" class="btn">Update Configuration</button>
+                    </form>
+                </div>
             </div>
-            <div class="p-6 bg-dark-bg rounded-lg border border-dark-border">
-                <h2 class="text-xl font-semibold mb-2">SEO Optimization</h2>
-                <p class="text-sm text-gray-400 mb-4">Get AI-powered suggestions for improving your content's SEO.</p>
-                <p class="text-dark-accent">Coming soon...</p>
+        </div>
+
+        <!-- Test Interface -->
+        <div class="config-card">
+            <h2 class="text-xl font-semibold text-dark-text mb-4">Test Interface</h2>
+            <form id="test-form">
+                <div class="form-group">
+                    <label class="form-label">Test Prompt</label>
+                    <textarea name="prompt" class="form-input test-prompt"
+                        placeholder="Enter a test prompt here..."></textarea>
+                </div>
+                <button type="submit" class="btn mt-4">Test LLM</button>
+            </form>
+            <div id="test-result" class="result-container mt-4" style="display: none;">
+                <h3 class="text-lg font-medium text-dark-text mb-2">Result:</h3>
+                <pre class="result-pre"></pre>
+            </div>
+        </div>
+
+        <!-- Prompt Templates -->
+        <div class="config-card">
+            <h2 class="text-xl font-semibold text-dark-text mb-4">Prompt Templates</h2>
+            <div class="space-y-4">
+                <div class="template-card">
+                    <div class="template-header">
+                        <h3 class="template-title">Title Generation</h3>
+                        <button class="btn btn-secondary">Edit Template</button>
+                    </div>
+                    <div class="template-content">{{ prompts.title_generation|default('Generate a compelling title for a
+                        blog post about {topic} that will engage readers and encourage them to read more.') }}</div>
+                </div>
+                <div class="template-card">
+                    <div class="template-header">
+                        <h3 class="template-title">Meta Description</h3>
+                        <button class="btn btn-secondary">Edit Template</button>
+                    </div>
+                    <div class="template-content">{{ prompts.meta_description|default('Write a concise and engaging meta
+                        description for a blog post about {topic}. The description should be under 160 characters and
+                        include relevant keywords.') }}</div>
+                </div>
+                <div class="template-card">
+                    <div class="template-header">
+                        <h3 class="template-title">Keywords</h3>
+                        <button class="btn btn-secondary">Edit Template</button>
+                    </div>
+                    <div class="template-content">{{ prompts.keywords|default('Generate a list of relevant SEO keywords
+                        and phrases for a blog post about {topic}. Include both primary and secondary keywords.') }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.getElementById('config-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        try {
+            const response = await fetch('/api/v1/llm/config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(Object.fromEntries(formData)),
+            });
+            const result = await response.json();
+            if (result.success) {
+                // Update displayed values
+                document.getElementById('current-provider').textContent = formData.get('provider_type');
+                document.getElementById('current-model').textContent = formData.get('model_name');
+                document.getElementById('current-api-base').textContent = formData.get('api_base');
+                alert('Configuration updated successfully');
+            } else {
+                alert('Error updating configuration: ' + result.error);
+            }
+        } catch (error) {
+            alert('Error updating configuration: ' + error.message);
+        }
+    });
+
+    document.getElementById('test-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        const resultContainer = document.getElementById('test-result');
+        const resultPre = resultContainer.querySelector('.result-pre');
+
+        try {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Testing...';
+
+            const response = await fetch('/api/v1/llm/test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt: formData.get('prompt')
+                }),
+            });
+            const result = await response.json();
+
+            resultContainer.style.display = 'block';
+            if (result.success) {
+                resultPre.textContent = result.response;
+                resultPre.style.color = 'var(--dark-text-primary)';
+            } else {
+                resultPre.textContent = 'Error: ' + result.error;
+                resultPre.style.color = 'var(--error-text)';
+            }
+        } catch (error) {
+            resultContainer.style.display = 'block';
+            resultPre.textContent = 'Error: ' + error.message;
+            resultPre.style.color = 'var(--error-text)';
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Test LLM';
+        }
+    });
+
+    // Template editing functionality will be added in a future update
+    document.querySelectorAll('.btn-secondary').forEach(btn => {
+        btn.addEventListener('click', () => {
+            alert('Template editing will be available in a future update');
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %}

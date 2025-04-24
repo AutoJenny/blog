@@ -101,20 +101,6 @@ def ensure_tag(name, session):
     return tag
 
 
-def ensure_user(username, session):
-    """Create or get a user."""
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        user = User()
-        user.username = username
-        user.email = f"{username}@example.com"  # Placeholder email
-        user.set_password("changeme")  # Placeholder password
-        setattr(user, "is_admin", False)  # Set is_admin using setattr
-        session.add(user)
-        session.flush()
-    return user
-
-
 def find_image_file(image_id, post_slug, old_images_dir):
     """Find the corresponding image file for an image ID."""
     post_images_dir = os.path.join(old_images_dir, "posts", post_slug)
@@ -263,24 +249,6 @@ def migrate_post(file_path, app):
                 post = Post()
                 print(f"Creating new post: {title} (slug: {slug})")
 
-            # Create or get the author
-            author = ensure_user(metadata.get("author", "admin"), db.session)
-            if not author:
-                print(f"Warning: Could not create/get author for {file_path}")
-                return
-
-            # Handle header image if present
-            header_image = None
-            if "headerImage" in metadata and metadata["headerImage"].get("src"):
-                print("Found header image in metadata")
-                header_image = migrate_image(
-                    "IMG00001",
-                    slug,
-                    os.path.join(app.root_path, "static"),
-                    os.path.join(app.root_path, "..", "images"),
-                    db.session,
-                )
-
             # Get the date, handling both string and datetime objects
             post_date = metadata.get("date")
             if isinstance(post_date, str):
@@ -306,8 +274,16 @@ def migrate_post(file_path, app):
                 post.created_at = post_date
                 post.published_at = post_date
             post.updated_at = datetime.now(UTC)
-            post.author_id = author.id
-            if header_image:
+            post.author_id = 1  # Placeholder author ID
+            if "headerImage" in metadata and metadata["headerImage"].get("src"):
+                print("Found header image in metadata")
+                header_image = migrate_image(
+                    "IMG00001",
+                    slug,
+                    os.path.join(app.root_path, "static"),
+                    os.path.join(app.root_path, "..", "images"),
+                    db.session,
+                )
                 post.header_image = header_image
             post.llm_metadata = post.llm_metadata or {}
             post.seo_metadata = {"description": metadata.get("description", "")}
@@ -334,7 +310,7 @@ def migrate_post(file_path, app):
                 history.workflow_status_id = workflow_status.id
                 history.from_stage = WorkflowStage.CONCEPTUALIZATION
                 history.to_stage = WorkflowStage.PUBLISHING
-                history.user_id = author.id
+                history.user_id = 1  # Placeholder user ID
                 history.notes = "Post migrated from old blog"
                 db.session.add(history)
 
