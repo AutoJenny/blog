@@ -1,11 +1,24 @@
-from flask import Blueprint, render_template, flash, redirect, url_for
+from flask import (
+    Blueprint,
+    render_template,
+    flash,
+    redirect,
+    url_for,
+    request,
+    current_app,
+)
 from flask_login import login_required
 from app import db
 from sqlalchemy import text
 import subprocess
 import os
+import json
+from pathlib import Path
 
 bp = Blueprint("db", __name__, url_prefix="/db")
+
+# Global replicator instance
+replicator = None
 
 
 @bp.route("/")
@@ -78,4 +91,97 @@ def migrations():
 @bp.route("/replication")
 @login_required
 def replication():
-    return render_template("db/replication.html")
+    status_file = Path(current_app.instance_path) / "replication_status.json"
+    status = {}
+    config = {"check_interval": 60}  # Default config
+
+    if status_file.exists():
+        try:
+            with open(status_file) as f:
+                status = json.load(f)
+        except json.JSONDecodeError:
+            flash("Error reading replication status", "error")
+
+    config_file = Path(current_app.instance_path) / "replication_config.json"
+    if config_file.exists():
+        try:
+            with open(config_file) as f:
+                config = json.load(f)
+        except json.JSONDecodeError:
+            flash("Error reading replication configuration", "error")
+
+    return render_template("db/replication.html", status=status, config=config)
+
+
+@bp.route("/replication/start")
+@login_required
+def start_replication():
+    global replicator
+    try:
+        if not replicator:
+            from scripts.db_replication import DatabaseReplicator
+
+            primary_db = Path(current_app.instance_path) / "blog.db"
+            replica_db = Path(current_app.instance_path) / "blog.replica.db"
+            replicator = DatabaseReplicator(primary_db, replica_db)
+            replicator.start()
+            flash("Replication started successfully", "success")
+        else:
+            flash("Replication is already running", "warning")
+    except Exception as e:
+        flash(f"Failed to start replication: {str(e)}", "error")
+    return redirect(url_for("db.replication"))
+
+
+@bp.route("/replication/stop")
+@login_required
+def stop_replication():
+    global replicator
+    try:
+        if replicator:
+            replicator.stop()
+            replicator = None
+            flash("Replication stopped successfully", "success")
+        else:
+            flash("Replication is not running", "warning")
+    except Exception as e:
+        flash(f"Failed to stop replication: {str(e)}", "error")
+    return redirect(url_for("db.replication"))
+
+
+@bp.route("/replication/force")
+@login_required
+def force_sync():
+    global replicator
+    try:
+        if replicator:
+            replicator._sync_databases()
+            flash("Force sync completed successfully", "success")
+        else:
+            flash("Replication is not running", "warning")
+    except Exception as e:
+        flash(f"Force sync failed: {str(e)}", "error")
+    return redirect(url_for("db.replication"))
+
+
+@bp.route("/replication/config", methods=["POST"])
+@login_required
+def update_replication_config():
+    try:
+        check_interval = int(request.form.get("check_interval", 60))
+        check_interval = max(10, min(3600, check_interval))  # Clamp between 10s and 1h
+
+        config = {"check_interval": check_interval}
+        config_file = Path(current_app.instance_path) / "replication_config.json"
+
+        with open(config_file, "w") as f:
+            json.dump(config, f, indent=2)
+
+        if replicator:
+            replicator.check_interval = check_interval
+
+        flash("Configuration updated successfully", "success")
+    except Exception as e:
+        flash(f"Failed to update configuration: {str(e)}", "error")
+
+    return redirect(url_for("db.replication"))
