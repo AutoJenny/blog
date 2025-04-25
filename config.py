@@ -17,6 +17,9 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # TinyMCE
+    TINYMCE_API_KEY = os.environ.get("TINYMCE_API_KEY")
+
     # Email
     MAIL_SERVER = os.environ.get("MAIL_SERVER")
     MAIL_PORT = int(os.environ.get("MAIL_PORT") or 25)

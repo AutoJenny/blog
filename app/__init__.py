@@ -33,6 +33,11 @@ def create_app(config_class=Config):
     cache.init_app(app)
     mail.init_app(app)
 
+    # Make config available to all templates
+    @app.context_processor
+    def inject_config():
+        return dict(config=app.config)
+
     # Configure Celery
     celery.conf.update(app.config)
     celery.conf.beat_schedule = {

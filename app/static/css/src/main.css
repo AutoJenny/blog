@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-bg text-dark-text;
+  }
+}
+
+@layer components {
+  .admin-title {
+    @apply text-2xl font-bold text-dark-text mb-4;
+  }
+  
+  .admin-card {
+    @apply bg-dark-surface p-6 rounded-lg shadow-lg;
+  }
+  
+  .admin-nav-link {
+    @apply flex flex-col items-center text-dark-text hover:text-dark-accent transition-colors;
+  }
+  
+  .admin-nav-link.active {
+    @apply text-dark-accent;
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors;
+  }
+
+  .btn-primary {
+    @apply bg-dark-accent text-dark-text hover:opacity-90;
+  }
+
+  .btn-secondary {
+    @apply bg-dark-surface text-dark-text border border-dark-border hover:border-dark-accent;
+  }
+
+  .form-input {
+    @apply bg-dark-surface border border-dark-border text-dark-text rounded-md px-3 py-2 focus:border-dark-accent focus:ring-1 focus:ring-dark-accent;
+  }
+
+  .form-select {
+    @apply bg-dark-surface border border-dark-border text-dark-text rounded-md px-3 py-2 focus:border-dark-accent focus:ring-1 focus:ring-dark-accent;
+  }
+} 
