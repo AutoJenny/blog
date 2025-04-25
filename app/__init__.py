@@ -138,6 +138,10 @@ def create_app(config_class=Config):
 
     app.register_blueprint(db_bp)
 
+    from app.workflow import bp as workflow_bp
+
+    app.register_blueprint(workflow_bp, url_prefix="/api/v1/workflow")
+
     return app
 
 

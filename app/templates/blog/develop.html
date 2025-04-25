@@ -495,6 +495,30 @@
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
+        // Initialize TinyMCE editors
+        const editors = document.querySelectorAll('.content-editor-field');
+        editors.forEach(editor => {
+            tinymce.init({
+                target: editor,
+                height: 300,
+                menubar: false,
+                plugins: [
+                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                    'insertdatetime', 'media', 'table', 'help', 'wordcount'
+                ],
+                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+                skin: 'oxide-dark',
+                content_css: 'dark',
+                setup: function (editor) {
+                    editor.on('change input keyup paste', function (e) {
+                        const subStageId = editor.getElement().dataset.substage;
+                        handleContentChange(subStageId);
+                    });
+                }
+            });
+        });
+
         // Handle sub-stage status updates
         document.querySelectorAll('.status-btn').forEach(btn => {
             btn.addEventListener('click', async function () {
@@ -502,7 +526,7 @@
                 const status = this.dataset.status;
 
                 try {
-                    const response = await fetch(`/api/v1/posts/${postSlug}/workflow/sub-stage`, {
+                    const response = await fetch(`/api/v1/workflow/posts/${postSlug}/sub-stage`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -537,7 +561,7 @@
                 if (!note) return;
 
                 try {
-                    const response = await fetch(`/api/v1/posts/${postSlug}/workflow/sub-stage`, {
+                    const response = await fetch(`/api/v1/workflow/posts/${postSlug}/sub-stage`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -572,7 +596,7 @@
                     const notes = document.getElementById('transitionNotes').value;
 
                     try {
-                        const response = await fetch(`/api/v1/posts/${postSlug}/workflow/transition`, {
+                        const response = await fetch(`/api/v1/workflow/posts/${postSlug}/transition`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -628,44 +652,11 @@
             notesList.appendChild(noteEl);
         }
 
-        // Initialize TinyMCE editors
-        document.addEventListener('DOMContentLoaded', function () {
-            const editors = document.querySelectorAll('.content-editor-field');
-            editors.forEach(editor => {
-                tinymce.init({
-                    target: editor,
-                    height: 300,
-                    menubar: false,
-                    plugins: [
-                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                        'insertdatetime', 'media', 'table', 'help', 'wordcount'
-                    ],
-                    toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-                    skin: 'oxide-dark',
-                    content_css: 'dark',
-                    setup: function (editor) {
-                        editor.on('change input keyup paste', function (e) {
-                            console.log('Editor event:', e.type);
-                            const subStageId = editor.getElement().dataset.substage;
-                            console.log('SubStage ID:', subStageId);
-                            handleContentChange(subStageId);
-                        });
-                    }
-                });
-            });
-        });
-
         // Handle content changes
         function handleContentChange(subStageId) {
-            console.log('Handling content change for:', subStageId);
             const saveBtn = document.getElementById(`save-${subStageId}`);
             const statusDot = document.getElementById(`status-dot-${subStageId}`);
             const statusText = document.getElementById(`status-text-${subStageId}`);
-
-            console.log('Save button:', saveBtn);
-            console.log('Status dot:', statusDot);
-            console.log('Status text:', statusText);
 
             saveBtn.disabled = false;
             statusDot.classList.remove('saved');
@@ -674,7 +665,7 @@
         }
 
         // Save sub-stage content
-        async function saveSubStageContent(subStageId) {
+        window.saveSubStageContent = async function (subStageId) {
             const editor = tinymce.get(`content-${subStageId}`);
             const content = editor.getContent();
             const saveBtn = document.getElementById(`save-${subStageId}`);
@@ -683,7 +674,7 @@
 
             try {
                 saveBtn.disabled = true;
-                const response = await fetch(`/api/v1/posts/${postSlug}/workflow/sub-stage`, {
+                const response = await fetch(`/api/v1/workflow/posts/${postSlug}/sub-stage`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -708,7 +699,7 @@
                 alert('Failed to save content');
                 saveBtn.disabled = false;
             }
-        }
+        };
     });
 </script>
 {% endblock %}

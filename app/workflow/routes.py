@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import jsonify, request
 
 from app import db
 from app.models import Post
@@ -9,11 +9,10 @@ from app.workflow.manager import (
     ValidationError,
 )
 from app.workflow.constants import WORKFLOW_STAGES, SubStageStatus
+from app.workflow import bp
 
-bp = Blueprint("workflow", __name__)
 
-
-@bp.route("/posts/<slug>/workflow/status")
+@bp.route("/<slug>/status")
 def get_workflow_status(slug):
     """Get the current workflow status and available transitions"""
     post = Post.query.filter_by(slug=slug).first_or_404()
@@ -39,7 +38,7 @@ def get_workflow_status(slug):
     )
 
 
-@bp.route("/posts/<slug>/workflow/transition", methods=["POST"])
+@bp.route("/<slug>/transition", methods=["POST"])
 def transition_stage(slug):
     """Transition to a new workflow stage"""
     data = request.get_json()
@@ -60,7 +59,7 @@ def transition_stage(slug):
         return jsonify({"error": str(e)}), 500
 
 
-@bp.route("/posts/<slug>/workflow/sub-stage", methods=["POST"])
+@bp.route("/<slug>/sub-stage", methods=["POST"])
 def update_sub_stage(slug):
     """Update a sub-stage status, content, or add a note"""
     data = request.get_json()
@@ -95,7 +94,7 @@ def update_sub_stage(slug):
         return jsonify({"error": str(e)}), 500
 
 
-@bp.route("/posts/<slug>/workflow/history")
+@bp.route("/<slug>/history")
 def get_history(slug):
     """Get the workflow history for a post"""
     post = Post.query.filter_by(slug=slug).first_or_404()
