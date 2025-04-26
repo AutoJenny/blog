@@ -200,4 +200,29 @@ All database operations should be performed using:
 
 Note: When rendering workflow sub-stages in the frontend, always use the actual stage_data from the backend for each post and sub-stage, not just the static workflow definition. The web interface for database management has been removed. Use the command line tools or direct database access instead.
 
-See individual model documentation for detailed field descriptions and usage examples. 
+See individual model documentation for detailed field descriptions and usage examples.
+
+## Automated PostgreSQL Backups
+
+A backup script (`scripts/pg_backup.sh`) creates a timestamped SQL backup of your `blog` PostgreSQL database every hour. Backups are stored in `~/.blog_pg_backups` and are automatically deleted after 14 days.
+
+### How it works
+- The script uses `pg_dump` to export the database.
+- A cron job runs the script at the top of every hour.
+- Old backups (older than 14 days) are deleted automatically.
+
+### Manual Backup
+You can run the script manually:
+```sh
+./scripts/pg_backup.sh
+```
+
+### Restore Example
+To restore from a backup:
+```sh
+psql -U postgres -d blog < ~/.blog_pg_backups/blog_backup_YYYYMMDD_HHMMSS.sql
+```
+
+### Adjusting Frequency or Retention
+- Edit your crontab (`crontab -e`) to change the schedule.
+- Edit the script to change the retention period. 
