@@ -223,3 +223,60 @@ class PromptTemplate(db.Model):
 
     def __repr__(self):
         return f"<PromptTemplate {self.name}>"
+
+
+# --- Normalized Workflow Models ---
+class WorkflowStageEntity(db.Model):
+    __tablename__ = "workflow_stage_entity"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text)
+    order = db.Column(db.Integer, nullable=False)
+    sub_stages = db.relationship(
+        "WorkflowSubStageEntity",
+        back_populates="stage",
+        order_by="WorkflowSubStageEntity.order",
+    )
+
+
+class WorkflowSubStageEntity(db.Model):
+    __tablename__ = "workflow_sub_stage_entity"
+    id = db.Column(db.Integer, primary_key=True)
+    stage_id = db.Column(db.Integer, db.ForeignKey("workflow_stage_entity.id"))
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    order = db.Column(db.Integer, nullable=False)
+    stage = db.relationship("WorkflowStageEntity", back_populates="sub_stages")
+
+
+class PostWorkflowStage(db.Model):
+    __tablename__ = "post_workflow_stage"
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
+    stage_id = db.Column(db.Integer, db.ForeignKey("workflow_stage_entity.id"))
+    started_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    status = db.Column(db.String(50))
+    sub_stages = db.relationship(
+        "PostWorkflowSubStage", back_populates="post_workflow_stage"
+    )
+    post = db.relationship("Post")
+    stage = db.relationship("WorkflowStageEntity")
+
+
+class PostWorkflowSubStage(db.Model):
+    __tablename__ = "post_workflow_sub_stage"
+    id = db.Column(db.Integer, primary_key=True)
+    post_workflow_stage_id = db.Column(
+        db.Integer, db.ForeignKey("post_workflow_stage.id")
+    )
+    sub_stage_id = db.Column(db.Integer, db.ForeignKey("workflow_sub_stage_entity.id"))
+    content = db.Column(db.Text)
+    status = db.Column(db.String(50))
+    notes = db.Column(db.Text)
+    started_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    post_workflow_stage = db.relationship(
+        "PostWorkflowStage", back_populates="sub_stages"
+    )
+    sub_stage = db.relationship("WorkflowSubStageEntity")

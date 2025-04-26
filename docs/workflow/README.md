@@ -189,4 +189,44 @@ Each stage maintains its data in the following format:
     }
   }
 }
-``` 
+```
+
+# Workflow Data Model (Normalized SQL)
+
+## Overview
+
+The workflow system is now fully normalized in SQL, providing robust, queryable, and future-proof tracking of post development stages and sub-stages.
+
+## Tables
+
+- **WorkflowStageEntity**: Defines each workflow stage (e.g., Idea, Research, Authoring).
+- **WorkflowSubStageEntity**: Defines sub-stages for each stage (e.g., Basic Idea, Audience Definition).
+- **PostWorkflowStage**: Tracks a post's progress in a given stage (status, timestamps, etc.).
+- **PostWorkflowSubStage**: Tracks a post's progress/content in a sub-stage (content, status, notes, timestamps).
+
+## Relationships
+
+- Each `WorkflowStageEntity` can have multiple `WorkflowSubStageEntity` children.
+- Each `Post` can have multiple `PostWorkflowStage` records (one per stage).
+- Each `PostWorkflowStage` can have multiple `PostWorkflowSubStage` records (one per sub-stage).
+
+## Rationale
+
+- **Data Integrity**: SQL constraints ensure valid relationships and prevent orphaned data.
+- **Queryability**: Easily filter, sort, and aggregate workflow progress across posts.
+- **Robustness**: Schema changes (adding/removing stages/sub-stages) are explicit and safe.
+- **Migration-Friendly**: Future changes to the workflow structure are handled via SQL migrations, not ad-hoc JSON updates.
+
+## Migration
+
+Existing workflow data in JSON will be migrated to the new structure. See `scripts/update_workflow.py` for details.
+
+## Example Usage
+
+- To get all posts in the 'Authoring' stage: join `PostWorkflowStage` with `WorkflowStageEntity`.
+- To get all sub-stages for a post: join `PostWorkflowSubStage` with `WorkflowSubStageEntity`.
+
+## Next Steps
+
+- Update all backend logic and templates to use the new models.
+- Remove the old JSON-based workflow fields after migration is complete. 
