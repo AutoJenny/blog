@@ -22,8 +22,12 @@ def validate_stage(post: Post, stage: str, sub_stage: str, rules: List[str]) -> 
 
 
 def basic_idea_not_empty(post: Post) -> None:
-    """Validate that the post has a basic idea"""
-    if not post.basic_idea or not post.basic_idea.strip():
+    """Validate that the post has a basic idea in workflow_status.stage_data."""
+    stage_data = post.workflow_status.stage_data if post.workflow_status else {}
+    content = ""
+    if stage_data.get("idea") and stage_data["idea"]["sub_stages"].get("basic_idea"):
+        content = stage_data["idea"]["sub_stages"]["basic_idea"].get("content", "")
+    if not content or not content.strip():
         raise ValidationError("Basic idea is required")
 
 

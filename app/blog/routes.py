@@ -39,7 +39,6 @@ def new_post():
             post = Post()
             post.title = temp_title
             post.slug = slug
-            post.basic_idea = data["basic_idea"]
             post.published = False
             post.deleted = False
             post.content = ""  # Initialize with empty content
@@ -60,7 +59,9 @@ def new_post():
                             "started_at": None,
                             "completed_at": None,
                             "notes": [],
-                            "content": "",
+                            "content": (
+                                data["basic_idea"] if name == "basic_idea" else ""
+                            ),
                         }
                         for name in WORKFLOW_STAGES["idea"]["sub_stages"]
                     },
@@ -91,11 +92,18 @@ def new_post():
 def develop(slug):
     post = Post.query.filter_by(slug=slug).first_or_404()
     stage_data = post.workflow_status.stage_data if post.workflow_status else {}
+    # Extract basic_idea content for display
+    basic_idea_content = ""
+    if stage_data.get("idea") and stage_data["idea"]["sub_stages"].get("basic_idea"):
+        basic_idea_content = stage_data["idea"]["sub_stages"]["basic_idea"].get(
+            "content", ""
+        )
     return render_template(
         "blog/develop.html",
         post=post,
         workflow_stages=WORKFLOW_STAGES,
         stage_data=stage_data,
+        basic_idea_content=basic_idea_content,
     )
 
 

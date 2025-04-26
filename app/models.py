@@ -41,8 +41,6 @@ class Post(db.Model):
     slug = db.Column(db.String(200), unique=True, nullable=False)
     content = db.Column(db.Text)
     summary = db.Column(db.Text)
-    concept = db.Column(db.Text)
-    basic_idea = db.Column(db.Text)
     published = db.Column(db.Boolean, default=False)
     deleted = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

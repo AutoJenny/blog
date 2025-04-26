@@ -187,10 +187,6 @@ class WorkflowManager:
             sub_stage_data["content"] = content
             sub_stage_data["content_updated_at"] = datetime.utcnow().isoformat()
 
-            # Update post's basic_idea field if this is the basic_idea sub-stage
-            if current_stage == "idea" and sub_stage == "basic_idea":
-                self.post.basic_idea = content
-
         # Update status if provided
         if status is not None:
             old_status = sub_stage_data.get("status")
