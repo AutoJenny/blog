@@ -3,7 +3,7 @@
 ## System Requirements
 - Python 3.8+
 - Redis (for preview caching)
-- SQLite (for local content storage)
+- PostgreSQL is used for all environments
 
 ## Local Installation
 - Python environment setup

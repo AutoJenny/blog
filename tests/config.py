@@ -9,7 +9,7 @@ class TestConfig:
     """Test configuration."""
 
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres@localhost/blog"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Generate a random secret key for tests if not provided

@@ -7,6 +7,9 @@ from datetime import datetime
 from pathlib import Path
 from db_backup import validate_sqlite_db, calculate_db_hash
 
+print("This script is deprecated. Please use PostgreSQL monitoring tools instead.")
+sys.exit(0)
+
 
 def check_database_health(db_path):
     """Perform comprehensive database health check"""

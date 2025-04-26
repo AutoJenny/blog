@@ -6,6 +6,9 @@ from datetime import datetime
 from pathlib import Path
 from db_backup import validate_sqlite_db, calculate_db_hash
 
+print("This script is deprecated. Please use PostgreSQL restore tools instead.")
+sys.exit(0)
+
 
 def list_backups(backup_dir):
     """List all available backups with their timestamps"""

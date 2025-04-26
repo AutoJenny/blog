@@ -394,17 +394,18 @@
                         <div class="accordion-body">
                             <p>{{ data.description }}</p>
                             {% for sub_stage_id, sub_stage in data.sub_stages.items() %}
+                            {% set sub_stage_data = stage_data[stage]['sub_stages'][sub_stage_id] if
+                            stage_data.get(stage) and stage_data[stage]['sub_stages'].get(sub_stage_id) else {} %}
                             <div class="sub-stage" id="sub-stage-{{ sub_stage_id }}">
                                 <h3>{{ sub_stage.name }}</h3>
                                 <p>{{ sub_stage.description }}</p>
-
                                 <!-- Content Editor -->
                                 <div class="content-editor">
                                     <label class="content-editor-label">Content</label>
                                     <div class="content-editor-wrapper">
                                         <textarea class="content-editor-field" id="content-{{ sub_stage_id }}"
                                             data-substage="{{ sub_stage_id }}"
-                                            placeholder="Enter content for this section...">{{ sub_stage.content|default('') }}</textarea>
+                                            placeholder="Enter content for this section...">{{ sub_stage_data.content|default('') }}</textarea>
                                     </div>
                                     <div class="content-actions">
                                         <div class="content-status">
@@ -417,7 +418,6 @@
                                         </button>
                                     </div>
                                 </div>
-
                                 <div class="status-buttons">
                                     <button class="status-btn" data-status="not_started">
                                         Not Started
@@ -488,6 +488,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const postSlug = '{{ post.slug }}';
+        let editorInitCount = 0;
+        const totalEditors = document.querySelectorAll('.content-editor-field').length;
 
         // Initialize tooltips
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -501,21 +503,60 @@
             tinymce.init({
                 target: editor,
                 height: 300,
-                menubar: false,
+                menubar: true,
                 plugins: [
                     'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
                     'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                    'insertdatetime', 'media', 'table', 'help', 'wordcount'
+                    'insertdatetime', 'media', 'table', 'help', 'wordcount', 'autosave'
                 ],
-                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | removeformat | help',
                 skin: 'oxide-dark',
                 content_css: 'dark',
+                autosave_interval: '30s',
+                autosave_prefix: `tinymce-autosave-${postSlug}-`,
+                autosave_restore_when_empty: true,
+                images_upload_url: `/api/v1/workflow/${postSlug}/upload-image`,
+                automatic_uploads: true,
+                image_title: true,
+                file_picker_types: 'image',
                 setup: function (editor) {
+                    editor.on('init', function (e) {
+                        editorInitCount++;
+                        if (editorInitCount === totalEditors) {
+                            console.log('All editors initialized');
+                            // Hide loading state if you have one
+                        }
+                    });
+
                     editor.on('change input keyup paste', function (e) {
                         const subStageId = editor.getElement().dataset.substage;
                         handleContentChange(subStageId);
                     });
+
+                    // Add custom keyboard shortcuts
+                    editor.addShortcut('meta+s', 'Save content', function () {
+                        const subStageId = editor.getElement().dataset.substage;
+                        saveSubStageContent(subStageId);
+                    });
+
+                    // Handle paste to clean up content
+                    editor.on('PastePreProcess', function (e) {
+                        // Clean up pasted content here if needed
+                        e.content = e.content.replace(/<!--[\s\S]*?-->/g, ''); // Remove comments
+                            e.content = e.content.replace(/style="[^"]*"/g, ''); // Remove inline styles
+                    });
+
+                    // Handle errors
+                    editor.on('error', function (e) {
+                        console.error('TinyMCE Error:', e);
+                        alert('An error occurred in the editor. Please try refreshing the page.');
+                    });
                 }
+            }).then(function (editors) {
+                // Success callback
+            }).catch(function (error) {
+                console.error('TinyMCE initialization error:', error);
+                alert('Failed to initialize the editor. Please try refreshing the page.');
             });
         });
 
@@ -526,7 +567,7 @@
                 const status = this.dataset.status;
 
                 try {
-                    const response = await fetch(`/api/v1/workflow/posts/${postSlug}/sub-stage`, {
+                    const response = await fetch(`/api/v1/workflow/${postSlug}/sub-stage`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -561,7 +602,7 @@
                 if (!note) return;
 
                 try {
-                    const response = await fetch(`/api/v1/workflow/posts/${postSlug}/sub-stage`, {
+                    const response = await fetch(`/api/v1/workflow/${postSlug}/sub-stage`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -596,7 +637,7 @@
                     const notes = document.getElementById('transitionNotes').value;
 
                     try {
-                        const response = await fetch(`/api/v1/workflow/posts/${postSlug}/transition`, {
+                        const response = await fetch(`/api/v1/workflow/${postSlug}/transition`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -652,29 +693,54 @@
             notesList.appendChild(noteEl);
         }
 
-        // Handle content changes
+        // Enhanced content change handler
         function handleContentChange(subStageId) {
             const saveBtn = document.getElementById(`save-${subStageId}`);
             const statusDot = document.getElementById(`status-dot-${subStageId}`);
             const statusText = document.getElementById(`status-text-${subStageId}`);
 
+            if (!saveBtn || !statusDot || !statusText) {
+                console.error('Required elements not found for sub-stage:', subStageId);
+                return;
+            }
+
             saveBtn.disabled = false;
             statusDot.classList.remove('saved');
             statusDot.classList.add('unsaved');
             statusText.textContent = 'Unsaved changes';
+
+            // Debounced autosave
+            if (window.autosaveTimeout) {
+                clearTimeout(window.autosaveTimeout);
+            }
+            window.autosaveTimeout = setTimeout(() => {
+                saveSubStageContent(subStageId);
+            }, 30000); // Autosave after 30 seconds of no changes
         }
 
-        // Save sub-stage content
+        // Enhanced save function
         window.saveSubStageContent = async function (subStageId) {
             const editor = tinymce.get(`content-${subStageId}`);
+            if (!editor) {
+                console.error('Editor not found for sub-stage:', subStageId);
+                return;
+            }
+
             const content = editor.getContent();
             const saveBtn = document.getElementById(`save-${subStageId}`);
             const statusDot = document.getElementById(`status-dot-${subStageId}`);
             const statusText = document.getElementById(`status-text-${subStageId}`);
 
+            if (!saveBtn || !statusDot || !statusText) {
+                console.error('Required elements not found for sub-stage:', subStageId);
+                return;
+            }
+
             try {
                 saveBtn.disabled = true;
-                const response = await fetch(`/api/v1/workflow/posts/${postSlug}/sub-stage`, {
+                statusText.textContent = 'Saving...';
+
+                const response = await fetch(`/api/v1/workflow/${postSlug}/sub-stage`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -689,17 +755,33 @@
                     statusDot.classList.remove('unsaved');
                     statusDot.classList.add('saved');
                     statusText.textContent = 'Saved';
+
+                    // Clear autosave content since we've successfully saved
+                    editor.setContent(content);
                 } else {
                     const data = await response.json();
+                    console.error('Save error:', data);
                     alert(data.error || 'Failed to save content');
                     saveBtn.disabled = false;
+                    statusText.textContent = 'Save failed';
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to save content');
+                console.error('Save error:', error);
+                alert('Failed to save content. Please try again.');
                 saveBtn.disabled = false;
+                statusText.textContent = 'Save failed';
             }
         };
+
+        // Add window unload handler to warn about unsaved changes
+        window.addEventListener('beforeunload', function (e) {
+            const unsavedChanges = document.querySelectorAll('.status-dot.unsaved').length > 0;
+            if (unsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
     });
 </script>
 {% endblock %}

@@ -120,4 +120,7 @@
 1. Keep dependencies updated
 2. Use secure passwords
 3. Regular backups
-4. Monitor access logs 
+4. Monitor access logs
+
+- SQLite is no longer supported. PostgreSQL is required for all environments.
+- When building or editing workflow UI, always bind each sub-stage field to its corresponding value in the backend's stage_data for the current post. 

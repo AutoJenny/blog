@@ -66,7 +66,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite://"  # Use in-memory database
+    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres@localhost/blog"
     WTF_CSRF_ENABLED = False
 
 

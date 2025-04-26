@@ -108,4 +108,7 @@ The database management interface has been removed. Database operations should b
 All database operations should be performed using:
 - Flask CLI commands
 - Direct database access
-- Migration scripts 
+- Migration scripts
+
+- SQLite is no longer supported. PostgreSQL is required for all environments.
+- When building or editing workflow UI, always bind each sub-stage field to its corresponding value in the backend's stage_data for the current post. 

@@ -5,6 +5,7 @@ from app import db
 from slugify import slugify
 import logging
 from datetime import datetime
+from app.workflow.constants import WORKFLOW_STAGES, SubStageStatus
 
 
 @bp.route("/")
@@ -50,7 +51,21 @@ def new_post():
             workflow_status = WorkflowStatus()
             workflow_status.post_id = post.id
             workflow_status.current_stage = WorkflowStage.IDEA
-            workflow_status.stage_data = {}
+            workflow_status.stage_data = {
+                "idea": {
+                    "started_at": datetime.utcnow().isoformat(),
+                    "sub_stages": {
+                        name: {
+                            "status": SubStageStatus.NOT_STARTED,
+                            "started_at": None,
+                            "completed_at": None,
+                            "notes": [],
+                            "content": "",
+                        }
+                        for name in WORKFLOW_STAGES["idea"]["sub_stages"]
+                    },
+                }
+            }
 
             db.session.add(workflow_status)
             db.session.commit()
@@ -75,132 +90,12 @@ def new_post():
 @bp.route("/develop/<slug>")
 def develop(slug):
     post = Post.query.filter_by(slug=slug).first_or_404()
-
-    workflow_stages = {
-        "idea": {
-            "description": "Initial concept and planning phase",
-            "sub_stages": {
-                "concept": {
-                    "name": "Core Concept",
-                    "description": "Define the main idea and target audience",
-                    "required": True,
-                },
-                "outline": {
-                    "name": "Post Outline",
-                    "description": "Create a basic structure and key points",
-                    "required": True,
-                },
-                "research": {
-                    "name": "Research Plan",
-                    "description": "Identify key sources and research areas",
-                    "required": False,
-                },
-            },
-        },
-        "research": {
-            "description": "Gather and organize research materials",
-            "sub_stages": {
-                "sources": {
-                    "name": "Source Collection",
-                    "description": "Gather and validate primary sources",
-                    "required": True,
-                },
-                "notes": {
-                    "name": "Research Notes",
-                    "description": "Compile and organize research findings",
-                    "required": True,
-                },
-                "media": {
-                    "name": "Media Collection",
-                    "description": "Gather images, videos, and other media",
-                    "required": False,
-                },
-            },
-        },
-        "draft": {
-            "description": "Write and refine the post content",
-            "sub_stages": {
-                "first_draft": {
-                    "name": "First Draft",
-                    "description": "Write the initial complete draft",
-                    "required": True,
-                },
-                "revision": {
-                    "name": "Content Revision",
-                    "description": "Review and revise for clarity and flow",
-                    "required": True,
-                },
-                "media_integration": {
-                    "name": "Media Integration",
-                    "description": "Insert and caption media elements",
-                    "required": True,
-                },
-            },
-        },
-        "review": {
-            "description": "Quality assurance and improvements",
-            "sub_stages": {
-                "technical": {
-                    "name": "Technical Review",
-                    "description": "Check formatting, links, and technical accuracy",
-                    "required": True,
-                },
-                "editorial": {
-                    "name": "Editorial Review",
-                    "description": "Review for style, tone, and grammar",
-                    "required": True,
-                },
-                "fact_check": {
-                    "name": "Fact Checking",
-                    "description": "Verify claims and citations",
-                    "required": True,
-                },
-            },
-        },
-        "publish": {
-            "description": "Prepare and publish the post",
-            "sub_stages": {
-                "seo": {
-                    "name": "SEO Optimization",
-                    "description": "Optimize title, meta description, and keywords",
-                    "required": True,
-                },
-                "preview": {
-                    "name": "Final Preview",
-                    "description": "Review the post in preview mode",
-                    "required": True,
-                },
-                "schedule": {
-                    "name": "Publication Schedule",
-                    "description": "Set publication date and time",
-                    "required": True,
-                },
-            },
-        },
-        "syndicate": {
-            "description": "Share and promote the post",
-            "sub_stages": {
-                "social": {
-                    "name": "Social Media",
-                    "description": "Prepare and schedule social media posts",
-                    "required": True,
-                },
-                "newsletter": {
-                    "name": "Newsletter",
-                    "description": "Create and schedule newsletter content",
-                    "required": False,
-                },
-                "analytics": {
-                    "name": "Analytics Setup",
-                    "description": "Configure tracking and goals",
-                    "required": True,
-                },
-            },
-        },
-    }
-
+    stage_data = post.workflow_status.stage_data if post.workflow_status else {}
     return render_template(
-        "blog/develop.html", post=post, workflow_stages=workflow_stages
+        "blog/develop.html",
+        post=post,
+        workflow_stages=WORKFLOW_STAGES,
+        stage_data=stage_data,
     )
 
 

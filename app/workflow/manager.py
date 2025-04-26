@@ -5,6 +5,7 @@ from app import db
 from app.models import Post, WorkflowStatus, WorkflowStatusHistory, WorkflowStage
 from app.workflow.constants import WORKFLOW_STAGES, VALID_TRANSITIONS, SubStageStatus
 from app.workflow.validators import validate_stage
+from sqlalchemy.orm.attributes import flag_modified
 
 
 class WorkflowError(Exception):
@@ -43,18 +44,24 @@ class WorkflowManager:
                             "status": SubStageStatus.NOT_STARTED,
                             "started_at": None,
                             "completed_at": None,
+                            "content": "",
+                            "content_updated_at": None,
                             "notes": [],
                         },
                         "audience_definition": {
                             "status": SubStageStatus.NOT_STARTED,
                             "started_at": None,
                             "completed_at": None,
+                            "content": "",
+                            "content_updated_at": None,
                             "notes": [],
                         },
                         "value_proposition": {
                             "status": SubStageStatus.NOT_STARTED,
                             "started_at": None,
                             "completed_at": None,
+                            "content": "",
+                            "content_updated_at": None,
                             "notes": [],
                         },
                     },
@@ -128,6 +135,8 @@ class WorkflowManager:
                         "status": SubStageStatus.NOT_STARTED,
                         "started_at": None,
                         "completed_at": None,
+                        "content": "",
+                        "content_updated_at": None,
                         "notes": [],
                     }
                     for name in WORKFLOW_STAGES[target_stage]["sub_stages"]
@@ -161,16 +170,26 @@ class WorkflowManager:
         if current_stage not in self.workflow_status.stage_data:
             raise WorkflowError(f"Stage data not initialized for {current_stage}")
 
-        stage_data = self.workflow_status.stage_data[current_stage]
-        if sub_stage not in stage_data["sub_stages"]:
+        # Get a copy of the current stage data
+        stage_data = dict(self.workflow_status.stage_data)
+        if sub_stage not in stage_data[current_stage]["sub_stages"]:
             raise WorkflowError(f"Invalid sub-stage: {sub_stage}")
 
-        sub_stage_data = stage_data["sub_stages"][sub_stage]
+        sub_stage_data = stage_data[current_stage]["sub_stages"][sub_stage]
+
+        # Initialize content fields if they don't exist
+        if "content" not in sub_stage_data:
+            sub_stage_data["content"] = ""
+            sub_stage_data["content_updated_at"] = None
 
         # Update content if provided
         if content is not None:
             sub_stage_data["content"] = content
             sub_stage_data["content_updated_at"] = datetime.utcnow().isoformat()
+
+            # Update post's basic_idea field if this is the basic_idea sub-stage
+            if current_stage == "idea" and sub_stage == "basic_idea":
+                self.post.basic_idea = content
 
         # Update status if provided
         if status is not None:
@@ -203,6 +222,12 @@ class WorkflowManager:
                 self.post, current_stage, sub_stage, stage_config["validation_rules"]
             )
 
+        # Update the stage data and flag it as modified
+        self.workflow_status.stage_data = stage_data
+        flag_modified(self.workflow_status, "stage_data")
+
+        # Update last_updated timestamp
+        self.workflow_status.last_updated = datetime.utcnow()
         db.session.commit()
 
     def get_sub_stage_status(self, stage: str, sub_stage: str) -> Dict:

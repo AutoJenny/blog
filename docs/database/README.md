@@ -1,7 +1,7 @@
 # Database Documentation
 
 ## Overview
-The blog uses PostgreSQL with SQLAlchemy ORM for data storage. The schema is designed around content management, LLM integration, and media handling. SQLite is used only in the test environment.
+The blog uses PostgreSQL with SQLAlchemy ORM for data storage in all environments. The schema is designed around content management, LLM integration, and media handling.
 
 ## Core Models
 
@@ -198,6 +198,6 @@ All database operations should be performed using:
 2. Direct database access for advanced operations
 3. Migration scripts for schema changes
 
-Note: The web interface for database management has been removed. Use the command line tools or direct database access instead.
+Note: When rendering workflow sub-stages in the frontend, always use the actual stage_data from the backend for each post and sub-stage, not just the static workflow definition. The web interface for database management has been removed. Use the command line tools or direct database access instead.
 
 See individual model documentation for detailed field descriptions and usage examples. 

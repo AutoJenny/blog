@@ -157,4 +157,8 @@ AI-assisted features include:
 
 For details, see:
 - [LLM API Documentation](api/llm.md) - API endpoints and usage
-- [LLM Architecture](project/llm_architecture.md) - Implementation details 
+- [LLM Architecture](project/llm_architecture.md) - Implementation details
+
+## Notes
+- SQLite is no longer supported. PostgreSQL is required for all environments.
+- When building or editing workflow UI, always bind each sub-stage field to its corresponding value in the backend's stage_data for the current post. 

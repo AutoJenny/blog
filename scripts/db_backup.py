@@ -118,6 +118,11 @@ def main():
     # Store backups in user's home directory to survive project changes
     backup_dir = Path.home() / ".blog_backups"
 
+    print(
+        "This script is deprecated. Please use PostgreSQL backup tools (pg_dump, etc.) instead."
+    )
+    sys.exit(0)
+
     if create_backup(source_db, backup_dir):
         sys.exit(0)
     else:

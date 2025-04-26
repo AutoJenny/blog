@@ -18,6 +18,9 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(), logging.FileHandler("logs/replication.log")],
 )
 
+print("This script is deprecated. Please use PostgreSQL replication tools instead.")
+sys.exit(0)
+
 
 class DatabaseReplicator:
     def __init__(self, primary_path, replica_path, check_interval=60):

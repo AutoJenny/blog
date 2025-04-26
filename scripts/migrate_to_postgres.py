@@ -8,6 +8,11 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from db_backup import validate_sqlite_db
 
+print(
+    "This script is deprecated. Please use PostgreSQL migration tools and direct SQLAlchemy migrations instead."
+)
+sys.exit(0)
+
 
 def get_sqlite_tables(sqlite_conn):
     """Get all tables and their creation SQL from SQLite"""

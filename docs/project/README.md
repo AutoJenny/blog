@@ -205,4 +205,7 @@ pytest tests/integration/
 1. OpenAI
 2. clan.com
 3. Email services
-4. Storage services 
+4. Storage services
+
+## Workflow UI Best Practice
+When building or editing workflow UI, always bind each sub-stage field to its corresponding value in the backend's stage_data for the current post. This ensures correct data display and editing for each workflow step. 
