@@ -364,12 +364,6 @@
             </div>
         </div>
 
-        <!-- Basic Idea Display -->
-        <div class="basic-idea">
-            <h2>Basic Idea</h2>
-            <p>{{ basic_idea_content }}</p>
-        </div>
-
         <!-- Workflow Stages -->
         <div class="workflow-stages">
             <div class="accordion" id="workflowAccordion">
@@ -396,24 +390,34 @@
                             {% for sub_stage_id, sub_stage in data.sub_stages.items() %}
                             {% set sub_stage_data = stage_data[stage]['sub_stages'][sub_stage_id] if
                             stage_data.get(stage) and stage_data[stage]['sub_stages'].get(sub_stage_id) else {} %}
-                            <div class="sub-stage" id="sub-stage-{{ sub_stage_id }}">
+                            {% set post_workflow_stage_id = post_workflow_stage_id_map[stage] if
+                            post_workflow_stage_id_map and post_workflow_stage_id_map.get(stage) else None %}
+                            {% set sub_stage_int_id = sub_stage_id_map[stage][sub_stage_id] if sub_stage_id_map and
+                            sub_stage_id_map.get(stage) and sub_stage_id_map[stage].get(sub_stage_id) else None %}
+                            {% set post_sub_stage_id = post_sub_stage_id_map[stage][sub_stage_id] if
+                            post_sub_stage_id_map and post_sub_stage_id_map.get(stage) and
+                            post_sub_stage_id_map[stage].get(sub_stage_id) else None %}
+                            <div class="sub-stage" id="sub-stage-{{ post_sub_stage_id }}"
+                                data-post-workflow-stage-id="{{ post_workflow_stage_id }}"
+                                data-sub-stage-id="{{ post_sub_stage_id }}">
                                 <h3>{{ sub_stage.name }}</h3>
                                 <p>{{ sub_stage.description }}</p>
                                 <!-- Content Editor -->
                                 <div class="content-editor">
                                     <label class="content-editor-label">Content</label>
                                     <div class="content-editor-wrapper">
-                                        <textarea class="content-editor-field" id="content-{{ sub_stage_id }}"
-                                            data-substage="{{ sub_stage_id }}"
+                                        <textarea class="content-editor-field" id="content-{{ post_sub_stage_id }}"
+                                            data-substage="{{ post_sub_stage_id }}"
                                             placeholder="Enter content for this section...">{{ sub_stage_data.content|default('') }}</textarea>
                                     </div>
                                     <div class="content-actions">
                                         <div class="content-status">
-                                            <span class="status-dot saved" id="status-dot-{{ sub_stage_id }}"></span>
-                                            <span id="status-text-{{ sub_stage_id }}">Saved</span>
+                                            <span class="status-dot saved"
+                                                id="status-dot-{{ post_sub_stage_id }}"></span>
+                                            <span id="status-text-{{ post_sub_stage_id }}">Saved</span>
                                         </div>
-                                        <button class="save-content-btn" id="save-{{ sub_stage_id }}"
-                                            onclick="saveSubStageContent('{{ sub_stage_id }}')" disabled>
+                                        <button class="save-content-btn" id="save-{{ post_sub_stage_id }}"
+                                            onclick="saveSubStageContent('{{ post_sub_stage_id }}')" disabled>
                                             Save Changes
                                         </button>
                                     </div>
@@ -573,7 +577,8 @@
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            sub_stage: subStage,
+                            post_workflow_stage_id: this.closest('.sub-stage').dataset.postWorkflowStageId,
+                            sub_stage_id: this.closest('.sub-stage').dataset.subStageId,
                             status: status
                         })
                     });
@@ -608,7 +613,8 @@
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            sub_stage: subStage,
+                            post_workflow_stage_id: this.closest('.sub-stage').dataset.postWorkflowStageId,
+                            sub_stage_id: this.closest('.sub-stage').dataset.subStageId,
                             note: note
                         })
                     });
@@ -730,8 +736,9 @@
             const saveBtn = document.getElementById(`save-${subStageId}`);
             const statusDot = document.getElementById(`status-dot-${subStageId}`);
             const statusText = document.getElementById(`status-text-${subStageId}`);
+            const subStageEl = document.getElementById(`sub-stage-${subStageId}`);
 
-            if (!saveBtn || !statusDot || !statusText) {
+            if (!saveBtn || !statusDot || !statusText || !subStageEl) {
                 console.error('Required elements not found for sub-stage:', subStageId);
                 return;
             }
@@ -746,7 +753,8 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        sub_stage: subStageId,
+                        post_workflow_stage_id: subStageEl.dataset.postWorkflowStageId,
+                        sub_stage_id: subStageEl.dataset.subStageId,
                         content: content
                     })
                 });
@@ -755,8 +763,6 @@
                     statusDot.classList.remove('unsaved');
                     statusDot.classList.add('saved');
                     statusText.textContent = 'Saved';
-
-                    // Clear autosave content since we've successfully saved
                     editor.setContent(content);
                 } else {
                     const data = await response.json();
