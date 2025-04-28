@@ -5,6 +5,7 @@ from app import db
 from slugify import slugify
 import logging
 from datetime import datetime
+from app.blog.fields import WORKFLOW_FIELDS
 
 
 @bp.route("/")
@@ -60,7 +61,7 @@ def post_view(post_id, view):
             .order_by(PostSection.section_order)
             .all()
         )
-        return render_template("blog/develop.html", post=post, dev=dev, sections=sections, active_view='develop')
+        return render_template("blog/develop.html", post=post, dev=dev, sections=sections, active_view='develop', workflow_fields=WORKFLOW_FIELDS)
     elif view == 'json':
         post_json = {
             "id": post.id,
@@ -81,7 +82,7 @@ def post_view(post_id, view):
             .order_by(PostSection.section_order)
             .all()
         )
-        return render_template("blog/develop.html", post=post, dev=dev, sections=sections, active_view='preview')
+        return render_template("blog/develop.html", post=post, dev=dev, sections=sections, active_view='preview', workflow_fields=WORKFLOW_FIELDS)
     else:
         abort(404)
 

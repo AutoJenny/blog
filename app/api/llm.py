@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app
 from app.services.llm import LLMService
-from app.models import LLMConfig, PromptTemplate, LLMInteraction, PostSection
+from app.models import LLMConfig, PromptTemplate, LLMInteraction, PostSection, LLMAction
 from app import db
 
 bp = Blueprint("llm_api", __name__)
@@ -163,3 +163,36 @@ def generate_social(section_id):
         }
         db.session.commit()
     return jsonify({"twitter": "Test tweet", "instagram": "Test instagram post"})
+
+
+@bp.route('/actions/<field_name>', methods=['GET'])
+def get_llm_action(field_name):
+    action = LLMAction.query.filter_by(field_name=field_name).first()
+    if not action:
+        return jsonify({}), 404
+    return jsonify({
+        'field_name': action.field_name,
+        'stage_name': action.stage_name,
+        'source_field': action.source_field,
+        'prompt_template': action.prompt_template,
+        'llm_model': action.llm_model,
+        'temperature': action.temperature,
+        'max_tokens': action.max_tokens,
+    })
+
+
+@bp.route('/actions/<field_name>', methods=['POST'])
+def update_llm_action(field_name):
+    data = request.get_json()
+    action = LLMAction.query.filter_by(field_name=field_name).first()
+    if not action:
+        action = LLMAction(field_name=field_name)
+        db.session.add(action)
+    action.stage_name = data.get('stage_name')
+    action.source_field = data.get('source_field', field_name)
+    action.prompt_template = data.get('prompt_template', '')
+    action.llm_model = data.get('llm_model', '')
+    action.temperature = float(data.get('temperature', 0.7))
+    action.max_tokens = int(data.get('max_tokens', 64))
+    db.session.commit()
+    return jsonify({'status': 'success'})

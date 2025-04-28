@@ -145,6 +145,135 @@
                         }}</label>
                     <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
                         rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    {% if field == 'provisional_title' %}
+                    <div style="display: flex; gap: 0.5rem; align-items: center; margin: 0.5rem 0;">
+                        <button type="button" class="admin-button" id="generate-provisional-title-btn">Generate</button>
+                        <button type="button" class="admin-button-secondary" id="toggle-llm-settings-btn">LLM
+                            Settings</button>
+                    </div>
+                    <div id="llm-settings-panel"
+                        style="display:none; border:2px solid #6366F1; background:#23272F; border-radius:1rem; margin:0.5rem 0 1rem 0; padding:1.5rem;">
+                        <h3 style="color:#fff; font-size:1.1rem; margin-bottom:1rem;">LLM Action Settings</h3>
+                        <form id="llmActionFormPanel">
+                            <div id="llm-settings-feedback" style="margin-bottom:1rem; color:#a3e635; display:none;">
+                            </div>
+                            <div id="llm-settings-loading" style="margin-bottom:1rem; color:#fff; display:none;">
+                                Loading...</div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-1">Source Field</label>
+                                <select name="source_field" class="admin-textarea w-full" id="llm-source-field-select">
+                                    {% for stage, fields in workflow_fields.items() %}
+                                    <optgroup label="{{ stage }}">
+                                        {% for wf in fields %}
+                                        <option value="{{ wf }}" {% if wf==field %}selected{% endif %}>{{
+                                            wf.replace('_', ' ').title() }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-1">Prompt Template</label>
+                                <textarea name="prompt_template" class="admin-textarea w-full" rows="3"
+                                    id="llm-prompt-template">Suggest a catchy title for: {{ basic_idea }}</textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-1">LLM Model</label>
+                                <select name="llm_model" class="admin-textarea w-full" id="llm-model-select">
+                                    <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                                    <option value="mistral">mistral</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-1">Temperature</label>
+                                <input type="number" name="temperature" class="admin-textarea w-full" min="0" max="2"
+                                    step="0.01" value="0.7" id="llm-temperature">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-semibold mb-1">Max Tokens</label>
+                                <input type="number" name="max_tokens" class="admin-textarea w-full" min="1" max="2048"
+                                    value="64" id="llm-max-tokens">
+                            </div>
+                            <div class="flex justify-end gap-2">
+                                <button type="button" class="admin-button-secondary"
+                                    id="close-llm-settings-btn">Close</button>
+                                <button type="submit" class="admin-button">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var toggleBtn = document.getElementById('toggle-llm-settings-btn');
+                            var panel = document.getElementById('llm-settings-panel');
+                            var closeBtn = document.getElementById('close-llm-settings-btn');
+                            var form = document.getElementById('llmActionFormPanel');
+                            var feedback = document.getElementById('llm-settings-feedback');
+                            var loading = document.getElementById('llm-settings-loading');
+                            var fieldName = 'provisional_title';
+                            function showFeedback(msg, color) {
+                                feedback.textContent = msg;
+                                feedback.style.color = color || '#a3e635';
+                                feedback.style.display = 'block';
+                                setTimeout(() => { feedback.style.display = 'none'; }, 2000);
+                            }
+                            function showLoading(show) {
+                                loading.style.display = show ? 'block' : 'none';
+                            }
+                            function loadSettings() {
+                                showLoading(true);
+                                fetch('/api/v1/llm/actions/' + fieldName)
+                                    .then(r => r.json())
+                                    .then(data => {
+                                        showLoading(false);
+                                        if (data && data.field_name) {
+                                            document.getElementById('llm-source-field-select').value = data.source_field || data.field_name;
+                                            document.getElementById('llm-prompt-template').value = data.prompt_template;
+                                            document.getElementById('llm-model-select').value = data.llm_model;
+                                            document.getElementById('llm-temperature').value = data.temperature;
+                                            document.getElementById('llm-max-tokens').value = data.max_tokens;
+                                        }
+                                    })
+                                    .catch(() => { showLoading(false); showFeedback('Failed to load settings', '#f87171'); });
+                            }
+                            if (toggleBtn && panel) {
+                                toggleBtn.addEventListener('click', function () {
+                                    panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'block' : 'none';
+                                    if (panel.style.display === 'block') loadSettings();
+                                });
+                            }
+                            if (closeBtn && panel) {
+                                closeBtn.addEventListener('click', function () {
+                                    panel.style.display = 'none';
+                                });
+                            }
+                            if (form) {
+                                form.addEventListener('submit', function (e) {
+                                    e.preventDefault();
+                                    showLoading(true);
+                                    fetch('/api/v1/llm/actions/' + fieldName, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            field_name: fieldName,
+                                            source_field: document.getElementById('llm-source-field-select').value,
+                                            prompt_template: document.getElementById('llm-prompt-template').value,
+                                            llm_model: document.getElementById('llm-model-select').value,
+                                            temperature: document.getElementById('llm-temperature').value,
+                                            max_tokens: document.getElementById('llm-max-tokens').value
+                                        })
+                                    })
+                                        .then(r => r.json())
+                                        .then(data => {
+                                            showLoading(false);
+                                            if (data.status === 'success') showFeedback('Saved!', '#a3e635');
+                                            else showFeedback('Save failed', '#f87171');
+                                        })
+                                        .catch(() => { showLoading(false); showFeedback('Save failed', '#f87171'); });
+                                });
+                            }
+                        });
+                    </script>
+                    {% endif %}
                     <button type="button" class="admin-button mt-2"
                         onclick="saveGlobalField('{{ field }}')">Save</button>
                 </div>
@@ -341,6 +470,52 @@
         </div>
     </div>
 </div>
+<!-- Specimen LLM Action Modal (moved up for guaranteed DOM presence) -->
+<div id="llmActionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 hidden">
+    <div class="bg-[#23272F] rounded-lg shadow-lg p-8 w-full max-w-lg relative">
+        <h2 class="text-xl font-semibold mb-4">Configure LLM Action</h2>
+        <form id="llmActionForm">
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-1">Source Field</label>
+                <select name="source_field" class="admin-textarea w-full">
+                    {% for stage, fields in workflow_fields.items() %}
+                    <optgroup label="{{ stage }}">
+                        {% for wf in fields %}
+                        <option value="{{ wf }}" {% if wf==field %}selected{% endif %}>{{ wf.replace('_', ' ').title()
+                            }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-1">Prompt Template</label>
+                <textarea name="prompt_template" class="admin-textarea w-full"
+                    rows="3">Suggest a catchy title for: {{ basic_idea }}</textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-1">LLM Model</label>
+                <select name="llm_model" class="admin-textarea w-full">
+                    <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                    <option value="mistral">mistral</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-1">Temperature</label>
+                <input type="number" name="temperature" class="admin-textarea w-full" min="0" max="2" step="0.01"
+                    value="0.7">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-1">Max Tokens</label>
+                <input type="number" name="max_tokens" class="admin-textarea w-full" min="1" max="2048" value="64">
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" id="llmActionCancel" class="admin-button-secondary">Cancel</button>
+                <button type="submit" class="admin-button">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -428,6 +603,20 @@
         });
         // Open the first accordion by default
         openAccordion(0);
+    });
+    // Show specimen LLM modal when Generate button is clicked
+    window.addEventListener('DOMContentLoaded', function () {
+        const genBtn = document.getElementById('generate-provisional-title-btn');
+        const modal = document.getElementById('llmActionModal');
+        const cancelBtn = document.getElementById('llmActionCancel');
+        if (genBtn && modal && cancelBtn) {
+            genBtn.addEventListener('click', function () {
+                modal.classList.remove('hidden');
+            });
+            cancelBtn.addEventListener('click', function () {
+                modal.classList.add('hidden');
+            });
+        }
     });
 </script>
 {% endblock %}

@@ -215,3 +215,17 @@ class PromptTemplate(db.Model):
 
     def __repr__(self):
         return f"<PromptTemplate {self.name}>"
+
+
+class LLMAction(db.Model):
+    __tablename__ = 'llm_action'
+    id = db.Column(db.Integer, primary_key=True)
+    field_name = db.Column(db.String(100), nullable=False, unique=True)  # e.g. 'provisional_title'
+    stage_name = db.Column(db.String(100), nullable=True)  # e.g. 'Idea Stage'
+    source_field = db.Column(db.String(100), nullable=False, default='')  # The source field for this action
+    prompt_template = db.Column(db.Text, nullable=False)
+    llm_model = db.Column(db.String(100), nullable=False)
+    temperature = db.Column(db.Float, nullable=False, default=0.7)
+    max_tokens = db.Column(db.Integer, nullable=False, default=64)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
