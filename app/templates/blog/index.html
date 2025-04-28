@@ -12,19 +12,47 @@
     <div class="flex items-center justify-between mb-8">
         <h1 class="text-2xl font-bold">Posts</h1>
     </div>
+    <!-- Toggle for showing deleted posts -->
+    <div class="flex items-center mb-4">
+        <label class="flex items-center cursor-pointer">
+            <input type="checkbox" id="showDeletedToggle" class="mr-2">
+            <span class="text-sm">Show deleted posts</span>
+        </label>
+    </div>
     <!-- Simple list of posts, most recent first -->
-    <ul class="divide-y divide-dark-border">
+    <ul class="divide-y divide-dark-border" id="postList">
         {% for post in posts|sort(attribute='created_at', reverse=True) %}
-        <li class="py-4 flex items-center justify-between">
-            <div>
+        <li class="py-4 flex items-center justify-between post-row" data-deleted="{{ post.deleted }}">
+            <div class="flex items-center space-x-2">
                 <a href="{{ url_for('blog.get_post', slug=post.slug) }}"
-                    class="font-semibold text-lg text-dark-text hover:text-primary">
+                    class="font-semibold text-lg text-dark-text hover:text-primary" title="Details (JSON)">
                     {{ post.title or 'Untitled Post' }}
                 </a>
+                <a href="{{ url_for('blog.get_post', slug=post.slug) }}" class="text-xs text-blue-500 underline ml-1"
+                    title="JSON">json</a>
+                <a href="{{ url_for('blog.develop', post_id=post.id) }}" class="ml-2 text-gray-500 hover:text-primary"
+                    title="Edit">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </a>
+                <button class="ml-2 text-red-500 hover:text-red-700 delete-btn" data-slug="{{ post.slug }}"
+                    title="Delete">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
                 <span
                     class="ml-2 text-xs px-2 py-1 rounded {{ 'bg-green-200 text-green-800' if post.published else 'bg-gray-200 text-gray-800' }}">
                     {{ 'Published' if post.published else 'Draft' }}
                 </span>
+                {% if post.deleted %}
+                <span class="ml-2 text-xs px-2 py-1 rounded bg-red-200 text-red-800">Deleted</span>
+                {% endif %}
             </div>
             <span class="text-sm text-gray-400">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
         </li>
@@ -33,4 +61,54 @@
         {% endfor %}
     </ul>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Toggle show deleted posts
+    const showDeletedToggle = document.getElementById('showDeletedToggle');
+    const postList = document.getElementById('postList');
+    function filterPosts() {
+        const showDeleted = showDeletedToggle.checked;
+        postList.querySelectorAll('.post-row').forEach(row => {
+            if (row.dataset.deleted === 'True' && !showDeleted) {
+                row.style.display = 'none';
+            } else {
+                row.style.display = '';
+            }
+        });
+    }
+    showDeletedToggle.addEventListener('change', filterPosts);
+    window.addEventListener('DOMContentLoaded', filterPosts);
+    // Delete button logic
+    postList.addEventListener('click', async function (e) {
+        if (e.target.closest('.delete-btn')) {
+            const btn = e.target.closest('.delete-btn');
+            const slug = btn.dataset.slug;
+            if (!confirm('Are you sure you want to delete this post?')) return;
+            try {
+                const response = await fetch(`/blog/${slug}`, { method: 'DELETE' });
+                if (response.ok) {
+                    // Mark as deleted in UI
+                    const row = btn.closest('.post-row');
+                    row.dataset.deleted = 'True';
+                    row.querySelectorAll('.bg-green-200, .bg-gray-200').forEach(el => el.classList.add('bg-red-200', 'text-red-800'));
+                    let deletedTag = row.querySelector('.bg-red-200.text-red-800');
+                    if (!deletedTag) {
+                        const tag = document.createElement('span');
+                        tag.className = 'ml-2 text-xs px-2 py-1 rounded bg-red-200 text-red-800';
+                        tag.textContent = 'Deleted';
+                        btn.parentNode.insertBefore(tag, btn.nextSibling);
+                    }
+                    filterPosts();
+                } else {
+                    alert('Failed to delete post');
+                }
+            } catch (err) {
+                alert('Error deleting post');
+            }
+        }
+    });
+</script>
 {% endblock %}
