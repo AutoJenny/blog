@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Edit Post Development{% endblock %}
+{% block content %}
+<h1>Edit Post: {{ post.title }}</h1>
+<h2>Global Fields</h2>
+<form id="global-fields-form">
+    {% for field, value in dev.__dict__.items() if field not in ['id', 'post_id', '_sa_instance_state'] %}
+    <div>
+        <label for="{{ field }}">{{ field.replace('_', ' ').title() }}</label><br>
+        <textarea id="{{ field }}" name="{{ field }}">{{ value or '' }}</textarea>
+        <button type="button" onclick="saveGlobalField('{{ field }}')">Save</button>
+    </div>
+    {% endfor %}
+</form>
+<hr>
+<h2>Sections</h2>
+<div id="sections">
+    {% for section in sections %}
+    <div class="section-block" data-section-id="{{ section.id }}">
+        <h3>Section {{ loop.index }}: {{ section.section_heading or '' }}</h3>
+        <label>Section Heading</label><br>
+        <textarea id="section_heading_{{ section.id }}">{{ section.section_heading or '' }}</textarea>
+        <button type="button" onclick="saveSectionField({{ section.id }}, 'section_heading')">Save</button><br>
+        {% for field, value in section.__dict__.items() if field not in ['id', 'post_id', 'section_order',
+        'section_heading', '_sa_instance_state'] %}
+        <label for="{{ field }}_{{ section.id }}">{{ field.replace('_', ' ').title() }}</label><br>
+        <textarea id="{{ field }}_{{ section.id }}">{{ value or '' }}</textarea>
+        <button type="button" onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button><br>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endfor %}
+</div>
+<button type="button" onclick="addSection()">Add Section</button>
+<script>
+    const postId = {{ post.id }};
+    function saveGlobalField(field) {
+        const value = document.getElementById(field).value;
+        fetch(`/blog/api/v1/post/${postId}/development`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [field]: value })
+        }).then(r => r.json()).then(data => {
+            alert('Saved!');
+        });
+    }
+    function saveSectionField(sectionId, field) {
+        const value = document.getElementById(`${field}_${sectionId}`).value;
+        fetch(`/blog/api/v1/section/${sectionId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [field]: value })
+        }).then(r => r.json()).then(data => {
+            alert('Saved!');
+        });
+    }
+    function addSection() {
+        fetch(`/blog/api/v1/post/${postId}/sections`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        }).then(r => r.json()).then(data => {
+            location.reload();
+        });
+    }
+</script>
+{% endblock %}
