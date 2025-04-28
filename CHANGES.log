@@ -57,3 +57,5 @@
 2024-07-10: Major UI redesign of blog index page. Replaced table with a modern, responsive card/grid layout for posts. Each post is now a card showing title, status, date, and clear action buttons (Develop, JSON, Delete). Added a floating 'New Post' button, modern toggle for showing deleted posts, and improved accessibility, mobile responsiveness, and visual hierarchy. Updated scripts and styles for new structure. [AI]
 
 2024-07-10: Refined blog index dark theme—ensured all backgrounds are dark, improved contrast, and made delete button a red icon-only circle for better accessibility and visual clarity.
+
+2024-07-10: Blog index improvements—main title now links to Develop, Develop/JSON links have text, creation and updated dates shown (updated in 'ago' format).

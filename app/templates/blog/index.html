@@ -98,10 +98,11 @@
             data-deleted="{{ post.deleted }}">
             <div>
                 <div class="flex items-center justify-between mb-2">
-                    <h2 class="blog-card__title text-xl font-semibold truncate"
-                        title="{{ post.title or 'Untitled Post' }}">
+                    <a href="{{ url_for('blog.develop', post_id=post.id) }}"
+                        class="blog-card__title text-xl font-semibold truncate hover:underline focus:underline"
+                        title="Go to Develop">
                         {{ post.title or 'Untitled Post' }}
-                    </h2>
+                    </a>
                     <div class="flex items-center space-x-1">
                         {% if post.published %}
                         <span class="badge-published px-2 py-1 rounded text-xs font-semibold">Published</span>
@@ -113,7 +114,10 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="text-sm text-gray-400 mb-4">{{ post.created_at.strftime('%Y-%m-%d') }}</div>
+                <div class="text-sm text-gray-400 mb-1">Created: {{ post.created_at.strftime('%Y-%m-%d') }}</div>
+                <div class="text-sm text-gray-400 mb-4">Updated: <span class="updated-ago"
+                        data-updated="{{ post.updated_at.isoformat() if post.updated_at else '' }}">{{
+                        post.updated_at.strftime('%Y-%m-%d') if post.updated_at else '' }}</span></div>
             </div>
             <div class="flex items-center justify-between mt-auto space-x-2">
                 <a href="{{ url_for('blog.develop', post_id=post.id) }}"
@@ -124,6 +128,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
+                    Develop
                 </a>
                 <a href="{{ url_for('blog.get_post', slug=post.slug) }}"
                     class="admin-button admin-button-secondary flex-1 flex items-center justify-center py-2 px-3 text-sm font-medium mr-1"
@@ -133,6 +138,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
+                    JSON
                 </a>
                 <button class="admin-delete-btn delete-btn" data-slug="{{ post.slug }}" title="Delete">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,6 +197,22 @@
     window.addEventListener('DOMContentLoaded', () => {
         updateSwitch();
         filterPosts();
+        // Format updated date as 'ago'
+        document.querySelectorAll('.updated-ago').forEach(function (el) {
+            const iso = el.dataset.updated;
+            if (!iso) return;
+            const date = new Date(iso);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            let str = '';
+            if (diff < 60) str = diff + ' seconds ago';
+            else if (diff < 3600) str = Math.floor(diff / 60) + ' minutes ago';
+            else if (diff < 86400) str = Math.floor(diff / 3600) + ' hours ago';
+            else if (diff < 2592000) str = Math.floor(diff / 86400) + ' days ago';
+            else if (diff < 31536000) str = Math.floor(diff / 2592000) + ' months ago';
+            else str = Math.floor(diff / 31536000) + ' years ago';
+            el.textContent = str;
+        });
     });
     // Delete button logic
     postGrid.addEventListener('click', async function (e) {
