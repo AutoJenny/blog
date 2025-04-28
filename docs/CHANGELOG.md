@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workflow management system
 - Fully normalized SQL workflow system for post development stages and sub-stages
 - Seeding script for workflow tables (`scripts/update_workflow.py`)
+- Major UI redesign of blog index page (2024-07-10):
+  - Replaced table with a modern, responsive card/grid layout for posts
+  - Each post is now a card showing title, status, date, and clear action buttons (Develop, JSON, Delete)
+  - Added a floating 'New Post' button
+  - Modern toggle for showing deleted posts
+  - Improved accessibility, mobile responsiveness, and visual hierarchy
+  - Updated scripts and styles for new structure
 
 ### Fixed
 - Blueprint registration for LLM and DB modules

@@ -3,6 +3,8 @@
 ## Overview
 This is a Flask-based blog system with integrated AI assistance, workflow management, and clan.com integration. The system supports rich content management, media handling, and automated content generation.
 
+**2024-07-10:** The blog index page has been redesigned for a modern, card-based experience. Posts are now shown as cards in a responsive grid, each with clear actions (Develop, JSON, Delete), and a floating New Post button for improved usability and accessibility.
+
 ## Documentation Sections
 
 ### [Project Setup](project/README.md)

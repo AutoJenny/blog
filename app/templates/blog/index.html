@@ -4,87 +4,117 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto py-8">
+<div class="max-w-6xl mx-auto py-10">
     <div class="flex items-center justify-between mb-8">
-        <h1 class="text-2xl font-bold">Posts</h1>
+        <h1 class="text-3xl font-bold text-dark-text">Posts</h1>
+        <div class="flex items-center space-x-4">
+            <label class="flex items-center cursor-pointer select-none">
+                <span class="mr-2 text-sm text-dark-text">Show deleted</span>
+                <input type="checkbox" id="showDeletedToggle" class="hidden">
+                <span class="w-10 h-6 flex items-center bg-dark-border rounded-full p-1 transition-colors duration-300"
+                    id="toggleSwitch">
+                    <span
+                        class="dot w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300"></span>
+                </span>
+            </label>
+        </div>
     </div>
-    <div class="flex items-center mb-4">
-        <label class="flex items-center cursor-pointer">
-            <input type="checkbox" id="showDeletedToggle" class="mr-2">
-            <span class="text-sm">Show deleted posts</span>
-        </label>
+    <div id="postGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for post in posts|sort(attribute='created_at', reverse=True) %}
+        <div class="blog-card post-card relative post-row shadow-lg border border-dark-border rounded-xl bg-dark-surface p-6 flex flex-col justify-between transition-transform hover:-translate-y-1 hover:shadow-2xl"
+            data-deleted="{{ post.deleted }}">
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="blog-card__title text-xl font-semibold text-dark-text truncate"
+                        title="{{ post.title or 'Untitled Post' }}">
+                        {{ post.title or 'Untitled Post' }}
+                    </h2>
+                    {% if post.published %}
+                    <span
+                        class="inline-block px-2 py-1 rounded bg-green-200 text-green-800 text-xs font-semibold">Published</span>
+                    {% else %}
+                    <span
+                        class="inline-block px-2 py-1 rounded bg-gray-200 text-gray-800 text-xs font-semibold">Draft</span>
+                    {% endif %}
+                    {% if post.deleted %}
+                    <span
+                        class="ml-2 inline-block px-2 py-1 rounded bg-red-200 text-red-800 text-xs font-semibold">Deleted</span>
+                    {% endif %}
+                </div>
+                <div class="text-sm text-gray-400 mb-4">{{ post.created_at.strftime('%Y-%m-%d') }}</div>
+            </div>
+            <div class="flex items-center justify-between mt-auto space-x-2">
+                <a href="{{ url_for('blog.develop', post_id=post.id) }}"
+                    class="admin-button flex-1 flex items-center justify-center py-2 px-3 text-sm font-medium mr-1"
+                    title="Develop">
+                    <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Develop
+                </a>
+                <a href="{{ url_for('blog.get_post', slug=post.slug) }}"
+                    class="admin-button admin-button-secondary flex-1 flex items-center justify-center py-2 px-3 text-sm font-medium mr-1"
+                    title="JSON">
+                    <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    JSON
+                </a>
+                <button
+                    class="admin-button admin-delete-btn flex-1 flex items-center justify-center py-2 px-3 text-sm font-medium delete-btn"
+                    data-slug="{{ post.slug }}" title="Delete">
+                    <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Delete
+                </button>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-span-full no-posts">
+            <p class="text-gray-400 text-center text-lg">No posts yet</p>
+        </div>
+        {% endfor %}
     </div>
-    <div class="overflow-x-auto">
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>JSON</th>
-                    <th>Published</th>
-                    <th>Date</th>
-                    <th>Delete</th>
-                </tr>
-            </thead>
-            <tbody id="postList">
-                {% for post in posts|sort(attribute='created_at', reverse=True) %}
-                <tr class="post-row" data-deleted="{{ post.deleted }}">
-                    <td>
-                        <a href="{{ url_for('blog.develop', post_id=post.id) }}" class="admin-edit-link">
-                            {{ post.title or 'Untitled Post' }}
-                            <svg xmlns="http://www.w3.org/2000/svg" class="admin-edit-icon" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                        </a>
-                    </td>
-                    <td>
-                        <a href="{{ url_for('blog.get_post', slug=post.slug) }}" class="text-xs text-blue-600 underline"
-                            title="JSON">json</a>
-                    </td>
-                    <td class="text-center">
-                        <span
-                            class="inline-block px-2 py-1 rounded {{ 'bg-green-200 text-green-800' if post.published else 'bg-gray-200 text-gray-800' }}">
-                            {{ 'Yes' if post.published else 'No' }}
-                        </span>
-                        {% if post.deleted %}
-                        <span class="ml-2 text-xs px-2 py-1 rounded bg-red-200 text-red-800">Deleted</span>
-                        {% endif %}
-                    </td>
-                    <td class="text-center text-gray-500">{{ post.created_at.strftime('%Y-%m-%d') }}</td>
-                    <td class="text-center">
-                        <button class="admin-delete-btn delete-btn" data-slug="{{ post.slug }}" title="Delete">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5" class="py-4 text-gray-400 text-center">No posts yet</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <button id="floatingNewPostBtn"
+        class="fixed z-50 bottom-8 right-8 bg-dark-accent hover:bg-dark-accent/90 text-white rounded-full shadow-lg p-5 flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-dark-accent focus:ring-offset-2"
+        title="New Post">
+        <svg class="w-7 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+    </button>
 </div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-    // Toggle show deleted posts
+    // Modern toggle switch logic
     const showDeletedToggle = document.getElementById('showDeletedToggle');
-    const postList = document.getElementById('postList');
+    const toggleSwitch = document.getElementById('toggleSwitch');
+    const postGrid = document.getElementById('postGrid');
+    function updateSwitch() {
+        if (showDeletedToggle.checked) {
+            toggleSwitch.classList.add('bg-dark-accent');
+            toggleSwitch.querySelector('.dot').classList.add('translate-x-4');
+        } else {
+            toggleSwitch.classList.remove('bg-dark-accent');
+            toggleSwitch.querySelector('.dot').classList.remove('translate-x-4');
+        }
+    }
     function filterPosts() {
         const showDeleted = showDeletedToggle.checked;
-        postList.querySelectorAll('.post-row').forEach(row => {
+        postGrid.querySelectorAll('.post-row').forEach(row => {
             if (row.dataset.deleted === 'True' && !showDeleted) {
                 row.style.display = 'none';
             } else {
@@ -92,10 +122,16 @@
             }
         });
     }
-    showDeletedToggle.addEventListener('change', filterPosts);
-    window.addEventListener('DOMContentLoaded', filterPosts);
+    showDeletedToggle.addEventListener('change', () => {
+        updateSwitch();
+        filterPosts();
+    });
+    window.addEventListener('DOMContentLoaded', () => {
+        updateSwitch();
+        filterPosts();
+    });
     // Delete button logic
-    postList.addEventListener('click', async function (e) {
+    postGrid.addEventListener('click', async function (e) {
         if (e.target.closest('.delete-btn')) {
             const btn = e.target.closest('.delete-btn');
             const slug = btn.dataset.slug;
@@ -110,7 +146,7 @@
                     let deletedTag = row.querySelector('.bg-red-200.text-red-800');
                     if (!deletedTag) {
                         const tag = document.createElement('span');
-                        tag.className = 'ml-2 text-xs px-2 py-1 rounded bg-red-200 text-red-800';
+                        tag.className = 'ml-2 inline-block px-2 py-1 rounded bg-red-200 text-red-800 text-xs font-semibold';
                         tag.textContent = 'Deleted';
                         btn.parentNode.insertBefore(tag, btn.nextSibling);
                     }
@@ -121,6 +157,29 @@
             } catch (err) {
                 alert('Error deleting post');
             }
+        }
+    });
+    // Floating new post button logic
+    document.getElementById('floatingNewPostBtn').addEventListener('click', async () => {
+        const basicIdea = prompt('Enter your basic idea for the post:');
+        if (!basicIdea) return;
+        try {
+            const response = await fetch("{{ url_for('blog.new_post') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ basic_idea: basicIdea })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                window.location.href = `/blog/develop/${data.id}`;
+            } else {
+                alert(data.error || 'Failed to create post');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to create post');
         }
     });
 </script>

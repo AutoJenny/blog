@@ -1,37 +1,59 @@
 {% extends "base.html" %}
-{% block title %}Edit Post Development{% endblock %}
+{% block title %}{{ post.title }}{% endblock %}
 {% block content %}
-<h1>Edit Post: {{ post.title }}</h1>
-<h2>Global Fields</h2>
-<form id="global-fields-form">
-    {% for field, value in dev.__dict__.items() if field not in ['id', 'post_id', '_sa_instance_state'] %}
-    <div>
-        <label for="{{ field }}">{{ field.replace('_', ' ').title() }}</label><br>
-        <textarea id="{{ field }}" name="{{ field }}">{{ value or '' }}</textarea>
-        <button type="button" onclick="saveGlobalField('{{ field }}')">Save</button>
+<div class="max-w-3xl mx-auto py-8">
+    <!-- Centered post title -->
+    <h1 class="text-3xl font-bold text-center mb-6" style="color: var(--admin-text);">{{ post.title or 'Untitled Post'
+        }}</h1>
+    <!-- Header row with nav -->
+    <div class="flex items-center justify-center mb-8">
+        <div class="flex space-x-8 bg-[#20232A] rounded-lg px-6 py-2 shadow">
+            <span class="font-semibold text-lg text-white border-b-2 border-indigo-500 pb-1">Develop</span>
+            <a href="{{ url_for('blog.get_post', slug=post.slug) }}" class="admin-json-link text-base">json</a>
+        </div>
     </div>
-    {% endfor %}
-</form>
-<hr>
-<h2>Sections</h2>
-<div id="sections">
-    {% for section in sections %}
-    <div class="section-block" data-section-id="{{ section.id }}">
-        <h3>Section {{ loop.index }}: {{ section.section_heading or '' }}</h3>
-        <label>Section Heading</label><br>
-        <textarea id="section_heading_{{ section.id }}">{{ section.section_heading or '' }}</textarea>
-        <button type="button" onclick="saveSectionField({{ section.id }}, 'section_heading')">Save</button><br>
-        {% for field, value in section.__dict__.items() if field not in ['id', 'post_id', 'section_order',
-        'section_heading', '_sa_instance_state'] %}
-        <label for="{{ field }}_{{ section.id }}">{{ field.replace('_', ' ').title() }}</label><br>
-        <textarea id="{{ field }}_{{ section.id }}">{{ value or '' }}</textarea>
-        <button type="button" onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button><br>
+    <!-- Global fields form -->
+    <form id="global-fields-form" class="mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for field, value in dev.__dict__.items() if field not in ['id', 'post_id', '_sa_instance_state'] %}
+            <div class="bg-[#23272F] rounded-lg p-4 mb-4 shadow">
+                <label for="{{ field }}" class="block text-sm font-semibold mb-2"
+                    style="color: var(--admin-text-secondary);">{{ field.replace('_', ' ').title() }}</label>
+                <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                    rows="2">{{ value or '' }}</textarea>
+                <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+            </div>
+            {% endfor %}
+        </div>
+    </form>
+    <!-- Sections -->
+    <h2 class="text-xl font-semibold mb-4 mt-8 text-center" style="color: var(--admin-text);">Sections</h2>
+    <div id="sections">
+        {% for section in sections %}
+        <div class="section-block bg-[#23272F] rounded-lg p-4 mb-6 shadow" data-section-id="{{ section.id }}">
+            <h3 class="text-lg font-semibold mb-2" style="color: var(--admin-accent);">Section {{ loop.index }}: {{
+                section.section_heading or '' }}</h3>
+            <label class="block text-sm font-semibold mb-1" style="color: var(--admin-text-secondary);">Section
+                Heading</label>
+            <textarea id="section_heading_{{ section.id }}"
+                class="admin-textarea mb-2">{{ section.section_heading or '' }}</textarea>
+            <button type="button" class="admin-button mb-2"
+                onclick="saveSectionField({{ section.id }}, 'section_heading')">Save</button><br>
+            {% for field, value in section.__dict__.items() if field not in ['id', 'post_id', 'section_order',
+            'section_heading', '_sa_instance_state'] %}
+            <label for="{{ field }}_{{ section.id }}" class="block text-sm font-semibold mb-1"
+                style="color: var(--admin-text-secondary);">{{ field.replace('_', ' ').title() }}</label>
+            <textarea id="{{ field }}_{{ section.id }}" class="admin-textarea mb-2">{{ value or '' }}</textarea>
+            <button type="button" class="admin-button mb-2"
+                onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button><br>
+            {% endfor %}
+        </div>
         {% endfor %}
     </div>
-    <hr>
-    {% endfor %}
+    <div class="flex justify-center mt-6">
+        <button type="button" class="admin-button" onclick="addSection()">Add Section</button>
+    </div>
 </div>
-<button type="button" onclick="addSection()">Add Section</button>
 <script>
     const postId = {{ post.id }};
     function saveGlobalField(field) {
