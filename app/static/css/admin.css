@@ -8,6 +8,17 @@
     --admin-background: #ffffff;
     --admin-background-dim: #f3f4f6;
     --admin-shadow: rgba(0, 0, 0, 0.1);
+    --admin-bg-main: #181A20;
+    --admin-bg-card: #23272F;
+    --admin-bg-row-even: #23272F;
+    --admin-bg-row-odd: #1A1D23;
+    --admin-text: #E0E0E0;
+    --admin-text-secondary: #A0A4AB;
+    --admin-accent: #6366F1;
+    --admin-accent-hover: #4F46E5;
+    --admin-danger: #EF4444;
+    --admin-danger-hover: #B91C1C;
+    --admin-json-link: #60A5FA;
 }
 
 /* Base styles */
@@ -234,4 +245,133 @@
 
 .admin-nav-link:hover svg {
     stroke: #6366f1;
-} 
+}
+
+/* Modern admin table styles */
+body, .admin-content, .admin-container {
+    background: var(--admin-bg-main) !important;
+    color: var(--admin-text);
+}
+.admin-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--admin-bg-card);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px 0 var(--admin-shadow);
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+}
+.admin-table th, .admin-table td {
+    padding: 0.85rem 1.2rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--admin-border);
+}
+.admin-table thead th {
+    background: #20232A;
+    color: #F3F4F6;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--admin-border);
+}
+.admin-table tbody tr {
+    transition: background 0.2s;
+}
+.admin-table tbody tr:nth-child(even) {
+    background: var(--admin-bg-row-even);
+}
+.admin-table tbody tr:nth-child(odd) {
+    background: var(--admin-bg-row-odd);
+}
+.admin-table tbody tr:hover {
+    background: #23243a;
+}
+.admin-table .admin-edit-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--admin-accent);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 1.05em;
+    transition: color 0.2s;
+    border-radius: 0.375rem;
+    padding: 0.25em 0.5em;
+    background: rgba(99,102,241,0.08);
+}
+.admin-table .admin-edit-link:hover {
+    color: #fff;
+    background: var(--admin-accent-hover);
+    text-decoration: none;
+}
+.admin-table .admin-edit-icon {
+    margin-left: 0.5em;
+    color: var(--admin-accent);
+    width: 1.1em;
+    height: 1.1em;
+    vertical-align: middle;
+    transition: color 0.2s;
+}
+.admin-table .admin-edit-link:hover .admin-edit-icon {
+    color: #fff;
+}
+.admin-table .admin-delete-btn {
+    background: var(--admin-danger);
+    border: none;
+    border-radius: 50%;
+    padding: 0.4em 0.6em;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px 0 rgba(239,68,68,0.08);
+}
+.admin-table .admin-delete-btn svg {
+    color: #fff;
+    width: 1.2em;
+    height: 1.2em;
+    transition: color 0.2s;
+}
+.admin-table .admin-delete-btn:hover {
+    background: var(--admin-danger-hover);
+    box-shadow: 0 4px 12px 0 rgba(185,28,28,0.18);
+}
+.admin-table .admin-delete-btn:focus {
+    outline: 2px solid var(--admin-danger-hover);
+}
+.admin-table .admin-json-link {
+    color: var(--admin-json-link);
+    text-decoration: underline;
+    font-size: 0.98em;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.admin-table .admin-json-link:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+.admin-table th, .admin-table td {
+    border-right: 1px solid var(--admin-border);
+}
+.admin-table th:last-child, .admin-table td:last-child {
+    border-right: none;
+}
+.admin-table td {
+    color: var(--admin-text);
+}
+.admin-table .bg-green-200 {
+    background: #14532d !important;
+    color: #bbf7d0 !important;
+}
+.admin-table .bg-gray-200 {
+    background: #374151 !important;
+    color: #d1d5db !important;
+}
+.admin-table .bg-red-200 {
+    background: #7f1d1d !important;
+    color: #fecaca !important;
+}
+.admin-table .text-green-800 { color: #bbf7d0 !important; }
+.admin-table .text-gray-800 { color: #d1d5db !important; }
+.admin-table .text-red-800 { color: #fecaca !important; } 

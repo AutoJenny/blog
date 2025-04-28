@@ -8,58 +8,71 @@
 
 {% block content %}
 <div class="max-w-3xl mx-auto py-8">
-    <!-- Main heading -->
     <div class="flex items-center justify-between mb-8">
         <h1 class="text-2xl font-bold">Posts</h1>
     </div>
-    <!-- Toggle for showing deleted posts -->
     <div class="flex items-center mb-4">
         <label class="flex items-center cursor-pointer">
             <input type="checkbox" id="showDeletedToggle" class="mr-2">
             <span class="text-sm">Show deleted posts</span>
         </label>
     </div>
-    <!-- Simple list of posts, most recent first -->
-    <ul class="divide-y divide-dark-border" id="postList">
-        {% for post in posts|sort(attribute='created_at', reverse=True) %}
-        <li class="py-4 flex items-center justify-between post-row" data-deleted="{{ post.deleted }}">
-            <div class="flex items-center space-x-2">
-                <a href="{{ url_for('blog.get_post', slug=post.slug) }}"
-                    class="font-semibold text-lg text-dark-text hover:text-primary" title="Details (JSON)">
-                    {{ post.title or 'Untitled Post' }}
-                </a>
-                <a href="{{ url_for('blog.get_post', slug=post.slug) }}" class="text-xs text-blue-500 underline ml-1"
-                    title="JSON">json</a>
-                <a href="{{ url_for('blog.develop', post_id=post.id) }}" class="ml-2 text-gray-500 hover:text-primary"
-                    title="Edit">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                </a>
-                <button class="ml-2 text-red-500 hover:text-red-700 delete-btn" data-slug="{{ post.slug }}"
-                    title="Delete">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-                <span
-                    class="ml-2 text-xs px-2 py-1 rounded {{ 'bg-green-200 text-green-800' if post.published else 'bg-gray-200 text-gray-800' }}">
-                    {{ 'Published' if post.published else 'Draft' }}
-                </span>
-                {% if post.deleted %}
-                <span class="ml-2 text-xs px-2 py-1 rounded bg-red-200 text-red-800">Deleted</span>
-                {% endif %}
-            </div>
-            <span class="text-sm text-gray-400">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
-        </li>
-        {% else %}
-        <li class="py-4 text-gray-400">No posts yet</li>
-        {% endfor %}
-    </ul>
+    <div class="overflow-x-auto">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>JSON</th>
+                    <th>Published</th>
+                    <th>Date</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody id="postList">
+                {% for post in posts|sort(attribute='created_at', reverse=True) %}
+                <tr class="post-row" data-deleted="{{ post.deleted }}">
+                    <td>
+                        <a href="{{ url_for('blog.develop', post_id=post.id) }}" class="admin-edit-link">
+                            {{ post.title or 'Untitled Post' }}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="admin-edit-icon" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('blog.get_post', slug=post.slug) }}" class="text-xs text-blue-600 underline"
+                            title="JSON">json</a>
+                    </td>
+                    <td class="text-center">
+                        <span
+                            class="inline-block px-2 py-1 rounded {{ 'bg-green-200 text-green-800' if post.published else 'bg-gray-200 text-gray-800' }}">
+                            {{ 'Yes' if post.published else 'No' }}
+                        </span>
+                        {% if post.deleted %}
+                        <span class="ml-2 text-xs px-2 py-1 rounded bg-red-200 text-red-800">Deleted</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center text-gray-500">{{ post.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td class="text-center">
+                        <button class="admin-delete-btn delete-btn" data-slug="{{ post.slug }}" title="Delete">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="py-4 text-gray-400 text-center">No posts yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
 
