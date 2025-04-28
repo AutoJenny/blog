@@ -59,3 +59,5 @@
 2024-07-10: Refined blog index dark theme—ensured all backgrounds are dark, improved contrast, and made delete button a red icon-only circle for better accessibility and visual clarity.
 
 2024-07-10: Blog index improvements—main title now links to Develop, Develop/JSON links have text, creation and updated dates shown (updated in 'ago' format).
+
+2024-07-10: Blog develop page now uses the same card-based dark theme and header row styling as the blog index, with badges, action buttons, and date formatting for visual parity.

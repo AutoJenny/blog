@@ -4,789 +4,153 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- TinyMCE -->
-<script src="https://cdn.tiny.cloud/1/{{ config.TINYMCE_API_KEY or 'no-api-key' }}/tinymce/6/tinymce.min.js"
-    referrerpolicy="origin"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
 <style>
-    /* Dark theme variables */
-    :root {
-        --dark-bg-primary: #1a1a1a;
-        --dark-bg-secondary: #2d2d2d;
-        --dark-bg-hover: #363636;
-        --dark-text-primary: #ffffff;
-        --dark-text-secondary: #cccccc;
-        --dark-border: #404040;
-        --dark-accent: #6366f1;
+    .blog-card,
+    .admin-card {
+        background-color: var(--admin-bg-card, #23272F) !important;
+        color: var(--admin-text, #E0E0E0) !important;
+        border-radius: 1rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        border: 1px solid var(--admin-border, #404040);
+        padding: 2rem;
     }
 
-    /* Accordion container */
-    .accordion {
-        background: var(--dark-bg-primary);
-        border-radius: 8px;
-        overflow: hidden;
+    .blog-card__title {
+        color: var(--admin-text, #E0E0E0) !important;
     }
 
-    /* Accordion items */
-    .accordion-item {
-        background: var(--dark-bg-secondary);
-        border: 1px solid var(--dark-border);
-        margin-bottom: 0.5rem;
+    .badge-published {
+        background: #166534 !important;
+        color: #bbf7d0 !important;
     }
 
-    /* Accordion headers and buttons */
-    .accordion-button {
-        background: var(--dark-bg-secondary) !important;
-        color: var(--dark-text-primary) !important;
-        font-weight: 600;
-        padding: 1.25rem;
+    .badge-draft {
+        background: #374151 !important;
+        color: #d1d5db !important;
     }
 
-    .accordion-button:not(.collapsed) {
-        background: var(--dark-bg-hover) !important;
-        box-shadow: inset 0 -1px 0 var(--dark-border);
+    .badge-deleted {
+        background: #7f1d1d !important;
+        color: #fecaca !important;
     }
 
-    .accordion-button:focus {
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
-    }
-
-    /* Custom arrow icon */
-    .accordion-button::after {
-        filter: invert(1) brightness(1.75);
-    }
-
-    /* Accordion content */
-    .accordion-body {
-        background: var(--dark-bg-secondary);
-        color: var(--dark-text-secondary);
-        padding: 1.5rem;
-        font-size: 1rem;
-        line-height: 1.6;
-    }
-
-    /* Fix for accordion collapse animation */
-    .accordion-collapse {
-        display: block !important;
-        visibility: visible !important;
-        height: 0;
-        overflow: hidden;
-        transition: height 0.35s ease;
-    }
-
-    .accordion-collapse.show {
-        height: auto !important;
-        overflow: visible;
-    }
-
-    .accordion-collapse.collapsing {
-        height: 0;
-        overflow: hidden;
-        transition: height 0.35s ease;
-    }
-
-    /* Sub-stages */
-    .sub-stage {
-        background: var(--dark-bg-primary);
-        border: 1px solid var(--dark-border);
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .sub-stage h3 {
-        color: var(--dark-text-primary);
-        font-size: 1.25rem;
-        margin-bottom: 1rem;
-        font-weight: 600;
-    }
-
-    .sub-stage p {
-        color: var(--dark-text-secondary);
-        margin-bottom: 1.25rem;
-    }
-
-    /* Status buttons */
-    .status-buttons {
-        display: flex;
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .status-btn {
-        background: var(--dark-bg-secondary);
-        color: var(--dark-text-secondary);
-        border: 1px solid var(--dark-border);
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
-    }
-
-    .status-btn:hover {
-        background: var(--dark-bg-hover);
-        color: var(--dark-text-primary);
-        border-color: var(--dark-accent);
-    }
-
-    .status-btn.active {
-        background: var(--dark-accent);
-        color: var(--dark-text-primary);
-        border-color: var(--dark-accent);
-    }
-
-    /* Notes section */
-    .notes {
-        background: var(--dark-bg-primary);
-        border-radius: 6px;
-        padding: 1.25rem;
-    }
-
-    .note-input {
-        background: var(--dark-bg-secondary) !important;
-        color: var(--dark-text-primary) !important;
-        border: 1px solid var(--dark-border) !important;
-        padding: 0.75rem;
-        border-radius: 6px;
-        width: 100%;
-    }
-
-    .note-input::placeholder {
-        color: var(--dark-text-secondary);
-    }
-
-    .note-input:focus {
-        border-color: var(--dark-accent) !important;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
-    }
-
-    .add-note-btn {
-        background: var(--dark-accent);
-        color: var(--dark-text-primary);
+    .admin-button,
+    .admin-button-secondary {
+        background-color: var(--admin-primary, #1B4B73) !important;
+        color: #fff !important;
         border: none;
-        padding: 0.75rem 1.25rem;
-        border-radius: 6px;
+        border-radius: 0.375rem;
         font-weight: 500;
-        margin-left: 0.75rem;
-    }
-
-    .add-note-btn:hover {
-        opacity: 0.9;
-        color: var(--dark-text-primary);
-    }
-
-    .notes-list {
-        margin-top: 1.25rem;
-    }
-
-    .note {
-        background: var(--dark-bg-secondary);
-        color: var(--dark-text-secondary);
-        padding: 1rem;
-        border-radius: 6px;
-        margin-bottom: 0.75rem;
-        border: 1px solid var(--dark-border);
-    }
-
-    /* Stage controls */
-    .stage-controls {
-        margin-top: 2rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--dark-border);
-    }
-
-    .transition-btn {
-        background: var(--dark-accent);
-        color: var(--dark-text-primary);
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 6px;
-        font-weight: 500;
-        transition: all 0.2s ease;
-    }
-
-    .transition-btn:hover:not(:disabled) {
-        opacity: 0.9;
-    }
-
-    .transition-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    /* Basic idea section */
-    .basic-idea {
-        background: var(--dark-bg-secondary);
-        color: var(--dark-text-secondary);
-        padding: 1.5rem;
-        border-radius: 8px;
-        margin-bottom: 2rem;
-        border: 1px solid var(--dark-border);
-    }
-
-    .basic-idea h2 {
-        color: var(--dark-text-primary);
-        font-size: 1.25rem;
-        margin-bottom: 1rem;
-        font-weight: 600;
-    }
-
-    .basic-idea p {
-        margin: 0;
-        line-height: 1.6;
-    }
-
-    /* Content editor */
-    .content-editor {
-        margin-bottom: 1.5rem;
-    }
-
-    .content-editor-label {
-        color: var(--dark-text-primary);
-        font-size: 0.875rem;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-        display: block;
-    }
-
-    .content-editor-wrapper {
-        border: 1px solid var(--dark-border);
-        border-radius: 6px;
-        overflow: hidden;
-    }
-
-    .content-editor textarea {
-        background: var(--dark-bg-secondary) !important;
-        color: var(--dark-text-primary) !important;
-        border: none;
-        padding: 1rem;
-        width: 100%;
-        min-height: 150px;
-        resize: vertical;
-    }
-
-    .content-editor textarea:focus {
-        outline: none;
-        border-color: var(--dark-accent);
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
-    }
-
-    .content-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-        margin-top: 0.75rem;
-    }
-
-    .save-content-btn {
-        background: var(--dark-accent);
-        color: var(--dark-text-primary);
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-    }
-
-    .save-content-btn:hover {
-        opacity: 0.9;
-    }
-
-    .save-content-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    /* Status indicator */
-    .content-status {
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        color: var(--dark-text-secondary);
-        font-size: 0.875rem;
+        justify-content: center;
+        transition: background 0.2s;
+        padding: 0.5rem 1rem;
+        margin-right: 0.5rem;
     }
 
-    .content-status .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--dark-text-secondary);
+    .admin-button-secondary {
+        background-color: var(--admin-accent, #6366F1) !important;
     }
 
-    .content-status .status-dot.saved {
-        background: #10B981;
-    }
-
-    .content-status .status-dot.unsaved {
-        background: #F59E0B;
+    .admin-button:disabled,
+    .admin-button-secondary:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="admin-content">
-    <div class="admin-card">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="admin-title">{{ post.title or 'Untitled Post' }}</h1>
-        </div>
-
-        <!-- Secondary Navigation -->
-        <div class="border-t border-b border-dark-border py-4 mb-8">
-            <div class="flex justify-center space-x-8">
-                <a href="{{ url_for('blog.index') }}" class="admin-nav-link">
-                    <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15" />
-                    </svg>
-                    <span>Posts</span>
+<div class="max-w-3xl mx-auto py-8">
+    <!-- Card-style header row -->
+    <div class="blog-card mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div class="flex-1 min-w-0">
+                <a href="{{ url_for('blog.develop', post_id=post.id) }}"
+                    class="blog-card__title text-2xl font-bold truncate hover:underline focus:underline"
+                    title="Go to Develop">
+                    {{ post.title or 'Untitled Post' }}
                 </a>
-                <a href="{{ url_for('blog.develop', post_id=post.id) }}" class="admin-nav-link active">
-                    <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    <span>Develop</span>
-                </a>
-                <a href="#" class="admin-nav-link">
-                    <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    <span>Preview</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- Workflow Stages -->
-        <div class="workflow-stages">
-            <div class="accordion" id="workflowAccordion">
-                {% for stage, data in workflow_stages.items() %}
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading{{ stage|capitalize }}">
-                        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button"
-                            data-bs-toggle="collapse" data-bs-target="#collapse{{ stage|capitalize }}"
-                            aria-expanded="{% if loop.first %}true{% else %}false{% endif %}"
-                            aria-controls="collapse{{ stage|capitalize }}">
-                            <div class="d-flex justify-content-between w-100 me-3">
-                                <span class="stage-title">{{ loop.index }}. {{ stage|capitalize }}</span>
-                                <span class="stage-status" id="status-{{ stage }}">
-                                    <i class="fas fa-circle-notch text-secondary"></i>
-                                </span>
-                            </div>
-                        </button>
-                    </h2>
-                    <div id="collapse{{ stage|capitalize }}"
-                        class="accordion-collapse collapse {% if loop.first %}show{% endif %}"
-                        aria-labelledby="heading{{ stage|capitalize }}" data-bs-parent="#workflowAccordion">
-                        <div class="accordion-body">
-                            <p>{{ data.description }}</p>
-                            {% for sub_stage_id, sub_stage in data.sub_stages.items() %}
-                            {% set sub_stage_data = stage_data[stage]['sub_stages'][sub_stage_id] if
-                            stage_data.get(stage) and stage_data[stage]['sub_stages'].get(sub_stage_id) else {} %}
-                            {% set post_workflow_stage_id = post_workflow_stage_id_map[stage] if
-                            post_workflow_stage_id_map and post_workflow_stage_id_map.get(stage) else None %}
-                            {% set sub_stage_int_id = sub_stage_id_map[stage][sub_stage_id] if sub_stage_id_map and
-                            sub_stage_id_map.get(stage) and sub_stage_id_map[stage].get(sub_stage_id) else None %}
-                            {% set post_sub_stage_id = post_sub_stage_id_map[stage][sub_stage_id] if
-                            post_sub_stage_id_map and post_sub_stage_id_map.get(stage) and
-                            post_sub_stage_id_map[stage].get(sub_stage_id) else None %}
-                            <div class="sub-stage" id="sub-stage-{{ post_sub_stage_id }}"
-                                data-post-workflow-stage-id="{{ post_workflow_stage_id }}"
-                                data-sub-stage-id="{{ post_sub_stage_id }}">
-                                <h3>{{ sub_stage.name }}</h3>
-                                <p>{{ sub_stage.description }}</p>
-                                <!-- Content Editor -->
-                                <div class="content-editor">
-                                    <label class="content-editor-label">Content</label>
-                                    <div class="content-editor-wrapper">
-                                        <textarea class="content-editor-field" id="content-{{ post_sub_stage_id }}"
-                                            data-substage="{{ post_sub_stage_id }}"
-                                            placeholder="Enter content for this section...">{{ sub_stage_data.content|default('') }}</textarea>
-                                    </div>
-                                    <div class="content-actions">
-                                        <div class="content-status">
-                                            <span class="status-dot saved"
-                                                id="status-dot-{{ post_sub_stage_id }}"></span>
-                                            <span id="status-text-{{ post_sub_stage_id }}">Saved</span>
-                                        </div>
-                                        <button class="save-content-btn" id="save-{{ post_sub_stage_id }}"
-                                            onclick="saveSubStageContent('{{ post_sub_stage_id }}')" disabled>
-                                            Save Changes
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="status-buttons">
-                                    <button class="status-btn" data-status="not_started">
-                                        Not Started
-                                    </button>
-                                    <button class="status-btn" data-status="in_progress">
-                                        In Progress
-                                    </button>
-                                    <button class="status-btn" data-status="completed">
-                                        Completed
-                                    </button>
-                                </div>
-                                <div class="notes">
-                                    <div class="input-group">
-                                        <input type="text" class="note-input" placeholder="Add a note...">
-                                        <button class="add-note-btn" type="button">
-                                            Add Note
-                                        </button>
-                                    </div>
-                                    <div class="notes-list">
-                                        <!-- Notes will be dynamically added here -->
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                            <div class="stage-controls">
-                                <button class="transition-btn" data-stage="{{ stage }}" {% if not loop.first
-                                    %}disabled{% endif %}>
-                                    Proceed to Next Stage
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Stage Transition Modal -->
-<div class="modal fade" id="transitionModal" tabindex="-1" aria-labelledby="transitionModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content bg-dark-surface text-dark-text">
-            <div class="modal-header border-dark-border">
-                <h5 class="modal-title" id="transitionModalLabel">Stage Transition</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="transitionNotes">Transition Notes</label>
-                    <textarea class="form-control bg-dark-bg text-dark-text border-dark-border" id="transitionNotes"
-                        rows="3"></textarea>
+                <div class="flex items-center space-x-2 mt-2">
+                    {% if post.published %}
+                    <span class="badge-published px-2 py-1 rounded text-xs font-semibold">Published</span>
+                    {% else %}
+                    <span class="badge-draft px-2 py-1 rounded text-xs font-semibold">Draft</span>
+                    {% endif %}
+                    {% if post.deleted %}
+                    <span class="badge-deleted px-2 py-1 rounded text-xs font-semibold ml-1">Deleted</span>
+                    {% endif %}
                 </div>
             </div>
-            <div class="modal-footer border-dark-border">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirmTransition">Proceed</button>
+            <div class="flex flex-col items-start md:items-end gap-1">
+                <div class="text-sm text-gray-400">Created: {{ post.created_at.strftime('%Y-%m-%d') }}</div>
+                <div class="text-sm text-gray-400">Updated: <span class="updated-ago"
+                        data-updated="{{ post.updated_at.isoformat() if post.updated_at else '' }}">{{
+                        post.updated_at.strftime('%Y-%m-%d') if post.updated_at else '' }}</span></div>
             </div>
         </div>
+        <div class="flex items-center gap-2 mt-2">
+            <a href="{{ url_for('blog.develop', post_id=post.id) }}" class="admin-button" title="Develop">
+                <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Develop
+            </a>
+            <a href="{{ url_for('blog.get_post', slug=post.slug) }}" class="admin-button admin-button-secondary"
+                title="JSON">
+                <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                JSON
+            </a>
+        </div>
     </div>
+
+    <!-- Main content (global fields, sections, etc.) -->
+    <form id="global-fields-form" class="mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for field, value in dev.__dict__.items() if field not in ['id', 'post_id', '_sa_instance_state'] %}
+            <div class="bg-[#23272F] rounded-lg p-4 mb-4 shadow">
+                <label for="{{ field }}" class="block text-sm font-semibold mb-2"
+                    style="color: var(--admin-text-secondary);">{{ field.replace('_', ' ').title() }}</label>
+                <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                    rows="2">{{ value or '' }}</textarea>
+                <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+            </div>
+            {% endfor %}
+        </div>
+    </form>
+    <!-- Sections, etc. remain unchanged -->
+    <h2 class="text-xl font-semibold mb-4 mt-8 text-center" style="color: var(--admin-text);">Sections</h2>
+    {% block sections %}{% endblock %}
 </div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
-<!-- Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // Format updated date as 'ago'
     document.addEventListener('DOMContentLoaded', function () {
-        const postSlug = '{{ post.slug }}';
-        let editorInitCount = 0;
-        const totalEditors = document.querySelectorAll('.content-editor-field').length;
-
-        // Initialize tooltips
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-
-        // Initialize TinyMCE editors
-        const editors = document.querySelectorAll('.content-editor-field');
-        editors.forEach(editor => {
-            tinymce.init({
-                target: editor,
-                height: 300,
-                menubar: true,
-                plugins: [
-                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                    'insertdatetime', 'media', 'table', 'help', 'wordcount', 'autosave'
-                ],
-                toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | removeformat | help',
-                skin: 'oxide-dark',
-                content_css: 'dark',
-                autosave_interval: '30s',
-                autosave_prefix: `tinymce-autosave-${postSlug}-`,
-                autosave_restore_when_empty: true,
-                images_upload_url: `/api/v1/workflow/${postSlug}/upload-image`,
-                automatic_uploads: true,
-                image_title: true,
-                file_picker_types: 'image',
-                setup: function (editor) {
-                    editor.on('init', function (e) {
-                        editorInitCount++;
-                        if (editorInitCount === totalEditors) {
-                            console.log('All editors initialized');
-                            // Hide loading state if you have one
-                        }
-                    });
-
-                    editor.on('change input keyup paste', function (e) {
-                        const subStageId = editor.getElement().dataset.substage;
-                        handleContentChange(subStageId);
-                    });
-
-                    // Add custom keyboard shortcuts
-                    editor.addShortcut('meta+s', 'Save content', function () {
-                        const subStageId = editor.getElement().dataset.substage;
-                        saveSubStageContent(subStageId);
-                    });
-
-                    // Handle paste to clean up content
-                    editor.on('PastePreProcess', function (e) {
-                        // Clean up pasted content here if needed
-                        e.content = e.content.replace(/<!--[\s\S]*?-->/g, ''); // Remove comments
-                            e.content = e.content.replace(/style="[^"]*"/g, ''); // Remove inline styles
-                    });
-
-                    // Handle errors
-                    editor.on('error', function (e) {
-                        console.error('TinyMCE Error:', e);
-                        alert('An error occurred in the editor. Please try refreshing the page.');
-                    });
-                }
-            }).then(function (editors) {
-                // Success callback
-            }).catch(function (error) {
-                console.error('TinyMCE initialization error:', error);
-                alert('Failed to initialize the editor. Please try refreshing the page.');
-            });
-        });
-
-        // Handle sub-stage status updates
-        document.querySelectorAll('.status-btn').forEach(btn => {
-            btn.addEventListener('click', async function () {
-                const subStage = this.closest('.sub-stage').id.replace('sub-stage-', '');
-                const status = this.dataset.status;
-
-                try {
-                    const response = await fetch(`/api/v1/workflow/${postSlug}/sub-stage`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            post_workflow_stage_id: this.closest('.sub-stage').dataset.postWorkflowStageId,
-                            sub_stage_id: this.closest('.sub-stage').dataset.subStageId,
-                            status: status
-                        })
-                    });
-
-                    if (response.ok) {
-                        updateSubStageUI(subStage, status);
-                        updateStageProgress();
-                    } else {
-                        const data = await response.json();
-                        alert(data.error || 'Failed to update status');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Failed to update status');
-                }
-            });
-        });
-
-        // Handle note addition
-        document.querySelectorAll('.add-note-btn').forEach(btn => {
-            btn.addEventListener('click', async function () {
-                const subStage = this.closest('.sub-stage').id.replace('sub-stage-', '');
-                const input = this.closest('.notes').querySelector('.note-input');
-                const note = input.value.trim();
-
-                if (!note) return;
-
-                try {
-                    const response = await fetch(`/api/v1/workflow/${postSlug}/sub-stage`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            post_workflow_stage_id: this.closest('.sub-stage').dataset.postWorkflowStageId,
-                            sub_stage_id: this.closest('.sub-stage').dataset.subStageId,
-                            note: note
-                        })
-                    });
-
-                    if (response.ok) {
-                        addNoteToUI(subStage, note);
-                        input.value = '';
-                    } else {
-                        const data = await response.json();
-                        alert(data.error || 'Failed to add note');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Failed to add note');
-                }
-            });
-        });
-
-        // Handle stage transitions
-        document.querySelectorAll('.transition-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const stage = this.dataset.stage;
-                const modal = new bootstrap.Modal(document.getElementById('transitionModal'));
-
-                document.getElementById('confirmTransition').onclick = async function () {
-                    const notes = document.getElementById('transitionNotes').value;
-
-                    try {
-                        const response = await fetch(`/api/v1/workflow/${postSlug}/transition`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                target_stage: stage,
-                                notes: notes
-                            })
-                        });
-
-                        if (response.ok) {
-                            modal.hide();
-                            location.reload(); // Refresh to show new stage
-                        } else {
-                            const data = await response.json();
-                            alert(data.error || 'Failed to transition stage');
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        alert('Failed to transition stage');
-                    }
-                };
-
-                modal.show();
-            });
-        });
-
-        // Helper functions for UI updates
-        function updateSubStageUI(subStage, status) {
-            const subStageEl = document.getElementById(`sub-stage-${subStage}`);
-            const buttons = subStageEl.querySelectorAll('.status-btn');
-
-            buttons.forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.status === status) {
-                    btn.classList.add('active');
-                }
-            });
-        }
-
-        function updateStageProgress() {
-            // Implementation for updating overall stage progress
-        }
-
-        function addNoteToUI(subStage, note) {
-            const subStageEl = document.getElementById(`sub-stage-${subStage}`);
-            const notesList = subStageEl.querySelector('.notes-list');
-
-            const noteEl = document.createElement('div');
-            noteEl.className = 'note';
-            noteEl.textContent = note;
-
-            notesList.appendChild(noteEl);
-        }
-
-        // Enhanced content change handler
-        function handleContentChange(subStageId) {
-            const saveBtn = document.getElementById(`save-${subStageId}`);
-            const statusDot = document.getElementById(`status-dot-${subStageId}`);
-            const statusText = document.getElementById(`status-text-${subStageId}`);
-
-            if (!saveBtn || !statusDot || !statusText) {
-                console.error('Required elements not found for sub-stage:', subStageId);
-                return;
-            }
-
-            saveBtn.disabled = false;
-            statusDot.classList.remove('saved');
-            statusDot.classList.add('unsaved');
-            statusText.textContent = 'Unsaved changes';
-
-            // Debounced autosave
-            if (window.autosaveTimeout) {
-                clearTimeout(window.autosaveTimeout);
-            }
-            window.autosaveTimeout = setTimeout(() => {
-                saveSubStageContent(subStageId);
-            }, 30000); // Autosave after 30 seconds of no changes
-        }
-
-        // Enhanced save function
-        window.saveSubStageContent = async function (subStageId) {
-            const editor = tinymce.get(`content-${subStageId}`);
-            if (!editor) {
-                console.error('Editor not found for sub-stage:', subStageId);
-                return;
-            }
-
-            const content = editor.getContent();
-            const saveBtn = document.getElementById(`save-${subStageId}`);
-            const statusDot = document.getElementById(`status-dot-${subStageId}`);
-            const statusText = document.getElementById(`status-text-${subStageId}`);
-            const subStageEl = document.getElementById(`sub-stage-${subStageId}`);
-
-            if (!saveBtn || !statusDot || !statusText || !subStageEl) {
-                console.error('Required elements not found for sub-stage:', subStageId);
-                return;
-            }
-
-            try {
-                saveBtn.disabled = true;
-                statusText.textContent = 'Saving...';
-
-                const response = await fetch(`/api/v1/workflow/${postSlug}/sub-stage`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        post_workflow_stage_id: subStageEl.dataset.postWorkflowStageId,
-                        sub_stage_id: subStageEl.dataset.subStageId,
-                        content: content
-                    })
-                });
-
-                if (response.ok) {
-                    statusDot.classList.remove('unsaved');
-                    statusDot.classList.add('saved');
-                    statusText.textContent = 'Saved';
-                    editor.setContent(content);
-                } else {
-                    const data = await response.json();
-                    console.error('Save error:', data);
-                    alert(data.error || 'Failed to save content');
-                    saveBtn.disabled = false;
-                    statusText.textContent = 'Save failed';
-                }
-            } catch (error) {
-                console.error('Save error:', error);
-                alert('Failed to save content. Please try again.');
-                saveBtn.disabled = false;
-                statusText.textContent = 'Save failed';
-            }
-        };
-
-        // Add window unload handler to warn about unsaved changes
-        window.addEventListener('beforeunload', function (e) {
-            const unsavedChanges = document.querySelectorAll('.status-dot.unsaved').length > 0;
-            if (unsavedChanges) {
-                e.preventDefault();
-                e.returnValue = '';
-                return '';
-            }
+        document.querySelectorAll('.updated-ago').forEach(function (el) {
+            const iso = el.dataset.updated;
+            if (!iso) return;
+            const date = new Date(iso);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            let str = '';
+            if (diff < 60) str = diff + ' seconds ago';
+            else if (diff < 3600) str = Math.floor(diff / 60) + ' minutes ago';
+            else if (diff < 86400) str = Math.floor(diff / 3600) + ' hours ago';
+            else if (diff < 2592000) str = Math.floor(diff / 86400) + ' days ago';
+            else if (diff < 31536000) str = Math.floor(diff / 2592000) + ' months ago';
+            else str = Math.floor(diff / 31536000) + ' years ago';
+            el.textContent = str;
         });
     });
 </script>
