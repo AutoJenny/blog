@@ -5,7 +5,8 @@ import tempfile
 import pytest
 from datetime import datetime, UTC
 from app import create_app, db
-from tests.config import TestConfig
+from tests.test_config import TestConfig
+from sqlalchemy import text
 
 
 @pytest.fixture
@@ -17,7 +18,11 @@ def app():
         db.create_all()
         yield app
         db.session.remove()
-        db.drop_all()
+        # Patch: Drop all tables with CASCADE to avoid FK constraint errors
+        engine = db.get_engine()
+        with engine.connect() as conn:
+            conn.execute(text('DROP SCHEMA public CASCADE; CREATE SCHEMA public;'))
+        # db.drop_all()  # Removed: schema drop already removes all tables
 
 
 @pytest.fixture
@@ -30,3 +35,16 @@ def client(app):
 def runner(app):
     """A test CLI runner for the app."""
     return app.test_cli_runner()
+
+
+@pytest.fixture(autouse=True)
+def setup_and_teardown_db(app):
+    with app.app_context():
+        db.create_all()
+        yield
+        db.session.remove()
+        # Patch: Drop all tables with CASCADE to avoid FK constraint errors
+        engine = db.get_engine()
+        with engine.connect() as conn:
+            conn.execute(text('DROP SCHEMA public CASCADE; CREATE SCHEMA public;'))
+        # db.drop_all()  # Removed: schema drop already removes all tables

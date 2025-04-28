@@ -254,28 +254,7 @@ POST /api/v1/posts/{slug}/sections/reorder
 
 ## Workflow API
 
-### Get Workflow Status
-```http
-GET /api/v1/posts/{slug}/workflow
-```
-
-### Update Workflow Status
-```http
-POST /api/v1/posts/{slug}/workflow
-```
-
-#### Request Body
-```json
-{
-  "status": "review",
-  "comment": "Ready for review"
-}
-```
-
-### Get Workflow History
-```http
-GET /api/v1/posts/{slug}/workflow/history
-```
+For a comprehensive reference of all workflow-related endpoints, including workflow status management, stage transitions, and sub-stage updates, please see the [Workflow API Documentation](workflow.md).
 
 ## Error Responses
 

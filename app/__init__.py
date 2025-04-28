@@ -134,13 +134,9 @@ def create_app(config_class=Config):
 
     app.register_blueprint(errors_bp)
 
-    from app.db import bp as db_bp
+    from app.database import bp as db_bp
 
     app.register_blueprint(db_bp)
-
-    from app.workflow import bp as workflow_bp
-
-    app.register_blueprint(workflow_bp, url_prefix="/api/v1/workflow")
 
     return app
 

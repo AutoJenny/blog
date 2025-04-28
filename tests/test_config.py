@@ -2,10 +2,11 @@
 
 import os
 import secrets
+from config import Config
 from datetime import timedelta
 
 
-class TestConfig:
+class TestConfig(Config):
     """Test configuration."""
 
     TESTING = True

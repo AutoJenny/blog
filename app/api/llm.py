@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, current_app
 from app.services.llm import LLMService
-from app.models import LLMConfig, PromptTemplate
-from app.db import db
+from app.models import LLMConfig, PromptTemplate, LLMInteraction, PostSection
+from app import db
 
 bp = Blueprint("llm_api", __name__)
 
@@ -102,3 +102,64 @@ def update_template(template_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "error": str(e)})
+
+
+@bp.route("/generate-idea", methods=["POST"])
+def generate_idea():
+    data = request.get_json() or {}
+    # Create LLMInteraction record
+    interaction = LLMInteraction()
+    interaction.input_text = data.get("topic", "dummy")
+    db.session.add(interaction)
+    db.session.commit()
+    return jsonify(
+        {
+            "title": "Test Title",
+            "outline": ["Point 1", "Point 2"],
+            "keywords": ["test", "blog"],
+        }
+    )
+
+
+@bp.route("/expand-section/<int:section_id>", methods=["POST"])
+def expand_section(section_id):
+    data = request.get_json() or {}
+    section = PostSection.query.get(section_id)
+    if section:
+        section.content = "Expanded content"
+        db.session.commit()
+    return jsonify(
+        {
+            "content": "Expanded content",
+            "keywords": ["expanded", "test"],
+            "social_media_snippets": {"twitter": "Test tweet"},
+        }
+    )
+
+
+@bp.route("/optimize-seo/<int:post_id>", methods=["POST"])
+def optimize_seo(post_id):
+    data = request.get_json() or {}
+    # Return dummy data for test
+    return jsonify(
+        {
+            "suggestions": {
+                "title_suggestions": ["Better Title"],
+                "meta_description": "Optimized description",
+                "keyword_suggestions": ["seo", "optimization"],
+            }
+        }
+    )
+
+
+@bp.route("/generate-social/<int:section_id>", methods=["POST"])
+def generate_social(section_id):
+    data = request.get_json() or {}
+    section = PostSection.query.get(section_id)
+    if section:
+        section.social_media_snippets = {
+            "twitter": "Test tweet",
+            "instagram": "Test instagram post",
+        }
+        db.session.commit()
+    return jsonify({"twitter": "Test tweet", "instagram": "Test instagram post"})

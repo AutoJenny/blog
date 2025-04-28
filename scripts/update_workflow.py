@@ -7,7 +7,13 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from app import create_app, db
-from app.models import Post, WorkflowStatus, WorkflowStage
+from app.models import (
+    Post,
+    WorkflowStatus,
+    WorkflowStage,
+    WorkflowStageEntity,
+    WorkflowSubStageEntity,
+)
 from app.workflow.constants import WORKFLOW_STAGES, SubStageStatus
 
 
@@ -73,9 +79,102 @@ def update_workflow_status(slug):
             print(f"Error updating workflow status: {str(e)}")
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python update_workflow.py <post-slug>")
-        sys.exit(1)
+# Example workflow stages and sub-stages
+STAGES = [
+    {
+        "name": "idea",
+        "description": "Initial idea stage",
+        "order": 1,
+        "sub_stages": [
+            {
+                "name": "basic_idea",
+                "description": "Describe the basic idea",
+                "order": 1,
+            },
+            {"name": "concept", "description": "Develop the concept", "order": 2},
+        ],
+    },
+    {
+        "name": "research",
+        "description": "Research stage",
+        "order": 2,
+        "sub_stages": [
+            {"name": "sources", "description": "List sources", "order": 1},
+            {"name": "notes", "description": "Take research notes", "order": 2},
+        ],
+    },
+]
 
-    update_workflow_status(sys.argv[1])
+
+def seed_workflow_stages():
+    app = create_app()
+    with app.app_context():
+        for stage_data in STAGES:
+            stage = WorkflowStageEntity.query.filter_by(name=stage_data["name"]).first()
+            if not stage:
+                stage = WorkflowStageEntity()
+                stage.name = stage_data["name"]
+                stage.description = stage_data["description"]
+                stage.order = stage_data["order"]
+                db.session.add(stage)
+                db.session.flush()  # Assigns ID
+            for sub_stage_data in stage_data["sub_stages"]:
+                sub_stage = WorkflowSubStageEntity.query.filter_by(
+                    name=sub_stage_data["name"], stage_id=stage.id
+                ).first()
+                if not sub_stage:
+                    sub_stage = WorkflowSubStageEntity()
+                    sub_stage.stage_id = stage.id
+                    sub_stage.name = sub_stage_data["name"]
+                    sub_stage.description = sub_stage_data["description"]
+                    sub_stage.order = sub_stage_data["order"]
+                    db.session.add(sub_stage)
+        db.session.commit()
+        print("Seeded workflow stages and sub-stages.")
+
+
+def update_workflow_entities():
+    app = create_app()
+    with app.app_context():
+        for order, (stage_name, stage_data) in enumerate(
+            WORKFLOW_STAGES.items(), start=1
+        ):
+            stage = WorkflowStageEntity.query.filter_by(name=stage_name).first()
+            if not stage:
+                stage = WorkflowStageEntity(
+                    name=stage_name, description=stage_data["description"], order=order
+                )
+                db.session.add(stage)
+                db.session.flush()
+                print(f"Created stage: {stage_name}")
+            else:
+                print(f"Stage already exists: {stage_name}")
+            # Ensure all sub-stages exist
+            for sub_order, (sub_name, sub_data) in enumerate(
+                stage_data["sub_stages"].items(), start=1
+            ):
+                sub_stage = WorkflowSubStageEntity.query.filter_by(
+                    stage_id=stage.id, name=sub_name
+                ).first()
+                if not sub_stage:
+                    sub_stage = WorkflowSubStageEntity(
+                        stage_id=stage.id,
+                        name=sub_name,
+                        description=sub_data["description"],
+                        order=sub_order,
+                    )
+                    db.session.add(sub_stage)
+                    print(f"  Created sub-stage: {sub_name} (stage: {stage_name})")
+                else:
+                    print(
+                        f"  Sub-stage already exists: {sub_name} (stage: {stage_name})"
+                    )
+        db.session.commit()
+        print("Workflow stages and sub-stages are up to date.")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        update_workflow_status(sys.argv[1])
+    else:
+        update_workflow_entities()

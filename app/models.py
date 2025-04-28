@@ -56,13 +56,10 @@ class Post(db.Model):
     # Relationships
     header_image = db.relationship("Image", foreign_keys=[header_image_id])
     sections = db.relationship(
-        "PostSection", back_populates="post", order_by="PostSection.position"
+        "PostSection", backref=db.backref("post"), order_by="PostSection.section_order"
     )
     tags = db.relationship("Tag", secondary="post_tags")
     categories = db.relationship("Category", secondary="post_categories")
-    workflow_status = db.relationship(
-        "WorkflowStatus", back_populates="post", uselist=False
-    )
 
 
 class Image(db.Model):
@@ -125,69 +122,64 @@ post_tags = db.Table(
 )
 
 
-class WorkflowStatus(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey("post.id"), unique=True)
-    current_stage = db.Column(
-        Enum(
-            WorkflowStage,
-            name="workflowstage",
-            values_callable=lambda obj: [e.value for e in obj],
-        )
-    )
-    stage_data = db.Column(JSON)
-    last_updated = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
-
-    # Relationships
-    post = db.relationship("Post", back_populates="workflow_status")
-    history = db.relationship("WorkflowStatusHistory", back_populates="workflow_status")
-
-
 class PostSection(db.Model):
+    __tablename__ = "post_section"
     id = db.Column(db.Integer, primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
-    title = db.Column(db.String(200))
-    subtitle = db.Column(db.String(200))
-    content = db.Column(db.Text)
-    position = db.Column(db.Integer, nullable=False)
-    image_id = db.Column(db.Integer, db.ForeignKey("image.id"))
-    content_type = db.Column(db.String(50), default="text")
-    video_url = db.Column(db.String(255))
-    audio_url = db.Column(db.String(255))
-    duration = db.Column(db.Integer)  # Duration in seconds for video/audio content
-    keywords = db.Column(JSON)
-    social_media_snippets = db.Column(JSON)
-    section_metadata = db.Column(JSON)
-
-    # Relationships
-    post = db.relationship("Post", back_populates="sections")
-    image = db.relationship("Image")
+    post_id = db.Column(db.Integer, db.ForeignKey("post.id"), nullable=False)
+    section_order = db.Column(db.Integer)
+    section_heading = db.Column(db.Text)
+    # Per-section fields (all nullable)
+    first_draft = db.Column(db.Text)
+    uk_british = db.Column(db.Text)
+    highlighting = db.Column(db.Text)
+    image_concepts = db.Column(db.Text)
+    image_prompts = db.Column(db.Text)
+    generation = db.Column(db.Text)
+    optimization = db.Column(db.Text)
+    watermarking = db.Column(db.Text)
+    image_meta_descriptions = db.Column(db.Text)
+    image_captions = db.Column(db.Text)
 
 
-class WorkflowStatusHistory(db.Model):
+class PostDevelopment(db.Model):
+    __tablename__ = "post_development"
     id = db.Column(db.Integer, primary_key=True)
-    workflow_status_id = db.Column(db.Integer, db.ForeignKey("workflow_status.id"))
-    from_stage = db.Column(
-        Enum(
-            WorkflowStage,
-            name="workflowstage",
-            values_callable=lambda obj: [e.value for e in obj],
-        )
+    post_id = db.Column(
+        db.Integer, db.ForeignKey("post.id"), unique=True, nullable=False
     )
-    to_stage = db.Column(
-        Enum(
-            WorkflowStage,
-            name="workflowstage",
-            values_callable=lambda obj: [e.value for e in obj],
-        )
-    )
-    notes = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # Relationships
-    workflow_status = db.relationship("WorkflowStatus", back_populates="history")
+    # Global fields (all nullable)
+    basic_idea = db.Column(db.Text)
+    provisional_title = db.Column(db.Text)
+    idea_scope = db.Column(db.Text)
+    topics_to_cover = db.Column(db.Text)
+    interesting_facts = db.Column(db.Text)
+    tartans_products = db.Column(db.Text)
+    section_planning = db.Column(db.Text)
+    section_headings = db.Column(db.Text)
+    section_order = db.Column(db.Text)
+    main_title = db.Column(db.Text)
+    subtitle = db.Column(db.Text)
+    intro_blurb = db.Column(db.Text)
+    conclusion = db.Column(db.Text)
+    basic_metadata = db.Column(db.Text)
+    tags = db.Column(db.Text)
+    categories = db.Column(db.Text)
+    image_captions = db.Column(db.Text)
+    seo_optimization = db.Column(db.Text)
+    self_review = db.Column(db.Text)
+    peer_review = db.Column(db.Text)
+    final_check = db.Column(db.Text)
+    scheduling = db.Column(db.Text)
+    deployment = db.Column(db.Text)
+    verification = db.Column(db.Text)
+    feedback_collection = db.Column(db.Text)
+    content_updates = db.Column(db.Text)
+    version_control = db.Column(db.Text)
+    platform_selection = db.Column(db.Text)
+    content_adaptation = db.Column(db.Text)
+    distribution = db.Column(db.Text)
+    engagement_tracking = db.Column(db.Text)
+    post = db.relationship("Post", backref=db.backref("development", uselist=False))
 
 
 class LLMConfig(db.Model):
@@ -223,60 +215,3 @@ class PromptTemplate(db.Model):
 
     def __repr__(self):
         return f"<PromptTemplate {self.name}>"
-
-
-# --- Normalized Workflow Models ---
-class WorkflowStageEntity(db.Model):
-    __tablename__ = "workflow_stage_entity"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
-    description = db.Column(db.Text)
-    order = db.Column(db.Integer, nullable=False)
-    sub_stages = db.relationship(
-        "WorkflowSubStageEntity",
-        back_populates="stage",
-        order_by="WorkflowSubStageEntity.order",
-    )
-
-
-class WorkflowSubStageEntity(db.Model):
-    __tablename__ = "workflow_sub_stage_entity"
-    id = db.Column(db.Integer, primary_key=True)
-    stage_id = db.Column(db.Integer, db.ForeignKey("workflow_stage_entity.id"))
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    order = db.Column(db.Integer, nullable=False)
-    stage = db.relationship("WorkflowStageEntity", back_populates="sub_stages")
-
-
-class PostWorkflowStage(db.Model):
-    __tablename__ = "post_workflow_stage"
-    id = db.Column(db.Integer, primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
-    stage_id = db.Column(db.Integer, db.ForeignKey("workflow_stage_entity.id"))
-    started_at = db.Column(db.DateTime)
-    completed_at = db.Column(db.DateTime)
-    status = db.Column(db.String(50))
-    sub_stages = db.relationship(
-        "PostWorkflowSubStage", back_populates="post_workflow_stage"
-    )
-    post = db.relationship("Post")
-    stage = db.relationship("WorkflowStageEntity")
-
-
-class PostWorkflowSubStage(db.Model):
-    __tablename__ = "post_workflow_sub_stage"
-    id = db.Column(db.Integer, primary_key=True)
-    post_workflow_stage_id = db.Column(
-        db.Integer, db.ForeignKey("post_workflow_stage.id")
-    )
-    sub_stage_id = db.Column(db.Integer, db.ForeignKey("workflow_sub_stage_entity.id"))
-    content = db.Column(db.Text)
-    status = db.Column(db.String(50))
-    notes = db.Column(db.Text)
-    started_at = db.Column(db.DateTime)
-    completed_at = db.Column(db.DateTime)
-    post_workflow_stage = db.relationship(
-        "PostWorkflowStage", back_populates="sub_stages"
-    )
-    sub_stage = db.relationship("WorkflowSubStageEntity")

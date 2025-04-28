@@ -113,6 +113,18 @@ blog/
    flask db upgrade
    ```
 
+### Seeding Workflow Tables
+
+Before using the workflow system, you must seed the workflow tables with stages and sub-stages:
+
+```bash
+python scripts/update_workflow.py
+```
+
+This script now ensures all `WorkflowStageEntity` and `WorkflowSubStageEntity` rows are present in the database, matching the `WORKFLOW_STAGES` constant. It uses the correct model parameters for stage and sub-stage creation, and prints a summary of created or already present entities.
+
+The workflow system is now fully normalized in SQL. All workflow logic, transitions, and sub-stage updates use the normalized tables. Legacy JSON-based workflow fields are deprecated and will be removed after migration is complete.
+
 ### Adding New Dependencies
 
 1. Add to `requirements.txt`
@@ -144,4 +156,6 @@ Common issues and solutions:
 - Never commit `.env` files
 - Keep dependencies updated
 - Use environment variables for sensitive data
-- Regular security audits 
+- Regular security audits
+
+> **Workflow Initialization:** All workflow stages and sub-stages are now initialized for every post at creation, enabling asynchronous editing. The seeding script (`scripts/update_workflow.py`) defines and ensures the presence of all stages and sub-stages in the database. There is no longer any sequential or partial initialization—authors can work on any stage or sub-stage at any time. 

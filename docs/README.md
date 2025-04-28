@@ -162,3 +162,9 @@ For details, see:
 ## Notes
 - SQLite is no longer supported. PostgreSQL is required for all environments.
 - When building or editing workflow UI, always bind each sub-stage field to its corresponding value in the backend's stage_data for the current post. 
+
+The workflow system is now fully normalized in SQL. All workflow logic, transitions, and sub-stage updates use the normalized tables (`workflow_stage_entity`, `workflow_sub_stage_entity`, `post_workflow_stage`, `post_workflow_sub_stage`).
+
+The workflow tables must be seeded before use. The script `scripts/update_workflow.py` ensures all workflow stages and sub-stages are present in the database. As of the latest update, all stages and sub-stages are initialized for every post at creation, enabling asynchronous editing—authors can work on any stage or sub-stage at any time. There is no longer any sequential or partial initialization.
+
+Legacy JSON-based workflow fields are deprecated and will be removed after migration is complete. 

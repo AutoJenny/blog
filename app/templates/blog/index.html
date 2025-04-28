@@ -23,7 +23,7 @@
         <!-- Secondary Navigation -->
         <div class="border-t border-b border-dark-border py-4 mb-8">
             <div class="flex justify-center space-x-8">
-                <a href="{{ url_for('blog.develop', slug=posts[0].slug) if posts else '#' }}"
+                <a href="{{ url_for('blog.develop', post_id=posts[0].id) if posts else '#' }}"
                     class="admin-nav-link {% if not posts %}disabled{% endif %}">
                     <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -68,7 +68,7 @@
                 <div class="mt-4">
                     {% for post in posts if not post.published %}
                     <div class="post-item">
-                        <a href="{{ url_for('blog.develop', slug=post.slug) }}"
+                        <a href="{{ url_for('blog.develop', post_id=post.id) }}"
                             class="text-dark-text hover:text-primary">
                             {{ post.title or 'Untitled Post' }}
                         </a>
@@ -84,7 +84,7 @@
                 <div class="mt-4">
                     {% for post in posts if post.published %}
                     <div class="post-item">
-                        <a href="{{ url_for('blog.develop', slug=post.slug) }}"
+                        <a href="{{ url_for('blog.develop', post_id=post.id) }}"
                             class="text-dark-text hover:text-primary">
                             {{ post.title }}
                         </a>
@@ -105,7 +105,7 @@
             <div class="space-y-4">
                 {% for post in posts[:5] %}
                 <div class="post-item">
-                    <a href="{{ url_for('blog.develop', slug=post.slug) }}" class="text-dark-text hover:text-primary">
+                    <a href="{{ url_for('blog.develop', post_id=post.id) }}" class="text-dark-text hover:text-primary">
                         {{ post.title or 'Untitled Post' }}
                     </a>
                     <span class="text-sm text-gray-400">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
@@ -136,7 +136,7 @@
 
             const data = await response.json();
             if (response.ok) {
-                window.location.href = "{{ url_for('blog.develop', slug='SLUG') }}".replace('SLUG', data.slug);
+                window.location.href = `/blog/develop/${data.id}`;
             } else {
                 alert(data.error || 'Failed to create post');
             }

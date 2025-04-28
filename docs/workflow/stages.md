@@ -1,13 +1,30 @@
-# Workflow Stages Documentation
+# Blog Post Workflow Stages
+
+> **Note:** As of the latest update, the workflow system is fully asynchronous. All stages and sub-stages are initialized for every post at creation, enabling editing in any order. The seeding script (`scripts/update_workflow.py`) ensures that all workflow stages and sub-stages are present in the database. There is no longer any sequential or partial initialization—authors can work on any stage or sub-stage at any time. Validation and required fields are enforced only at key transitions (e.g., publishing).
 
 ## Overview
-The blog post workflow is divided into multiple stages, each with its own set of sub-stages. Each sub-stage can have one of three statuses:
-- `NOT_STARTED`
-- `IN_PROGRESS`
-- `COMPLETED`
+The blog post workflow is divided into multiple stages, each with its own sub-stages. All stages are initialized at post creation and can be worked on in any order. While there is a recommended progression through stages, the workflow is asynchronous to allow for flexible content development.
+
+Each stage and sub-stage can have one of three statuses:
+- `NOT_STARTED`: Default state when initialized
+- `IN_PROGRESS`: Work has begun but is not complete
+- `COMPLETED`: All validation rules are satisfied
 
 ## Stage Progression
-1. Idea → Research → Outlining → Authoring → Images → Metadata → Review → Publishing → Updates → Syndication
+While stages can be worked on in any order, the recommended progression is:
+
+1. Idea Stage
+2. Research Stage
+3. Outlining Stage
+4. Authoring Stage
+5. Images Stage
+6. Metadata Stage
+7. Review Stage
+8. Publishing Stage
+9. Updates Stage
+10. Syndication Stage
+
+This progression ensures a logical flow of content development but is not enforced. Authors can work on any stage at any time based on their needs and workflow preferences.
 
 ## Detailed Stage Descriptions
 
@@ -211,20 +228,28 @@ The blog post workflow is divided into multiple stages, each with its own set of
   - Validation: Must setup tracking
   - Dependencies: Distribution
 
-## Valid Stage Transitions
+## Stage Transitions
+Stage transitions are flexible and allow moving to any stage at any time. However, certain actions (like publishing) require all mandatory sub-stages to be completed and validated. The recommended transitions are:
 
-- From **Idea**: Can move to Research
-- From **Research**: Can move to Outlining or back to Idea
-- From **Outlining**: Can move to Authoring or back to Research
-- From **Authoring**: Can move to Images or back to Outlining
-- From **Images**: Can move to Metadata or back to Authoring
-- From **Metadata**: Can move to Review or back to Images
-- From **Review**: Can move to Publishing, back to Metadata, or back to Authoring
-- From **Publishing**: Can move to Updates or back to Review
-- From **Updates**: Can move to Syndication or back to Publishing
-- From **Syndication**: Can move back to Updates
+```json
+{
+  "idea": ["research"],
+  "research": ["outlining", "idea"],
+  "outlining": ["authoring", "research"],
+  "authoring": ["images", "outlining"],
+  "images": ["metadata", "authoring"],
+  "metadata": ["review", "images"],
+  "review": ["publishing", "metadata", "authoring"],
+  "publishing": ["updates", "review"],
+  "updates": ["syndication", "publishing"],
+  "syndication": ["updates"]
+}
+```
+
+These transitions are suggestions for optimal workflow but are not enforced during editing.
 
 ## Validation Rules
+While editing is asynchronous, validation rules are enforced at key points (e.g., publishing):
 
 Each validation rule ensures specific criteria are met before marking a sub-stage as complete:
 
@@ -259,4 +284,22 @@ Each validation rule ensures specific criteria are met before marking a sub-stag
 29. `platforms_selected`: Verifies platforms are selected
 30. `content_adapted`: Checks content is adapted
 31. `distributed`: Ensures content is distributed
-32. `tracking_setup`: Verifies tracking is configured 
+32. `tracking_setup`: Verifies tracking is configured
+
+**Frontend Note:**
+
+Sub-stage updates in the workflow UI now use element lookup by subStageId and dataset attributes for accurate data binding. The previous use of `this.closest` has been replaced to avoid errors and ensure correct updates.
+
+## Sub-Stage Field Mapping and Data Binding
+
+- Each sub-stage field in the workflow UI must be mapped to a corresponding backend value in the `stage_data` JSON of the `workflow_status` table.
+- Frontend updates to sub-stage fields should use the `subStageId` and dataset attributes for precise data binding and saving.
+- Avoid static field definitions; always ensure the UI reflects the current backend state for each sub-stage.
+- Refer to the API documentation for the correct structure of update requests and expected responses.
+
+## Implementation Notes
+- All stages and sub-stages are initialized during post creation
+- Each stage can be edited independently
+- Validation occurs at key points rather than during editing
+- Progress tracking is maintained for all stages
+- The UI indicates recommended next stages while allowing access to all stages 
