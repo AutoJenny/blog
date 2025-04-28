@@ -62,7 +62,7 @@ def post_view(post_id, view):
         )
         return render_template("blog/develop.html", post=post, dev=dev, sections=sections, active_view='develop')
     elif view == 'json':
-        return jsonify({
+        post_json = {
             "id": post.id,
             "slug": post.slug,
             "title": post.title,
@@ -71,7 +71,8 @@ def post_view(post_id, view):
             "deleted": post.deleted,
             "created_at": post.created_at.isoformat() if post.created_at else None,
             "updated_at": post.updated_at.isoformat() if post.updated_at else None,
-        })
+        }
+        return render_template("blog/json.html", post=post, post_json=post_json, active_view='json')
     elif view == 'preview':
         # For now, just render the develop template as a placeholder for preview
         dev = PostDevelopment.query.filter_by(post_id=post_id).first()
@@ -119,8 +120,12 @@ def update_post_development(post_id):
     for field in columns:
         if field in data:
             setattr(dev, field, data[field])
+    # Also update the parent Post's updated_at
+    post = Post.query.get(post_id)
+    if post:
+        post.updated_at = datetime.utcnow()
     db.session.commit()
-    return jsonify({"status": "success"})
+    return jsonify({"status": "success", "updated_at": post.updated_at.isoformat() if post and post.updated_at else None})
 
 
 @bp.route("/api/v1/post/<int:post_id>/sections", methods=["GET"])

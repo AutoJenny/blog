@@ -65,3 +65,9 @@
 [2024-06-13] Updated app/templates/blog/develop.html: Changed all links from url_for('blog.develop', post_id=post.id) to url_for('blog.post_view', post_id=post.id, view='develop') to use the new canonical route for Develop view.
 
 [2024-07-10] FIX: Added missing saveGlobalField, saveSectionField, and addSection JS functions to app/templates/blog/develop.html so field saving works. Updated JSON button links in develop.html and index.html to use the canonical /blog/<post_id>/json route (handled by blog.post_view with view='json').
+
+[2024-07-10] FIX: Post.updated_at is now updated when PostDevelopment fields are saved, so the 'Updated' time in the UI will refresh after saving any development field.
+
+[2024-07-10] FIX: The updated time in the Develop view now refreshes immediately after saving a field, as the backend returns the new updated_at and the frontend updates the display.
+
+[2024-07-10] FIX: The JSON view now uses the same card-style header and button styling as the Develop view, for full visual consistency.
