@@ -1,121 +1,49 @@
 {% extends "base.html" %}
 
-{% block title %}Blog Posts{% endblock %}
+{% block title %}Blog{% endblock %}
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="admin-content">
-    <div class="admin-card">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="admin-title">Blog Posts</h1>
-            <button class="admin-button" id="newPostBtn">
-                <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                New Post
-            </button>
+<div class="max-w-3xl mx-auto py-8">
+    <!-- Subheading row with actions -->
+    <div class="flex items-center justify-between mb-6 border-b pb-4">
+        <div class="flex space-x-4">
+            <a href="#" class="subnav-link">Develop</a>
+            <a href="#" class="subnav-link">Preview</a>
+            <a href="#" class="subnav-link">Edit</a>
+            <a href="#" class="subnav-link">Raw</a>
         </div>
-
-        <!-- Secondary Navigation -->
-        <div class="border-t border-b border-dark-border py-4 mb-8">
-            <div class="flex justify-center space-x-8">
-                <a href="{{ url_for('blog.develop', post_id=posts[0].id) if posts else '#' }}"
-                    class="admin-nav-link {% if not posts %}disabled{% endif %}">
-                    <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    <span>Develop</span>
-                </a>
-                <a href="#" class="admin-nav-link">
-                    <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    <span>Preview</span>
-                </a>
-                <a href="#" class="admin-nav-link">
-                    <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                    <span>Edit</span>
-                </a>
-                <a href="#" class="admin-nav-link">
-                    <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                    </svg>
-                    <span>Raw</span>
-                </a>
-            </div>
-        </div>
-
-        <div class="admin-grid">
-            <div class="admin-item">
-                <h2 class="admin-item-title">Draft Posts</h2>
-                <p class="admin-item-description">View and edit your unpublished posts</p>
-                <div class="mt-4">
-                    {% for post in posts if not post.published %}
-                    <div class="post-item">
-                        <a href="{{ url_for('blog.develop', post_id=post.id) }}"
-                            class="text-dark-text hover:text-primary">
-                            {{ post.title or 'Untitled Post' }}
-                        </a>
-                    </div>
-                    {% else %}
-                    <p class="text-gray-400">No draft posts</p>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="admin-item">
-                <h2 class="admin-item-title">Published Posts</h2>
-                <p class="admin-item-description">Manage your live blog posts</p>
-                <div class="mt-4">
-                    {% for post in posts if post.published %}
-                    <div class="post-item">
-                        <a href="{{ url_for('blog.develop', post_id=post.id) }}"
-                            class="text-dark-text hover:text-primary">
-                            {{ post.title }}
-                        </a>
-                    </div>
-                    {% else %}
-                    <p class="text-gray-400">No published posts</p>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="admin-item">
-                <h2 class="admin-item-title">Categories</h2>
-                <p class="admin-item-description">Organize your content</p>
-            </div>
-        </div>
-
-        <div class="mt-8">
-            <h2 class="text-xl font-semibold text-dark-text mb-4">Recent Posts</h2>
-            <div class="space-y-4">
-                {% for post in posts[:5] %}
-                <div class="post-item">
-                    <a href="{{ url_for('blog.develop', post_id=post.id) }}" class="text-dark-text hover:text-primary">
-                        {{ post.title or 'Untitled Post' }}
-                    </a>
-                    <span class="text-sm text-gray-400">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
-                </div>
-                {% else %}
-                <p class="text-gray-400">No posts yet</p>
-                {% endfor %}
-            </div>
-        </div>
+        <button class="admin-button" id="newPostBtn">
+            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New Post
+        </button>
     </div>
+    <!-- Simple list of posts -->
+    <ul class="divide-y divide-dark-border">
+        {% for post in posts %}
+        <li class="py-4 flex items-center justify-between">
+            <div>
+                <a href="{{ url_for('blog.develop', post_id=post.id) }}"
+                    class="font-semibold text-lg text-dark-text hover:text-primary">
+                    {{ post.title or 'Untitled Post' }}
+                </a>
+                <span
+                    class="ml-2 text-xs px-2 py-1 rounded {{ 'bg-green-200 text-green-800' if post.published else 'bg-gray-200 text-gray-800' }}">
+                    {{ 'Published' if post.published else 'Draft' }}
+                </span>
+            </div>
+            <span class="text-sm text-gray-400">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
+        </li>
+        {% else %}
+        <li class="py-4 text-gray-400">No posts yet</li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}
 
