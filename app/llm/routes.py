@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def index():
     """LLM management interface."""
     config = LLMConfig.query.first()
-    prompts = {template.name: template.content for template in LLMPrompt.query.all()}
+    prompts = {template.name: template.prompt_text for template in LLMPrompt.query.all()}
     return render_template("llm/index.html", config=config, prompts=prompts)
 
 

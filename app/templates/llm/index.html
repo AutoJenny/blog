@@ -248,32 +248,15 @@
         <div class="config-card">
             <h2 class="text-xl font-semibold text-dark-text mb-4">Prompt Templates</h2>
             <div class="space-y-4">
+                {% for name, content in prompts.items() %}
                 <div class="template-card">
                     <div class="template-header">
-                        <h3 class="template-title">Title Generation</h3>
+                        <h3 class="template-title">{{ name }}</h3>
                         <button class="btn btn-secondary">Edit Template</button>
                     </div>
-                    <div class="template-content">{{ prompts.title_generation|default('Generate a compelling title for a
-                        blog post about {topic} that will engage readers and encourage them to read more.') }}</div>
+                    <div class="template-content">{{ content }}</div>
                 </div>
-                <div class="template-card">
-                    <div class="template-header">
-                        <h3 class="template-title">Meta Description</h3>
-                        <button class="btn btn-secondary">Edit Template</button>
-                    </div>
-                    <div class="template-content">{{ prompts.meta_description|default('Write a concise and engaging meta
-                        description for a blog post about {topic}. The description should be under 160 characters and
-                        include relevant keywords.') }}</div>
-                </div>
-                <div class="template-card">
-                    <div class="template-header">
-                        <h3 class="template-title">Keywords</h3>
-                        <button class="btn btn-secondary">Edit Template</button>
-                    </div>
-                    <div class="template-content">{{ prompts.keywords|default('Generate a list of relevant SEO keywords
-                        and phrases for a blog post about {topic}. Include both primary and secondary keywords.') }}
-                    </div>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
