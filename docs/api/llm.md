@@ -393,4 +393,36 @@ curl -X POST \
      -H "Content-Type: application/json" \
      -d '{"name": "Title Generator", "template": "Generate title: {{content}}"}' \
      https://api.blog.com/v1/llm/prompts
-``` 
+```
+
+## LLM Action Test Feature (UI)
+
+A "Test" button is available in the LLM Action modal on the blog develop page (for fields like Provisional Title). This button allows users to test their prompt template and selected model directly from the UI.
+
+- When clicked, the button sends the current prompt template and selected model to the backend endpoint:
+  - `POST /api/v1/llm/test`
+  - Request body: `{ "prompt": "...", "model_name": "..." }`
+- The backend returns the generated result, which is displayed below the button in the modal.
+
+### Example Usage (API)
+
+```http
+POST /api/v1/llm/test
+Content-Type: application/json
+
+{
+  "prompt": "Suggest a catchy title for: Scottish tartans and their history",
+  "model_name": "mistral"
+}
+```
+
+**Response:**
+```json
+{
+  "result": "Tartan Traditions: The Colorful History of Scottish Kilts"
+}
+```
+
+This feature allows users to quickly iterate on prompt templates and model selection before saving LLM Action settings.
+
+> Note: The Test Interface on the /llm/ page now sends both the prompt and the selected model to /api/v1/llm/test. The backend will use the selected model for the test. No changes are made to the blog develop modal. 

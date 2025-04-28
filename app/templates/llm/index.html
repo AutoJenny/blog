@@ -198,7 +198,7 @@
                     <form id="config-form" class="config-form">
                         <div class="form-group">
                             <label class="form-label">Provider Type</label>
-                            <select name="provider_type" class="form-select">
+                            <select name="provider_type" class="form-select" id="llm-provider-select">
                                 <option value="ollama" {% if config.provider_type=='ollama' %}selected{% endif %}>Ollama
                                 </option>
                                 <option value="openai" {% if config.provider_type=='openai' %}selected{% endif %}>OpenAI
@@ -206,9 +206,9 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Model Name</label>
-                            <input type="text" name="model_name" class="form-input"
-                                value="{{ config.model_name|default('mistral') }}">
+                            <label class="form-label">Model</label>
+                            <div id="llm-model-list"></div>
+                            <div id="llm-model-note" style="font-size:0.95em; color:#a3e635; margin-top:0.25em;"></div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">API Base URL</label>
@@ -298,6 +298,10 @@
         const resultContainer = document.getElementById('test-result');
         const resultPre = resultContainer.querySelector('.result-pre');
 
+        // Get selected model from radio buttons
+        const modelRadio = document.querySelector('#llm-model-list input[name="llm_model"]:checked');
+        const modelName = modelRadio ? modelRadio.value : null;
+
         try {
             submitButton.disabled = true;
             submitButton.textContent = 'Testing...';
@@ -308,17 +312,21 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    prompt: formData.get('prompt')
+                    prompt: formData.get('prompt'),
+                    model_name: modelName
                 }),
             });
             const result = await response.json();
 
             resultContainer.style.display = 'block';
-            if (result.success) {
-                resultPre.textContent = result.response;
+            if (result.result) {
+                resultPre.textContent = result.result + (result.model_used ? `\n\n(Model used: ${result.model_used})` : '');
                 resultPre.style.color = 'var(--dark-text-primary)';
-            } else {
+            } else if (result.error) {
                 resultPre.textContent = 'Error: ' + result.error;
+                resultPre.style.color = 'var(--error-text)';
+            } else {
+                resultPre.textContent = 'No result.';
                 resultPre.style.color = 'var(--error-text)';
             }
         } catch (error) {
@@ -335,6 +343,116 @@
     document.querySelectorAll('.btn-secondary').forEach(btn => {
         btn.addEventListener('click', () => {
             alert('Template editing will be available in a future update');
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        function renderModelList(models, loaded, selectedModel) {
+            const listDiv = document.getElementById('llm-model-list');
+            listDiv.innerHTML = '';
+            if (!models.length) {
+                listDiv.innerHTML = '<div style="color:#fbbf24;">No models found</div>';
+                return;
+            }
+            models.forEach(m => {
+                const isLoaded = loaded.includes(m);
+                const wrapper = document.createElement('label');
+                wrapper.style.display = 'flex';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.marginBottom = '0.5em';
+                wrapper.style.padding = '0.5em 1em';
+                wrapper.style.borderRadius = '0.5em';
+                wrapper.style.cursor = 'pointer';
+                wrapper.style.background = isLoaded ? '#166534' : '#fbbf24';
+                wrapper.style.color = isLoaded ? '#fff' : '#23272F';
+                wrapper.style.fontWeight = isLoaded ? 'bold' : 'normal';
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'llm_model';
+                radio.value = m;
+                radio.style.marginRight = '0.75em';
+                if (selectedModel === m) radio.checked = true;
+                wrapper.appendChild(radio);
+                wrapper.appendChild(document.createTextNode(m + (isLoaded ? ' (loaded)' : '')));
+                // Preload button
+                const preloadBtn = document.createElement('button');
+                preloadBtn.type = 'button';
+                preloadBtn.textContent = isLoaded ? 'Loaded' : 'Preload';
+                preloadBtn.disabled = isLoaded;
+                preloadBtn.style.marginLeft = 'auto';
+                preloadBtn.style.background = isLoaded ? '#22c55e' : '#6366F1';
+                preloadBtn.style.color = '#fff';
+                preloadBtn.style.border = 'none';
+                preloadBtn.style.borderRadius = '0.375em';
+                preloadBtn.style.padding = '0.25em 0.75em';
+                preloadBtn.style.fontWeight = 'bold';
+                preloadBtn.style.cursor = isLoaded ? 'default' : 'pointer';
+                preloadBtn.addEventListener('click', function () {
+                    preloadBtn.textContent = 'Loading...';
+                    preloadBtn.disabled = true;
+                    fetch('/api/v1/llm/preload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ model: m })
+                    })
+                        .then(r => r.json())
+                        .then(() => {
+                            setTimeout(() => loadOllamaModels(selectedModel), 1000);
+                        });
+                });
+                wrapper.appendChild(preloadBtn);
+                listDiv.appendChild(wrapper);
+            });
+        }
+        function loadOllamaModels(selectedModel) {
+            const note = document.getElementById('llm-model-note');
+            fetch('/api/v1/llm/models/ollama')
+                .then(r => r.json())
+                .then(data => {
+                    renderModelList(data.models || [], data.loaded || [], selectedModel);
+                    note.textContent = 'Green = loaded in memory. Amber = downloaded and ready to use.';
+                })
+                .catch(() => {
+                    renderModelList([], [], null);
+                    note.textContent = '';
+                });
+        }
+        function loadProviderModels() {
+            const provider = document.getElementById('llm-provider-select').value;
+            if (provider === 'ollama') {
+                loadOllamaModels();
+            } else {
+                // Placeholder for OpenAI or other providers
+                const listDiv = document.getElementById('llm-model-list');
+                listDiv.innerHTML = '';
+                ['gpt-3.5-turbo', 'gpt-4'].forEach(m => {
+                    const wrapper = document.createElement('label');
+                    wrapper.style.display = 'block';
+                    wrapper.style.marginBottom = '0.5em';
+                    wrapper.style.padding = '0.5em 1em';
+                    wrapper.style.borderRadius = '0.5em';
+                    wrapper.style.cursor = 'pointer';
+                    wrapper.style.background = '#fbbf24';
+                    wrapper.style.color = '#23272F';
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'llm_model';
+                    radio.value = m;
+                    radio.style.marginRight = '0.75em';
+                    wrapper.appendChild(radio);
+                    wrapper.appendChild(document.createTextNode(m));
+                    listDiv.appendChild(wrapper);
+                });
+                document.getElementById('llm-model-note').textContent = 'OpenAI models are selected from the API.';
+            }
+        }
+        document.getElementById('llm-provider-select').addEventListener('change', loadProviderModels);
+        loadProviderModels();
+        // When a model is selected, update the test field below
+        document.getElementById('llm-model-list').addEventListener('change', function (e) {
+            if (e.target && e.target.name === 'llm_model') {
+                document.getElementById('current-model').textContent = e.target.value;
+            }
         });
     });
 </script>

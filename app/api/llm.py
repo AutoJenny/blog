@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request, current_app
 from app.services.llm import LLMService
 from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPrompt
 from app import db
+import requests
 
 bp = Blueprint("llm_api", __name__)
 
@@ -58,16 +59,15 @@ def test_llm():
     """Test LLM with a prompt"""
     data = request.get_json()
     prompt = data.get("prompt")
-
+    model_name = data.get("model_name")
     if not prompt:
-        return jsonify({"success": False, "error": "No prompt provided"})
-
+        return jsonify({"error": "Prompt is required"}), 400
     try:
-        llm = LLMService()
-        response = llm.generate(prompt)
-        return jsonify({"success": True, "response": response})
+        llm_service = LLMService()
+        result = llm_service.generate(prompt, model_name=model_name)
+        return jsonify({"result": result["response"], "model_used": result["model_used"]})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
+        return jsonify({"error": str(e)}), 500
 
 
 @bp.route("/templates", methods=["GET"])
@@ -209,3 +209,36 @@ def create_prompt():
     db.session.add(prompt)
     db.session.commit()
     return jsonify({'success': True, 'prompt': {'id': prompt.id, 'name': prompt.name, 'prompt_text': prompt.prompt_text, 'description': prompt.description}})
+
+
+@bp.route('/models/ollama', methods=['GET'])
+def get_ollama_models():
+    try:
+        tags_resp = requests.get('http://localhost:11434/api/tags', timeout=3)
+        tags_data = tags_resp.json()
+        all_models = [m['name'] for m in tags_data.get('models', [])]
+        ps_resp = requests.get('http://localhost:11434/api/ps', timeout=3)
+        ps_data = ps_resp.json()
+        loaded_models = [m['name'] for m in ps_data.get('models', [])]
+        return jsonify({'models': all_models, 'loaded': loaded_models})
+    except Exception as e:
+        return jsonify({'models': [], 'loaded': [], 'error': str(e)}), 500
+
+
+@bp.route('/preload', methods=['POST'])
+def preload_model():
+    data = request.get_json()
+    model = data.get('model')
+    if not model:
+        return jsonify({'success': False, 'error': 'No model specified'}), 400
+    try:
+        # Send a dummy prompt to load the model
+        r = requests.post('http://localhost:11434/api/generate', json={
+            'model': model,
+            'prompt': '',
+            'stream': False
+        }, timeout=60)
+        r.raise_for_status()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500

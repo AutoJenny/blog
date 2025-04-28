@@ -77,3 +77,14 @@
 - Updated /api/v1/llm/templates endpoint to return templates from LLMPrompt.
 - Added '+ Add New Prompt' link below the prompt template dropdown in the LLM settings panel. Users can now create and save new prompt templates directly from the UI.
 - Added /api/v1/llm/prompts POST endpoint to support creation of new LLMPrompt records from the frontend.
+- Updated /test endpoint in app/api/llm.py to accept an optional model_name from the request JSON and pass it to LLMService.generate. This allows backend testing with a selected model.
+
+2024-07-10: Added a Test button to the LLM Action modal in app/templates/blog/develop.html. The button sends the prompt and selected model to /api/v1/llm/test and displays the result below the button. This restores and fixes the workflow for testing LLM output with the selected model in the blog develop interface. [AI]
+
+2024-07-10: FIX: The Test Interface on /llm/ now sends both the prompt and the selected model to /api/v1/llm/test, so the backend uses the correct model for testing. No changes were made to the blog develop modal. [AI]
+
+[2025-04-28] LLMService now uses a 20s timeout and improved error handling for LLM backend requests (Ollama/OpenAI). Returns clear error messages for timeouts and connection errors. Fixes possible hanging or unclear 500 errors in /api/v1/llm/test.
+
+[2025-04-28] LLM Test Interface now displays the model actually used for the test (from backend response). Backend always uses the selected model for testing, and returns model_used for confirmation. Fixes confusion about which model was used.
+
+[2025-04-28] Increased LLMService timeout for backend requests to 60 seconds to support large models like llama70b, reducing timeouts for slow or large model responses.

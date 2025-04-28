@@ -169,4 +169,7 @@ The workflow system is now fully normalized in SQL. All workflow logic, transiti
 
 The workflow tables must be seeded before use. The script `scripts/update_workflow.py` ensures all workflow stages and sub-stages are present in the database. As of the latest update, all stages and sub-stages are initialized for every post at creation, enabling asynchronous editing—authors can work on any stage or sub-stage at any time. There is no longer any sequential or partial initialization.
 
-Legacy JSON-based workflow fields are deprecated and will be removed after migration is complete. 
+Legacy JSON-based workflow fields are deprecated and will be removed after migration is complete.
+
+- The blog develop UI now includes a "Test" button in the LLM Action modal, allowing users to test prompt templates and model selection via the /api/v1/llm/test endpoint before saving settings. See docs/api/llm.md for details. 
++ The /llm/ Test Interface now sends both the prompt and the selected model to /api/v1/llm/test, so the backend uses the correct model for testing. No changes are made to the blog develop modal. See docs/api/llm.md for details. 

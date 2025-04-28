@@ -200,8 +200,7 @@
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1">LLM Model</label>
                                 <select name="llm_model" class="admin-textarea w-full" id="llm-model-select">
-                                    <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
-                                    <option value="mistral">mistral</option>
+                                    <option value="">Loading models...</option>
                                 </select>
                             </div>
                             <div class="mb-4">
@@ -358,6 +357,32 @@
                                         });
                                 });
                             }
+                            // Fetch Ollama models for the model dropdown
+                            function loadOllamaModels() {
+                                const modelSelect = document.getElementById('llm-model-select');
+                                fetch('/api/v1/llm/models/ollama')
+                                    .then(r => r.json())
+                                    .then(data => {
+                                        modelSelect.innerHTML = '';
+                                        if (data.models && data.models.length) {
+                                            data.models.forEach(m => {
+                                                const opt = document.createElement('option');
+                                                opt.value = m;
+                                                opt.textContent = m + (data.loaded && data.loaded.includes(m) ? ' (loaded)' : '');
+                                                if (data.loaded && data.loaded.includes(m)) {
+                                                    opt.style.fontWeight = 'bold';
+                                                }
+                                                modelSelect.appendChild(opt);
+                                            });
+                                        } else {
+                                            modelSelect.innerHTML = '<option value="">No models found</option>';
+                                        }
+                                    })
+                                    .catch(() => {
+                                        modelSelect.innerHTML = '<option value="">Failed to load models</option>';
+                                    });
+                            }
+                            loadOllamaModels();
                         });
                     </script>
                     {% endif %}
@@ -599,8 +624,11 @@
             <div class="flex justify-end gap-2">
                 <button type="button" id="llmActionCancel" class="admin-button-secondary">Cancel</button>
                 <button type="submit" class="admin-button">Save</button>
+                <button type="button" id="llmActionTestBtn" class="admin-button"
+                    style="margin-left: 1rem;">Test</button>
             </div>
         </form>
+        <div id="llmActionTestResult" style="margin-top:1rem; color:#a3e635; display:none;"></div>
     </div>
 </div>
 {% endblock %}
@@ -696,12 +724,39 @@
         const genBtn = document.getElementById('generate-provisional-title-btn');
         const modal = document.getElementById('llmActionModal');
         const cancelBtn = document.getElementById('llmActionCancel');
+        const testBtn = document.getElementById('llmActionTestBtn');
+        const testResult = document.getElementById('llmActionTestResult');
         if (genBtn && modal && cancelBtn) {
             genBtn.addEventListener('click', function () {
                 modal.classList.remove('hidden');
             });
             cancelBtn.addEventListener('click', function () {
                 modal.classList.add('hidden');
+            });
+        }
+        if (testBtn && testResult) {
+            testBtn.addEventListener('click', async function () {
+                testResult.style.display = 'block';
+                testResult.textContent = 'Testing...';
+                const prompt = modal.querySelector('textarea[name="prompt_template"]').value;
+                const model = modal.querySelector('select[name="llm_model"]').value;
+                try {
+                    const resp = await fetch('/api/v1/llm/test', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt: prompt, model_name: model })
+                    });
+                    const data = await resp.json();
+                    if (data.result) {
+                        testResult.textContent = data.result;
+                    } else if (data.error) {
+                        testResult.textContent = 'Error: ' + data.error;
+                    } else {
+                        testResult.textContent = 'No result.';
+                    }
+                } catch (e) {
+                    testResult.textContent = 'Error: ' + e;
+                }
             });
         }
     });
