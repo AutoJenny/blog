@@ -59,32 +59,287 @@
         opacity: 0.7;
         cursor: not-allowed;
     }
+
+    .accordion-panel {
+        border-radius: 1rem;
+        overflow: hidden;
+        background: var(--admin-bg-card, #23272F);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+        border: 1px solid var(--admin-border, #404040);
+    }
+
+    .accordion-header {
+        width: 100%;
+        text-align: left;
+        background: var(--admin-accent, #6366F1);
+        color: #fff;
+        font-size: 1.2rem;
+        font-weight: 600;
+        padding: 1rem 2rem;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        transition: background 0.2s;
+        border-bottom: 1px solid var(--admin-border, #404040);
+    }
+
+    .accordion-header:hover,
+    .accordion-header:focus {
+        background: #4f46e5;
+    }
+
+    .accordion-header.active {
+        background: #312e81;
+    }
+
+    .accordion-content {
+        display: none;
+        padding: 1.5rem 2rem 2rem 2rem;
+        background: transparent;
+    }
+
+    .accordion-content.active {
+        display: block;
+        animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .accordion-field {
+        margin-bottom: 1.5rem;
+    }
+
+    .section-block {
+        margin-bottom: 2rem;
+        border: 1px solid var(--admin-border, #404040);
+        background: #23272F;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+        padding: 1.5rem;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 {% from "blog/_post_header.html" import post_header %}
 <div class="max-w-3xl mx-auto py-8">
-    <!-- Card-style header row -->
     {{ post_header(post, active_view) }}
-
-    <!-- Main content (global fields, sections, etc.) -->
-    <form id="global-fields-form" class="mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {% for field, value in dev.__dict__.items() if field not in ['id', 'post_id', '_sa_instance_state'] %}
-            <div class="bg-[#23272F] rounded-lg p-4 mb-4 shadow">
-                <label for="{{ field }}" class="block text-sm font-semibold mb-2"
-                    style="color: var(--admin-text-secondary);">{{ field.replace('_', ' ').title() }}</label>
-                <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
-                    rows="2">{{ value or '' }}</textarea>
-                <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+    <div id="stage-accordion" class="space-y-4">
+        {# IDEA STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="idea">Idea Stage</button>
+            <div class="accordion-content">
+                {% for field in [
+                'basic_idea', 'provisional_title', 'idea_scope'] %}
+                {% if field in dev.__dict__ %}
+                <div class="accordion-field">
+                    <label for="{{ field }}" class="block text-sm font-semibold mb-2">{{ field.replace('_', ' ').title()
+                        }}</label>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
+                </div>
+                {% endif %}
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
-    </form>
-    <!-- Sections, etc. remain unchanged -->
-    <h2 class="text-xl font-semibold mb-4 mt-8 text-center" style="color: var(--admin-text);">Sections</h2>
-    {% block sections %}{% endblock %}
+        {# RESEARCH STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="research">Research Stage</button>
+            <div class="accordion-content">
+                {% for field in [
+                'topics_to_cover', 'interesting_facts', 'tartans_products'] %}
+                {% if field in dev.__dict__ %}
+                <div class="accordion-field">
+                    <label for="{{ field }}" class="block text-sm font-semibold mb-2">{{ field.replace('_', ' ').title()
+                        }}</label>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {# OUTLINING STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="outlining">Outlining Stage</button>
+            <div class="accordion-content">
+                {% for field in [
+                'section_planning', 'section_headings', 'section_order'] %}
+                {% if field in dev.__dict__ %}
+                <div class="accordion-field">
+                    <label for="{{ field }}" class="block text-sm font-semibold mb-2">{{ field.replace('_', ' ').title()
+                        }}</label>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {# AUTHORING (SECTIONS) STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="authoring">Authoring Stage (Sections)</button>
+            <div class="accordion-content">
+                <div id="sections">
+                    {% for section in sections %}
+                    <div class="section-block bg-[#23272F] rounded-lg p-4 mb-6 shadow"
+                        data-section-id="{{ section.id }}">
+                        <h3 class="text-lg font-semibold mb-2" style="color: var(--admin-accent);">Section {{ loop.index
+                            }}: {{ section.section_heading or '' }}</h3>
+                        <label class="block text-sm font-semibold mb-1"
+                            style="color: var(--admin-text-secondary);">Section Heading</label>
+                        <textarea id="section_heading_{{ section.id }}"
+                            class="admin-textarea mb-2">{{ section.section_heading or '' }}</textarea>
+                        <button type="button" class="admin-button mb-2"
+                            onclick="saveSectionField({{ section.id }}, 'section_heading')">Save</button><br>
+                        {% for field in ['first_draft', 'uk_british', 'highlighting', 'image_concepts', 'image_prompts',
+                        'generation', 'optimization', 'watermarking', 'image_meta_descriptions', 'image_captions'] %}
+                        {% if field in section.__dict__ %}
+                        <label for="{{ field }}_{{ section.id }}" class="block text-sm font-semibold mb-1"
+                            style="color: var(--admin-text-secondary);">{{ field.replace('_', ' ').title() }}</label>
+                        <textarea id="{{ field }}_{{ section.id }}"
+                            class="admin-textarea mb-2">{{ section.__dict__[field] or '' }}</textarea>
+                        <button type="button" class="admin-button mb-2"
+                            onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button><br>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="flex justify-center mt-6">
+                    <button type="button" class="admin-button" onclick="addSection()">Add Section</button>
+                </div>
+            </div>
+        </div>
+        {# TOP & TAIL STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="topntail">Top & Tail Stage</button>
+            <div class="accordion-content">
+                {% for field in [
+                'main_title', 'subtitle', 'intro_blurb', 'conclusion'] %}
+                {% if field in dev.__dict__ %}
+                <div class="accordion-field">
+                    <label for="{{ field }}" class="block text-sm font-semibold mb-2">{{ field.replace('_', ' ').title()
+                        }}</label>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {# METADATA STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="metadata">Metadata Stage</button>
+            <div class="accordion-content">
+                {% for field in [
+                'basic_metadata', 'tags', 'categories', 'image_captions', 'seo_optimization'] %}
+                {% if field in dev.__dict__ %}
+                <div class="accordion-field">
+                    <label for="{{ field }}" class="block text-sm font-semibold mb-2">{{ field.replace('_', ' ').title()
+                        }}</label>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {# REVIEW STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="review">Review Stage</button>
+            <div class="accordion-content">
+                {% for field in [
+                'self_review', 'peer_review', 'final_check'] %}
+                {% if field in dev.__dict__ %}
+                <div class="accordion-field">
+                    <label for="{{ field }}" class="block text-sm font-semibold mb-2">{{ field.replace('_', ' ').title()
+                        }}</label>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {# PUBLISHING STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="publishing">Publishing Stage</button>
+            <div class="accordion-content">
+                {% for field in [
+                'scheduling', 'deployment', 'verification'] %}
+                {% if field in dev.__dict__ %}
+                <div class="accordion-field">
+                    <label for="{{ field }}" class="block text-sm font-semibold mb-2">{{ field.replace('_', ' ').title()
+                        }}</label>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {# UPDATES STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="updates">Updates Stage</button>
+            <div class="accordion-content">
+                {% for field in [
+                'feedback_collection', 'content_updates', 'version_control'] %}
+                {% if field in dev.__dict__ %}
+                <div class="accordion-field">
+                    <label for="{{ field }}" class="block text-sm font-semibold mb-2">{{ field.replace('_', ' ').title()
+                        }}</label>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {# SYNDICATION STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="syndication">Syndication Stage</button>
+            <div class="accordion-content">
+                {% for field in [
+                'platform_selection', 'content_adaptation', 'distribution', 'engagement_tracking'] %}
+                {% if field in dev.__dict__ %}
+                <div class="accordion-field">
+                    <label for="{{ field }}" class="block text-sm font-semibold mb-2">{{ field.replace('_', ' ').title()
+                        }}</label>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -158,5 +413,21 @@
             location.reload();
         });
     }
+    // Accordion logic
+    document.addEventListener('DOMContentLoaded', function () {
+        const headers = document.querySelectorAll('.accordion-header');
+        const contents = document.querySelectorAll('.accordion-content');
+        function openAccordion(idx) {
+            headers.forEach((h, i) => {
+                h.classList.toggle('active', i === idx);
+                contents[i].classList.toggle('active', i === idx);
+            });
+        }
+        headers.forEach((header, idx) => {
+            header.addEventListener('click', () => openAccordion(idx));
+        });
+        // Open the first accordion by default
+        openAccordion(0);
+    });
 </script>
 {% endblock %}
