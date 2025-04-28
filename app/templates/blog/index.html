@@ -8,14 +8,9 @@
 
 {% block content %}
 <div class="max-w-3xl mx-auto py-8">
-    <!-- Subheading row with actions -->
-    <div class="flex items-center justify-between mb-6 border-b pb-4">
-        <div class="flex space-x-4">
-            <a href="#" class="subnav-link">Develop</a>
-            <a href="#" class="subnav-link">Preview</a>
-            <a href="#" class="subnav-link">Edit</a>
-            <a href="#" class="subnav-link">Raw</a>
-        </div>
+    <!-- Main heading with New Post button top right -->
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-2xl font-bold">Posts</h1>
         <button class="admin-button" id="newPostBtn">
             <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
@@ -24,12 +19,12 @@
             New Post
         </button>
     </div>
-    <!-- Simple list of posts -->
+    <!-- Simple list of posts, most recent first -->
     <ul class="divide-y divide-dark-border">
-        {% for post in posts %}
+        {% for post in posts|sort(attribute='created_at', reverse=True) %}
         <li class="py-4 flex items-center justify-between">
             <div>
-                <a href="{{ url_for('blog.develop', post_id=post.id) }}"
+                <a href="{{ url_for('blog.get_post', slug=post.slug) }}"
                     class="font-semibold text-lg text-dark-text hover:text-primary">
                     {{ post.title or 'Untitled Post' }}
                 </a>
