@@ -75,3 +75,5 @@
 - Removed PromptTemplate model and table from the codebase and database.
 - All prompt template functionality now uses LLMPrompt exclusively (including LLM settings panel and /llm area specimens).
 - Updated /api/v1/llm/templates endpoint to return templates from LLMPrompt.
+- Added '+ Add New Prompt' link below the prompt template dropdown in the LLM settings panel. Users can now create and save new prompt templates directly from the UI.
+- Added /api/v1/llm/prompts POST endpoint to support creation of new LLMPrompt records from the frontend.

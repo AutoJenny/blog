@@ -181,6 +181,22 @@
                                         id="llm-prompt-template">Suggest a catchy title for: {{ basic_idea }}</textarea>
                                 </div>
                             </div>
+                            <div style="margin-top: 0.5rem;">
+                                <a href="#" id="llm-add-new-prompt-link" style="color:#6366F1; font-size:0.95em;">+ Add
+                                    New Prompt</a>
+                            </div>
+                            <div id="llm-new-prompt-form"
+                                style="display:none; margin-top:0.5rem; background:#23272F; border:1px solid #6366F1; border-radius:0.5rem; padding:1rem;">
+                                <label class="block text-sm font-semibold mb-1">Prompt Name</label>
+                                <input type="text" id="llm-new-prompt-name" class="admin-textarea w-full mb-2"
+                                    placeholder="Prompt name">
+                                <label class="block text-sm font-semibold mb-1">Prompt Content</label>
+                                <textarea id="llm-new-prompt-content" class="admin-textarea w-full mb-2"
+                                    rows="3"></textarea>
+                                <button type="button" class="admin-button" id="llm-save-new-prompt-btn">Save</button>
+                                <button type="button" class="admin-button-secondary"
+                                    id="llm-cancel-new-prompt-btn">Cancel</button>
+                            </div>
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1">LLM Model</label>
                                 <select name="llm_model" class="admin-textarea w-full" id="llm-model-select">
@@ -294,6 +310,54 @@
                                     document.getElementById('llm-prompt-template').value = e.target.value;
                                 }
                             });
+                            // Add New Prompt logic
+                            const addNewPromptLink = document.getElementById('llm-add-new-prompt-link');
+                            const newPromptForm = document.getElementById('llm-new-prompt-form');
+                            const saveNewPromptBtn = document.getElementById('llm-save-new-prompt-btn');
+                            const cancelNewPromptBtn = document.getElementById('llm-cancel-new-prompt-btn');
+                            const newPromptName = document.getElementById('llm-new-prompt-name');
+                            const newPromptContent = document.getElementById('llm-new-prompt-content');
+                            const promptSelect = document.getElementById('llm-prompt-template-select');
+                            if (addNewPromptLink && newPromptForm) {
+                                addNewPromptLink.addEventListener('click', function (e) {
+                                    e.preventDefault();
+                                    newPromptForm.style.display = 'block';
+                                    newPromptName.value = '';
+                                    newPromptContent.value = document.getElementById('llm-prompt-template').value;
+                                });
+                            }
+                            if (cancelNewPromptBtn) {
+                                cancelNewPromptBtn.addEventListener('click', function () {
+                                    newPromptForm.style.display = 'none';
+                                });
+                            }
+                            if (saveNewPromptBtn) {
+                                saveNewPromptBtn.addEventListener('click', function () {
+                                    const name = newPromptName.value.trim();
+                                    const content = newPromptContent.value.trim();
+                                    if (!name || !content) return alert('Please enter both name and content.');
+                                    fetch('/api/v1/llm/prompts', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ name, prompt_text: content })
+                                    })
+                                        .then(r => r.json())
+                                        .then(data => {
+                                            if (data.success && data.prompt) {
+                                                // Add new option to dropdown and select it
+                                                const opt = document.createElement('option');
+                                                opt.value = data.prompt.prompt_text;
+                                                opt.textContent = data.prompt.name;
+                                                opt.selected = true;
+                                                promptSelect.appendChild(opt);
+                                                document.getElementById('llm-prompt-template').value = data.prompt.prompt_text;
+                                                newPromptForm.style.display = 'none';
+                                            } else {
+                                                alert('Failed to save prompt');
+                                            }
+                                        });
+                                });
+                            }
                         });
                     </script>
                     {% endif %}

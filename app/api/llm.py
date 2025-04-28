@@ -196,3 +196,16 @@ def update_llm_action(field_name):
     action.max_tokens = int(data.get('max_tokens', 64))
     db.session.commit()
     return jsonify({'status': 'success'})
+
+
+@bp.route('/prompts', methods=['POST'])
+def create_prompt():
+    data = request.get_json()
+    name = data.get('name')
+    prompt_text = data.get('prompt_text')
+    if not name or not prompt_text:
+        return jsonify({'success': False, 'error': 'Name and prompt_text required'}), 400
+    prompt = LLMPrompt(name=name, prompt_text=prompt_text, description=data.get('description', ''))
+    db.session.add(prompt)
+    db.session.commit()
+    return jsonify({'success': True, 'prompt': {'id': prompt.id, 'name': prompt.name, 'prompt_text': prompt.prompt_text, 'description': prompt.description}})
