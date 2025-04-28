@@ -45,7 +45,7 @@ def new_post():
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 
-@bp.route("/blog/develop/<int:post_id>")
+@bp.route("/develop/<int:post_id>")
 def develop(post_id):
     post = Post.query.get_or_404(post_id)
     dev = PostDevelopment.query.filter_by(post_id=post_id).first()
