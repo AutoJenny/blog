@@ -77,7 +77,7 @@
                         });
                         const data = await response.json();
                         if (response.ok) {
-                            window.location.href = `/blog/develop/${data.id}`;
+                            window.location.href = `/blog/${data.id}/develop`;
                         } else {
                             alert(data.error || 'Failed to create post');
                         }

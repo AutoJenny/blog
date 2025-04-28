@@ -68,7 +68,7 @@
     <div class="blog-card mb-8">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
             <div class="flex-1 min-w-0">
-                <a href="{{ url_for('blog.develop', post_id=post.id) }}"
+                <a href="{{ url_for('blog.post_view', post_id=post.id, view='develop') }}"
                     class="blog-card__title text-2xl font-bold truncate hover:underline focus:underline"
                     title="Go to Develop">
                     {{ post.title or 'Untitled Post' }}
@@ -92,7 +92,8 @@
             </div>
         </div>
         <div class="flex items-center gap-2 mt-2">
-            <a href="{{ url_for('blog.develop', post_id=post.id) }}" class="admin-button" title="Develop">
+            <a href="{{ url_for('blog.post_view', post_id=post.id, view='develop') }}" class="admin-button"
+                title="Develop">
                 <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -100,8 +101,8 @@
                 </svg>
                 Develop
             </a>
-            <a href="{{ url_for('blog.get_post', slug=post.slug) }}" class="admin-button admin-button-secondary"
-                title="JSON">
+            <a href="{{ url_for('blog.post_view', post_id=post.id, view='json') }}"
+                class="admin-button admin-button-secondary" title="JSON">
                 <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -153,5 +154,36 @@
             el.textContent = str;
         });
     });
+    // Add missing saveGlobalField, saveSectionField, addSection
+    const postId = {{ post.id }};
+    function saveGlobalField(field) {
+        const value = document.getElementById(field).value;
+        fetch(`/blog/api/v1/post/${postId}/development`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [field]: value })
+        }).then(r => r.json()).then(data => {
+            alert('Saved!');
+        });
+    }
+    function saveSectionField(sectionId, field) {
+        const value = document.getElementById(`${field}_${sectionId}`).value;
+        fetch(`/blog/api/v1/section/${sectionId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [field]: value })
+        }).then(r => r.json()).then(data => {
+            alert('Saved!');
+        });
+    }
+    function addSection() {
+        fetch(`/blog/api/v1/post/${postId}/sections`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        }).then(r => r.json()).then(data => {
+            location.reload();
+        });
+    }
 </script>
 {% endblock %}

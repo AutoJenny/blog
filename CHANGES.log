@@ -61,3 +61,7 @@
 2024-07-10: Blog index improvements—main title now links to Develop, Develop/JSON links have text, creation and updated dates shown (updated in 'ago' format).
 
 2024-07-10: Blog develop page now uses the same card-based dark theme and header row styling as the blog index, with badges, action buttons, and date formatting for visual parity.
+
+[2024-06-13] Updated app/templates/blog/develop.html: Changed all links from url_for('blog.develop', post_id=post.id) to url_for('blog.post_view', post_id=post.id, view='develop') to use the new canonical route for Develop view.
+
+[2024-07-10] FIX: Added missing saveGlobalField, saveSectionField, and addSection JS functions to app/templates/blog/develop.html so field saving works. Updated JSON button links in develop.html and index.html to use the canonical /blog/<post_id>/json route (handled by blog.post_view with view='json').

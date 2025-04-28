@@ -1,4 +1,4 @@
-from flask import render_template, jsonify, request
+from flask import render_template, jsonify, request, redirect, url_for, abort
 from app.blog import bp
 from app.models import Post, PostDevelopment, PostSection
 from app import db
@@ -45,22 +45,55 @@ def new_post():
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 
-@bp.route("/develop/<int:post_id>")
-def develop(post_id):
+@bp.route("/<int:post_id>/", defaults={'view': 'preview'})
+@bp.route("/<int:post_id>/<view>")
+def post_view(post_id, view):
     post = Post.query.get_or_404(post_id)
-    dev = PostDevelopment.query.filter_by(post_id=post_id).first()
-    if not dev:
-        dev = PostDevelopment(post_id=post_id)
-        db.session.add(dev)
-        db.session.commit()
-    sections = (
-        PostSection.query.filter_by(post_id=post_id)
-        .order_by(PostSection.section_order)
-        .all()
-    )
-    return render_template(
-        "blog/development.html", post=post, dev=dev, sections=sections
-    )
+    if view == 'develop':
+        dev = PostDevelopment.query.filter_by(post_id=post_id).first()
+        if not dev:
+            dev = PostDevelopment(post_id=post_id)
+            db.session.add(dev)
+            db.session.commit()
+        sections = (
+            PostSection.query.filter_by(post_id=post_id)
+            .order_by(PostSection.section_order)
+            .all()
+        )
+        return render_template("blog/develop.html", post=post, dev=dev, sections=sections, active_view='develop')
+    elif view == 'json':
+        return jsonify({
+            "id": post.id,
+            "slug": post.slug,
+            "title": post.title,
+            "content": post.content,
+            "published": post.published,
+            "deleted": post.deleted,
+            "created_at": post.created_at.isoformat() if post.created_at else None,
+            "updated_at": post.updated_at.isoformat() if post.updated_at else None,
+        })
+    elif view == 'preview':
+        # For now, just render the develop template as a placeholder for preview
+        dev = PostDevelopment.query.filter_by(post_id=post_id).first()
+        sections = (
+            PostSection.query.filter_by(post_id=post_id)
+            .order_by(PostSection.section_order)
+            .all()
+        )
+        return render_template("blog/develop.html", post=post, dev=dev, sections=sections, active_view='preview')
+    else:
+        abort(404)
+
+
+@bp.route('/develop/<int:post_id>')
+def legacy_develop(post_id):
+    return redirect(url_for('blog.post_view', post_id=post_id, view='develop'), code=301)
+
+
+@bp.route('/<slug>')
+def legacy_slug(slug):
+    post = Post.query.filter_by(slug=slug).first_or_404()
+    return redirect(url_for('blog.post_view', post_id=post.id, view='preview'), code=301)
 
 
 @bp.route("/api/v1/post/<int:post_id>/development", methods=["GET"])
