@@ -8,16 +8,9 @@
 
 {% block content %}
 <div class="max-w-3xl mx-auto py-8">
-    <!-- Main heading with New Post button top right -->
+    <!-- Main heading -->
     <div class="flex items-center justify-between mb-8">
         <h1 class="text-2xl font-bold">Posts</h1>
-        <button class="admin-button" id="newPostBtn">
-            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            New Post
-        </button>
     </div>
     <!-- Simple list of posts, most recent first -->
     <ul class="divide-y divide-dark-border">
@@ -40,33 +33,4 @@
         {% endfor %}
     </ul>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.getElementById('newPostBtn').addEventListener('click', async () => {
-        const basicIdea = prompt('Enter your basic idea for the post:');
-        if (!basicIdea) return;
-
-        try {
-            const response = await fetch("{{ url_for('blog.new_post') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ basic_idea: basicIdea })
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                window.location.href = `/blog/develop/${data.id}`;
-            } else {
-                alert(data.error || 'Failed to create post');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to create post');
-        }
-    });
-</script>
 {% endblock %}

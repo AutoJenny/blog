@@ -32,6 +32,17 @@
                             class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium">LLMs</a>
                     </div>
                 </div>
+                {% if request.endpoint == 'blog.index' %}
+                <div class="flex-1 flex justify-end">
+                    <button class="admin-button" id="newPostBtn">
+                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        New Post
+                    </button>
+                </div>
+                {% endif %}
             </div>
         </nav>
     </header>
@@ -48,7 +59,37 @@
         </div>
     </footer>
 
-    {% block scripts %}{% endblock %}
+    {% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var newPostBtn = document.getElementById('newPostBtn');
+            if (newPostBtn) {
+                newPostBtn.addEventListener('click', async () => {
+                    const basicIdea = prompt('Enter your basic idea for the post:');
+                    if (!basicIdea) return;
+                    try {
+                        const response = await fetch("{{ url_for('blog.new_post') }}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ basic_idea: basicIdea })
+                        });
+                        const data = await response.json();
+                        if (response.ok) {
+                            window.location.href = `/blog/develop/${data.id}`;
+                        } else {
+                            alert(data.error || 'Failed to create post');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to create post');
+                    }
+                });
+            }
+        });
+    </script>
+    {% endblock %}
 </body>
 
 </html>
