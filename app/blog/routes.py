@@ -9,7 +9,7 @@ from datetime import datetime
 
 @bp.route("/")
 def index():
-    posts = Post.query.filter_by(deleted=False).order_by(Post.created_at.desc()).all()
+    posts = Post.query.order_by(Post.created_at.desc()).all()
     return render_template("blog/index.html", posts=posts)
 
 
