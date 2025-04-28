@@ -199,24 +199,6 @@ class LLMConfig(db.Model):
         return f"<LLMConfig {self.provider_type}:{self.model_name}>"
 
 
-class PromptTemplate(db.Model):
-    """Model for storing prompt templates"""
-
-    __tablename__ = "prompt_template"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    description = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
-
-    def __repr__(self):
-        return f"<PromptTemplate {self.name}>"
-
-
 class LLMAction(db.Model):
     __tablename__ = 'llm_action'
     id = db.Column(db.Integer, primary_key=True)

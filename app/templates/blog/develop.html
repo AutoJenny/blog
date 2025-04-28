@@ -174,8 +174,12 @@
                             </div>
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1">Prompt Template</label>
-                                <textarea name="prompt_template" class="admin-textarea w-full" rows="3"
-                                    id="llm-prompt-template">Suggest a catchy title for: {{ basic_idea }}</textarea>
+                                <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                                    <select id="llm-prompt-template-select" class="admin-textarea w-full"
+                                        style="max-width: 220px;"></select>
+                                    <textarea name="prompt_template" class="admin-textarea w-full" rows="3"
+                                        id="llm-prompt-template">Suggest a catchy title for: {{ basic_idea }}</textarea>
+                                </div>
                             </div>
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1">LLM Model</label>
@@ -271,6 +275,25 @@
                                         .catch(() => { showLoading(false); showFeedback('Save failed', '#f87171'); });
                                 });
                             }
+                            // Fetch prompt templates for dropdown
+                            fetch('/api/v1/llm/templates')
+                                .then(r => r.json())
+                                .then(templates => {
+                                    const select = document.getElementById('llm-prompt-template-select');
+                                    select.innerHTML = '<option value="">Select a template...</option>';
+                                    templates.forEach(t => {
+                                        const opt = document.createElement('option');
+                                        opt.value = t.content;
+                                        opt.textContent = t.name;
+                                        select.appendChild(opt);
+                                    });
+                                });
+                            // When a template is selected, load its content into the textarea
+                            document.getElementById('llm-prompt-template-select').addEventListener('change', function (e) {
+                                if (e.target.value) {
+                                    document.getElementById('llm-prompt-template').value = e.target.value;
+                                }
+                            });
                         });
                     </script>
                     {% endif %}

@@ -71,3 +71,7 @@
 [2024-07-10] FIX: The updated time in the Develop view now refreshes immediately after saving a field, as the backend returns the new updated_at and the frontend updates the display.
 
 [2024-07-10] FIX: The JSON view now uses the same card-style header and button styling as the Develop view, for full visual consistency.
+
+- Removed PromptTemplate model and table from the codebase and database.
+- All prompt template functionality now uses LLMPrompt exclusively (including LLM settings panel and /llm area specimens).
+- Updated /api/v1/llm/templates endpoint to return templates from LLMPrompt.

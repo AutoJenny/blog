@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app
 from app.services.llm import LLMService
-from app.models import LLMConfig, PromptTemplate, LLMInteraction, PostSection, LLMAction
+from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPrompt
 from app import db
 
 bp = Blueprint("llm_api", __name__)
@@ -72,14 +72,14 @@ def test_llm():
 
 @bp.route("/templates", methods=["GET"])
 def get_templates():
-    """Get all prompt templates"""
-    templates = PromptTemplate.query.all()
+    """Get all prompt templates from LLMPrompt"""
+    templates = LLMPrompt.query.all()
     return jsonify(
         [
             {
                 "id": t.id,
                 "name": t.name,
-                "content": t.content,
+                "content": t.prompt_text,
                 "description": t.description,
             }
             for t in templates
