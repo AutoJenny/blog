@@ -21,6 +21,34 @@
    - SMTP for email notifications
    - clan.com API integration
 
+## Quick Start
+
+1. Clone the repository
+2. Set up Python virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Configure environment:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your settings
+   ```
+5. Start the server:
+   ```bash
+   ./run_server.sh
+   ```
+
+The `run_server.sh` script includes smart virtual environment handling:
+- Automatically detects if venv is activated
+- Activates venv if needed
+- Provides clear error messages
+- Ensures correct Python environment usage
+
 ## Development Setup
 
 ### Prerequisites
@@ -68,19 +96,23 @@
    ```
 
 ### Running Services
-1. Start Redis:
-   ```bash
-   redis-server
-   ```
 
-2. Start Celery worker:
+The application consists of several services:
+
+1. Main Flask Application:
+   ```bash
+   ./run_server.sh
+   ```
+   Handles web requests and core functionality.
+
+2. Celery Worker (for background tasks):
    ```bash
    celery -A app.celery worker --loglevel=info
    ```
 
-3. Run development server:
+3. Celery Beat (for scheduled tasks):
    ```bash
-   ./run_server.sh
+   celery -A app.celery beat --loglevel=info
    ```
 
 ## Testing

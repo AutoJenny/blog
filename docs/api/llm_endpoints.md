@@ -131,4 +131,35 @@ All LLM interactions are logged in the database for monitoring and improvement p
 
 A "Test" button is available in the LLM Action modal on the blog develop page. This button sends the current prompt template and selected model to the `/api/v1/llm/test` endpoint and displays the generated result below the button. This allows users to quickly test prompt/model combinations before saving LLM Action settings.
 
-> Note: The Test Interface on the /llm/ page now sends both the prompt and the selected model to /api/v1/llm/test. The backend will use the selected model for the test. No changes are made to the blog develop modal. 
+> Note: The Test Interface on the /llm/ page now sends both the prompt and the selected model to /api/v1/llm/test. The backend will use the selected model for the test. No changes are made to the blog develop modal.
+
+## Error Handling
+
+The LLM endpoints now provide improved error handling and timeout management:
+
+### Timeout Handling
+- Default timeout increased to 60 seconds for model loading
+- Non-fatal failures allow continued operation
+- Clear distinction between temporary and permanent failures
+
+### Error Messages
+- Detailed error descriptions
+- Specific troubleshooting steps
+- Clear indication of error type (timeout/connection/etc)
+
+### Logging
+- Comprehensive logging of all operations
+- Error tracking with stack traces
+- Performance monitoring for timeouts
+
+### Response Format for Errors
+```json
+{
+  "error": "Detailed error message",
+  "type": "timeout|connection|validation",
+  "suggestions": [
+    "Specific troubleshooting step 1",
+    "Specific troubleshooting step 2"
+  ]
+}
+``` 

@@ -425,4 +425,20 @@ Content-Type: application/json
 
 This feature allows users to quickly iterate on prompt templates and model selection before saving LLM Action settings.
 
-> Note: The Test Interface on the /llm/ page now sends both the prompt and the selected model to /api/v1/llm/test. The backend will use the selected model for the test. No changes are made to the blog develop modal. 
+> Note: The Test Interface on the /llm/ page now sends both the prompt and the selected model to /api/v1/llm/test. The backend will use the selected model for the test. No changes are made to the blog develop modal.
+
+### Error Handling and Timeouts
+
+The LLMService now includes improved error handling and timeout management:
+
+- Model loading timeout is set to 60 seconds to accommodate larger models
+- Detailed error messages provide specific troubleshooting steps
+- Comprehensive logging helps track issues and their resolution
+- Resilient operation continues even if model loading is delayed
+- Clear distinction between different types of errors (timeout vs connection)
+
+When encountering a timeout:
+1. Check if the model is still loading (first request may take longer)
+2. Verify Ollama/OpenAI service is running and accessible
+3. Consider using a smaller model if loading consistently times out
+4. Check the logs for specific error details and troubleshooting steps 

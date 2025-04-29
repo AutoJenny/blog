@@ -43,6 +43,12 @@ blog/
    ./run_server.sh
    ```
    The server will run on http://localhost:5000
+   
+   Note: The script will automatically:
+   - Check if the virtual environment is activated
+   - Activate it if needed
+   - Display helpful error messages if the virtual environment is not found
+   - Ensure Python runs from the correct environment
 
 2. For background tasks (Celery):
    ```bash

@@ -56,35 +56,60 @@ def update_config():
 
 @bp.route("/test", methods=["POST"])
 def test_llm():
-    """Test LLM with a prompt"""
+    """Test an LLM prompt"""
     data = request.get_json()
-    prompt = data.get("prompt")
-    model_name = data.get("model_name")
-    if not prompt:
-        return jsonify({"error": "Prompt is required"}), 400
+    if not data or "prompt" not in data:
+        return jsonify({"error": "No prompt provided"}), 400
+
     try:
-        llm_service = LLMService()
-        result = llm_service.generate(prompt, model_name=model_name)
-        return jsonify({"result": result["response"], "model_used": result["model_used"]})
-    except Exception as e:
+        llm = LLMService()
+        result = llm.generate(data["prompt"], model_name=data.get("model_name"))
+        return jsonify(result)
+    except RuntimeError as e:
+        if "timed out" in str(e).lower():
+            current_app.logger.error(f"LLM test timeout: {e}")
+            return jsonify({
+                "error": "Request timed out. This could be because:\n"
+                "1. The model is not loaded and loading took too long\n"
+                "2. The generation request itself took too long\n"
+                "Try preloading the model first or using a different model."
+            }), 504  # Gateway Timeout
+        current_app.logger.error(f"LLM test runtime error: {e}")
         return jsonify({"error": str(e)}), 500
+    except requests.exceptions.Timeout:
+        current_app.logger.error("LLM test explicit timeout")
+        return jsonify({
+            "error": "Request timed out while waiting for the LLM service"
+        }), 504
+    except Exception as e:
+        current_app.logger.error(f"Unexpected error in LLM test: {type(e).__name__}: {e}")
+        return jsonify({
+            "error": f"An unexpected error occurred: {type(e).__name__}"
+        }), 500
+
+
+@bp.route('/prompts', methods=['GET'])
+def get_prompts():
+    """Get all prompts"""
+    prompts = LLMPrompt.query.all()
+    return jsonify([{
+        'id': p.id,
+        'name': p.name,
+        'description': p.description,
+        'prompt_text': p.prompt_text
+    } for p in prompts])
 
 
 @bp.route("/templates", methods=["GET"])
 def get_templates():
     """Get all prompt templates from LLMPrompt"""
-    templates = LLMPrompt.query.all()
-    return jsonify(
-        [
-            {
-                "id": t.id,
-                "name": t.name,
-                "content": t.prompt_text,
-                "description": t.description,
-            }
-            for t in templates
-        ]
-    )
+    prompts = LLMPrompt.query.all()
+    return jsonify([{
+        'id': p.id,
+        'name': p.name,
+        'description': p.description,
+        'prompt_text': p.prompt_text
+    } for p in prompts])
 
 
 @bp.route("/templates/<int:template_id>", methods=["PUT"])
@@ -93,7 +118,7 @@ def update_template(template_id):
     data = request.get_json()
     template = PromptTemplate.query.get_or_404(template_id)
 
-    template.content = data.get("content", template.content)
+    template.prompt_text = data.get("prompt_text", template.prompt_text)
     template.description = data.get("description", template.description)
 
     try:
@@ -241,4 +266,42 @@ def preload_model():
         r.raise_for_status()
         return jsonify({'success': True})
     except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/prompts/<int:prompt_id>', methods=['PUT'])
+def update_prompt(prompt_id):
+    """Update an existing prompt"""
+    data = request.get_json()
+    if not data or not data.get('name') or not data.get('prompt_text'):
+        return jsonify({'success': False, 'error': 'Name and prompt_text required'}), 400
+    
+    prompt = LLMPrompt.query.get_or_404(prompt_id)
+    prompt.name = data['name']
+    prompt.description = data.get('description', '')
+    prompt.prompt_text = data['prompt_text']
+    
+    try:
+        db.session.commit()
+        return jsonify({'success': True, 'prompt': {
+            'id': prompt.id,
+            'name': prompt.name,
+            'description': prompt.description,
+            'prompt_text': prompt.prompt_text
+        }})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/prompts/<int:prompt_id>', methods=['DELETE'])
+def delete_prompt(prompt_id):
+    """Delete a prompt"""
+    prompt = LLMPrompt.query.get_or_404(prompt_id)
+    try:
+        db.session.delete(prompt)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500

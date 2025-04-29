@@ -169,6 +169,34 @@ CREATE TABLE llm_interaction (
 );
 ```
 
+## LLM Operation Logging
+
+The database includes tables for tracking LLM operations and errors:
+
+### llm_log Table
+- Stores detailed logs of all LLM operations
+- Includes request parameters, response data, and timing information
+- Tracks model versions and configurations used
+- Records error details and stack traces
+
+### Error Tracking
+- Error classification and categorization
+- Timestamp and duration tracking
+- Related request context
+- Recovery actions taken
+
+### Performance Metrics
+- Response time tracking
+- Success/failure rates
+- Resource utilization
+- Model performance statistics
+
+### Data Retention
+- Log rotation policies
+- Archival procedures
+- Cleanup of old records
+- Backup requirements
+
 ## Best Practices
 
 ### Data Integrity

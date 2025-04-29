@@ -5,6 +5,7 @@
 ### Web Framework
 - Flask (3.1.0): Main web framework
 - Werkzeug (3.1.3): WSGI utility library
+- Gunicorn (23.0.0): WSGI HTTP Server
 
 ### Database
 - SQLAlchemy (2.0.40): SQL toolkit and ORM
@@ -24,15 +25,34 @@
 ### API & Documentation
 - Flasgger (0.9.7): Swagger/OpenAPI integration
 - marshmallow (3.26.1): Object serialization/deserialization
+- pydantic (2.11.3): Data validation and settings management
+- pydantic-settings (2.9.1): Settings management
 
 ### LLM Integration
 - langchain (0.3.23): LLM framework
+- langchain-community (0.3.21): Community components for LangChain
+- langchain-core (0.3.55): Core LangChain functionality
+- langchain-text-splitters (0.3.8): Text splitting utilities
 - openai (1.75.0): OpenAI API client
+
+### HTTP Client
+- httpx (0.28.1): Async HTTP client
+- httpx-sse (0.4.0): Server-Sent Events support
+- requests (2.32.3): HTTP client library
+- requests-toolbelt (1.0.0): Utilities for requests
+
+### Content Processing
+- python-frontmatter (1.0.1): Front matter parsing
+- markdown (3.8): Markdown processing
+- beautifulsoup4 (4.13.4): HTML parsing
+- Pillow (11.2.1): Image processing
 
 ### Utilities
 - python-dotenv (1.1.0): Environment variable management
 - Flask-Mail (0.10.0): Email sending support
 - Flask-Caching (2.3.1): Cache support
+- python-slugify (8.0.4): URL slug generation
+- PyYAML (6.0.2): YAML file processing
 
 ## Development Dependencies
 

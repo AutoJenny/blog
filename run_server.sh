@@ -25,5 +25,14 @@ export FLASK_APP=app.py
 export FLASK_DEBUG=1
 export FLASK_RUN_PORT=5000
 
+# Activate virtual environment
+if [ -d "venv" ]; then
+    echo "Activating virtual environment..."
+    source venv/bin/activate
+else
+    echo "Error: Virtual environment not found. Please run: python -m venv venv"
+    exit 1
+fi
+
 echo "Starting server on http://127.0.0.1:5000"
 exec python run.py  # Using exec to replace shell process with Python 

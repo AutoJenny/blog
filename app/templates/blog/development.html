@@ -21,7 +21,89 @@
                     style="color: var(--admin-text-secondary);">{{ field.replace('_', ' ').title() }}</label>
                 <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
                     rows="2">{{ value or '' }}</textarea>
-                <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+                <div style="display: flex; gap: 0.5rem; align-items: center; margin: 0.5rem 0;">
+                    <button type="button" class="admin-button" onclick="saveGlobalField('{{ field }}')">Save</button>
+                    {% if field in ['idea_scope', 'provisional_title'] %}
+                    <button type="button" class="admin-button"
+                        id="generate-{{ field.replace('_', '-') }}-btn">Generate</button>
+                    <button type="button" class="admin-button-secondary"
+                        id="toggle-llm-settings-{{ field.replace('_', '-') }}-btn">LLM Settings</button>
+                    {% endif %}
+                </div>
+                {% if field in ['idea_scope', 'provisional_title'] %}
+                <div id="llm-settings-panel-{{ field.replace('_', '-') }}"
+                    style="display:none; border:2px solid #6366F1; background:#23272F; border-radius:1rem; margin:0.5rem 0 1rem 0; padding:1.5rem;">
+                    <h3 style="color:#fff; font-size:1.1rem; margin-bottom:1rem;">LLM Action Settings</h3>
+                    <form id="llmActionFormPanel-{{ field.replace('_', '-') }}">
+                        <div id="llm-settings-feedback-{{ field.replace('_', '-') }}"
+                            style="margin-bottom:1rem; color:#a3e635; display:none;"></div>
+                        <div id="llm-settings-loading-{{ field.replace('_', '-') }}"
+                            style="margin-bottom:1rem; color:#fff; display:none;">Loading...</div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-1">Source Field</label>
+                            <select name="source_field" class="admin-textarea w-full"
+                                id="llm-source-field-select-{{ field.replace('_', '-') }}">
+                                {% for stage, fields in workflow_fields.items() %}
+                                <optgroup label="{{ stage }}">
+                                    {% for wf in fields %}
+                                    <option value="{{ wf }}" {% if wf==field %}selected{% endif %}>{{
+                                        wf.replace('_', ' ').title() }}</option>
+                                    {% endfor %}
+                                </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-1">Prompt Template</label>
+                            <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                                <select id="llm-prompt-template-select-{{ field.replace('_', '-') }}"
+                                    class="admin-textarea w-full" style="max-width: 220px;"></select>
+                                <textarea name="prompt_template" class="admin-textarea w-full" rows="3"
+                                    id="llm-prompt-template-{{ field.replace('_', '-') }}">Suggest a {{ field.replace('_', ' ') }} for: {{ basic_idea }}</textarea>
+                            </div>
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <a href="#" id="llm-add-new-prompt-link-{{ field.replace('_', '-') }}"
+                                style="color:#6366F1; font-size:0.95em;">+ Add New Prompt</a>
+                        </div>
+                        <div id="llm-new-prompt-form-{{ field.replace('_', '-') }}"
+                            style="display:none; margin-top:0.5rem; background:#23272F; border:1px solid #6366F1; border-radius:0.5rem; padding:1rem;">
+                            <label class="block text-sm font-semibold mb-1">Prompt Name</label>
+                            <input type="text" id="llm-new-prompt-name-{{ field.replace('_', '-') }}"
+                                class="admin-textarea w-full mb-2" placeholder="Prompt name">
+                            <label class="block text-sm font-semibold mb-1">Prompt Content</label>
+                            <textarea id="llm-new-prompt-content-{{ field.replace('_', '-') }}"
+                                class="admin-textarea w-full mb-2" rows="3"></textarea>
+                            <button type="button" class="admin-button"
+                                id="llm-save-new-prompt-btn-{{ field.replace('_', '-') }}">Save</button>
+                            <button type="button" class="admin-button-secondary"
+                                id="llm-cancel-new-prompt-btn-{{ field.replace('_', '-') }}">Cancel</button>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-1">LLM Model</label>
+                            <select name="llm_model" class="admin-textarea w-full"
+                                id="llm-model-select-{{ field.replace('_', '-') }}">
+                                <option value="">Loading models...</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-1">Temperature</label>
+                            <input type="number" name="temperature" class="admin-textarea w-full" min="0" max="2"
+                                step="0.01" value="0.7" id="llm-temperature-{{ field.replace('_', '-') }}">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold mb-1">Max Tokens</label>
+                            <input type="number" name="max_tokens" class="admin-textarea w-full" min="1" max="2048"
+                                value="64" id="llm-max-tokens-{{ field.replace('_', '-') }}">
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button type="button" id="close-llm-settings-btn-{{ field.replace('_', '-') }}"
+                                class="admin-button-secondary">Close</button>
+                            <button type="submit" class="admin-button">Save Settings</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
@@ -85,5 +167,205 @@
             location.reload();
         });
     }
+
+    // Initialize LLM settings for each field
+    ['idea-scope', 'provisional-title'].forEach(field => {
+        const toggleBtn = document.getElementById(`toggle-llm-settings-${field}-btn`);
+        const panel = document.getElementById(`llm-settings-panel-${field}`);
+        const closeBtn = document.getElementById(`close-llm-settings-btn-${field}`);
+        const form = document.getElementById(`llmActionFormPanel-${field}`);
+        const feedback = document.getElementById(`llm-settings-feedback-${field}`);
+        const loading = document.getElementById(`llm-settings-loading-${field}`);
+        const fieldName = field.replace('-', '_');
+
+        function showFeedback(msg, color) {
+            feedback.textContent = msg;
+            feedback.style.color = color || '#a3e635';
+            feedback.style.display = 'block';
+            setTimeout(() => { feedback.style.display = 'none'; }, 2000);
+        }
+
+        function showLoading(show) {
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        function loadSettings() {
+            showLoading(true);
+            fetch('/api/v1/llm/actions/' + fieldName)
+                .then(r => r.json())
+                .then(data => {
+                    showLoading(false);
+                    if (data && data.field_name) {
+                        document.getElementById(`llm-source-field-select-${field}`).value = data.source_field || data.field_name;
+                        document.getElementById(`llm-prompt-template-${field}`).value = data.prompt_template;
+                        document.getElementById(`llm-model-select-${field}`).value = data.llm_model;
+                        document.getElementById(`llm-temperature-${field}`).value = data.temperature;
+                        document.getElementById(`llm-max-tokens-${field}`).value = data.max_tokens;
+                    }
+                })
+                .catch(() => { showLoading(false); showFeedback('Failed to load settings', '#f87171'); });
+        }
+
+        // Load prompt templates for dropdown
+        fetch('/api/v1/llm/prompts')
+            .then(r => r.json())
+            .then(templates => {
+                const select = document.getElementById(`llm-prompt-template-select-${field}`);
+                select.innerHTML = '<option value="">Select a template...</option>';
+                templates.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.prompt_text;
+                    opt.textContent = t.name;
+                    select.appendChild(opt);
+                });
+            });
+
+        // When a template is selected, load its content into the textarea
+        document.getElementById(`llm-prompt-template-select-${field}`).addEventListener('change', function (e) {
+            if (e.target.value) {
+                document.getElementById(`llm-prompt-template-${field}`).value = e.target.value;
+            }
+        });
+
+        if (toggleBtn && panel) {
+            toggleBtn.addEventListener('click', function () {
+                panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'block' : 'none';
+                if (panel.style.display === 'block') loadSettings();
+            });
+        }
+
+        if (closeBtn && panel) {
+            closeBtn.addEventListener('click', function () {
+                panel.style.display = 'none';
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                showLoading(true);
+                fetch('/api/v1/llm/actions/' + fieldName, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        field_name: fieldName,
+                        source_field: document.getElementById(`llm-source-field-select-${field}`).value,
+                        prompt_template: document.getElementById(`llm-prompt-template-${field}`).value,
+                        llm_model: document.getElementById(`llm-model-select-${field}`).value,
+                        temperature: document.getElementById(`llm-temperature-${field}`).value,
+                        max_tokens: document.getElementById(`llm-max-tokens-${field}`).value
+                    })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        showLoading(false);
+                        if (data.status === 'success') showFeedback('Saved!', '#a3e635');
+                        else showFeedback('Save failed', '#f87171');
+                    })
+                    .catch(() => { showLoading(false); showFeedback('Save failed', '#f87171'); });
+            });
+        }
+
+        // Add New Prompt logic
+        const addNewPromptLink = document.getElementById(`llm-add-new-prompt-link-${field}`);
+        const newPromptForm = document.getElementById(`llm-new-prompt-form-${field}`);
+        const saveNewPromptBtn = document.getElementById(`llm-save-new-prompt-btn-${field}`);
+        const cancelNewPromptBtn = document.getElementById(`llm-cancel-new-prompt-btn-${field}`);
+        const newPromptName = document.getElementById(`llm-new-prompt-name-${field}`);
+        const newPromptContent = document.getElementById(`llm-new-prompt-content-${field}`);
+        const promptSelect = document.getElementById(`llm-prompt-template-select-${field}`);
+
+        if (addNewPromptLink && newPromptForm) {
+            addNewPromptLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                newPromptForm.style.display = 'block';
+                newPromptName.value = '';
+                newPromptContent.value = document.getElementById(`llm-prompt-template-${field}`).value;
+            });
+        }
+
+        if (cancelNewPromptBtn) {
+            cancelNewPromptBtn.addEventListener('click', function () {
+                newPromptForm.style.display = 'none';
+            });
+        }
+
+        if (saveNewPromptBtn) {
+            saveNewPromptBtn.addEventListener('click', function () {
+                const name = newPromptName.value.trim();
+                const content = newPromptContent.value.trim();
+                if (!name || !content) return alert('Please enter both name and content.');
+                fetch('/api/v1/llm/prompts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, prompt_text: content })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success && data.prompt) {
+                            // Add new option to dropdown and select it
+                            const opt = document.createElement('option');
+                            opt.value = data.prompt.prompt_text;
+                            opt.textContent = data.prompt.name;
+                            opt.selected = true;
+                            promptSelect.appendChild(opt);
+                            document.getElementById(`llm-prompt-template-${field}`).value = data.prompt.prompt_text;
+                            newPromptForm.style.display = 'none';
+                        } else {
+                            alert('Failed to save prompt');
+                        }
+                    });
+            });
+        }
+
+        // Generate button functionality
+        const generateBtn = document.getElementById(`generate-${field}-btn`);
+        if (generateBtn) {
+            generateBtn.addEventListener('click', async function () {
+                const prompt = document.getElementById(`llm-prompt-template-${field}`).value;
+                const model = document.getElementById(`llm-model-select-${field}`).value;
+                const temperature = document.getElementById(`llm-temperature-${field}`).value;
+                const maxTokens = document.getElementById(`llm-max-tokens-${field}`).value;
+                const sourceField = document.getElementById(`llm-source-field-select-${field}`).value;
+                const textarea = document.getElementById(fieldName);
+
+                if (!prompt || !model) {
+                    alert('Prompt and model are required!');
+                    return;
+                }
+
+                generateBtn.disabled = true;
+                generateBtn.textContent = 'Generating...';
+
+                try {
+                    const resp = await fetch('/api/v1/llm/test', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prompt: prompt,
+                            model_name: model,
+                            temperature: parseFloat(temperature),
+                            max_tokens: parseInt(maxTokens),
+                            source_field: sourceField
+                        })
+                    });
+                    const data = await resp.json();
+                    if (data.result) {
+                        textarea.value = data.result;
+                        saveGlobalField(fieldName);
+                    } else if (data.error) {
+                        alert('Error: ' + data.error);
+                    } else {
+                        alert('No result.');
+                    }
+                } catch (error) {
+                    alert('Error: ' + error);
+                } finally {
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = 'Generate';
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}
