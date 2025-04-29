@@ -82,3 +82,10 @@ All notable changes to this project are documented in this file.
   - Fixed template selection and persistence for provisional_title field
   - Synchronized template dropdown with textarea across all fields
   - Ensured proper saving of LLM settings for all fields
+
+2024-03-29
+- Fixed prompt template text persistence
+  - Fixed prompt template saving and loading in both idea_scope and provisional_title modals
+  - Ensured both dropdown and textarea are properly synchronized
+  - Fixed element ID references in JavaScript code
+  - Added proper error handling for template loading

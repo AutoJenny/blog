@@ -248,7 +248,15 @@
                                         showLoading(false);
                                         if (data && data.field_name) {
                                             document.getElementById('llm-source-field-select-idea-scope').value = data.source_field || data.field_name;
-                                            document.getElementById('llm-prompt-template-select-idea-scope').value = data.prompt_template;
+                                            const templateSelect = document.getElementById('llm-prompt-template-select-idea-scope');
+                                            const promptTextarea = document.getElementById('llm-prompt-template-idea-scope');
+
+                                            // Update both the dropdown and textarea
+                                            if (templateSelect && promptTextarea) {
+                                                templateSelect.value = data.prompt_template;
+                                                promptTextarea.value = data.prompt_template;
+                                            }
+
                                             document.getElementById('llm-model-select-idea-scope').value = data.llm_model;
                                             document.getElementById('llm-temperature-idea-scope').value = data.temperature;
                                             document.getElementById('llm-max-tokens-idea-scope').value = data.max_tokens;
@@ -508,7 +516,15 @@
                                         showLoading(false);
                                         if (data && data.field_name) {
                                             document.getElementById('llm-source-field-select-provisional-title').value = data.source_field || data.field_name;
-                                            document.getElementById('llm-prompt-template-select-provisional-title').value = data.prompt_template;
+                                            const templateSelect = document.getElementById('llm-prompt-template-select-provisional-title');
+                                            const promptTextarea = document.getElementById('llm-prompt-template-provisional-title');
+
+                                            // Update both the dropdown and textarea
+                                            if (templateSelect && promptTextarea) {
+                                                templateSelect.value = data.prompt_template;
+                                                promptTextarea.value = data.prompt_template;
+                                            }
+
                                             document.getElementById('llm-model-select-provisional-title').value = data.llm_model;
                                             document.getElementById('llm-temperature-provisional-title').value = data.temperature;
                                             document.getElementById('llm-max-tokens-provisional-title').value = data.max_tokens;
