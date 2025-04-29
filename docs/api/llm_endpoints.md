@@ -98,6 +98,52 @@ Generates social media content for a blog section.
 }
 ```
 
+## Template Management
+
+### Save Template Settings
+`POST /api/v1/llm/actions/`
+
+Saves template settings for a specific LLM action.
+
+**Request Body:**
+```json
+{
+    "source_field": "string",
+    "template": "string",
+    "llm_model": "string",
+    "temperature": "number",
+    "max_tokens": "number"
+}
+```
+
+**Response:**
+```json
+{
+    "status": "success",
+    "message": "Template settings saved successfully"
+}
+```
+
+### Test Template
+`POST /api/v1/llm/test`
+
+Tests a prompt template with the specified model.
+
+**Request Body:**
+```json
+{
+    "prompt": "string",
+    "model_name": "string"
+}
+```
+
+**Response:**
+```json
+{
+    "result": "string"
+}
+```
+
 ## Error Responses
 
 All endpoints may return the following error responses:
