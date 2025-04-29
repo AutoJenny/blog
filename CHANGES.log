@@ -62,6 +62,11 @@ All notable changes to this project are documented in this file.
 - Updated development interface to properly sync template selection with textarea
 - Enhanced stages documentation to include references to development interface and LLM assistance
 - Added LLM assistance details to Development Stage documentation
+- Updated API documentation for LLM actions endpoint
+  - Added detailed request/response formats for template management
+  - Added documentation for GET template settings endpoint
+  - Updated error response format documentation
+  - Added template_name field for new template creation
 
 2024-03-26
 - Updated documentation for template management functionality
@@ -89,3 +94,11 @@ All notable changes to this project are documented in this file.
   - Ensured both dropdown and textarea are properly synchronized
   - Fixed element ID references in JavaScript code
   - Added proper error handling for template loading
+
+[2024-03-XX]
+- Enhanced template management system:
+  - Added automatic synchronization between template dropdown and textarea
+  - Improved template settings persistence
+  - Added real-time saving of LLM settings
+  - Enhanced error handling and user feedback
+  - Updated development documentation to reflect changes

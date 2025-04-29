@@ -164,4 +164,71 @@ Common issues and solutions:
 - Use environment variables for sensitive data
 - Regular security audits
 
-> **Workflow Initialization:** All workflow stages and sub-stages are now initialized for every post at creation, enabling asynchronous editing. The seeding script (`scripts/update_workflow.py`) defines and ensures the presence of all stages and sub-stages in the database. There is no longer any sequential or partial initialization—authors can work on any stage or sub-stage at any time. 
+> **Workflow Initialization:** All workflow stages and sub-stages are now initialized for every post at creation, enabling asynchronous editing. The seeding script (`scripts/update_workflow.py`) defines and ensures the presence of all stages and sub-stages in the database. There is no longer any sequential or partial initialization—authors can work on any stage or sub-stage at any time.
+
+## Template Management
+Templates are managed through a dropdown interface in the development environment. The system provides:
+- Automatic synchronization between template selection and the prompt textarea
+- Persistent storage of template selections and settings
+- Real-time saving of associated settings (LLM model, temperature, max tokens)
+- User feedback on save operations through visual indicators
+- Error handling for failed save operations
+
+When working with templates:
+1. Select a template from the dropdown to load its content
+2. The system automatically:
+   - Updates the prompt textarea with the template content
+   - Saves your template selection
+   - Persists related settings (LLM model, temperature, max tokens)
+   - Provides visual feedback on the save operation status
+3. If a save operation fails:
+   - An error message is displayed
+   - The system maintains the current state
+   - Users can retry the operation
+
+The template management system uses event listeners to ensure:
+- Immediate UI updates on template selection
+- Reliable state synchronization between components
+- Proper error handling and user feedback
+- Clean state management during modal operations
+
+## LLM Integration
+
+The blog system integrates with Language Learning Models (LLM) to assist in content generation. Key components include:
+
+### Template Management
+
+- Templates are stored in the database and managed through the development interface
+- Template selection is synchronized between dropdown and textarea elements
+- Settings (template, source field, model, temperature, tokens) are automatically saved on selection
+
+### Content Generation
+
+The development interface supports LLM-assisted content generation for:
+- Idea Scope
+- Provisional Title
+- Other configurable fields
+
+Generation requests are handled asynchronously with user feedback.
+
+## Client-Side Development Interface
+
+The development interface (`app/templates/blog/development.html`) provides a rich editing environment with several key features:
+
+### Modal Management
+- LLM action modals for template selection and generation
+- Show/hide logic with proper cleanup
+
+### Field Management
+- Automatic saving of global and section-specific fields
+- Real-time feedback on save operations
+- Template synchronization between selection and display
+
+### Section Management
+- Accordion functionality for collapsible sections
+- Proper state management for section visibility
+
+### Event Handling
+- Debounced save operations
+- Proper cleanup of event listeners
+- Error handling with user feedback 
