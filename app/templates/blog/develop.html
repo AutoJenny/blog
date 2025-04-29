@@ -224,13 +224,23 @@
                     </div>
                     <script>
                         document.addEventListener('DOMContentLoaded', function () {
-                            var toggleBtn = document.getElementById('toggle-llm-settings-idea-scope-btn');
-                            var panel = document.getElementById('llm-settings-panel-idea-scope');
-                            var closeBtn = document.getElementById('close-llm-settings-btn-idea-scope');
-                            var form = document.getElementById('llmActionFormPanel-idea-scope');
-                            var feedback = document.getElementById('llm-settings-feedback-idea-scope');
-                            var loading = document.getElementById('llm-settings-loading-idea-scope');
-                            var fieldName = 'idea_scope';
+                            const fieldName = 'idea_scope';
+                            const toggleBtn = document.getElementById('toggle-llm-settings-idea-scope-btn');
+                            const panel = document.getElementById('llm-settings-panel-idea-scope');
+                            const closeBtn = document.getElementById('close-llm-settings-btn-idea-scope');
+                            const form = document.getElementById('llmActionFormPanel-idea-scope');
+                            const feedback = document.getElementById('llm-settings-feedback-idea-scope');
+                            const loading = document.getElementById('llm-settings-loading-idea-scope');
+                            const templateSelect = document.getElementById('llm-prompt-template-select-idea-scope');
+                            const promptTemplate = document.getElementById('llm-prompt-template-idea-scope');
+                            const addNewPromptLink = document.getElementById('llm-add-new-prompt-link-idea-scope');
+                            const newPromptForm = document.getElementById('llm-new-prompt-form-idea-scope');
+                            const saveNewPromptBtn = document.getElementById('llm-save-new-prompt-btn-idea-scope');
+                            const cancelNewPromptBtn = document.getElementById('llm-cancel-new-prompt-btn-idea-scope');
+                            const newPromptName = document.getElementById('llm-new-prompt-name-idea-scope');
+                            const newPromptContent = document.getElementById('llm-new-prompt-content-idea-scope');
+                            const promptSelect = document.getElementById('llm-prompt-template-select-idea-scope');
+
                             function showFeedback(msg, color) {
                                 feedback.textContent = msg;
                                 feedback.style.color = color || '#a3e635';
@@ -248,28 +258,16 @@
                                         showLoading(false);
                                         if (data && data.field_name) {
                                             document.getElementById('llm-source-field-select-idea-scope').value = data.source_field || data.field_name;
-                                            const templateSelect = document.getElementById('llm-prompt-template-select-idea-scope');
-                                            const promptTextarea = document.getElementById('llm-prompt-template-idea-scope');
 
                                             // Update both the dropdown and textarea
-                                            if (templateSelect && promptTextarea) {
+                                            if (templateSelect && promptTemplate) {
                                                 templateSelect.value = data.prompt_template;
-                                                promptTextarea.value = data.prompt_template;
+                                                promptTemplate.value = data.prompt_template;
                                             }
 
                                             document.getElementById('llm-model-select-idea-scope').value = data.llm_model;
                                             document.getElementById('llm-temperature-idea-scope').value = data.temperature;
                                             document.getElementById('llm-max-tokens-idea-scope').value = data.max_tokens;
-
-                                            // Also update the template dropdown if a template matches
-                                            const templateSelect = document.getElementById('llm-prompt-template-select-idea-scope');
-                                            if (templateSelect) {
-                                                const options = Array.from(templateSelect.options);
-                                                const matchingOption = options.find(opt => opt.value === data.prompt_template);
-                                                if (matchingOption) {
-                                                    matchingOption.selected = true;
-                                                }
-                                            }
                                         }
                                     })
                                     .catch(() => { showLoading(false); showFeedback('Failed to load settings', '#f87171'); });
@@ -295,7 +293,7 @@
                                         body: JSON.stringify({
                                             field_name: fieldName,
                                             source_field: document.getElementById('llm-source-field-select-idea-scope').value,
-                                            prompt_template: document.getElementById('llm-prompt-template-idea-scope').value,
+                                            prompt_template: promptTemplate.value,
                                             llm_model: document.getElementById('llm-model-select-idea-scope').value,
                                             temperature: document.getElementById('llm-temperature-idea-scope').value,
                                             max_tokens: document.getElementById('llm-max-tokens-idea-scope').value
@@ -314,18 +312,15 @@
                             fetch('/api/v1/llm/prompts')
                                 .then(r => r.json())
                                 .then(templates => {
-                                    const select = document.getElementById('llm-prompt-template-select-idea-scope');
-                                    select.innerHTML = '<option value="">Select a template...</option>';
+                                    templateSelect.innerHTML = '<option value="">Select a template...</option>';
                                     templates.forEach(t => {
                                         const opt = document.createElement('option');
                                         opt.value = t.prompt_text;
                                         opt.textContent = t.name;
-                                        select.appendChild(opt);
+                                        templateSelect.appendChild(opt);
                                     });
                                 });
                             // When a template is selected, load its content into the textarea
-                            const templateSelect = document.getElementById('llm-prompt-template-select-idea-scope');
-                            const promptTemplate = document.getElementById('llm-prompt-template-idea-scope');
                             if (templateSelect && promptTemplate) {
                                 templateSelect.addEventListener('change', function (e) {
                                     if (e.target.value) {
@@ -334,19 +329,12 @@
                                 });
                             }
                             // Add New Prompt logic
-                            const addNewPromptLink = document.getElementById('llm-add-new-prompt-link-idea-scope');
-                            const newPromptForm = document.getElementById('llm-new-prompt-form-idea-scope');
-                            const saveNewPromptBtn = document.getElementById('llm-save-new-prompt-btn-idea-scope');
-                            const cancelNewPromptBtn = document.getElementById('llm-cancel-new-prompt-btn-idea-scope');
-                            const newPromptName = document.getElementById('llm-new-prompt-name-idea-scope');
-                            const newPromptContent = document.getElementById('llm-new-prompt-content-idea-scope');
-                            const promptSelect = document.getElementById('llm-prompt-template-select-idea-scope');
                             if (addNewPromptLink && newPromptForm) {
                                 addNewPromptLink.addEventListener('click', function (e) {
                                     e.preventDefault();
                                     newPromptForm.style.display = 'block';
                                     newPromptName.value = '';
-                                    newPromptContent.value = document.getElementById('llm-prompt-template-idea-scope').value;
+                                    newPromptContent.value = promptTemplate.value;
                                 });
                             }
                             if (cancelNewPromptBtn) {
@@ -372,8 +360,8 @@
                                                 opt.value = data.prompt.prompt_text;
                                                 opt.textContent = data.prompt.name;
                                                 opt.selected = true;
-                                                promptSelect.appendChild(opt);
-                                                document.getElementById('llm-prompt-template-idea-scope').value = data.prompt.prompt_text;
+                                                templateSelect.appendChild(opt);
+                                                promptTemplate.value = data.prompt.prompt_text;
                                                 newPromptForm.style.display = 'none';
                                             } else {
                                                 alert('Failed to save prompt');
@@ -499,6 +487,15 @@
                             const form = document.getElementById('llmActionFormPanel-provisional-title');
                             const loading = document.getElementById('llm-settings-loading-provisional-title');
                             const feedback = document.getElementById('llm-settings-feedback-provisional-title');
+                            const templateSelect = document.getElementById('llm-prompt-template-select-provisional-title');
+                            const promptTemplate = document.getElementById('llm-prompt-template-provisional-title');
+                            const addNewPromptLink = document.getElementById('llm-add-new-prompt-link-provisional-title');
+                            const newPromptForm = document.getElementById('llm-new-prompt-form-provisional-title');
+                            const saveNewPromptBtn = document.getElementById('llm-save-new-prompt-btn-provisional-title');
+                            const cancelNewPromptBtn = document.getElementById('llm-cancel-new-prompt-btn-provisional-title');
+                            const newPromptName = document.getElementById('llm-new-prompt-name-provisional-title');
+                            const newPromptContent = document.getElementById('llm-new-prompt-content-provisional-title');
+
                             function showFeedback(msg, color) {
                                 feedback.textContent = msg;
                                 feedback.style.color = color || '#a3e635';
@@ -516,13 +513,11 @@
                                         showLoading(false);
                                         if (data && data.field_name) {
                                             document.getElementById('llm-source-field-select-provisional-title').value = data.source_field || data.field_name;
-                                            const templateSelect = document.getElementById('llm-prompt-template-select-provisional-title');
-                                            const promptTextarea = document.getElementById('llm-prompt-template-provisional-title');
 
                                             // Update both the dropdown and textarea
-                                            if (templateSelect && promptTextarea) {
+                                            if (templateSelect && promptTemplate) {
                                                 templateSelect.value = data.prompt_template;
-                                                promptTextarea.value = data.prompt_template;
+                                                promptTemplate.value = data.prompt_template;
                                             }
 
                                             document.getElementById('llm-model-select-provisional-title').value = data.llm_model;
@@ -553,7 +548,7 @@
                                         body: JSON.stringify({
                                             field_name: fieldName,
                                             source_field: document.getElementById('llm-source-field-select-provisional-title').value,
-                                            prompt_template: document.getElementById('llm-prompt-template-provisional-title').value,
+                                            prompt_template: promptTemplate.value,
                                             llm_model: document.getElementById('llm-model-select-provisional-title').value,
                                             temperature: document.getElementById('llm-temperature-provisional-title').value,
                                             max_tokens: document.getElementById('llm-max-tokens-provisional-title').value
@@ -572,18 +567,15 @@
                             fetch('/api/v1/llm/prompts')
                                 .then(r => r.json())
                                 .then(templates => {
-                                    const select = document.getElementById('llm-prompt-template-select-provisional-title');
-                                    select.innerHTML = '<option value="">Select a template...</option>';
+                                    templateSelect.innerHTML = '<option value="">Select a template...</option>';
                                     templates.forEach(t => {
                                         const opt = document.createElement('option');
                                         opt.value = t.prompt_text;
                                         opt.textContent = t.name;
-                                        select.appendChild(opt);
+                                        templateSelect.appendChild(opt);
                                     });
                                 });
                             // When a template is selected, load its content into the textarea
-                            const templateSelect = document.getElementById('llm-prompt-template-select-provisional-title');
-                            const promptTemplate = document.getElementById('llm-prompt-template-provisional-title');
                             if (templateSelect && promptTemplate) {
                                 templateSelect.addEventListener('change', function (e) {
                                     if (e.target.value) {
@@ -592,19 +584,12 @@
                                 });
                             }
                             // Add New Prompt logic
-                            const addNewPromptLink = document.getElementById('llm-add-new-prompt-link-provisional-title');
-                            const newPromptForm = document.getElementById('llm-new-prompt-form-provisional-title');
-                            const saveNewPromptBtn = document.getElementById('llm-save-new-prompt-btn-provisional-title');
-                            const cancelNewPromptBtn = document.getElementById('llm-cancel-new-prompt-btn-provisional-title');
-                            const newPromptName = document.getElementById('llm-new-prompt-name-provisional-title');
-                            const newPromptContent = document.getElementById('llm-new-prompt-content-provisional-title');
-                            const promptSelect = document.getElementById('llm-prompt-template-select-provisional-title');
                             if (addNewPromptLink && newPromptForm) {
                                 addNewPromptLink.addEventListener('click', function (e) {
                                     e.preventDefault();
                                     newPromptForm.style.display = 'block';
                                     newPromptName.value = '';
-                                    newPromptContent.value = document.getElementById('llm-prompt-template-provisional-title').value;
+                                    newPromptContent.value = promptTemplate.value;
                                 });
                             }
                             if (cancelNewPromptBtn) {
@@ -630,8 +615,8 @@
                                                 opt.value = data.prompt.prompt_text;
                                                 opt.textContent = data.prompt.name;
                                                 opt.selected = true;
-                                                promptSelect.appendChild(opt);
-                                                document.getElementById('llm-prompt-template-idea-scope').value = data.prompt.prompt_text;
+                                                templateSelect.appendChild(opt);
+                                                promptTemplate.value = data.prompt.prompt_text;
                                                 newPromptForm.style.display = 'none';
                                             } else {
                                                 alert('Failed to save prompt');

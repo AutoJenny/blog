@@ -103,7 +103,7 @@ Generates social media content for a blog section.
 ### Save Template Settings
 `POST /api/v1/llm/actions/`
 
-Saves template settings for a specific LLM action.
+Saves template settings for a specific LLM action. This endpoint handles both saving existing templates and creating new ones.
 
 **Request Body:**
 ```json
@@ -112,7 +112,8 @@ Saves template settings for a specific LLM action.
     "template": "string",
     "llm_model": "string",
     "temperature": "number",
-    "max_tokens": "number"
+    "max_tokens": "number",
+    "template_name": "string (optional, for new templates)"
 }
 ```
 
@@ -120,7 +121,53 @@ Saves template settings for a specific LLM action.
 ```json
 {
     "status": "success",
-    "message": "Template settings saved successfully"
+    "message": "Template settings saved successfully",
+    "data": {
+        "template_id": "string",
+        "template_name": "string",
+        "source_field": "string",
+        "template": "string",
+        "llm_model": "string",
+        "temperature": "number",
+        "max_tokens": "number"
+    }
+}
+```
+
+**Error Response:**
+```json
+{
+    "status": "error",
+    "message": "Error description",
+    "errors": {
+        "field_name": ["error details"]
+    }
+}
+```
+
+### Get Template Settings
+`GET /api/v1/llm/actions/<source_field>`
+
+Retrieves template settings for a specific source field.
+
+**Response:**
+```json
+{
+    "status": "success",
+    "data": {
+        "templates": [
+            {
+                "template_id": "string",
+                "template_name": "string",
+                "source_field": "string",
+                "template": "string",
+                "llm_model": "string",
+                "temperature": "number",
+                "max_tokens": "number"
+            }
+        ],
+        "models": ["string"]
+    }
 }
 ```
 

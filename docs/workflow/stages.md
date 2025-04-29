@@ -1,5 +1,13 @@
 # Blog Post Workflow Stages
 
+The blog post workflow is fully asynchronous, allowing authors to work on any stage or sub-stage at any time. Each stage has three possible statuses:
+
+- `NOT_STARTED`
+- `IN_PROGRESS`
+- `COMPLETED`
+
+The development interface (`app/templates/blog/development.html`) provides a rich editing environment for managing all stages and sub-stages, including LLM-assisted content generation for various fields. See the Development Documentation for details on the interface functionality.
+
 > **Note:** As of the latest update, the workflow system is fully asynchronous. All stages and sub-stages are initialized for every post at creation, enabling editing in any order. The seeding script (`scripts/update_workflow.py`) ensures that all workflow stages and sub-stages are present in the database. There is no longer any sequential or partial initialization—authors can work on any stage or sub-stage at any time. Validation and required fields are enforced only at key transitions (e.g., publishing).
 
 ## Overview
@@ -302,4 +310,23 @@ Sub-stage updates in the workflow UI now use element lookup by subStageId and da
 - Each stage can be edited independently
 - Validation occurs at key points rather than during editing
 - Progress tracking is maintained for all stages
-- The UI indicates recommended next stages while allowing access to all stages 
+- The UI indicates recommended next stages while allowing access to all stages
+
+### Development Stage
+
+The Development Stage is where the main content of the blog post is written and refined. This stage includes:
+
+#### Sub-stages:
+1. **Initial Draft**: Create the first draft of the post content. The development interface provides LLM-assisted content generation using customizable templates for different sections and fields.
+2. **Technical Review**: Review and validate technical accuracy
+3. **Editorial Review**: Review for style, clarity, and consistency
+4. **Final Draft**: Incorporate feedback and finalize content
+
+#### Required:
+- Post content must be complete
+- All sections must be reviewed
+- Technical accuracy must be verified
+- Editorial standards must be met
+
+#### Dependencies:
+- Research Stage must be `COMPLETED` 

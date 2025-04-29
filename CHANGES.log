@@ -37,6 +37,7 @@ All notable changes to this project are documented in this file.
 - Fixed Post.updated_at updates for PostDevelopment fields
 - Fixed LLM Test Interface model selection and display
 - Fixed Idea Scope modal prompt template saving
+- Fixed template dropdown population in LLM settings panels
 - Fixed blueprint registration issues
 - Fixed template rendering problems
 - Improved error handling in LLMService
@@ -73,6 +74,9 @@ All notable changes to this project are documented in this file.
   - Added template management section to DEVELOPMENT.md
   - Updated LLM architecture documentation with template persistence details
   - Enhanced documentation of settings persistence and synchronization
+- Updated LLM API documentation to include new template settings persistence endpoint
+- Added documentation for automatic template settings persistence in UI
+- Updated LLM Action Test Feature documentation to reflect current functionality
 
 2024-03-27
 - Updated API documentation for LLM endpoints

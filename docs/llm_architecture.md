@@ -24,4 +24,18 @@ The LLM service implements a robust error handling system:
 - Automatic service restart on fatal errors
 - Connection pooling and retry logic
 - Circuit breaker pattern for external services
-- Graceful shutdown handling 
+- Graceful shutdown handling
+
+## Template Management
+The LLM service includes a robust template management system that:
+- Maintains a collection of pre-defined prompt templates
+- Provides real-time template selection and persistence
+- Automatically syncs template content with the prompt interface
+- Saves associated settings (model, temperature, tokens) with each template selection
+
+### Settings Persistence
+Template selections and associated settings are persisted through the `/api/v1/llm/actions/` endpoint:
+- POST requests save template selections and settings
+- Settings include: source_field, llm_model, temperature, max_tokens
+- Responses provide immediate feedback on save status
+- Error handling follows the standard error classification system 

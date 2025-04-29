@@ -399,10 +399,12 @@ curl -X POST \
 
 A "Test" button is available in the LLM Action modal on the blog develop page (for fields like Provisional Title). This button allows users to test their prompt template and selected model directly from the UI.
 
-- When clicked, the button sends the current prompt template and selected model to the backend endpoint:
-  - `POST /api/v1/llm/test`
-  - Request body: `{ "prompt": "...", "model_name": "..." }`
-- The backend returns the generated result, which is displayed below the button in the modal.
+The template settings (including the selected template, model, temperature, and max tokens) are automatically persisted when:
+1. A template is selected from the dropdown
+2. The Test button is clicked
+3. The Save button is clicked
+
+These settings are stored per source field (e.g., separate settings for Provisional Title, Description, etc.) and are automatically loaded when the modal is opened for that field.
 
 ### Example Usage (API)
 
@@ -441,4 +443,39 @@ When encountering a timeout:
 1. Check if the model is still loading (first request may take longer)
 2. Verify Ollama/OpenAI service is running and accessible
 3. Consider using a smaller model if loading consistently times out
-4. Check the logs for specific error details and troubleshooting steps 
+4. Check the logs for specific error details and troubleshooting steps
+
+### Save Template Settings
+```http
+POST /api/v1/llm/actions/
+```
+
+#### Request Body
+```json
+{
+  "source_field": "string",  // The field this template is associated with
+  "template": "string",      // The template content
+  "llm_model": "string",    // The LLM model to use
+  "temperature": number,     // Temperature setting (0-1)
+  "max_tokens": number      // Maximum tokens to generate
+}
+```
+
+#### Response
+```json
+{
+  "status": "success",
+  "message": "Template settings saved successfully"
+}
+```
+
+#### Error Response
+```json
+{
+  "status": "error",
+  "message": "Failed to save template settings",
+  "details": {
+    "reason": "Invalid parameters"
+  }
+}
+``` 
