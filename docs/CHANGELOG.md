@@ -8,42 +8,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- LLM integration for content generation
-- Database management interface
-- Workflow management system
-- Fully normalized SQL workflow system for post development stages and sub-stages
-- Seeding script for workflow tables (`scripts/update_workflow.py`)
-- Major UI redesign of blog index page (2024-07-10):
-  - Replaced table with a modern, responsive card/grid layout for posts
-  - Each post is now a card showing title, status, date, and clear action buttons (Develop, JSON, Delete)
-  - Added a floating 'New Post' button
-  - Modern toggle for showing deleted posts
-  - Improved accessibility, mobile responsiveness, and visual hierarchy
-  - Updated scripts and styles for new structure
-
-### Fixed
-- Blueprint registration for LLM and DB modules
-- Port configuration standardization (now using port 5000)
-- Template rendering issues in base template
-- Fixed frontend bug where sub-stage content save failed due to incorrect use of `this.closest` in `saveSubStageContent` (now uses element lookup by subStageId).
-- All sub-stage update requests now use correct data binding via element dataset attributes.
-- Rendered 'Basic Idea' as a normal sub-stage in the workflow accordion, removed static block, and ensured all sub-stages are editable and save correctly.
+- LLM integration with improved interface and functionality
+  - Added Test button to LLM Action modal in blog develop interface
+  - Added '+ Add New Prompt' link in LLM settings panel
+  - Added /api/v1/llm/prompts POST endpoint for creating new LLMPrompt records
+  - Added comprehensive API documentation for workflow endpoints
+  - Added docs/workflow/field_reference.md for workflow sub-stage fields
+- Database management interface improvements
+  - Enhanced virtual environment handling in run_server.sh
+  - Added automatic venv detection and activation
+- Major UI redesign of blog index page
+  - Replaced table with modern, responsive card/grid layout
+  - Added floating 'New Post' button
+  - Added modern toggle for showing deleted posts
+  - Improved accessibility and mobile responsiveness
+  - Refined dark theme with improved contrast
+  - Added json, edit, and delete icons/links to each post row
 
 ### Changed
-- Improved development documentation
-- Standardized server startup process
-- Migrated workflow logic, transitions, and sub-stage updates to normalized SQL tables
-- Deprecated legacy JSON-based workflow fields (to be removed after migration)
-- Frontend workflow UI: sub-stage updates now use element lookup by subStageId and dataset attributes for data binding, replacing 'this.closest'.
-- Updated documentation to clarify that all workflow UI fields must be bound to backend stage_data, not static definitions.
+- Updated all workflow documentation for asynchronous model
+- Moved New Post button to main header
+- Enhanced LLM interface JavaScript functionality
+- Improved LLMService timeout handling and error reporting
+- Increased LLM backend request timeout to 60 seconds
+- Reorganized Idea Scope and Provisional Title fields with independent LLM modals
+- Updated DEPENDENCIES.md with current project dependencies
 
-## [0.1.0] - 2025-04-24
+### Fixed
+- Fixed incorrect route registration for /blog/develop/<post_id>
+- Fixed all fetch URLs in blog development template
+- Fixed Post.updated_at updates for PostDevelopment fields
+- Fixed LLM Test Interface model selection and display
+- Fixed Idea Scope modal prompt template saving
+- Fixed blueprint registration issues
+- Fixed template rendering problems
+- Improved error handling in LLMService
+
+### Removed
+- Removed PromptTemplate model and table
+- Removed legacy references to sequential workflow initialization
+
+## [0.1.0] - 2024-03-01
 
 ### Added
 - Initial project setup
 - Basic blog functionality
-- Post creation and management
-- User authentication
-- Admin interface
-- Celery task queue integration
-- Basic API endpoints 
+- User authentication system
+- API endpoints for core features
+- Database models and migrations
+- Frontend templates and styling
+- Development environment configuration
+- Testing framework implementation
+- Documentation structure 

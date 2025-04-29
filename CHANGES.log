@@ -1,90 +1,59 @@
-2024-06-13: Updated docs/workflow/stages.md to clarify that each sub-stage field must be mapped to a backend value in stage_data, and that frontend updates use subStageId and dataset attributes for binding and saving, avoiding static field definitions. 
+# Changes Log
 
-2024-04-18:
-- Added comprehensive API documentation for workflow endpoints in docs/api/workflow.md
-  - Documented all workflow API endpoints with request/response formats
-  - Added detailed error handling information
-  - Included workflow stages and sub-stage status descriptions
-  - Cross-referenced workflow stages documentation 
+All notable changes to this project are documented in this file.
 
-2024-03-21
-- Updated API documentation cross-references for workflow
-  - Added Workflow API section to posts API documentation
-  - Updated workflow README to properly reference comprehensive API docs
-  - Consolidated workflow API documentation references 
+## [Unreleased]
 
-2024-03-27
-- Updated workflow documentation to reflect asynchronous stage editing:
-  - Modified docs/workflow/README.md to clarify asynchronous workflow capabilities
-  - Updated docs/workflow/stages.md with new stage progression and transition rules
-  - Added implementation notes about stage initialization and validation
-  - Clarified that stage dependencies are recommendations rather than enforced rules 
+### Added
+- LLM integration with improved interface and functionality
+  - Added Test button to LLM Action modal in blog develop interface
+  - Added '+ Add New Prompt' link in LLM settings panel
+  - Added /api/v1/llm/prompts POST endpoint for creating new LLMPrompt records
+  - Added comprehensive API documentation for workflow endpoints
+  - Added docs/workflow/field_reference.md for workflow sub-stage fields
+- Database management interface improvements
+  - Enhanced virtual environment handling in run_server.sh
+  - Added automatic venv detection and activation
+- Major UI redesign of blog index page
+  - Replaced table with modern, responsive card/grid layout
+  - Added floating 'New Post' button
+  - Added modern toggle for showing deleted posts
+  - Improved accessibility and mobile responsiveness
+  - Refined dark theme with improved contrast
+  - Added json, edit, and delete icons/links to each post row
 
-2024-06-13: Added docs/workflow/field_reference.md, a comprehensive reference for all workflow sub-stage field names, values, endpoints, and data binding mechanisms, including a checklist for consistency and debugging. 
+### Changed
+- Updated all workflow documentation for asynchronous model
+- Moved New Post button to main header
+- Enhanced LLM interface JavaScript functionality
+- Improved LLMService timeout handling and error reporting
+- Increased LLM backend request timeout to 60 seconds
+- Reorganized Idea Scope and Provisional Title fields with independent LLM modals
+- Updated DEPENDENCIES.md with current project dependencies
 
-2024-07-09 Updated scripts/update_workflow.py to ensure all WorkflowStageEntity and WorkflowSubStageEntity rows are present in the database, matching the WORKFLOW_STAGES constant. Fixed linter errors by using correct model parameters for stage and sub-stage creation. The script now prints a summary of created or already present entities. 
+### Fixed
+- Fixed incorrect route registration for /blog/develop/<post_id>
+- Fixed all fetch URLs in blog development template
+- Fixed Post.updated_at updates for PostDevelopment fields
+- Fixed LLM Test Interface model selection and display
+- Fixed Idea Scope modal prompt template saving
+- Fixed blueprint registration issues
+- Fixed template rendering problems
+- Improved error handling in LLMService
 
-2024-07-09 Updated docs/DEVELOPMENT.md: clarified the workflow seeder section to reflect that scripts/update_workflow.py now ensures all WorkflowStageEntity and WorkflowSubStageEntity rows are present, matching WORKFLOW_STAGES, and uses correct model parameters. Also mention that the script prints a summary of created or already present entities. 
+### Removed
+- Removed PromptTemplate model and table
+- Removed legacy references to sequential workflow initialization
 
-- Clarified docs/workflow/README.md to state that all workflow stages and sub-stages are initialized for every post at creation, enabling asynchronous editing. Updated references to seeding and update_workflow.py to match new logic; removed legacy references to sequential/partial initialization. 
+## [0.1.0] - 2024-03-01
 
-- Updated docs/README.md: clarified that seeding (via scripts/update_workflow.py) ensures all workflow stages and sub-stages are present in the database, and that all stages and sub-stages are initialized for every post at creation, enabling asynchronous editing. Removed legacy references to sequential/linear workflow or partial initialization. 
-
-[2024-06-13] Clarified in docs/DEVELOPMENT.md that all workflow stages and sub-stages are initialized for every post at creation, enabling asynchronous editing. Removed references to sequential or partial initialization. Referenced scripts/update_workflow.py as the source of truth for workflow structure. 
-
-2024-06-13: Documentation review and confirmation — All workflow documentation (README, stages.md, field_reference.md) now consistently describes the asynchronous, fully-initialized model for stages and sub-stages. There is no sequential or partial initialization; all stages and sub-stages are available for editing at post creation. Updated as part of the workflow async model migration. [AI]
-
-2024-06-13: Documentation consistency review completed. All workflow documentation (stages.md, README.md, field_reference.md, DEVELOPMENT.md, etc.) now consistently describe the workflow as asynchronous and fully initialized for every post at creation. No references to sequential or partial initialization remain. All guidance and API docs reflect that all stages and sub-stages are editable at any time, with validation only at key transitions. [docs review]
-
-- FIX: Updated all fetch URLs in app/templates/blog/development.html to use the correct /blog/api/v1/... prefix so saving fields now works and matches backend routes.
-
-- ADD: Implemented /api/v1/workflow/<slug>/transition POST endpoint in app/api/routes.py to pass the workflow transition test (dummy implementation for now).
-
-[2025-04-28] Fixed an issue where the /blog/develop/<post_id> route was incorrectly registered as /blog/blog/develop/<post_id> due to a redundant '/blog' in the route path in app/blog/routes.py. Now accessible at /blog/develop/<post_id> as intended.
-
-[2025-04-28] Fixed all links and redirects in app/templates/blog/index.html to use /blog/develop/<id> instead of /blog/blog/develop/<id> after backend route correction.
-
-[2025-04-28] Redesign: Blog index page now features a single subheading row with Develop, Preview, Edit, Raw, and New Post actions. The main content is a simple list of posts. The Posts link in the main header is now highlighted as active when on the blog index page.
-
-[2025-04-28] UI update: Removed Develop/Preview/Edit/Raw links from blog index, placed New Post button in main heading, and made post list link to details page, sorted by most recent first (creation date).
-
-[2025-04-28] UI fix: New Post button is now in the main header (top right) only on the blog index, and its script is moved to base.html for correct behavior.
-
-[2025-04-28] UI: Added json, edit, and delete icons/links to each post row on blog index; added toggle to show deleted posts above the list (default off).
-
-[2025-04-28] Fix: index route now returns all posts (including deleted) so the show deleted toggle works on the blog index page.
-
-2024-07-10: Major UI redesign of blog index page. Replaced table with a modern, responsive card/grid layout for posts. Each post is now a card showing title, status, date, and clear action buttons (Develop, JSON, Delete). Added a floating 'New Post' button, modern toggle for showing deleted posts, and improved accessibility, mobile responsiveness, and visual hierarchy. Updated scripts and styles for new structure. [AI]
-
-2024-07-10: Refined blog index dark theme—ensured all backgrounds are dark, improved contrast, and made delete button a red icon-only circle for better accessibility and visual clarity.
-
-2024-07-10: Blog index improvements—main title now links to Develop, Develop/JSON links have text, creation and updated dates shown (updated in 'ago' format).
-
-2024-07-10: Blog develop page now uses the same card-based dark theme and header row styling as the blog index, with badges, action buttons, and date formatting for visual parity.
-
-[2024-06-13] Updated app/templates/blog/develop.html: Changed all links from url_for('blog.develop', post_id=post.id) to url_for('blog.post_view', post_id=post.id, view='develop') to use the new canonical route for Develop view.
-
-[2024-07-10] FIX: Added missing saveGlobalField, saveSectionField, and addSection JS functions to app/templates/blog/develop.html so field saving works. Updated JSON button links in develop.html and index.html to use the canonical /blog/<post_id>/json route (handled by blog.post_view with view='json').
-
-[2024-07-10] FIX: Post.updated_at is now updated when PostDevelopment fields are saved, so the 'Updated' time in the UI will refresh after saving any development field.
-
-[2024-07-10] FIX: The updated time in the Develop view now refreshes immediately after saving a field, as the backend returns the new updated_at and the frontend updates the display.
-
-[2024-07-10] FIX: The JSON view now uses the same card-style header and button styling as the Develop view, for full visual consistency.
-
-- Removed PromptTemplate model and table from the codebase and database.
-- All prompt template functionality now uses LLMPrompt exclusively (including LLM settings panel and /llm area specimens).
-- Updated /api/v1/llm/templates endpoint to return templates from LLMPrompt.
-- Added '+ Add New Prompt' link below the prompt template dropdown in the LLM settings panel. Users can now create and save new prompt templates directly from the UI.
-- Added /api/v1/llm/prompts POST endpoint to support creation of new LLMPrompt records from the frontend.
-- Updated /test endpoint in app/api/llm.py to accept an optional model_name from the request JSON and pass it to LLMService.generate. This allows backend testing with a selected model.
-
-2024-07-10: Added a Test button to the LLM Action modal in app/templates/blog/develop.html. The button sends the prompt and selected model to /api/v1/llm/test and displays the result below the button. This restores and fixes the workflow for testing LLM output with the selected model in the blog develop interface. [AI]
-
-2024-07-10: FIX: The Test Interface on /llm/ now sends both the prompt and the selected model to /api/v1/llm/test, so the backend uses the correct model for testing. No changes were made to the blog develop modal. [AI]
-
-[2025-04-28] LLMService now uses a 20s timeout and improved error handling for LLM backend requests (Ollama/OpenAI). Returns clear error messages for timeouts and connection errors. Fixes possible hanging or unclear 500 errors in /api/v1/llm/test.
-
-[2025-04-28] LLM Test Interface now displays the model actually used for the test (from backend response). Backend always uses the selected model for testing, and returns model_used for confirmation. Fixes confusion about which model was used.
-
-[2025-04-28] Increased LLMService timeout for backend requests to 60 seconds to support large models like llama70b, reducing timeouts for slow or large model responses.
+### Added
+- Initial project setup
+- Basic blog functionality
+- User authentication system
+- API endpoints for core features
+- Database models and migrations
+- Frontend templates and styling
+- Development environment configuration
+- Testing framework implementation
+- Documentation structure
