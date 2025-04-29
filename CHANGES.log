@@ -75,3 +75,10 @@ All notable changes to this project are documented in this file.
   - Added documentation for /api/v1/llm/actions/ endpoint
   - Added documentation for /api/v1/llm/test endpoint
   - Enhanced error response documentation with timeout details
+
+2024-03-28
+- Fixed template persistence in LLM modals
+  - Updated element IDs to use consistent field name suffixes
+  - Fixed template selection and persistence for provisional_title field
+  - Synchronized template dropdown with textarea across all fields
+  - Ensured proper saving of LLM settings for all fields

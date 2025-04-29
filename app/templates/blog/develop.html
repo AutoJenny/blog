@@ -303,7 +303,7 @@
                                 });
                             }
                             // Fetch prompt templates for dropdown
-                            fetch('/api/v1/llm/templates')
+                            fetch('/api/v1/llm/prompts')
                                 .then(r => r.json())
                                 .then(templates => {
                                     const select = document.getElementById('llm-prompt-template-select-idea-scope');
@@ -405,20 +405,24 @@
                     {% if field == 'provisional_title' %}
                     <div style="display: flex; gap: 0.5rem; align-items: center; margin: 0.5rem 0;">
                         <button type="button" class="admin-button" id="generate-provisional-title-btn">Generate</button>
-                        <button type="button" class="admin-button-secondary" id="toggle-llm-settings-btn">LLM
+                        <button type="button" class="admin-button-secondary"
+                            id="toggle-llm-settings-btn-provisional-title">LLM
                             Settings</button>
                     </div>
-                    <div id="llm-settings-panel"
+                    <div id="llm-settings-panel-provisional-title"
                         style="display:none; border:2px solid #6366F1; background:#23272F; border-radius:1rem; margin:0.5rem 0 1rem 0; padding:1.5rem;">
                         <h3 style="color:#fff; font-size:1.1rem; margin-bottom:1rem;">LLM Action Settings</h3>
-                        <form id="llmActionFormPanel">
-                            <div id="llm-settings-feedback" style="margin-bottom:1rem; color:#a3e635; display:none;">
+                        <form id="llmActionFormPanel-provisional-title">
+                            <div id="llm-settings-feedback-provisional-title"
+                                style="margin-bottom:1rem; color:#a3e635; display:none;">
                             </div>
-                            <div id="llm-settings-loading" style="margin-bottom:1rem; color:#fff; display:none;">
+                            <div id="llm-settings-loading-provisional-title"
+                                style="margin-bottom:1rem; color:#fff; display:none;">
                                 Loading...</div>
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1">Source Field</label>
-                                <select name="source_field" class="admin-textarea w-full" id="llm-source-field-select">
+                                <select name="source_field" class="admin-textarea w-full"
+                                    id="llm-source-field-select-provisional-title">
                                     {% for stage, fields in workflow_fields.items() %}
                                     <optgroup label="{{ stage }}">
                                         {% for wf in fields %}
@@ -432,60 +436,61 @@
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1">Prompt Template</label>
                                 <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
-                                    <select id="llm-prompt-template-select" class="admin-textarea w-full"
-                                        style="max-width: 220px;"></select>
+                                    <select id="llm-prompt-template-select-provisional-title"
+                                        class="admin-textarea w-full" style="max-width: 220px;"></select>
                                     <textarea name="prompt_template" class="admin-textarea w-full" rows="3"
-                                        id="llm-prompt-template">Suggest a catchy title for: {{ basic_idea }}</textarea>
+                                        id="llm-prompt-template-provisional-title">Suggest a catchy title for: {{ basic_idea }}</textarea>
                                 </div>
-                            </div>
-                            <div style="margin-top: 0.5rem;">
-                                <a href="#" id="llm-add-new-prompt-link" style="color:#6366F1; font-size:0.95em;">+ Add
-                                    New Prompt</a>
-                            </div>
-                            <div id="llm-new-prompt-form"
-                                style="display:none; margin-top:0.5rem; background:#23272F; border:1px solid #6366F1; border-radius:0.5rem; padding:1rem;">
-                                <label class="block text-sm font-semibold mb-1">Prompt Name</label>
-                                <input type="text" id="llm-new-prompt-name" class="admin-textarea w-full mb-2"
-                                    placeholder="Prompt name">
-                                <label class="block text-sm font-semibold mb-1">Prompt Content</label>
-                                <textarea id="llm-new-prompt-content" class="admin-textarea w-full mb-2"
-                                    rows="3"></textarea>
-                                <button type="button" class="admin-button" id="llm-save-new-prompt-btn">Save</button>
-                                <button type="button" class="admin-button-secondary"
-                                    id="llm-cancel-new-prompt-btn">Cancel</button>
+                                <div class="text-right mt-1">
+                                    <a href="#" id="llm-add-new-prompt-link-provisional-title"
+                                        class="text-indigo-500 hover:text-indigo-400 text-sm">+ Add New Prompt</a>
+                                </div>
+                                <div id="llm-new-prompt-form-provisional-title" style="display:none; margin-top:1rem;">
+                                    <input type="text" id="llm-new-prompt-name-provisional-title"
+                                        class="admin-textarea w-full mb-2" placeholder="Prompt Name">
+                                    <textarea id="llm-new-prompt-content-provisional-title"
+                                        class="admin-textarea w-full mb-2" rows="3"
+                                        placeholder="Prompt Content"></textarea>
+                                    <div class="text-right">
+                                        <button type="button" id="llm-cancel-new-prompt-btn-provisional-title"
+                                            class="admin-button-secondary mr-2">Cancel</button>
+                                        <button type="button" id="llm-save-new-prompt-btn-provisional-title"
+                                            class="admin-button">Save</button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1">LLM Model</label>
-                                <select name="llm_model" class="admin-textarea w-full" id="llm-model-select">
-                                    <option value="">Loading models...</option>
+                                <select name="llm_model" class="admin-textarea w-full"
+                                    id="llm-model-select-provisional-title">
                                 </select>
                             </div>
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1">Temperature</label>
-                                <input type="number" name="temperature" class="admin-textarea w-full" min="0" max="2"
-                                    step="0.01" value="0.7" id="llm-temperature">
+                                <input type="number" name="temperature" class="admin-textarea w-full"
+                                    id="llm-temperature-provisional-title" value="0.7" min="0" max="2" step="0.1">
                             </div>
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1">Max Tokens</label>
-                                <input type="number" name="max_tokens" class="admin-textarea w-full" min="1" max="2048"
-                                    value="64" id="llm-max-tokens">
+                                <input type="number" name="max_tokens" class="admin-textarea w-full"
+                                    id="llm-max-tokens-provisional-title" value="1000" min="1" max="4096">
                             </div>
-                            <div class="flex justify-end gap-2">
-                                <button type="button" class="admin-button-secondary"
-                                    id="close-llm-settings-btn">Close</button>
-                                <button type="submit" class="admin-button">Save</button>
+                            <div class="text-right">
+                                <button type="button" id="llm-settings-close-btn-provisional-title"
+                                    class="admin-button-secondary mr-2">Close</button>
+                                <button type="submit" class="admin-button">Save Settings</button>
                             </div>
                         </form>
                     </div>
                     <script>
                         document.addEventListener('DOMContentLoaded', function () {
-                            var toggleBtn = document.getElementById('toggle-llm-settings-btn');
-                            var panel = document.getElementById('llm-settings-panel');
-                            var closeBtn = document.getElementById('close-llm-settings-btn');
-                            var form = document.getElementById('llmActionFormPanel');
-                            var feedback = document.getElementById('llm-settings-feedback');
-                            var loading = document.getElementById('llm-settings-loading');
-                            var fieldName = 'provisional_title';
+                            const fieldName = 'provisional_title';
+                            const toggleBtn = document.getElementById('toggle-llm-settings-btn-provisional-title');
+                            const panel = document.getElementById('llm-settings-panel-provisional-title');
+                            const closeBtn = document.getElementById('llm-settings-close-btn-provisional-title');
+                            const form = document.getElementById('llmActionFormPanel-provisional-title');
+                            const loading = document.getElementById('llm-settings-loading-provisional-title');
+                            const feedback = document.getElementById('llm-settings-feedback-provisional-title');
                             function showFeedback(msg, color) {
                                 feedback.textContent = msg;
                                 feedback.style.color = color || '#a3e635';
@@ -502,11 +507,11 @@
                                     .then(data => {
                                         showLoading(false);
                                         if (data && data.field_name) {
-                                            document.getElementById('llm-source-field-select').value = data.source_field || data.field_name;
-                                            document.getElementById('llm-prompt-template').value = data.prompt_template;
-                                            document.getElementById('llm-model-select').value = data.llm_model;
-                                            document.getElementById('llm-temperature').value = data.temperature;
-                                            document.getElementById('llm-max-tokens').value = data.max_tokens;
+                                            document.getElementById('llm-source-field-select-provisional-title').value = data.source_field || data.field_name;
+                                            document.getElementById('llm-prompt-template-select-provisional-title').value = data.prompt_template;
+                                            document.getElementById('llm-model-select-provisional-title').value = data.llm_model;
+                                            document.getElementById('llm-temperature-provisional-title').value = data.temperature;
+                                            document.getElementById('llm-max-tokens-provisional-title').value = data.max_tokens;
                                         }
                                     })
                                     .catch(() => { showLoading(false); showFeedback('Failed to load settings', '#f87171'); });
@@ -531,11 +536,11 @@
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({
                                             field_name: fieldName,
-                                            source_field: document.getElementById('llm-source-field-select').value,
-                                            prompt_template: document.getElementById('llm-prompt-template').value,
-                                            llm_model: document.getElementById('llm-model-select').value,
-                                            temperature: document.getElementById('llm-temperature').value,
-                                            max_tokens: document.getElementById('llm-max-tokens').value
+                                            source_field: document.getElementById('llm-source-field-select-provisional-title').value,
+                                            prompt_template: document.getElementById('llm-prompt-template-provisional-title').value,
+                                            llm_model: document.getElementById('llm-model-select-provisional-title').value,
+                                            temperature: document.getElementById('llm-temperature-provisional-title').value,
+                                            max_tokens: document.getElementById('llm-max-tokens-provisional-title').value
                                         })
                                     })
                                         .then(r => r.json())
@@ -548,10 +553,10 @@
                                 });
                             }
                             // Fetch prompt templates for dropdown
-                            fetch('/api/v1/llm/templates')
+                            fetch('/api/v1/llm/prompts')
                                 .then(r => r.json())
                                 .then(templates => {
-                                    const select = document.getElementById('llm-prompt-template-select-idea-scope');
+                                    const select = document.getElementById('llm-prompt-template-select-provisional-title');
                                     select.innerHTML = '<option value="">Select a template...</option>';
                                     templates.forEach(t => {
                                         const opt = document.createElement('option');
@@ -561,8 +566,8 @@
                                     });
                                 });
                             // When a template is selected, load its content into the textarea
-                            const templateSelect = document.getElementById('llm-prompt-template-select-idea-scope');
-                            const promptTemplate = document.getElementById('llm-prompt-template-idea-scope');
+                            const templateSelect = document.getElementById('llm-prompt-template-select-provisional-title');
+                            const promptTemplate = document.getElementById('llm-prompt-template-provisional-title');
                             if (templateSelect && promptTemplate) {
                                 templateSelect.addEventListener('change', function (e) {
                                     if (e.target.value) {
@@ -571,19 +576,19 @@
                                 });
                             }
                             // Add New Prompt logic
-                            const addNewPromptLink = document.getElementById('llm-add-new-prompt-link-idea-scope');
-                            const newPromptForm = document.getElementById('llm-new-prompt-form-idea-scope');
-                            const saveNewPromptBtn = document.getElementById('llm-save-new-prompt-btn-idea-scope');
-                            const cancelNewPromptBtn = document.getElementById('llm-cancel-new-prompt-btn-idea-scope');
-                            const newPromptName = document.getElementById('llm-new-prompt-name-idea-scope');
-                            const newPromptContent = document.getElementById('llm-new-prompt-content-idea-scope');
-                            const promptSelect = document.getElementById('llm-prompt-template-select-idea-scope');
+                            const addNewPromptLink = document.getElementById('llm-add-new-prompt-link-provisional-title');
+                            const newPromptForm = document.getElementById('llm-new-prompt-form-provisional-title');
+                            const saveNewPromptBtn = document.getElementById('llm-save-new-prompt-btn-provisional-title');
+                            const cancelNewPromptBtn = document.getElementById('llm-cancel-new-prompt-btn-provisional-title');
+                            const newPromptName = document.getElementById('llm-new-prompt-name-provisional-title');
+                            const newPromptContent = document.getElementById('llm-new-prompt-content-provisional-title');
+                            const promptSelect = document.getElementById('llm-prompt-template-select-provisional-title');
                             if (addNewPromptLink && newPromptForm) {
                                 addNewPromptLink.addEventListener('click', function (e) {
                                     e.preventDefault();
                                     newPromptForm.style.display = 'block';
                                     newPromptName.value = '';
-                                    newPromptContent.value = document.getElementById('llm-prompt-template-idea-scope').value;
+                                    newPromptContent.value = document.getElementById('llm-prompt-template-provisional-title').value;
                                 });
                             }
                             if (cancelNewPromptBtn) {
@@ -620,7 +625,7 @@
                             }
                             // Fetch Ollama models for the model dropdown
                             function loadOllamaModels() {
-                                const modelSelect = document.getElementById('llm-model-select');
+                                const modelSelect = document.getElementById('llm-model-select-provisional-title');
                                 fetch('/api/v1/llm/models/ollama')
                                     .then(r => r.json())
                                     .then(data => {
