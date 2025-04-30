@@ -258,13 +258,10 @@
                                         showLoading(false);
                                         if (data && data.field_name) {
                                             document.getElementById('llm-source-field-select-idea-scope').value = data.source_field || data.field_name;
-
-                                            // Update both the dropdown and textarea
                                             if (templateSelect && promptTemplate) {
                                                 templateSelect.value = data.prompt_template;
                                                 promptTemplate.value = data.prompt_template;
                                             }
-
                                             document.getElementById('llm-model-select-idea-scope').value = data.llm_model;
                                             document.getElementById('llm-temperature-idea-scope').value = data.temperature;
                                             document.getElementById('llm-max-tokens-idea-scope').value = data.max_tokens;
@@ -513,13 +510,10 @@
                                         showLoading(false);
                                         if (data && data.field_name) {
                                             document.getElementById('llm-source-field-select-provisional-title').value = data.source_field || data.field_name;
-
-                                            // Update both the dropdown and textarea
                                             if (templateSelect && promptTemplate) {
                                                 templateSelect.value = data.prompt_template;
                                                 promptTemplate.value = data.prompt_template;
                                             }
-
                                             document.getElementById('llm-model-select-provisional-title').value = data.llm_model;
                                             document.getElementById('llm-temperature-provisional-title').value = data.temperature;
                                             document.getElementById('llm-max-tokens-provisional-title').value = data.max_tokens;
@@ -1013,65 +1007,141 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ prompt: prompt, model_name: model })
                     });
+                    console.log('Raw response:', resp);
                     const data = await resp.json();
+                    console.log('Response data:', data);
+
                     if (data.result) {
-                        testResult.textContent = data.result;
-                    } else if (data.error) {
-                        testResult.textContent = 'Error: ' + data.error;
+                        testResult.textContent = 'Test Result: ' + data.result;
+                        testResult.style.color = '#a3e635';  // Success color
                     } else {
-                        testResult.textContent = 'No result.';
+                        testResult.textContent = 'Error: No result in response';
+                        testResult.style.color = '#f87171';  // Error color
                     }
                 } catch (e) {
+                    console.error('Test error:', e);
                     testResult.textContent = 'Error: ' + e;
+                    testResult.style.color = '#f87171';  // Error color
                 }
             });
         }
     });
-    // Wire up Generate buttons for Idea Scope and Provisional Title
-    document.addEventListener('DOMContentLoaded', function () {
-        // Helper for LLM generation
-        async function generateForField(field) {
-            let modalPrefix = field === 'idea_scope' ? '-idea-scope' : '';
-            const prompt = document.getElementById('llm-prompt-template' + modalPrefix).value;
-            const model = document.getElementById('llm-model-select' + modalPrefix).value;
-            const temperature = document.getElementById('llm-temperature' + modalPrefix).value;
-            const maxTokens = document.getElementById('llm-max-tokens' + modalPrefix).value;
-            const sourceField = document.getElementById('llm-source-field-select' + modalPrefix).value;
-            const generateBtn = document.getElementById('generate-' + field.replace('_', '-') + '-btn');
-            const textarea = document.getElementById(field);
-            if (!prompt || !model) {
-                alert('Prompt and model are required!');
+    // Helper for LLM generation
+    async function generateForField(field) {
+        let modalPrefix = field === 'idea_scope' ? '-idea-scope' : '-provisional-title';
+
+        // First, load the current settings to ensure we have the correct source field
+        try {
+            const settingsResp = await fetch('/api/v1/llm/actions/' + field);
+            const settings = await settingsResp.json();
+
+            if (!settings || !settings.source_field) {
+                alert('Please configure the LLM settings first and select a source field.');
                 return;
             }
+
+            // Get all the required elements
+            const sourceFieldSelect = document.getElementById(`llm-source-field-select${modalPrefix}`);
+            const promptTemplate = document.getElementById(`llm-prompt-template${modalPrefix}`).value;
+            const model = document.getElementById(`llm-model-select${modalPrefix}`).value;
+            const temperature = document.getElementById(`llm-temperature${modalPrefix}`).value;
+            const maxTokens = document.getElementById(`llm-max-tokens${modalPrefix}`).value;
+            const generateBtn = document.getElementById(`generate-${field.replace('_', '-')}-btn`);
+            const destinationField = document.getElementById(field);
+
+            // Use the source field from the saved settings
+            const sourceFieldId = settings.source_field;
+            const sourceFieldContent = document.getElementById(sourceFieldId)?.value || '';
+
+            // Check if source field has content BEFORE processing the prompt
+            if (!sourceFieldContent) {
+                alert(`Please enter some content in the ${sourceFieldId.replace('_', ' ')} field first.`);
+                return;
+            }
+
+            // Process the prompt template by replacing variables with the source field content
+            const processedPrompt = promptTemplate.replace(/\{\{\s*([^}]+)\s*\}\}/g, (match, variable) => {
+                const varName = variable.trim();
+                // If this is the source field variable, use its content
+                if (varName === sourceFieldId || varName === sourceFieldId.split('_').pop()) {
+                    return sourceFieldContent;
+                }
+                // For other variables, try to get their content
+                return document.getElementById(varName)?.value || match;
+            });
+
+            // Log the complete prompt to the backend
+            await fetch('/api/v1/llm/log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: `COMPLETE PROMPT BEING SENT TO LLM:
+---
+Source Field (${sourceFieldId}): "${sourceFieldContent}"
+Template: "${promptTemplate}"
+Final Prompt: "${processedPrompt}"
+---
+Model: ${model}
+Temperature: ${temperature}
+Max Tokens: ${maxTokens}`
+                })
+            });
+
+            if (!processedPrompt || !model) {
+                alert('Prompt template and model are required!');
+                return;
+            }
+
             generateBtn.disabled = true;
             generateBtn.textContent = 'Generating...';
+
             try {
                 const resp = await fetch('/api/v1/llm/test', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        prompt: prompt,
+                        prompt: processedPrompt,
                         model_name: model,
                         temperature: parseFloat(temperature),
-                        max_tokens: parseInt(maxTokens),
-                        source_field: sourceField
+                        max_tokens: parseInt(maxTokens)
                     })
                 });
                 const data = await resp.json();
-                if (data.result) {
-                    textarea.value = data.result;
-                } else if (data.error) {
-                    alert('Error: ' + data.error);
+
+                // Check for various response formats
+                const generatedText = data.result || data.response || data.generated_text || (data.choices && data.choices[0]?.text);
+
+                if (generatedText) {
+                    destinationField.value = generatedText;
+                    // Save the field after successful generation
+                    try {
+                        const saveResp = await fetch(`/blog/api/v1/post/${postId}/development`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ [field]: generatedText })
+                        });
+                        const saveData = await saveResp.json();
+                    } catch (saveError) {
+                        console.error('Error saving generated text:', saveError);
+                    }
                 } else {
-                    alert('No result.');
+                    console.error('No generated text found in response:', data);
+                    alert('No generated text found in the response. Check console for details.');
                 }
             } catch (e) {
+                console.error('Generation error:', e);
                 alert('Error: ' + e);
             } finally {
                 generateBtn.disabled = false;
                 generateBtn.textContent = 'Generate';
             }
+        } catch (e) {
+            console.error('Error loading settings:', e);
+            alert('Error loading LLM settings. Please try again.');
         }
+    }
+    // Wire up Generate buttons for Idea Scope and Provisional Title
+    document.addEventListener('DOMContentLoaded', function () {
         // Idea Scope Generate
         const ideaScopeBtn = document.getElementById('generate-idea-scope-btn');
         if (ideaScopeBtn) {

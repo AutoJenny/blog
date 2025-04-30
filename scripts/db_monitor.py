@@ -1,132 +1,70 @@
 #!/usr/bin/env python3
 import os
-import sys
-import sqlite3
 import json
+import psycopg2
 from datetime import datetime
-from pathlib import Path
-from db_backup import validate_sqlite_db, calculate_db_hash
 
-print("This script is deprecated. Please use PostgreSQL monitoring tools instead.")
-sys.exit(0)
-
-
-def check_database_health(db_path):
-    """Perform comprehensive database health check"""
+def get_db_stats(db_url):
+    """Get PostgreSQL database statistics"""
     results = {
         "timestamp": datetime.now().isoformat(),
-        "database": str(db_path),
         "checks": {},
+        "stats": {}
     }
 
     try:
-        # Check if file exists and is readable
-        if not db_path.exists():
-            results["checks"]["exists"] = False
-            return results
+        conn = psycopg2.connect(db_url)
+        cur = conn.cursor()
 
-        results["checks"]["exists"] = True
-        results["checks"]["size"] = db_path.stat().st_size
+        # Check database size
+        cur.execute("""
+            SELECT pg_size_pretty(pg_database_size(current_database())),
+                   pg_database_size(current_database())
+        """)
+        pretty_size, size_bytes = cur.fetchone()
+        results["stats"]["size"] = {
+            "pretty": pretty_size,
+            "bytes": size_bytes
+        }
 
-        # Check file permissions
-        results["checks"]["permissions"] = oct(db_path.stat().st_mode)[-3:]
+        # Get table statistics
+        cur.execute("""
+            SELECT schemaname, tablename, n_live_tup, n_dead_tup,
+                   pg_size_pretty(pg_total_relation_size('"' || schemaname || '"."' || tablename || '"'))
+            FROM pg_stat_user_tables
+            ORDER BY n_live_tup DESC
+        """)
+        tables = []
+        for schema, table, live_rows, dead_rows, size in cur.fetchall():
+            tables.append({
+                "schema": schema,
+                "name": table,
+                "live_rows": live_rows,
+                "dead_rows": dead_rows,
+                "size": size
+            })
+        results["stats"]["tables"] = tables
 
-        # Validate database integrity
-        results["checks"]["integrity"] = validate_sqlite_db(db_path)
+        # Check database health
+        cur.execute("SELECT 1")
+        results["checks"]["connection"] = True
+        results["checks"]["health"] = "ok"
 
-        # Calculate and verify hash
-        current_hash = calculate_db_hash(db_path)
-        results["checks"]["hash"] = current_hash
-
-        # Check table structure
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-
-        # Get table list
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        tables = cursor.fetchall()
-        results["checks"]["tables"] = len(tables)
-
-        # Check row counts
-        table_stats = {}
-        for (table_name,) in tables:
-            cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
-            count = cursor.fetchone()[0]
-            table_stats[table_name] = count
-        results["checks"]["table_stats"] = table_stats
-
-        # Check for fragmentation
-        cursor.execute("PRAGMA page_count")
-        page_count = cursor.fetchone()[0]
-        cursor.execute("PRAGMA page_size")
-        page_size = cursor.fetchone()[0]
-        cursor.execute("PRAGMA freelist_count")
-        freelist_count = cursor.fetchone()[0]
-
-        fragmentation = (freelist_count / page_count) * 100 if page_count > 0 else 0
-        results["checks"]["fragmentation"] = f"{fragmentation:.1f}%"
-
+        cur.close()
         conn.close()
 
     except Exception as e:
-        results["error"] = str(e)
+        results["checks"]["error"] = str(e)
+        results["checks"]["health"] = "error"
 
     return results
 
-
-def save_health_check(results, output_dir):
-    """Save health check results to a JSON file"""
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    timestamp = datetime.fromisoformat(results["timestamp"]).strftime("%Y%m%d_%H%M%S")
-    output_file = output_dir / f"health_check_{timestamp}.json"
-
-    with open(output_file, "w") as f:
-        json.dump(results, f, indent=2)
-
-    return output_file
-
-
-def alert_if_needed(results):
-    """Check results and alert if there are issues"""
-    alerts = []
-
-    if not results["checks"].get("exists", False):
-        alerts.append("Database file missing")
-
-    if not results["checks"].get("integrity", False):
-        alerts.append("Database integrity check failed")
-
-    fragmentation = float(results["checks"].get("fragmentation", "0").rstrip("%"))
-    if fragmentation > 20:
-        alerts.append(f"High fragmentation: {fragmentation}%")
-
-    if "error" in results:
-        alerts.append(f"Error during health check: {results['error']}")
-
-    if alerts:
-        print("⚠️ Database Health Alerts:")
-        for alert in alerts:
-            print(f"  - {alert}")
-        return False
-
-    print("✅ Database health check passed")
-    return True
-
-
-def main():
-    project_root = Path(__file__).parent.parent
-    db_path = project_root / "instance" / "blog.db"
-    health_dir = Path.home() / ".blog_backups" / "health_checks"
-
-    results = check_database_health(db_path)
-    output_file = save_health_check(results, health_dir)
-
-    print(f"\nHealth check results saved to: {output_file}")
-    if not alert_if_needed(results):
-        sys.exit(1)
-
-
 if __name__ == "__main__":
-    main()
+    # Get database URL from environment
+    db_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/blog")
+    
+    # Get database statistics
+    stats = get_db_stats(db_url)
+    
+    # Print results
+    print(json.dumps(stats, indent=2))

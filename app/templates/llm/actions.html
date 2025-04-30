@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+
+{% block title %}LLM Actions{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<style>
+    .action-card {
+        background-color: var(--admin-bg-card, #23272F);
+        color: var(--admin-text, #E0E0E0);
+        border-radius: 1rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        border: 1px solid var(--admin-border, #404040);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .action-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .action-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--admin-text, #E0E0E0);
+    }
+
+    .action-meta {
+        font-size: 0.875rem;
+        color: var(--admin-text-secondary, #9CA3AF);
+    }
+
+    .action-content {
+        margin-bottom: 1.5rem;
+    }
+
+    .action-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+
+    .action-button {
+        background-color: var(--admin-primary, #1B4B73);
+        color: #fff;
+        border: none;
+        border-radius: 0.375rem;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .action-button:hover {
+        background-color: var(--admin-primary-hover, #1a4469);
+    }
+
+    .action-button-secondary {
+        background-color: var(--admin-accent, #6366F1);
+    }
+
+    .action-button-secondary:hover {
+        background-color: var(--admin-accent-hover, #4F46E5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">LLM Actions</h1>
+
+    <!-- Tab Navigation -->
+    <div class="mb-4 border-b border-gray-200">
+        <ul class="flex flex-wrap -mb-px" role="tablist">
+            <li class="mr-2" role="presentation">
+                <button class="inline-block p-4 border-b-2 rounded-t-lg" id="actions-tab" data-tabs-target="#actions"
+                    type="button" role="tab" aria-controls="actions" aria-selected="true">
+                    Actions
+                </button>
+            </li>
+            <li class="mr-2" role="presentation">
+                <button
+                    class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300"
+                    id="builder-tab" data-tabs-target="#builder" type="button" role="tab" aria-controls="builder"
+                    aria-selected="false">
+                    Builder
+                </button>
+            </li>
+            <li class="mr-2" role="presentation">
+                <button
+                    class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300"
+                    id="test-tab" data-tabs-target="#test" type="button" role="tab" aria-controls="test"
+                    aria-selected="false">
+                    Test
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Tab Content -->
+    <div id="tab-content">
+        <!-- Actions Tab -->
+        <div class="hidden p-4 rounded-lg bg-gray-50" id="actions" role="tabpanel" aria-labelledby="actions-tab">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for action in actions %}
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-2">{{ action.title }}</h3>
+                    <p class="text-gray-600 mb-4">{{ action.description }}</p>
+                    <div class="flex space-x-4">
+                        <button onclick="showEditActionModal('{{ action.id }}')"
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
+                            Edit
+                        </button>
+                        <button onclick="testAction('{{ action.id }}')"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Test
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Builder Tab -->
+        <div class="hidden p-4 rounded-lg bg-gray-50" id="builder" role="tabpanel" aria-labelledby="builder-tab">
+            <div class="max-w-3xl mx-auto">
+                <form id="action-builder-form" class="space-y-6">
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700">Action Title</label>
+                        <input type="text" name="title" id="title"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea name="description" id="description" rows="3"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="model" class="block text-sm font-medium text-gray-700">LLM Model</label>
+                        <select name="model" id="model"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            <option value="claude-3-opus">Claude 3 Opus</option>
+                            <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="prompt_template" class="block text-sm font-medium text-gray-700">Prompt
+                            Template</label>
+                        <textarea name="prompt_template" id="prompt_template" rows="6"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="temperature" class="block text-sm font-medium text-gray-700">Temperature</label>
+                            <input type="number" name="temperature" id="temperature" min="0" max="2" step="0.1"
+                                value="0.7"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="max_tokens" class="block text-sm font-medium text-gray-700">Max Tokens</label>
+                            <input type="number" name="max_tokens" id="max_tokens" min="1" max="4096" value="1000"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-900 mb-2">JSON Preview</h4>
+                        <pre id="json-preview" class="bg-gray-800 text-white p-4 rounded-md overflow-x-auto"></pre>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit"
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            Save Action
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Test Tab -->
+        <div class="hidden p-4 rounded-lg bg-gray-50" id="test" role="tabpanel" aria-labelledby="test-tab">
+            <div class="max-w-3xl mx-auto">
+                <div class="mb-6">
+                    <label for="test-action" class="block text-sm font-medium text-gray-700">Select Action</label>
+                    <select name="test-action" id="test-action"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        {% for action in actions %}
+                        <option value="{{ action.id }}">{{ action.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label for="test-input" class="block text-sm font-medium text-gray-700">Test Input</label>
+                    <textarea name="test-input" id="test-input" rows="4"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                </div>
+
+                <div class="flex justify-end mb-6">
+                    <button type="button" id="run-test"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Run Test
+                    </button>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-medium text-gray-900 mb-2">Test Output</h4>
+                    <pre id="test-output"
+                        class="bg-gray-800 text-white p-4 rounded-md overflow-x-auto min-h-[200px]"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New/Edit Action Modal -->
+<div id="actionModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative z-10 max-w-lg mx-auto mt-20 bg-[#23272F] rounded-lg shadow-xl">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold mb-4" id="modalTitle">New Action</h2>
+            <form id="actionForm">
+                <input type="hidden" id="actionId" name="actionId">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-1">Field Name</label>
+                    <input type="text" id="fieldName" name="fieldName" class="admin-textarea w-full">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-1">Stage Name</label>
+                    <input type="text" id="stageName" name="stageName" class="admin-textarea w-full">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-1">Source Field</label>
+                    <input type="text" id="sourceField" name="sourceField" class="admin-textarea w-full">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-1">Prompt Template</label>
+                    <textarea id="promptTemplate" name="promptTemplate" class="admin-textarea w-full"
+                        rows="3"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-1">LLM Model</label>
+                    <select id="llmModel" name="llmModel" class="admin-textarea w-full"></select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-1">Temperature</label>
+                    <input type="number" id="temperature" name="temperature" class="admin-textarea w-full" min="0"
+                        max="2" step="0.1" value="0.7">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-1">Max Tokens</label>
+                    <input type="number" id="maxTokens" name="maxTokens" class="admin-textarea w-full" min="1"
+                        max="4096" value="1000">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="action-button-secondary" onclick="closeActionModal()">Cancel</button>
+                    <button type="submit" class="action-button">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- History Modal -->
+<div id="historyModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative z-10 max-w-4xl mx-auto mt-20 bg-[#23272F] rounded-lg shadow-xl">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold mb-4">Action History</h2>
+            <div id="historyContent" class="max-h-[60vh] overflow-y-auto">
+                <!-- History items will be loaded here -->
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button type="button" class="action-button" onclick="closeHistoryModal()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Modal management
+    function showNewActionModal() {
+        document.getElementById('modalTitle').textContent = 'New Action';
+        document.getElementById('actionId').value = '';
+        document.getElementById('actionForm').reset();
+        document.getElementById('actionModal').classList.remove('hidden');
+    }
+
+    function showEditActionModal(actionId) {
+        document.getElementById('modalTitle').textContent = 'Edit Action';
+        document.getElementById('actionId').value = actionId;
+
+        // Fetch action data
+        fetch(`/api/v1/llm/actions/${actionId}`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('fieldName').value = data.field_name;
+                document.getElementById('stageName').value = data.stage_name;
+                document.getElementById('sourceField').value = data.source_field;
+                document.getElementById('promptTemplate').value = data.prompt_template;
+                document.getElementById('llmModel').value = data.llm_model;
+                document.getElementById('temperature').value = data.temperature;
+                document.getElementById('maxTokens').value = data.max_tokens;
+            });
+
+        document.getElementById('actionModal').classList.remove('hidden');
+    }
+
+    function closeActionModal() {
+        document.getElementById('actionModal').classList.add('hidden');
+    }
+
+    function showHistoryModal(actionId) {
+        // Fetch history data
+        fetch(`/api/v1/llm/actions/${actionId}/history`)
+            .then(r => r.json())
+            .then(data => {
+                const content = document.getElementById('historyContent');
+                content.innerHTML = data.history.map(h => `
+                    <div class="action-card mb-4">
+                        <div class="action-meta mb-2">
+                            ${new Date(h.timestamp).toLocaleString()}
+                        </div>
+                        <div class="mb-2">
+                            <strong>Input:</strong>
+                            <pre class="text-sm mt-1 p-2 bg-black bg-opacity-20 rounded">${h.input}</pre>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Output:</strong>
+                            <pre class="text-sm mt-1 p-2 bg-black bg-opacity-20 rounded">${h.output}</pre>
+                        </div>
+                        <div class="text-sm text-gray-400">
+                            Duration: ${h.duration}s | Status: ${h.status}
+                        </div>
+                    </div>
+                `).join('');
+            });
+
+        document.getElementById('historyModal').classList.remove('hidden');
+    }
+
+    function closeHistoryModal() {
+        document.getElementById('historyModal').classList.add('hidden');
+    }
+
+    // Form submission
+    document.getElementById('actionForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const actionId = document.getElementById('actionId').value;
+        const data = {
+            field_name: document.getElementById('fieldName').value,
+            stage_name: document.getElementById('stageName').value,
+            source_field: document.getElementById('sourceField').value,
+            prompt_template: document.getElementById('promptTemplate').value,
+            llm_model: document.getElementById('llmModel').value,
+            temperature: parseFloat(document.getElementById('temperature').value),
+            max_tokens: parseInt(document.getElementById('maxTokens').value)
+        };
+
+        fetch(`/api/v1/llm/actions${actionId ? '/' + actionId : ''}`, {
+            method: actionId ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert('Error saving action: ' + data.error);
+                }
+            });
+    });
+
+    // Test functionality
+    function testAction(actionId) {
+        // Switch to test tab
+        document.getElementById('test-tab').click();
+        // Select the action in the dropdown
+        document.getElementById('test-action').value = actionId;
+        // Focus the input field
+        document.getElementById('test-input').focus();
+    }
+
+    // Load available models
+    fetch('/api/v1/llm/models/ollama')
+        .then(r => r.json())
+        .then(data => {
+            const select = document.getElementById('llmModel');
+            if (data.models && data.models.length) {
+                data.models.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.textContent = m + (data.loaded && data.loaded.includes(m) ? ' (loaded)' : '');
+                    if (data.loaded && data.loaded.includes(m)) {
+                        opt.style.fontWeight = 'bold';
+                    }
+                    select.appendChild(opt);
+                });
+            }
+        });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Tab functionality
+        const tabs = document.querySelectorAll('[role="tab"]');
+        const tabPanels = document.querySelectorAll('[role="tabpanel"]');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function (e) {
+                // Deactivate all tabs
+                tabs.forEach(t => {
+                    t.setAttribute('aria-selected', 'false');
+                    t.classList.remove('border-blue-600', 'text-blue-600');
+                    t.classList.add('border-transparent');
+                });
+
+                // Hide all panels
+                tabPanels.forEach(p => p.classList.add('hidden'));
+
+                // Activate clicked tab
+                this.setAttribute('aria-selected', 'true');
+                this.classList.remove('border-transparent');
+                this.classList.add('border-blue-600', 'text-blue-600');
+
+                // Show corresponding panel
+                const panelId = this.getAttribute('data-tabs-target').substring(1);
+                document.getElementById(panelId).classList.remove('hidden');
+            });
+        });
+
+        // Activate first tab by default
+        tabs[0].click();
+
+        // JSON Preview functionality
+        const form = document.getElementById('action-builder-form');
+        const jsonPreview = document.getElementById('json-preview');
+
+        function updateJsonPreview() {
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            jsonPreview.textContent = JSON.stringify(data, null, 2);
+        }
+
+        form.addEventListener('input', updateJsonPreview);
+        updateJsonPreview(); // Initial preview
+
+        // Test functionality
+        const runTestButton = document.getElementById('run-test');
+        const testOutput = document.getElementById('test-output');
+
+        runTestButton.addEventListener('click', async function () {
+            const actionId = document.getElementById('test-action').value;
+            const input = document.getElementById('test-input').value;
+
+            testOutput.textContent = 'Running test...';
+
+            try {
+                const response = await fetch(`/api/llm/actions/${actionId}/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ input }),
+                });
+
+                const data = await response.json();
+                testOutput.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                testOutput.textContent = `Error: ${error.message}`;
+            }
+        });
+    });
+</script>
+{% endblock %}

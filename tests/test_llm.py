@@ -39,14 +39,10 @@ def test_section(client):
     return section
 
 
-def test_generate_idea(client, mock_chain):
+def test_generate_idea(client):
     response = client.post(
         "/api/v1/llm/generate-idea",
-        json={
-            "topic": "Scottish Kilts",
-            "style": "informative",
-            "audience": "history enthusiasts",
-        },
+        json={"topic": "test topic"}
     )
     assert response.status_code == 200
     data = response.get_json()
@@ -56,7 +52,7 @@ def test_generate_idea(client, mock_chain):
     # Verify interaction was recorded
     interaction = LLMInteraction.query.first()
     assert interaction is not None
-    assert "Scottish Kilts" in interaction.input_text
+    assert "test topic" in interaction.input_text
 
 
 def test_expand_section(client, test_section):
@@ -70,7 +66,7 @@ def test_expand_section(client, test_section):
         mock_chain.return_value = chain
         response = client.post(
             f"/api/v1/llm/expand-section/{test_section.id}",
-            json={"tone": "professional", "platforms": ["blog"]},
+            json={"content": "test content"}
         )
         assert response.status_code == 200
         data = response.get_json()
@@ -83,14 +79,8 @@ def test_expand_section(client, test_section):
         assert updated_section.content == "Expanded content"
 
 
-def test_optimize_seo(client):
-    # Create a post via the API
-    response = client.post(
-        "/api/v1/posts",
-        json={"title": "Test Post", "content": "Test content", "author_id": 1},
-    )
-    assert response.status_code == 201
-    post_id = response.get_json()["id"]
+def test_optimize_seo(client, test_post):
+    post_id = test_post.id
     with patch("app.llm.routes.create_seo_optimization_chain") as mock_chain:
         chain = MagicMock()
         chain.run.return_value = {
@@ -100,7 +90,8 @@ def test_optimize_seo(client):
         }
         mock_chain.return_value = chain
         response = client.post(
-            f"/api/v1/llm/optimize-seo/{post_id}", json={"keywords": ["test", "seo"]}
+            f"/api/v1/llm/optimize-seo/{post_id}",
+            json={"keywords": ["test", "seo"]}
         )
         assert response.status_code == 200
         data = response.get_json()
@@ -116,7 +107,7 @@ def test_generate_social(client, test_section):
         }
         response = client.post(
             f"/api/v1/llm/generate-social/{test_section.id}",
-            json={"platforms": ["twitter", "instagram"]},
+            json={"content": "test content"}
         )
         assert response.status_code == 200
         data = response.get_json()
@@ -129,15 +120,13 @@ def test_generate_social(client, test_section):
         assert "twitter" in updated_section.social_media_snippets
 
 
-def test_unauthorized_access(client):
+@pytest.mark.parametrize("method,endpoint", [
+    ("post", "/api/v1/llm/generate-idea"),
+    ("post", f"/api/v1/llm/expand-section/1"),
+    ("post", f"/api/v1/llm/optimize-seo/1"),
+    ("post", f"/api/v1/llm/generate-social/1"),
+])
+def test_unauthorized_access(client, method, endpoint):
     # Test all endpoints without login
-    endpoints = [
-        ("post", "/api/v1/llm/generate-idea"),
-        ("post", f"/api/v1/llm/expand-section/1"),
-        ("post", f"/api/v1/llm/optimize-seo/1"),
-        ("post", f"/api/v1/llm/generate-social/1"),
-    ]
-
-    for method, endpoint in endpoints:
-        response = getattr(client, method)(endpoint, json={})
-        assert response.status_code == 200  # No authentication, should be 200
+    response = getattr(client, method)(endpoint, json={})
+    assert response.status_code == 200  # No authentication, should be 200

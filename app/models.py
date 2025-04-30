@@ -200,14 +200,71 @@ class LLMConfig(db.Model):
 
 
 class LLMAction(db.Model):
-    __tablename__ = 'llm_action'
+    """Model for storing LLM action configurations."""
     id = db.Column(db.Integer, primary_key=True)
-    field_name = db.Column(db.String(100), nullable=False, unique=True)  # e.g. 'provisional_title'
-    stage_name = db.Column(db.String(100), nullable=True)  # e.g. 'Idea Stage'
-    source_field = db.Column(db.String(100), nullable=False, default='')  # The source field for this action
+    field_name = db.Column(db.String(128), nullable=False)
+    stage_name = db.Column(db.String(128), nullable=False)
+    source_field = db.Column(db.String(128))
     prompt_template = db.Column(db.Text, nullable=False)
-    llm_model = db.Column(db.String(100), nullable=False)
-    temperature = db.Column(db.Float, nullable=False, default=0.7)
-    max_tokens = db.Column(db.Integer, nullable=False, default=64)
+    llm_model = db.Column(db.String(128), nullable=False)
+    temperature = db.Column(db.Float, default=0.7)
+    max_tokens = db.Column(db.Integer, default=1000)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship to history
+    history = db.relationship('LLMActionHistory', backref='action', lazy='dynamic')
+    
+    def to_dict(self):
+        """Convert the model to a dictionary."""
+        return {
+            'id': self.id,
+            'field_name': self.field_name,
+            'stage_name': self.stage_name,
+            'source_field': self.source_field,
+            'prompt_template': self.prompt_template,
+            'llm_model': self.llm_model,
+            'temperature': self.temperature,
+            'max_tokens': self.max_tokens,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class LLMActionHistory(db.Model):
+    """Model for storing the history of LLM action executions."""
+    id = db.Column(db.Integer, primary_key=True)
+    action_id = db.Column(db.Integer, db.ForeignKey('llm_action.id'), nullable=False)
+    input_text = db.Column(db.Text)
+    output_text = db.Column(db.Text)
+    error = db.Column(db.Text)
+    execution_time = db.Column(db.Float)  # in seconds
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    execution_metadata = db.Column(JSON)
+    
+    def to_dict(self):
+        """Convert the model to a dictionary."""
+        return {
+            'id': self.id,
+            'action_id': self.action_id,
+            'input_text': self.input_text,
+            'output_text': self.output_text,
+            'error': self.error,
+            'execution_time': self.execution_time,
+            'timestamp': self.timestamp.isoformat() if self.timestamp else None,
+            'execution_metadata': self.execution_metadata
+        }
+
+
+class User(db.Model):
+    """User model for authentication and tracking."""
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<User {self.username}>'

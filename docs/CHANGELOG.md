@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database management interface improvements
   - Enhanced virtual environment handling in run_server.sh
   - Added automatic venv detection and activation
+  - Added new PostgreSQL-specific database management scripts
+  - Added database monitoring and replication tools
 - Major UI redesign of blog index page
   - Replaced table with modern, responsive card/grid layout
   - Added floating 'New Post' button
@@ -33,6 +35,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Increased LLM backend request timeout to 60 seconds
 - Reorganized Idea Scope and Provisional Title fields with independent LLM modals
 - Updated DEPENDENCIES.md with current project dependencies
+- Migrated all database operations to PostgreSQL
+  - Removed SQLite support completely
+  - Updated database scripts to use PostgreSQL
+  - Added PostgreSQL-specific backup and restore tools
+  - Enhanced database monitoring capabilities
 
 ### Fixed
 - Fixed incorrect route registration for /blog/develop/<post_id>
@@ -43,10 +50,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed blueprint registration issues
 - Fixed template rendering problems
 - Improved error handling in LLMService
+- Fixed database connection issues
+  - Added proper PostgreSQL connection validation
+  - Enhanced error handling for database operations
+  - Improved database script reliability
 
 ### Removed
 - Removed PromptTemplate model and table
 - Removed legacy references to sequential workflow initialization
+- Removed SQLite support and related code
+  - Removed SQLite migration scripts
+  - Removed SQLite-specific database operations
+  - Removed SQLite fallback options
 
 ## [0.1.0] - 2024-03-01
 

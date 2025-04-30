@@ -248,9 +248,72 @@ You can run the script manually:
 ### Restore Example
 To restore from a backup:
 ```sh
-psql -U postgres -d blog < ~/.blog_pg_backups/blog_backup_YYYYMMDD_HHMMSS.sql
+python scripts/db_restore.py backups/blog_backup_YYYYMMDD_HHMMSS.sql
 ```
 
 ### Adjusting Frequency or Retention
 - Edit your crontab (`crontab -e`) to change the schedule.
-- Edit the script to change the retention period. 
+- Edit the script to change the retention period.
+
+## Database Management Scripts
+
+The following scripts are available for database management:
+
+### 1. Backup Script (`scripts/db_backup.py`)
+- Creates PostgreSQL database backups
+- Validates database connection before backup
+- Uses `pg_dump` for reliable backups
+- Example:
+  ```sh
+  python scripts/db_backup.py
+  ```
+
+### 2. Restore Script (`scripts/db_restore.py`)
+- Restores PostgreSQL database from backup
+- Validates database connection
+- Uses `psql` for reliable restores
+- Example:
+  ```sh
+  python scripts/db_restore.py <backup_file>
+  ```
+
+### 3. Monitor Script (`scripts/db_monitor.py`)
+- Provides real-time database statistics
+- Shows table sizes and row counts
+- Monitors database health
+- Example:
+  ```sh
+  python scripts/db_monitor.py
+  ```
+
+### 4. Replication Script (`scripts/db_replication.py`)
+- Supports database replication
+- Monitors source and replica databases
+- Uses PostgreSQL native replication
+- Example:
+  ```sh
+  python scripts/db_replication.py
+  ```
+
+## Environment Setup
+
+The application requires PostgreSQL. SQLite is no longer supported. Configure your database connection in `.env`:
+
+```sh
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/blog
+```
+
+Make sure PostgreSQL is running:
+```sh
+brew services start postgresql@14  # On macOS with Homebrew
+```
+
+Create the database:
+```sh
+createdb blog
+```
+
+Apply migrations:
+```sh
+flask db upgrade
+``` 

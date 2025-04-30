@@ -4,7 +4,7 @@ from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPro
 from app import db
 import requests
 
-bp = Blueprint("llm_api", __name__)
+bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 
 
 @bp.route("/config", methods=["GET"])
@@ -129,7 +129,7 @@ def update_template(template_id):
         return jsonify({"success": False, "error": str(e)})
 
 
-@bp.route("/generate-idea", methods=["POST"])
+@bp.route('/generate-idea', methods=['POST'])
 def generate_idea():
     data = request.get_json() or {}
     # Create LLMInteraction record
@@ -146,7 +146,7 @@ def generate_idea():
     )
 
 
-@bp.route("/expand-section/<int:section_id>", methods=["POST"])
+@bp.route('/expand-section/<int:section_id>', methods=['POST'])
 def expand_section(section_id):
     data = request.get_json() or {}
     section = PostSection.query.get(section_id)
@@ -162,7 +162,7 @@ def expand_section(section_id):
     )
 
 
-@bp.route("/optimize-seo/<int:post_id>", methods=["POST"])
+@bp.route('/optimize-seo/<int:post_id>', methods=['POST'])
 def optimize_seo(post_id):
     data = request.get_json() or {}
     # Return dummy data for test
@@ -177,7 +177,7 @@ def optimize_seo(post_id):
     )
 
 
-@bp.route("/generate-social/<int:section_id>", methods=["POST"])
+@bp.route('/generate-social/<int:section_id>', methods=['POST'])
 def generate_social(section_id):
     data = request.get_json() or {}
     section = PostSection.query.get(section_id)

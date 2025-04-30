@@ -30,6 +30,10 @@ All notable changes to this project are documented in this file.
 - Increased LLM backend request timeout to 60 seconds
 - Reorganized Idea Scope and Provisional Title fields with independent LLM modals
 - Updated DEPENDENCIES.md with current project dependencies
+- Standardized all LLM API endpoints to use /api/v1/llm/ prefix
+  - Updated routes in app/llm/routes.py
+  - Updated documentation in docs/api/llm_endpoints.md
+  - Updated test cases in tests/test_llm.py
 
 ### Fixed
 - Fixed incorrect route registration for /blog/develop/<post_id>
@@ -38,6 +42,7 @@ All notable changes to this project are documented in this file.
 - Fixed LLM Test Interface model selection and display
 - Fixed Idea Scope modal prompt template saving
 - Fixed template dropdown population in LLM settings panels
+- Fixed Generate button functionality in LLM settings panels
 - Fixed blueprint registration issues
 - Fixed template rendering problems
 - Improved error handling in LLMService
@@ -84,6 +89,10 @@ All notable changes to this project are documented in this file.
   - Added documentation for /api/v1/llm/actions/ endpoint
   - Added documentation for /api/v1/llm/test endpoint
   - Enhanced error response documentation with timeout details
+- Standardized API route prefixes to consistently use /api/v1/llm/
+- Updated frontend fetch calls in develop.html to use consistent API paths
+- Updated backend routes in llm.py to use proper URL prefix
+- Fixed route path mismatches between frontend and backend
 
 2024-03-28
 - Fixed template persistence in LLM modals

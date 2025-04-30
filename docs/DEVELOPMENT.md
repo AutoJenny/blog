@@ -21,19 +21,39 @@ blog/
 
 ## Development Environment Setup
 
-1. Clone the repository
-2. Create and activate virtual environment:
+1. Install PostgreSQL:
+   ```bash
+   # On macOS with Homebrew
+   brew install postgresql@14
+   brew services start postgresql@14
+   
+   # On Ubuntu/Debian
+   sudo apt-get update
+   sudo apt-get install postgresql-14
+   sudo systemctl start postgresql
+   ```
+
+2. Clone the repository
+3. Create and activate virtual environment:
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
-3. Install dependencies:
+4. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-4. Copy `.env.example` to `.env` and configure:
+5. Copy `.env.example` to `.env` and configure:
    ```bash
    cp .env.example .env
+   ```
+6. Set up the database:
+   ```bash
+   # Create the database
+   createdb blog
+   
+   # Apply migrations
+   flask db upgrade
    ```
 
 ## Running the Application
@@ -118,6 +138,28 @@ blog/
    ```bash
    flask db upgrade
    ```
+
+3. Backup database:
+   ```bash
+   python scripts/db_backup.py
+   ```
+
+4. Restore from backup:
+   ```bash
+   python scripts/db_restore.py <backup_file>
+   ```
+
+5. Monitor database:
+   ```bash
+   python scripts/db_monitor.py
+   ```
+
+6. Set up replication (if needed):
+   ```bash
+   python scripts/db_replication.py
+   ```
+
+Note: The application requires PostgreSQL. SQLite is no longer supported.
 
 ### Seeding Workflow Tables
 

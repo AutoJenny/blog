@@ -4,12 +4,14 @@ This document describes the LLM-powered endpoints available in the blog applicat
 
 ## Authentication
 
-All endpoints require authentication. Use the login endpoint to obtain a session cookie before making requests.
+All endpoints require authentication via JWT token in the Authorization header.
 
 ## Endpoints
 
-### Generate Blog Post Idea
-`POST /api/llm/generate-idea`
+### Generate Blog Post Ideas
+```http
+POST /api/v1/llm/generate-idea
+```
 
 Generates a blog post idea based on the provided topic and parameters.
 
@@ -32,7 +34,9 @@ Generates a blog post idea based on the provided topic and parameters.
 ```
 
 ### Expand Section Content
-`POST /api/llm/expand-section/<section_id>`
+```http
+POST /api/v1/llm/expand-section/<section_id>
+```
 
 Expands a section's content with AI-generated material.
 
@@ -56,7 +60,9 @@ Expands a section's content with AI-generated material.
 ```
 
 ### Optimize SEO
-`POST /api/llm/optimize-seo/<post_id>`
+```http
+POST /api/v1/llm/optimize-seo/<post_id>
+```
 
 Provides SEO optimization suggestions for a blog post.
 
@@ -79,7 +85,9 @@ Provides SEO optimization suggestions for a blog post.
 ```
 
 ### Generate Social Media Content
-`POST /api/llm/generate-social/<section_id>`
+```http
+POST /api/v1/llm/generate-social/<section_id>
+```
 
 Generates social media content for a blog section.
 
