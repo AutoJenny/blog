@@ -64,6 +64,24 @@ All notable changes to this project are documented in this file.
 - Fixed LLM model dropdown population in Actions builder page
 - Synchronized model selection between LLM management and Actions builder
 - Added current model selection state to model dropdowns
+- Fixed action builder form submission in LLM Actions page
+- Corrected field mapping between form and API endpoint
+- Added proper error handling and success feedback for action creation
+- Fixed action creation in LLM Actions builder
+- Added proper validation for required fields in action creation
+- Improved error handling and logging for action creation
+- Added default values for temperature and max_tokens
+- Fixed route path for action creation in LLM Actions builder
+- Updated JavaScript to use correct endpoint path
+- Improved route registration to avoid prefix duplication
+- Reorganized LLM routes to avoid conflicts between blueprints
+- Moved action creation endpoint to API blueprint
+- Fixed endpoint paths in JavaScript code
+- Improved route organization and documentation
+- Cleaned up route organization to separate UI and API routes
+- Removed duplicate route definitions
+- Fixed route conflicts between blueprints
+- Improved code organization and maintainability
 
 ### Removed
 - Removed PromptTemplate model and table
@@ -143,3 +161,84 @@ All notable changes to this project are documented in this file.
   - Updated database models for better action tracking
   - Improved error handling and logging
   - Added execution history with status tracking
+
+2025-05-01 - LLM Actions UI Improvements
+- Redesigned LLM Actions page with improved styling and contrast
+- Added clear action cards with detailed information display
+- Improved tab navigation with better visual feedback
+- Enhanced form styling with better input contrast and labels
+- Removed URL parameters from action creation
+- Fixed action display in the Actions tab
+- Improved modal styling and form organization
+- Added proper field name display in action cards
+- Standardized button styles and layout
+- Added consistent dark theme styling across all components
+
+2025-05-01 - LLM Action Routing Fix
+- Fixed duplicate route definitions between llm and api blueprints
+- Consolidated all API routes into app/api/llm.py
+- Moved UI routes to app/llm/routes.py
+- Updated frontend code to use correct API endpoints
+- Fixed issue with LLM action creation not working due to route conflicts
+
+2025-05-01 - LLM Actions Additional Improvements
+- Added delete functionality for LLM actions
+- Fixed prompt template text wrapping in action cards
+- Updated edit functionality to load actions into Builder tab
+- Improved action update/create form handling
+- Added confirmation dialog for action deletion
+- Enhanced error handling for action operations
+
+2025-05-01 - LLM Actions Test Tab Improvements
+- Fixed Test tab functionality
+- Added proper test execution with loading states
+- Added error handling for test runs
+- Improved test output display with proper wrapping
+- Added action details to test selection dropdown
+- Enhanced user feedback during test execution
+
+[2024-03-21] LLM Actions Test Functionality
+- Added missing /api/v1/llm/test endpoint for testing LLM actions
+- Implemented execute_llm_request function in services.py
+- Fixed "No output generated" issue by adding proper error handling and logging
+- Added detailed request/response logging for better debugging
+- Improved error messages in the UI for better user feedback
+
+[2024-03-21] Enhanced LLM Error Handling
+- Added comprehensive error handling in LLM services
+- Added model availability validation before test execution
+- Improved error messages with specific failure reasons
+- Added detailed logging throughout LLM request lifecycle
+- Added timeout handling with appropriate error responses
+- Added validation for required fields with specific error messages
+- Added response format validation for Ollama service
+- Enhanced logging for request/response debugging
+
+[2024-03-21] Fixed Ollama Response Format Handling
+- Updated LLM service to handle multiple Ollama response formats
+- Added support for responses with model_used field
+- Improved response format validation and error handling
+- Fixed "No output generated" error in test functionality
+
+[2024-03-21] Standardized LLM Response Format
+- Updated frontend to handle multiple response formats
+- Standardized backend response format for consistency
+- Added model information to test responses
+- Improved error handling for unexpected formats
+- Fixed frontend display of test results
+
+[2024-03-21] Fixed LLM Test Input and Response Handling
+- Fixed prompt template formatting to properly incorporate test input
+- Moved prompt formatting to frontend for better transparency
+- Updated response handling to support all Ollama response formats
+- Fixed "No output generated" error by improving response parsing
+- Added support for direct string responses
+- Improved error messages for better debugging
+
+[2025-05-01]
+- Fixed LLM test functionality:
+  - Added proper prompt template with {{input}} placeholder
+  - Added validation to ensure templates have required placeholder
+  - Added comprehensive logging throughout request lifecycle
+  - Fixed prompt + input combination logic
+  - Added better error messages for template issues
