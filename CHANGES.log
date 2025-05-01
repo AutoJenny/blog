@@ -21,6 +21,11 @@ All notable changes to this project are documented in this file.
   - Improved accessibility and mobile responsiveness
   - Refined dark theme with improved contrast
   - Added json, edit, and delete icons/links to each post row
+- Added new LLM API endpoints:
+  - GET /api/v1/llm/templates for prompt templates
+  - GET /api/v1/llm/config for LLM configuration
+  - GET /api/v1/llm/prompts for prompt management
+  - Enhanced /api/v1/llm/models/ollama endpoint
 
 ### Changed
 - Updated all workflow documentation for asynchronous model
@@ -46,6 +51,19 @@ All notable changes to this project are documented in this file.
 - Fixed blueprint registration issues
 - Fixed template rendering problems
 - Improved error handling in LLMService
+- Fixed prompt template loading in LLM Actions builder
+- Fixed LLM model selection in builder interface
+- Fixed prompt template management endpoints
+- Improved LLM configuration handling with default values
+- Fixed prompt template and model loading in LLM Actions builder
+- Standardized API endpoints across LLM management interfaces
+- Improved model loading state display in builder interface
+- Fixed LLM model selection persistence in configuration
+- Added automatic configuration saving when model is selected
+- Improved model selection state management across pages
+- Fixed LLM model dropdown population in Actions builder page
+- Synchronized model selection between LLM management and Actions builder
+- Added current model selection state to model dropdowns
 
 ### Removed
 - Removed PromptTemplate model and table
@@ -115,3 +133,13 @@ All notable changes to this project are documented in this file.
   - Added real-time saving of LLM settings
   - Enhanced error handling and user feedback
   - Updated development documentation to reflect changes
+
+2025-04-30
+- Enhanced LLM Actions system:
+  - Added source field selection from workflow fields
+  - Added prompt template selection from existing templates
+  - Added LLM model selection with status indicators
+  - Added test functionality with input/output preview
+  - Updated database models for better action tracking
+  - Improved error handling and logging
+  - Added execution history with status tracking

@@ -203,8 +203,7 @@ class LLMAction(db.Model):
     """Model for storing LLM action configurations."""
     id = db.Column(db.Integer, primary_key=True)
     field_name = db.Column(db.String(128), nullable=False)
-    stage_name = db.Column(db.String(128), nullable=False)
-    source_field = db.Column(db.String(128))
+    source_field = db.Column(db.String(128), nullable=False)
     prompt_template = db.Column(db.Text, nullable=False)
     llm_model = db.Column(db.String(128), nullable=False)
     temperature = db.Column(db.Float, default=0.7)
@@ -220,7 +219,6 @@ class LLMAction(db.Model):
         return {
             'id': self.id,
             'field_name': self.field_name,
-            'stage_name': self.stage_name,
             'source_field': self.source_field,
             'prompt_template': self.prompt_template,
             'llm_model': self.llm_model,
@@ -232,27 +230,27 @@ class LLMAction(db.Model):
 
 
 class LLMActionHistory(db.Model):
-    """Model for storing the history of LLM action executions."""
+    """Model for storing LLM action execution history."""
     id = db.Column(db.Integer, primary_key=True)
     action_id = db.Column(db.Integer, db.ForeignKey('llm_action.id'), nullable=False)
-    input_text = db.Column(db.Text)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    input_text = db.Column(db.Text, nullable=False)
     output_text = db.Column(db.Text)
-    error = db.Column(db.Text)
-    execution_time = db.Column(db.Float)  # in seconds
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    execution_metadata = db.Column(JSON)
+    status = db.Column(db.String(50), default='pending')  # pending, success, error
+    error_message = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def to_dict(self):
         """Convert the model to a dictionary."""
         return {
             'id': self.id,
             'action_id': self.action_id,
+            'post_id': self.post_id,
             'input_text': self.input_text,
             'output_text': self.output_text,
-            'error': self.error,
-            'execution_time': self.execution_time,
-            'timestamp': self.timestamp.isoformat() if self.timestamp else None,
-            'execution_metadata': self.execution_metadata
+            'status': self.status,
+            'error_message': self.error_message,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
 

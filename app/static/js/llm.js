@@ -103,6 +103,31 @@ document.addEventListener('DOMContentLoaded', function () {
             radio.value = m;
             radio.style.marginRight = '0.75em';
             if (selectedModel === m) radio.checked = true;
+            
+            // Add change event listener to save configuration when model is selected
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    fetch('/api/v1/llm/config', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            model_name: m,
+                            provider_type: document.getElementById('llm-provider-select').value,
+                            api_base: document.querySelector('input[name="api_base"]').value
+                        })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('current-model').textContent = m;
+                        }
+                    })
+                    .catch(err => console.error('Error saving model selection:', err));
+                }
+            });
+            
             wrapper.appendChild(radio);
             wrapper.appendChild(document.createTextNode(m + (isLoaded ? ' (loaded)' : '')));
             // Preload button
