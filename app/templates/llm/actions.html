@@ -5,6 +5,38 @@
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 <style>
+    /* Tab Navigation */
+    .tab-nav {
+        border-bottom: 2px solid var(--admin-border, #404040);
+        margin-bottom: 2rem;
+    }
+
+    .tab-button {
+        position: relative;
+        padding: 1rem 2rem;
+        font-weight: 500;
+        color: var(--admin-text-secondary, #9CA3AF);
+        border: none;
+        background: none;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .tab-button[aria-selected="true"] {
+        color: var(--admin-text, #E0E0E0);
+    }
+
+    .tab-button[aria-selected="true"]::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: var(--admin-primary, #1B4B73);
+    }
+
+    /* Action Cards */
     .action-card {
         background-color: var(--admin-bg-card, #23272F);
         color: var(--admin-text, #E0E0E0);
@@ -37,99 +69,168 @@
         margin-bottom: 1.5rem;
     }
 
-    .action-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.5rem;
+    .action-details {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1rem;
     }
 
-    .action-button {
-        background-color: var(--admin-primary, #1B4B73);
-        color: #fff;
-        border: none;
-        border-radius: 0.375rem;
-        padding: 0.5rem 1rem;
+    .action-detail {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-label {
+        font-size: 0.875rem;
+        color: var(--admin-text-secondary, #9CA3AF);
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        color: var(--admin-text, #E0E0E0);
+    }
+
+    /* Form Styling */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--admin-text, #E0E0E0);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: var(--admin-bg-input, #2D333B);
+        border: 1px solid var(--admin-border, #404040);
+        border-radius: 0.5rem;
+        color: var(--admin-text, #E0E0E0);
+        transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+        border-color: var(--admin-primary, #1B4B73);
+        outline: none;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
         font-weight: 500;
         cursor: pointer;
         transition: background-color 0.2s;
     }
 
-    .action-button:hover {
+    .btn-primary {
+        background-color: var(--admin-primary, #1B4B73);
+        color: #fff;
+        border: none;
+    }
+
+    .btn-primary:hover {
         background-color: var(--admin-primary-hover, #1a4469);
     }
 
-    .action-button-secondary {
+    .btn-secondary {
         background-color: var(--admin-accent, #6366F1);
+        color: #fff;
+        border: none;
     }
 
-    .action-button-secondary:hover {
+    .btn-secondary:hover {
         background-color: var(--admin-accent-hover, #4F46E5);
+    }
+
+    .btn-danger {
+        background-color: var(--admin-danger, #DC2626);
+        color: #fff;
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background-color: var(--admin-danger-hover, #B91C1C);
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8">LLM Actions</h1>
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">LLM Actions Manager</h1>
+        <button onclick="showNewActionModal()" class="btn btn-primary">
+            <span class="mr-2">+</span> New Action
+        </button>
+    </div>
 
     <!-- Tab Navigation -->
-    <div class="mb-4 border-b border-gray-200">
-        <ul class="flex flex-wrap -mb-px" role="tablist">
-            <li class="mr-2" role="presentation">
-                <button class="inline-block p-4 border-b-2 rounded-t-lg" id="actions-tab" data-tabs-target="#actions"
-                    type="button" role="tab" aria-controls="actions" aria-selected="true">
-                    Actions
-                </button>
-            </li>
-            <li class="mr-2" role="presentation">
-                <button
-                    class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300"
-                    id="builder-tab" data-tabs-target="#builder" type="button" role="tab" aria-controls="builder"
-                    aria-selected="false">
-                    Builder
-                </button>
-            </li>
-            <li class="mr-2" role="presentation">
-                <button
-                    class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300"
-                    id="test-tab" data-tabs-target="#test" type="button" role="tab" aria-controls="test"
-                    aria-selected="false">
-                    Test
-                </button>
-            </li>
-        </ul>
+    <div class="tab-nav">
+        <div class="flex" role="tablist">
+            <button class="tab-button" id="actions-tab" data-tabs-target="#actions" type="button" role="tab"
+                aria-controls="actions" aria-selected="true">
+                Existing Actions
+            </button>
+            <button class="tab-button" id="builder-tab" data-tabs-target="#builder" type="button" role="tab"
+                aria-controls="builder" aria-selected="false">
+                Action Builder
+            </button>
+            <button class="tab-button" id="test-tab" data-tabs-target="#test" type="button" role="tab"
+                aria-controls="test" aria-selected="false">
+                Test Actions
+            </button>
+        </div>
     </div>
 
     <!-- Tab Content -->
     <div id="tab-content">
         <!-- Actions Tab -->
-        <div class="hidden p-4 rounded-lg bg-gray-50" id="actions" role="tabpanel" aria-labelledby="actions-tab">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="hidden" id="actions" role="tabpanel" aria-labelledby="actions-tab">
+            <div class="grid grid-cols-1 gap-6">
                 {% for action in actions %}
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-semibold mb-2">{{ action.title }}</h3>
-                    <p class="text-gray-600 mb-4">{{ action.description }}</p>
-                    <div class="flex space-x-4">
-                        <button onclick="showEditActionModal('{{ action.id }}')"
-                            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                                </path>
-                            </svg>
-                            Edit
-                        </button>
-                        <button onclick="testAction('{{ action.id }}')"
-                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
-                                </path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Test
-                        </button>
+                <div class="action-card">
+                    <div class="action-header">
+                        <h3 class="action-title">{{ action.field_name }}</h3>
+                        <div class="flex space-x-4">
+                            <button onclick="editAction('{{ action.id }}')" class="btn btn-secondary">
+                                Edit
+                            </button>
+                            <button onclick="testAction('{{ action.id }}')" class="btn btn-primary">
+                                Test
+                            </button>
+                            <button onclick="deleteAction('{{ action.id }}')" class="btn btn-danger">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="action-details">
+                        <div class="action-detail">
+                            <span class="detail-label">Source Field</span>
+                            <span class="detail-value">{{ action.source_field }}</span>
+                        </div>
+                        <div class="action-detail">
+                            <span class="detail-label">Model</span>
+                            <span class="detail-value">{{ action.llm_model }}</span>
+                        </div>
+                        <div class="action-detail">
+                            <span class="detail-label">Temperature</span>
+                            <span class="detail-value">{{ action.temperature }}</span>
+                        </div>
+                        <div class="action-detail">
+                            <span class="detail-label">Max Tokens</span>
+                            <span class="detail-value">{{ action.max_tokens }}</span>
+                        </div>
+                    </div>
+                    <div class="action-content">
+                        <span class="detail-label">Prompt Template</span>
+                        <pre
+                            class="mt-2 p-4 bg-gray-800 rounded-md text-sm overflow-x-auto whitespace-pre-wrap">{{ action.prompt_template }}</pre>
                     </div>
                 </div>
                 {% endfor %}
@@ -137,19 +238,18 @@
         </div>
 
         <!-- Builder Tab -->
-        <div class="hidden p-4 rounded-lg bg-gray-50" id="builder" role="tabpanel" aria-labelledby="builder-tab">
+        <div class="hidden" id="builder" role="tabpanel" aria-labelledby="builder-tab">
             <div class="max-w-3xl mx-auto">
                 <form id="action-builder-form" class="space-y-6">
-                    <div>
-                        <label for="field_name" class="block text-sm font-medium text-gray-700">Field Name</label>
-                        <input type="text" name="field_name" id="field_name"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <div class="form-group">
+                        <label class="form-label" for="field_name">Field Name</label>
+                        <input type="text" name="field_name" id="field_name" class="form-input"
+                            placeholder="Enter the field name">
                     </div>
 
-                    <div>
-                        <label for="source_field" class="block text-sm font-medium text-gray-700">Source Field</label>
-                        <select name="source_field" id="source_field"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <div class="form-group">
+                        <label class="form-label" for="source_field">Source Field</label>
+                        <select name="source_field" id="source_field" class="form-input">
                             {% for stage, fields in workflow_fields.items() %}
                             <optgroup label="{{ stage }}">
                                 {% for wf in fields %}
@@ -160,159 +260,147 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label for="prompt_template_id" class="block text-sm font-medium text-gray-700">Prompt
-                            Template</label>
-                        <select name="prompt_template_id" id="prompt_template_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <div class="form-group">
+                        <label class="form-label" for="prompt_template_id">Prompt Template</label>
+                        <select name="prompt_template_id" id="prompt_template_id" class="form-input">
                         </select>
-                        <div id="prompt_preview" class="mt-2 p-3 bg-gray-100 rounded-md font-mono text-sm hidden"></div>
+                        <div id="prompt_preview" class="mt-2 p-4 bg-gray-800 rounded-md text-sm hidden"></div>
                     </div>
 
-                    <div>
-                        <label for="llm_model" class="block text-sm font-medium text-gray-700">LLM Model</label>
-                        <select name="llm_model" id="llm_model"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <div class="form-group">
+                        <label class="form-label" for="llm_model">LLM Model</label>
+                        <select name="llm_model" id="llm_model" class="form-input">
                         </select>
                         <div id="model_status" class="mt-1 text-sm"></div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="temperature" class="block text-sm font-medium text-gray-700">Temperature</label>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label class="form-label" for="temperature">Temperature</label>
                             <input type="number" name="temperature" id="temperature" min="0" max="2" step="0.1"
-                                value="0.7"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                value="0.7" class="form-input">
                         </div>
-                        <div>
-                            <label for="max_tokens" class="block text-sm font-medium text-gray-700">Max Tokens</label>
+                        <div class="form-group">
+                            <label class="form-label" for="max_tokens">Max Tokens</label>
                             <input type="number" name="max_tokens" id="max_tokens" min="1" max="4096" value="1000"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                class="form-input">
                         </div>
                     </div>
 
-                    <div>
-                        <label for="test_input" class="block text-sm font-medium text-gray-700">Test Input</label>
-                        <textarea name="test_input" id="test_input" rows="3"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    <div class="form-group">
+                        <label class="form-label" for="test_input">Test Input</label>
+                        <textarea name="test_input" id="test_input" rows="3" class="form-input"
+                            placeholder="Enter test input here"></textarea>
                     </div>
 
-                    <div>
-                        <button type="button" id="test_action" class="btn btn-secondary mr-2">Test</button>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="test_action" class="btn btn-secondary">Test</button>
                         <button type="submit" class="btn btn-primary">Save Action</button>
                     </div>
 
-                    <div id="test_result" class="mt-4 p-4 bg-gray-100 rounded-md hidden">
-                        <h4 class="text-sm font-medium text-gray-700 mb-2">Test Result:</h4>
-                        <pre id="test_output" class="whitespace-pre-wrap font-mono text-sm"></pre>
+                    <div id="test_result" class="mt-4 p-4 bg-gray-800 rounded-md hidden">
+                        <h4 class="text-sm font-medium text-white mb-2">Test Result:</h4>
+                        <pre id="test_output" class="text-sm text-gray-300 whitespace-pre-wrap"></pre>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- Test Tab -->
-        <div class="hidden p-4 rounded-lg bg-gray-50" id="test" role="tabpanel" aria-labelledby="test-tab">
+        <div class="hidden" id="test" role="tabpanel" aria-labelledby="test-tab">
             <div class="max-w-3xl mx-auto">
-                <div class="mb-6">
-                    <label for="test-action" class="block text-sm font-medium text-gray-700">Select Action</label>
-                    <select name="test-action" id="test-action"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <div class="form-group">
+                    <label class="form-label" for="test-action">Select Action</label>
+                    <select name="test-action" id="test-action" class="form-input">
                         {% for action in actions %}
-                        <option value="{{ action.id }}">{{ action.title }}</option>
+                        <option value="{{ action.id }}" data-prompt="{{ action.prompt_template }}"
+                            data-model="{{ action.llm_model }}" data-temperature="{{ action.temperature }}"
+                            data-max-tokens="{{ action.max_tokens }}">
+                            {{ action.field_name }}
+                        </option>
                         {% endfor %}
                     </select>
+                    <div class="mt-2 text-sm text-gray-500">
+                        <strong>Selected Prompt Template:</strong>
+                        <pre id="selected-prompt" class="mt-1 p-2 bg-gray-800 rounded text-white"></pre>
+                    </div>
                 </div>
 
-                <div class="mb-6">
-                    <label for="test-input" class="block text-sm font-medium text-gray-700">Test Input</label>
-                    <textarea name="test-input" id="test-input" rows="4"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                <div class="form-group">
+                    <label class="form-label" for="test-input">Test Input</label>
+                    <textarea name="test-input" id="test-input" rows="4" class="form-input"
+                        placeholder="Enter test input here"></textarea>
                 </div>
 
                 <div class="flex justify-end mb-6">
-                    <button type="button" id="run-test"
-                        class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
-                            </path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                    <button type="button" id="run-test" class="btn btn-primary">
                         Run Test
                     </button>
                 </div>
 
                 <div>
-                    <h4 class="text-lg font-medium text-gray-900 mb-2">Test Output</h4>
+                    <h4 class="text-lg font-medium mb-2">Test Output</h4>
                     <pre id="test-output"
-                        class="bg-gray-800 text-white p-4 rounded-md overflow-x-auto min-h-[200px]"></pre>
+                        class="bg-gray-800 text-white p-4 rounded-md overflow-x-auto min-h-[200px] whitespace-pre-wrap"></pre>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- New/Edit Action Modal -->
+<!-- Action Modal -->
 <div id="actionModal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
     <div class="relative z-10 max-w-lg mx-auto mt-20 bg-[#23272F] rounded-lg shadow-xl">
         <div class="p-6">
-            <h2 class="text-xl font-semibold mb-4" id="modalTitle">New Action</h2>
+            <h2 class="text-xl font-semibold mb-4 text-white" id="modalTitle">New Action</h2>
             <form id="actionForm">
                 <input type="hidden" id="actionId" name="actionId">
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1">Field Name</label>
-                    <input type="text" id="fieldName" name="fieldName" class="admin-textarea w-full">
+                <div class="form-group">
+                    <label class="form-label" for="fieldName">Field Name</label>
+                    <input type="text" id="fieldName" name="fieldName" class="form-input">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1">Stage Name</label>
-                    <input type="text" id="stageName" name="stageName" class="admin-textarea w-full">
+                <div class="form-group">
+                    <label class="form-label" for="sourceField">Source Field</label>
+                    <select id="sourceField" name="sourceField" class="form-input">
+                        {% for stage, fields in workflow_fields.items() %}
+                        <optgroup label="{{ stage }}">
+                            {% for wf in fields %}
+                            <option value="{{ wf }}">{{ wf.replace('_', ' ').title() }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endfor %}
+                    </select>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1">Source Field</label>
-                    <input type="text" id="sourceField" name="sourceField" class="admin-textarea w-full">
+                <div class="form-group">
+                    <label class="form-label" for="promptTemplate">Prompt Template</label>
+                    <select id="promptTemplate" name="promptTemplate" class="form-input">
+                        {% for prompt in prompts %}
+                        <option value="{{ prompt.id }}">{{ prompt.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1">Prompt Template</label>
-                    <textarea id="promptTemplate" name="promptTemplate" class="admin-textarea w-full"
-                        rows="3"></textarea>
+                <div class="form-group">
+                    <label class="form-label" for="llmModel">LLM Model</label>
+                    <select id="llmModel" name="llmModel" class="form-input"></select>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1">LLM Model</label>
-                    <select id="llmModel" name="llmModel" class="admin-textarea w-full"></select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1">Temperature</label>
-                    <input type="number" id="temperature" name="temperature" class="admin-textarea w-full" min="0"
-                        max="2" step="0.1" value="0.7">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold mb-1">Max Tokens</label>
-                    <input type="number" id="maxTokens" name="maxTokens" class="admin-textarea w-full" min="1"
-                        max="4096" value="1000">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label" for="temperature">Temperature</label>
+                        <input type="number" id="temperature" name="temperature" class="form-input" min="0" max="2"
+                            step="0.1" value="0.7">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="maxTokens">Max Tokens</label>
+                        <input type="number" id="maxTokens" name="maxTokens" class="form-input" min="1" max="4096"
+                            value="1000">
+                    </div>
                 </div>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="action-button-secondary" onclick="closeActionModal()">Cancel</button>
-                    <button type="submit" class="action-button">Save</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeActionModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
-        </div>
-    </div>
-</div>
-
-<!-- History Modal -->
-<div id="historyModal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
-    <div class="relative z-10 max-w-4xl mx-auto mt-20 bg-[#23272F] rounded-lg shadow-xl">
-        <div class="p-6">
-            <h2 class="text-xl font-semibold mb-4">Action History</h2>
-            <div id="historyContent" class="max-h-[60vh] overflow-y-auto">
-                <!-- History items will be loaded here -->
-            </div>
-            <div class="mt-4 flex justify-end">
-                <button type="button" class="action-button" onclick="closeHistoryModal()">Close</button>
-            </div>
         </div>
     </div>
 </div>
@@ -320,74 +408,10 @@
 
 {% block scripts %}
 <script>
-    // State management
     let currentConfig = null;
     let availableModels = [];
     let availablePrompts = [];
 
-    // Utility functions
-    function handleFetchError(error, message) {
-        console.error(message, error);
-        alert(`${message}: ${error.message}`);
-    }
-
-    function updateModelSelects(config, data) {
-        ['llm_model', 'llmModel'].forEach(selectId => {
-            const select = document.getElementById(selectId);
-            if (!select) return;
-
-            select.innerHTML = ''; // Clear existing options
-            if (data.models && data.models.length) {
-                data.models.forEach(m => {
-                    const option = document.createElement('option');
-                    option.value = m;
-                    option.textContent = m + (data.loaded && data.loaded.includes(m) ? ' (loaded)' : '');
-                    if (data.loaded && data.loaded.includes(m)) {
-                        option.style.fontWeight = 'bold';
-                    }
-                    if (m === config.model_name) {
-                        option.selected = true;
-                    }
-                    select.appendChild(option);
-                });
-            }
-        });
-    }
-
-    function updatePromptSelect(prompts) {
-        const select = document.getElementById('prompt_template_id');
-        if (!select) return;
-
-        select.innerHTML = ''; // Clear existing options
-
-        // Add a default empty option
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = '-- Select a template --';
-        select.appendChild(defaultOption);
-
-        prompts.forEach(prompt => {
-            const option = document.createElement('option');
-            option.value = prompt.id;
-            option.textContent = prompt.name;
-            option.dataset.prompt = prompt.prompt_text;
-            select.appendChild(option);
-        });
-
-        // Set up preview functionality
-        select.addEventListener('change', function () {
-            const selected = this.options[this.selectedIndex];
-            const preview = document.getElementById('prompt_preview');
-            if (selected && selected.dataset.prompt) {
-                preview.textContent = selected.dataset.prompt;
-                preview.classList.remove('hidden');
-            } else {
-                preview.classList.add('hidden');
-            }
-        });
-    }
-
-    // Initialize data
     async function initializeData() {
         try {
             // Load configuration
@@ -423,15 +447,11 @@
             tab.addEventListener('click', function (e) {
                 tabs.forEach(t => {
                     t.setAttribute('aria-selected', 'false');
-                    t.classList.remove('border-blue-600', 'text-blue-600');
-                    t.classList.add('border-transparent');
                 });
 
                 tabPanels.forEach(p => p.classList.add('hidden'));
 
                 this.setAttribute('aria-selected', 'true');
-                this.classList.remove('border-transparent');
-                this.classList.add('border-blue-600', 'text-blue-600');
 
                 const panelId = this.getAttribute('data-tabs-target').substring(1);
                 document.getElementById(panelId).classList.remove('hidden');
@@ -441,36 +461,42 @@
         // Activate first tab by default
         tabs[0].click();
 
-        // Form handling
-        const actionForm = document.getElementById('actionForm');
-        if (actionForm) {
-            actionForm.addEventListener('submit', async function (e) {
+        // Form submission handler
+        const builderForm = document.getElementById('action-builder-form');
+        if (builderForm) {
+            builderForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                const actionId = document.getElementById('actionId').value;
+
+                const formData = new FormData(this);
                 const data = {
-                    field_name: document.getElementById('fieldName').value,
-                    stage_name: document.getElementById('stageName').value,
-                    source_field: document.getElementById('sourceField').value,
-                    prompt_template: document.getElementById('promptTemplate').value,
-                    llm_model: document.getElementById('llmModel').value,
-                    temperature: parseFloat(document.getElementById('temperature').value),
-                    max_tokens: parseInt(document.getElementById('maxTokens').value)
+                    field_name: formData.get('field_name'),
+                    source_field: formData.get('source_field'),
+                    prompt_template_id: formData.get('prompt_template_id'),
+                    llm_model: formData.get('llm_model'),
+                    temperature: parseFloat(formData.get('temperature')),
+                    max_tokens: parseInt(formData.get('max_tokens'))
                 };
 
+                const actionId = formData.get('action_id');
+                const method = actionId ? 'PUT' : 'POST';
+                const url = actionId ? `/api/v1/llm/actions/${actionId}` : '/api/v1/llm/actions';
+
                 try {
-                    const response = await fetch(`/api/v1/llm/actions${actionId ? '/' + actionId : ''}`, {
-                        method: actionId ? 'PUT' : 'POST',
+                    const response = await fetch(url, {
+                        method: method,
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     });
+
                     const result = await response.json();
                     if (result.status === 'success') {
-                        location.reload();
+                        window.location.reload();
                     } else {
-                        alert('Error saving action: ' + result.error);
+                        alert('Error saving action: ' + (result.error || 'Unknown error'));
                     }
                 } catch (error) {
-                    handleFetchError(error, 'Error saving action');
+                    console.error('Error saving action:', error);
+                    alert('Error saving action: ' + error.message);
                 }
             });
         }
@@ -479,14 +505,13 @@
         const testActionButton = document.getElementById('test_action');
         if (testActionButton) {
             testActionButton.addEventListener('click', async function () {
+                const formData = new FormData(document.getElementById('action-builder-form'));
                 const data = {
-                    prompt: document.getElementById('prompt_template_id').options[
-                        document.getElementById('prompt_template_id').selectedIndex
-                    ].dataset.prompt,
-                    model_name: document.getElementById('llm_model').value,
-                    temperature: parseFloat(document.getElementById('temperature').value),
-                    max_tokens: parseInt(document.getElementById('max_tokens').value),
-                    input: document.getElementById('test_input').value
+                    prompt: document.querySelector('#prompt_template_id option:checked').dataset.prompt,
+                    model_name: formData.get('llm_model'),
+                    temperature: parseFloat(formData.get('temperature')),
+                    max_tokens: parseInt(formData.get('max_tokens')),
+                    input: formData.get('test_input')
                 };
 
                 try {
@@ -507,6 +532,133 @@
         }
     });
 
+    // Test tab functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const runTestButton = document.getElementById('run-test');
+        const testOutput = document.getElementById('test-output');
+        const testInput = document.getElementById('test-input');
+        const testActionSelect = document.getElementById('test-action');
+        const selectedPromptDisplay = document.getElementById('selected-prompt');
+
+        if (runTestButton) {
+            runTestButton.addEventListener('click', async function () {
+                try {
+                    // Show loading state
+                    testOutput.textContent = 'Running test...';
+                    runTestButton.disabled = true;
+                    runTestButton.textContent = 'Testing...';
+
+                    // Get selected action details
+                    const selectedOption = testActionSelect.options[testActionSelect.selectedIndex];
+                    const inputText = testInput.value.trim();
+
+                    // Validate input
+                    if (!inputText) {
+                        throw new Error('Please enter some test input');
+                    }
+
+                    const promptTemplate = selectedOption.dataset.prompt;
+                    if (!promptTemplate) {
+                        throw new Error('No prompt template found for this action');
+                    }
+
+                    // Prepare request data
+                    const data = {
+                        prompt: promptTemplate.trim(),
+                        model_name: selectedOption.dataset.model,
+                        temperature: parseFloat(selectedOption.dataset.temperature),
+                        max_tokens: parseInt(selectedOption.dataset.maxTokens),
+                        input: inputText
+                    };
+
+                    // Log request details for debugging
+                    console.log('Test request:', {
+                        prompt: data.prompt,
+                        input: data.input,
+                        model: data.model_name,
+                        temperature: data.temperature,
+                        max_tokens: data.max_tokens
+                    });
+
+                    // Call the test endpoint
+                    const response = await fetch('/api/v1/llm/test', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+                    console.log('Server response:', result);
+
+                    if (response.ok && result.response) {
+                        testOutput.textContent = result.response;
+                    } else {
+                        throw new Error(result.error || 'Test failed: ' + response.statusText);
+                    }
+                } catch (error) {
+                    console.error('Test error:', error);
+                    testOutput.textContent = `Error: ${error.message}`;
+                } finally {
+                    runTestButton.disabled = false;
+                    runTestButton.textContent = 'Run Test';
+                }
+            });
+        }
+
+        // Update the displayed prompt when an action is selected
+        if (testActionSelect && selectedPromptDisplay) {
+            function updateSelectedPrompt() {
+                const selectedOption = testActionSelect.options[testActionSelect.selectedIndex];
+                const promptTemplate = selectedOption.dataset.prompt;
+                if (promptTemplate) {
+                    selectedPromptDisplay.textContent = `Template: ${promptTemplate}`;
+                } else {
+                    selectedPromptDisplay.textContent = 'No prompt template available';
+                }
+            }
+
+            testActionSelect.addEventListener('change', updateSelectedPrompt);
+            // Show initial selection
+            updateSelectedPrompt();
+        }
+    });
+
+    // Helper functions
+    function updateModelSelects(config, modelsData) {
+        const modelSelects = document.querySelectorAll('select[name="llm_model"]');
+        modelSelects.forEach(select => {
+            select.innerHTML = '';
+            modelsData.models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.text = model;
+                if (model === config.model_name) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        });
+    }
+
+    function updatePromptSelect(prompts) {
+        const promptSelects = document.querySelectorAll('select[name="prompt_template_id"]');
+        promptSelects.forEach(select => {
+            select.innerHTML = '';
+            prompts.forEach(prompt => {
+                const option = document.createElement('option');
+                option.value = prompt.id;
+                option.text = prompt.name;
+                option.dataset.prompt = prompt.prompt_text;
+                select.appendChild(option);
+            });
+        });
+    }
+
+    function handleFetchError(error, message) {
+        console.error(message, error);
+        alert(message + ': ' + error.message);
+    }
+
     // Modal management functions
     function showNewActionModal() {
         document.getElementById('modalTitle').textContent = 'New Action';
@@ -515,25 +667,67 @@
         document.getElementById('actionModal').classList.remove('hidden');
     }
 
-    async function showEditActionModal(actionId) {
-        document.getElementById('modalTitle').textContent = 'Edit Action';
-        document.getElementById('actionId').value = actionId;
-
+    async function editAction(actionId) {
         try {
             const response = await fetch(`/api/v1/llm/actions/${actionId}`);
             const data = await response.json();
-            document.getElementById('fieldName').value = data.field_name;
-            document.getElementById('stageName').value = data.stage_name;
-            document.getElementById('sourceField').value = data.source_field;
-            document.getElementById('promptTemplate').value = data.prompt_template;
-            document.getElementById('llmModel').value = data.llm_model;
+
+            // Switch to builder tab
+            document.getElementById('builder-tab').click();
+
+            // Fill form with action data
+            document.getElementById('field_name').value = data.field_name;
+            document.getElementById('source_field').value = data.source_field;
+            document.getElementById('prompt_template_id').value = data.prompt_template_id;
+            document.getElementById('llm_model').value = data.llm_model;
             document.getElementById('temperature').value = data.temperature;
-            document.getElementById('maxTokens').value = data.max_tokens;
+            document.getElementById('max_tokens').value = data.max_tokens;
+
+            // Add action ID to form for update instead of create
+            const form = document.getElementById('action-builder-form');
+            if (!form.dataset.actionId) {
+                const actionIdInput = document.createElement('input');
+                actionIdInput.type = 'hidden';
+                actionIdInput.name = 'action_id';
+                actionIdInput.value = actionId;
+                form.appendChild(actionIdInput);
+            } else {
+                form.dataset.actionId = actionId;
+            }
+
+            // Update submit button text
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.textContent = 'Update Action';
         } catch (error) {
             handleFetchError(error, 'Error loading action data');
         }
+    }
 
-        document.getElementById('actionModal').classList.remove('hidden');
+    async function deleteAction(actionId) {
+        if (!confirm('Are you sure you want to delete this action?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/v1/llm/actions/${actionId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                // Remove the action card from the UI
+                const actionCard = document.querySelector(`[data-action-id="${actionId}"]`);
+                if (actionCard) {
+                    actionCard.remove();
+                }
+                // Reload the page to update the lists
+                window.location.reload();
+            } else {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to delete action');
+            }
+        } catch (error) {
+            handleFetchError(error, 'Error deleting action');
+        }
     }
 
     function closeActionModal() {

@@ -214,6 +214,19 @@ class LLMAction(db.Model):
     # Relationship to history
     history = db.relationship('LLMActionHistory', backref='action', lazy='dynamic')
     
+    def process_template(self, input_text: str) -> str:
+        """Process the prompt template with the given input text.
+        
+        The template can use {input} to reference the input text.
+        Additional template variables may be added in the future.
+        """
+        try:
+            return self.prompt_template.format(input=input_text)
+        except KeyError as e:
+            raise ValueError(f"Invalid template variable in prompt template: {e}")
+        except Exception as e:
+            raise ValueError(f"Error processing prompt template: {e}")
+    
     def to_dict(self):
         """Convert the model to a dictionary."""
         return {

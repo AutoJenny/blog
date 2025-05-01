@@ -1,15 +1,20 @@
 # LLM API Documentation
 
+## Base URL
+All API endpoints are prefixed with `/api/v1/llm`.
+
 ## Authentication
 All API endpoints require authentication. Use one of the following methods:
 1. Session-based authentication (for browser clients)
 2. API key authentication (for programmatic access)
 
-## LLM Actions
+## Endpoints
 
-### List Actions
+### LLM Actions
+
+#### List Actions
 ```http
-GET /api/v1/llm/actions
+GET /actions
 ```
 
 Response:
@@ -29,9 +34,9 @@ Response:
 ]
 ```
 
-### Create Action
+#### Create Action
 ```http
-POST /api/v1/llm/actions
+POST /actions
 Content-Type: application/json
 
 {
@@ -39,8 +44,8 @@ Content-Type: application/json
     "source_field": "string",
     "prompt_template_id": "integer",
     "llm_model": "string",
-    "temperature": "number",
-    "max_tokens": "number"
+    "temperature": "number (optional, default: 0.7)",
+    "max_tokens": "number (optional, default: 1000)"
 }
 ```
 
@@ -62,9 +67,9 @@ Response:
 }
 ```
 
-### Get Action
+#### Get Action
 ```http
-GET /api/v1/llm/actions/{action_id}
+GET /actions/{action_id}
 ```
 
 Response:
@@ -82,9 +87,9 @@ Response:
 }
 ```
 
-### Update Action
+#### Update Action
 ```http
-PUT /api/v1/llm/actions/{action_id}
+PUT /actions/{action_id}
 Content-Type: application/json
 
 {
@@ -115,9 +120,9 @@ Response:
 }
 ```
 
-### Delete Action
+#### Delete Action
 ```http
-DELETE /api/v1/llm/actions/{action_id}
+DELETE /actions/{action_id}
 ```
 
 Response:
@@ -127,14 +132,86 @@ Response:
 }
 ```
 
-### Test Action
+#### Get Action History
 ```http
-POST /api/v1/llm/test
+GET /actions/{action_id}/history
+```
+
+Response:
+```json
+{
+    "action": {
+        "id": "integer",
+        "field_name": "string",
+        "source_field": "string",
+        "prompt_template": "string",
+        "llm_model": "string",
+        "temperature": "number",
+        "max_tokens": "number",
+        "created_at": "string (ISO datetime)",
+        "updated_at": "string (ISO datetime)"
+    },
+    "history": [
+        {
+            "id": "integer",
+            "action_id": "integer",
+            "post_id": "integer",
+            "input_text": "string",
+            "output_text": "string",
+            "status": "string",
+            "error_message": "string",
+            "created_at": "string (ISO datetime)"
+        }
+    ]
+}
+```
+
+### LLM Configuration
+
+#### Get Configuration
+```http
+GET /config
+```
+
+Response:
+```json
+{
+    "provider_type": "string",
+    "model_name": "string",
+    "api_base": "string"
+}
+```
+
+#### Update Configuration
+```http
+POST /config
+Content-Type: application/json
+
+{
+    "provider_type": "string (optional)",
+    "model_name": "string (optional)",
+    "api_base": "string (optional)",
+    "auth_token": "string (optional)"
+}
+```
+
+Response:
+```json
+{
+    "success": true
+}
+```
+
+### LLM Testing
+
+#### Test LLM
+```http
+POST /test
 Content-Type: application/json
 
 {
     "prompt": "string",
-    "model_name": "string",
+    "model_name": "string (optional)",
     "temperature": "number (optional, default: 0.7)",
     "max_tokens": "number (optional, default: 1000)",
     "input": "string"
@@ -150,7 +227,7 @@ Response:
 }
 ```
 
-## Error Responses
+### Error Responses
 
 All endpoints may return the following error responses:
 
@@ -173,6 +250,25 @@ The LLM endpoints are subject to rate limiting:
 - 100 requests per minute per user for test endpoints
 - 1000 requests per day per user for action execution
 - No limit on read operations (GET requests)
+
+## Error Handling
+
+The LLM endpoints provide improved error handling:
+
+### Timeout Handling
+- Default timeout: 60 seconds for model loading
+- Non-fatal failures allow continued operation
+- Clear distinction between temporary and permanent failures
+
+### Error Messages
+- Detailed error descriptions
+- Specific troubleshooting steps
+- Clear indication of error type (timeout/connection/etc)
+
+### Logging
+- Comprehensive logging of all operations
+- Error tracking with stack traces
+- Performance monitoring for timeouts
 
 ## Interaction Tracking
 

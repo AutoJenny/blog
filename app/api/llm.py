@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app
 from app.services.llm import LLMService
-from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPrompt
+from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPrompt, LLMActionHistory
 from app import db
 import requests
 
@@ -190,37 +190,43 @@ def generate_social(section_id):
     return jsonify({"twitter": "Test tweet", "instagram": "Test instagram post"})
 
 
-@bp.route('/actions/<field_name>', methods=['GET'])
-def get_llm_action(field_name):
-    action = LLMAction.query.filter_by(field_name=field_name).first()
-    if not action:
-        return jsonify({}), 404
-    return jsonify({
-        'field_name': action.field_name,
-        'stage_name': action.stage_name,
-        'source_field': action.source_field,
-        'prompt_template': action.prompt_template,
-        'llm_model': action.llm_model,
-        'temperature': action.temperature,
-        'max_tokens': action.max_tokens,
-    })
-
-
-@bp.route('/actions/<field_name>', methods=['POST'])
-def update_llm_action(field_name):
+@bp.route('/actions', methods=['GET', 'POST'])
+def handle_actions():
+    """Handle LLM actions list and creation."""
+    if request.method == 'GET':
+        actions = LLMAction.query.all()
+        return jsonify([action.to_dict() for action in actions])
+    
     data = request.get_json()
-    action = LLMAction.query.filter_by(field_name=field_name).first()
-    if not action:
-        action = LLMAction(field_name=field_name)
+    try:
+        # Validate required fields
+        required_fields = ['field_name', 'source_field', 'prompt_template_id', 'llm_model']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'status': 'error', 'error': f'Missing required field: {field}'}), 400
+        
+        # Get the prompt template
+        prompt_template = LLMPrompt.query.get_or_404(data['prompt_template_id'])
+        
+        # Create the action
+        action = LLMAction(
+            field_name=data['field_name'],
+            source_field=data['source_field'],
+            prompt_template=prompt_template.prompt_text,
+            llm_model=data['llm_model'],
+            temperature=float(data.get('temperature', 0.7)),
+            max_tokens=int(data.get('max_tokens', 1000))
+        )
+        
         db.session.add(action)
-    action.stage_name = data.get('stage_name')
-    action.source_field = data.get('source_field', field_name)
-    action.prompt_template = data.get('prompt_template', '')
-    action.llm_model = data.get('llm_model', '')
-    action.temperature = float(data.get('temperature', 0.7))
-    action.max_tokens = int(data.get('max_tokens', 64))
-    db.session.commit()
-    return jsonify({'status': 'success'})
+        db.session.commit()
+        
+        current_app.logger.info(f"Created new LLM action: {action.to_dict()}")
+        return jsonify({'status': 'success', 'action': action.to_dict()})
+    except Exception as e:
+        current_app.logger.error(f"Error creating action: {str(e)}")
+        db.session.rollback()
+        return jsonify({'status': 'error', 'error': str(e)}), 400
 
 
 @bp.route('/prompts', methods=['POST'])
@@ -305,3 +311,71 @@ def delete_prompt(prompt_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/actions/<int:action_id>', methods=['GET', 'PUT', 'DELETE'])
+def handle_action(action_id):
+    """Handle individual LLM action operations."""
+    action = LLMAction.query.get_or_404(action_id)
+    
+    if request.method == 'GET':
+        return jsonify(action.to_dict())
+    
+    elif request.method == 'PUT':
+        data = request.get_json()
+        
+        # Update action fields
+        for field in ['field_name', 'source_field', 'prompt_template', 'llm_model', 'temperature', 'max_tokens']:
+            if field in data:
+                setattr(action, field, data[field])
+        
+        try:
+            db.session.commit()
+            return jsonify(action.to_dict())
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 400
+    
+    elif request.method == 'DELETE':
+        try:
+            db.session.delete(action)
+            db.session.commit()
+            return jsonify({'success': True})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 400
+
+
+@bp.route('/actions/<int:action_id>/execute', methods=['POST'])
+def execute_action(action_id):
+    """Execute an LLM action."""
+    action = LLMAction.query.get_or_404(action_id)
+    data = request.get_json()
+    
+    if not data or 'input_text' not in data:
+        return jsonify({'error': 'No input text provided'}), 400
+    
+    try:
+        llm = LLMService()
+        result = llm.execute_action(
+            action=action,
+            input_text=data['input_text'],
+            post_id=data.get('post_id')
+        )
+        return jsonify(result)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        current_app.logger.error(f"Error executing action: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@bp.route('/actions/<int:action_id>/history')
+def action_history(action_id):
+    """Get the history for a specific LLM action."""
+    action = LLMAction.query.get_or_404(action_id)
+    history = LLMActionHistory.query.filter_by(action_id=action_id).order_by(LLMActionHistory.created_at.desc()).all()
+    return jsonify({
+        'action': action.to_dict(),
+        'history': [h.to_dict() for h in history]
+    })
