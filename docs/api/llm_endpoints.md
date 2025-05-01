@@ -1,10 +1,224 @@
-# LLM API Endpoints Documentation
-
-This document describes the LLM-powered endpoints available in the blog application.
+# LLM API Documentation
 
 ## Authentication
+All API endpoints require authentication. Use one of the following methods:
+1. Session-based authentication (for browser clients)
+2. API key authentication (for programmatic access)
 
-All endpoints require authentication via JWT token in the Authorization header.
+## LLM Actions
+
+### List Actions
+```http
+GET /api/v1/llm/actions
+```
+
+Response:
+```json
+[
+    {
+        "id": "integer",
+        "field_name": "string",
+        "source_field": "string",
+        "prompt_template": "string",
+        "llm_model": "string",
+        "temperature": "number",
+        "max_tokens": "number",
+        "created_at": "string (ISO datetime)",
+        "updated_at": "string (ISO datetime)"
+    }
+]
+```
+
+### Create Action
+```http
+POST /api/v1/llm/actions
+Content-Type: application/json
+
+{
+    "field_name": "string",
+    "source_field": "string",
+    "prompt_template_id": "integer",
+    "llm_model": "string",
+    "temperature": "number",
+    "max_tokens": "number"
+}
+```
+
+Response:
+```json
+{
+    "status": "success",
+    "action": {
+        "id": "integer",
+        "field_name": "string",
+        "source_field": "string",
+        "prompt_template": "string",
+        "llm_model": "string",
+        "temperature": "number",
+        "max_tokens": "number",
+        "created_at": "string (ISO datetime)",
+        "updated_at": "string (ISO datetime)"
+    }
+}
+```
+
+### Get Action
+```http
+GET /api/v1/llm/actions/{action_id}
+```
+
+Response:
+```json
+{
+    "id": "integer",
+    "field_name": "string",
+    "source_field": "string",
+    "prompt_template": "string",
+    "llm_model": "string",
+    "temperature": "number",
+    "max_tokens": "number",
+    "created_at": "string (ISO datetime)",
+    "updated_at": "string (ISO datetime)"
+}
+```
+
+### Update Action
+```http
+PUT /api/v1/llm/actions/{action_id}
+Content-Type: application/json
+
+{
+    "field_name": "string (optional)",
+    "source_field": "string (optional)",
+    "prompt_template_id": "integer (optional)",
+    "llm_model": "string (optional)",
+    "temperature": "number (optional)",
+    "max_tokens": "number (optional)"
+}
+```
+
+Response:
+```json
+{
+    "status": "success",
+    "action": {
+        "id": "integer",
+        "field_name": "string",
+        "source_field": "string",
+        "prompt_template": "string",
+        "llm_model": "string",
+        "temperature": "number",
+        "max_tokens": "number",
+        "created_at": "string (ISO datetime)",
+        "updated_at": "string (ISO datetime)"
+    }
+}
+```
+
+### Delete Action
+```http
+DELETE /api/v1/llm/actions/{action_id}
+```
+
+Response:
+```json
+{
+    "status": "success"
+}
+```
+
+### Test Action
+```http
+POST /api/v1/llm/test
+Content-Type: application/json
+
+{
+    "prompt": "string",
+    "model_name": "string",
+    "temperature": "number (optional, default: 0.7)",
+    "max_tokens": "number (optional, default: 1000)",
+    "input": "string"
+}
+```
+
+Response:
+```json
+{
+    "result": "string",
+    "model": "string",
+    "duration": "number (seconds)"
+}
+```
+
+## Error Responses
+
+All endpoints may return the following error responses:
+
+- `400 Bad Request`: Invalid request parameters
+- `401 Unauthorized`: User is not authenticated
+- `404 Not Found`: Requested resource does not exist
+- `500 Internal Server Error`: Server-side error occurred
+
+Error responses follow this format:
+```json
+{
+    "status": "error",
+    "error": "string"
+}
+```
+
+## Rate Limiting
+
+The LLM endpoints are subject to rate limiting:
+- 100 requests per minute per user for test endpoints
+- 1000 requests per day per user for action execution
+- No limit on read operations (GET requests)
+
+## Interaction Tracking
+
+All LLM interactions are logged in the database for monitoring and improvement purposes. Each interaction record includes:
+- Input text
+- Output text
+- Model used
+- Parameters used
+- Duration
+- Status
+- Error message (if any)
+- Timestamp
+
+## Error Handling
+
+The LLM endpoints provide improved error handling:
+
+### Timeout Handling
+- Default timeout: 60 seconds for model loading
+- Non-fatal failures allow continued operation
+- Clear distinction between temporary and permanent failures
+
+### Error Messages
+- Detailed error descriptions
+- Specific troubleshooting steps
+- Clear indication of error type (timeout/connection/etc)
+
+### Logging
+- Comprehensive logging of all operations
+- Error tracking with stack traces
+- Performance monitoring for timeouts
+
+### Response Format for Errors
+```json
+{
+    "status": "error",
+    "error": {
+        "type": "string",
+        "message": "string",
+        "details": {
+            "field": ["error details"]
+        },
+        "troubleshooting": ["steps to resolve"]
+    }
+}
+```
 
 ## Endpoints
 
@@ -179,88 +393,8 @@ Retrieves template settings for a specific source field.
 }
 ```
 
-### Test Template
-`POST /api/v1/llm/test`
-
-Tests a prompt template with the specified model.
-
-**Request Body:**
-```json
-{
-    "prompt": "string",
-    "model_name": "string"
-}
-```
-
-**Response:**
-```json
-{
-    "result": "string"
-}
-```
-
-## Error Responses
-
-All endpoints may return the following error responses:
-
-- `401 Unauthorized`: User is not authenticated
-- `404 Not Found`: Requested resource does not exist
-- `500 Internal Server Error`: Server-side error occurred
-
-Error responses follow this format:
-```json
-{
-    "error": "string"
-}
-```
-
-## Rate Limiting
-
-The LLM endpoints are subject to rate limiting based on your OpenAI API quota. Please ensure your requests are within reasonable limits.
-
-## Interaction Tracking
-
-All LLM interactions are logged in the database for monitoring and improvement purposes. Each interaction record includes:
-- Input text
-- Output text
-- Model used
-- Duration
-- Parameters used
-- Timestamp 
-
 ## LLM Action Test Button (UI)
 
 A "Test" button is available in the LLM Action modal on the blog develop page. This button sends the current prompt template and selected model to the `/api/v1/llm/test` endpoint and displays the generated result below the button. This allows users to quickly test prompt/model combinations before saving LLM Action settings.
 
-> Note: The Test Interface on the /llm/ page now sends both the prompt and the selected model to /api/v1/llm/test. The backend will use the selected model for the test. No changes are made to the blog develop modal.
-
-## Error Handling
-
-The LLM endpoints now provide improved error handling and timeout management:
-
-### Timeout Handling
-- Default timeout increased to 60 seconds for model loading
-- Non-fatal failures allow continued operation
-- Clear distinction between temporary and permanent failures
-
-### Error Messages
-- Detailed error descriptions
-- Specific troubleshooting steps
-- Clear indication of error type (timeout/connection/etc)
-
-### Logging
-- Comprehensive logging of all operations
-- Error tracking with stack traces
-- Performance monitoring for timeouts
-
-### Response Format for Errors
-```json
-{
-  "error": "Detailed error message",
-  "type": "timeout|connection|validation",
-  "suggestions": [
-    "Specific troubleshooting step 1",
-    "Specific troubleshooting step 2"
-  ]
-}
-``` 
+> Note: The Test Interface on the /llm/ page now sends both the prompt and the selected model to /api/v1/llm/test. The backend will use the selected model for the test. No changes are made to the blog develop modal. 
