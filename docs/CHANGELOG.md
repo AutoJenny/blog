@@ -49,6 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed Idea Scope modal prompt template saving
 - Fixed blueprint registration issues
 - Fixed template rendering problems
+- Fixed LLM input processing and prompt handling
+  - Simplified prompt template combination with input text
+  - Removed complex chat-style formatting that caused issues
+  - Added direct validation of input presence
+  - Improved error reporting for missing inputs
+  - Optimized temperature settings for consistency
 - Improved error handling in LLMService
 - Fixed database connection issues
   - Added proper PostgreSQL connection validation

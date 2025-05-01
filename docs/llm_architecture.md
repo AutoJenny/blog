@@ -39,3 +39,24 @@ Template selections and associated settings are persisted through the `/api/v1/l
 - Settings include: source_field, llm_model, temperature, max_tokens
 - Responses provide immediate feedback on save status
 - Error handling follows the standard error classification system 
+
+## Prompt Handling and Input Processing
+The LLM service implements a simplified and robust prompt handling system:
+
+### Input Processing
+- Direct template-input combination using format: "{prompt_template}\n\nTopic: {input_text}"
+- Simplified prompt structure to ensure reliable input incorporation
+- Removal of complex chat-style formatting to improve reliability
+- Direct validation of input presence and processing
+
+### Template Processing
+- Streamlined template handling without role-based formatting
+- Immediate validation of template-input combination
+- Clear error reporting for missing or invalid inputs
+- Simplified retry mechanisms for failed requests
+
+### Quality Assurance
+- Automated testing of prompt-input combinations
+- Validation of LLM response relevance
+- Temperature control for consistent outputs
+- Monitoring of prompt-response correlation 
