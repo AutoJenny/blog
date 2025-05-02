@@ -288,34 +288,30 @@
     <div class="relative z-10 max-w-lg mx-auto mt-20 bg-[#23272F] rounded-lg shadow-xl">
         <div class="p-6">
             <h2 class="text-xl font-semibold mb-4 text-white" id="modalTitle">New Action</h2>
-            <form id="actionForm">
-                <input type="hidden" id="actionId" name="actionId">
+            <form id="action-modal-form">
+                <input type="hidden" id="action_id_modal" name="action_id">
                 <div class="form-group">
-                    <label class="form-label" for="fieldName">Field Name</label>
-                    <input type="text" id="fieldName" name="fieldName" class="form-input">
+                    <label class="form-label" for="field_name_modal">Field Name</label>
+                    <input type="text" id="field_name_modal" name="field_name" class="form-input">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="promptTemplate">Prompt Template</label>
-                    <select id="promptTemplate" name="promptTemplate" class="form-input">
-                        {% for prompt in prompts %}
-                        <option value="{{ prompt.id }}">{{ prompt.name }}</option>
-                        {% endfor %}
-                    </select>
+                    <label class="form-label" for="prompt_template_id_modal">Prompt Template</label>
+                    <select id="prompt_template_id_modal" name="prompt_template_id" class="form-input"></select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="llmModel">LLM Model</label>
-                    <select id="llmModel" name="llmModel" class="form-input"></select>
+                    <label class="form-label" for="llm_model_modal">LLM Model</label>
+                    <select id="llm_model_modal" name="llm_model" class="form-input"></select>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
-                        <label class="form-label" for="temperature">Temperature</label>
-                        <input type="number" id="temperature" name="temperature" class="form-input" min="0" max="2"
-                            step="0.1" value="0.7">
+                        <label class="form-label" for="temperature_modal">Temperature</label>
+                        <input type="number" id="temperature_modal" name="temperature" class="form-input" min="0"
+                            max="2" step="0.1" value="0.7">
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="maxTokens">Max Tokens</label>
-                        <input type="number" id="maxTokens" name="maxTokens" class="form-input" min="1" max="4096"
-                            value="1000">
+                        <label class="form-label" for="max_tokens_modal">Max Tokens</label>
+                        <input type="number" id="max_tokens_modal" name="max_tokens" class="form-input" min="1"
+                            max="4096" value="1000">
                     </div>
                 </div>
                 <div class="flex justify-end gap-2">
@@ -421,6 +417,41 @@
                 }
             });
         }
+
+        // Modal form submission handler
+        const modalForm = document.getElementById('action-modal-form');
+        if (modalForm) {
+            modalForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const data = {
+                    field_name: formData.get('field_name'),
+                    prompt_template_id: formData.get('prompt_template_id'),
+                    llm_model: formData.get('llm_model'),
+                    temperature: parseFloat(formData.get('temperature')),
+                    max_tokens: parseInt(formData.get('max_tokens'))
+                };
+                const actionId = formData.get('action_id');
+                const method = actionId ? 'PUT' : 'POST';
+                const url = actionId ? `/api/v1/llm/actions/${actionId}` : '/api/v1/llm/actions';
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        window.location.reload();
+                    } else {
+                        alert('Error saving action: ' + (result.error || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error saving action:', error);
+                    alert('Error saving action: ' + error.message);
+                }
+            });
+        }
     });
 
     // Helper functions
@@ -462,12 +493,12 @@
     // Modal management functions
     function showNewActionModal() {
         document.getElementById('modalTitle').textContent = 'New Action';
-        document.getElementById('actionId').value = '';
-        document.getElementById('actionForm').reset();
+        document.getElementById('action_id_modal').value = '';
+        document.getElementById('action-modal-form').reset();
         document.getElementById('actionModal').classList.remove('hidden');
 
         // Populate LLM Model select in modal
-        const llmModelSelect = document.getElementById('llmModel');
+        const llmModelSelect = document.getElementById('llm_model_modal');
         llmModelSelect.innerHTML = '';
         (availableModels || []).forEach(model => {
             const option = document.createElement('option');
@@ -477,7 +508,7 @@
         });
 
         // Populate Prompt Template select in modal
-        const promptTemplateSelect = document.getElementById('promptTemplate');
+        const promptTemplateSelect = document.getElementById('prompt_template_id_modal');
         promptTemplateSelect.innerHTML = '';
         (availablePrompts || []).forEach(prompt => {
             const option = document.createElement('option');
