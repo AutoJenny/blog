@@ -203,7 +203,6 @@ class LLMAction(db.Model):
     """Model for storing LLM action configurations."""
     id = db.Column(db.Integer, primary_key=True)
     field_name = db.Column(db.String(128), nullable=False)
-    source_field = db.Column(db.String(128), nullable=False)
     prompt_template = db.Column(db.Text, nullable=False)
     llm_model = db.Column(db.String(128), nullable=False)
     temperature = db.Column(db.Float, default=0.7)
@@ -232,7 +231,6 @@ class LLMAction(db.Model):
         return {
             'id': self.id,
             'field_name': self.field_name,
-            'source_field': self.source_field,
             'prompt_template': self.prompt_template,
             'llm_model': self.llm_model,
             'temperature': self.temperature,
