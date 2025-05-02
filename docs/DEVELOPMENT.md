@@ -215,6 +215,7 @@ Templates are managed through a dropdown interface in the development environmen
 - Real-time saving of associated settings (LLM model, temperature, max tokens)
 - User feedback on save operations through visual indicators
 - Error handling for failed save operations
+- **2024-05-02:** The template modal JavaScript now safely handles empty state and placeholder elements, preventing TypeErrors when opening the modal. Curly braces for template fields are inserted using Unicode escapes to avoid Jinja/JS conflicts.
 
 When working with templates:
 1. Select a template from the dropdown to load its content
@@ -233,6 +234,11 @@ The template management system uses event listeners to ensure:
 - Reliable state synchronization between components
 - Proper error handling and user feedback
 - Clean state management during modal operations
+
+### Modal Management
+- LLM action modals for template selection and generation
+- Show/hide logic with proper cleanup
+- **2024-05-02:** Modal JS logic updated to prevent errors when clearing selected fields, and to ensure robust event handling for all modal operations.
 
 ## LLM Integration
 

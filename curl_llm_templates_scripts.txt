@@ -1,0 +1,47 @@
+            </div>
+
+            <div class="flex justify-end gap-4">
+                <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Template</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="application/json" id="workflow-fields-json">
+{"Authoring Stage": ["first_draft", "uk_british", "highlighting", "image_concepts", "image_prompts", "generation", "optimization", "watermarking", "image_meta_descriptions", "image_captions"], "Idea Stage": ["basic_idea", "provisional_title", "idea_scope"], "Metadata Stage": ["basic_metadata", "tags", "categories", "image_captions", "seo_optimization"], "Outlining Stage": ["section_planning", "section_headings", "section_order"], "Publishing Stage": ["scheduling", "deployment", "verification"], "Research Stage": ["topics_to_cover", "interesting_facts", "tartans_products"], "Review Stage": ["self_review", "peer_review", "final_check"], "Syndication Stage": ["platform_selection", "content_adaptation", "distribution", "engagement_tracking"], "Top \u0026 Tail Stage": ["main_title", "subtitle", "intro_blurb", "conclusion"], "Updates Stage": ["feedback_collection", "content_updates", "version_control"]}
+</script>
+
+<script>
+    // Initialize variables
+    let draggedField = null;
+    const workflow_fields = JSON.parse(document.getElementById('workflow-fields-json').textContent);
+
+    // Modal management functions
+    function showNewTemplateModal() {
+        const modal = document.getElementById('templateModal');
+        const form = document.getElementById('templateForm');
+        const modalTitle = document.getElementById('modalTitle');
+
+--
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark-surface border-t border-dark-border py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">&copy; 2025 Blog CMS. All rights reserved.</p>
+        </div>
+    </footer>
+
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var newPostBtn = document.getElementById('newPostBtn');
+            if (newPostBtn) {
+                newPostBtn.addEventListener('click', async () => {
+                    const basicIdea = prompt('Enter your basic idea for the post:');
+                    if (!basicIdea) return;
+                    try {
+                        const response = await fetch("/blog/new", {
+                            method: 'POST',
+                            headers: {
