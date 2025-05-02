@@ -465,6 +465,26 @@
         document.getElementById('actionId').value = '';
         document.getElementById('actionForm').reset();
         document.getElementById('actionModal').classList.remove('hidden');
+
+        // Populate LLM Model select in modal
+        const llmModelSelect = document.getElementById('llmModel');
+        llmModelSelect.innerHTML = '';
+        (availableModels || []).forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.text = model;
+            llmModelSelect.appendChild(option);
+        });
+
+        // Populate Prompt Template select in modal
+        const promptTemplateSelect = document.getElementById('promptTemplate');
+        promptTemplateSelect.innerHTML = '';
+        (availablePrompts || []).forEach(prompt => {
+            const option = document.createElement('option');
+            option.value = prompt.id;
+            option.text = prompt.name;
+            promptTemplateSelect.appendChild(option);
+        });
     }
 
     async function editAction(actionId) {
