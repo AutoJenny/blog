@@ -200,7 +200,7 @@ def handle_actions():
     data = request.get_json()
     try:
         # Validate required fields
-        required_fields = ['field_name', 'source_field', 'prompt_template_id', 'llm_model']
+        required_fields = ['field_name', 'prompt_template_id', 'llm_model']
         for field in required_fields:
             if field not in data:
                 return jsonify({'status': 'error', 'error': f'Missing required field: {field}'}), 400
@@ -211,7 +211,6 @@ def handle_actions():
         # Create the action
         action = LLMAction(
             field_name=data['field_name'],
-            source_field=data['source_field'],
             prompt_template=prompt_template.prompt_text,
             llm_model=data['llm_model'],
             temperature=float(data.get('temperature', 0.7)),
@@ -337,7 +336,7 @@ def handle_action(action_id):
         data = request.get_json()
         
         # Update action fields
-        for field in ['field_name', 'source_field', 'prompt_template', 'llm_model', 'temperature', 'max_tokens']:
+        for field in ['field_name', 'prompt_template', 'llm_model', 'temperature', 'max_tokens']:
             if field in data:
                 setattr(action, field, data[field])
         
