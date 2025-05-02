@@ -404,7 +404,7 @@ The template settings (including the selected template, model, temperature, and 
 2. The Test button is clicked
 3. The Save button is clicked
 
-These settings are stored per source field (e.g., separate settings for Provisional Title, Description, etc.) and are automatically loaded when the modal is opened for that field.
+These settings are stored per field (e.g., separate settings for Provisional Title, Description, etc.) and are automatically loaded when the modal is opened for that field.
 
 ### Example Usage (API)
 
@@ -453,7 +453,6 @@ POST /api/v1/llm/actions/
 #### Request Body
 ```json
 {
-  "source_field": "string",  // The field this template is associated with
   "template": "string",      // The template content
   "llm_model": "string",    // The LLM model to use
   "temperature": number,     // Temperature setting (0-1)
