@@ -22,7 +22,7 @@ A robust, transparent system for defining, editing, and running LLM-powered cont
 ## Project Steps
 
 ### 1. Data Model & Backend
-- [x] Design `LLMAction` model (fields: id, source_field, prompt_template, destination_field, llm_model, temperature, etc.)
+- [x] Design `LLMAction` model (fields: id, prompt_template, destination_field, llm_model, temperature, etc.)
 - [x] Design `LLMActionHistory` model (fields: id, action_id, post_id, input, output, status, timestamp, user, etc.)
 - [x] Create migration scripts for new tables (for LLMConfig, LLMPrompt, LLMInteraction)
 - [x] Implement backend CRUD API for actions (list, create, edit, delete)
@@ -36,7 +36,7 @@ A robust, transparent system for defining, editing, and running LLM-powered cont
 
 ### 3. Frontend UI/UX
 - [x] Design action builder interface
-- [x] Implement source field selector
+- [x] Remove source field selector
 - [x] Implement prompt template selector
 - [x] Implement LLM model selector
 - [x] Add test functionality
@@ -63,7 +63,7 @@ A robust, transparent system for defining, editing, and running LLM-powered cont
 ## Implementation Notes
 
 ### Action Execution Flow
-1. User selects source field and destination field
+1. User selects destination field
 2. User selects or creates prompt template
 3. User configures LLM model and parameters
 4. System validates configuration

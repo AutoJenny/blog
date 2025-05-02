@@ -23,7 +23,6 @@ Response:
     {
         "id": "integer",
         "field_name": "string",
-        "source_field": "string",
         "prompt_template": "string",
         "llm_model": "string",
         "temperature": "number",
@@ -41,7 +40,6 @@ Content-Type: application/json
 
 {
     "field_name": "string",
-    "source_field": "string",
     "prompt_template_id": "integer",
     "llm_model": "string",
     "temperature": "number (optional, default: 0.7)",
@@ -56,7 +54,6 @@ Response:
     "action": {
         "id": "integer",
         "field_name": "string",
-        "source_field": "string",
         "prompt_template": "string",
         "llm_model": "string",
         "temperature": "number",
@@ -77,7 +74,6 @@ Response:
 {
     "id": "integer",
     "field_name": "string",
-    "source_field": "string",
     "prompt_template": "string",
     "llm_model": "string",
     "temperature": "number",
@@ -94,7 +90,6 @@ Content-Type: application/json
 
 {
     "field_name": "string (optional)",
-    "source_field": "string (optional)",
     "prompt_template_id": "integer (optional)",
     "llm_model": "string (optional)",
     "temperature": "number (optional)",
@@ -109,7 +104,6 @@ Response:
     "action": {
         "id": "integer",
         "field_name": "string",
-        "source_field": "string",
         "prompt_template": "string",
         "llm_model": "string",
         "temperature": "number",
@@ -143,7 +137,6 @@ Response:
     "action": {
         "id": "integer",
         "field_name": "string",
-        "source_field": "string",
         "prompt_template": "string",
         "llm_model": "string",
         "temperature": "number",

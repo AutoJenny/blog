@@ -248,7 +248,7 @@ The blog system integrates with Language Learning Models (LLM) to assist in cont
 
 - Templates are stored in the database and managed through the development interface
 - Template selection is synchronized between dropdown and textarea elements
-- Settings (template, source field, model, temperature, tokens) are automatically saved on selection
+- Settings (template, model, temperature, tokens) are automatically saved on selection
 
 ### Content Generation
 

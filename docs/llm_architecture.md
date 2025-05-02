@@ -36,7 +36,7 @@ The LLM service includes a robust template management system that:
 ### Settings Persistence
 Template selections and associated settings are persisted through the `/api/v1/llm/actions/` endpoint:
 - POST requests save template selections and settings
-- Settings include: source_field, llm_model, temperature, max_tokens
+- Settings include: llm_model, temperature, max_tokens
 - Responses provide immediate feedback on save status
 - Error handling follows the standard error classification system 
 
