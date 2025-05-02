@@ -359,3 +359,5 @@ All notable changes to this project are documented in this file.
 2024-05-02: Improve action form submission logic to prevent false error alerts, disable submit button, log result, and reload only after success. Fixes misleading 'Unknown error' alert.
 
 2024-05-02: Prevent error alert after successful action save by reloading and returning immediately. Fixes race condition in both builder and modal forms.
+
+2024-05-02: Remove duplicate modal form event handlers before adding a new one, using a named handler. Prevents false error alerts after successful save.

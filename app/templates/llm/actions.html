@@ -425,7 +425,11 @@
         // Modal form submission handler
         const modalForm = document.getElementById('action-modal-form');
         if (modalForm) {
-            modalForm.addEventListener('submit', async function (e) {
+            // Remove any previous handler
+            if (window._modalFormHandler) {
+                modalForm.removeEventListener('submit', window._modalFormHandler);
+            }
+            window._modalFormHandler = async function (e) {
                 e.preventDefault();
                 const submitButton = modalForm.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
@@ -462,7 +466,8 @@
                     submitButton.disabled = false;
                     submitButton.textContent = 'Save';
                 }
-            }, { once: true });
+            };
+            modalForm.addEventListener('submit', window._modalFormHandler);
         }
     });
 
