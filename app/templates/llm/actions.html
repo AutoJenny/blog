@@ -384,7 +384,9 @@
         if (builderForm) {
             builderForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
-
+                const submitButton = builderForm.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Saving...';
                 const formData = new FormData(this);
                 const data = {
                     field_name: formData.get('field_name'),
@@ -393,29 +395,31 @@
                     temperature: parseFloat(formData.get('temperature')),
                     max_tokens: parseInt(formData.get('max_tokens'))
                 };
-
                 const actionId = formData.get('action_id');
                 const method = actionId ? 'PUT' : 'POST';
                 const url = actionId ? `/api/v1/llm/actions/${actionId}` : '/api/v1/llm/actions';
-
                 try {
                     const response = await fetch(url, {
                         method: method,
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     });
-
                     const result = await response.json();
+                    console.log('Action save result:', result);
                     if (result.status === 'success') {
-                        window.location.reload();
+                        setTimeout(() => window.location.reload(), 100);
                     } else {
                         alert('Error saving action: ' + (result.error || 'Unknown error'));
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Save Action';
                     }
                 } catch (error) {
                     console.error('Error saving action:', error);
                     alert('Error saving action: ' + error.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Save Action';
                 }
-            });
+            }, { once: true });
         }
 
         // Modal form submission handler
@@ -423,6 +427,9 @@
         if (modalForm) {
             modalForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
+                const submitButton = modalForm.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Saving...';
                 const formData = new FormData(this);
                 const data = {
                     field_name: formData.get('field_name'),
@@ -441,16 +448,21 @@
                         body: JSON.stringify(data)
                     });
                     const result = await response.json();
+                    console.log('Action save result:', result);
                     if (result.status === 'success') {
-                        window.location.reload();
+                        setTimeout(() => window.location.reload(), 100);
                     } else {
                         alert('Error saving action: ' + (result.error || 'Unknown error'));
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Save';
                     }
                 } catch (error) {
                     console.error('Error saving action:', error);
                     alert('Error saving action: ' + error.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Save';
                 }
-            });
+            }, { once: true });
         }
     });
 
