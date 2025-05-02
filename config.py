@@ -66,7 +66,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres@localhost/blog"
+    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres@localhost/blog_test"
     WTF_CSRF_ENABLED = False
 
 
