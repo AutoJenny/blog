@@ -1,21 +1,32 @@
 """Routes for LLM-powered content generation and enhancement."""
 
-from flask import jsonify, request, current_app, render_template
+from flask import jsonify, request, current_app, render_template, redirect, url_for
 import logging
 from app.models import Post, PostSection, LLMPrompt, LLMInteraction, LLMConfig, db, LLMAction, LLMActionHistory
 from datetime import datetime
 from app.llm import bp
 from app.llm.services import execute_llm_request
 import httpx
+from app.blog.fields import WORKFLOW_FIELDS
 
 logger = logging.getLogger(__name__)
 
 @bp.route("/")
 def index():
-    """LLM management interface."""
+    """Redirect to config page."""
+    return redirect(url_for('llm.config_page'))
+
+@bp.route("/config")
+def config_page():
+    """LLM configuration interface."""
     config = LLMConfig.query.first()
-    prompts = {template.name: template.prompt_text for template in LLMPrompt.query.all()}
-    return render_template("llm/index.html", config=config, prompts=prompts)
+    return render_template("llm/config.html", config=config)
+
+@bp.route('/templates')
+def templates():
+    """Show prompt templates"""
+    prompts = LLMPrompt.query.all()
+    return render_template('llm/templates.html', prompts=prompts, workflow_fields=WORKFLOW_FIELDS)
 
 @bp.route('/actions')
 def actions():
@@ -35,7 +46,6 @@ def actions():
         db.session.add(config)
         db.session.commit()
     
-    from app.blog.fields import WORKFLOW_FIELDS
     return render_template(
         'llm/actions.html',
         actions=actions,

@@ -313,6 +313,18 @@ def delete_prompt(prompt_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@bp.route('/prompts/<int:prompt_id>', methods=['GET'])
+def get_prompt(prompt_id):
+    """Get a single prompt by ID"""
+    prompt = LLMPrompt.query.get_or_404(prompt_id)
+    return jsonify({
+        'id': prompt.id,
+        'name': prompt.name,
+        'description': prompt.description,
+        'prompt_text': prompt.prompt_text
+    })
+
+
 @bp.route('/actions/<int:action_id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_action(action_id):
     """Handle individual LLM action operations."""

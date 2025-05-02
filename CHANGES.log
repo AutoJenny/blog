@@ -242,3 +242,76 @@ All notable changes to this project are documented in this file.
   - Added comprehensive logging throughout request lifecycle
   - Fixed prompt + input combination logic
   - Added better error messages for template issues
+
+[2025-05-01]
+- Split LLM interface into separate pages:
+  - Created dedicated configuration page (config.html)
+  - Created dedicated prompt templates page (templates.html)
+  - Created dedicated test interface (test.html)
+  - Added consistent navigation between pages
+  - Improved UI/UX with better feedback and error handling
+  - Added live preview of prompt + input combination
+
+[2024-03-21]
+- Improved LLM templates page styling:
+  - Added consistent admin styling system integration
+  - Enhanced button styles with proper hover states and visual hierarchy
+  - Improved modal design with better spacing and transitions
+  - Updated form elements for better usability
+  - Added proper color variables usage from admin theme
+  - Enhanced template cards with better shadows and animations
+  - Improved navigation tabs styling
+
+[2024-03-21]
+- Fixed LLM template editing functionality:
+  - Added missing GET endpoint for retrieving single prompt by ID
+  - Fixed route path for fetching prompt details
+  - Improved error handling for prompt editing
+
+[2024-03-21]
+- Enhanced LLM prompt template editor:
+  - Improved field selector with stage-based grouping
+  - Added drag & drop functionality for field insertion
+  - Enhanced visual feedback for drag & drop interactions
+  - Added placeholder text and help messages
+  - Improved template editor styling and usability
+  - Fixed field insertion at cursor position
+
+[2024-03-21]
+- Fixed route name mismatches across LLM templates:
+  - Updated 'llm.templates_page' to 'llm.templates' in all template files
+  - Fixed navigation links in config.html, templates.html, and test.html
+  - Ensured consistent route naming across the LLM management interface
+
+[2024-03-21]
+- Fixed JavaScript template literal syntax in templates.html:
+  - Fixed conflict between JavaScript template literals and Jinja2 syntax
+  - Updated field insertion code to use string concatenation
+  - Fixed 500 error in templates route
+
+[2024-03-21]
+- Improved LLM template field selector:
+  - Replaced long field list with two-level dropdown system
+  - Added stage selection dropdown to filter fields
+  - Added dynamic field tag creation for selected fields
+  - Fixed field insertion syntax in template editor
+  - Enhanced drag and drop interaction with better visual feedback
+  - Improved field tag styling and usability
+
+[2025-05-01]
+- Fixed issue where test suite was accidentally dropping production database
+- Created separate test database (blog_test) to prevent test suite from affecting production data
+
+[2025-05-01]
+- Standardized styling across LLM management interface:
+  - Updated navigation tabs with consistent styling and hover effects
+  - Unified card and section styling with consistent shadows and animations
+  - Standardized form elements and button styles
+  - Improved visual hierarchy and spacing
+  - Enhanced dark theme consistency
+
+[2025-05-01]
+- Improved button styling in LLM interface:
+  - Added proper primary button styling for main actions
+  - Standardized action button appearance across all pages
+  - Enhanced visual hierarchy for primary actions

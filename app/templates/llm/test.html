@@ -3,19 +3,50 @@
 {% block title %}Test Prompts{% endblock %}
 
 {% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
-    .container {
-        max-width: 800px;
-        margin: 2rem auto;
-        padding: 0 1rem;
+    /* Navigation */
+    .nav-links {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--admin-border);
+        padding-bottom: 0.5rem;
     }
 
-    .card {
-        background: var(--admin-bg-card, #23272F);
-        border: 1px solid var(--admin-border, #404040);
-        border-radius: 0.5rem;
+    .nav-link {
+        color: var(--admin-text-secondary);
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .nav-link:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    .nav-link.active {
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.1);
+        border-bottom: 2px solid var(--admin-accent);
+        margin-bottom: -1px;
+    }
+
+    /* Test Interface */
+    .test-card {
+        background: var(--admin-bg-card);
+        border: 1px solid var(--admin-border);
+        border-radius: 0.75rem;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .form-group {
@@ -24,104 +55,210 @@
 
     .form-label {
         display: block;
+        color: var(--admin-text);
+        font-weight: 600;
         font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--admin-text, #E0E0E0);
         margin-bottom: 0.5rem;
     }
 
-    .form-input {
+    .form-select,
+    .form-input,
+    .form-textarea {
         width: 100%;
+        background: var(--admin-bg-card);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text);
         padding: 0.75rem;
-        background: var(--admin-bg-input, #2D333B);
-        border: 1px solid var(--admin-border, #404040);
         border-radius: 0.5rem;
-        color: var(--admin-text, #E0E0E0);
-        font-size: 1rem;
-        line-height: 1.5;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
     }
 
-    .form-input:focus {
-        border-color: var(--admin-primary, #1B4B73);
+    .form-select:focus,
+    .form-input:focus,
+    .form-textarea:focus {
+        border-color: var(--admin-accent);
         outline: none;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
     }
 
-    .btn {
-        display: inline-block;
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 500;
-        text-align: center;
+    .form-textarea {
+        min-height: 100px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        resize: vertical;
+        line-height: 1.6;
+    }
+
+    /* Preview and Results */
+    .preview-section,
+    .result-section {
+        background: var(--admin-bg-row-odd);
+        border: 1px solid var(--admin-border);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .preview-section:hover,
+    .result-section:hover {
+        border-color: var(--admin-accent);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-label,
+    .result-title {
+        font-size: 0.875rem;
+        color: var(--admin-text-secondary);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .preview-text,
+    .result-text {
+        font-family: 'Monaco', 'Menlo', monospace;
+        white-space: pre-wrap;
+        color: var(--admin-text);
+        background: var(--admin-bg-card);
+        padding: 1.25rem;
         border-radius: 0.5rem;
+        margin: 0;
+        line-height: 1.6;
+        font-size: 0.875rem;
+        border: 1px solid var(--admin-border);
+    }
+
+    .result-section {
+        display: none;
+    }
+
+    .result-section.active {
+        display: block;
+    }
+
+    .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--admin-border);
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
         cursor: pointer;
-        background: var(--admin-primary, #1B4B73);
+        font-size: 0.875rem;
+    }
+
+    .btn-primary {
+        background: var(--admin-accent);
         color: white;
         border: none;
     }
 
-    .btn:disabled {
-        opacity: 0.7;
+    .btn-primary:hover {
+        background: var(--admin-accent-hover);
+        transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.5;
         cursor: not-allowed;
+        transform: none;
     }
 
-    .error {
-        color: #DC2626;
-        margin-top: 0.5rem;
-        font-size: 0.875rem;
+    .btn-secondary {
+        background: var(--admin-bg-row-even);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text);
     }
 
-    #output {
-        white-space: pre-wrap;
-        font-family: monospace;
-        min-height: 200px;
-    }
-
-    .prompt-preview {
-        font-family: monospace;
-        margin-top: 0.5rem;
-        padding: 0.75rem;
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
-        white-space: pre-wrap;
+    .btn-secondary:hover {
+        background: var(--admin-bg-row-odd);
+        border-color: var(--admin-accent);
+        transform: translateY(-1px);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="text-2xl font-bold mb-6">Test Prompts</h1>
+<div class="admin-content">
+    <div class="admin-card">
+        <h1 class="admin-title mb-6">
+            <i class="fas fa-robot mr-2"></i>
+            LLM Management
+        </h1>
 
-    <div class="card">
-        <form id="testForm" class="space-y-6">
-            <div class="form-group">
-                <label class="form-label" for="prompt_id">1. Select a Prompt Template</label>
-                <select id="prompt_id" name="prompt_id" class="form-input" required>
-                    <option value="">Choose a prompt template...</option>
-                    {% for prompt in prompts %}
-                    <option value="{{ prompt.id }}" data-prompt="{{ prompt.prompt_text }}">
-                        {{ prompt.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-                <div id="promptPreview" class="prompt-preview mt-2">Select a prompt to see its template...</div>
+        <!-- Navigation -->
+        <div class="nav-links">
+            <a href="{{ url_for('llm.config_page') }}" class="nav-link">
+                <i class="fas fa-cog"></i>
+                Configuration
+            </a>
+            <a href="{{ url_for('llm.templates') }}" class="nav-link">
+                <i class="fas fa-file-alt"></i>
+                Prompt Templates
+            </a>
+            <a href="{{ url_for('llm.test_page') }}" class="nav-link active">
+                <i class="fas fa-vial"></i>
+                Test Interface
+            </a>
+        </div>
+
+        <!-- Test Interface -->
+        <div class="test-card">
+            <form id="test-form">
+                <div class="form-group">
+                    <label class="form-label" for="prompt-select">Select Prompt Template</label>
+                    <select id="prompt-select" class="form-select" required>
+                        <option value="">Choose a template...</option>
+                        {% for prompt in prompts %}
+                        <option value="{{ prompt.id }}" data-template="{{ prompt.prompt_text }}">{{ prompt.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="test-input">Input Text</label>
+                    <textarea id="test-input" class="form-textarea" required
+                        placeholder="Enter the text to test with..."></textarea>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">Final Prompt Preview:</div>
+                    <pre class="preview-text"
+                        id="prompt-preview">Select a template and enter input text to see the preview...</pre>
+                </div>
+
+                <div class="text-right mt-4">
+                    <button type="submit" class="btn btn-primary" id="test-button">
+                        <i class="fas fa-play"></i>
+                        Run Test
+                    </button>
+                </div>
+            </form>
+
+            <div class="result-section" id="result-section">
+                <div class="result-header">
+                    <span class="result-title">
+                        <i class="fas fa-comment-dots mr-2"></i>
+                        LLM Response
+                    </span>
+                </div>
+                <pre class="result-text" id="result-text"></pre>
             </div>
-
-            <div class="form-group">
-                <label class="form-label" for="input">2. Enter Your Input</label>
-                <textarea id="input" name="input" rows="3" class="form-input" required
-                    placeholder="This text will replace {{input}} in the template..."></textarea>
-            </div>
-
-            <button type="submit" id="submitBtn" class="btn">
-                Test Prompt
-            </button>
-        </form>
-    </div>
-
-    <div class="card">
-        <h2 class="text-xl font-semibold mb-4">Result</h2>
-        <pre id="output" class="form-input">Response will appear here...</pre>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -129,60 +266,63 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('testForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const output = document.getElementById('output');
-        const promptSelect = document.getElementById('prompt_id');
-        const promptPreview = document.getElementById('promptPreview');
+        const form = document.getElementById('test-form');
+        const promptSelect = document.getElementById('prompt-select');
+        const inputText = document.getElementById('test-input');
+        const previewText = document.getElementById('prompt-preview');
+        const resultSection = document.getElementById('result-section');
+        const resultText = document.getElementById('result-text');
+        const testButton = document.getElementById('test-button');
 
-        // Show the selected prompt template
-        promptSelect.addEventListener('change', function () {
-            const selectedOption = promptSelect.options[promptSelect.selectedIndex];
-            const promptText = selectedOption.dataset.prompt || '';
-            promptPreview.textContent = promptText;
-        });
+        function updatePreview() {
+            const selectedOption = promptSelect.selectedOptions[0];
+            if (selectedOption && selectedOption.value) {
+                const template = selectedOption.dataset.template;
+                const input = inputText.value.trim();
+                if (input) {
+                    previewText.textContent = template.replace('{{input}}', input);
+                } else {
+                    previewText.textContent = template;
+                }
+            } else {
+                previewText.textContent = 'Select a template and enter input text to see the preview...';
+            }
+        }
+
+        promptSelect.addEventListener('change', updatePreview);
+        inputText.addEventListener('input', updatePreview);
 
         form.addEventListener('submit', async function (e) {
             e.preventDefault();
-
-            const promptId = promptSelect.value;
-            const input = document.getElementById('input').value.trim();
-
-            if (!promptId || !input) {
-                output.textContent = 'Error: Please select a prompt and provide input text.';
-                return;
-            }
-
-            // Show loading state
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Testing...';
-            output.textContent = 'Generating response...';
+            testButton.disabled = true;
+            testButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+            resultSection.classList.remove('active');
 
             try {
-                const response = await fetch('/llm/api/test', {
+                const response = await fetch('/api/test', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        prompt_id: promptId,
-                        input: input,
-                        model: '{{ config.model_name }}'
+                        prompt_id: promptSelect.value,
+                        input: inputText.value.trim()
                     })
                 });
 
                 const data = await response.json();
-
                 if (response.ok) {
-                    output.textContent = data.response;
+                    resultText.textContent = data.response;
+                    resultSection.classList.add('active');
                 } else {
-                    output.textContent = `Error: ${data.error || 'Failed to generate response'}`;
+                    throw new Error(data.error || 'Error testing prompt');
                 }
             } catch (error) {
-                output.textContent = `Error: ${error.message}`;
+                console.error('Error:', error);
+                alert(error.message);
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Test Prompt';
+                testButton.disabled = false;
+                testButton.innerHTML = '<i class="fas fa-play"></i> Run Test';
             }
         });
     });
