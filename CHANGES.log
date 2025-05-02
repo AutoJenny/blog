@@ -353,3 +353,5 @@ All notable changes to this project are documented in this file.
 2024-05-02: Removed 'Source Field' and all test functionality from /llm/actions page, including UI, form fields, tabs, and related JavaScript logic. Actions now only define field name, prompt template, model, temperature, and max tokens.
 
 2024-05-02: Fix New Action modal to populate LLM model and prompt template selects using availableModels and availablePrompts, matching builder tab.
+
+2024-05-02: Unify modal and builder form field names/IDs for LLM Action creation, and update modal JS to match builder logic. Fixes 'Unknown error' on Action save.
