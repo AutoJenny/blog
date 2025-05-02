@@ -315,3 +315,37 @@ All notable changes to this project are documented in this file.
   - Added proper primary button styling for main actions
   - Standardized action button appearance across all pages
   - Enhanced visual hierarchy for primary actions
+
+[2025-05-01]
+- Fixed field placeholder insertion in template editor:
+  - Resolved string concatenation issues with Jinja2 template
+  - Improved JavaScript handling of template placeholders
+  - Fixed field text insertion at cursor position
+  - Added proper handling of curly braces in JavaScript
+
+[2025-05-01]
+- Fixed template modal functionality:
+  - Fixed New Template and Edit Template buttons
+  - Added proper modal open/close handling
+  - Improved form reset and field clearing
+  - Added modal close on outside click
+  - Fixed body scroll lock when modal is open
+  - Enhanced error handling for template operations
+
+[2025-05-01]
+- Fixed template button functionality:
+  - Replaced onclick attributes with proper event listeners
+  - Added data-id attributes for template actions
+  - Improved button event handling
+  - Fixed modal open/close functionality
+  - Enhanced error handling for template operations
+
+[2025-05-01]
+- Fixed JavaScript syntax error in templates page:
+  - Fixed unexpected EOF error
+  - Reorganized function definitions
+  - Added proper error handling
+  - Added debug logging
+  - Improved code structure and organization
+
+2024-05-02: Fixed TypeError in /llm/templates New Template button (showNewTemplateModal) by adding null and classList check before accessing classList.contains on selectedFields.firstChild.
