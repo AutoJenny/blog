@@ -26,7 +26,18 @@ def config_page():
 def templates():
     """Show prompt templates"""
     prompts = LLMPrompt.query.all()
-    return render_template('llm/templates.html', prompts=prompts, workflow_fields=WORKFLOW_FIELDS)
+    logger.info(f"RAW WORKFLOW_FIELDS: {WORKFLOW_FIELDS}")
+    def clean_workflow_fields(fields):
+        return {
+            stage.replace('\n', ' ').replace('\r', ' '): [
+                f.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').strip()
+                for f in field_list
+            ]
+            for stage, field_list in fields.items()
+        }
+    clean_fields = clean_workflow_fields(WORKFLOW_FIELDS)
+    logger.info(f"CLEANED WORKFLOW_FIELDS: {clean_fields}")
+    return render_template('llm/templates.html', prompts=prompts, workflow_fields=clean_fields)
 
 @bp.route('/actions')
 def actions():
