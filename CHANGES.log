@@ -357,3 +357,5 @@ All notable changes to this project are documented in this file.
 2024-05-02: Unify modal and builder form field names/IDs for LLM Action creation, and update modal JS to match builder logic. Fixes 'Unknown error' on Action save.
 
 2024-05-02: Improve action form submission logic to prevent false error alerts, disable submit button, log result, and reload only after success. Fixes misleading 'Unknown error' alert.
+
+2024-05-02: Prevent error alert after successful action save by reloading and returning immediately. Fixes race condition in both builder and modal forms.
