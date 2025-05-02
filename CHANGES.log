@@ -349,3 +349,5 @@ All notable changes to this project are documented in this file.
   - Improved code structure and organization
 
 2024-05-02: Fixed TypeError in /llm/templates New Template button (showNewTemplateModal) by adding null and classList check before accessing classList.contains on selectedFields.firstChild.
+
+2024-05-02: Removed 'Source Field' and all test functionality from /llm/actions page, including UI, form fields, tabs, and related JavaScript logic. Actions now only define field name, prompt template, model, temperature, and max tokens.

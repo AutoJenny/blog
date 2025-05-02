@@ -211,10 +211,6 @@
                     </div>
                     <div class="action-details">
                         <div class="action-detail">
-                            <span class="detail-label">Source Field</span>
-                            <span class="detail-value">{{ action.source_field }}</span>
-                        </div>
-                        <div class="action-detail">
                             <span class="detail-label">Model</span>
                             <span class="detail-value">{{ action.llm_model }}</span>
                         </div>
@@ -248,19 +244,6 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="source_field">Source Field</label>
-                        <select name="source_field" id="source_field" class="form-input">
-                            {% for stage, fields in workflow_fields.items() %}
-                            <optgroup label="{{ stage }}">
-                                {% for wf in fields %}
-                                <option value="{{ wf }}">{{ wf.replace('_', ' ').title() }}</option>
-                                {% endfor %}
-                            </optgroup>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="form-group">
                         <label class="form-label" for="prompt_template_id">Prompt Template</label>
                         <select name="prompt_template_id" id="prompt_template_id" class="form-input">
                         </select>
@@ -287,64 +270,15 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="test_input">Test Input</label>
-                        <textarea name="test_input" id="test_input" rows="3" class="form-input"
-                            placeholder="Enter test input here"></textarea>
-                    </div>
-
                     <div class="flex justify-end space-x-4">
-                        <button type="button" id="test_action" class="btn btn-secondary">Test</button>
                         <button type="submit" class="btn btn-primary">Save Action</button>
-                    </div>
-
-                    <div id="test_result" class="mt-4 p-4 bg-gray-800 rounded-md hidden">
-                        <h4 class="text-sm font-medium text-white mb-2">Test Result:</h4>
-                        <pre id="test_output" class="text-sm text-gray-300 whitespace-pre-wrap"></pre>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- Test Tab -->
-        <div class="hidden" id="test" role="tabpanel" aria-labelledby="test-tab">
-            <div class="max-w-3xl mx-auto">
-                <div class="form-group">
-                    <label class="form-label" for="test-action">Select Action</label>
-                    <select name="test-action" id="test-action" class="form-input">
-                        {% for action in actions %}
-                        <option value="{{ action.id }}" data-prompt="{{ action.prompt_template }}"
-                            data-model="{{ action.llm_model }}" data-temperature="{{ action.temperature }}"
-                            data-max-tokens="{{ action.max_tokens }}">
-                            {{ action.field_name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                    <div class="mt-2 text-sm text-gray-500">
-                        <strong>Selected Prompt Template:</strong>
-                        <pre id="selected-prompt" class="mt-1 p-2 bg-gray-800 rounded text-white"></pre>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="test-input">Test Input</label>
-                    <textarea name="test-input" id="test-input" rows="4" class="form-input"
-                        placeholder="Enter test input here"></textarea>
-                </div>
-
-                <div class="flex justify-end mb-6">
-                    <button type="button" id="run-test" class="btn btn-primary">
-                        Run Test
-                    </button>
-                </div>
-
-                <div>
-                    <h4 class="text-lg font-medium mb-2">Test Output</h4>
-                    <pre id="test-output"
-                        class="bg-gray-800 text-white p-4 rounded-md overflow-x-auto min-h-[200px] whitespace-pre-wrap"></pre>
-                </div>
-            </div>
-        </div>
+        <!-- (REMOVED) -->
     </div>
 </div>
 
@@ -359,18 +293,6 @@
                 <div class="form-group">
                     <label class="form-label" for="fieldName">Field Name</label>
                     <input type="text" id="fieldName" name="fieldName" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="sourceField">Source Field</label>
-                    <select id="sourceField" name="sourceField" class="form-input">
-                        {% for stage, fields in workflow_fields.items() %}
-                        <optgroup label="{{ stage }}">
-                            {% for wf in fields %}
-                            <option value="{{ wf }}">{{ wf.replace('_', ' ').title() }}</option>
-                            {% endfor %}
-                        </optgroup>
-                        {% endfor %}
-                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="promptTemplate">Prompt Template</label>
@@ -470,7 +392,6 @@
                 const formData = new FormData(this);
                 const data = {
                     field_name: formData.get('field_name'),
-                    source_field: formData.get('source_field'),
                     prompt_template_id: formData.get('prompt_template_id'),
                     llm_model: formData.get('llm_model'),
                     temperature: parseFloat(formData.get('temperature')),
@@ -499,127 +420,6 @@
                     alert('Error saving action: ' + error.message);
                 }
             });
-        }
-
-        // Test action functionality
-        const testActionButton = document.getElementById('test_action');
-        if (testActionButton) {
-            testActionButton.addEventListener('click', async function () {
-                const formData = new FormData(document.getElementById('action-builder-form'));
-                const data = {
-                    prompt: document.querySelector('#prompt_template_id option:checked').dataset.prompt,
-                    model_name: formData.get('llm_model'),
-                    temperature: parseFloat(formData.get('temperature')),
-                    max_tokens: parseInt(formData.get('max_tokens')),
-                    input: formData.get('test_input')
-                };
-
-                try {
-                    const response = await fetch('/api/v1/llm/test', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                    const result = await response.json();
-                    const resultContainer = document.getElementById('test_result');
-                    const output = document.getElementById('test_output');
-                    output.textContent = result.result;
-                    resultContainer.classList.remove('hidden');
-                } catch (error) {
-                    handleFetchError(error, 'Error testing action');
-                }
-            });
-        }
-    });
-
-    // Test tab functionality
-    document.addEventListener('DOMContentLoaded', function () {
-        const runTestButton = document.getElementById('run-test');
-        const testOutput = document.getElementById('test-output');
-        const testInput = document.getElementById('test-input');
-        const testActionSelect = document.getElementById('test-action');
-        const selectedPromptDisplay = document.getElementById('selected-prompt');
-
-        if (runTestButton) {
-            runTestButton.addEventListener('click', async function () {
-                try {
-                    // Show loading state
-                    testOutput.textContent = 'Running test...';
-                    runTestButton.disabled = true;
-                    runTestButton.textContent = 'Testing...';
-
-                    // Get selected action details
-                    const selectedOption = testActionSelect.options[testActionSelect.selectedIndex];
-                    const inputText = testInput.value.trim();
-
-                    // Validate input
-                    if (!inputText) {
-                        throw new Error('Please enter some test input');
-                    }
-
-                    const promptTemplate = selectedOption.dataset.prompt;
-                    if (!promptTemplate) {
-                        throw new Error('No prompt template found for this action');
-                    }
-
-                    // Prepare request data
-                    const data = {
-                        prompt: promptTemplate.trim(),
-                        model_name: selectedOption.dataset.model,
-                        temperature: parseFloat(selectedOption.dataset.temperature),
-                        max_tokens: parseInt(selectedOption.dataset.maxTokens),
-                        input: inputText
-                    };
-
-                    // Log request details for debugging
-                    console.log('Test request:', {
-                        prompt: data.prompt,
-                        input: data.input,
-                        model: data.model_name,
-                        temperature: data.temperature,
-                        max_tokens: data.max_tokens
-                    });
-
-                    // Call the test endpoint
-                    const response = await fetch('/api/v1/llm/test', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-
-                    const result = await response.json();
-                    console.log('Server response:', result);
-
-                    if (response.ok && result.response) {
-                        testOutput.textContent = result.response;
-                    } else {
-                        throw new Error(result.error || 'Test failed: ' + response.statusText);
-                    }
-                } catch (error) {
-                    console.error('Test error:', error);
-                    testOutput.textContent = `Error: ${error.message}`;
-                } finally {
-                    runTestButton.disabled = false;
-                    runTestButton.textContent = 'Run Test';
-                }
-            });
-        }
-
-        // Update the displayed prompt when an action is selected
-        if (testActionSelect && selectedPromptDisplay) {
-            function updateSelectedPrompt() {
-                const selectedOption = testActionSelect.options[testActionSelect.selectedIndex];
-                const promptTemplate = selectedOption.dataset.prompt;
-                if (promptTemplate) {
-                    selectedPromptDisplay.textContent = `Template: ${promptTemplate}`;
-                } else {
-                    selectedPromptDisplay.textContent = 'No prompt template available';
-                }
-            }
-
-            testActionSelect.addEventListener('change', updateSelectedPrompt);
-            // Show initial selection
-            updateSelectedPrompt();
         }
     });
 
@@ -677,7 +477,6 @@
 
             // Fill form with action data
             document.getElementById('field_name').value = data.field_name;
-            document.getElementById('source_field').value = data.source_field;
             document.getElementById('prompt_template_id').value = data.prompt_template_id;
             document.getElementById('llm_model').value = data.llm_model;
             document.getElementById('temperature').value = data.temperature;
