@@ -407,12 +407,12 @@
                     const result = await response.json();
                     console.log('Action save result:', result);
                     if (result.status === 'success') {
-                        setTimeout(() => window.location.reload(), 100);
-                    } else {
-                        alert('Error saving action: ' + (result.error || 'Unknown error'));
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Save Action';
+                        window.location.reload();
+                        return;
                     }
+                    alert('Error saving action: ' + (result.error || 'Unknown error'));
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Save Action';
                 } catch (error) {
                     console.error('Error saving action:', error);
                     alert('Error saving action: ' + error.message);
@@ -450,12 +450,12 @@
                     const result = await response.json();
                     console.log('Action save result:', result);
                     if (result.status === 'success') {
-                        setTimeout(() => window.location.reload(), 100);
-                    } else {
-                        alert('Error saving action: ' + (result.error || 'Unknown error'));
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Save';
+                        window.location.reload();
+                        return;
                     }
+                    alert('Error saving action: ' + (result.error || 'Unknown error'));
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Save';
                 } catch (error) {
                     console.error('Error saving action:', error);
                     alert('Error saving action: ' + error.message);
