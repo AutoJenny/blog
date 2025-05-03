@@ -1,3 +1,5 @@
+// DEPRECATED: All test-related code is deprecated and must not be used. Test UI and endpoints are disabled for safety.
+
 // Configuration
 document.getElementById('config-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -22,57 +24,6 @@ document.getElementById('config-form').addEventListener('submit', async (e) => {
         }
     } catch (error) {
         alert('Error updating configuration: ' + error.message);
-    }
-});
-
-// Test Interface
-document.getElementById('test-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const submitButton = e.target.querySelector('button[type="submit"]');
-    const resultContainer = document.getElementById('test-result');
-    const resultPre = resultContainer.querySelector('.result-pre');
-
-    // Get selected model from radio buttons
-    const modelRadio = document.querySelector('input[name="model"]:checked');
-    const modelName = modelRadio ? modelRadio.value : null;
-
-    if (!modelName) {
-        alert('Please select a model to test with');
-        return;
-    }
-
-    try {
-        submitButton.disabled = true;
-        submitButton.textContent = 'Testing...';
-
-        const response = await fetch('/api/v1/llm/test', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                prompt: formData.get('prompt'),
-                model_name: modelName
-            }),
-        });
-        const result = await response.json();
-
-        resultContainer.style.display = 'block';
-        if (result.error) {
-            resultPre.textContent = 'Error: ' + result.error;
-            resultPre.style.color = 'var(--error-text)';
-        } else {
-            resultPre.textContent = result.result + (result.model_used ? `\n\n(Model used: ${result.model_used})` : '');
-            resultPre.style.color = 'var(--dark-text-primary)';
-        }
-    } catch (error) {
-        resultContainer.style.display = 'block';
-        resultPre.textContent = 'Error: ' + error.message;
-        resultPre.style.color = 'var(--error-text)';
-    } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Test LLM';
     }
 });
 
