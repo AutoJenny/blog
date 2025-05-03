@@ -2,9 +2,9 @@
 
 ## Overview
 
-The LLM Actions system allows you to define reusable content generation actions that use LLMs (Language Model Models) to process content from one field and generate content for another field. Each action is configured with:
+The LLM Actions system allows you to define reusable content generation actions that use LLMs (Language Model Models) to process content for a specific field. Each action is configured with:
 
-- Source field (where to get input from)
+- Field name (the destination field for output)
 - Prompt template (how to process the input)
 - LLM model (which model to use)
 - Model parameters (temperature, max tokens)
@@ -15,7 +15,6 @@ The LLM Actions system allows you to define reusable content generation actions 
 2. Click "New Action"
 3. Fill in the form:
    - Field Name: The destination field where the output will go
-   - Source Field: Select from available workflow fields
    - Prompt Template: Select from existing templates
    - LLM Model: Choose the model to use
    - Temperature: Set creativity level (0.0-2.0)
@@ -44,13 +43,12 @@ Before saving an action, you can test it:
 - Edit: Click the edit icon next to an action
 - Delete: Click the delete icon
 - View History: Click the history icon to see past runs
-- Test: Click the test icon to try an action
 
 ## Prompt Templates
 
 Actions use prompt templates that can include variables:
 
-- `{{input}}`: The content from the source field
+- `{{input}}`: The content provided to the action (now defined in the prompt template itself)
 - `{{post_title}}`: The post's title
 - `{{post_summary}}`: The post's summary
 
@@ -93,8 +91,7 @@ Common errors and solutions:
    - Check model status
 
 2. Invalid Input
-   - Check source field content
-   - Verify prompt template
+   - Check prompt template
    - Test with sample input
 
 3. Rate Limiting

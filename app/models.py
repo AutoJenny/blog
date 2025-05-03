@@ -204,6 +204,7 @@ class LLMAction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     field_name = db.Column(db.String(128), nullable=False)
     prompt_template = db.Column(db.Text, nullable=False)
+    prompt_template_id = db.Column(db.Integer, db.ForeignKey('llm_prompt.id'), nullable=False)
     llm_model = db.Column(db.String(128), nullable=False)
     temperature = db.Column(db.Float, default=0.7)
     max_tokens = db.Column(db.Integer, default=1000)
@@ -232,6 +233,7 @@ class LLMAction(db.Model):
             'id': self.id,
             'field_name': self.field_name,
             'prompt_template': self.prompt_template,
+            'prompt_template_id': self.prompt_template_id,
             'llm_model': self.llm_model,
             'temperature': self.temperature,
             'max_tokens': self.max_tokens,
