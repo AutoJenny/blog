@@ -72,16 +72,24 @@ GET /actions/{action_id}
 Response:
 ```json
 {
-    "id": "integer",
-    "field_name": "string",
-    "prompt_template": "string",
-    "llm_model": "string",
-    "temperature": "number",
-    "max_tokens": "number",
-    "created_at": "string (ISO datetime)",
-    "updated_at": "string (ISO datetime)"
+    "status": "success",
+    "action": {
+        "id": "integer",
+        "field_name": "string",
+        "prompt_template": "string",
+        "llm_model": "string",
+        "temperature": "number",
+        "max_tokens": "number",
+        "created_at": "string (ISO datetime)",
+        "updated_at": "string (ISO datetime)"
+    }
 }
 ```
+
+> **Note:** All /actions endpoints now return a response with a top-level `status` field (`"success"` or `"error"`). On error, the response is:
+> ```json
+> { "status": "error", "error": "string" }
+> ```
 
 #### Update Action
 ```http

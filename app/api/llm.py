@@ -212,6 +212,7 @@ def handle_actions():
         action = LLMAction(
             field_name=data['field_name'],
             prompt_template=prompt_template.prompt_text,
+            prompt_template_id=prompt_template.id,
             llm_model=data['llm_model'],
             temperature=float(data.get('temperature', 0.7)),
             max_tokens=int(data.get('max_tokens', 1000))
@@ -330,7 +331,10 @@ def handle_action(action_id):
     action = LLMAction.query.get_or_404(action_id)
     
     if request.method == 'GET':
-        return jsonify(action.to_dict())
+        try:
+            return jsonify({'status': 'success', 'action': action.to_dict()})
+        except Exception as e:
+            return jsonify({'status': 'error', 'error': str(e)}), 400
     
     elif request.method == 'PUT':
         data = request.get_json()
@@ -339,22 +343,26 @@ def handle_action(action_id):
         for field in ['field_name', 'prompt_template', 'llm_model', 'temperature', 'max_tokens']:
             if field in data:
                 setattr(action, field, data[field])
+        if 'prompt_template_id' in data:
+            prompt_template = LLMPrompt.query.get_or_404(data['prompt_template_id'])
+            action.prompt_template_id = prompt_template.id
+            action.prompt_template = prompt_template.prompt_text
         
         try:
             db.session.commit()
-            return jsonify(action.to_dict())
+            return jsonify({'status': 'success', 'action': action.to_dict()})
         except Exception as e:
             db.session.rollback()
-            return jsonify({'error': str(e)}), 400
+            return jsonify({'status': 'error', 'error': str(e)}), 400
     
     elif request.method == 'DELETE':
         try:
             db.session.delete(action)
             db.session.commit()
-            return jsonify({'success': True})
+            return jsonify({'status': 'success'})
         except Exception as e:
             db.session.rollback()
-            return jsonify({'error': str(e)}), 400
+            return jsonify({'status': 'error', 'error': str(e)}), 400
 
 
 @bp.route('/actions/<int:action_id>/execute', methods=['POST'])
