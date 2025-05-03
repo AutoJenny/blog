@@ -343,7 +343,6 @@
             const promptsResponse = await fetch('/api/v1/llm/prompts');
             availablePrompts = await promptsResponse.json();
             updatePromptSelect(availablePrompts);
-
         } catch (error) {
             handleFetchError(error, 'Error initializing data');
         }
@@ -379,7 +378,10 @@
         // Form submission handler
         const builderForm = document.getElementById('action-builder-form');
         if (builderForm) {
-            builderForm.addEventListener('submit', async function (e) {
+            if (window._builderFormHandler) {
+                builderForm.removeEventListener('submit', window._builderFormHandler);
+            }
+            window._builderFormHandler = async function (e) {
                 e.preventDefault();
                 const submitButton = builderForm.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
@@ -402,7 +404,6 @@
                         body: JSON.stringify(data)
                     });
                     const result = await response.json();
-                    console.log('Action save result:', result);
                     if (result.status === 'success') {
                         window.location.reload();
                         return;
@@ -411,12 +412,12 @@
                     submitButton.disabled = false;
                     submitButton.textContent = 'Save Action';
                 } catch (error) {
-                    console.error('Error saving action:', error);
                     alert('Error saving action: ' + error.message);
                     submitButton.disabled = false;
                     submitButton.textContent = 'Save Action';
                 }
-            }, { once: true });
+            };
+            builderForm.addEventListener('submit', window._builderFormHandler);
         }
 
         // Modal form submission handler
@@ -427,8 +428,6 @@
                 modalForm.removeEventListener('submit', window._modalFormHandler);
             }
             window._modalFormHandler = async function (e) {
-                alert('DEBUG: Modal form handler fired');
-                console.log('DEBUG: Modal form handler fired', new Date().toISOString());
                 e.preventDefault();
                 const submitButton = modalForm.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
@@ -451,7 +450,6 @@
                         body: JSON.stringify(data)
                     });
                     const result = await response.json();
-                    console.log('Action save result:', result);
                     if (result.status === 'success') {
                         window.location.reload();
                         return;
@@ -460,7 +458,6 @@
                     submitButton.disabled = false;
                     submitButton.textContent = 'Save';
                 } catch (error) {
-                    console.error('Error saving action:', error);
                     alert('Error saving action: ' + error.message);
                     submitButton.disabled = false;
                     submitButton.textContent = 'Save';
@@ -516,6 +513,10 @@
         // Populate LLM Model select in modal
         const llmModelSelect = document.getElementById('llm_model_modal');
         llmModelSelect.innerHTML = '';
+        const blankModelOption = document.createElement('option');
+        blankModelOption.value = '';
+        blankModelOption.text = '-- Select Model --';
+        llmModelSelect.appendChild(blankModelOption);
         (availableModels || []).forEach(model => {
             const option = document.createElement('option');
             option.value = model;
@@ -526,6 +527,10 @@
         // Populate Prompt Template select in modal
         const promptTemplateSelect = document.getElementById('prompt_template_id_modal');
         promptTemplateSelect.innerHTML = '';
+        const blankPromptOption = document.createElement('option');
+        blankPromptOption.value = '';
+        blankPromptOption.text = '-- Select Prompt --';
+        promptTemplateSelect.appendChild(blankPromptOption);
         (availablePrompts || []).forEach(prompt => {
             const option = document.createElement('option');
             option.value = prompt.id;
@@ -536,6 +541,9 @@
 
     async function editAction(actionId) {
         try {
+            // Always re-initialize data to ensure dropdowns are populated
+            await initializeData();
+
             const response = await fetch(`/api/v1/llm/actions/${actionId}`);
             const data = await response.json();
 
@@ -543,11 +551,11 @@
             document.getElementById('builder-tab').click();
 
             // Fill form with action data
-            document.getElementById('field_name').value = data.field_name;
-            document.getElementById('prompt_template_id').value = data.prompt_template_id;
-            document.getElementById('llm_model').value = data.llm_model;
-            document.getElementById('temperature').value = data.temperature;
-            document.getElementById('max_tokens').value = data.max_tokens;
+            document.getElementById('field_name').value = data.action.field_name;
+            document.getElementById('prompt_template_id').value = data.action.prompt_template_id;
+            document.getElementById('llm_model').value = data.action.llm_model;
+            document.getElementById('temperature').value = data.action.temperature;
+            document.getElementById('max_tokens').value = data.action.max_tokens;
 
             // Add action ID to form for update instead of create
             const form = document.getElementById('action-builder-form');

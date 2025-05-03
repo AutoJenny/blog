@@ -361,3 +361,14 @@ All notable changes to this project are documented in this file.
 2024-05-02: Prevent error alert after successful action save by reloading and returning immediately. Fixes race condition in both builder and modal forms.
 
 2024-05-02: Remove duplicate modal form event handlers before adding a new one, using a named handler. Prevents false error alerts after successful save.
+
+- FIX: Standardized all /api/v1/llm/actions and /api/v1/llm/actions/<id> endpoints to return {status: 'success', action: ...} or {status: 'error', error: ...} for all GET, PUT, and DELETE requests. This resolves frontend error dialog issues due to inconsistent API responses.
+
+- ENHANCEMENT: Added prompt_template_id to LLMAction model and API responses. The edit form for LLM Actions now pre-selects the correct prompt template when editing an action.
+
+- FIX: Removed all debug alert and console messages from LLM Actions page scripts. Improved editAction logic to ensure dropdowns are reliably pre-loaded with the correct values when editing an action.
+
+- FIX: Edit Action form now always pre-loads dropdowns with the correct values by awaiting data initialization before setting form values.
+
+- Fix: LLM Actions Edit now pre-populates fields correctly (uses data.action.<field>).
+- Fix: New Action modal now starts with blank/placeholder selects for model and prompt template, so nothing is pre-selected by default.
