@@ -144,9 +144,8 @@ CREATE TABLE public.llm_action (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     field_name character varying(128) NOT NULL,
-    stage_name character varying(128) NOT NULL,
     max_tokens integer,
-    source_field character varying(128)
+    prompt_template_id integer NOT NULL
 );
 
 
@@ -159,12 +158,12 @@ ALTER TABLE public.llm_action OWNER TO postgres;
 CREATE TABLE public.llm_action_history (
     id integer NOT NULL,
     action_id integer NOT NULL,
-    "timestamp" timestamp without time zone,
-    input_text text,
+    input_text text NOT NULL,
     output_text text,
-    error text,
-    execution_time double precision,
-    execution_metadata json
+    post_id integer NOT NULL,
+    status character varying(50),
+    error_message text,
+    created_at timestamp without time zone
 );
 
 
@@ -677,7 +676,7 @@ ALTER TABLE ONLY public."user" ALTER COLUMN id SET DEFAULT nextval('public.user_
 --
 
 COPY public.alembic_version (version_num) FROM stdin;
-12636902a3f2
+6d343f8d20ca
 \.
 
 
@@ -701,7 +700,8 @@ COPY public.image (id, filename, original_filename, path, alt_text, caption, ima
 -- Data for Name: llm_action; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.llm_action (id, prompt_template, llm_model, temperature, created_at, updated_at, field_name, stage_name, max_tokens, source_field) FROM stdin;
+COPY public.llm_action (id, prompt_template, llm_model, temperature, created_at, updated_at, field_name, max_tokens, prompt_template_id) FROM stdin;
+3	Write a short, meaningful poem about the following topic: {{input}}. The poem should be creative and engaging.	llama3.1:70b	0.7	2025-05-03 15:34:47.074891	2025-05-03 15:34:47.074899	test poem 2	1000	4
 \.
 
 
@@ -709,7 +709,7 @@ COPY public.llm_action (id, prompt_template, llm_model, temperature, created_at,
 -- Data for Name: llm_action_history; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.llm_action_history (id, action_id, "timestamp", input_text, output_text, error, execution_time, execution_metadata) FROM stdin;
+COPY public.llm_action_history (id, action_id, input_text, output_text, post_id, status, error_message, created_at) FROM stdin;
 \.
 
 
@@ -718,6 +718,7 @@ COPY public.llm_action_history (id, action_id, "timestamp", input_text, output_t
 --
 
 COPY public.llm_config (id, provider_type, model_name, api_base, auth_token, created_at, updated_at) FROM stdin;
+1	ollama	llama3.1:70b	http://localhost:11434	\N	2025-05-01 07:03:20.613924	2025-05-01 07:33:20.294464
 \.
 
 
@@ -734,6 +735,7 @@ COPY public.llm_interaction (id, prompt_id, input_text, output_text, parameters_
 --
 
 COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, parameters, created_at, updated_at) FROM stdin;
+4	Write Poem	Write a short poem about a given topic	Write a short, meaningful poem about the following topic: {{input}}. The poem should be creative and engaging.	\N	\N	2025-05-01 16:02:49.255598	2025-05-01 16:02:49.255598
 \.
 
 
@@ -742,7 +744,6 @@ COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, param
 --
 
 COPY public.post (id, title, slug, content, summary, published, deleted, created_at, updated_at, published_at, header_image_id, llm_metadata, seo_metadata, syndication_status) FROM stdin;
-1	hand-fasting...	hand-fasting		\N	f	f	2025-04-30 06:12:27.444361	2025-04-30 06:12:27.444372	\N	\N	\N	\N	\N
 \.
 
 
@@ -759,7 +760,6 @@ COPY public.post_categories (post_id, category_id) FROM stdin;
 --
 
 COPY public.post_development (id, post_id, basic_idea, provisional_title, idea_scope, topics_to_cover, interesting_facts, tartans_products, section_planning, section_headings, section_order, main_title, subtitle, intro_blurb, conclusion, basic_metadata, tags, categories, image_captions, seo_optimization, self_review, peer_review, final_check, scheduling, deployment, verification, feedback_collection, content_updates, version_control, platform_selection, content_adaptation, distribution, engagement_tracking) FROM stdin;
-1	1	hand-fasting	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
 \.
 
 
@@ -820,14 +820,14 @@ SELECT pg_catalog.setval('public.llm_action_history_id_seq', 1, false);
 -- Name: llm_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.llm_action_id_seq', 1, false);
+SELECT pg_catalog.setval('public.llm_action_id_seq', 3, true);
 
 
 --
 -- Name: llm_config_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.llm_config_id_seq', 1, false);
+SELECT pg_catalog.setval('public.llm_config_id_seq', 1, true);
 
 
 --
@@ -841,21 +841,21 @@ SELECT pg_catalog.setval('public.llm_interaction_id_seq', 1, false);
 -- Name: llm_prompt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.llm_prompt_id_seq', 1, false);
+SELECT pg_catalog.setval('public.llm_prompt_id_seq', 4, true);
 
 
 --
 -- Name: post_development_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.post_development_id_seq', 1, true);
+SELECT pg_catalog.setval('public.post_development_id_seq', 1, false);
 
 
 --
 -- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.post_id_seq', 1, true);
+SELECT pg_catalog.setval('public.post_id_seq', 1, false);
 
 
 --
@@ -1077,6 +1077,22 @@ ALTER TABLE ONLY public."user"
 
 ALTER TABLE ONLY public.llm_action_history
     ADD CONSTRAINT llm_action_history_action_id_fkey FOREIGN KEY (action_id) REFERENCES public.llm_action(id);
+
+
+--
+-- Name: llm_action_history llm_action_history_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.llm_action_history
+    ADD CONSTRAINT llm_action_history_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.post(id);
+
+
+--
+-- Name: llm_action llm_action_prompt_template_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.llm_action
+    ADD CONSTRAINT llm_action_prompt_template_id_fkey FOREIGN KEY (prompt_template_id) REFERENCES public.llm_prompt(id);
 
 
 --
