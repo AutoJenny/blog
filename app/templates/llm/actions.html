@@ -181,10 +181,8 @@
                 aria-controls="builder" aria-selected="false">
                 Action Builder
             </button>
-            <button class="tab-button" id="test-tab" data-tabs-target="#test" type="button" role="tab"
-                aria-controls="test" aria-selected="false">
-                Test Actions
-            </button>
+            <!-- DEPRECATED: Test tab and test-related UI are deprecated and must not be used. -->
+            <!-- <button class="tab-button" id="test-tab" data-tabs-target="#test" type="button" role="tab" aria-controls="test" aria-selected="false">Test Actions</button> -->
         </div>
     </div>
 
@@ -201,9 +199,8 @@
                             <button onclick="editAction('{{ action.id }}')" class="btn btn-secondary">
                                 Edit
                             </button>
-                            <button onclick="testAction('{{ action.id }}')" class="btn btn-primary">
-                                Test
-                            </button>
+                            <!-- DEPRECATED: Test tab and test-related UI are deprecated and must not be used. -->
+                            <!-- <button onclick="testAction('{{ action.id }}')" class="btn btn-primary">Test</button> -->
                             <button onclick="deleteAction('{{ action.id }}')" class="btn btn-danger">
                                 Delete
                             </button>
@@ -430,6 +427,8 @@
                 modalForm.removeEventListener('submit', window._modalFormHandler);
             }
             window._modalFormHandler = async function (e) {
+                alert('DEBUG: Modal form handler fired');
+                console.log('DEBUG: Modal form handler fired', new Date().toISOString());
                 e.preventDefault();
                 const submitButton = modalForm.querySelector('button[type="submit"]');
                 submitButton.disabled = true;
@@ -601,10 +600,11 @@
         document.getElementById('actionModal').classList.add('hidden');
     }
 
-    function testAction(actionId) {
-        document.getElementById('test-tab').click();
-        document.getElementById('test-action').value = actionId;
-        document.getElementById('test-input').focus();
-    }
+    // DEPRECATED: Test tab and test-related UI are deprecated and must not be used.
+    // function testAction(actionId) {
+    //     document.getElementById('test-tab').click();
+    //     document.getElementById('test-action').value = actionId;
+    //     document.getElementById('test-input').focus();
+    // }
 </script>
 {% endblock %}
