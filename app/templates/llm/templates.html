@@ -641,12 +641,8 @@
             if (draggedField) {
                 const cursorPos = textarea.selectionStart || textarea.value.length;
                 const currentValue = textarea.value;
-                const formattedField = draggedField.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-
-                // Create the field text by concatenating parts separately
-                const openBrace = '\u007b\u007b';
-                const closeBrace = '\u007d\u007d';
-                const fieldText = openBrace + formattedField + closeBrace;
+                // Insert the field as {{ field_name }} (not prettified)
+                const fieldText = `{{ ${draggedField} }}`;
 
                 // Insert the field text at the cursor position
                 textarea.value = currentValue.slice(0, cursorPos) + fieldText + currentValue.slice(cursorPos);
