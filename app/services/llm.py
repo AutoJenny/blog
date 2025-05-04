@@ -18,58 +18,49 @@ class LLMService:
                 api_base="http://localhost:11434",
             )
 
-    def execute_action(self, action, input_text: str, post_id: int = None):
-        """Execute an LLM action with the given input text.
-        
+    def execute_action(self, action, fields: dict, post_id: int = None):
+        """Execute an LLM action with the given fields dict.
         Args:
             action: LLMAction instance to execute
-            input_text: Text to process with the action
+            fields: dict of all fields for prompt substitution (should include 'input')
             post_id: Optional post ID to associate with the action history
-            
         Returns:
             dict containing the response and model used
         """
         try:
             # Process the template
-            prompt = action.process_template(input_text)
-            
+            prompt = action.process_template(fields)
             # Generate the response
             result = self.generate(prompt, model_name=action.llm_model)
-            
             # Create history record if post_id provided
             if post_id:
                 from app.models import LLMActionHistory
                 from app import db
-                
                 history = LLMActionHistory(
                     action_id=action.id,
                     post_id=post_id,
-                    input_text=input_text,
+                    input_text=fields.get('input', ''),
                     output_text=result['response'],
                     status='success'
                 )
                 db.session.add(history)
                 db.session.commit()
-            
             return result
-            
         except Exception as e:
             # Log error and create failed history record if post_id provided
             current_app.logger.error(f"Error executing LLM action: {str(e)}")
             if post_id:
                 from app.models import LLMActionHistory
                 from app import db
-                
                 history = LLMActionHistory(
                     action_id=action.id,
                     post_id=post_id,
-                    input_text=input_text,
+                    input_text=fields.get('input', ''),
                     status='error',
                     error_message=str(e)
                 )
                 db.session.add(history)
                 db.session.commit()
-            
             raise
 
     def generate(self, prompt, model_name=None):

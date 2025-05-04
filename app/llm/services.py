@@ -138,22 +138,27 @@ class LLMService:
             logger.error(f"Error generating with OpenAI: {str(e)}")
             raise
 
-    def execute_action(self, action, post_id, input_text):
-        """Execute an LLM action on a post field."""
+    def execute_action(self, action, post_id, fields):
+        """Execute an LLM action on a post field, using a fields dict for template substitution.
+        Args:
+            action: LLMAction instance
+            post_id: Post ID
+            fields: dict of all fields for prompt substitution (should include 'input')
+        Returns:
+            Output from LLM
+        """
         try:
-            # Format the prompt template with the input
-            prompt = action.prompt_template.replace("{{input}}", input_text)
-            
+            # Format the prompt template with the fields
+            prompt = action.process_template(fields)
             # Create history record
             history = LLMActionHistory(
                 action_id=action.id,
                 post_id=post_id,
-                input_text=input_text,
+                input_text=fields.get('input', ''),
                 status="pending"
             )
             db.session.add(history)
             db.session.commit()
-            
             try:
                 # Generate the output
                 output = self.generate(
@@ -162,12 +167,10 @@ class LLMService:
                     temperature=action.temperature,
                     max_tokens=action.max_tokens
                 )
-                
                 # Update history record
                 history.output_text = output
                 history.status = "success"
                 db.session.commit()
-                
                 return output
             except Exception as e:
                 # Update history record with error
