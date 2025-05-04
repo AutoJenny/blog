@@ -406,6 +406,7 @@
             <div class="accordion-content">
                 <div class="flex justify-end mb-4">
                     <button type="button" class="admin-button" id="allocate-ideas-btn">Allocate Ideas</button>
+                    <button type="button" class="admin-button" id="allocate-facts-btn">Allocate Facts</button>
                 </div>
                 <div id="sections">
                     {% for section in sections %}
@@ -963,21 +964,18 @@
             }
         });
 
-        // Allocate Ideas to Sections
+        // Allocate Ideas to Sections (save as JSON array)
         const allocateBtn = document.getElementById('allocate-ideas-btn');
         if (allocateBtn) {
             allocateBtn.addEventListener('click', async function () {
                 try {
-                    // 1. Fetch the Action ID for 'Allocate ideas to sections'
                     const actions = await fetch('/api/v1/llm/actions').then(r => r.json());
                     const action = actions.find(a => a.field_name && a.field_name.toLowerCase().includes('allocate ideas'));
                     if (!action) { alert('No Allocate Ideas action found.'); return; }
                     const actionId = action.id;
-                    // 2. Get idea_scope and section_order
                     const ideaScope = document.getElementById('idea_scope').value;
                     const sectionOrder = document.getElementById('section_order').value;
                     if (!ideaScope || !sectionOrder) { alert('Missing idea_scope or section_order.'); return; }
-                    // 3. POST to LLM action
                     const postId = document.getElementById('stage-accordion').dataset.postId;
                     const res = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
                         method: 'POST',
@@ -993,7 +991,6 @@
                         alert('Failed to parse LLM response as JSON.');
                         return;
                     }
-                    // 4. For each section, insert allocated ideas
                     let anyMatched = false;
                     document.querySelectorAll('.section-block').forEach(block => {
                         const sectionId = block.getAttribute('data-section-id');
@@ -1003,8 +1000,7 @@
                             anyMatched = true;
                             const ta = block.querySelector('textarea[id^="ideas_to_include_"]');
                             if (ta) {
-                                ta.value = ideas.join('\n');
-                                // Auto-save
+                                ta.value = JSON.stringify(ideas, null, 2);
                                 fetch(`/blog/api/v1/posts/${postId}/sections/${sectionId}/fields/ideas_to_include`, {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
@@ -1016,6 +1012,57 @@
                     if (!anyMatched) alert('No section headings matched in LLM response.');
                 } catch (err) {
                     alert('Error allocating ideas: ' + err.message);
+                }
+            });
+        }
+        // Allocate Facts to Sections (save as JSON array)
+        const allocateFactsBtn = document.getElementById('allocate-facts-btn');
+        if (allocateFactsBtn) {
+            allocateFactsBtn.addEventListener('click', async function () {
+                try {
+                    const actions = await fetch('/api/v1/llm/actions').then(r => r.json());
+                    const action = actions.find(a => a.field_name && a.field_name.toLowerCase().includes('allocate facts'));
+                    if (!action) { alert('No Allocate Facts action found.'); return; }
+                    const actionId = action.id;
+                    const facts = document.getElementById('interesting_facts').value;
+                    const sectionOrder = document.getElementById('section_order').value;
+                    if (!facts || !sectionOrder) { alert('Missing interesting_facts or section_order.'); return; }
+                    const postId = document.getElementById('stage-accordion').dataset.postId;
+                    const res = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ input_text: facts, post_id: postId, section_order: sectionOrder })
+                    });
+                    const js = await res.json();
+                    const allocation = typeof js === 'string' ? js : js.response || js.data?.content || '';
+                    let parsed;
+                    try {
+                        parsed = typeof allocation === 'string' ? JSON.parse(allocation) : allocation;
+                    } catch (e) {
+                        alert('Failed to parse LLM response as JSON.');
+                        return;
+                    }
+                    let anyMatched = false;
+                    document.querySelectorAll('.section-block').forEach(block => {
+                        const sectionId = block.getAttribute('data-section-id');
+                        const heading = block.querySelector('textarea[id^="section_heading_"]').value.trim();
+                        const factsArr = parsed[heading];
+                        if (factsArr && Array.isArray(factsArr)) {
+                            anyMatched = true;
+                            const ta = block.querySelector('textarea[id^="facts_to_include_"]');
+                            if (ta) {
+                                ta.value = JSON.stringify(factsArr, null, 2);
+                                fetch(`/blog/api/v1/posts/${postId}/sections/${sectionId}/fields/facts_to_include`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ value: ta.value })
+                                });
+                            }
+                        }
+                    });
+                    if (!anyMatched) alert('No section headings matched in LLM response.');
+                } catch (err) {
+                    alert('Error allocating facts: ' + err.message);
                 }
             });
         }
