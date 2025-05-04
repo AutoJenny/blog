@@ -82,6 +82,7 @@ All notable changes to this project are documented in this file.
 - Removed duplicate route definitions
 - Fixed route conflicts between blueprints
 - Improved code organization and maintainability
+- Fix: Updated all fetch URLs in develop.html to use the /blog/api/v1/posts/... prefix to match the Flask route registration and resolve 404 errors when saving global and section fields.
 
 ### Removed
 - Removed PromptTemplate model and table
@@ -384,3 +385,7 @@ All notable changes to this project are documented in this file.
 - Fix: Resolved TemplateSyntaxError in app/templates/llm/templates.html caused by Jinja2 parsing a JavaScript template literal (`{{ ${draggedField} }}`) in the template editor. Wrapped the line in `{% raw %}...{% endraw %}` to prevent Jinja2 from interpreting it.
 
 - Fix: Drag&drop field insertion in app/templates/llm/templates.html now inserts {{field_name}} (no spaces, no hidden chars). Removed hidden characters that caused backend template errors.
+
+- Add: Implemented /api/v1/posts/<post_id>/fields/<field> endpoint to allow saving individual PostDevelopment fields from the develop page. This fixes saving for global fields like Idea Scope.
+
+- Refactor: Switched postId passing in develop.html to use a data attribute on the main container, and updated all JS to read postId from the DOM instead of inline Jinja2. This prevents template syntax errors and is more robust.

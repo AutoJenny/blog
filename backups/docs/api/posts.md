@@ -189,6 +189,31 @@ POST /api/v1/posts/{slug}/publish
 POST /api/v1/posts/{slug}/unpublish
 ```
 
+### Update a Single PostDevelopment Field
+```http
+PUT /api/v1/posts/{post_id}/fields/{field}
+```
+
+Update a single global (PostDevelopment) field for a post. Useful for saving fields like `idea_scope`, `basic_idea`, etc. from the develop interface.
+
+#### Request Body
+```json
+{
+  "value": "New value for the field"
+}
+```
+
+#### Response
+```json
+{
+  "status": "success",
+  "updated_at": "2024-07-09T12:34:56.789Z"
+}
+```
+
+- Returns 400 if the field is invalid.
+- Returns 404 if the post or development record does not exist.
+
 ## Sections API
 
 ### List Sections
