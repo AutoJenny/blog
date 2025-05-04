@@ -397,3 +397,11 @@ All notable changes to this project are documented in this file.
 - Added DELETE endpoint /api/v1/section/<int:section_id> to allow deleting sections from the Authoring stage in the post development interface.
 
 - UI/UX: Improved section accordions in the Authoring stage. Added chevron icon, highlight for open section, hover effect, and animated open/close for better usability.
+
+- Enhancement: 'Ideas to include' and 'Facts to include' fields in each section are now persisted in the database and auto-saved in the UI, with values pre-populated from the backend.
+
+- Added endpoint: PUT /api/v1/posts/<post_id>/sections/<section_id>/fields/<field> to allow saving individual section fields (including new ones) from the UI.
+
+- Refactor: Deprecated app/services/llm.py and consolidated all LLM service logic into app/llm/services.py. Updated all imports and usages. See docs/llm_service_refactor.md for details.
+
+- Enhancement: The Idea Scope LLM Generate button now auto-saves the generated content to the backend, ensuring the UI and db are updated immediately after generation.

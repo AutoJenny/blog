@@ -3,7 +3,7 @@
 import httpx
 import logging
 from flask import current_app
-from app.models import LLMConfig, LLMInteraction
+from app.models import LLMConfig, LLMInteraction, LLMActionHistory
 from app import db
 from datetime import datetime
 
@@ -96,7 +96,7 @@ class LLMService:
             response = httpx.post(
                 f"{self.config.api_base}/api/generate",
                 json=request_data,
-                timeout=60.0,
+                timeout=180.0,
             )
             response.raise_for_status()
             
