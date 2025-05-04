@@ -393,3 +393,7 @@ All notable changes to this project are documented in this file.
 - Enhancement: Added LLM Action selector and Generate button to every field (except sections) on the develop page, and ensured the Generate button saves the field after generation. This makes LLM generation available for all fields and ensures saving works.
 
 - Enhancement: Replaced the Section Order textarea in the Outlining Stage with a Grab Headings button, draggable list, and Save button. This allows users to visually reorder section headings and save the new order as JSON.
+
+- Added DELETE endpoint /api/v1/section/<int:section_id> to allow deleting sections from the Authoring stage in the post development interface.
+
+- UI/UX: Improved section accordions in the Authoring stage. Added chevron icon, highlight for open section, hover effect, and animated open/close for better usability.
