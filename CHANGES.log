@@ -372,3 +372,5 @@ All notable changes to this project are documented in this file.
 
 - Fix: LLM Actions Edit now pre-populates fields correctly (uses data.action.<field>).
 - Fix: New Action modal now starts with blank/placeholder selects for model and prompt template, so nothing is pre-selected by default.
+
+- Fix: Corrected TemplateSyntaxError in app/templates/blog/develop.html by adding missing closing brace to the Jinja expression for postId in the LLM action button scripts for 'idea_scope' and 'provisional_title'.
