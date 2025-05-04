@@ -104,8 +104,13 @@
     }
 
     @keyframes fadeIn {
-        from { opacity: 0; }
-        to   { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
     }
 
     .accordion-field {
@@ -127,7 +132,7 @@
 {% from "blog/_post_header.html" import post_header %}
 <div class="max-w-3xl mx-auto py-8">
     {{ post_header(post, active_view) }}
-    <div id="stage-accordion" class="space-y-4">
+    <div id="stage-accordion" class="space-y-4" data-post-id="{{ post.id }}">
 
         {# IDEA STAGE #}
         <div class="accordion-panel">
@@ -139,101 +144,105 @@
                     <label for="{{ field }}" class="block text-sm font-semibold mb-2">
                         {{ field.replace('_', ' ').title() }}
                     </label>
-                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea" rows="2">{{ dev.__dict__[field] or '' }}</textarea>
-                    
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+
                     {% if field == 'idea_scope' %}
                     <div class="flex gap-2 items-center mt-2">
-                        <select id="llm-action-select-idea-scope" class="admin-textarea" style="max-width:220px;"></select>
+                        <select id="llm-action-select-idea-scope" class="admin-textarea"
+                            style="max-width:220px;"></select>
                         <button type="button" id="generate-idea-scope-btn" class="admin-button">Generate</button>
                     </div>
                     <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        fetch('/api/v1/llm/actions')
-                            .then(r => r.json())
-                            .then(actions => {
+                        document.addEventListener('DOMContentLoaded', function () {
+                            fetch('/api/v1/llm/actions')
+                                .then(r => r.json())
+                                .then(actions => {
+                                    const sel = document.getElementById('llm-action-select-idea-scope');
+                                    sel.innerHTML = '<option value="">-- Select Action --</option>';
+                                    actions.forEach(a => {
+                                        const opt = document.createElement('option');
+                                        opt.value = a.id;
+                                        opt.text = a.field_name;
+                                        sel.appendChild(opt);
+                                    });
+                                });
+                            document.getElementById('generate-idea-scope-btn').addEventListener('click', async function () {
                                 const sel = document.getElementById('llm-action-select-idea-scope');
-                                sel.innerHTML = '<option value="">-- Select Action --</option>';
-                                actions.forEach(a => {
-                                    const opt = document.createElement('option');
-                                    opt.value = a.id;
-                                    opt.text = a.field_name;
-                                    sel.appendChild(opt);
-                                });
+                                const actionId = sel.value;
+                                const ta = document.getElementById('idea_scope');
+                                if (!actionId) { alert('Please select an LLM Action.'); return; }
+                                const postId = document.getElementById('stage-accordion').dataset.postId;
+                                this.disabled = true;
+                                this.textContent = 'Generating...';
+                                try {
+                                    const res = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ input_text: ta.value, post_id: postId })
+                                    });
+                                    const js = await res.json();
+                                    ta.value = js.response || js.data?.content || ta.value;
+                                } catch (e) {
+                                    alert('Error generating content: ' + e.message);
+                                } finally {
+                                    this.disabled = false;
+                                    this.textContent = 'Generate';
+                                }
                             });
-                        document.getElementById('generate-idea-scope-btn').addEventListener('click', async function () {
-                            const sel = document.getElementById('llm-action-select-idea-scope');
-                            const actionId = sel.value;
-                            const ta = document.getElementById('idea_scope');
-                            if (!actionId) { alert('Please select an LLM Action.'); return; }
-                            const postId = {{ post.id }};
-                            this.disabled = true;
-                            this.textContent = 'Generating...';
-                            try {
-                                const res = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ input_text: ta.value, post_id: postId })
-                                });
-                                const js = await res.json();
-                                ta.value = js.response || js.data?.content || ta.value;
-                            } catch (e) {
-                                alert('Error generating content: ' + e.message);
-                            } finally {
-                                this.disabled = false;
-                                this.textContent = 'Generate';
-                            }
                         });
-                    });
                     </script>
                     {% endif %}
 
                     {% if field == 'provisional_title' %}
                     <div class="flex gap-2 items-center mt-2">
-                        <select id="llm-action-select-provisional-title" class="admin-textarea" style="max-width:220px;"></select>
+                        <select id="llm-action-select-provisional-title" class="admin-textarea"
+                            style="max-width:220px;"></select>
                         <button type="button" id="generate-provisional-title-btn" class="admin-button">Generate</button>
                     </div>
                     <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        fetch('/api/v1/llm/actions')
-                            .then(r => r.json())
-                            .then(actions => {
+                        document.addEventListener('DOMContentLoaded', function () {
+                            fetch('/api/v1/llm/actions')
+                                .then(r => r.json())
+                                .then(actions => {
+                                    const sel = document.getElementById('llm-action-select-provisional-title');
+                                    sel.innerHTML = '<option value="">-- Select Action --</option>';
+                                    actions.forEach(a => {
+                                        const opt = document.createElement('option');
+                                        opt.value = a.id;
+                                        opt.text = a.field_name;
+                                        sel.appendChild(opt);
+                                    });
+                                });
+                            document.getElementById('generate-provisional-title-btn').addEventListener('click', async function () {
                                 const sel = document.getElementById('llm-action-select-provisional-title');
-                                sel.innerHTML = '<option value="">-- Select Action --</option>';
-                                actions.forEach(a => {
-                                    const opt = document.createElement('option');
-                                    opt.value = a.id;
-                                    opt.text = a.field_name;
-                                    sel.appendChild(opt);
-                                });
+                                const actionId = sel.value;
+                                const ta = document.getElementById('provisional_title');
+                                if (!actionId) { alert('Please select an LLM Action.'); return; }
+                                const postId = document.getElementById('stage-accordion').dataset.postId;
+                                this.disabled = true;
+                                this.textContent = 'Generating...';
+                                try {
+                                    const res = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ input_text: ta.value, post_id: postId })
+                                    });
+                                    const js = await res.json();
+                                    ta.value = js.response || js.data?.content || ta.value;
+                                } catch (e) {
+                                    alert('Error generating content: ' + e.message);
+                                } finally {
+                                    this.disabled = false;
+                                    this.textContent = 'Generate';
+                                }
                             });
-                        document.getElementById('generate-provisional-title-btn').addEventListener('click', async function () {
-                            const sel = document.getElementById('llm-action-select-provisional-title');
-                            const actionId = sel.value;
-                            const ta = document.getElementById('provisional_title');
-                            if (!actionId) { alert('Please select an LLM Action.'); return; }
-                            const postId = {{ post.id }};
-                            this.disabled = true;
-                            this.textContent = 'Generating...';
-                            try {
-                                const res = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ input_text: ta.value, post_id: postId })
-                                });
-                                const js = await res.json();
-                                ta.value = js.response || js.data?.content || ta.value;
-                            } catch (e) {
-                                alert('Error generating content: ' + e.message);
-                            } finally {
-                                this.disabled = false;
-                                this.textContent = 'Generate';
-                            }
                         });
-                    });
                     </script>
                     {% endif %}
 
-                    <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -250,8 +259,10 @@
                     <label for="{{ field }}" class="block text-sm font-semibold mb-2">
                         {{ field.replace('_', ' ').title() }}
                     </label>
-                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea" rows="2">{{ dev.__dict__[field] or '' }}</textarea>
-                    <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -268,8 +279,10 @@
                     <label for="{{ field }}" class="block text-sm font-semibold mb-2">
                         {{ field.replace('_', ' ').title() }}
                     </label>
-                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea" rows="2">{{ dev.__dict__[field] or '' }}</textarea>
-                    <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -289,18 +302,21 @@
                         <label class="block text-sm font-semibold mb-1" style="color: var(--admin-text-secondary);">
                             Section Heading
                         </label>
-                        <textarea id="section_heading_{{ section.id }}" class="admin-textarea mb-2">{{ section.section_heading or '' }}</textarea>
+                        <textarea id="section_heading_{{ section.id }}"
+                            class="admin-textarea mb-2">{{ section.section_heading or '' }}</textarea>
                         <button type="button" class="admin-button mb-2"
-                                onclick="saveSectionField({{ section.id }}, 'section_heading')">Save</button><br>
+                            onclick="saveSectionField({{ section.id }}, 'section_heading')">Save</button><br>
                         {% for field in ['first_draft', 'uk_british', 'highlighting', 'image_concepts', 'image_prompts',
-                                         'generation', 'optimization', 'watermarking', 'image_meta_descriptions', 'image_captions'] %}
+                        'generation', 'optimization', 'watermarking', 'image_meta_descriptions', 'image_captions'] %}
                         {% if field in section.__dict__ %}
-                        <label for="{{ field }}_{{ section.id }}" class="block text-sm font-semibold mb-1" style="color: var(--admin-text-secondary);">
+                        <label for="{{ field }}_{{ section.id }}" class="block text-sm font-semibold mb-1"
+                            style="color: var(--admin-text-secondary);">
                             {{ field.replace('_', ' ').title() }}
                         </label>
-                        <textarea id="{{ field }}_{{ section.id }}" class="admin-textarea mb-2">{{ section.__dict__[field] or '' }}</textarea>
+                        <textarea id="{{ field }}_{{ section.id }}"
+                            class="admin-textarea mb-2">{{ section.__dict__[field] or '' }}</textarea>
                         <button type="button" class="admin-button mb-2"
-                                onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button><br>
+                            onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button><br>
                         {% endif %}
                         {% endfor %}
                     </div>
@@ -322,8 +338,10 @@
                     <label for="{{ field }}" class="block text-sm font-semibold mb-2">
                         {{ field.replace('_', ' ').title() }}
                     </label>
-                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea" rows="2">{{ dev.__dict__[field] or '' }}</textarea>
-                    <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -340,8 +358,10 @@
                     <label for="{{ field }}" class="block text-sm font-semibold mb-2">
                         {{ field.replace('_', ' ').title() }}
                     </label>
-                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea" rows="2">{{ dev.__dict__[field] or '' }}</textarea>
-                    <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -358,8 +378,10 @@
                     <label for="{{ field }}" class="block text-sm font-semibold mb-2">
                         {{ field.replace('_', ' ').title() }}
                     </label>
-                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea" rows="2">{{ dev.__dict__[field] or '' }}</textarea>
-                    <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -376,8 +398,10 @@
                     <label for="{{ field }}" class="block text-sm font-semibold mb-2">
                         {{ field.replace('_', ' ').title() }}
                     </label>
-                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea" rows="2">{{ dev.__dict__[field] or '' }}</textarea>
-                    <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -394,8 +418,10 @@
                     <label for="{{ field }}" class="block text-sm font-semibold mb-2">
                         {{ field.replace('_', ' ').title() }}
                     </label>
-                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea" rows="2">{{ dev.__dict__[field] or '' }}</textarea>
-                    <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -412,8 +438,10 @@
                     <label for="{{ field }}" class="block text-sm font-semibold mb-2">
                         {{ field.replace('_', ' ').title() }}
                     </label>
-                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea" rows="2">{{ dev.__dict__[field] or '' }}</textarea>
-                    <button type="button" class="admin-button mt-2" onclick="saveGlobalField('{{ field }}')">Save</button>
+                    <textarea id="{{ field }}" name="{{ field }}" class="admin-textarea"
+                        rows="2">{{ dev.__dict__[field] or '' }}</textarea>
+                    <button type="button" class="admin-button mt-2"
+                        onclick="saveGlobalField('{{ field }}')">Save</button>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -433,7 +461,8 @@
                     {% for stage, fields in workflow_fields.items() %}
                     <optgroup label="{{ stage }}">
                         {% for wf in fields %}
-                        <option value="{{ wf }}" {% if wf == field %}selected{% endif %}>{{ wf.replace('_', ' ').title() }}</option>
+                        <option value="{{ wf }}" {% if wf==field %}selected{% endif %}>{{ wf.replace('_', ' ').title()
+                            }}</option>
                         {% endfor %}
                     </optgroup>
                     {% endfor %}
@@ -441,7 +470,8 @@
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-semibold mb-1">Prompt Template</label>
-                <textarea name="prompt_template" class="admin-textarea w-full" rows="3">Suggest a catchy title for: {{ basic_idea }}</textarea>
+                <textarea name="prompt_template" class="admin-textarea w-full"
+                    rows="3">Suggest a catchy title for: {{ basic_idea }}</textarea>
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-semibold mb-1">LLM Model</label>
@@ -452,7 +482,8 @@
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-semibold mb-1">Temperature</label>
-                <input type="number" name="temperature" class="admin-textarea w-full" min="0" max="2" step="0.01" value="0.7">
+                <input type="number" name="temperature" class="admin-textarea w-full" min="0" max="2" step="0.01"
+                    value="0.7">
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-semibold mb-1">Max Tokens</label>
@@ -472,60 +503,60 @@
 {% block scripts %}
 {{ super() }}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // 'updated-ago' formatter
-    document.querySelectorAll('.updated-ago').forEach(el => {
-        const iso = el.dataset.updated;
-        if (!iso) return;
-        const diff = Math.floor((new Date() - new Date(iso)) / 1000);
-        let str = diff < 60 ? `${diff} seconds ago`
-                : diff < 3600 ? `${Math.floor(diff/60)} minutes ago`
-                : diff < 86400 ? `${Math.floor(diff/3600)} hours ago`
-                : diff < 2592000 ? `${Math.floor(diff/86400)} days ago`
-                : diff < 31536000 ? `${Math.floor(diff/2592000)} months ago`
-                : `${Math.floor(diff/31536000)} years ago`;
-        el.textContent = str;
-    });
+    document.addEventListener('DOMContentLoaded', function () {
+        // 'updated-ago' formatter
+        document.querySelectorAll('.updated-ago').forEach(el => {
+            const iso = el.dataset.updated;
+            if (!iso) return;
+            const diff = Math.floor((new Date() - new Date(iso)) / 1000);
+            let str = diff < 60 ? `${diff} seconds ago`
+                : diff < 3600 ? `${Math.floor(diff / 60)} minutes ago`
+                    : diff < 86400 ? `${Math.floor(diff / 3600)} hours ago`
+                        : diff < 2592000 ? `${Math.floor(diff / 86400)} days ago`
+                            : diff < 31536000 ? `${Math.floor(diff / 2592000)} months ago`
+                                : `${Math.floor(diff / 31536000)} years ago`;
+            el.textContent = str;
+        });
 
-    // Accordion toggle
-    document.querySelectorAll('.accordion-header').forEach(header => {
-        header.addEventListener('click', () => {
-            const content = header.nextElementSibling;
-            const open = content.classList.toggle('active');
-            header.classList.toggle('active', open);
+        // Accordion toggle
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                const open = content.classList.toggle('active');
+                header.classList.toggle('active', open);
+            });
         });
     });
-});
 
-// Helpers
-const postId = {{ post.id }};
-function saveGlobalField(field) {
-    const value = document.getElementById(field).value;
-    fetch(`/api/v1/posts/${postId}/fields/${field}`, {
-        method: 'PUT',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ value })
-    })
-    .then(r => r.json())
-    .then(d => alert(d.status==='success'?'Saved!':'Save failed'))
-    .catch(() => alert('Save failed'));
-}
+    // Helpers
+    const postId = document.getElementById('stage-accordion').dataset.postId;
+    function saveGlobalField(field) {
+        const value = document.getElementById(field).value;
+        fetch(`/blog/api/v1/posts/${postId}/fields/${field}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value })
+        })
+            .then(r => r.json())
+            .then(d => alert(d.status === 'success' ? 'Saved!' : 'Save failed'))
+            .catch(() => alert('Save failed'));
+    }
 
-function saveSectionField(sectionId, field) {
-    const el = document.getElementById(`${field}_${sectionId}`);
-    const value = el ? el.value : '';
-    fetch(`/api/v1/posts/${postId}/sections/${sectionId}/fields/${field}`, {
-        method: 'PUT',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ value })
-    })
-    .then(r => r.json())
-    .then(d => alert(d.status==='success'?'Saved!':'Save failed'))
-    .catch(() => alert('Save failed'));
-}
+    function saveSectionField(sectionId, field) {
+        const el = document.getElementById(`${field}_${sectionId}`);
+        const value = el ? el.value : '';
+        fetch(`/blog/api/v1/posts/${postId}/sections/${sectionId}/fields/${field}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value })
+        })
+            .then(r => r.json())
+            .then(d => alert(d.status === 'success' ? 'Saved!' : 'Save failed'))
+            .catch(() => alert('Save failed'));
+    }
 
-function addSection() {
-    // Implementation left as before
-}
+    function addSection() {
+        // Implementation left as before
+    }
 </script>
 {% endblock %}

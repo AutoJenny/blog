@@ -238,3 +238,20 @@ def delete_post(slug):
     post.deleted = True
     db.session.commit()
     return jsonify({"message": "Post deleted"})
+
+
+@bp.route("/api/v1/posts/<int:post_id>/fields/<field>", methods=["PUT"])
+def update_post_development_field(post_id, field):
+    dev = PostDevelopment.query.filter_by(post_id=post_id).first_or_404()
+    data = request.get_json()
+    # Only allow updating valid fields
+    valid_fields = [c.key for c in db.inspect(PostDevelopment).mapper.column_attrs if c.key not in ["id", "post_id"]]
+    if field not in valid_fields:
+        return jsonify({"error": "Invalid field"}), 400
+    setattr(dev, field, data.get("value", ""))
+    # Update parent post's updated_at
+    post = Post.query.get(post_id)
+    if post:
+        post.updated_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify({"status": "success", "updated_at": post.updated_at.isoformat() if post and post.updated_at else None})
