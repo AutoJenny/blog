@@ -255,3 +255,15 @@ def update_post_development_field(post_id, field):
         post.updated_at = datetime.utcnow()
     db.session.commit()
     return jsonify({"status": "success", "updated_at": post.updated_at.isoformat() if post and post.updated_at else None})
+
+
+@bp.route("/api/v1/section/<int:section_id>", methods=["DELETE"])
+def delete_section(section_id):
+    section = PostSection.query.get_or_404(section_id)
+    try:
+        db.session.delete(section)
+        db.session.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "error": str(e)}), 500
