@@ -130,6 +130,8 @@ class PostSection(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"), nullable=False)
     section_order = db.Column(db.Integer)
     section_heading = db.Column(db.Text)
+    ideas_to_include = db.Column(db.Text)
+    facts_to_include = db.Column(db.Text)
     # Per-section fields (all nullable)
     first_draft = db.Column(db.Text)
     uk_british = db.Column(db.Text)

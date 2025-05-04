@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, current_app
-from app.services.llm import LLMService
+from app.llm.services import LLMService, execute_llm_request
 from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPrompt, LLMActionHistory, PostDevelopment
 from app import db
 import requests

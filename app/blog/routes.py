@@ -267,3 +267,15 @@ def delete_section(section_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"status": "error", "error": str(e)}), 500
+
+
+@bp.route("/api/v1/posts/<int:post_id>/sections/<int:section_id>/fields/<field>", methods=["PUT"])
+def update_section_field(post_id, section_id, field):
+    section = PostSection.query.filter_by(id=section_id, post_id=post_id).first_or_404()
+    data = request.get_json()
+    valid_fields = [c.key for c in db.inspect(PostSection).mapper.column_attrs if c.key not in ["id", "post_id"]]
+    if field not in valid_fields:
+        return jsonify({"error": "Invalid field"}), 400
+    setattr(section, field, data.get("value", ""))
+    db.session.commit()
+    return jsonify({"status": "success"})
