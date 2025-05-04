@@ -3,6 +3,8 @@ from app import db
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy import Enum
 import enum
+from jinja2 import Template
+from flask import current_app
 
 
 class WorkflowStage(str, enum.Enum):
@@ -214,17 +216,16 @@ class LLMAction(db.Model):
     # Relationship to history
     history = db.relationship('LLMActionHistory', backref='action', lazy='dynamic')
     
-    def process_template(self, input_text: str) -> str:
-        """Process the prompt template with the given input text.
-        
-        The template can use {input} to reference the input text.
-        Additional template variables may be added in the future.
+    def process_template(self, fields: dict) -> str:
+        """Process the prompt template with the given fields dict.
+        Supports {{field}} syntax for any field in the dict.
         """
         try:
-            return self.prompt_template.format(input=input_text)
-        except KeyError as e:
-            raise ValueError(f"Invalid template variable in prompt template: {e}")
+            template = Template(self.prompt_template)
+            return template.render(**fields)
         except Exception as e:
+            # Log the template and fields for debugging
+            current_app.logger.error(f"Template rendering error: {e}\nTemplate: {self.prompt_template}\nFields: {fields}")
             raise ValueError(f"Error processing prompt template: {e}")
     
     def to_dict(self):

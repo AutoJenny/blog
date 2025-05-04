@@ -374,3 +374,7 @@ All notable changes to this project are documented in this file.
 - Fix: New Action modal now starts with blank/placeholder selects for model and prompt template, so nothing is pre-selected by default.
 
 - Fix: Corrected TemplateSyntaxError in app/templates/blog/develop.html by adding missing closing brace to the Jinja expression for postId in the LLM action button scripts for 'idea_scope' and 'provisional_title'.
+
+2024-07-09: Fix LLMAction prompt template field substitution. Prompt templates now support {{field}} for any PostDevelopment field (e.g., {{basic_idea}}), not just {input}. Backend fetches all fields for the post and substitutes them using Jinja2. This enables LLM actions to work as expected for all referenced fields in prompts.
+
+2024-07-09: Add robust logging for Jinja2 template errors in LLMAction.process_template. Now logs the template string and fields dict to help debug template rendering issues.
