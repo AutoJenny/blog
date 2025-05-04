@@ -378,3 +378,5 @@ All notable changes to this project are documented in this file.
 2024-07-09: Fix LLMAction prompt template field substitution. Prompt templates now support {{field}} for any PostDevelopment field (e.g., {{basic_idea}}), not just {input}. Backend fetches all fields for the post and substitutes them using Jinja2. This enables LLM actions to work as expected for all referenced fields in prompts.
 
 2024-07-09: Add robust logging for Jinja2 template errors in LLMAction.process_template. Now logs the template string and fields dict to help debug template rendering issues.
+
+2024-07-09: Add debug endpoint /api/v1/llm/actions/debug/list_templates to list all LLMAction prompt templates for troubleshooting template errors.

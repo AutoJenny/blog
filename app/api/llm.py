@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app
 from app.services.llm import LLMService
-from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPrompt, LLMActionHistory
+from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPrompt, LLMActionHistory, PostDevelopment
 from app import db
 import requests
 
@@ -375,11 +375,21 @@ def execute_action(action_id):
         return jsonify({'error': 'No input text provided'}), 400
     
     try:
+        post_id = data.get('post_id')
+        fields = {'input': data['input_text']}
+        # If post_id is provided, fetch all PostDevelopment fields
+        if post_id:
+            dev = PostDevelopment.query.filter_by(post_id=post_id).first()
+            if dev:
+                # Add all fields from dev to the fields dict
+                for c in dev.__table__.columns:
+                    if c.name not in ['id', 'post_id']:
+                        fields[c.name] = getattr(dev, c.name)
         llm = LLMService()
         result = llm.execute_action(
             action=action,
-            input_text=data['input_text'],
-            post_id=data.get('post_id')
+            fields=fields,
+            post_id=post_id
         )
         return jsonify(result)
     except ValueError as e:
@@ -398,3 +408,16 @@ def action_history(action_id):
         'action': action.to_dict(),
         'history': [h.to_dict() for h in history]
     })
+
+
+@bp.route('/actions/debug/list_templates', methods=['GET'])
+def debug_list_llm_templates():
+    """Debug: List all LLMAction prompt templates."""
+    actions = LLMAction.query.all()
+    return jsonify([
+        {
+            'id': a.id,
+            'field_name': a.field_name,
+            'prompt_template': a.prompt_template
+        } for a in actions
+    ])
