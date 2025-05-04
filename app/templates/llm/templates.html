@@ -641,8 +641,10 @@
             if (draggedField) {
                 const cursorPos = textarea.selectionStart || textarea.value.length;
                 const currentValue = textarea.value;
-                // Insert the field as {{ field_name }} (not prettified)
-                const fieldText = `{{ ${draggedField} }}`;
+                {% raw %}
+                // Insert the field as {{field_name}} (no spaces, no hidden chars)
+                const fieldText = `{{${draggedField}}}`;
+                {% endraw %}
 
                 // Insert the field text at the cursor position
                 textarea.value = currentValue.slice(0, cursorPos) + fieldText + currentValue.slice(cursorPos);

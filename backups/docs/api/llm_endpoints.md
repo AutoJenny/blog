@@ -12,6 +12,8 @@ All API endpoints require authentication. Use one of the following methods:
 
 ### LLM Actions
 
+> **Update (2024-07-09):** Prompt templates for LLM Actions now support `{{field}}` for any field in the post's development record (e.g., `{{basic_idea}}`, `{{idea_scope}}`, etc.), not just `{input}`. When executing an action, all fields from the post's development are available for substitution in the template.
+
 #### List Actions
 ```http
 GET /actions

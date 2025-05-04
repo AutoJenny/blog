@@ -216,6 +216,7 @@ Templates are managed through a dropdown interface in the development environmen
 - User feedback on save operations through visual indicators
 - Error handling for failed save operations
 - **2024-05-02:** The template modal JavaScript now safely handles empty state and placeholder elements, preventing TypeErrors when opening the modal. Curly braces for template fields are inserted using Unicode escapes to avoid Jinja/JS conflicts.
+- **2024-07-09:** When inserting Jinja2-style template fields (e.g., `{{ ${draggedField} }}`) via JavaScript template literals in HTML templates, always wrap the relevant code in `{% raw %}...{% endraw %}` to prevent Jinja2 from parsing the JavaScript as template syntax. This is the preferred solution for avoiding Jinja/JS conflicts in the template editor and similar dynamic interfaces.
 
 When working with templates:
 1. Select a template from the dropdown to load its content

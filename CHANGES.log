@@ -380,3 +380,7 @@ All notable changes to this project are documented in this file.
 2024-07-09: Add robust logging for Jinja2 template errors in LLMAction.process_template. Now logs the template string and fields dict to help debug template rendering issues.
 
 2024-07-09: Add debug endpoint /api/v1/llm/actions/debug/list_templates to list all LLMAction prompt templates for troubleshooting template errors.
+
+- Fix: Resolved TemplateSyntaxError in app/templates/llm/templates.html caused by Jinja2 parsing a JavaScript template literal (`{{ ${draggedField} }}`) in the template editor. Wrapped the line in `{% raw %}...{% endraw %}` to prevent Jinja2 from interpreting it.
+
+- Fix: Drag&drop field insertion in app/templates/llm/templates.html now inserts {{field_name}} (no spaces, no hidden chars). Removed hidden characters that caused backend template errors.
