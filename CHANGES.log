@@ -389,3 +389,5 @@ All notable changes to this project are documented in this file.
 - Add: Implemented /api/v1/posts/<post_id>/fields/<field> endpoint to allow saving individual PostDevelopment fields from the develop page. This fixes saving for global fields like Idea Scope.
 
 - Refactor: Switched postId passing in develop.html to use a data attribute on the main container, and updated all JS to read postId from the DOM instead of inline Jinja2. This prevents template syntax errors and is more robust.
+
+- Enhancement: Added LLM Action selector and Generate button to every field (except sections) on the develop page, and ensured the Generate button saves the field after generation. This makes LLM generation available for all fields and ensures saving works.
