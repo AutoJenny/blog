@@ -278,7 +278,7 @@
         <div class="accordion-panel">
             <button class="accordion-header" data-accordion="outlining">Outlining Stage</button>
             <div class="accordion-content">
-                {% for field in ['section_planning', 'section_headings', 'section_order'] %}
+                {% for field in ['section_planning', 'section_headings'] %}
                 {% if field in dev.__dict__ %}
                 <div class="accordion-field">
                     <label for="{{ field }}" class="block text-sm font-semibold mb-2">
@@ -296,6 +296,19 @@
                 </div>
                 {% endif %}
                 {% endfor %}
+                {% if 'section_order' in dev.__dict__ %}
+                <div class="accordion-field">
+                    <label class="block text-sm font-semibold mb-2">Section Order</label>
+                    <button type="button" class="admin-button mb-2" id="grab-headings-btn">Grab Headings</button>
+                    <div id="section-order-label" class="text-xs text-gray-400 mb-1">Drag to reorder</div>
+                    <div id="section-order-list" class="mb-2"></div>
+                    <div id="section-order-empty" class="text-gray-500 text-sm mb-2" style="display:none;">No section
+                        order yet. Click 'Grab Headings' to start.</div>
+                    <button type="button" class="admin-button" id="save-section-order-btn">Save</button>
+                    <textarea id="section_order" name="section_order" class="admin-textarea" rows="2"
+                        style="display:none;">{{ dev.section_order or '' }}</textarea>
+                </div>
+                {% endif %}
             </div>
         </div>
 
@@ -617,6 +630,89 @@
                     }
                 });
             });
+
+        // Section Order drag-and-drop logic
+        const grabBtn = document.getElementById('grab-headings-btn');
+        const listDiv = document.getElementById('section-order-list');
+        const saveBtn = document.getElementById('save-section-order-btn');
+        const sectionOrderTextarea = document.getElementById('section_order');
+        const emptyMsg = document.getElementById('section-order-empty');
+        const label = document.getElementById('section-order-label');
+        if (grabBtn && listDiv && saveBtn && sectionOrderTextarea) {
+            let orderArr = [];
+            function renderList() {
+                listDiv.innerHTML = '';
+                if (!orderArr.length) {
+                    emptyMsg.style.display = '';
+                    label.style.display = 'none';
+                    return;
+                }
+                emptyMsg.style.display = 'none';
+                label.style.display = '';
+                orderArr.forEach((item, idx) => {
+                    const el = document.createElement('div');
+                    el.className = 'draggable-item flex items-center gap-2 mb-1 p-2 rounded shadow bg-gray-800 hover:bg-gray-700 transition-all';
+                    el.draggable = true;
+                    // Drag handle
+                    const handle = document.createElement('span');
+                    handle.textContent = '☰';
+                    handle.className = 'cursor-move text-lg text-gray-400 mr-2';
+                    el.appendChild(handle);
+                    // Item text
+                    const text = document.createElement('span');
+                    text.textContent = item;
+                    text.className = 'flex-1';
+                    el.appendChild(text);
+                    // Drag events
+                    el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', idx); el.style.opacity = '0.5'; });
+                    el.addEventListener('dragend', e => { el.style.opacity = '1'; });
+                    el.addEventListener('dragover', e => { e.preventDefault(); el.style.background = '#6366F1'; });
+                    el.addEventListener('dragleave', e => { el.style.background = '#1e293b'; });
+                    el.addEventListener('drop', e => {
+                        e.preventDefault();
+                        el.style.background = '#1e293b';
+                        const from = +e.dataTransfer.getData('text/plain');
+                        if (from !== idx) {
+                            const moved = orderArr.splice(from, 1)[0];
+                            orderArr.splice(idx, 0, moved);
+                            renderList();
+                        }
+                    });
+                    listDiv.appendChild(el);
+                });
+            }
+            // On page load, render from section_order if present
+            try {
+                const val = sectionOrderTextarea.value.trim();
+                if (val) {
+                    const arr = JSON.parse(val);
+                    if (Array.isArray(arr)) {
+                        orderArr = arr.slice();
+                        renderList();
+                    }
+                } else {
+                    emptyMsg.style.display = '';
+                    label.style.display = 'none';
+                }
+            } catch (e) {
+                emptyMsg.style.display = '';
+                label.style.display = 'none';
+            }
+            grabBtn.onclick = function () {
+                try {
+                    const headings = JSON.parse(document.getElementById('section_headings').value);
+                    if (!Array.isArray(headings)) throw new Error('Not an array');
+                    orderArr = headings.slice();
+                    renderList();
+                } catch (e) {
+                    alert('Invalid JSON in Section Headings: ' + e.message);
+                }
+            };
+            saveBtn.onclick = function () {
+                sectionOrderTextarea.value = JSON.stringify(orderArr);
+                saveGlobalField('section_order');
+            };
+        }
     });
 
     // Helpers
