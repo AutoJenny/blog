@@ -406,6 +406,6 @@ All notable changes to this project are documented in this file.
 
 - Enhancement: The Idea Scope LLM Generate button now auto-saves the generated content to the backend, ensuring the UI and db are updated immediately after generation.
 
-2025-05-05 Fixed Jinja2 TemplateSyntaxError in llm/templates.html by wrapping the JavaScript template string containing `{{${draggedField}}}` in a Jinja2 raw block. This prevents Jinja2 from misinterpreting JavaScript template literals as Jinja2 variables. No other changes made.
+2025-05-05 Fix: Removed unwanted special character from draggable field template string in llm/templates.html. Field insertion now correctly uses {{field_name}} syntax without extra characters.
 
 2025-05-05 Added 'ideas_to_include', 'facts_to_include', and 'section_heading' to the Authoring Stage in WORKFLOW_FIELDS (app/blog/fields.py) so they are available for prompt templates and saving in the UI.

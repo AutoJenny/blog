@@ -685,7 +685,7 @@
                 const cursorPos = textarea.selectionStart || textarea.value.length;
                 const currentValue = textarea.value;
                 // Insert the field as {{field_name}} (no spaces, no hidden chars)
-                let fieldText = `{{${draggedField}}}`;
+                let fieldText = `{{${draggedField}}}`;
                 textarea.value = currentValue.slice(0, cursorPos) + fieldText + currentValue.slice(cursorPos);
                 textarea.focus();
                 textarea.setSelectionRange(cursorPos + fieldText.length, cursorPos + fieldText.length);
