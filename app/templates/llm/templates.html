@@ -488,6 +488,23 @@
     let draggedField = null;
     const workflow_fields = JSON.parse(document.getElementById('workflow-fields-json').textContent);
 
+    // Section-specific fields (hardcoded for now, could be dynamic)
+    const sectionFields = [
+        'section_heading',
+        'ideas_to_include',
+        'facts_to_include',
+        'first_draft',
+        'uk_british',
+        'highlighting',
+        'image_concepts',
+        'image_prompts',
+        'generation',
+        'optimization',
+        'watermarking',
+        'image_meta_descriptions',
+        'image_captions'
+    ];
+
     // Modal management functions
     function showNewTemplateModal() {
         const modal = document.getElementById('templateModal');
@@ -580,10 +597,28 @@
                     const option = document.createElement('option');
                     option.value = field;
                     option.textContent = field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    if (sectionFields.includes(field)) {
+                        option.className = 'section-field-option';
+                        option.textContent += ' (Section-specific)';
+                    }
                     fieldSelect.appendChild(option);
                 });
             }
         });
+
+        // Add section fields group at the end
+        const sectionGroup = document.createElement('optgroup');
+        sectionGroup.label = 'Section Fields';
+        sectionFields.forEach(field => {
+            const option = document.createElement('option');
+            option.value = field;
+            option.textContent = field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            option.className = 'section-field-option';
+            option.title = 'Section-specific field';
+            option.innerHTML = '🟪 ' + option.textContent + ' <span style="font-size:0.85em;color:#a78bfa;">(Section-specific)</span>';
+            sectionGroup.appendChild(option);
+        });
+        fieldSelect.appendChild(sectionGroup);
 
         // Create draggable field when field is selected
         fieldSelect.addEventListener('change', () => {
@@ -595,8 +630,14 @@
             fieldTag.className = 'field-tag';
             fieldTag.draggable = true;
             fieldTag.dataset.field = field;
-            fieldTag.innerHTML = '<i class="fas fa-grip-lines"></i> ' +
-                field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            if (sectionFields.includes(field)) {
+                fieldTag.innerHTML = '<span style="color:#a78bfa;font-weight:bold;">🟪 ' +
+                    field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) +
+                    ' <span style="font-size:0.85em;color:#a78bfa;">(Section-specific)</span></span>';
+                fieldTag.title = 'Section-specific field';
+            } else {
+                fieldTag.innerHTML = field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            }
 
             // Add drag event listeners
             fieldTag.addEventListener('dragstart', handleDragStart);
@@ -611,6 +652,8 @@
         });
     }
 
+    // --- Jinja2 RAW BLOCK to prevent template parsing error with JS template string ---
+    {% raw %}
     function handleDragStart(e) {
         draggedField = e.target.dataset.field;
         e.target.classList.add('dragging');
@@ -641,12 +684,8 @@
             if (draggedField) {
                 const cursorPos = textarea.selectionStart || textarea.value.length;
                 const currentValue = textarea.value;
-                {% raw %}
                 // Insert the field as {{field_name}} (no spaces, no hidden chars)
-                const fieldText = `{{${draggedField}}}`;
-                {% endraw %}
-
-                // Insert the field text at the cursor position
+                let fieldText = `{{${draggedField}}}`;
                 textarea.value = currentValue.slice(0, cursorPos) + fieldText + currentValue.slice(cursorPos);
                 textarea.focus();
                 textarea.setSelectionRange(cursorPos + fieldText.length, cursorPos + fieldText.length);
@@ -659,6 +698,7 @@
             placeholder.style.display = textarea.value ? 'none' : 'block';
         });
     }
+    {% endraw %}
 
     // Initialize everything when the page loads
     document.addEventListener('DOMContentLoaded', () => {
