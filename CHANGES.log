@@ -419,3 +419,7 @@ All notable changes to this project are documented in this file.
 - Enhancement: Automatic database backup now runs after every commit (insert, update, or delete), with old backups rotated to prevent bloat. This uses a SQLAlchemy event listener and the existing backup script.
 
 - UI: Section Generate buttons now show 'Generating...' and are disabled while the request is in progress, preventing double-clicks and giving clear feedback to the user.
+
+- Enhancement: Added drag-and-drop reordering for prompt templates with visible gap indicator. Order is now persisted in the database and respected in all selection menus. Added /api/v1/llm/prompts/order endpoint to update order.
+
+- Fix: LLM prompt templates and selection menus now always reflect the persisted order by ordering on the 'order' field in all UI routes.

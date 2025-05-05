@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added json, edit, and delete icons/links to each post row
 - Enhancement: Automatic database backup now runs after every commit (insert, update, or delete), with old backups rotated to prevent bloat. This uses a SQLAlchemy event listener and the existing backup script.
 - UI: Section Generate buttons now show 'Generating...' and are disabled while the request is in progress, preventing double-clicks and giving clear feedback to the user.
+- Enhancement: Added drag-and-drop reordering for prompt templates with visible gap indicator. Order is now persisted in the database and respected in all selection menus. Added /api/v1/llm/prompts/order endpoint to update order.
 
 ### Changed
 - Updated all workflow documentation for asynchronous model
@@ -66,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced error handling for database operations
   - Improved database script reliability
 - Fix: Section LLM Action dropdowns and Generate buttons are now always populated and wired up after DOM is ready, ensuring Actions are available for all section content fields in the develop page.
+- Fix: LLM prompt templates and selection menus now always reflect the persisted order by ordering on the 'order' field in all UI routes.
 
 ### Removed
 - Removed PromptTemplate model and table

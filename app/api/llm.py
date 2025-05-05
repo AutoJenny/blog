@@ -90,8 +90,8 @@ def test_llm():
 
 @bp.route('/prompts', methods=['GET'])
 def get_prompts():
-    """Get all prompts"""
-    prompts = LLMPrompt.query.all()
+    """Get all prompts, ordered by 'order' (NULLs last), then id."""
+    prompts = LLMPrompt.query.order_by(LLMPrompt.order.is_(None), LLMPrompt.order, LLMPrompt.id).all()
     return jsonify([{
         'id': p.id,
         'name': p.name,
@@ -102,8 +102,8 @@ def get_prompts():
 
 @bp.route("/templates", methods=["GET"])
 def get_templates():
-    """Get all prompt templates from LLMPrompt"""
-    prompts = LLMPrompt.query.all()
+    """Get all prompt templates from LLMPrompt, ordered by 'order' (NULLs last), then id."""
+    prompts = LLMPrompt.query.order_by(LLMPrompt.order.is_(None), LLMPrompt.order, LLMPrompt.id).all()
     return jsonify([{
         'id': p.id,
         'name': p.name,
@@ -421,3 +421,22 @@ def debug_list_llm_templates():
             'prompt_template': a.prompt_template
         } for a in actions
     ])
+
+
+@bp.route('/prompts/order', methods=['POST'])
+def update_prompt_order():
+    """Update the order of prompt templates."""
+    data = request.get_json()
+    ids = data.get('order', [])
+    if not isinstance(ids, list):
+        return jsonify({'success': False, 'error': 'Invalid order list'}), 400
+    try:
+        for idx, prompt_id in enumerate(ids):
+            prompt = LLMPrompt.query.get(int(prompt_id))
+            if prompt:
+                prompt.order = idx
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500

@@ -93,6 +93,7 @@ class LLMPrompt(db.Model):
     prompt_text = db.Column(db.Text, nullable=False)
     system_prompt = db.Column(db.Text)
     parameters = db.Column(JSON)
+    order = db.Column(db.Integer, default=0, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
