@@ -356,6 +356,18 @@
         opacity: 0.5;
         font-size: 0.875rem;
     }
+
+    .sortable-ghost {
+        opacity: 0.4;
+        background: #6366F1 !important;
+    }
+
+    .sortable-chosen {
+        border-top: 6px solid #6366F1 !important;
+        margin-top: -6px;
+        box-shadow: 0 0 0 2px #6366F1;
+        transition: border 0.2s, box-shadow 0.2s;
+    }
 </style>
 {% endblock %}
 
@@ -390,26 +402,27 @@
                 </button>
             </div>
 
-            <div class="template-list">
+            <div class="template-list" id="templateAccordionList">
                 {% for prompt in prompts %}
-                <div class="template-item">
-                    <div class="template-header">
-                        <span class="template-name">{{ prompt.name }}</span>
-                        <div class="template-actions">
-                            <button class="btn btn-secondary edit-template-btn" data-id="{{ prompt.id }}">
-                                <i class="fas fa-edit"></i>
-                                Edit
-                            </button>
-                            <button class="btn btn-danger delete-template-btn" data-id="{{ prompt.id }}">
-                                <i class="fas fa-trash"></i>
-                                Delete
-                            </button>
-                        </div>
+                <div class="template-accordion-item" data-id="{{ prompt.id }}" draggable="true">
+                    <div class="template-accordion-header flex items-center justify-between cursor-pointer select-none bg-gray-900 px-4 py-2 rounded"
+                        style="color: var(--admin-accent);">
+                        <span class="flex items-center">
+                            <span class="drag-handle mr-2" title="Drag to reorder"
+                                style="cursor:grab;font-size:1.2em;">☰</span>
+                            <span class="chevron mr-2" style="transition:transform 0.2s;">&#9654;</span>
+                            <span class="template-name">{{ prompt.name }}</span>
+                        </span>
+                        <button class="btn btn-secondary edit-template-btn ml-2" data-id="{{ prompt.id }}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
                     </div>
-                    {% if prompt.description %}
-                    <div class="template-description">{{ prompt.description }}</div>
-                    {% endif %}
-                    <div class="template-text">{{ prompt.prompt_text }}</div>
+                    <div class="template-accordion-content" style="display:none;">
+                        {% if prompt.description %}
+                        <div class="template-description">{{ prompt.description }}</div>
+                        {% endif %}
+                        <div class="template-text">{{ prompt.prompt_text }}</div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
@@ -483,6 +496,7 @@
 {{ workflow_fields | tojson | safe }}
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
     // Initialize variables
     let draggedField = null;
@@ -759,6 +773,48 @@
                 hideTemplateModal();
             }
         });
+
+        // Accordion logic
+        document.querySelectorAll('.template-accordion-header').forEach(header => {
+            header.addEventListener('click', function (e) {
+                if (e.target.closest('.edit-template-btn')) return; // Don't toggle if Edit clicked
+                const item = header.parentElement;
+                const content = item.querySelector('.template-accordion-content');
+                const chevron = header.querySelector('.chevron');
+                const isOpen = content.style.display === 'block';
+                document.querySelectorAll('.template-accordion-content').forEach(c => c.style.display = 'none');
+                document.querySelectorAll('.chevron').forEach(ch => ch.style.transform = 'rotate(0deg)');
+                if (!isOpen) {
+                    content.style.display = 'block';
+                    chevron.style.transform = 'rotate(90deg)';
+                }
+            });
+        });
+
+        // Replace manual drag-and-drop with SortableJS
+        const el = document.getElementById('templateAccordionList');
+        if (el) {
+            new Sortable(el, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                onEnd: function (evt) {
+                    const ids = Array.from(el.querySelectorAll('.template-accordion-item')).map(item => item.dataset.id);
+                    fetch('/api/v1/llm/prompts/order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ order: ids })
+                    }).then(r => r.json()).then(data => {
+                        if (!data.success) {
+                            alert('Failed to save order: ' + (data.error || 'Unknown error'));
+                        }
+                    }).catch(err => {
+                        alert('Error saving order: ' + err);
+                    });
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

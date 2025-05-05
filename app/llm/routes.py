@@ -25,7 +25,7 @@ def config_page():
 @bp.route('/templates')
 def templates():
     """Show prompt templates"""
-    prompts = LLMPrompt.query.all()
+    prompts = LLMPrompt.query.order_by(LLMPrompt.order.is_(None), LLMPrompt.order, LLMPrompt.id).all()
     logger.info(f"RAW WORKFLOW_FIELDS: {WORKFLOW_FIELDS}")
     def clean_workflow_fields(fields):
         return {
@@ -42,11 +42,9 @@ def templates():
 @bp.route('/actions')
 def actions():
     """Render the LLM Actions management page."""
-    # Get all actions and convert to dictionaries
     actions = [action.to_dict() for action in LLMAction.query.all()]
     logger.info(f"[ACTIONS] Loaded actions: {actions}")
-    
-    prompts = LLMPrompt.query.all()
+    prompts = LLMPrompt.query.order_by(LLMPrompt.order.is_(None), LLMPrompt.order, LLMPrompt.id).all()
     config = LLMConfig.query.first()
     if not config:
         config = LLMConfig(
@@ -56,7 +54,6 @@ def actions():
         )
         db.session.add(config)
         db.session.commit()
-    
     return render_template(
         'llm/actions.html',
         actions=actions,
