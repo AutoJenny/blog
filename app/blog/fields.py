@@ -16,6 +16,9 @@ WORKFLOW_FIELDS = {
         "section_order",
     ],
     "Authoring Stage": [
+        "section_heading",
+        "ideas_to_include",
+        "facts_to_include",
         "first_draft",
         "uk_british",
         "highlighting",
