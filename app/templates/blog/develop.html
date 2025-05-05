@@ -461,8 +461,12 @@
                                     style="color: var(--admin-text-secondary);">
                                     {{ field.replace('_', ' ').title() }}
                                 </label>
-                                <textarea id="{{ field }}_{{ section.id }}"
-                                    class="admin-textarea mb-2">{{ section.__dict__[field] or '' }}</textarea>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <textarea id="{{ field }}_{{ section.id }}"
+                                        class="admin-textarea">{{ section.__dict__[field] or '' }}</textarea>
+                                    <button type="button" class="admin-button generate-section-content-btn"
+                                        data-section-id="{{ section.id }}" data-field="{{ field }}">Generate</button>
+                                </div>
                                 <button type="button" class="admin-button mb-2"
                                     onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button><br>
                                 {% endif %}
@@ -1066,6 +1070,57 @@
                 }
             });
         }
+
+        // Add JS for section content generation
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.generate-section-content-btn').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const sectionId = btn.getAttribute('data-section-id');
+                    const field = btn.getAttribute('data-field');
+                    const postId = document.getElementById('stage-accordion').dataset.postId;
+                    // Gather global fields
+                    const globalFields = {};
+                    document.querySelectorAll('.accordion-field textarea').forEach(ta => {
+                        globalFields[ta.id] = ta.value;
+                    });
+                    // Gather section fields
+                    const sectionBlock = btn.closest('.section-block');
+                    const sectionFields = {};
+                    sectionBlock.querySelectorAll('textarea').forEach(ta => {
+                        // Remove _<sectionId> from id for key
+                        const key = ta.id.replace(/_\d+$/, '');
+                        sectionFields[key] = ta.value;
+                    });
+                    // Find the LLM action for this field
+                    const actions = await fetch('/api/v1/llm/actions').then(r => r.json());
+                    const action = actions.find(a => a.field_name && a.field_name.toLowerCase().includes(field.replace('_', ' ')));
+                    if (!action) { alert('No LLM action found for ' + field); return; }
+                    const actionId = action.id;
+                    // POST to LLM action
+                    try {
+                        const res = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                input_text: sectionFields[field] || '',
+                                post_id: postId,
+                                section_id: sectionId,
+                                fields: globalFields,
+                                section_fields: sectionFields
+                            })
+                        });
+                        const js = await res.json();
+                        const newValue = typeof js === 'string' ? js : js.response || js.data?.content || '';
+                        if (!newValue) { alert('No content generated.'); return; }
+                        sectionBlock.querySelector(`#${field}_${sectionId}`).value = newValue;
+                        // Auto-save
+                        saveSectionField(sectionId, field);
+                    } catch (err) {
+                        alert('Error generating content: ' + err.message);
+                    }
+                });
+            });
+        });
     });
 
     // Helpers
