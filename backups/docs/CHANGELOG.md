@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved accessibility and mobile responsiveness
   - Refined dark theme with improved contrast
   - Added json, edit, and delete icons/links to each post row
+- Enhancement: Automatic database backup now runs after every commit (insert, update, or delete), with old backups rotated to prevent bloat. This uses a SQLAlchemy event listener and the existing backup script.
+- UI: Section Generate buttons now show 'Generating...' and are disabled while the request is in progress, preventing double-clicks and giving clear feedback to the user.
 
 ### Changed
 - Updated all workflow documentation for asynchronous model
@@ -63,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added proper PostgreSQL connection validation
   - Enhanced error handling for database operations
   - Improved database script reliability
+- Fix: Section LLM Action dropdowns and Generate buttons are now always populated and wired up after DOM is ready, ensuring Actions are available for all section content fields in the develop page.
 
 ### Removed
 - Removed PromptTemplate model and table
@@ -83,4 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Frontend templates and styling
 - Development environment configuration
 - Testing framework implementation
-- Documentation structure 
+- Documentation structure
+
+## [Unreleased]
+- Deprecated and removed all test Postgres and test database configuration, scripts, and test infrastructure. Retained backup and restore functionality only. All test-related files, configs, and scripts have been deleted for a belt-and-braces approach. Test infrastructure can be rebuilt later if needed. 

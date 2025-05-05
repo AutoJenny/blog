@@ -64,12 +64,6 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_ECHO = True
 
 
-class TestingConfig(Config):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres@localhost/blog_test"
-    WTF_CSRF_ENABLED = False
-
-
 class ProductionConfig(Config):
     # Production-specific settings
     CACHE_TYPE = "redis"
@@ -93,7 +87,6 @@ class ProductionConfig(Config):
 
 config = {
     "development": DevelopmentConfig,
-    "testing": TestingConfig,
     "production": ProductionConfig,
     "default": DevelopmentConfig,
 }

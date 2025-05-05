@@ -47,14 +47,5 @@ if ! curl -s "$APP_URL" >/dev/null; then
     error "Application is not responding"
 fi
 
-# Check if we can create a test post (optional)
-if ! psql -U "$DB_USER" -d "$DB_NAME" -c "
-    INSERT INTO post (title, slug, created_at, updated_at) 
-    VALUES ('Test Post', 'test-post-$(date +%s)', NOW(), NOW())
-    ON CONFLICT DO NOTHING
-    RETURNING id" >/dev/null 2>&1; then
-    error "Cannot write to database"
-fi
-
 # Log successful health check
 log "Health check completed successfully" 

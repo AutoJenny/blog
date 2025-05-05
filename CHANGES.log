@@ -83,10 +83,12 @@ All notable changes to this project are documented in this file.
 - Fixed route conflicts between blueprints
 - Improved code organization and maintainability
 - Fix: Updated all fetch URLs in develop.html to use the /blog/api/v1/posts/... prefix to match the Flask route registration and resolve 404 errors when saving global and section fields.
+- Fix: Section LLM Action dropdowns and Generate buttons are now always populated and wired up after DOM is ready, ensuring Actions are available for all section content fields in the develop page.
 
 ### Removed
 - Removed PromptTemplate model and table
 - Removed legacy references to sequential workflow initialization
+- [REMOVED] All test Postgres and test database configuration, scripts, and test infrastructure have been deleted. Backup and restore functionality is retained. This is a belt-and-braces removal; test infrastructure can be rebuilt later if needed.
 
 ## [0.1.0] - 2024-03-01
 
@@ -413,3 +415,7 @@ All notable changes to this project are documented in this file.
 2025-05-05 Enhancement: Added LLM action selectors beside each Generate button for section fields in the Authoring stage in develop.html, and updated JS to use the selected action for section content generation.
 
 2025-05-05 Fix: Section LLM action selectors now populate reliably—JS populates all selectors after DOM is ready, before attaching click handlers, ensuring menus are filled as soon as the page loads.
+
+- Enhancement: Automatic database backup now runs after every commit (insert, update, or delete), with old backups rotated to prevent bloat. This uses a SQLAlchemy event listener and the existing backup script.
+
+- UI: Section Generate buttons now show 'Generating...' and are disabled while the request is in progress, preventing double-clicks and giving clear feedback to the user.

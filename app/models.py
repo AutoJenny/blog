@@ -5,6 +5,10 @@ from sqlalchemy import Enum
 import enum
 from jinja2 import Template
 from flask import current_app
+from sqlalchemy import event
+from sqlalchemy.orm import Session
+import subprocess
+import os
 
 
 class WorkflowStage(str, enum.Enum):
@@ -282,3 +286,20 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
+
+# --- Automatic backup after DB commit ---
+def backup_after_commit(session):
+    # Only backup if there were changes
+    if session.new or session.dirty or session.deleted:
+        db_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/blog")
+        try:
+            subprocess.Popen(["python", "scripts/db_backup.py"])  # Non-blocking
+        except Exception as e:
+            print(f"[Backup Trigger] Failed to run backup: {e}")
+
+# Register the event listener for all sessions
+try:
+    event.listen(Session, "after_commit", backup_after_commit)
+except Exception as e:
+    print(f"[Backup Trigger] Could not register after_commit event: {e}")
