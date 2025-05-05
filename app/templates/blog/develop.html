@@ -407,6 +407,11 @@
                 <div class="flex justify-end mb-4">
                     <button type="button" class="admin-button" id="allocate-ideas-btn">Allocate Ideas</button>
                     <button type="button" class="admin-button" id="allocate-facts-btn">Allocate Facts</button>
+                    <button type="button" class="admin-button" id="generate-all-sections-btn">Generate All
+                        Sections</button>
+                </div>
+                <div id="generate-all-sections-log"
+                    style="background:#23244d;color:#a3e635;padding:0.5em 1em;margin-bottom:1em;border-radius:0.5em;display:none;">
                 </div>
                 <div id="sections">
                     {% for section in sections %}
@@ -461,9 +466,9 @@
                                     style="color: var(--admin-text-secondary);">
                                     {{ field.replace('_', ' ').title() }}
                                 </label>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <textarea id="{{ field }}_{{ section.id }}"
-                                        class="admin-textarea">{{ section.__dict__[field] or '' }}</textarea>
+                                <textarea id="{{ field }}_{{ section.id }}"
+                                    class="admin-textarea mb-2">{{ section.__dict__[field] or '' }}</textarea>
+                                <div class="flex flex-col gap-2 mb-2">
                                     <select id="llm-action-select-{{ field }}-{{ section.id }}" class="admin-textarea"
                                         style="max-width:220px;"></select>
                                     <button type="button" class="admin-button generate-section-content-btn"
@@ -739,7 +744,12 @@
         // Accordion toggle
         document.querySelectorAll('.accordion-header').forEach(header => {
             header.addEventListener('click', () => {
+                console.log('Accordion header clicked:', header.textContent.trim());
                 const content = header.nextElementSibling;
+                if (!content || !content.classList.contains('accordion-content')) {
+                    console.warn('Accordion content not found for header:', header.textContent.trim(), content);
+                    return;
+                }
                 const open = content.classList.toggle('active');
                 header.classList.toggle('active', open);
             });
@@ -824,6 +834,10 @@
                                     const opt = document.createElement('option');
                                     opt.value = a.id;
                                     opt.text = a.field_name;
+                                    // Auto-select for first_draft
+                                    if (field === 'first_draft' && a.field_name.trim().toLowerCase() === 'write section first draft') {
+                                        opt.selected = true;
+                                    }
                                     sel.appendChild(opt);
                                 });
                             }
@@ -871,7 +885,10 @@
                             });
                             const js = await res.json();
                             const newValue = typeof js === 'string' ? js : js.response || js.data?.content || '';
-                            if (!newValue) { alert('No content generated.'); return; }
+                            if (!newValue) {
+                                console.log(`Section ${sectionId}: No content generated.`);
+                                return;
+                            }
                             sectionBlock.querySelector(`#${field}_${sectionId}`).value = newValue;
                             // Auto-save
                             saveSectionField(sectionId, field);
@@ -1171,6 +1188,113 @@
                     allocateFactsBtn.disabled = false;
                     allocateFactsBtn.classList.remove('opacity-70');
                     allocateFactsBtn.style.cursor = '';
+                }
+            });
+        }
+
+        // Generate All Sections logic
+        const generateAllBtn = document.getElementById('generate-all-sections-btn');
+        const generateAllLog = document.getElementById('generate-all-sections-log');
+        if (generateAllBtn) {
+            generateAllBtn.addEventListener('click', async function () {
+                // DEBUG: Confirm handler is firing
+                console.log('Generate All Sections button clicked');
+                generateAllLog.style.display = '';
+                generateAllLog.textContent = 'Starting generation...';
+                alert('Generate All Sections button clicked!');
+                generateAllBtn.disabled = true;
+                generateAllBtn.textContent = 'Generating...';
+                generateAllBtn.classList.add('opacity-70');
+                try {
+                    const sectionBlocks = Array.from(document.querySelectorAll('.section-block'));
+                    for (let i = 0; i < sectionBlocks.length; i++) {
+                        const block = sectionBlocks[i];
+                        const sectionId = block.getAttribute('data-section-id');
+                        const field = 'first_draft';
+                        const sel = document.getElementById(`llm-action-select-${field}-${sectionId}`);
+                        const btn = block.querySelector(`.generate-section-content-btn[data-field="${field}"]`);
+                        if (!sel || !btn) {
+                            const msg = `Section ${sectionId}: No action selector or button for ${field}`;
+                            console.log(msg);
+                            generateAllLog.textContent += '\n' + msg;
+                            continue;
+                        }
+                        const actionId = sel.value;
+                        if (!actionId) {
+                            const msg = `Section ${sectionId}: No LLM Action selected for ${field}`;
+                            console.log(msg);
+                            generateAllLog.textContent += '\n' + msg;
+                            continue;
+                        }
+                        // Gather global fields
+                        const globalFields = {};
+                        document.querySelectorAll('.accordion-field textarea').forEach(ta => {
+                            globalFields[ta.id] = ta.value;
+                        });
+                        // Gather section fields
+                        const sectionFields = {};
+                        block.querySelectorAll('textarea').forEach(ta => {
+                            const key = ta.id.replace(/_\d+$/, '');
+                            sectionFields[key] = ta.value;
+                        });
+                        btn.disabled = true;
+                        btn.textContent = 'Generating...';
+                        btn.classList.add('opacity-70');
+                        try {
+                            const postId = document.getElementById('stage-accordion').dataset.postId;
+                            generateAllLog.textContent += `\nSection ${sectionId}: Sending request...`;
+                            const res = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    input_text: sectionFields[field] || '',
+                                    post_id: postId,
+                                    section_id: sectionId,
+                                    fields: globalFields,
+                                    section_fields: sectionFields
+                                })
+                            });
+                            if (!res.ok) {
+                                const errMsg = `Section ${sectionId}: Network error (${res.status})`;
+                                generateAllLog.textContent += '\n' + errMsg;
+                                alert(errMsg);
+                                continue;
+                            }
+                            const js = await res.json();
+                            const newValue = typeof js === 'string' ? js : js.response || js.data?.content || '';
+                            if (!newValue) {
+                                const msg = `Section ${sectionId}: No content generated.`;
+                                generateAllLog.textContent += '\n' + msg;
+                                continue;
+                            }
+                            block.querySelector(`#${field}_${sectionId}`).value = newValue;
+                            // Auto-save
+                            await fetch(`/blog/api/v1/posts/${postId}/sections/${sectionId}/fields/${field}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ value: newValue })
+                            });
+                            const msg = `Section ${sectionId}: Content generated and saved.`;
+                            generateAllLog.textContent += '\n' + msg;
+                        } catch (err) {
+                            const errMsg = `Section ${sectionId}: Error generating content: ${err.message}`;
+                            generateAllLog.textContent += '\n' + errMsg;
+                            alert(errMsg);
+                        } finally {
+                            btn.disabled = false;
+                            btn.textContent = 'Generate';
+                            btn.classList.remove('opacity-70');
+                        }
+                    }
+                } catch (outerErr) {
+                    const errMsg = `Fatal error: ${outerErr.message}`;
+                    generateAllLog.textContent += '\n' + errMsg;
+                    alert(errMsg);
+                } finally {
+                    generateAllBtn.disabled = false;
+                    generateAllBtn.textContent = 'Generate All Sections';
+                    generateAllBtn.classList.remove('opacity-70');
+                    generateAllLog.textContent += '\nDone.';
                 }
             });
         }
