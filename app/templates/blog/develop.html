@@ -1078,19 +1078,31 @@
             fetch('/api/v1/llm/actions')
                 .then(r => r.json())
                 .then(actions => {
+                    // Populate all section LLM action selectors
+                    document.querySelectorAll('.section-block').forEach(block => {
+                        block.querySelectorAll('textarea').forEach(ta => {
+                            const match = ta.id.match(/^(\w+)_([0-9]+)$/);
+                            if (match) {
+                                const field = match[1];
+                                const sectionId = match[2];
+                                const sel = document.getElementById(`llm-action-select-${field}-${sectionId}`);
+                                if (sel) {
+                                    sel.innerHTML = '<option value="">-- Select Action --</option>';
+                                    actions.forEach(a => {
+                                        const opt = document.createElement('option');
+                                        opt.value = a.id;
+                                        opt.text = a.field_name;
+                                        sel.appendChild(opt);
+                                    });
+                                }
+                            }
+                        });
+                    });
+                    // Attach click handlers for Generate buttons
                     document.querySelectorAll('.generate-section-content-btn').forEach(btn => {
                         const sectionId = btn.getAttribute('data-section-id');
                         const field = btn.getAttribute('data-field');
                         const sel = document.getElementById(`llm-action-select-${field}-${sectionId}`);
-                        if (sel) {
-                            sel.innerHTML = '<option value="">-- Select Action --</option>';
-                            actions.forEach(a => {
-                                const opt = document.createElement('option');
-                                opt.value = a.id;
-                                opt.text = a.field_name;
-                                sel.appendChild(opt);
-                            });
-                        }
                         btn.addEventListener('click', async function () {
                             if (!sel) { alert('No LLM Action selector found.'); return; }
                             const actionId = sel.value;

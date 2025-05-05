@@ -411,3 +411,5 @@ All notable changes to this project are documented in this file.
 2025-05-05 Added 'ideas_to_include', 'facts_to_include', and 'section_heading' to the Authoring Stage in WORKFLOW_FIELDS (app/blog/fields.py) so they are available for prompt templates and saving in the UI.
 
 2025-05-05 Enhancement: Added LLM action selectors beside each Generate button for section fields in the Authoring stage in develop.html, and updated JS to use the selected action for section content generation.
+
+2025-05-05 Fix: Section LLM action selectors now populate reliably—JS populates all selectors after DOM is ready, before attaching click handlers, ensuring menus are filled as soon as the page loads.
