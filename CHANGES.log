@@ -437,3 +437,9 @@ All notable changes to this project are documented in this file.
 - Change: The New Action form is now hidden by default and only appears above the list when the New Action button is clicked. Editing an action also shows the form. A Cancel button hides the form. All modal and always-visible logic is removed.
 
 - Enhancement: The /api/v1/llm/actions/<id>/execute endpoint now merges section_fields from the request into the template context, allowing LLM prompt templates to use section-specific variables like {{section_heading}}, {{ideas_to_include}}, etc. This enables section actions (e.g., Write Section first draft) to access all relevant per-section data.
+
+- Debug patch: Added a visible log area and debug output to the Generate All Sections button handler in app/templates/blog/develop.html. This includes:
+  - A log area above the button to show progress and errors.
+  - Console log and alert at the start of the click handler to confirm it is firing.
+  - Error handling for fetch failures and network errors.
+  - Improved feedback for each section's generation attempt.
