@@ -405,3 +405,5 @@ All notable changes to this project are documented in this file.
 - Refactor: Deprecated app/services/llm.py and consolidated all LLM service logic into app/llm/services.py. Updated all imports and usages. See docs/llm_service_refactor.md for details.
 
 - Enhancement: The Idea Scope LLM Generate button now auto-saves the generated content to the backend, ensuring the UI and db are updated immediately after generation.
+
+2025-05-05 Fixed Jinja2 TemplateSyntaxError in llm/templates.html by wrapping the JavaScript template string containing `{{${draggedField}}}` in a Jinja2 raw block. This prevents Jinja2 from misinterpreting JavaScript template literals as Jinja2 variables. No other changes made.
