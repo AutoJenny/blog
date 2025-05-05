@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Actions</title>
+    <!-- Tailwind CSS -->
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    
+<link rel="stylesheet" href="/static/css/admin.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js">
+<style>
+    /* Tab Navigation */
+    .tab-nav {
+        border-bottom: 2px solid var(--admin-border, #404040);
+        margin-bottom: 2rem;
+    }
+
+    .tab-button {
+        position: relative;
+        padding: 1rem 2rem;
+        font-weight: 500;
+        color: var(--admin-text-secondary, #9CA3AF);
+        border: none;
+        background: none;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .tab-button[aria-selected="true"] {
+        color: var(--admin-text, #E0E0E0);
+    }
+
+    .tab-button[aria-selected="true"]::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: var(--admin-primary, #1B4B73);
+    }
+
+    /* Action Cards */
+    .action-accordion-item {
+        background: var(--admin-bg-card, #23272F);
+        border: 1px solid var(--admin-border, #404040);
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+    }
+
+    .action-accordion-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+        padding: 1rem 2rem;
+        background: #23272F;
+        border-radius: 0.75rem;
+        border-bottom: 1px solid var(--admin-border, #404040);
+        color: var(--admin-accent, #6366F1);
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: background 0.2s;
+    }
+
+    .action-accordion-header:hover {
+        background: #3730a3 !important;
+        color: #fff;
+    }
+
+    .action-accordion-header.active {
+        background: #312e81 !important;
+        color: #fff;
+    }
+
+    .chevron {
+        transition: transform 0.3s;
+        margin-right: 0.75em;
+        font-size: 1.2em;
+        color: #a5b4fc;
+    }
+
+    .chevron.open {
+        transform: rotate(90deg);
+    }
+
+    .drag-handle {
+        cursor: grab;
+        font-size: 1.2em;
+        color: #a3a3a3;
+        margin-right: 0.75em;
+    }
+
+    .sortable-ghost {
+        opacity: 0.4;
+        background: #6366F1 !important;
+    }
+
+    .sortable-chosen {
+        border-top: 6px solid #6366F1 !important;
+        margin-top: -6px;
+        box-shadow: 0 0 0 2px #6366F1;
+        transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    .action-accordion-content {
+        display: none;
+        padding: 1.5rem 2rem 2rem 2rem;
+        background: #18181b;
+        border-radius: 0 0 0.75rem 0.75rem;
+        color: var(--admin-text, #E0E0E0);
+    }
+
+    .action-accordion-content.active {
+        display: block;
+        animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* Form Styling */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--admin-text, #E0E0E0);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: var(--admin-bg-input, #2D333B);
+        border: 1px solid var(--admin-border, #404040);
+        border-radius: 0.5rem;
+        color: var(--admin-text, #E0E0E0);
+        transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+        border-color: var(--admin-primary, #1B4B73);
+        outline: none;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+        background-color: var(--admin-primary, #1B4B73);
+        color: #fff;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--admin-primary-hover, #1a4469);
+    }
+
+    .btn-secondary {
+        background-color: var(--admin-accent, #6366F1);
+        color: #fff;
+        border: none;
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--admin-accent-hover, #4F46E5);
+    }
+
+    .btn-danger {
+        background-color: var(--admin-danger, #DC2626);
+        color: #fff;
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background-color: var(--admin-danger-hover, #B91C1C);
+    }
+</style>
+
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    <!-- Header -->
+    <header class="bg-dark-surface border-b border-dark-border">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <!-- Home Icon -->
+                    <a href="/" class="text-dark-text hover:text-dark-accent">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                        </svg>
+                    </a>
+                    <!-- Navigation Links -->
+                    <div class="flex space-x-4">
+                        <a href="/blog/"
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium">Posts</a>
+                        <a href="/llm/actions"
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium bg-dark-accent text-white">Actions</a>
+                        <a href="/llm/"
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium">LLMs</a>
+                    </div>
+                </div>
+                
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">LLM Actions Manager</h1>
+        <button onclick="showNewActionModal()" class="btn btn-primary">
+            <span class="mr-2">+</span> New Action
+        </button>
+    </div>
+    <div id="actionAccordionList">
+        
+        <div class="action-accordion-item" data-id="3">
+            <div class="action-accordion-header flex items-center justify-between">
+                <span class="flex items-center">
+                    <span class="drag-handle" title="Drag to reorder">☰</span>
+                    <span class="chevron">&#9654;</span>
+                    <span class="action-title ml-2">Idea Scope from Basic Idea</span>
+                </span>
+                <button onclick="editAction('3')" class="btn btn-secondary ml-2">Edit</button>
+            </div>
+            <div class="action-accordion-content">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <span class="detail-label">Model</span><br>
+                        <span class="detail-value">llama3.1:70b</span>
+                    </div>
+                    <div>
+                        <span class="detail-label">Temperature</span><br>
+                        <span class="detail-value">0.7</span>
+                    </div>
+                    <div>
+                        <span class="detail-label">Max Tokens</span><br>
+                        <span class="detail-value">3000</span>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <span class="detail-label">Prompt Template</span>
+                    <pre
+                        class="mt-2 p-3 bg-gray-900 rounded text-xs overflow-x-auto whitespace-pre-wrap">You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article — this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-accordion-item" data-id="4">
+            <div class="action-accordion-header flex items-center justify-between">
+                <span class="flex items-center">
+                    <span class="drag-handle" title="Drag to reorder">☰</span>
+                    <span class="chevron">&#9654;</span>
+                    <span class="action-title ml-2">Generate blog title</span>
+                </span>
+                <button onclick="editAction('4')" class="btn btn-secondary ml-2">Edit</button>
+            </div>
+            <div class="action-accordion-content">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <span class="detail-label">Model</span><br>
+                        <span class="detail-value">llama3.1:70b</span>
+                    </div>
+                    <div>
+                        <span class="detail-label">Temperature</span><br>
+                        <span class="detail-value">0.7</span>
+                    </div>
+                    <div>
+                        <span class="detail-label">Max Tokens</span><br>
+                        <span class="detail-value">1000</span>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <span class="detail-label">Prompt Template</span>
+                    <pre
+                        class="mt-2 p-3 bg-gray-900 rounded text-xs overflow-x-auto whitespace-pre-wrap">You are a professional copywriter and editor specializing in digital publishing and historical blogging.
+
+Your task is to generate one catchy and engaging blog title suitable for a wide audience from the ideas provided below. This is especially those interested in Scottish culture and heritage. The title should be compelling, relevant to the content, and appropriate for web publication.
+
+Return only the title with no explanation, commentary, or additional text. Do NOT enclose it in quote marks.
+
+
+Your topic is the following:
+	1.	The basic idea of: {{basic_idea}}
+	2.	Theses topics and angles:
+{{idea_scope}}</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-accordion-item" data-id="5">
+            <div class="action-accordion-header flex items-center justify-between">
+                <span class="flex items-center">
+                    <span class="drag-handle" title="Drag to reorder">☰</span>
+                    <span class="chevron">&#9654;</span>
+                    <span class="action-title ml-2">Generate Interesting facts</span>
+                </span>
+                <button onclick="editAction('5')" class="btn btn-secondary ml-2">Edit</button>
+            </div>
+            <div class="action-accordion-content">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <span class="detail-label">Model</span><br>
+                        <span class="detail-value">llama3.1:70b</span>
+                    </div>
+                    <div>
+                        <span class="detail-label">Temperature</span><br>
+                        <span class="detail-value">0.9</span>
+                    </div>
+                    <div>
+                        <span class="detail-label">Max Tokens</span><br>
+                        <span class="detail-value">1000</span>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <span class="detail-label">Prompt Template</span>
+                    <pre
+                        class="mt-2 p-3 bg-gray-900 rounded text-xs overflow-x-auto whitespace-pre-wrap">You are a researcher specialising in finding curious facts for blog articles for specialist audiences. You have been commissioned to assist with an article about {{basic_idea}} which will examine in depth these ideas {{idea_scope}}.
+
+Please do a deep dive into this topic and provide a list of up to ten unusual and interesting facts that people might not know, to make this article worth reading. 
+
+Return only a JSON array of paragraph titles, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.”</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-accordion-item" data-id="6">
+            <div class="action-accordion-header flex items-center justify-between">
+                <span class="flex items-center">
+                    <span class="drag-handle" title="Drag to reorder">☰</span>
+                    <span class="chevron">&#9654;</span>
+                    <span class="action-title ml-2">Outlining section headings</span>
+                </span>
+                <button onclick="editAction('6')" class="btn btn-secondary ml-2">Edit</button>
+            </div>
+            <div class="action-accordion-content">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <span class="detail-label">Model</span><br>
+                        <span class="detail-value">llama3.1:70b</span>
+                    </div>
+                    <div>
+                        <span class="detail-label">Temperature</span><br>
+                        <span class="detail-value">0.7</span>
+                    </div>
+                    <div>
+                        <span class="detail-label">Max Tokens</span><br>
+                        <span class="detail-value">1000</span>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <span class="detail-label">Prompt Template</span>
+                    <pre
+                        class="mt-2 p-3 bg-gray-900 rounded text-xs overflow-x-auto whitespace-pre-wrap">You are an experienced editor and content strategist. Your task is to analyze the blog post title and content below intended for a blog article on Scottish culture and heritage.
+Group and organize the content into a logical structure by identifying distinct thematic sections.
+Return only a JSON array of paragraph titles that represent the structure of the final article.
+Each title should be concise, descriptive, and reflect a key theme from the text.
+Do not include any explanation, commentary, or full text of the paragraphs. Return only a JSON array of paragraph titles, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.
+---
+
+Title: {{provisional_title}}
+
+Scope of ideas:
+{{idea_scope}}
+
+Some interesting facts: </pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-accordion-item" data-id="7">
+            <div class="action-accordion-header flex items-center justify-between">
+                <span class="flex items-center">
+                    <span class="drag-handle" title="Drag to reorder">☰</span>
+                    <span class="chevron">&#9654;</span>
+                    <span class="action-title ml-2">Write Section first draft</span>
+                </span>
+                <button onclick="editAction('7')" class="btn btn-secondary ml-2">Edit</button>
+            </div>
+            <div class="action-accordion-content">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <span class="detail-label">Model</span><br>
+                        <span class="detail-value">llama3.1:70b</span>
+                    </div>
+                    <div>
+                        <span class="detail-label">Temperature</span><br>
+                        <span class="detail-value">0.7</span>
+                    </div>
+                    <div>
+                        <span class="detail-label">Max Tokens</span><br>
+                        <span class="detail-value">1000</span>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <span class="detail-label">Prompt Template</span>
+                    <pre
+                        class="mt-2 p-3 bg-gray-900 rounded text-xs overflow-x-auto whitespace-pre-wrap">You are a professional historical writer specializing in Scottish culture and heritage.
+Your task is to write 2–3 well-written paragraphs for a blog article based on a specific section.
+
+You are given:
+	•	The overall subject of the blog post, which is: {{basic_idea}}
+
+	•	General background context about the topic, describing the range of content the full blog will cover, which is: {{idea_scope}}
+
+	•	The current section title to write under, which is: {{section_heading}}
+
+	•	Concepts and angles that should guide this section (but that you may also add to and expand) which are: {{ideas_to_include}}
+
+	•	Some interesting factual points that must be included in this section, which are: {{facts_to_include}}
+
+Write clear, informative, and engaging text that suits a public-facing blog while respecting historical accuracy. Use only UK-British spellings and idioms, avoiding Americanisms (eg colour not color, and &#39;s&#39; not &#39;z&#39; in words like authorise). 
+Ensure that all the &lt;SECTION IDEAS&gt; and &lt;SECTION FACTS&gt; are incorporated meaningfully into the text.
+Do not include any commentary, headings, titles, or formatting — return only the body paragraphs in plain text.</pre>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<!-- Action Modal -->
+<div id="actionModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative z-10 max-w-lg mx-auto mt-20 bg-[#23272F] rounded-lg shadow-xl">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold mb-4 text-white" id="modalTitle">New Action</h2>
+            <form id="action-modal-form">
+                <input type="hidden" id="action_id_modal" name="action_id">
+                <div class="form-group">
+                    <label class="form-label" for="field_name_modal">Field Name</label>
+                    <input type="text" id="field_name_modal" name="field_name" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="prompt_template_id_modal">Prompt Template</label>
+                    <select id="prompt_template_id_modal" name="prompt_template_id" class="form-input"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="llm_model_modal">LLM Model</label>
+                    <select id="llm_model_modal" name="llm_model" class="form-input"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label" for="temperature_modal">Temperature</label>
+                        <input type="number" id="temperature_modal" name="temperature" class="form-input" min="0"
+                            max="2" step="0.1" value="0.7">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="max_tokens_modal">Max Tokens</label>
+                        <input type="number" id="max_tokens_modal" name="max_tokens" class="form-input" min="1"
+                            max="4096" value="1000">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="btn btn-secondary" onclick="closeActionModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark-surface border-t border-dark-border py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">&copy; 2025 Blog CMS. All rights reserved.</p>
+        </div>
+    </footer>
+
+    
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+    let currentConfig = null;
+    let availableModels = [];
+    let availablePrompts = [];
+
+    async function initializeData() {
+        try {
+            // Load configuration
+            const configResponse = await fetch('/api/v1/llm/config');
+            currentConfig = await configResponse.json();
+
+            // Load models
+            const modelsResponse = await fetch('/api/v1/llm/models/ollama');
+            const modelsData = await modelsResponse.json();
+            availableModels = modelsData.models || [];
+            updateModelSelects(currentConfig, modelsData);
+
+            // Load prompts
+            const promptsResponse = await fetch('/api/v1/llm/prompts');
+            availablePrompts = await promptsResponse.json();
+            updatePromptSelect(availablePrompts);
+        } catch (error) {
+            handleFetchError(error, 'Error initializing data');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize data
+        initializeData();
+
+        // Modal form submission handler
+        const modalForm = document.getElementById('action-modal-form');
+        if (modalForm) {
+            if (window._modalFormHandler) {
+                modalForm.removeEventListener('submit', window._modalFormHandler);
+            }
+            window._modalFormHandler = async function (e) {
+                e.preventDefault();
+                const submitButton = modalForm.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Saving...';
+                const formData = new FormData(this);
+                const data = {
+                    field_name: formData.get('field_name'),
+                    prompt_template_id: formData.get('prompt_template_id'),
+                    llm_model: formData.get('llm_model'),
+                    temperature: parseFloat(formData.get('temperature')),
+                    max_tokens: parseInt(formData.get('max_tokens'))
+                };
+                const actionId = formData.get('action_id');
+                const method = actionId ? 'PUT' : 'POST';
+                const url = actionId ? `/api/v1/llm/actions/${actionId}` : '/api/v1/llm/actions';
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        window.location.reload();
+                        return;
+                    }
+                    alert('Error saving action: ' + (result.error || 'Unknown error'));
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Save';
+                } catch (error) {
+                    alert('Error saving action: ' + error.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Save';
+                }
+            };
+            modalForm.addEventListener('submit', window._modalFormHandler);
+        }
+
+        // Accordion logic for actions
+        document.querySelectorAll('.action-accordion-header').forEach(header => {
+            header.addEventListener('click', function (e) {
+                if (e.target.closest('.btn')) return; // Don't toggle if Edit/Delete clicked
+                const item = header.parentElement;
+                const content = item.querySelector('.action-accordion-content');
+                const chevron = header.querySelector('.chevron');
+                const isOpen = content.classList.contains('active');
+                document.querySelectorAll('.action-accordion-content').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('.action-accordion-header').forEach(h => h.classList.remove('active'));
+                document.querySelectorAll('.chevron').forEach(ch => ch.classList.remove('open'));
+                if (!isOpen) {
+                    content.classList.add('active');
+                    header.classList.add('active');
+                    chevron.classList.add('open');
+                }
+            });
+        });
+
+        // Drag-and-drop with SortableJS for actions
+        const el = document.getElementById('actionAccordionList');
+        if (el) {
+            new Sortable(el, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                onEnd: function (evt) {
+                    const ids = Array.from(el.querySelectorAll('.action-accordion-item')).map(item => item.dataset.id);
+                    fetch('/api/v1/llm/actions/order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ order: ids })
+                    }).then(r => r.json()).then(data => {
+                        if (!data.success) {
+                            alert('Failed to save order: ' + (data.error || 'Unknown error'));
+                        }
+                    }).catch(err => {
+                        alert('Error saving order: ' + err);
+                    });
+                }
+            });
+        }
+    });
+
+    function updateModelSelects(config, modelsData) {
+        const modelSelects = document.querySelectorAll('select[name="llm_model"]');
+        modelSelects.forEach(select => {
+            select.innerHTML = '';
+            modelsData.models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.text = model;
+                if (model === config.model_name) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        });
+    }
+
+    function updatePromptSelect(prompts) {
+        const promptSelects = document.querySelectorAll('select[name="prompt_template_id"]');
+        promptSelects.forEach(select => {
+            select.innerHTML = '';
+            prompts.forEach(prompt => {
+                const option = document.createElement('option');
+                option.value = prompt.id;
+                option.text = prompt.name;
+                option.dataset.prompt = prompt.prompt_text;
+                select.appendChild(option);
+            });
+        });
+    }
+
+    function handleFetchError(error, message) {
+        console.error(message, error);
+        alert(message + ': ' + error.message);
+    }
+
+    // Modal management functions
+    function showNewActionModal() {
+        document.getElementById('modalTitle').textContent = 'New Action';
+        document.getElementById('action_id_modal').value = '';
+        document.getElementById('action-modal-form').reset();
+        document.getElementById('actionModal').classList.remove('hidden');
+
+        // Populate LLM Model select in modal
+        const llmModelSelect = document.getElementById('llm_model_modal');
+        llmModelSelect.innerHTML = '';
+        const blankModelOption = document.createElement('option');
+        blankModelOption.value = '';
+        blankModelOption.text = '-- Select Model --';
+        llmModelSelect.appendChild(blankModelOption);
+        (availableModels || []).forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.text = model;
+            llmModelSelect.appendChild(option);
+        });
+
+        // Populate Prompt Template select in modal
+        const promptTemplateSelect = document.getElementById('prompt_template_id_modal');
+        promptTemplateSelect.innerHTML = '';
+        const blankPromptOption = document.createElement('option');
+        blankPromptOption.value = '';
+        blankPromptOption.text = '-- Select Prompt --';
+        promptTemplateSelect.appendChild(blankPromptOption);
+        (availablePrompts || []).forEach(prompt => {
+            const option = document.createElement('option');
+            option.value = prompt.id;
+            option.text = prompt.name;
+            promptTemplateSelect.appendChild(option);
+        });
+    }
+
+    async function editAction(actionId) {
+        try {
+            await initializeData();
+            const response = await fetch(`/api/v1/llm/actions/${actionId}`);
+            const data = await response.json();
+            // Open modal and fill fields
+            document.getElementById('modalTitle').textContent = 'Edit Action';
+            document.getElementById('action_id_modal').value = actionId;
+            document.getElementById('field_name_modal').value = data.action.field_name;
+            document.getElementById('prompt_template_id_modal').value = data.action.prompt_template_id;
+            document.getElementById('llm_model_modal').value = data.action.llm_model;
+            document.getElementById('temperature_modal').value = data.action.temperature;
+            document.getElementById('max_tokens_modal').value = data.action.max_tokens;
+            document.getElementById('actionModal').classList.remove('hidden');
+        } catch (error) {
+            handleFetchError(error, 'Error loading action data');
+        }
+    }
+
+    async function deleteAction(actionId) {
+        if (!confirm('Are you sure you want to delete this action?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/v1/llm/actions/${actionId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                // Remove the action card from the UI
+                const actionCard = document.querySelector(`[data-action-id="${actionId}"]`);
+                if (actionCard) {
+                    actionCard.remove();
+                }
+                // Reload the page to update the lists
+                window.location.reload();
+            } else {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to delete action');
+            }
+        } catch (error) {
+            handleFetchError(error, 'Error deleting action');
+        }
+    }
+
+    function closeActionModal() {
+        document.getElementById('actionModal').classList.add('hidden');
+    }
+</script>
+
+</body>
+
+</html>
