@@ -409,3 +409,5 @@ All notable changes to this project are documented in this file.
 2025-05-05 Fix: Removed unwanted special character from draggable field template string in llm/templates.html. Field insertion now correctly uses {{field_name}} syntax without extra characters.
 
 2025-05-05 Added 'ideas_to_include', 'facts_to_include', and 'section_heading' to the Authoring Stage in WORKFLOW_FIELDS (app/blog/fields.py) so they are available for prompt templates and saving in the UI.
+
+2025-05-05 Enhancement: Added LLM action selectors beside each Generate button for section fields in the Authoring stage in develop.html, and updated JS to use the selected action for section content generation.
