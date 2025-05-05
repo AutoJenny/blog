@@ -381,10 +381,13 @@ def execute_action(action_id):
         if post_id:
             dev = PostDevelopment.query.filter_by(post_id=post_id).first()
             if dev:
-                # Add all fields from dev to the fields dict
                 for c in dev.__table__.columns:
                     if c.name not in ['id', 'post_id']:
                         fields[c.name] = getattr(dev, c.name)
+        # PATCH: Merge in section_fields if provided
+        section_fields = data.get('section_fields')
+        if section_fields and isinstance(section_fields, dict):
+            fields.update(section_fields)
         llm = LLMService()
         result = llm.execute_action(
             action=action,
@@ -435,6 +438,25 @@ def update_prompt_order():
             prompt = LLMPrompt.query.get(int(prompt_id))
             if prompt:
                 prompt.order = idx
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/actions/order', methods=['POST'])
+def update_action_order():
+    """Update the order of LLM actions."""
+    data = request.get_json()
+    ids = data.get('order', [])
+    if not isinstance(ids, list):
+        return jsonify({'success': False, 'error': 'Invalid order list'}), 400
+    try:
+        for idx, action_id in enumerate(ids):
+            action = LLMAction.query.get(int(action_id))
+            if action:
+                action.order = idx
         db.session.commit()
         return jsonify({'success': True})
     except Exception as e:

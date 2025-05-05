@@ -423,3 +423,17 @@ All notable changes to this project are documented in this file.
 - Enhancement: Added drag-and-drop reordering for prompt templates with visible gap indicator. Order is now persisted in the database and respected in all selection menus. Added /api/v1/llm/prompts/order endpoint to update order.
 
 - Fix: LLM prompt templates and selection menus now always reflect the persisted order by ordering on the 'order' field in all UI routes.
+
+- Refactored LLM Actions page (`/llm/actions`) to use accordion and drag-and-drop UI, matching the prompt templates page.
+    - Each action is now a draggable accordion item with only the title and Edit button visible by default.
+    - Clicking the header expands to show action details.
+    - Drag-and-drop reordering is enabled and persists order via the API.
+
+- Add: Implemented /api/v1/llm/actions/order endpoint and added 'order' field to LLMAction model to support drag-and-drop ordering of actions in the admin UI.
+- Fix: Migration now sets all NULL values in llm_prompt.order to 0 before making the column NOT NULL, preventing migration errors.
+
+- Fix: The LLM Actions page modal is now a true overlay, never rendered inline. The modal is hidden by default and only shown when triggered. All legacy builder form and tab logic is removed. The modal is now the only way to add/edit actions, and overlays the page properly.
+
+- Change: The New Action form is now hidden by default and only appears above the list when the New Action button is clicked. Editing an action also shows the form. A Cancel button hides the form. All modal and always-visible logic is removed.
+
+- Enhancement: The /api/v1/llm/actions/<id>/execute endpoint now merges section_fields from the request into the template context, allowing LLM prompt templates to use section-specific variables like {{section_heading}}, {{ideas_to_include}}, etc. This enables section actions (e.g., Write Section first draft) to access all relevant per-section data.

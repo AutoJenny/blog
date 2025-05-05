@@ -1046,6 +1046,9 @@
         const allocateBtn = document.getElementById('allocate-ideas-btn');
         if (allocateBtn) {
             allocateBtn.addEventListener('click', async function () {
+                allocateBtn.disabled = true;
+                allocateBtn.classList.add('opacity-70');
+                allocateBtn.style.cursor = 'not-allowed';
                 try {
                     const actions = await fetch('/api/v1/llm/actions').then(r => r.json());
                     const action = actions.find(a => a.field_name && a.field_name.toLowerCase().includes('allocate ideas'));
@@ -1061,12 +1064,20 @@
                         body: JSON.stringify({ input_text: ideaScope, post_id: postId, section_order: sectionOrder })
                     });
                     const js = await res.json();
+                    console.log('Full LLM API response:', js);
                     const allocation = typeof js === 'string' ? js : js.response || js.data?.content || '';
+                    console.log('Raw LLM allocation response:', allocation);
                     let parsed;
+                    let jsonBlock;
                     try {
-                        parsed = typeof allocation === 'string' ? JSON.parse(allocation) : allocation;
+                        let jsonStr = typeof allocation === 'string' ? allocation : JSON.stringify(allocation);
+                        jsonStr = jsonStr.replace(/```(json)?/gi, '').trim();
+                        jsonBlock = extractJsonBlock(jsonStr);
+                        if (!jsonBlock) throw new Error('No JSON object found in response.');
+                        parsed = JSON.parse(jsonBlock);
                     } catch (e) {
-                        alert('Failed to parse LLM response as JSON.');
+                        console.error('JSON parse error:', e);
+                        alert('Failed to parse LLM response as JSON.\n\nExtracted JSON:\n' + (jsonBlock || allocation) + '\n\nError: ' + e.message + '\n\nPlease copy this and report it.');
                         return;
                     }
                     let anyMatched = false;
@@ -1090,6 +1101,10 @@
                     if (!anyMatched) alert('No section headings matched in LLM response.');
                 } catch (err) {
                     alert('Error allocating ideas: ' + err.message);
+                } finally {
+                    allocateBtn.disabled = false;
+                    allocateBtn.classList.remove('opacity-70');
+                    allocateBtn.style.cursor = '';
                 }
             });
         }
@@ -1097,6 +1112,9 @@
         const allocateFactsBtn = document.getElementById('allocate-facts-btn');
         if (allocateFactsBtn) {
             allocateFactsBtn.addEventListener('click', async function () {
+                allocateFactsBtn.disabled = true;
+                allocateFactsBtn.classList.add('opacity-70');
+                allocateFactsBtn.style.cursor = 'not-allowed';
                 try {
                     const actions = await fetch('/api/v1/llm/actions').then(r => r.json());
                     const action = actions.find(a => a.field_name && a.field_name.toLowerCase().includes('allocate facts'));
@@ -1112,12 +1130,20 @@
                         body: JSON.stringify({ input_text: facts, post_id: postId, section_order: sectionOrder })
                     });
                     const js = await res.json();
+                    console.log('Full LLM API response:', js);
                     const allocation = typeof js === 'string' ? js : js.response || js.data?.content || '';
+                    console.log('Raw LLM allocation response:', allocation);
                     let parsed;
+                    let jsonBlock;
                     try {
-                        parsed = typeof allocation === 'string' ? JSON.parse(allocation) : allocation;
+                        let jsonStr = typeof allocation === 'string' ? allocation : JSON.stringify(allocation);
+                        jsonStr = jsonStr.replace(/```(json)?/gi, '').trim();
+                        jsonBlock = extractJsonBlock(jsonStr);
+                        if (!jsonBlock) throw new Error('No JSON object found in response.');
+                        parsed = JSON.parse(jsonBlock);
                     } catch (e) {
-                        alert('Failed to parse LLM response as JSON.');
+                        console.error('JSON parse error:', e);
+                        alert('Failed to parse LLM response as JSON.\n\nExtracted JSON:\n' + (jsonBlock || allocation) + '\n\nError: ' + e.message + '\n\nPlease copy this and report it.');
                         return;
                     }
                     let anyMatched = false;
@@ -1141,6 +1167,10 @@
                     if (!anyMatched) alert('No section headings matched in LLM response.');
                 } catch (err) {
                     alert('Error allocating facts: ' + err.message);
+                } finally {
+                    allocateFactsBtn.disabled = false;
+                    allocateFactsBtn.classList.remove('opacity-70');
+                    allocateFactsBtn.style.cursor = '';
                 }
             });
         }
@@ -1192,6 +1222,12 @@
                 }
             })
             .catch(() => alert('Failed to add section'));
+    }
+
+    function extractJsonBlock(text) {
+        // Remove code fences and extra text, extract first {...} block
+        const match = text.match(/{[\s\S]*}/);
+        return match ? match[0] : null;
     }
 </script>
 {% endblock %}

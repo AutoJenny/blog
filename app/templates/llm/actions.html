@@ -4,6 +4,8 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js">
 <style>
     /* Tab Navigation */
     .tab-nav {
@@ -37,59 +39,91 @@
     }
 
     /* Action Cards */
-    .action-card {
-        background-color: var(--admin-bg-card, #23272F);
-        color: var(--admin-text, #E0E0E0);
-        border-radius: 1rem;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    .action-accordion-item {
+        background: var(--admin-bg-card, #23272F);
         border: 1px solid var(--admin-border, #404040);
-        padding: 2rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .action-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-    }
-
-    .action-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--admin-text, #E0E0E0);
-    }
-
-    .action-meta {
-        font-size: 0.875rem;
-        color: var(--admin-text-secondary, #9CA3AF);
-    }
-
-    .action-content {
-        margin-bottom: 1.5rem;
-    }
-
-    .action-details {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+        border-radius: 0.75rem;
         margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
     }
 
-    .action-detail {
+    .action-accordion-header {
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+        padding: 1rem 2rem;
+        background: #23272F;
+        border-radius: 0.75rem;
+        border-bottom: 1px solid var(--admin-border, #404040);
+        color: var(--admin-accent, #6366F1);
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: background 0.2s;
     }
 
-    .detail-label {
-        font-size: 0.875rem;
-        color: var(--admin-text-secondary, #9CA3AF);
-        margin-bottom: 0.25rem;
+    .action-accordion-header:hover {
+        background: #3730a3 !important;
+        color: #fff;
     }
 
-    .detail-value {
-        font-size: 1rem;
+    .action-accordion-header.active {
+        background: #312e81 !important;
+        color: #fff;
+    }
+
+    .chevron {
+        transition: transform 0.3s;
+        margin-right: 0.75em;
+        font-size: 1.2em;
+        color: #a5b4fc;
+    }
+
+    .chevron.open {
+        transform: rotate(90deg);
+    }
+
+    .drag-handle {
+        cursor: grab;
+        font-size: 1.2em;
+        color: #a3a3a3;
+        margin-right: 0.75em;
+    }
+
+    .sortable-ghost {
+        opacity: 0.4;
+        background: #6366F1 !important;
+    }
+
+    .sortable-chosen {
+        border-top: 6px solid #6366F1 !important;
+        margin-top: -6px;
+        box-shadow: 0 0 0 2px #6366F1;
+        transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    .action-accordion-content {
+        display: none;
+        padding: 1.5rem 2rem 2rem 2rem;
+        background: #18181b;
+        border-radius: 0 0 0.75rem 0.75rem;
         color: var(--admin-text, #E0E0E0);
+    }
+
+    .action-accordion-content.active {
+        display: block;
+        animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
     }
 
     /* Form Styling */
@@ -165,163 +199,86 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold">LLM Actions Manager</h1>
-        <button onclick="showNewActionModal()" class="btn btn-primary">
+        <button id="show-action-form-btn" class="btn btn-primary">
             <span class="mr-2">+</span> New Action
         </button>
     </div>
-
-    <!-- Tab Navigation -->
-    <div class="tab-nav">
-        <div class="flex" role="tablist">
-            <button class="tab-button" id="actions-tab" data-tabs-target="#actions" type="button" role="tab"
-                aria-controls="actions" aria-selected="true">
-                Existing Actions
-            </button>
-            <button class="tab-button" id="builder-tab" data-tabs-target="#builder" type="button" role="tab"
-                aria-controls="builder" aria-selected="false">
-                Action Builder
-            </button>
-            <!-- DEPRECATED: Test tab and test-related UI are deprecated and must not be used. -->
-            <!-- <button class="tab-button" id="test-tab" data-tabs-target="#test" type="button" role="tab" aria-controls="test" aria-selected="false">Test Actions</button> -->
-        </div>
+    <!-- New Action Form (hidden by default, appears above the list when triggered) -->
+    <div id="action-form-container" class="mb-8 p-6 bg-[#23272F] rounded-lg shadow-lg border border-gray-700 hidden">
+        <h2 class="text-xl font-semibold mb-4 text-white" id="action-form-title">New Action</h2>
+        <form id="action-form">
+            <input type="hidden" id="action_id" name="action_id">
+            <div class="form-group">
+                <label class="form-label" for="field_name">Field Name</label>
+                <input type="text" id="field_name" name="field_name" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="prompt_template_id">Prompt Template</label>
+                <select id="prompt_template_id" name="prompt_template_id" class="form-input"></select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="llm_model">LLM Model</label>
+                <select id="llm_model" name="llm_model" class="form-input"></select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label class="form-label" for="temperature">Temperature</label>
+                    <input type="number" id="temperature" name="temperature" class="form-input" min="0" max="2"
+                        step="0.1" value="0.7">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="max_tokens">Max Tokens</label>
+                    <input type="number" id="max_tokens" name="max_tokens" class="form-input" min="1" max="4096"
+                        value="1000">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" id="cancel-action-form-btn" class="btn btn-secondary">Cancel</button>
+                <button type="reset" class="btn btn-secondary">Clear</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
     </div>
-
-    <!-- Tab Content -->
-    <div id="tab-content">
-        <!-- Actions Tab -->
-        <div class="hidden" id="actions" role="tabpanel" aria-labelledby="actions-tab">
-            <div class="grid grid-cols-1 gap-6">
-                {% for action in actions %}
-                <div class="action-card">
-                    <div class="action-header">
-                        <h3 class="action-title">{{ action.field_name }}</h3>
-                        <div class="flex space-x-4">
-                            <button onclick="editAction('{{ action.id }}')" class="btn btn-secondary">
-                                Edit
-                            </button>
-                            <!-- DEPRECATED: Test tab and test-related UI are deprecated and must not be used. -->
-                            <!-- <button onclick="testAction('{{ action.id }}')" class="btn btn-primary">Test</button> -->
-                            <button onclick="deleteAction('{{ action.id }}')" class="btn btn-danger">
-                                Delete
-                            </button>
-                        </div>
+    <div id="actionAccordionList">
+        {% for action in actions %}
+        <div class="action-accordion-item" data-id="{{ action.id }}">
+            <div class="action-accordion-header flex items-center justify-between">
+                <span class="flex items-center">
+                    <span class="drag-handle" title="Drag to reorder">☰</span>
+                    <span class="chevron">&#9654;</span>
+                    <span class="action-title ml-2">{{ action.field_name }}</span>
+                </span>
+                <button onclick="editAction('{{ action.id }}')" class="btn btn-secondary ml-2">Edit</button>
+            </div>
+            <div class="action-accordion-content">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <span class="detail-label">Model</span><br>
+                        <span class="detail-value">{{ action.llm_model }}</span>
                     </div>
-                    <div class="action-details">
-                        <div class="action-detail">
-                            <span class="detail-label">Model</span>
-                            <span class="detail-value">{{ action.llm_model }}</span>
-                        </div>
-                        <div class="action-detail">
-                            <span class="detail-label">Temperature</span>
-                            <span class="detail-value">{{ action.temperature }}</span>
-                        </div>
-                        <div class="action-detail">
-                            <span class="detail-label">Max Tokens</span>
-                            <span class="detail-value">{{ action.max_tokens }}</span>
-                        </div>
+                    <div>
+                        <span class="detail-label">Temperature</span><br>
+                        <span class="detail-value">{{ action.temperature }}</span>
                     </div>
-                    <div class="action-content">
-                        <span class="detail-label">Prompt Template</span>
-                        <pre
-                            class="mt-2 p-4 bg-gray-800 rounded-md text-sm overflow-x-auto whitespace-pre-wrap">{{ action.prompt_template }}</pre>
+                    <div>
+                        <span class="detail-label">Max Tokens</span><br>
+                        <span class="detail-value">{{ action.max_tokens }}</span>
                     </div>
                 </div>
-                {% endfor %}
+                <div class="mb-2">
+                    <span class="detail-label">Prompt Template</span>
+                    <pre
+                        class="mt-2 p-3 bg-gray-900 rounded text-xs overflow-x-auto whitespace-pre-wrap">{{ action.prompt_template }}</pre>
+                </div>
             </div>
         </div>
-
-        <!-- Builder Tab -->
-        <div class="hidden" id="builder" role="tabpanel" aria-labelledby="builder-tab">
-            <div class="max-w-3xl mx-auto">
-                <form id="action-builder-form" class="space-y-6">
-                    <div class="form-group">
-                        <label class="form-label" for="field_name">Field Name</label>
-                        <input type="text" name="field_name" id="field_name" class="form-input"
-                            placeholder="Enter the field name">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="prompt_template_id">Prompt Template</label>
-                        <select name="prompt_template_id" id="prompt_template_id" class="form-input">
-                        </select>
-                        <div id="prompt_preview" class="mt-2 p-4 bg-gray-800 rounded-md text-sm hidden"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="llm_model">LLM Model</label>
-                        <select name="llm_model" id="llm_model" class="form-input">
-                        </select>
-                        <div id="model_status" class="mt-1 text-sm"></div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="form-group">
-                            <label class="form-label" for="temperature">Temperature</label>
-                            <input type="number" name="temperature" id="temperature" min="0" max="2" step="0.1"
-                                value="0.7" class="form-input">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="max_tokens">Max Tokens</label>
-                            <input type="number" name="max_tokens" id="max_tokens" min="1" max="4096" value="1000"
-                                class="form-input">
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end space-x-4">
-                        <button type="submit" class="btn btn-primary">Save Action</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Test Tab -->
-        <!-- (REMOVED) -->
-    </div>
-</div>
-
-<!-- Action Modal -->
-<div id="actionModal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
-    <div class="relative z-10 max-w-lg mx-auto mt-20 bg-[#23272F] rounded-lg shadow-xl">
-        <div class="p-6">
-            <h2 class="text-xl font-semibold mb-4 text-white" id="modalTitle">New Action</h2>
-            <form id="action-modal-form">
-                <input type="hidden" id="action_id_modal" name="action_id">
-                <div class="form-group">
-                    <label class="form-label" for="field_name_modal">Field Name</label>
-                    <input type="text" id="field_name_modal" name="field_name" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="prompt_template_id_modal">Prompt Template</label>
-                    <select id="prompt_template_id_modal" name="prompt_template_id" class="form-input"></select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="llm_model_modal">LLM Model</label>
-                    <select id="llm_model_modal" name="llm_model" class="form-input"></select>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="form-group">
-                        <label class="form-label" for="temperature_modal">Temperature</label>
-                        <input type="number" id="temperature_modal" name="temperature" class="form-input" min="0"
-                            max="2" step="0.1" value="0.7">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="max_tokens_modal">Max Tokens</label>
-                        <input type="number" id="max_tokens_modal" name="max_tokens" class="form-input" min="1"
-                            max="4096" value="1000">
-                    </div>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" class="btn btn-secondary" onclick="closeActionModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
     let currentConfig = null;
     let availableModels = [];
@@ -348,126 +305,114 @@
         }
     }
 
-    // Event Listeners
     document.addEventListener('DOMContentLoaded', function () {
         // Initialize data
         initializeData();
 
-        // Tab functionality
-        const tabs = document.querySelectorAll('[role="tab"]');
-        const tabPanels = document.querySelectorAll('[role="tabpanel"]');
+        // Show/Hide New Action form
+        const showFormBtn = document.getElementById('show-action-form-btn');
+        const formContainer = document.getElementById('action-form-container');
+        const cancelFormBtn = document.getElementById('cancel-action-form-btn');
+        const actionForm = document.getElementById('action-form');
+        const formTitle = document.getElementById('action-form-title');
+        showFormBtn.addEventListener('click', function () {
+            formTitle.textContent = 'New Action';
+            actionForm.reset();
+            document.getElementById('action_id').value = '';
+            formContainer.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        cancelFormBtn.addEventListener('click', function () {
+            formContainer.classList.add('hidden');
+            actionForm.reset();
+            document.getElementById('action_id').value = '';
+        });
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function (e) {
-                tabs.forEach(t => {
-                    t.setAttribute('aria-selected', 'false');
-                });
+        // New Action form submission handler
+        if (actionForm) {
+            actionForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const submitButton = actionForm.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Saving...';
+                const formData = new FormData(this);
+                const data = {
+                    field_name: formData.get('field_name'),
+                    prompt_template_id: formData.get('prompt_template_id'),
+                    llm_model: formData.get('llm_model'),
+                    temperature: parseFloat(formData.get('temperature')),
+                    max_tokens: parseInt(formData.get('max_tokens'))
+                };
+                const actionId = formData.get('action_id');
+                const method = actionId ? 'PUT' : 'POST';
+                const url = actionId ? `/api/v1/llm/actions/${actionId}` : '/api/v1/llm/actions';
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        window.location.reload();
+                        return;
+                    }
+                    alert('Error saving action: ' + (result.error || 'Unknown error'));
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Save';
+                } catch (error) {
+                    alert('Error saving action: ' + error.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Save';
+                }
+            });
+        }
 
-                tabPanels.forEach(p => p.classList.add('hidden'));
-
-                this.setAttribute('aria-selected', 'true');
-
-                const panelId = this.getAttribute('data-tabs-target').substring(1);
-                document.getElementById(panelId).classList.remove('hidden');
+        // Accordion logic for actions
+        document.querySelectorAll('.action-accordion-header').forEach(header => {
+            header.addEventListener('click', function (e) {
+                if (e.target.closest('.btn')) return; // Don't toggle if Edit/Delete clicked
+                const item = header.parentElement;
+                const content = item.querySelector('.action-accordion-content');
+                const chevron = header.querySelector('.chevron');
+                const isOpen = content.classList.contains('active');
+                document.querySelectorAll('.action-accordion-content').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('.action-accordion-header').forEach(h => h.classList.remove('active'));
+                document.querySelectorAll('.chevron').forEach(ch => ch.classList.remove('open'));
+                if (!isOpen) {
+                    content.classList.add('active');
+                    header.classList.add('active');
+                    chevron.classList.add('open');
+                }
             });
         });
 
-        // Activate first tab by default
-        tabs[0].click();
-
-        // Form submission handler
-        const builderForm = document.getElementById('action-builder-form');
-        if (builderForm) {
-            if (window._builderFormHandler) {
-                builderForm.removeEventListener('submit', window._builderFormHandler);
-            }
-            window._builderFormHandler = async function (e) {
-                e.preventDefault();
-                const submitButton = builderForm.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Saving...';
-                const formData = new FormData(this);
-                const data = {
-                    field_name: formData.get('field_name'),
-                    prompt_template_id: formData.get('prompt_template_id'),
-                    llm_model: formData.get('llm_model'),
-                    temperature: parseFloat(formData.get('temperature')),
-                    max_tokens: parseInt(formData.get('max_tokens'))
-                };
-                const actionId = formData.get('action_id');
-                const method = actionId ? 'PUT' : 'POST';
-                const url = actionId ? `/api/v1/llm/actions/${actionId}` : '/api/v1/llm/actions';
-                try {
-                    const response = await fetch(url, {
-                        method: method,
+        // Drag-and-drop with SortableJS for actions
+        const el = document.getElementById('actionAccordionList');
+        if (el) {
+            new Sortable(el, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                onEnd: function (evt) {
+                    const ids = Array.from(el.querySelectorAll('.action-accordion-item')).map(item => item.dataset.id);
+                    fetch('/api/v1/llm/actions/order', {
+                        method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
+                        body: JSON.stringify({ order: ids })
+                    }).then(r => r.json()).then(data => {
+                        if (!data.success) {
+                            alert('Failed to save order: ' + (data.error || 'Unknown error'));
+                        }
+                    }).catch(err => {
+                        alert('Error saving order: ' + err);
                     });
-                    const result = await response.json();
-                    if (result.status === 'success') {
-                        window.location.reload();
-                        return;
-                    }
-                    alert('Error saving action: ' + (result.error || 'Unknown error'));
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Save Action';
-                } catch (error) {
-                    alert('Error saving action: ' + error.message);
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Save Action';
                 }
-            };
-            builderForm.addEventListener('submit', window._builderFormHandler);
-        }
-
-        // Modal form submission handler
-        const modalForm = document.getElementById('action-modal-form');
-        if (modalForm) {
-            // Remove any previous handler
-            if (window._modalFormHandler) {
-                modalForm.removeEventListener('submit', window._modalFormHandler);
-            }
-            window._modalFormHandler = async function (e) {
-                e.preventDefault();
-                const submitButton = modalForm.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Saving...';
-                const formData = new FormData(this);
-                const data = {
-                    field_name: formData.get('field_name'),
-                    prompt_template_id: formData.get('prompt_template_id'),
-                    llm_model: formData.get('llm_model'),
-                    temperature: parseFloat(formData.get('temperature')),
-                    max_tokens: parseInt(formData.get('max_tokens'))
-                };
-                const actionId = formData.get('action_id');
-                const method = actionId ? 'PUT' : 'POST';
-                const url = actionId ? `/api/v1/llm/actions/${actionId}` : '/api/v1/llm/actions';
-                try {
-                    const response = await fetch(url, {
-                        method: method,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                    const result = await response.json();
-                    if (result.status === 'success') {
-                        window.location.reload();
-                        return;
-                    }
-                    alert('Error saving action: ' + (result.error || 'Unknown error'));
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Save';
-                } catch (error) {
-                    alert('Error saving action: ' + error.message);
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Save';
-                }
-            };
-            modalForm.addEventListener('submit', window._modalFormHandler);
+            });
         }
     });
 
-    // Helper functions
     function updateModelSelects(config, modelsData) {
         const modelSelects = document.querySelectorAll('select[name="llm_model"]');
         modelSelects.forEach(select => {
@@ -503,116 +448,25 @@
         alert(message + ': ' + error.message);
     }
 
-    // Modal management functions
-    function showNewActionModal() {
-        document.getElementById('modalTitle').textContent = 'New Action';
-        document.getElementById('action_id_modal').value = '';
-        document.getElementById('action-modal-form').reset();
-        document.getElementById('actionModal').classList.remove('hidden');
-
-        // Populate LLM Model select in modal
-        const llmModelSelect = document.getElementById('llm_model_modal');
-        llmModelSelect.innerHTML = '';
-        const blankModelOption = document.createElement('option');
-        blankModelOption.value = '';
-        blankModelOption.text = '-- Select Model --';
-        llmModelSelect.appendChild(blankModelOption);
-        (availableModels || []).forEach(model => {
-            const option = document.createElement('option');
-            option.value = model;
-            option.text = model;
-            llmModelSelect.appendChild(option);
-        });
-
-        // Populate Prompt Template select in modal
-        const promptTemplateSelect = document.getElementById('prompt_template_id_modal');
-        promptTemplateSelect.innerHTML = '';
-        const blankPromptOption = document.createElement('option');
-        blankPromptOption.value = '';
-        blankPromptOption.text = '-- Select Prompt --';
-        promptTemplateSelect.appendChild(blankPromptOption);
-        (availablePrompts || []).forEach(prompt => {
-            const option = document.createElement('option');
-            option.value = prompt.id;
-            option.text = prompt.name;
-            promptTemplateSelect.appendChild(option);
-        });
-    }
-
-    async function editAction(actionId) {
+    // Edit Action logic: loads action into the form for editing
+    window.editAction = async function (actionId) {
         try {
-            // Always re-initialize data to ensure dropdowns are populated
             await initializeData();
-
             const response = await fetch(`/api/v1/llm/actions/${actionId}`);
             const data = await response.json();
-
-            // Switch to builder tab
-            document.getElementById('builder-tab').click();
-
-            // Fill form with action data
+            // Fill form fields
+            document.getElementById('action_id').value = actionId;
             document.getElementById('field_name').value = data.action.field_name;
             document.getElementById('prompt_template_id').value = data.action.prompt_template_id;
             document.getElementById('llm_model').value = data.action.llm_model;
             document.getElementById('temperature').value = data.action.temperature;
             document.getElementById('max_tokens').value = data.action.max_tokens;
-
-            // Add action ID to form for update instead of create
-            const form = document.getElementById('action-builder-form');
-            if (!form.dataset.actionId) {
-                const actionIdInput = document.createElement('input');
-                actionIdInput.type = 'hidden';
-                actionIdInput.name = 'action_id';
-                actionIdInput.value = actionId;
-                form.appendChild(actionIdInput);
-            } else {
-                form.dataset.actionId = actionId;
-            }
-
-            // Update submit button text
-            const submitButton = form.querySelector('button[type="submit"]');
-            submitButton.textContent = 'Update Action';
+            document.getElementById('action-form-title').textContent = 'Edit Action';
+            document.getElementById('action-form-container').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (error) {
             handleFetchError(error, 'Error loading action data');
         }
     }
-
-    async function deleteAction(actionId) {
-        if (!confirm('Are you sure you want to delete this action?')) {
-            return;
-        }
-
-        try {
-            const response = await fetch(`/api/v1/llm/actions/${actionId}`, {
-                method: 'DELETE'
-            });
-
-            if (response.ok) {
-                // Remove the action card from the UI
-                const actionCard = document.querySelector(`[data-action-id="${actionId}"]`);
-                if (actionCard) {
-                    actionCard.remove();
-                }
-                // Reload the page to update the lists
-                window.location.reload();
-            } else {
-                const data = await response.json();
-                throw new Error(data.error || 'Failed to delete action');
-            }
-        } catch (error) {
-            handleFetchError(error, 'Error deleting action');
-        }
-    }
-
-    function closeActionModal() {
-        document.getElementById('actionModal').classList.add('hidden');
-    }
-
-    // DEPRECATED: Test tab and test-related UI are deprecated and must not be used.
-    // function testAction(actionId) {
-    //     document.getElementById('test-tab').click();
-    //     document.getElementById('test-action').value = actionId;
-    //     document.getElementById('test-input').focus();
-    // }
 </script>
 {% endblock %}

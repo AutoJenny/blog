@@ -217,6 +217,7 @@ class LLMAction(db.Model):
     llm_model = db.Column(db.String(128), nullable=False)
     temperature = db.Column(db.Float, default=0.7)
     max_tokens = db.Column(db.Integer, default=1000)
+    order = db.Column(db.Integer, default=0, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -245,6 +246,7 @@ class LLMAction(db.Model):
             'llm_model': self.llm_model,
             'temperature': self.temperature,
             'max_tokens': self.max_tokens,
+            'order': self.order,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
