@@ -1,5 +1,7 @@
 # Workflow Field Reference and Data Binding
 
+**All workflow fields, including section image/meta fields and 'basic_idea', now have LLM Action selectors and Generate buttons, with auto-save after generation. This ensures consistent LLM-assisted editing for every field in the develop workflow UI.**
+
 ## 1. Field Names and Values
 
 ### Stages and Sub-Stages

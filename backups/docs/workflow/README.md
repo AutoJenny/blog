@@ -3,6 +3,8 @@
 ## Overview
 The blog uses a comprehensive workflow system to track post development from initial idea through to syndication. Each stage has specific requirements and validation rules to ensure quality and completeness. **The workflow is asynchronous: all stages and sub-stages are initialized at post creation, and authors can work on any stage or sub-stage at any time.** Validation occurs at key points like publishing, not during editing.
 
+**All workflow fields, including section image/meta fields and 'basic_idea', now have LLM Action selectors and Generate buttons, with auto-save after generation. This ensures consistent LLM-assisted editing for every field in the develop workflow UI.**
+
 ## Workflow Stages
 
 ### 1. Idea

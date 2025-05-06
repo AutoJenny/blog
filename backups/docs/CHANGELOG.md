@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added /api/v1/llm/prompts POST endpoint for creating new LLMPrompt records
   - Added comprehensive API documentation for workflow endpoints
   - Added docs/workflow/field_reference.md for workflow sub-stage fields
+  - All workflow fields (including section image/meta fields and 'basic_idea') now have LLM Action selectors and Generate buttons, with auto-save after generation. This ensures consistent LLM-assisted editing for every field in the develop workflow UI.
 - Database management interface improvements
   - Enhanced virtual environment handling in run_server.sh
   - Added automatic venv detection and activation
