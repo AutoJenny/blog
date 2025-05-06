@@ -69,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved database script reliability
 - Fix: Section LLM Action dropdowns and Generate buttons are now always populated and wired up after DOM is ready, ensuring Actions are available for all section content fields in the develop page.
 - Fix: LLM prompt templates and selection menus now always reflect the persisted order by ordering on the 'order' field in all UI routes.
+- Fix: Section Images zone is now always fully visible in the develop UI; CSS override prevents it from being clipped or collapsed when a section is expanded.
 
 ### Removed
 - Removed PromptTemplate model and table

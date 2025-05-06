@@ -1,3 +1,4 @@
+<!-- TELLTALE: develop.html loaded at May 6, 2025, 17:00 -->
 {% extends "base.html" %}
 
 {% block title %}Develop Post (New){% endblock %}
@@ -185,6 +186,8 @@
         padding: 1.5rem;
         margin-bottom: 1.5rem;
         box-shadow: 0 2px 8px rgba(30, 60, 120, 0.18);
+        overflow: visible !important;
+        max-height: none !important;
     }
 
     .section-meta-zone {
@@ -194,6 +197,77 @@
         padding: 1.5rem;
         margin-bottom: 1rem;
         box-shadow: 0 2px 8px rgba(80, 60, 120, 0.12);
+    }
+
+    /* --- INNER ACCORDION STYLES --- */
+    .section-inner-accordion {
+        margin-top: 1.5rem;
+    }
+
+    .inner-accordion-panel {
+        border-radius: 0.75rem;
+        margin-bottom: 1.25rem;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+        border: 1px solid #353a4d;
+    }
+
+    .inner-accordion-header {
+        width: 100%;
+        text-align: left;
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        background: #23244d;
+        color: #a5b4fc;
+        transition: background 0.2s, color 0.2s;
+        position: relative;
+    }
+
+    .inner-accordion-header .chevron {
+        margin-right: 0.75em;
+        font-size: 1.1em;
+        color: #a5b4fc;
+        transition: transform 0.3s;
+    }
+
+    .inner-accordion-header.active {
+        background: #3730a3;
+        color: #fff;
+    }
+
+    .inner-accordion-header.active .chevron {
+        transform: rotate(90deg);
+        color: #fff;
+    }
+
+    .inner-accordion-content {
+        display: none;
+        padding: 1.25rem 1.5rem 1.5rem 1.5rem;
+        background: #23244d;
+        border-top: 1px solid #353a4d;
+        animation: fadeIn 0.3s;
+    }
+
+    .inner-accordion-panel.images .inner-accordion-header,
+    .inner-accordion-panel.images .inner-accordion-content {
+        background: #1a2636;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .inner-accordion-panel.meta .inner-accordion-header,
+    .inner-accordion-panel.meta .inner-accordion-content {
+        background: #111827;
+        border-left: 4px solid #a78bfa;
+    }
+
+    .inner-accordion-content.active {
+        display: block;
     }
 </style>
 {% endblock %}
@@ -323,106 +397,131 @@
                                 style="background:none;border:none;font-size:1.2em;cursor:pointer;">&#128465;</button>
                         </div>
                         <div class="section-accordion-content">
-                            <!-- Section Heading -->
+                            <!-- Section Heading, Ideas, Facts (always visible) -->
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1"
-                                    style="color: var(--admin-text-secondary);">
-                                    Section Heading
-                                </label>
+                                    style="color: var(--admin-text-secondary);">Section Heading</label>
                                 <textarea id="section_heading_{{ section.id }}"
                                     class="admin-textarea mb-2">{{ section.section_heading or '' }}</textarea>
-                                <button type="button" class="admin-button mb-2"
-                                    onclick="saveSectionField({{ section.id }}, 'section_heading')">Save</button>
+                                <div class="flex gap-2 mt-2">
+                                    <button type="button" class="admin-button"
+                                        onclick="saveSectionField({{ section.id }}, 'section_heading')">Save</button>
+                                </div>
                             </div>
-                            <!-- Ideas to include -->
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1"
-                                    style="color: var(--admin-text-secondary);">
-                                    Ideas to include
-                                </label>
+                                    style="color: var(--admin-text-secondary);">Ideas to include</label>
                                 <textarea id="ideas_to_include_{{ section.id }}"
                                     class="admin-textarea mb-2">{{ section.ideas_to_include or '' }}</textarea>
-                                <button type="button" class="admin-button mb-2"
-                                    onclick="saveSectionField({{ section.id }}, 'ideas_to_include')">Save</button>
+                                <div class="flex gap-2 mt-2">
+                                    <button type="button" class="admin-button"
+                                        onclick="saveSectionField({{ section.id }}, 'ideas_to_include')">Save</button>
+                                </div>
                             </div>
-                            <!-- Facts to include -->
                             <div class="mb-4">
                                 <label class="block text-sm font-semibold mb-1"
-                                    style="color: var(--admin-text-secondary);">
-                                    Facts to include
-                                </label>
+                                    style="color: var(--admin-text-secondary);">Facts to include</label>
                                 <textarea id="facts_to_include_{{ section.id }}"
                                     class="admin-textarea mb-2">{{ section.facts_to_include or '' }}</textarea>
-                                <button type="button" class="admin-button mb-2"
-                                    onclick="saveSectionField({{ section.id }}, 'facts_to_include')">Save</button>
-                            </div>
-                            <!-- Content Zone -->
-                            <div class="section-content-zone">
-                                <div class="font-semibold text-indigo-300 mb-2">Content</div>
-                                {% for field in ['first_draft', 'uk_british', 'highlighting', 'generation',
-                                'optimization'] %}
-                                {% if field in section.__dict__ %}
-                                <label for="{{ field }}_{{ section.id }}" class="block text-sm font-semibold mb-1"
-                                    style="color: var(--admin-text-secondary);">
-                                    {{ field.replace('_', ' ').title() }}
-                                </label>
-                                <textarea id="{{ field }}_{{ section.id }}"
-                                    class="admin-textarea mb-2">{{ section.__dict__[field] or '' }}</textarea>
-                                <div class="flex flex-col gap-2 mb-2">
-                                    <select id="llm-action-select-{{ field }}-{{ section.id }}" class="admin-textarea"
-                                        style="max-width:220px;"></select>
-                                    <button type="button" class="admin-button generate-section-content-btn"
-                                        data-section-id="{{ section.id }}" data-field="{{ field }}">Generate</button>
+                                <div class="flex gap-2 mt-2">
+                                    <button type="button" class="admin-button"
+                                        onclick="saveSectionField({{ section.id }}, 'facts_to_include')">Save</button>
                                 </div>
-                                <button type="button" class="admin-button mb-2"
-                                    onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button><br>
-                                {% endif %}
-                                {% endfor %}
                             </div>
-                            <!-- Images Zone (always render) -->
-                            <div class="section-images-zone">
-                                <div class="font-semibold text-blue-300 mb-2">Images</div>
-                                {% for field in ['image_concepts', 'image_prompts', 'watermarking',
-                                'image_meta_descriptions', 'image_captions'] %}
-                                {% if field in section.__dict__ %}
-                                <label for="{{ field }}_{{ section.id }}" class="block text-sm font-semibold mb-1"
-                                    style="color: var(--admin-text-secondary);">
-                                    {{ field.replace('_', ' ').title() }}
-                                </label>
-                                <textarea id="{{ field }}_{{ section.id }}"
-                                    class="admin-textarea mb-2">{{ section.__dict__[field] or '' }}</textarea>
-                                <div class="flex flex-col gap-2 mb-2">
-                                    <select id="llm-action-select-{{ field }}-{{ section.id }}" class="admin-textarea"
-                                        style="max-width:220px;"></select>
-                                    <button type="button" class="admin-button generate-section-content-btn"
-                                        data-section-id="{{ section.id }}" data-field="{{ field }}">Generate</button>
+                            <!-- Inner Accordion for Content, Images, Meta -->
+                            <div class="section-inner-accordion">
+                                <!-- Content Panel -->
+                                <div class="inner-accordion-panel content">
+                                    <button class="inner-accordion-header" type="button">
+                                        <span class="chevron">&#9654;</span> Content
+                                    </button>
+                                    <div class="inner-accordion-content">
+                                        {% for field in ['first_draft', 'uk_british', 'highlighting', 'generation',
+                                        'optimization'] %}
+                                        {% if field in section.__dict__ %}
+                                        <div class="mb-4">
+                                            <label for="{{ field }}_{{ section.id }}"
+                                                class="block text-sm font-semibold mb-1"
+                                                style="color: var(--admin-text-secondary);">
+                                                {{ field.replace('_', ' ').title() }}
+                                            </label>
+                                            <textarea id="{{ field }}_{{ section.id }}"
+                                                class="admin-textarea mb-2">{{ section.__dict__[field] or '' }}</textarea>
+                                            <div class="flex gap-2 mt-2">
+                                                <select id="llm-action-select-{{ field }}-{{ section.id }}"
+                                                    class="admin-textarea" style="max-width:220px;"></select>
+                                                <button type="button" class="admin-button generate-section-content-btn"
+                                                    data-section-id="{{ section.id }}"
+                                                    data-field="{{ field }}">Generate</button>
+                                                <button type="button" class="admin-button"
+                                                    onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
                                 </div>
-                                <button type="button" class="admin-button mb-2"
-                                    onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button><br>
-                                {% endif %}
-                                {% endfor %}
-                            </div>
-                            <!-- Meta Zone (always render) -->
-                            <div class="section-meta-zone">
-                                <div class="font-semibold text-purple-300 mb-2">Meta</div>
-                                {% for field in ['highlighting', 'optimization'] %}
-                                {% if field in section.__dict__ %}
-                                <label for="{{ field }}_{{ section.id }}" class="block text-sm font-semibold mb-1"
-                                    style="color: var(--admin-text-secondary);">
-                                    {{ field.replace('_', ' ').title() }}
-                                </label>
-                                <textarea id="{{ field }}_{{ section.id }}"
-                                    class="admin-textarea mb-2">{{ section.__dict__[field] or '' }}</textarea>
-                                <div class="flex flex-col gap-2 mb-2">
-                                    <select id="llm-action-select-{{ field }}-{{ section.id }}" class="admin-textarea"
-                                        style="max-width:220px;"></select>
-                                    <button type="button" class="admin-button generate-section-content-btn"
-                                        data-section-id="{{ section.id }}" data-field="{{ field }}">Generate</button>
+                                <!-- Images Panel -->
+                                <div class="inner-accordion-panel images">
+                                    <button class="inner-accordion-header" type="button">
+                                        <span class="chevron">&#9654;</span> Images
+                                    </button>
+                                    <div class="inner-accordion-content">
+                                        {% for field in ['image_concepts', 'image_prompts', 'watermarking',
+                                        'image_meta_descriptions', 'image_captions'] %}
+                                        {% if field in section.__dict__ %}
+                                        <div class="mb-4">
+                                            <label for="{{ field }}_{{ section.id }}"
+                                                class="block text-sm font-semibold mb-1"
+                                                style="color: var(--admin-text-secondary);">
+                                                {{ field.replace('_', ' ').title() }}
+                                            </label>
+                                            <textarea id="{{ field }}_{{ section.id }}"
+                                                class="admin-textarea mb-2">{{ section.__dict__[field] or '' }}</textarea>
+                                            <div class="flex gap-2 mt-2">
+                                                <select id="llm-action-select-{{ field }}-{{ section.id }}"
+                                                    class="admin-textarea" style="max-width:220px;"></select>
+                                                <button type="button" class="admin-button generate-section-content-btn"
+                                                    data-section-id="{{ section.id }}"
+                                                    data-field="{{ field }}">Generate</button>
+                                                <button type="button" class="admin-button"
+                                                    onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
                                 </div>
-                                <button type="button" class="admin-button mb-2"
-                                    onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button><br>
-                                {% endif %}
-                                {% endfor %}
+                                <!-- Meta Panel -->
+                                <div class="inner-accordion-panel meta">
+                                    <button class="inner-accordion-header" type="button">
+                                        <span class="chevron">&#9654;</span> Meta
+                                    </button>
+                                    <div class="inner-accordion-content">
+                                        {% for field in ['highlighting', 'optimization'] %}
+                                        {% if field in section.__dict__ %}
+                                        <div class="mb-4">
+                                            <label for="{{ field }}_{{ section.id }}"
+                                                class="block text-sm font-semibold mb-1"
+                                                style="color: var(--admin-text-secondary);">
+                                                {{ field.replace('_', ' ').title() }}
+                                            </label>
+                                            <textarea id="{{ field }}_{{ section.id }}"
+                                                class="admin-textarea mb-2">{{ section.__dict__[field] or '' }}</textarea>
+                                            <div class="flex gap-2 mt-2">
+                                                <select id="llm-action-select-{{ field }}-{{ section.id }}"
+                                                    class="admin-textarea" style="max-width:220px;"></select>
+                                                <button type="button" class="admin-button generate-section-content-btn"
+                                                    data-section-id="{{ section.id }}"
+                                                    data-field="{{ field }}">Generate</button>
+                                                <button type="button" class="admin-button"
+                                                    onclick="saveSectionField({{ section.id }}, '{{ field }}')">Save</button>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1212,6 +1311,31 @@
                 }
             });
         }
+
+        // --- Add inner accordion logic for Content, Images, Meta ---
+        document.querySelectorAll('.section-block').forEach(block => {
+            const innerPanels = block.querySelectorAll('.inner-accordion-panel');
+            innerPanels.forEach(panel => {
+                const header = panel.querySelector('.inner-accordion-header');
+                const content = panel.querySelector('.inner-accordion-content');
+                const chevron = header.querySelector('.chevron');
+                header.addEventListener('click', function () {
+                    // Close all other panels in this section
+                    innerPanels.forEach(p => {
+                        p.querySelector('.inner-accordion-content').classList.remove('active');
+                        p.querySelector('.inner-accordion-header').classList.remove('active');
+                        p.querySelector('.chevron').classList.remove('open');
+                    });
+                    // Toggle this one
+                    const isOpen = content.classList.contains('active');
+                    if (!isOpen) {
+                        content.classList.add('active');
+                        header.classList.add('active');
+                        chevron.classList.add('open');
+                    }
+                });
+            });
+        });
     });
 
     // Helpers

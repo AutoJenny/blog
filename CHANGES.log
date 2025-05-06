@@ -84,6 +84,8 @@ All notable changes to this project are documented in this file.
 - Improved code organization and maintainability
 - Fix: Updated all fetch URLs in develop.html to use the /blog/api/v1/posts/... prefix to match the Flask route registration and resolve 404 errors when saving global and section fields.
 - Fix: Section LLM Action dropdowns and Generate buttons are now always populated and wired up after DOM is ready, ensuring Actions are available for all section content fields in the develop page.
+- Fix: Replaced all inline Jinja2 postId usage in JavaScript in develop2.html with the robust data attribute approach, using document.getElementById('stage-accordion').dataset.postId. This prevents Jinja2 syntax errors and ensures consistent postId access.
+- Fix: Purged all Python cache files, confirmed only one develop.html exists, added a telltale comment to the template, and verified the correct template is now loaded and the /api/v1/llm/actions/3/execute endpoint works without error.
 
 ### Removed
 - Removed PromptTemplate model and table
@@ -443,3 +445,8 @@ All notable changes to this project are documented in this file.
   - Console log and alert at the start of the click handler to confirm it is firing.
   - Error handling for fetch failures and network errors.
   - Improved feedback for each section's generation attempt.
+
+- Made Content, Images, and Meta areas within each Section of the Authoring Stage in develop.html visually distinct and collapsible:
+  - Added unique background colors and borders for each inner panel.
+  - Added chevrons to each inner-accordion-header.
+  - Implemented JavaScript to toggle inner-accordion-content and ensure only one is open at a time per section.
