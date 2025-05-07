@@ -127,6 +127,26 @@
             <a href="/llm/images/previews" class="images-tab">Image Previews</a>
         </div>
         <form id="imagePromptForm" class="mb-10 bg-dark-bg p-6 rounded-lg shadow border border-dark-border">
+            <!-- IMAGE SETTING MENU -->
+            <div class="mb-6">
+                <label class="form-label block mb-2" for="imageSettingSelect">Image Setting</label>
+                <div class="flex gap-2 items-center mb-2">
+                    <select id="imageSettingSelect" class="form-input w-full">
+                        <option value="">-- Select an Image Setting --</option>
+                    </select>
+                    <button type="button" class="btn btn-secondary" id="newImageSettingBtn">
+                        <i class="fas fa-plus"></i> New
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="editImageSettingBtn" style="display:none;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button type="button" class="btn btn-danger" id="deleteImageSettingBtn" style="display:none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div id="selectedImageSettingDisplay" class="text-sm text-gray-400 mt-1" style="min-height:1.5em;">
+                </div>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                 <div>
                     <label class="form-label block mb-2" for="promptDescription">Description</label>
@@ -210,6 +230,26 @@
         <div id="formatModalError" class="text-red-400 mt-2"></div>
     </div>
 </div>
+<!-- ImageSetting Modal -->
+<div id="imageSettingModalBg" class="modal-bg" style="display:none;">
+    <div class="modal">
+        <h2 class="text-xl font-semibold mb-4" id="imageSettingModalTitle">Add Image Setting</h2>
+        <input type="text" id="imageSettingNameInput" placeholder="Setting Name" />
+        <div class="mb-2">
+            <label class="block text-sm mb-1">Style</label>
+            <select id="imageSettingStyleInput" class="form-input w-full"></select>
+        </div>
+        <div class="mb-2">
+            <label class="block text-sm mb-1">Format</label>
+            <select id="imageSettingFormatInput" class="form-input w-full"></select>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="cancelImageSettingBtn">Cancel</button>
+            <button type="button" class="btn btn-primary" id="saveImageSettingBtn">Save</button>
+        </div>
+        <div id="imageSettingModalError" class="text-red-400 mt-2"></div>
+    </div>
+</div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const styleSelect = document.getElementById('promptStyleSelect');
@@ -242,6 +282,30 @@
         const cancelFormatBtn = document.getElementById('cancelFormatBtn');
         const formatModalError = document.getElementById('formatModalError');
         let editingFormatId = null;
+
+        // --- ImageSetting logic ---
+        const imageSettingSelect = document.getElementById('imageSettingSelect');
+        const newImageSettingBtn = document.getElementById('newImageSettingBtn');
+        const editImageSettingBtn = document.getElementById('editImageSettingBtn');
+        const deleteImageSettingBtn = document.getElementById('deleteImageSettingBtn');
+        const selectedImageSettingDisplay = document.getElementById('selectedImageSettingDisplay');
+        let imageSettingLibrary = {};
+        // Modal elements
+        const imageSettingModalBg = document.getElementById('imageSettingModalBg');
+        const imageSettingModalTitle = document.getElementById('imageSettingModalTitle');
+        const imageSettingNameInput = document.getElementById('imageSettingNameInput');
+        const imageSettingStyleInput = document.getElementById('imageSettingStyleInput');
+        const imageSettingFormatInput = document.getElementById('imageSettingFormatInput');
+        const saveImageSettingBtn = document.getElementById('saveImageSettingBtn');
+        const cancelImageSettingBtn = document.getElementById('cancelImageSettingBtn');
+        const imageSettingModalError = document.getElementById('imageSettingModalError');
+        let editingImageSettingId = null;
+
+        // Populate style/format selects in modal
+        function populateImageSettingStyleFormat() {
+            imageSettingStyleInput.innerHTML = styleSelect.innerHTML;
+            imageSettingFormatInput.innerHTML = formatSelect.innerHTML;
+        }
 
         // --- Fetch and populate styles ---
         async function loadStyles() {
@@ -494,6 +558,156 @@
             } finally {
                 saveFormatBtn.disabled = false;
             }
+        });
+
+        // --- Fetch and populate image settings ---
+        async function loadImageSettings() {
+            imageSettingSelect.innerHTML = '<option value="">-- Select an Image Setting --</option>';
+            imageSettingLibrary = {};
+            try {
+                const res = await fetch('/api/v1/images/settings');
+                const settings = await res.json();
+                settings.forEach(s => {
+                    imageSettingLibrary[s.id] = s;
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.name + ' (' + (s.style?.title || '?') + ' / ' + (s.format?.title || '?') + ')';
+                    imageSettingSelect.appendChild(opt);
+                });
+            } catch (e) {
+                imageSettingSelect.innerHTML = '<option value="">(Failed to load settings)</option>';
+            }
+            editImageSettingBtn.style.display = 'none';
+            deleteImageSettingBtn.style.display = 'none';
+        }
+        loadImageSettings();
+
+        imageSettingSelect.addEventListener('change', function () {
+            const val = imageSettingSelect.value;
+            if (val && imageSettingLibrary[val]) {
+                const s = imageSettingLibrary[val];
+                selectedImageSettingDisplay.innerHTML = `<strong>${s.name}</strong>: Style = <em>${s.style?.title || ''}</em>, Format = <em>${s.format?.title || ''}</em>`;
+                editImageSettingBtn.style.display = '';
+                deleteImageSettingBtn.style.display = '';
+                // Auto-select style/format
+                if (s.style_id) styleSelect.value = s.style_id;
+                if (s.format_id) formatSelect.value = s.format_id;
+                styleSelect.dispatchEvent(new Event('change'));
+                formatSelect.dispatchEvent(new Event('change'));
+            } else {
+                selectedImageSettingDisplay.textContent = '';
+                editImageSettingBtn.style.display = 'none';
+                deleteImageSettingBtn.style.display = 'none';
+            }
+        });
+
+        // --- Modal logic ---
+        function openImageSettingModal(editId = null) {
+            editingImageSettingId = editId;
+            imageSettingModalError.textContent = '';
+            populateImageSettingStyleFormat();
+            if (editId && imageSettingLibrary[editId]) {
+                imageSettingModalTitle.textContent = 'Edit Image Setting';
+                imageSettingNameInput.value = imageSettingLibrary[editId].name;
+                imageSettingStyleInput.value = imageSettingLibrary[editId].style_id;
+                imageSettingFormatInput.value = imageSettingLibrary[editId].format_id;
+            } else {
+                imageSettingModalTitle.textContent = 'Add Image Setting';
+                imageSettingNameInput.value = '';
+                imageSettingStyleInput.value = styleSelect.value;
+                imageSettingFormatInput.value = formatSelect.value;
+            }
+            imageSettingModalBg.style.display = '';
+            imageSettingNameInput.focus();
+        }
+        function closeImageSettingModal() {
+            imageSettingModalBg.style.display = 'none';
+        }
+        newImageSettingBtn.addEventListener('click', function () {
+            openImageSettingModal();
+        });
+        editImageSettingBtn.addEventListener('click', function () {
+            const val = imageSettingSelect.value;
+            if (val && imageSettingLibrary[val]) openImageSettingModal(val);
+        });
+        deleteImageSettingBtn.addEventListener('click', async function () {
+            const val = imageSettingSelect.value;
+            if (!val || !imageSettingLibrary[val]) return;
+            if (!confirm(`Delete image setting "${imageSettingLibrary[val].name}"? This cannot be undone.`)) return;
+            deleteImageSettingBtn.disabled = true;
+            try {
+                const res = await fetch(`/api/v1/images/settings/${val}`, { method: 'DELETE' });
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || 'Failed to delete image setting');
+                }
+                await loadImageSettings();
+                imageSettingSelect.value = '';
+                imageSettingSelect.dispatchEvent(new Event('change'));
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                deleteImageSettingBtn.disabled = false;
+            }
+        });
+        cancelImageSettingBtn.addEventListener('click', closeImageSettingModal);
+        imageSettingModalBg.addEventListener('click', function (e) {
+            if (e.target === imageSettingModalBg) closeImageSettingModal();
+        });
+        // --- Save image setting (add or edit) ---
+        saveImageSettingBtn.addEventListener('click', async function () {
+            const name = imageSettingNameInput.value.trim();
+            const style_id = imageSettingStyleInput.value;
+            const format_id = imageSettingFormatInput.value;
+            if (!name) {
+                imageSettingModalError.textContent = 'Name is required.';
+                return;
+            }
+            if (!style_id || !format_id) {
+                imageSettingModalError.textContent = 'Style and Format are required.';
+                return;
+            }
+            saveImageSettingBtn.disabled = true;
+            try {
+                let res, data;
+                if (editingImageSettingId) {
+                    res = await fetch(`/api/v1/images/settings/${editingImageSettingId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, style_id, format_id })
+                    });
+                } else {
+                    res = await fetch('/api/v1/images/settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, style_id, format_id })
+                    });
+                }
+                data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to save image setting');
+                closeImageSettingModal();
+                await loadImageSettings();
+                // Optionally, select the new/edited setting
+                if (editingImageSettingId) {
+                    imageSettingSelect.value = editingImageSettingId;
+                } else {
+                    imageSettingSelect.value = data.id;
+                }
+                imageSettingSelect.dispatchEvent(new Event('change'));
+            } catch (e) {
+                imageSettingModalError.textContent = e.message;
+            } finally {
+                saveImageSettingBtn.disabled = false;
+            }
+        });
+        // When style/format is changed, clear ImageSetting selection
+        styleSelect.addEventListener('change', function () {
+            imageSettingSelect.value = '';
+            imageSettingSelect.dispatchEvent(new Event('change'));
+        });
+        formatSelect.addEventListener('change', function () {
+            imageSettingSelect.value = '';
+            imageSettingSelect.dispatchEvent(new Event('change'));
         });
     });
 </script>
