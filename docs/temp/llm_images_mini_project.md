@@ -36,7 +36,8 @@ This mini-project aims to build a robust, extensible image management system for
 - [ ] Add DB migrations
 
 ### 2. Prompt Creation UI
-- [ ] Build form for manual prompt creation (description, style, format)
+- [x] Build form for manual prompt creation (description, style, format)  
+  _UI implemented and visually verified._
 - [ ] Add option to import prompt from post field
 
 ### 3. Prompt Testing & OpenAI Integration
@@ -57,6 +58,9 @@ This mini-project aims to build a robust, extensible image management system for
 
 ### 7. API Endpoints
 - [ ] Create endpoints for prompt creation, image generation, image listing
+
+### 8. ImageStyle CRUD API endpoints
+- [x] Implement CRUD API endpoints for ImageStyle (list, get, create, update, delete) in app/api/routes.py. Endpoints are ready for UI integration.
 
 ---
 

@@ -9,7 +9,7 @@ import requests
 import time
 import openai
 from app.services.llm_service import ServiceAuth
-from app.models import Post
+from app.models import Post, ImageStyle
 from slugify import slugify
 
 
@@ -297,3 +297,59 @@ def create_post():
 def workflow_transition(slug):
     # Dummy implementation for test pass
     return jsonify({"status": "transitioned", "slug": slug}), 200
+
+
+# --- ImageStyle CRUD API endpoints ---
+@bp.route("/api/v1/images/styles", methods=["GET"])
+def list_image_styles():
+    styles = ImageStyle.query.order_by(ImageStyle.title).all()
+    return jsonify([s.to_dict() for s in styles]), 200
+
+@bp.route("/api/v1/images/styles/<int:style_id>", methods=["GET"])
+def get_image_style(style_id):
+    style = ImageStyle.query.get(style_id)
+    if not style:
+        return jsonify({"error": "Style not found"}), 404
+    return jsonify(style.to_dict()), 200
+
+@bp.route("/api/v1/images/styles", methods=["POST"])
+def create_image_style():
+    data = request.get_json() or {}
+    title = data.get("title")
+    description = data.get("description")
+    if not title:
+        return jsonify({"error": "Title is required"}), 400
+    if ImageStyle.query.filter_by(title=title).first():
+        return jsonify({"error": "Style with this title already exists"}), 400
+    style = ImageStyle(title=title, description=description)
+    db.session.add(style)
+    db.session.commit()
+    return jsonify(style.to_dict()), 201
+
+@bp.route("/api/v1/images/styles/<int:style_id>", methods=["PUT"])
+def update_image_style(style_id):
+    style = ImageStyle.query.get(style_id)
+    if not style:
+        return jsonify({"error": "Style not found"}), 404
+    data = request.get_json() or {}
+    title = data.get("title")
+    description = data.get("description")
+    if title:
+        # Check for duplicate title
+        existing = ImageStyle.query.filter_by(title=title).first()
+        if existing and existing.id != style_id:
+            return jsonify({"error": "Style with this title already exists"}), 400
+        style.title = title
+    if description is not None:
+        style.description = description
+    db.session.commit()
+    return jsonify(style.to_dict()), 200
+
+@bp.route("/api/v1/images/styles/<int:style_id>", methods=["DELETE"])
+def delete_image_style(style_id):
+    style = ImageStyle.query.get(style_id)
+    if not style:
+        return jsonify({"error": "Style not found"}), 404
+    db.session.delete(style)
+    db.session.commit()
+    return jsonify({"result": "deleted"}), 200
