@@ -9,7 +9,7 @@ import requests
 import time
 import openai
 from app.services.llm_service import ServiceAuth
-from app.models import Post, ImageStyle, ImageFormat
+from app.models import Post, ImageStyle, ImageFormat, ImageSetting
 from slugify import slugify
 
 
@@ -408,3 +408,72 @@ def delete_image_format(format_id):
     db.session.delete(fmt)
     db.session.commit()
     return jsonify({"result": "deleted"}), 200
+
+
+# --- ImageSetting CRUD API ---
+@bp.route('/images/settings', methods=['GET'])
+def list_image_settings():
+    settings = ImageSetting.query.order_by(ImageSetting.name).all()
+    return jsonify([s.to_dict() for s in settings])
+
+@bp.route('/images/settings/<int:setting_id>', methods=['GET'])
+def get_image_setting(setting_id):
+    s = ImageSetting.query.get(setting_id)
+    if not s:
+        return jsonify({'error': 'Not found'}), 404
+    return jsonify(s.to_dict())
+
+@bp.route('/images/settings', methods=['POST'])
+def create_image_setting():
+    data = request.get_json() or {}
+    name = data.get('name')
+    style_id = data.get('style_id')
+    format_id = data.get('format_id')
+    if not name or not style_id or not format_id:
+        return jsonify({'error': 'Missing required fields'}), 400
+    if ImageSetting.query.filter_by(name=name).first():
+        return jsonify({'error': 'Name already exists'}), 400
+    style = ImageStyle.query.get(style_id)
+    fmt = ImageFormat.query.get(format_id)
+    if not style or not fmt:
+        return jsonify({'error': 'Invalid style or format'}), 400
+    s = ImageSetting(name=name, style_id=style_id, format_id=format_id)
+    db.session.add(s)
+    db.session.commit()
+    return jsonify(s.to_dict()), 201
+
+@bp.route('/images/settings/<int:setting_id>', methods=['PUT'])
+def update_image_setting(setting_id):
+    s = ImageSetting.query.get(setting_id)
+    if not s:
+        return jsonify({'error': 'Not found'}), 404
+    data = request.get_json() or {}
+    name = data.get('name')
+    style_id = data.get('style_id')
+    format_id = data.get('format_id')
+    if name:
+        existing = ImageSetting.query.filter_by(name=name).first()
+        if existing and existing.id != setting_id:
+            return jsonify({'error': 'Name already exists'}), 400
+        s.name = name
+    if style_id:
+        style = ImageStyle.query.get(style_id)
+        if not style:
+            return jsonify({'error': 'Invalid style'}), 400
+        s.style_id = style_id
+    if format_id:
+        fmt = ImageFormat.query.get(format_id)
+        if not fmt:
+            return jsonify({'error': 'Invalid format'}), 400
+        s.format_id = format_id
+    db.session.commit()
+    return jsonify(s.to_dict())
+
+@bp.route('/images/settings/<int:setting_id>', methods=['DELETE'])
+def delete_image_setting(setting_id):
+    s = ImageSetting.query.get(setting_id)
+    if not s:
+        return jsonify({'error': 'Not found'}), 404
+    db.session.delete(s)
+    db.session.commit()
+    return jsonify({'success': True})

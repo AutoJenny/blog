@@ -327,6 +327,32 @@ class ImageFormat(db.Model):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
 
+
+class ImageSetting(db.Model):
+    __tablename__ = 'image_setting'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    style_id = db.Column(db.Integer, db.ForeignKey('image_style.id'), nullable=False)
+    format_id = db.Column(db.Integer, db.ForeignKey('image_format.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    style = db.relationship('ImageStyle', backref='image_settings')
+    format = db.relationship('ImageFormat', backref='image_settings')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'style_id': self.style_id,
+            'format_id': self.format_id,
+            'style': self.style.to_dict() if self.style else None,
+            'format': self.format.to_dict() if self.format else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
 # --- Automatic backup after DB commit ---
 def backup_after_commit(session):
     # Only backup if there were changes
