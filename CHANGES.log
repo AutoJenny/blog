@@ -456,3 +456,5 @@ All notable changes to this project are documented in this file.
   - Implemented JavaScript to toggle inner-accordion-content and ensure only one is open at a time per section.
 
 - Refactor: Broke up the Authoring Stage (Sections) in develop.html into three separate stages: 'Sections - Authoring', 'Sections - Images', and 'Sections - Meta', each with its own accordion panel and relevant fields.
+
+[YYYY-MM-DD] Added CRUD API endpoints for ImageStyle (list, get, create, update, delete) in app/api/routes.py under /api/v1/images/styles and /api/v1/images/styles/<id>.
