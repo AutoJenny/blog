@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}LLM Image Generation & Management{% endblock %}
+{% block title %}LLM Image Previews{% endblock %}
 {% block styles %}
 {{ super() }}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -38,6 +38,10 @@
     .images-submenu {
         margin-top: -0.5rem;
         margin-bottom: 2rem;
+        display: flex;
+        gap: 1.5rem;
+        border-bottom: 1px solid var(--admin-border);
+        padding-bottom: 0.5rem;
     }
 
     .images-tab {
@@ -84,16 +88,12 @@
                 Configuration
             </a>
         </div>
-        <!-- Secondary sub-menu for Images section -->
-        <div class="images-submenu flex gap-4 mb-8 border-b border-dark-border">
-            <a href="/llm/images/prompts" class="images-tab images-tab-active">Image Prompts</a>
-            <a href="/llm/images/previews" class="images-tab">Image Previews</a>
+        <div class="images-submenu">
+            <a href="/llm/images/prompts" class="images-tab">Image Prompts</a>
+            <a href="/llm/images/previews" class="images-tab images-tab-active">Image Previews</a>
         </div>
-        <h2 class="text-3xl font-bold mb-6 text-center">LLM Image Generation & Management</h2>
-        <p class="mb-8 text-center text-lg text-gray-300">This page will provide tools to develop, test, and manage
-            LLM-powered image workflows, including prompt-to-image, style transfer, and more.</p>
-        <div class="flex justify-center">
-            <a href="/llm/" class="admin-button">&larr; Back to LLM Landing</a>
+        <div class="text-center text-lg text-gray-400 mt-12">
+            <p>Image Previews management coming soon.</p>
         </div>
     </div>
 </div>

@@ -9,6 +9,7 @@ from sqlalchemy import event
 from sqlalchemy.orm import Session
 import subprocess
 import os
+from sqlalchemy import Column, Integer, String, DateTime
 
 
 class WorkflowStage(str, enum.Enum):
@@ -290,6 +291,41 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.username}>'
 
+
+class ImageStyle(db.Model):
+    __tablename__ = 'image_style'
+    id = Column(Integer, primary_key=True)
+    title = Column(String(100), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class ImageFormat(db.Model):
+    __tablename__ = 'image_format'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
 
 # --- Automatic backup after DB commit ---
 def backup_after_commit(session):

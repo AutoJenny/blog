@@ -462,3 +462,11 @@ All notable changes to this project are documented in this file.
 [YYYY-MM-DD] UI: Image style dropdown in images_prompts.html is now dynamic, fetching from the API, and supports adding new styles via modal dialog. Edit/delete coming next.
 
 [YYYY-MM-DD] UI: Edit and delete functionality for image styles is now available in the image prompt creation UI (images_prompts.html). Users can edit or delete styles directly from the dropdown.
+
+[YYYY-MM-DD] Enhancement: ImageStyle.description column changed from String(255) to Text (unlimited length). Migration applied.
+
+[YYYY-MM-DD] Add: ImageFormat model and CRUD API endpoints for format management (description limited to 255 chars), mirroring ImageStyle functionality.
+
+- Debug: Added robust debug logging to the /api/v1/llm/actions/<id>/execute endpoint in app/api/llm.py. This logs all incoming data, constructed fields, and full stack traces for any errors, to surface the root cause of persistent 500 errors during LLM Action execution.
+
+- Enhancement: Added a full CRUD Format menu to the LLM Images Prompts page, mirroring the Styles menu. Users can now add, edit, and delete image formats via a dropdown, modal, and API integration with /api/v1/images/formats.
