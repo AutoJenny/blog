@@ -212,3 +212,11 @@ def test_prompt():
     except Exception as e:
         logger.exception("[TEST] Error")
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/')
+def llm_index():
+    return render_template('llm/index.html')
+
+@bp.route('/images')
+def llm_images():
+    return render_template('llm/images.html')

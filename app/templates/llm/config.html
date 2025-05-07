@@ -157,103 +157,140 @@
         background: rgba(234, 179, 8, 0.2);
         color: #eab308;
     }
+
+    .llm-tab-nav {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--admin-border);
+        padding-bottom: 0.5rem;
+    }
+
+    .llm-tab-link {
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        border: none;
+        color: var(--admin-text-secondary);
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .llm-tab-link:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    .llm-tab-link.active {
+        color: var(--admin-accent);
+        border-bottom: 2px solid var(--admin-accent);
+        background: rgba(99, 102, 241, 0.1);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="admin-content">
-    <div class="admin-card">
-        <h1 class="admin-title mb-6">
-            <i class="fas fa-robot mr-2"></i>
-            LLM Management
-        </h1>
+<div class="max-w-3xl mx-auto py-10">
+    <div class="admin-content">
+        <div class="admin-card">
+            <h1 class="admin-title mb-6">
+                <i class="fas fa-robot mr-2"></i>
+                LLM Management
+            </h1>
 
-        <!-- Navigation -->
-        <div class="nav-links">
-            <a href="{{ url_for('llm.config_page') }}" class="nav-link active">
-                <i class="fas fa-cog"></i>
-                Configuration
-            </a>
-            <a href="{{ url_for('llm.templates') }}" class="nav-link">
-                <i class="fas fa-file-alt"></i>
-                Prompt Templates
-            </a>
-            <!-- DEPRECATED: Test Interface link is deprecated and must not be used. -->
-            <!-- <a href="{{ url_for('llm.test_page') }}" class="nav-link">
-                <i class="fas fa-vial"></i>
-                Test Interface
-            </a> -->
-        </div>
+            <!-- Navigation -->
+            <div class="nav-links">
+                <a href="/llm/templates" class="nav-link">
+                    <i class="fas fa-file-alt"></i>
+                    Prompt Templates
+                </a>
+                <a href="/llm/images" class="nav-link">
+                    <i class="fas fa-image"></i>
+                    Images
+                </a>
+                <a href="/llm/config" class="nav-link active">
+                    <i class="fas fa-cog"></i>
+                    Configuration
+                </a>
+            </div>
 
-        <div class="config-card">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Current Settings -->
-                <div class="config-section">
-                    <h3 class="text-lg font-medium text-dark-text mb-3">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        Current Settings
-                    </h3>
-                    <div class="result-container">
-                        <p class="mb-2">
-                            <i class="fas fa-plug mr-2"></i>
-                            <strong>Provider:</strong>
-                            <span id="current-provider">{{ config.provider_type|default('ollama') }}</span>
-                        </p>
-                        <p class="mb-2">
-                            <i class="fas fa-microchip mr-2"></i>
-                            <strong>Model:</strong>
-                            <span id="current-model">{{ config.model_name|default('mistral') }}</span>
-                        </p>
-                        <p class="mb-0">
-                            <i class="fas fa-server mr-2"></i>
-                            <strong>API Base:</strong>
-                            <span id="current-api-base">{{ config.api_base|default('http://localhost:11434') }}</span>
-                        </p>
+            <div class="config-card">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Current Settings -->
+                    <div class="config-section">
+                        <h3 class="text-lg font-medium text-dark-text mb-3">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Current Settings
+                        </h3>
+                        <div class="result-container">
+                            <p class="mb-2">
+                                <i class="fas fa-plug mr-2"></i>
+                                <strong>Provider:</strong>
+                                <span id="current-provider">{{ config.provider_type|default('ollama') }}</span>
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-microchip mr-2"></i>
+                                <strong>Model:</strong>
+                                <span id="current-model">{{ config.model_name|default('mistral') }}</span>
+                            </p>
+                            <p class="mb-0">
+                                <i class="fas fa-server mr-2"></i>
+                                <strong>API Base:</strong>
+                                <span id="current-api-base">{{ config.api_base|default('http://localhost:11434')
+                                    }}</span>
+                            </p>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Update Settings -->
-                <div class="config-section">
-                    <h3 class="text-lg font-medium text-dark-text mb-3">
-                        <i class="fas fa-edit mr-2"></i>
-                        Update Settings
-                    </h3>
-                    <form id="config-form" class="space-y-4">
-                        <div class="form-group">
-                            <label class="form-label" for="provider">
-                                <i class="fas fa-plug"></i>
-                                Provider
-                            </label>
-                            <select id="provider" name="provider" class="form-select">
-                                <option value="ollama" {% if config.provider_type=='ollama' %}selected{% endif %}>Ollama
-                                </option>
-                            </select>
-                        </div>
+                    <!-- Update Settings -->
+                    <div class="config-section">
+                        <h3 class="text-lg font-medium text-dark-text mb-3">
+                            <i class="fas fa-edit mr-2"></i>
+                            Update Settings
+                        </h3>
+                        <form id="config-form" class="space-y-4">
+                            <div class="form-group">
+                                <label class="form-label" for="provider">
+                                    <i class="fas fa-plug"></i>
+                                    Provider
+                                </label>
+                                <select id="provider" name="provider" class="form-select">
+                                    <option value="ollama" {% if config.provider_type=='ollama' %}selected{% endif %}>
+                                        Ollama
+                                    </option>
+                                </select>
+                            </div>
 
-                        <div class="form-group">
-                            <label class="form-label" for="model">
-                                <i class="fas fa-microchip"></i>
-                                Model
-                            </label>
-                            <select id="model" name="model" class="form-select">
-                                <option value="loading">Loading available models...</option>
-                            </select>
-                        </div>
+                            <div class="form-group">
+                                <label class="form-label" for="model">
+                                    <i class="fas fa-microchip"></i>
+                                    Model
+                                </label>
+                                <select id="model" name="model" class="form-select">
+                                    <option value="loading">Loading available models...</option>
+                                </select>
+                            </div>
 
-                        <div class="form-group">
-                            <label class="form-label" for="api-base">
-                                <i class="fas fa-server"></i>
-                                API Base URL
-                            </label>
-                            <input type="text" id="api-base" name="api-base" class="form-input"
-                                value="{{ config.api_base|default('http://localhost:11434') }}">
-                        </div>
+                            <div class="form-group">
+                                <label class="form-label" for="api-base">
+                                    <i class="fas fa-server"></i>
+                                    API Base URL
+                                </label>
+                                <input type="text" id="api-base" name="api-base" class="form-input"
+                                    value="{{ config.api_base|default('http://localhost:11434') }}">
+                            </div>
 
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i>
-                            Save Changes
-                        </button>
-                    </form>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Save Changes
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

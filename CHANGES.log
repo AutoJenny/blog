@@ -26,6 +26,9 @@ All notable changes to this project are documented in this file.
   - GET /api/v1/llm/config for LLM configuration
   - GET /api/v1/llm/prompts for prompt management
   - Enhanced /api/v1/llm/models/ollama endpoint
+- Add: New LLM landing page at /llm/ with links to LLM Config, Actions, Templates, and Images.
+- Add: New LLM Images sub-page at /llm/images for image workflow management (placeholder).
+- Add: Main header menu link to /llm/config for easy access to LLM configuration.
 
 ### Changed
 - Updated all workflow documentation for asynchronous model
@@ -39,6 +42,7 @@ All notable changes to this project are documented in this file.
   - Updated routes in app/llm/routes.py
   - Updated documentation in docs/api/llm_endpoints.md
   - Updated test cases in tests/test_llm.py
+- Change: Removed LLM Config from the main menu; LLMs now links to a new landing page with a tabbed sub-header for Templates, Images, and Config. All LLM sub-pages now have consistent tabbed navigation.
 
 ### Fixed
 - Fixed incorrect route registration for /blog/develop/<post_id>

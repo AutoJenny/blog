@@ -30,7 +30,7 @@
                             class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium{% if request.endpoint == 'blog.index' %} bg-dark-accent text-white{% endif %}">Posts</a>
                         <a href="{{ url_for('llm.actions') }}"
                             class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium{% if request.endpoint == 'llm.actions' %} bg-dark-accent text-white{% endif %}">Actions</a>
-                        <a href="{{ url_for('llm.index') }}"
+                        <a href="/llm/"
                             class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium">LLMs</a>
                     </div>
                 </div>
