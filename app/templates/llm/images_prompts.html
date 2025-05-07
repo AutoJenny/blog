@@ -142,6 +142,12 @@
                         <button type="button" class="btn btn-secondary" id="newStyleBtn">
                             <i class="fas fa-plus"></i> New
                         </button>
+                        <button type="button" class="btn btn-secondary" id="editStyleBtn" style="display:none;">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-danger" id="deleteStyleBtn" style="display:none;">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                     <div id="selectedStyleDisplay" class="text-sm text-gray-400 mt-1" style="min-height:1.5em;"></div>
                 </div>
@@ -182,6 +188,8 @@
     document.addEventListener('DOMContentLoaded', function () {
         const styleSelect = document.getElementById('promptStyleSelect');
         const styleDisplay = document.getElementById('selectedStyleDisplay');
+        const editStyleBtn = document.getElementById('editStyleBtn');
+        const deleteStyleBtn = document.getElementById('deleteStyleBtn');
         let styleLibrary = {};
         // --- Modal elements ---
         const styleModalBg = document.getElementById('styleModalBg');
@@ -210,6 +218,9 @@
             } catch (e) {
                 styleSelect.innerHTML = '<option value="">(Failed to load styles)</option>';
             }
+            // Hide edit/delete if nothing selected
+            editStyleBtn.style.display = 'none';
+            deleteStyleBtn.style.display = 'none';
         }
         loadStyles();
 
@@ -217,8 +228,12 @@
             const val = styleSelect.value;
             if (val && styleLibrary[val]) {
                 styleDisplay.innerHTML = `<strong>${styleLibrary[val].title}</strong>: ${styleLibrary[val].description || ''}`;
+                editStyleBtn.style.display = '';
+                deleteStyleBtn.style.display = '';
             } else {
                 styleDisplay.textContent = '';
+                editStyleBtn.style.display = 'none';
+                deleteStyleBtn.style.display = 'none';
             }
         });
 
@@ -243,6 +258,30 @@
         }
         document.getElementById('newStyleBtn').addEventListener('click', function () {
             openStyleModal();
+        });
+        editStyleBtn.addEventListener('click', function () {
+            const val = styleSelect.value;
+            if (val && styleLibrary[val]) openStyleModal(val);
+        });
+        deleteStyleBtn.addEventListener('click', async function () {
+            const val = styleSelect.value;
+            if (!val || !styleLibrary[val]) return;
+            if (!confirm(`Delete style "${styleLibrary[val].title}"? This cannot be undone.`)) return;
+            deleteStyleBtn.disabled = true;
+            try {
+                const res = await fetch(`/api/v1/images/styles/${val}`, { method: 'DELETE' });
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || 'Failed to delete style');
+                }
+                await loadStyles();
+                styleSelect.value = '';
+                styleSelect.dispatchEvent(new Event('change'));
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                deleteStyleBtn.disabled = false;
+            }
         });
         cancelStyleBtn.addEventListener('click', closeStyleModal);
         styleModalBg.addEventListener('click', function (e) {
