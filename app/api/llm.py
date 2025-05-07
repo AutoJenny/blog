@@ -3,6 +3,7 @@ from app.llm.services import LLMService, execute_llm_request
 from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPrompt, LLMActionHistory, PostDevelopment
 from app import db
 import requests
+import traceback
 
 bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 
@@ -367,11 +368,13 @@ def handle_action(action_id):
 
 @bp.route('/actions/<int:action_id>/execute', methods=['POST'])
 def execute_action(action_id):
-    """Execute an LLM action."""
+    """Execute an LLM action with robust debug logging."""
     action = LLMAction.query.get_or_404(action_id)
     data = request.get_json()
+    current_app.logger.debug(f"[LLM EXECUTE] Action ID: {action_id}, Incoming data: {data}")
     
     if not data or 'input_text' not in data:
+        current_app.logger.warning(f"[LLM EXECUTE] No input_text provided for action {action_id}.")
         return jsonify({'error': 'No input text provided'}), 400
     
     try:
@@ -388,17 +391,20 @@ def execute_action(action_id):
         section_fields = data.get('section_fields')
         if section_fields and isinstance(section_fields, dict):
             fields.update(section_fields)
+        current_app.logger.debug(f"[LLM EXECUTE] Final fields for action {action_id}: {fields}")
         llm = LLMService()
         result = llm.execute_action(
             action=action,
             fields=fields,
             post_id=post_id
         )
+        current_app.logger.info(f"[LLM EXECUTE] Action {action_id} executed successfully.")
         return jsonify(result)
     except ValueError as e:
+        current_app.logger.error(f"[LLM EXECUTE] ValueError executing action {action_id}: {str(e)}\n{traceback.format_exc()}")
         return jsonify({'error': str(e)}), 400
     except Exception as e:
-        current_app.logger.error(f"Error executing action: {str(e)}")
+        current_app.logger.error(f"[LLM EXECUTE] Exception executing action {action_id}: {str(e)}\n{traceback.format_exc()} | Data: {data}")
         return jsonify({'error': 'Internal server error'}), 500
 
 

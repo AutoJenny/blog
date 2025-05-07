@@ -153,8 +153,21 @@
                 </div>
                 <div>
                     <label class="form-label block mb-2" for="promptFormat">Format</label>
-                    <input id="promptFormat" name="format" class="form-input w-full"
-                        placeholder="e.g. 1024x1024 PNG, no watermark" />
+                    <div class="flex gap-2 items-center mb-2">
+                        <select id="promptFormatSelect" name="format" class="form-input w-full">
+                            <option value="">-- Select a Format --</option>
+                        </select>
+                        <button type="button" class="btn btn-secondary" id="newFormatBtn">
+                            <i class="fas fa-plus"></i> New
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="editFormatBtn" style="display:none;">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-danger" id="deleteFormatBtn" style="display:none;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div id="selectedFormatDisplay" class="text-sm text-gray-400 mt-1" style="min-height:1.5em;"></div>
                 </div>
             </div>
             <div class="flex gap-4 mb-2">
@@ -184,6 +197,19 @@
         <div id="styleModalError" class="text-red-400 mt-2"></div>
     </div>
 </div>
+<!-- Format Modal -->
+<div id="formatModalBg" class="modal-bg" style="display:none;">
+    <div class="modal">
+        <h2 class="text-xl font-semibold mb-4" id="formatModalTitle">Add Format</h2>
+        <input type="text" id="formatTitleInput" placeholder="Format Title" />
+        <textarea id="formatDescInput" rows="3" placeholder="Format Description"></textarea>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="cancelFormatBtn">Cancel</button>
+            <button type="button" class="btn btn-primary" id="saveFormatBtn">Save</button>
+        </div>
+        <div id="formatModalError" class="text-red-400 mt-2"></div>
+    </div>
+</div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const styleSelect = document.getElementById('promptStyleSelect');
@@ -200,6 +226,22 @@
         const cancelStyleBtn = document.getElementById('cancelStyleBtn');
         const styleModalError = document.getElementById('styleModalError');
         let editingStyleId = null;
+
+        // --- Format logic ---
+        const formatSelect = document.getElementById('promptFormatSelect');
+        const formatDisplay = document.getElementById('selectedFormatDisplay');
+        const editFormatBtn = document.getElementById('editFormatBtn');
+        const deleteFormatBtn = document.getElementById('deleteFormatBtn');
+        let formatLibrary = {};
+        // --- Modal elements ---
+        const formatModalBg = document.getElementById('formatModalBg');
+        const formatModalTitle = document.getElementById('formatModalTitle');
+        const formatTitleInput = document.getElementById('formatTitleInput');
+        const formatDescInput = document.getElementById('formatDescInput');
+        const saveFormatBtn = document.getElementById('saveFormatBtn');
+        const cancelFormatBtn = document.getElementById('cancelFormatBtn');
+        const formatModalError = document.getElementById('formatModalError');
+        let editingFormatId = null;
 
         // --- Fetch and populate styles ---
         async function loadStyles() {
@@ -326,6 +368,131 @@
                 styleModalError.textContent = e.message;
             } finally {
                 saveStyleBtn.disabled = false;
+            }
+        });
+
+        // --- Fetch and populate formats ---
+        async function loadFormats() {
+            formatSelect.innerHTML = '<option value="">-- Select a Format --</option>';
+            formatLibrary = {};
+            try {
+                const res = await fetch('/api/v1/images/formats');
+                const formats = await res.json();
+                formats.forEach(f => {
+                    formatLibrary[f.id] = f;
+                    const opt = document.createElement('option');
+                    opt.value = f.id;
+                    opt.textContent = f.title;
+                    formatSelect.appendChild(opt);
+                });
+            } catch (e) {
+                formatSelect.innerHTML = '<option value="">(Failed to load formats)</option>';
+            }
+            editFormatBtn.style.display = 'none';
+            deleteFormatBtn.style.display = 'none';
+        }
+        loadFormats();
+
+        formatSelect.addEventListener('change', function () {
+            const val = formatSelect.value;
+            if (val && formatLibrary[val]) {
+                formatDisplay.innerHTML = `<strong>${formatLibrary[val].title}</strong>: ${formatLibrary[val].description || ''}`;
+                editFormatBtn.style.display = '';
+                deleteFormatBtn.style.display = '';
+            } else {
+                formatDisplay.textContent = '';
+                editFormatBtn.style.display = 'none';
+                deleteFormatBtn.style.display = 'none';
+            }
+        });
+
+        // --- Format logic ---
+        function openFormatModal(editId = null) {
+            editingFormatId = editId;
+            formatModalError.textContent = '';
+            if (editId && formatLibrary[editId]) {
+                formatModalTitle.textContent = 'Edit Format';
+                formatTitleInput.value = formatLibrary[editId].title;
+                formatDescInput.value = formatLibrary[editId].description || '';
+            } else {
+                formatModalTitle.textContent = 'Add Format';
+                formatTitleInput.value = '';
+                formatDescInput.value = '';
+            }
+            formatModalBg.style.display = '';
+            formatTitleInput.focus();
+        }
+        function closeFormatModal() {
+            formatModalBg.style.display = 'none';
+        }
+        document.getElementById('newFormatBtn').addEventListener('click', function () {
+            openFormatModal();
+        });
+        editFormatBtn.addEventListener('click', function () {
+            const val = formatSelect.value;
+            if (val && formatLibrary[val]) openFormatModal(val);
+        });
+        deleteFormatBtn.addEventListener('click', async function () {
+            const val = formatSelect.value;
+            if (!val || !formatLibrary[val]) return;
+            if (!confirm(`Delete format "${formatLibrary[val].title}"? This cannot be undone.`)) return;
+            deleteFormatBtn.disabled = true;
+            try {
+                const res = await fetch(`/api/v1/images/formats/${val}`, { method: 'DELETE' });
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || 'Failed to delete format');
+                }
+                await loadFormats();
+                formatSelect.value = '';
+                formatSelect.dispatchEvent(new Event('change'));
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                deleteFormatBtn.disabled = false;
+            }
+        });
+        cancelFormatBtn.addEventListener('click', closeFormatModal);
+        formatModalBg.addEventListener('click', function (e) {
+            if (e.target === formatModalBg) closeFormatModal();
+        });
+        saveFormatBtn.addEventListener('click', async function () {
+            const title = formatTitleInput.value.trim();
+            const description = formatDescInput.value.trim();
+            if (!title) {
+                formatModalError.textContent = 'Title is required.';
+                return;
+            }
+            saveFormatBtn.disabled = true;
+            try {
+                let res, data;
+                if (editingFormatId) {
+                    res = await fetch(`/api/v1/images/formats/${editingFormatId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title, description })
+                    });
+                } else {
+                    res = await fetch('/api/v1/images/formats', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title, description })
+                    });
+                }
+                data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to save format');
+                closeFormatModal();
+                await loadFormats();
+                if (editingFormatId) {
+                    formatSelect.value = editingFormatId;
+                } else {
+                    formatSelect.value = data.id;
+                }
+                formatSelect.dispatchEvent(new Event('change'));
+            } catch (e) {
+                formatModalError.textContent = e.message;
+            } finally {
+                saveFormatBtn.disabled = false;
             }
         });
     });

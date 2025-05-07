@@ -9,7 +9,7 @@ import requests
 import time
 import openai
 from app.services.llm_service import ServiceAuth
-from app.models import Post, ImageStyle
+from app.models import Post, ImageStyle, ImageFormat
 from slugify import slugify
 
 
@@ -300,19 +300,19 @@ def workflow_transition(slug):
 
 
 # --- ImageStyle CRUD API endpoints ---
-@bp.route("/api/v1/images/styles", methods=["GET"])
+@bp.route("/images/styles", methods=["GET"])
 def list_image_styles():
     styles = ImageStyle.query.order_by(ImageStyle.title).all()
     return jsonify([s.to_dict() for s in styles]), 200
 
-@bp.route("/api/v1/images/styles/<int:style_id>", methods=["GET"])
+@bp.route("/images/styles/<int:style_id>", methods=["GET"])
 def get_image_style(style_id):
     style = ImageStyle.query.get(style_id)
     if not style:
         return jsonify({"error": "Style not found"}), 404
     return jsonify(style.to_dict()), 200
 
-@bp.route("/api/v1/images/styles", methods=["POST"])
+@bp.route("/images/styles", methods=["POST"])
 def create_image_style():
     data = request.get_json() or {}
     title = data.get("title")
@@ -326,7 +326,7 @@ def create_image_style():
     db.session.commit()
     return jsonify(style.to_dict()), 201
 
-@bp.route("/api/v1/images/styles/<int:style_id>", methods=["PUT"])
+@bp.route("/images/styles/<int:style_id>", methods=["PUT"])
 def update_image_style(style_id):
     style = ImageStyle.query.get(style_id)
     if not style:
@@ -345,11 +345,66 @@ def update_image_style(style_id):
     db.session.commit()
     return jsonify(style.to_dict()), 200
 
-@bp.route("/api/v1/images/styles/<int:style_id>", methods=["DELETE"])
+@bp.route("/images/styles/<int:style_id>", methods=["DELETE"])
 def delete_image_style(style_id):
     style = ImageStyle.query.get(style_id)
     if not style:
         return jsonify({"error": "Style not found"}), 404
     db.session.delete(style)
+    db.session.commit()
+    return jsonify({"result": "deleted"}), 200
+
+
+# --- ImageFormat CRUD API endpoints ---
+@bp.route("/images/formats", methods=["GET"])
+def list_image_formats():
+    formats = ImageFormat.query.order_by(ImageFormat.title).all()
+    return jsonify([f.to_dict() for f in formats]), 200
+
+@bp.route("/images/formats/<int:format_id>", methods=["GET"])
+def get_image_format(format_id):
+    fmt = ImageFormat.query.get(format_id)
+    if not fmt:
+        return jsonify({"error": "Format not found"}), 404
+    return jsonify(fmt.to_dict()), 200
+
+@bp.route("/images/formats", methods=["POST"])
+def create_image_format():
+    data = request.get_json() or {}
+    title = data.get("title")
+    description = data.get("description")
+    if not title:
+        return jsonify({"error": "Title is required"}), 400
+    if ImageFormat.query.filter_by(title=title).first():
+        return jsonify({"error": "Format with this title already exists"}), 400
+    fmt = ImageFormat(title=title, description=description)
+    db.session.add(fmt)
+    db.session.commit()
+    return jsonify(fmt.to_dict()), 201
+
+@bp.route("/images/formats/<int:format_id>", methods=["PUT"])
+def update_image_format(format_id):
+    fmt = ImageFormat.query.get(format_id)
+    if not fmt:
+        return jsonify({"error": "Format not found"}), 404
+    data = request.get_json() or {}
+    title = data.get("title")
+    description = data.get("description")
+    if title:
+        existing = ImageFormat.query.filter_by(title=title).first()
+        if existing and existing.id != format_id:
+            return jsonify({"error": "Format with this title already exists"}), 400
+        fmt.title = title
+    if description is not None:
+        fmt.description = description
+    db.session.commit()
+    return jsonify(fmt.to_dict()), 200
+
+@bp.route("/images/formats/<int:format_id>", methods=["DELETE"])
+def delete_image_format(format_id):
+    fmt = ImageFormat.query.get(format_id)
+    if not fmt:
+        return jsonify({"error": "Format not found"}), 404
+    db.session.delete(fmt)
     db.session.commit()
     return jsonify({"result": "deleted"}), 200

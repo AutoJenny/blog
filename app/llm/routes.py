@@ -220,3 +220,11 @@ def llm_index():
 @bp.route('/images')
 def llm_images():
     return render_template('llm/images.html')
+
+@bp.route('/images/prompts')
+def llm_images_prompts():
+    return render_template('llm/images_prompts.html')
+
+@bp.route('/images/previews')
+def llm_images_previews():
+    return render_template('llm/images_previews.html')
