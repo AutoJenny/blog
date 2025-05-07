@@ -370,20 +370,11 @@
             </div>
         </div>
 
-        {# AUTHORING (SECTIONS) STAGE #}
+        {# SECTIONS - AUTHORING STAGE #}
         <div class="accordion-panel">
-            <button class="accordion-header" data-accordion="authoring">Authoring Stage (Sections)</button>
+            <button class="accordion-header" data-accordion="sections-authoring">Sections - Authoring</button>
             <div class="accordion-content">
-                <div class="flex justify-end mb-4">
-                    <button type="button" class="admin-button" id="allocate-ideas-btn">Allocate Ideas</button>
-                    <button type="button" class="admin-button" id="allocate-facts-btn">Allocate Facts</button>
-                    <button type="button" class="admin-button" id="generate-all-sections-btn">Generate All
-                        Sections</button>
-                </div>
-                <div id="generate-all-sections-log"
-                    style="background:#23244d;color:#a3e635;padding:0.5em 1em;margin-bottom:1em;border-radius:0.5em;display:none;">
-                </div>
-                <div id="sections">
+                <div id="sections-authoring">
                     {% for section in sections %}
                     <div class="section-block rounded-lg p-4 mb-6 shadow" data-section-id="{{ section.id }}">
                         <div class="section-accordion-header flex items-center justify-between cursor-pointer select-none bg-gray-900 px-4 py-2 rounded"
@@ -428,9 +419,8 @@
                                         onclick="saveSectionField({{ section.id }}, 'facts_to_include')">Save</button>
                                 </div>
                             </div>
-                            <!-- Inner Accordion for Content, Images, Meta -->
+                            <!-- Content Panel only -->
                             <div class="section-inner-accordion">
-                                <!-- Content Panel -->
                                 <div class="inner-accordion-panel content">
                                     <button class="inner-accordion-header" type="button">
                                         <span class="chevron">&#9654;</span> Content
@@ -461,7 +451,34 @@
                                         {% endfor %}
                                     </div>
                                 </div>
-                                <!-- Images Panel -->
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="flex justify-center mt-6 gap-2">
+                    <button type="button" class="admin-button" onclick="addSection()">Add Section</button>
+                    <button type="button" class="admin-button" id="import-headings-btn">Import Headings</button>
+                </div>
+            </div>
+        </div>
+
+        {# SECTIONS - IMAGES STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="sections-images">Sections - Images</button>
+            <div class="accordion-content">
+                <div id="sections-images">
+                    {% for section in sections %}
+                    <div class="section-block rounded-lg p-4 mb-6 shadow" data-section-id="{{ section.id }}">
+                        <div class="section-accordion-header flex items-center justify-between cursor-pointer select-none bg-gray-900 px-4 py-2 rounded"
+                            style="color: var(--admin-accent);">
+                            <span class="flex items-center">
+                                <span class="chevron">&#9654;</span>
+                                Section {{ loop.index }}: {{ section.section_heading or '' }}
+                            </span>
+                        </div>
+                        <div class="section-accordion-content">
+                            <div class="section-inner-accordion">
                                 <div class="inner-accordion-panel images">
                                     <button class="inner-accordion-header" type="button">
                                         <span class="chevron">&#9654;</span> Images
@@ -492,7 +509,30 @@
                                         {% endfor %}
                                     </div>
                                 </div>
-                                <!-- Meta Panel -->
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {# SECTIONS - META STAGE #}
+        <div class="accordion-panel">
+            <button class="accordion-header" data-accordion="sections-meta">Sections - Meta</button>
+            <div class="accordion-content">
+                <div id="sections-meta">
+                    {% for section in sections %}
+                    <div class="section-block rounded-lg p-4 mb-6 shadow" data-section-id="{{ section.id }}">
+                        <div class="section-accordion-header flex items-center justify-between cursor-pointer select-none bg-gray-900 px-4 py-2 rounded"
+                            style="color: var(--admin-accent);">
+                            <span class="flex items-center">
+                                <span class="chevron">&#9654;</span>
+                                Section {{ loop.index }}: {{ section.section_heading or '' }}
+                            </span>
+                        </div>
+                        <div class="section-accordion-content">
+                            <div class="section-inner-accordion">
                                 <div class="inner-accordion-panel meta">
                                     <button class="inner-accordion-header" type="button">
                                         <span class="chevron">&#9654;</span> Meta
@@ -526,10 +566,6 @@
                         </div>
                     </div>
                     {% endfor %}
-                </div>
-                <div class="flex justify-center mt-6 gap-2">
-                    <button type="button" class="admin-button" onclick="addSection()">Add Section</button>
-                    <button type="button" class="admin-button" id="import-headings-btn">Import Headings</button>
                 </div>
             </div>
         </div>
