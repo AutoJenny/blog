@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}LLM Image Generation & Management{% endblock %}
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .nav-links {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--admin-border);
+        padding-bottom: 0.5rem;
+    }
+
+    .nav-link {
+        color: var(--admin-text-secondary);
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .nav-link:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    .nav-link.active {
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.1);
+        border-bottom: 2px solid var(--admin-accent);
+        margin-bottom: -1px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto py-10">
+    <div class="admin-card">
+        <h1 class="admin-title mb-6">
+            <i class="fas fa-robot mr-2"></i>
+            LLM Management
+        </h1>
+        <div class="nav-links">
+            <a href="/llm/templates" class="nav-link">
+                <i class="fas fa-file-alt"></i>
+                Prompt Templates
+            </a>
+            <a href="/llm/images" class="nav-link active">
+                <i class="fas fa-image"></i>
+                Images
+            </a>
+            <a href="/llm/config" class="nav-link">
+                <i class="fas fa-cog"></i>
+                Configuration
+            </a>
+        </div>
+        <h2 class="text-3xl font-bold mb-6 text-center">LLM Image Generation & Management</h2>
+        <p class="mb-8 text-center text-lg text-gray-300">This page will provide tools to develop, test, and manage
+            LLM-powered image workflows, including prompt-to-image, style transfer, and more.</p>
+        <div class="flex justify-center">
+            <a href="/llm/" class="admin-button">&larr; Back to LLM Landing</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,11 +1,45 @@
 {% extends "base.html" %}
 
-{% block title %}LLM Management{% endblock %}
+{% block title %}LLM Admin{% endblock %}
 
 {% block styles %}
 {{ super() }}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
+    .llm-tab-nav {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--admin-border);
+        padding-bottom: 0.5rem;
+    }
+
+    .llm-tab-link {
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        border: none;
+        color: var(--admin-text-secondary);
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .llm-tab-link:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    .llm-tab-link.active {
+        color: var(--admin-accent);
+        border-bottom: 2px solid var(--admin-accent);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
     /* Tab Navigation */
     .tab-nav {
         display: flex;
@@ -201,218 +235,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="admin-content">
-    <div class="admin-card">
-        <h1 class="admin-title mb-6">
-            <i class="fas fa-robot mr-2"></i>
-            LLM Management
-        </h1>
-
-        <!-- Tab Navigation -->
-        <div class="tab-nav">
-            <button class="tab-button active" data-tab="config">
-                <i class="fas fa-cog"></i>
-                Configuration
-            </button>
-            <button class="tab-button" data-tab="test">
-                <i class="fas fa-vial"></i>
-                Test Interface
-            </button>
-            <button class="tab-button" data-tab="templates">
-                <i class="fas fa-file-alt"></i>
-                Prompt Templates
-            </button>
-        </div>
-
-        <!-- Configuration Tab -->
-        <div class="tab-content active" id="config-tab">
-            <div class="config-card">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="config-section">
-                        <h3 class="text-lg font-medium text-dark-text mb-3">
-                            <i class="fas fa-info-circle mr-2"></i>
-                            Current Settings
-                        </h3>
-                        <div class="result-container">
-                            <p class="mb-2">
-                                <i class="fas fa-plug mr-2"></i>
-                                <strong>Provider:</strong>
-                                <span id="current-provider">{{ config.provider_type|default('ollama') }}</span>
-                            </p>
-                            <p class="mb-2">
-                                <i class="fas fa-microchip mr-2"></i>
-                                <strong>Model:</strong>
-                                <span id="current-model">{{ config.model_name|default('mistral') }}</span>
-                            </p>
-                            <p class="mb-0">
-                                <i class="fas fa-server mr-2"></i>
-                                <strong>API Base:</strong>
-                                <span id="current-api-base">{{ config.api_base|default('http://localhost:11434')
-                                    }}</span>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="config-section">
-                        <h3 class="text-lg font-medium text-dark-text mb-3">
-                            <i class="fas fa-edit mr-2"></i>
-                            Update Settings
-                        </h3>
-                        <form id="config-form" class="config-form">
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-plug"></i>
-                                    Provider Type
-                                </label>
-                                <select name="provider_type" class="form-select" id="llm-provider-select">
-                                    <option value="ollama" {% if config.provider_type=='ollama' %}selected{% endif %}>
-                                        Ollama</option>
-                                    <option value="openai" {% if config.provider_type=='openai' %}selected{% endif %}>
-                                        OpenAI</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-microchip"></i>
-                                    Model
-                                </label>
-                                <div id="llm-model-list"></div>
-                                <div id="llm-model-note" style="font-size:0.95em; color:#a3e635; margin-top:0.25em;">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-server"></i>
-                                    API Base URL
-                                </label>
-                                <input type="text" name="api_base" class="form-input"
-                                    value="{{ config.api_base|default('http://localhost:11434') }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-key"></i>
-                                    Authentication Token
-                                </label>
-                                <input type="password" name="auth_token" class="form-input"
-                                    placeholder="Leave blank to keep current">
-                                <small class="text-muted">Provider authentication token for API access</small>
-                            </div>
-                            <button type="submit" class="btn">
-                                <i class="fas fa-save"></i>
-                                Update Configuration
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Test Interface Tab -->
-        <div class="tab-content" id="test-tab">
-            <div class="config-card">
-                <form id="test-form">
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class="fas fa-keyboard"></i>
-                            Test Prompt
-                        </label>
-                        <textarea name="prompt" class="form-input test-prompt"
-                            placeholder="Enter your test prompt here..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class="fas fa-microchip"></i>
-                            Model
-                        </label>
-                        <div id="test-model-list" class="space-y-2">
-                            <div class="flex items-center p-2 hover:bg-admin-bg-row-even rounded">
-                                <input type="radio" name="model" value="gpt-3.5-turbo" id="gpt-3.5-turbo"
-                                    class="form-radio">
-                                <label for="gpt-3.5-turbo" class="ml-2">GPT-3.5 Turbo</label>
-                            </div>
-                            <div class="flex items-center p-2 hover:bg-admin-bg-row-even rounded">
-                                <input type="radio" name="model" value="gpt-4" id="gpt-4" class="form-radio">
-                                <label for="gpt-4" class="ml-2">GPT-4</label>
-                            </div>
-                            <div class="flex items-center p-2 hover:bg-admin-bg-row-even rounded">
-                                <input type="radio" name="model" value="mistral" id="mistral" class="form-radio"
-                                    checked>
-                                <label for="mistral" class="ml-2">Mistral</label>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn">
-                        <i class="fas fa-play"></i>
-                        Test LLM
-                    </button>
-                </form>
-                <div id="test-result" class="result-container mt-4" style="display: none;">
-                    <h3 class="text-lg font-medium text-dark-text mb-2">
-                        <i class="fas fa-poll"></i>
-                        Result:
-                    </h3>
-                    <pre class="result-pre"></pre>
-                </div>
-            </div>
-        </div>
-
-        <!-- Prompt Templates Tab -->
-        <div class="tab-content" id="templates-tab">
-            <div class="config-card">
-                <div class="mb-4">
-                    <button id="add-new-prompt-btn" class="btn">
-                        <i class="fas fa-plus"></i>
-                        Add New Prompt
-                    </button>
-                </div>
-
-                <!-- New Prompt Form -->
-                <div id="new-prompt-form" class="mb-4 config-section" style="display: none;">
-                    <h3 class="text-lg font-medium text-dark-text mb-3">
-                        <i class="fas fa-plus-circle"></i>
-                        Add New Prompt
-                    </h3>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class="fas fa-tag"></i>
-                            Name
-                        </label>
-                        <input type="text" id="new-prompt-name" class="form-input" placeholder="Enter prompt name"
-                            required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class="fas fa-info-circle"></i>
-                            Description
-                        </label>
-                        <input type="text" id="new-prompt-description" class="form-input"
-                            placeholder="Enter prompt description">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class="fas fa-file-alt"></i>
-                            Content
-                        </label>
-                        <textarea id="new-prompt-content" class="form-input" rows="4" placeholder="Enter prompt content"
-                            required></textarea>
-                    </div>
-                    <div class="flex gap-2 mt-4">
-                        <button id="save-new-prompt-btn" class="btn">
-                            <i class="fas fa-save"></i>
-                            Save
-                        </button>
-                        <button id="cancel-new-prompt-btn" class="btn btn-secondary">
-                            <i class="fas fa-times"></i>
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Prompts Accordion -->
-                <div id="prompts-accordion" class="space-y-2">
-                    <!-- Templates will be inserted here -->
-                </div>
-            </div>
-        </div>
+<div class="max-w-3xl mx-auto py-10">
+    <h1 class="text-3xl font-bold mb-8 text-center">LLM Admin</h1>
+    <div class="text-center text-lg text-gray-400 mt-12">
+        <p>Select a tab above to manage LLM prompt templates, image workflows, or configuration.</p>
     </div>
 </div>
 {% endblock %}
