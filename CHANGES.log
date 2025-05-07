@@ -460,3 +460,5 @@ All notable changes to this project are documented in this file.
 [YYYY-MM-DD] Added CRUD API endpoints for ImageStyle (list, get, create, update, delete) in app/api/routes.py under /api/v1/images/styles and /api/v1/images/styles/<id>.
 
 [YYYY-MM-DD] UI: Image style dropdown in images_prompts.html is now dynamic, fetching from the API, and supports adding new styles via modal dialog. Edit/delete coming next.
+
+[YYYY-MM-DD] UI: Edit and delete functionality for image styles is now available in the image prompt creation UI (images_prompts.html). Users can edit or delete styles directly from the dropdown.

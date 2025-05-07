@@ -65,6 +65,9 @@ This mini-project aims to build a robust, extensible image management system for
 ### 9. Dynamic Style Dropdown in Prompt Creation UI
 - [x] Style dropdown in image prompt creation UI is now dynamic, fetching from the API, and supports adding new styles via modal dialog.
 
+### 10. Edit/Delete Style Functionality in Prompt Creation UI
+- [x] Users can now edit or delete image styles directly from the dropdown in the image prompt creation UI (images_prompts.html).
+
 ---
 
 **This document will be updated as each step is completed. Checkboxes will be ticked and progress committed to git after verification (e.g., with curl).** 
