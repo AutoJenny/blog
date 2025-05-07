@@ -62,6 +62,9 @@ This mini-project aims to build a robust, extensible image management system for
 ### 8. ImageStyle CRUD API endpoints
 - [x] Implement CRUD API endpoints for ImageStyle (list, get, create, update, delete) in app/api/routes.py. Endpoints are ready for UI integration.
 
+### 9. Dynamic Style Dropdown in Prompt Creation UI
+- [x] Style dropdown in image prompt creation UI is now dynamic, fetching from the API, and supports adding new styles via modal dialog.
+
 ---
 
 **This document will be updated as each step is completed. Checkboxes will be ticked and progress committed to git after verification (e.g., with curl).** 
