@@ -1,55 +1,76 @@
-# Stable Diffusion 3.5 (SD3.5) + ComfyUI Integration Memo
+# Stable Diffusion 3.5 (SD3.5) + ComfyUI Integration
 
-**Last updated:** [In progress, see chat log for timestamp]
+## Overview
 
-## Current Progress
-- Chosen interface: **ComfyUI** (recommended for SD3.5, robust on Mac Studio/Apple Silicon)
-- ComfyUI has been cloned and installed in `~/ComfyUI`.
-- Python virtual environment set up and all dependencies installed.
-- ComfyUI starts successfully and is accessible at [http://localhost:8188](http://localhost:8188).
-- The SD3.5 model checkpoint is being downloaded (user is saving to `~/Downloads`).
-- The ComfyUI checkpoints directory is ready: `~/ComfyUI/models/checkpoints/`
+- **Purpose:** Local, robust image generation for blog posts using SD3.5 via ComfyUI.
+- **Architecture:** Flask backend, ComfyUI as a subprocess, modern admin UI for prompt/image management.
 
-## Navigation & UI Update (2025-05-07)
-- **Images** is now a top-level menu item in the main header, visible on every page.
-- All `/llm/images/*` pages use a consistent, modern-styled tab system:
-  - **Level 2:** Image Configs, Image Prompts, Image Previews
-  - **Level 3 (under Configs):** Simple, Advanced (ComfyUI)
-- This ensures a clear, unified navigation experience for all image-related features.
+## Directory Structure
 
-## Next Steps (after model download completes)
-1. **Move the SD3.5 checkpoint** from `~/Downloads` to `~/ComfyUI/models/checkpoints/`.
-2. **Restart ComfyUI** and verify the model loads (check logs and web UI).
-3. **Test image generation** via the ComfyUI web UI and API.
-4. **Integrate with blog backend:**
-   - Add a Flask API endpoint to send prompts to ComfyUI and save images.
-   - Update the blog UI to use this endpoint for image generation.
-5. **Document API usage and integration details here as we proceed.**
+- `~/ComfyUI/` — Upstream ComfyUI install (not in repo).
+- `sd3.5_large_turbo_all_files/` — Large SD3.5 checkpoints, excluded from git.
+- `app/static/comfyui_output/` — Generated images for UI display.
+- `app/api/routes.py` — Flask endpoints for ComfyUI control and image generation.
+- `app/templates/llm/images_configs.html` — UI for prompt/image generation (Simple/Advanced tabs).
 
-## How to Continue
-- Wait for the SD3.5 model download to finish.
-- Notify the assistant of the filename and location.
-- The assistant will move the file and guide you through the next steps.
+## Installation & Setup
 
-## Update 2025-05-07: ImageSetting Model and API
-- Added `ImageSetting` model (name, style, format) to combine style and format into a single selectable setting.
-- CRUD API endpoints available at `/api/v1/images/settings`.
-- Next: Integrate ImageSetting selection and management into the `/llm/images/prompts` UI, above the Style/Format menus.
+1. **Clone ComfyUI:**  
+   `git clone https://github.com/comfyanonymous/ComfyUI.git ~/ComfyUI`
+2. **Install dependencies:**  
+   `cd ~/ComfyUI && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt`
+3. **Download SD3.5 checkpoint:**  
+   Save to `~/ComfyUI/models/checkpoints/` (not tracked by git).
+4. **.gitignore:**  
+   `sd3.5_large_turbo_all_files/` is excluded to prevent git commit hangs.
 
-## Update 2025-05-07: ImageSetting UI in /llm/images/prompts
-- Added a new ImageSetting menu above Style/Format in the Image Prompts UI.
-- Users can select, create, edit, and delete ImageSettings (name, style, format) from this menu.
-- Selecting an ImageSetting auto-selects the corresponding Style and Format in the menus below.
-- Includes a modal for adding/editing settings, and full JS integration for CRUD operations.
+## Running & Managing ComfyUI
 
-## Update 2024-07-09: SD 3.5 Large + CLIPLoader Fix
-- SD 3.5 Large checkpoints do **not** embed a CLIP model. You must use a separate `CLIPLoader` node in ComfyUI and select `clip_g.safetensors`.
-- The API workflow and backend have been updated to use a `CLIPLoader` node and connect its output to the `CLIPTextEncode` node.
-- This resolves the error: `CLIPTextEncode ERROR: clip input is invalid: None`.
-- If you add SD 3.5 Large in the ComfyUI UI, always add a `CLIPLoader` node and connect it to your text encoder.
+- **Status endpoint:**  
+  `GET /api/v1/comfyui/status` — Checks if ComfyUI is running.
+- **Start endpoint:**  
+  `POST /api/v1/comfyui/start` — Starts ComfyUI if not running (runs as background process).
+- **UI Integration:**  
+  - "Advanced (ComfyUI)" tab in Images UI shows status, allows starting, and embeds ComfyUI via iframe.
 
-## Note: The directory `sd3.5_large_turbo_all_files/` (used for large comfyUI files and checkpoints) is now excluded from git via `.gitignore` to prevent issues with large files causing git commit hangs.
+## Image Generation Workflow
+
+- **Simple tab:**  
+  - Sends prompt to `/api/v1/images/generate` (Flask).
+  - Flask builds ComfyUI workflow, POSTs to `http://localhost:8188/prompt`.
+  - Waits for output image in `~/ComfyUI/output/`, copies to `app/static/comfyui_output/`.
+  - Returns image URL for UI display.
+
+- **Advanced tab:**  
+  - Direct access to ComfyUI web UI via iframe.
+
+- **CLIPLoader for SD3.5 Large:**  
+  - SD3.5 Large checkpoints do not embed a CLIP model.
+  - Workflow uses a separate `CLIPLoader` node and connects it to `CLIPTextEncode`.
+
+## File Handling & Storage
+
+- **Generated images:**  
+  - Output images are copied to `app/static/comfyui_output/` for serving via Flask.
+- **Large files:**  
+  - All large model/checkpoint files are excluded from git.
+
+## Extensibility & Roadmap
+
+- **Prompt templates, styles, formats:**  
+  - Managed via UI and API.
+- **ImageSetting model:**  
+  - Combines style/format for easy selection.
+- **Future:**  
+  - Support for more backends, batch operations, watermarking, approval workflows (see `/docs/temp/llm_images_mini_project.md`).
+
+## Troubleshooting
+
+- **Git hangs:**  
+  - Caused by large files; fixed by `.gitignore` update.
+- **CLIP errors:**  
+  - Always use a `CLIPLoader` node for SD3.5 Large.
 
 ---
 
-_This memo will be updated as progress continues. See also: `/docs/temp/llm_images_mini_project.md` for broader image workflow plans._ 
+_See also: `/docs/temp/llm_images_mini_project.md` for broader image workflow plans and future extensibility._ 
