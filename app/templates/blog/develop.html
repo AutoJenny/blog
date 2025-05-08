@@ -515,6 +515,44 @@
                                         </div>
                                         {% endif %}
                                         {% endfor %}
+                                        <!-- ADMIN REVIEW PANEL -->
+                                        <div class="admin-card bg-gray-950 border border-blue-900 mt-6 p-4 rounded">
+                                            <div class="font-bold mb-2 text-blue-300">Admin Image Review</div>
+                                            <div id="admin-review-image-{{ section.id }}" class="mb-2">
+                                                {% if section.generated_image_url %}
+                                                <img src="{{ section.generated_image_url }}" class="w-full rounded mb-2"
+                                                    style="max-height:240px;object-fit:contain;">
+                                                {% else %}
+                                                <span class="text-red-400">No image generated yet.</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex gap-2 mb-2">
+                                                <button type="button" class="admin-button"
+                                                    onclick="approveImage({{ section.id }})">Approve</button>
+                                                <button type="button" class="admin-button admin-button-secondary"
+                                                    onclick="rejectImage({{ section.id }})">Reject</button>
+                                                <label class="admin-button admin-button-secondary cursor-pointer">
+                                                    Upload/Replace
+                                                    <input type="file" accept="image/*" style="display:none;"
+                                                        onchange="uploadImage(event, {{ section.id }})">
+                                                </label>
+                                                <button type="button" class="admin-button"
+                                                    onclick="regenerateImage({{ section.id }})">Regenerate</button>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="block text-xs text-gray-400 mb-1">Status:</label>
+                                                <span id="admin-image-status-{{ section.id }}">{{
+                                                    section.image_review_status or 'Pending' }}</span>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs text-gray-400 mb-1">Admin Comments:</label>
+                                                <textarea id="admin-image-comment-{{ section.id }}"
+                                                    class="admin-textarea w-full"
+                                                    rows="2">{{ section.image_review_comment or '' }}</textarea>
+                                                <button type="button" class="admin-button mt-2"
+                                                    onclick="saveImageComment({{ section.id }})">Save Comment</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1411,6 +1449,57 @@
                 resultsDiv.innerHTML = `<span class='text-red-400'>Error: ${err.message}</span>`;
             }
         });
+
+        // --- Admin Review Panel Logic ---
+        window.approveImage = async function (sectionId) {
+            await updateImageReview(sectionId, 'Approved');
+        };
+        window.rejectImage = async function (sectionId) {
+            await updateImageReview(sectionId, 'Rejected');
+        };
+        window.saveImageComment = async function (sectionId) {
+            const comment = document.getElementById(`admin-image-comment-${sectionId}`).value;
+            await fetch(`/blog/api/v1/posts/${postId}/sections/${sectionId}/fields/image_review_comment`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: comment })
+            });
+            alert('Comment saved!');
+        };
+        window.uploadImage = async function (event, sectionId) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('image', file);
+            const resp = await fetch(`/blog/api/v1/posts/${postId}/sections/${sectionId}/upload_image`, {
+                method: 'POST',
+                body: formData
+            });
+            if (resp.ok) {
+                alert('Image uploaded!');
+                location.reload();
+            } else {
+                alert('Upload failed');
+            }
+        };
+        window.regenerateImage = async function (sectionId) {
+            const resp = await fetch(`/api/v1/posts/${postId}/generate_images`, { method: 'POST' });
+            if (resp.ok) {
+                alert('Regeneration triggered!');
+                location.reload();
+            } else {
+                alert('Regeneration failed');
+            }
+        };
+        async function updateImageReview(sectionId, status) {
+            await fetch(`/blog/api/v1/posts/${postId}/sections/${sectionId}/fields/image_review_status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: status })
+            });
+            document.getElementById(`admin-image-status-${sectionId}`).textContent = status;
+            alert('Status updated!');
+        }
     });
 
     // Helpers
