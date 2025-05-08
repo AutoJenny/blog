@@ -221,6 +221,10 @@ def llm_index():
 def llm_images():
     return render_template('llm/images.html')
 
+@bp.route('/images/configs')
+def llm_images_configs():
+    return render_template('llm/images_configs.html')
+
 @bp.route('/images/prompts')
 def llm_images_prompts():
     return render_template('llm/images_prompts.html')
