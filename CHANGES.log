@@ -490,3 +490,5 @@ All notable changes to this project are documented in this file.
 2024-07-09: Added batch image generation UI to blog post workflow (develop.html) and updated implementation plan to reflect progress on LLM image generation system.
 
 2024-07-09: Enabled automated image generation for new/updated posts and updated implementation plan to reflect this progress.
+
+2024-07-09: Implemented inline admin review and override panel for generated images in blog workflow UI (develop.html), and updated implementation plan to reflect this progress.
