@@ -8,10 +8,10 @@ This plan covers the implementation of a robust, production-ready system for gen
 ## Implementation Steps
 
 ### 1. Data Model Updates
-- [ ] Add structured fields to `ImageSetting` for SD/ComfyUI (width, height, steps, guidance_scale, extra_settings)
-- [ ] Update or create migration scripts to move from freeform to structured settings
-- [ ] Add `provider` field to prompt examples and/or image generation requests
-- [ ] Add `ImagePromptExample` model for reusable prompt+style+format+provider combos
+- [x] Add structured fields to `ImageSetting` for SD/ComfyUI (width, height, steps, guidance_scale, extra_settings)
+- [x] Update or create migration scripts to move from freeform to structured settings
+- [x] Add `provider` field to prompt examples and/or image generation requests
+- [x] Add `ImagePromptExample` model for reusable prompt+style+format+provider combos
 - [ ] (Optional) Add `ImageGenerationResult` model for history/comparison
 
 ### 2. UI Changes
@@ -25,7 +25,7 @@ This plan covers the implementation of a robust, production-ready system for gen
 - [ ] Update `/api/v1/images/generate` to accept `provider` and structured settings, and route to correct backend
 - [ ] Implement backend logic for SD/ComfyUI (using structured settings)
 - [ ] Implement backend logic for OpenAI DALL·E (mapping settings as needed)
-- [ ] Add CRUD endpoints for prompt examples
+- [x] Add CRUD endpoints for prompt examples
 - [ ] (Optional) Add endpoints for batch generation and result history
 
 ### 4. Production Workflow Integration
@@ -41,6 +41,21 @@ This plan covers the implementation of a robust, production-ready system for gen
 - [ ] Update `/docs/sd_integration.md` and related docs as features are implemented
 - [ ] Add usage/testing instructions for each provider and workflow
 - [ ] Document troubleshooting and extensibility notes
+
+### 7. Backend API
+- [x] CRUD API for `ImagePromptExample`
+- [x] Update `/images/generate` endpoint for provider/structured settings
+- [x] Add `/posts/<post_id>/generate_images` endpoint for batch section image generation
+
+### 8. UI/UX
+- [x] Provider dropdown and prompt example library in `/llm/images/prompts`
+- [x] Multi-provider batch test/compare in `/llm/images/prompts`
+- [x] Integrate batch image generation into blog post workflow UI (develop.html)
+
+### 9. Production Integration
+- [ ] Automated image generation for new/updated posts
+- [ ] Admin review and override for generated images
+- [ ] Error handling, logging, and user feedback
 
 ---
 
