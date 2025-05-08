@@ -467,6 +467,14 @@
         <div class="accordion-panel">
             <button class="accordion-header" data-accordion="sections-images">Sections - Images</button>
             <div class="accordion-content">
+                <!-- BATCH IMAGE GENERATION UI -->
+                <div class="flex justify-between items-center mb-6">
+                    <button type="button" class="admin-button" id="generate-all-images-btn">Generate All Images for
+                        Sections</button>
+                    <span id="generate-all-images-loading" class="text-blue-400 ml-4" style="display:none;">Generating
+                        images...</span>
+                </div>
+                <div id="generate-all-images-results" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"></div>
                 <div id="sections-images">
                     {% for section in sections %}
                     <div class="section-block rounded-lg p-4 mb-6 shadow" data-section-id="{{ section.id }}">
@@ -1371,6 +1379,37 @@
                     }
                 });
             });
+        });
+
+        // --- Generate All Images for Sections ---
+        document.getElementById('generate-all-images-btn').addEventListener('click', async function () {
+            const postId = document.getElementById('stage-accordion').dataset.postId;
+            const loading = document.getElementById('generate-all-images-loading');
+            const resultsDiv = document.getElementById('generate-all-images-results');
+            loading.style.display = 'inline';
+            resultsDiv.innerHTML = '';
+            try {
+                const resp = await fetch(`/api/v1/posts/${postId}/generate_images`, { method: 'POST' });
+                const data = await resp.json();
+                loading.style.display = 'none';
+                if (data.results && Array.isArray(data.results)) {
+                    data.results.forEach(r => {
+                        const sectionDiv = document.createElement('div');
+                        sectionDiv.className = 'admin-card';
+                        sectionDiv.innerHTML = `<div class='font-bold mb-2'>Section: ${r.section_heading || ''}</div>` +
+                            (r.image_url ? `<img src='${r.image_url}' class='w-full rounded mb-2' style='max-height:240px;object-fit:contain;'>` :
+                                `<span class='text-red-400'>No image generated</span>`) +
+                            (r.provider ? `<div class='text-xs text-gray-400'>Provider: ${r.provider}</div>` : '') +
+                            (r.metadata ? `<pre class='text-xs bg-gray-900 p-2 rounded mt-2'>${JSON.stringify(r.metadata, null, 2)}</pre>` : '');
+                        resultsDiv.appendChild(sectionDiv);
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<span class="text-red-400">No results returned.</span>';
+                }
+            } catch (err) {
+                loading.style.display = 'none';
+                resultsDiv.innerHTML = `<span class='text-red-400'>Error: ${err.message}</span>`;
+            }
         });
     });
 
