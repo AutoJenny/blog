@@ -125,3 +125,6 @@ app/static/uploads/*
 app/static/cache/*
 !app/static/cache/.gitkeep
 .qodo
+
+# New file to exclude
+sd3.5_large_turbo_all_files/
