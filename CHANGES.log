@@ -492,3 +492,5 @@ All notable changes to this project are documented in this file.
 2024-07-09: Enabled automated image generation for new/updated posts and updated implementation plan to reflect this progress.
 
 2024-07-09: Implemented inline admin review and override panel for generated images in blog workflow UI (develop.html), and updated implementation plan to reflect this progress.
+
+2024-07-09: Improved error handling, logging, and user feedback in the admin image review workflow (develop.html), and updated implementation plan to reflect this progress.
