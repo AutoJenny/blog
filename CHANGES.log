@@ -484,3 +484,5 @@ All notable changes to this project are documented in this file.
 2024-07-09: Updated the ComfyUI workflow in app/api/routes.py generate_image endpoint to use a separate CLIPLoader node for SD 3.5 Large, resolving the issue where the CLIP was not recognized from the checkpoint.
 
 - Excluded sd3.5_large_turbo_all_files/ (comfyUI files) in .gitignore to prevent git commit hangs due to large files.
+
+2024-07-09: Comprehensive update to docs/sd_integration.md with full Stable Diffusion + ComfyUI implementation details, including architecture, setup, endpoints, UI, workflow, file handling, extensibility, and troubleshooting.
