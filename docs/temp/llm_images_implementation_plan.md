@@ -53,7 +53,7 @@ This plan covers the implementation of a robust, production-ready system for gen
 - [x] Integrate batch image generation into blog post workflow UI (develop.html)
 
 ### 9. Production Integration
-- [ ] Automated image generation for new/updated posts
+- [x] Automated image generation for new/updated posts
 - [ ] Admin review and override for generated images
 - [ ] Error handling, logging, and user feedback
 
