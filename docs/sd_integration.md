@@ -10,6 +10,13 @@
 - The SD3.5 model checkpoint is being downloaded (user is saving to `~/Downloads`).
 - The ComfyUI checkpoints directory is ready: `~/ComfyUI/models/checkpoints/`
 
+## Navigation & UI Update (2025-05-07)
+- **Images** is now a top-level menu item in the main header, visible on every page.
+- All `/llm/images/*` pages use a consistent, modern-styled tab system:
+  - **Level 2:** Image Configs, Image Prompts, Image Previews
+  - **Level 3 (under Configs):** Simple, Advanced (ComfyUI)
+- This ensures a clear, unified navigation experience for all image-related features.
+
 ## Next Steps (after model download completes)
 1. **Move the SD3.5 checkpoint** from `~/Downloads` to `~/ComfyUI/models/checkpoints/`.
 2. **Restart ComfyUI** and verify the model loads (check logs and web UI).
@@ -34,6 +41,14 @@
 - Users can select, create, edit, and delete ImageSettings (name, style, format) from this menu.
 - Selecting an ImageSetting auto-selects the corresponding Style and Format in the menus below.
 - Includes a modal for adding/editing settings, and full JS integration for CRUD operations.
+
+## Update 2024-07-09: SD 3.5 Large + CLIPLoader Fix
+- SD 3.5 Large checkpoints do **not** embed a CLIP model. You must use a separate `CLIPLoader` node in ComfyUI and select `clip_g.safetensors`.
+- The API workflow and backend have been updated to use a `CLIPLoader` node and connect its output to the `CLIPTextEncode` node.
+- This resolves the error: `CLIPTextEncode ERROR: clip input is invalid: None`.
+- If you add SD 3.5 Large in the ComfyUI UI, always add a `CLIPLoader` node and connect it to your text encoder.
+
+## Note: The directory `sd3.5_large_turbo_all_files/` (used for large comfyUI files and checkpoints) is now excluded from git via `.gitignore` to prevent issues with large files causing git commit hangs.
 
 ---
 

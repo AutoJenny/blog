@@ -11,6 +11,9 @@ import openai
 from app.services.llm_service import ServiceAuth
 from app.models import Post, ImageStyle, ImageFormat, ImageSetting
 from slugify import slugify
+import subprocess
+import glob
+import shutil
 
 
 def check_ollama_performance():
@@ -477,3 +480,138 @@ def delete_image_setting(setting_id):
     db.session.delete(s)
     db.session.commit()
     return jsonify({'success': True})
+
+@bp.route('/comfyui/status', methods=['GET'])
+def comfyui_status():
+    """Check if ComfyUI is running (by process name and port)."""
+    # Check for process
+    running = False
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            if proc.info['cmdline'] and 'main.py' in proc.info['cmdline'] and 'ComfyUI' in ' '.join(proc.info['cmdline']):
+                running = True
+                break
+        except Exception:
+            continue
+    return jsonify({"running": running})
+
+@bp.route('/comfyui/start', methods=['POST'])
+def comfyui_start():
+    """Start ComfyUI if not running."""
+    # Check if already running
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            if proc.info['cmdline'] and 'main.py' in proc.info['cmdline'] and 'ComfyUI' in ' '.join(proc.info['cmdline']):
+                return jsonify({"started": False, "running": True})
+        except Exception:
+            continue
+    # Not running, so start it
+    comfyui_dir = os.path.expanduser('~/ComfyUI')
+    venv_python = os.path.join(comfyui_dir, 'venv', 'bin', 'python')
+    main_py = os.path.join(comfyui_dir, 'main.py')
+    cmd = [venv_python, main_py, '--listen', '0.0.0.0', '--port', '8188']
+    # Start in background, detach from Flask
+    with open(os.devnull, 'w') as devnull:
+        subprocess.Popen(cmd, cwd=comfyui_dir, stdout=devnull, stderr=devnull, preexec_fn=os.setpgrp)
+    # Give it a few seconds to start
+    time.sleep(3)
+    # Check again
+    running = False
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            if proc.info['cmdline'] and 'main.py' in proc.info['cmdline'] and 'ComfyUI' in ' '.join(proc.info['cmdline']):
+                running = True
+                break
+        except Exception:
+            continue
+    return jsonify({"started": True, "running": running})
+
+@bp.route('/images/generate', methods=['POST'])
+def generate_image():
+    data = request.get_json() or {}
+    prompt = data.get('prompt', '').strip()
+    if not prompt:
+        return jsonify({'error': 'Prompt is required'}), 400
+    # Compose workflow for SD3.5
+    workflow = {
+        "prompt": {
+            "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {"ckpt_name": "sd3.5_large.safetensors"}
+            },
+            "2": {
+                "class_type": "CLIPLoader",
+                "inputs": {"clip_name": "clip_g.safetensors"}
+            },
+            "3": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                    "text": prompt,
+                    "clip": ["2", 0]
+                }
+            },
+            "4": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {"width": 512, "height": 512, "batch_size": 1}
+            },
+            "5": {
+                "class_type": "KSampler",
+                "inputs": {
+                    "model": ["1", 0],
+                    "positive": ["3", 0],
+                    "negative": ["3", 0],
+                    "latent_image": ["4", 0],
+                    "steps": 20,
+                    "cfg": 7.0,
+                    "sampler_name": "euler",
+                    "scheduler": "normal",
+                    "seed": 42,
+                    "denoise": 1.0
+                }
+            },
+            "6": {
+                "class_type": "VAEDecode",
+                "inputs": {
+                    "samples": ["5", 0],
+                    "vae": ["1", 2]
+                }
+            },
+            "7": {
+                "class_type": "SaveImage",
+                "inputs": {
+                    "images": ["6", 0],
+                    "filename_prefix": "webui_sd35"
+                }
+            }
+        }
+    }
+    try:
+        res = requests.post('http://localhost:8188/prompt', json=workflow, timeout=60)
+        debug_info = {'comfyui_status_code': res.status_code, 'comfyui_response': res.text}
+        if res.status_code != 200:
+            return jsonify({'error': f'ComfyUI error: {res.text}', 'debug': debug_info}), 500
+        # Wait for image to appear (poll for up to 30s)
+        output_dir = os.path.expanduser('~/ComfyUI/output/')
+        prefix = 'webui_sd35'
+        found = None
+        files_checked = []
+        for _ in range(30):
+            files = sorted(glob.glob(os.path.join(output_dir, f'{prefix}_*.png')), key=os.path.getmtime, reverse=True)
+            files_checked = files
+            if files:
+                found = files[0]
+                if os.path.getsize(found) > 0:
+                    break
+            time.sleep(1)
+        if not found:
+            return jsonify({'error': 'No image generated', 'debug': debug_info, 'files_checked': files_checked}), 500
+        # Copy to static/comfyui_output/
+        static_dir = os.path.join(current_app.root_path, 'static', 'comfyui_output')
+        os.makedirs(static_dir, exist_ok=True)
+        fname = os.path.basename(found)
+        dest = os.path.join(static_dir, fname)
+        shutil.copy2(found, dest)
+        image_url = f'/static/comfyui_output/{fname}'
+        return jsonify({'image_url': image_url, 'debug': debug_info})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

@@ -1,2 +1,203 @@
 nohup: python: No such file or directory
 nohup: python: No such file or directory
+Checkpoint files will always be loaded safely.
+Total VRAM 65536 MB, total RAM 65536 MB
+pytorch version: 2.7.0
+Mac Version (15, 4, 1)
+Set vram state to: SHARED
+Device: mps
+Using sub quadratic optimization for attention, if you have memory or speed issues try using: --use-split-cross-attention
+Python version: 3.12.2 (v3.12.2:6abddd9f6a, Feb  6 2024, 17:02:06) [Clang 13.0.0 (clang-1300.0.29.30)]
+ComfyUI version: 0.3.32
+ComfyUI frontend version: 1.18.9
+[Prompt Server] web root: /Users/nickfiddes/ComfyUI/venv/lib/python3.12/site-packages/comfyui_frontend_package/static
+
+Import times for custom nodes:
+   0.0 seconds: /Users/nickfiddes/ComfyUI/custom_nodes/websocket_image_save.py
+
+Starting server
+
+To see the GUI go to: http://127.0.0.1:8188
+got prompt
+model weight dtype torch.float16, manual cast: None
+model_type EPS
+Using split attention in VAE
+Using split attention in VAE
+VAE load device: mps, offload device: cpu, dtype: torch.bfloat16
+Requested to load SD1ClipModel
+loaded completely 9.5367431640625e+25 235.84423828125 True
+CLIP/text encoder model load device: cpu, offload device: cpu, current: cpu, dtype: torch.float16
+loaded diffusion model directly to GPU
+Requested to load BaseModel
+loaded completely 9.5367431640625e+25 1639.406135559082 True
+  0%|          | 0/20 [00:00<?, ?it/s]  5%|▌         | 1/20 [00:00<00:13,  1.45it/s] 10%|█         | 2/20 [00:00<00:07,  2.56it/s] 15%|█▌        | 3/20 [00:01<00:05,  3.23it/s] 20%|██        | 4/20 [00:01<00:04,  3.69it/s] 25%|██▌       | 5/20 [00:01<00:03,  4.00it/s] 30%|███       | 6/20 [00:01<00:03,  4.23it/s] 35%|███▌      | 7/20 [00:01<00:02,  4.35it/s] 40%|████      | 8/20 [00:02<00:02,  4.45it/s] 45%|████▌     | 9/20 [00:02<00:02,  4.54it/s] 50%|█████     | 10/20 [00:02<00:02,  4.58it/s] 55%|█████▌    | 11/20 [00:02<00:01,  4.63it/s] 60%|██████    | 12/20 [00:02<00:01,  4.65it/s] 65%|██████▌   | 13/20 [00:03<00:01,  4.67it/s] 70%|███████   | 14/20 [00:03<00:01,  4.68it/s] 75%|███████▌  | 15/20 [00:03<00:01,  4.69it/s] 80%|████████  | 16/20 [00:03<00:00,  4.70it/s] 85%|████████▌ | 17/20 [00:04<00:00,  4.70it/s] 90%|█████████ | 18/20 [00:04<00:00,  4.70it/s] 95%|█████████▌| 19/20 [00:04<00:00,  4.71it/s]100%|██████████| 20/20 [00:04<00:00,  4.71it/s]100%|██████████| 20/20 [00:04<00:00,  4.26it/s]
+Requested to load AutoencoderKL
+loaded completely 9.5367431640625e+25 159.55708122253418 True
+Prompt executed in 6.38 seconds
+got prompt
+model weight dtype torch.float16, manual cast: None
+model_type FLOW
+Using split attention in VAE
+Using split attention in VAE
+VAE load device: mps, offload device: cpu, dtype: torch.bfloat16
+no CLIP/text encoder weights in checkpoint, the text encoder model will not be loaded.
+loaded diffusion model directly to GPU
+Requested to load SD3
+loaded completely 9.5367431640625e+25 15366.797485351562 True
+!!! Exception during processing !!! ERROR: clip input is invalid: None
+
+If the clip is from a checkpoint loader node your checkpoint does not contain a valid clip or text encoder model.
+Traceback (most recent call last):
+  File "/Users/nickfiddes/ComfyUI/execution.py", line 347, in execute
+    output_data, output_ui, has_subgraph = get_output_data(obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nickfiddes/ComfyUI/execution.py", line 222, in get_output_data
+    return_values = _map_node_over_list(obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nickfiddes/ComfyUI/execution.py", line 194, in _map_node_over_list
+    process_inputs(input_dict, i)
+  File "/Users/nickfiddes/ComfyUI/execution.py", line 183, in process_inputs
+    results.append(getattr(obj, func)(**inputs))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nickfiddes/ComfyUI/nodes.py", line 67, in encode
+    raise RuntimeError("ERROR: clip input is invalid: None\n\nIf the clip is from a checkpoint loader node your checkpoint does not contain a valid clip or text encoder model.")
+RuntimeError: ERROR: clip input is invalid: None
+
+If the clip is from a checkpoint loader node your checkpoint does not contain a valid clip or text encoder model.
+
+Prompt executed in 12.32 seconds
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+Checkpoint files will always be loaded safely.
+Total VRAM 65536 MB, total RAM 65536 MB
+pytorch version: 2.7.0
+Mac Version (15, 4, 1)
+Set vram state to: SHARED
+Device: mps
+Using sub quadratic optimization for attention, if you have memory or speed issues try using: --use-split-cross-attention
+Python version: 3.12.2 (v3.12.2:6abddd9f6a, Feb  6 2024, 17:02:06) [Clang 13.0.0 (clang-1300.0.29.30)]
+ComfyUI version: 0.3.32
+ComfyUI frontend version: 1.18.9
+[Prompt Server] web root: /Users/nickfiddes/ComfyUI/venv/lib/python3.12/site-packages/comfyui_frontend_package/static
+
+Import times for custom nodes:
+   0.0 seconds: /Users/nickfiddes/ComfyUI/custom_nodes/websocket_image_save.py
+
+Starting server
+
+To see the GUI go to: http://127.0.0.1:8188
+Checkpoint files will always be loaded safely.
+Total VRAM 65536 MB, total RAM 65536 MB
+pytorch version: 2.7.0
+Mac Version (15, 4, 1)
+Set vram state to: SHARED
+Device: mps
+Using sub quadratic optimization for attention, if you have memory or speed issues try using: --use-split-cross-attention
+Python version: 3.12.2 (v3.12.2:6abddd9f6a, Feb  6 2024, 17:02:06) [Clang 13.0.0 (clang-1300.0.29.30)]
+ComfyUI version: 0.3.32
+ComfyUI frontend version: 1.18.9
+[Prompt Server] web root: /Users/nickfiddes/ComfyUI/venv/lib/python3.12/site-packages/comfyui_frontend_package/static
+
+Import times for custom nodes:
+   0.0 seconds: /Users/nickfiddes/ComfyUI/custom_nodes/websocket_image_save.py
+
+Starting server
+
+To see the GUI go to: http://127.0.0.1:8188
+got prompt
+Failed to validate prompt for output 9:
+* CLIPTextEncode 7:
+  - Required input is missing: clip
+Output will be ignored
+invalid prompt: {'type': 'prompt_outputs_failed_validation', 'message': 'Prompt outputs failed validation', 'details': '', 'extra_info': {}}
+Checkpoint files will always be loaded safely.
+Total VRAM 65536 MB, total RAM 65536 MB
+pytorch version: 2.7.0
+Mac Version (15, 4, 1)
+Set vram state to: SHARED
+Device: mps
+Using sub quadratic optimization for attention, if you have memory or speed issues try using: --use-split-cross-attention
+Python version: 3.12.2 (v3.12.2:6abddd9f6a, Feb  6 2024, 17:02:06) [Clang 13.0.0 (clang-1300.0.29.30)]
+ComfyUI version: 0.3.32
+ComfyUI frontend version: 1.18.9
+[Prompt Server] web root: /Users/nickfiddes/ComfyUI/venv/lib/python3.12/site-packages/comfyui_frontend_package/static
+
+Import times for custom nodes:
+   0.0 seconds: /Users/nickfiddes/ComfyUI/custom_nodes/websocket_image_save.py
+
+Starting server
+
+To see the GUI go to: http://0.0.0.0:8188
+got prompt
+Failed to validate prompt for output 50:
+* TripleCLIPLoader 11:
+  - Value not in list: clip_name2: 'clip_l_sdxl_base.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+  - Value not in list: clip_name1: 'clip_g_sdxl_base.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+  - Value not in list: clip_name3: 't5xxl.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+Output will be ignored
+invalid prompt: {'type': 'prompt_outputs_failed_validation', 'message': 'Prompt outputs failed validation', 'details': '', 'extra_info': {}}
+got prompt
+Failed to validate prompt for output 50:
+* TripleCLIPLoader 11:
+  - Value not in list: clip_name2: 'clip_l_sdxl_base.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+  - Value not in list: clip_name1: 'clip_g_sdxl_base.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+  - Value not in list: clip_name3: 't5xxl.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+Output will be ignored
+invalid prompt: {'type': 'prompt_outputs_failed_validation', 'message': 'Prompt outputs failed validation', 'details': '', 'extra_info': {}}
+got prompt
+model weight dtype torch.float16, manual cast: None
+model_type FLOW
+Using split attention in VAE
+Using split attention in VAE
+VAE load device: mps, offload device: cpu, dtype: torch.bfloat16
+no CLIP/text encoder weights in checkpoint, the text encoder model will not be loaded.
+loaded diffusion model directly to GPU
+Requested to load SD3
+loaded completely 9.5367431640625e+25 15366.797485351562 True
+Requested to load SD3ClipModel_
+loaded completely 9.5367431640625e+25 10644.189453125 True
+CLIP/text encoder model load device: cpu, offload device: cpu, current: cpu, dtype: torch.float16
+clip missing: ['text_projection.weight']
+Requested to load SD3
+  0%|          | 0/4 [00:00<?, ?it/s]huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+ 25%|██▌       | 1/4 [00:07<00:22,  7.61s/it] 50%|█████     | 2/4 [00:10<00:10,  5.11s/it] 75%|███████▌  | 3/4 [00:13<00:04,  4.07s/it]100%|██████████| 4/4 [00:16<00:00,  3.58s/it]100%|██████████| 4/4 [00:16<00:00,  4.16s/it]
+Requested to load AutoencodingEngine
+loaded completely 9.5367431640625e+25 159.87335777282715 True
+Prompt executed in 59.15 seconds
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.83s/it] 50%|█████     | 2/4 [00:05<00:05,  3.00s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.94s/it]100%|██████████| 4/4 [00:11<00:00,  2.90s/it]100%|██████████| 4/4 [00:11<00:00,  2.92s/it]
+Prompt executed in 14.68 seconds
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.79s/it] 50%|█████     | 2/4 [00:05<00:05,  2.98s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.92s/it]100%|██████████| 4/4 [00:11<00:00,  2.88s/it]100%|██████████| 4/4 [00:11<00:00,  2.89s/it]
+/Users/nickfiddes/ComfyUI/nodes.py:1594: RuntimeWarning: invalid value encountered in cast
+  img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+Prompt executed in 14.38 seconds
+got prompt
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.77s/it] 50%|█████     | 2/4 [00:05<00:05,  2.96s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.89s/it]100%|██████████| 4/4 [00:11<00:00,  2.86s/it]100%|██████████| 4/4 [00:11<00:00,  2.87s/it]
+Prompt executed in 12.48 seconds
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.73s/it] 50%|█████     | 2/4 [00:05<00:05,  2.95s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.88s/it]100%|██████████| 4/4 [00:11<00:00,  2.86s/it]100%|██████████| 4/4 [00:11<00:00,  2.86s/it]
+Prompt executed in 12.44 seconds
+got prompt
+Token indices sequence length is longer than the specified maximum sequence length for this model (106 > 77). Running this sequence through the model will result in indexing errors
+Token indices sequence length is longer than the specified maximum sequence length for this model (106 > 77). Running this sequence through the model will result in indexing errors
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.99s/it] 50%|█████     | 2/4 [00:06<00:06,  3.12s/it] 75%|███████▌  | 3/4 [00:09<00:03,  3.03s/it]100%|██████████| 4/4 [00:12<00:00,  2.99s/it]100%|██████████| 4/4 [00:12<00:00,  3.01s/it]
+Prompt executed in 15.29 seconds
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.85s/it] 50%|█████     | 2/4 [00:06<00:06,  3.06s/it] 75%|███████▌  | 3/4 [00:08<00:03,  3.00s/it]100%|██████████| 4/4 [00:11<00:00,  2.97s/it]100%|██████████| 4/4 [00:11<00:00,  2.98s/it]
+Prompt executed in 12.98 seconds
+got prompt
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.95s/it] 50%|█████     | 2/4 [00:06<00:06,  3.12s/it] 75%|███████▌  | 3/4 [00:09<00:03,  3.03s/it]100%|██████████| 4/4 [00:12<00:00,  2.99s/it]100%|██████████| 4/4 [00:12<00:00,  3.01s/it]
+Prompt executed in 13.01 seconds
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.84s/it] 50%|█████     | 2/4 [00:06<00:06,  3.06s/it] 75%|███████▌  | 3/4 [00:09<00:03,  3.01s/it]100%|██████████| 4/4 [00:11<00:00,  2.99s/it]100%|██████████| 4/4 [00:11<00:00,  2.99s/it]
+Prompt executed in 12.95 seconds
+got prompt
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.78s/it] 50%|█████     | 2/4 [00:05<00:05,  2.97s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.92s/it]100%|██████████| 4/4 [00:11<00:00,  2.88s/it]100%|██████████| 4/4 [00:11<00:00,  2.89s/it]
+Prompt executed in 14.42 seconds
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.72s/it] 50%|█████     | 2/4 [00:05<00:05,  2.94s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.90s/it]100%|██████████| 4/4 [00:11<00:00,  2.87s/it]100%|██████████| 4/4 [00:11<00:00,  2.88s/it]
+Prompt executed in 12.80 seconds

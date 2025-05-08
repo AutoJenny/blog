@@ -99,6 +99,38 @@
         gap: 1rem;
         justify-content: flex-end;
     }
+
+    .images-level2-tabs {
+        display: flex;
+        gap: 1.5rem;
+        border-bottom: 2px solid var(--admin-border);
+        margin-bottom: 2rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .images-level2-tab {
+        padding: 0.75rem 1.5rem;
+        color: var(--admin-text-secondary);
+        border: none;
+        background: transparent;
+        font-weight: 600;
+        border-radius: 0.5rem 0.5rem 0 0;
+        font-size: 1.1rem;
+        transition: all 0.2s;
+        text-decoration: none;
+        position: relative;
+    }
+
+    .images-level2-tab:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.08);
+    }
+
+    .images-level2-tab.active {
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.10);
+        border-bottom: 2.5px solid var(--admin-accent);
+    }
 </style>
 {% endblock %}
 {% block content %}
@@ -106,25 +138,15 @@
     <div class="admin-card">
         <h1 class="admin-title mb-6">
             <i class="fas fa-robot mr-2"></i>
-            LLM Management
+            LLM Image Tools
         </h1>
-        <div class="nav-links">
-            <a href="/llm/templates" class="nav-link">
-                <i class="fas fa-file-alt"></i>
-                Prompt Templates
-            </a>
-            <a href="/llm/images" class="nav-link active">
-                <i class="fas fa-image"></i>
-                Images
-            </a>
-            <a href="/llm/config" class="nav-link">
-                <i class="fas fa-cog"></i>
-                Configuration
-            </a>
-        </div>
-        <div class="images-submenu">
-            <a href="/llm/images/prompts" class="images-tab images-tab-active">Image Prompts</a>
-            <a href="/llm/images/previews" class="images-tab">Image Previews</a>
+        <div class="images-level2-tabs">
+            <a href="/llm/images/configs"
+                class="images-level2-tab{% if active_tab == 'configs' %} active{% endif %}">Image Configs</a>
+            <a href="/llm/images/prompts"
+                class="images-level2-tab{% if active_tab == 'prompts' %} active{% endif %}">Image Prompts</a>
+            <a href="/llm/images/previews"
+                class="images-level2-tab{% if active_tab == 'previews' %} active{% endif %}">Image Previews</a>
         </div>
         <form id="imagePromptForm" class="mb-10 bg-dark-bg p-6 rounded-lg shadow border border-dark-border">
             <!-- IMAGE SETTING MENU -->
@@ -199,6 +221,7 @@
                 </button>
             </div>
         </form>
+        <div id="test-image-result" class="mt-6 text-center"></div>
         <div class="text-center text-lg text-gray-400 mt-12">
             <p>Image Prompts management coming soon.</p>
         </div>
@@ -700,14 +723,43 @@
                 saveImageSettingBtn.disabled = false;
             }
         });
-        // When style/format is changed, clear ImageSetting selection
-        styleSelect.addEventListener('change', function () {
-            imageSettingSelect.value = '';
-            imageSettingSelect.dispatchEvent(new Event('change'));
-        });
-        formatSelect.addEventListener('change', function () {
-            imageSettingSelect.value = '';
-            imageSettingSelect.dispatchEvent(new Event('change'));
+
+        // --- Add Test button image generation logic ---
+        document.getElementById('testPromptBtn').addEventListener('click', async function () {
+            const desc = document.getElementById('promptDescription').value.trim();
+            const imageSettingId = document.getElementById('imageSettingSelect').value;
+            const testResultDiv = document.getElementById('test-image-result');
+            if (!desc) {
+                testResultDiv.innerHTML = '<span class="text-red-400">Please enter a description.</span>';
+                return;
+            }
+            if (!imageSettingId) {
+                testResultDiv.innerHTML = '<span class="text-red-400">Please select an Image Setting.</span>';
+                return;
+            }
+            // Get the selected Image Setting object
+            const s = imageSettingLibrary[imageSettingId];
+            let prompt = desc;
+            if (s) {
+                prompt += '\nStyle: ' + (s.style?.title || '');
+                prompt += '\nFormat: ' + (s.format?.title || '');
+            }
+            testResultDiv.innerHTML = '<span class="text-gray-400">Generating image...</span>';
+            try {
+                const res = await fetch('/api/v1/images/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
+                const data = await res.json();
+                if (data.image_url) {
+                    testResultDiv.innerHTML = `<img src="${data.image_url}" class="mx-auto rounded shadow mt-4" style="max-width:400px;" />`;
+                } else {
+                    testResultDiv.innerHTML = `<span class="text-red-400">Error: ${data.error || 'Unknown error'}</span>`;
+                }
+            } catch (err) {
+                testResultDiv.innerHTML = `<span class="text-red-400">Error: ${err.message}</span>`;
+            }
         });
     });
 </script>

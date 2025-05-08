@@ -474,3 +474,13 @@ All notable changes to this project are documented in this file.
 2025-05-07: Added ImageSetting UI to /llm/images/prompts. New menu above Style/Format allows selecting, creating, editing, and deleting ImageSettings (name, style, format). Selecting an ImageSetting auto-selects the corresponding Style and Format. Includes modal for add/edit and full JS integration.
 
 [UI] Move ImageSetting menu above Style/Format in images_prompts.html so it appears as the first field in the form.
+
+2025-05-07: Add /api/v1/comfyui/status and /api/v1/comfyui/start endpoints to allow the UI to check if ComfyUI is running and start it if needed (for hybrid integration).
+
+2025-05-07: Add /api/v1/images/generate endpoint for prompt-to-image generation using ComfyUI and SD1.5, with output image copying for UI display in the hybrid UI.
+
+2025-05-07: Major navigation and tab refactor. Added 'Images' as a top-level menu item in the main header. Refactored all /llm/images/* pages to use consistent, modern-styled tabs for section and sub-section navigation (Image Configs, Image Prompts, Image Previews; Simple/Advanced under Configs).
+
+2024-07-09: Updated the ComfyUI workflow in app/api/routes.py generate_image endpoint to use a separate CLIPLoader node for SD 3.5 Large, resolving the issue where the CLIP was not recognized from the checkpoint.
+
+- Excluded sd3.5_large_turbo_all_files/ (comfyUI files) in .gitignore to prevent git commit hangs due to large files.
