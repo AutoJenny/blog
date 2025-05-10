@@ -509,3 +509,6 @@ All notable changes to this project are documented in this file.
 
 2025-05-XX
 - Fix: Removed all JavaScript code referencing styleSelect and formatSelect from app/templates/llm/images_prompts.html, resolving JS errors and restoring Test button functionality after UI refactor.
+
+2025-05-XX
+- Fix: Updated backend image polling logic to wait for file size to be stable for 3 seconds before serving, preventing partial/black images when ComfyUI is still writing the file.
