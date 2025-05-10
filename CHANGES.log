@@ -512,3 +512,6 @@ All notable changes to this project are documented in this file.
 
 2025-05-XX
 - Fix: Updated backend image polling logic to wait for file size to be stable for 3 seconds before serving, preventing partial/black images when ComfyUI is still writing the file.
+
+2025-05-XX
+- Enhancement: The Image Setting dropdown in /llm/images/prompts now supports saving, editing, and deleting full ComfyUI settings (width, height, steps, guidance scale, etc.) with a Name field and Save button. Selecting a setting populates all fields. All changes are synced with the backend.
