@@ -1,63 +1,65 @@
 # LLM Images Mini-Project
 
+> **NOTE:** This plan is now superseded by [`llm_images_implementation_plan.md`](llm_images_implementation_plan.md). See that file for the current status and roadmap. All major features described below are now implemented and in production use.
+
 ## Overview
 This mini-project aims to build a robust, extensible image management system for LLM-powered image generation, selection, and refinement. The system will support prompt creation, image generation via OpenAI and other APIs, previewing, and systematic storage, with future-proofing for more advanced workflows.
 
 ## Goals
-- Simple, user-friendly UI for creating and testing image prompts
-- Support for prompt parts: description, style, format
-- Import prompt text from blog post fields
-- Generate images via OpenAI (DALL·E) API (MVP)
-- Preview and manage generated images
-- Store images systematically (test and post-based)
-- Watermarking as a post-generation action
-- Extensible for future LLMs, workflows, and approval/refinement
+- [x] Simple, user-friendly UI for creating and testing image prompts
+- [x] Support for prompt parts: description, style, format
+- [x] Import prompt text from blog post fields
+- [x] Generate images via OpenAI (DALL·E) API (MVP)
+- [x] Preview and manage generated images
+- [x] Store images systematically (test and post-based)
+- [x] Watermarking as a post-generation action
+- [x] Extensible for future LLMs, workflows, and approval/refinement
 
 ## MVP Features
-- [ ] Prompt creation form (description, style, format)
-- [ ] Import prompt from post field
-- [ ] Test prompt (send to OpenAI, view result)
-- [ ] Image preview gallery (filterable)
-- [ ] Systematic file storage (test dir, post dir)
-- [ ] Post-generation watermarking action
-- [ ] Models/schema for prompts and images
-- [ ] API endpoints for prompt creation, image generation, image listing
+- [x] Prompt creation form (description, style, format)
+- [x] Import prompt from post field
+- [x] Test prompt (send to OpenAI, view result)
+- [x] Image preview gallery (filterable)
+- [x] Systematic file storage (test dir, post dir)
+- [x] Post-generation watermarking action
+- [x] Models/schema for prompts and images
+- [x] API endpoints for prompt creation, image generation, image listing
 
 ## Extensibility Notes
-- Support for prompt templates and batch operations
-- Multiple LLM/image generation backends (OpenAI, local SD, etc.)
-- Image refinement, approval, and assignment workflows
-- Bulk operations and cloud storage options
+- [x] Support for prompt templates and batch operations
+- [x] Multiple LLM/image generation backends (OpenAI, local SD, etc.)
+- [x] Image refinement, approval, and assignment workflows
+- [x] Bulk operations and cloud storage options
 
 ## Implementation Steps
 
 ### 1. Data Models & Schema
-- [ ] Design and implement models for ImagePrompt and ImageOutput
-- [ ] Add DB migrations
+- [x] Design and implement models for ImagePrompt and ImageOutput
+- [x] Add DB migrations
 
 ### 2. Prompt Creation UI
 - [x] Build form for manual prompt creation (description, style, format)  
   _UI implemented and visually verified._
-- [ ] Add option to import prompt from post field
+- [x] Add option to import prompt from post field
 
 ### 3. Prompt Testing & OpenAI Integration
-- [ ] Implement test button to send prompt to OpenAI and receive image
-- [ ] Store test images in test directory with datestamps
+- [x] Implement test button to send prompt to OpenAI and receive image
+- [x] Store test images in test directory with datestamps
 
 ### 4. Image Preview Gallery
-- [ ] Build gallery UI for previews, filterable by prompt, post, date
-- [ ] Show image details and metadata
+- [x] Build gallery UI for previews, filterable by prompt, post, date
+- [x] Show image details and metadata
 
 ### 5. File Storage & Organization
-- [ ] Implement systematic file storage for test and post images
-- [ ] Store metadata in DB (and optionally as JSON sidecar)
+- [x] Implement systematic file storage for test and post images
+- [x] Store metadata in DB (and optionally as JSON sidecar)
 
 ### 6. Post-Generation Watermarking
-- [ ] Add watermarking action (not part of LLM prompt)
-- [ ] Allow user to apply watermark to any image
+- [x] Add watermarking action (not part of LLM prompt)
+- [x] Allow user to apply watermark to any image
 
 ### 7. API Endpoints
-- [ ] Create endpoints for prompt creation, image generation, image listing
+- [x] Create endpoints for prompt creation, image generation, image listing
 
 ### 8. ImageStyle CRUD API endpoints
 - [x] Implement CRUD API endpoints for ImageStyle (list, get, create, update, delete) in app/api/routes.py. Endpoints are ready for UI integration.
@@ -70,4 +72,4 @@ This mini-project aims to build a robust, extensible image management system for
 
 ---
 
-**This document will be updated as each step is completed. Checkboxes will be ticked and progress committed to git after verification (e.g., with curl).** 
+**This document is now archived. For current status and future work, see [`llm_images_implementation_plan.md`](llm_images_implementation_plan.md).** 
