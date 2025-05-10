@@ -637,14 +637,24 @@ def generate_image():
             output_dir = os.path.expanduser('~/ComfyUI/output/')
             prefix = unique_prefix
             found = None
-            files_checked = []
+            stable_count = 0
+            last_size = -1
             for _ in range(300):  # Wait up to 5 minutes (300 seconds)
                 files = sorted(glob.glob(os.path.join(output_dir, f'{prefix}_*.png')), key=os.path.getmtime, reverse=True)
                 files_checked = files
                 if files:
-                    found = files[0]
-                    if os.path.getsize(found) > 0:
-                        break
+                    candidate = files[0]
+                    size = os.path.getsize(candidate)
+                    if size > 0:
+                        if size == last_size:
+                            stable_count += 1
+                        else:
+                            stable_count = 0
+                        last_size = size
+                        # Require 3 consecutive checks (3 seconds) of stable size
+                        if stable_count >= 3:
+                            found = candidate
+                            break
                 time.sleep(1)
             if not found:
                 # Add more debug info: list all files in output dir
