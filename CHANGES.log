@@ -506,3 +506,6 @@ All notable changes to this project are documented in this file.
 
 2025-05-XX
 - Enhancement: The /api/v1/images/generate endpoint now returns the full prompt, settings, and workflow JSON for SD requests. The /llm/images/prompts UI displays this info below each test result with a Show Debug toggle, making it easy to inspect exactly what is sent to ComfyUI for each image generation.
+
+2025-05-XX
+- Fix: Removed all JavaScript code referencing styleSelect and formatSelect from app/templates/llm/images_prompts.html, resolving JS errors and restoring Test button functionality after UI refactor.
