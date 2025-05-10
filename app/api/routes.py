@@ -14,6 +14,7 @@ from slugify import slugify
 import subprocess
 import glob
 import shutil
+import random as _random
 
 
 def check_ollama_performance():
@@ -552,6 +553,13 @@ def generate_image():
         # Compose workflow for SD3.5
         import time as _time
         unique_prefix = f"webui_sd35_{int(_time.time())}"
+        # Set good defaults for SD3.5 Large
+        width = int(width) if width else 1024
+        height = int(height) if height else 1024
+        steps = int(steps) if steps else 30
+        guidance_scale = float(guidance_scale) if guidance_scale else 6.0
+        seed = _random.randint(1, 2**31-1)
+        negative_prompt = "blurry, low quality, bad anatomy, text, watermark, signature"
         workflow = {
             "prompt": {
                 "1": {
@@ -569,22 +577,29 @@ def generate_image():
                         "clip": ["2", 0]
                     }
                 },
+                "8": {
+                    "class_type": "CLIPTextEncode",
+                    "inputs": {
+                        "text": negative_prompt,
+                        "clip": ["2", 0]
+                    }
+                },
                 "4": {
                     "class_type": "EmptyLatentImage",
-                    "inputs": {"width": width or 512, "height": height or 512, "batch_size": 1}
+                    "inputs": {"width": width, "height": height, "batch_size": 1}
                 },
                 "5": {
                     "class_type": "KSampler",
                     "inputs": {
                         "model": ["1", 0],
                         "positive": ["3", 0],
-                        "negative": ["3", 0],
+                        "negative": ["8", 0],
                         "latent_image": ["4", 0],
-                        "steps": steps or 20,
-                        "cfg": guidance_scale or 7.0,
+                        "steps": steps,
+                        "cfg": guidance_scale,
                         "sampler_name": "euler",
                         "scheduler": "normal",
-                        "seed": 42,
+                        "seed": seed,
                         "denoise": 1.0
                     }
                 },
@@ -618,12 +633,12 @@ def generate_image():
             debug_info = {'comfyui_status_code': res.status_code, 'comfyui_response': res.text}
             if res.status_code != 200:
                 return jsonify({'error': f'ComfyUI error: {res.text}', 'debug': debug_info}), 500
-            # Wait for image to appear (poll for up to 30s)
+            # Wait for image to appear (poll for up to 5 minutes)
             output_dir = os.path.expanduser('~/ComfyUI/output/')
             prefix = unique_prefix
             found = None
             files_checked = []
-            for _ in range(30):
+            for _ in range(300):  # Wait up to 5 minutes (300 seconds)
                 files = sorted(glob.glob(os.path.join(output_dir, f'{prefix}_*.png')), key=os.path.getmtime, reverse=True)
                 files_checked = files
                 if files:
@@ -634,7 +649,9 @@ def generate_image():
             if not found:
                 # Add more debug info: list all files in output dir
                 all_files = sorted(glob.glob(os.path.join(output_dir, '*.png')), key=os.path.getmtime, reverse=True)
-                return jsonify({'error': 'No image generated', 'debug': debug_info, 'files_checked': files_checked, 'all_png_files': all_files}), 500
+                return jsonify({'error': 'No image generated', 'debug': debug_info, 'files_checked': files_checked, 'all_png_files': all_files, 'debug_prompt': prompt, 'debug_settings': {
+                    'width': width, 'height': height, 'steps': steps, 'guidance_scale': guidance_scale, 'extra_settings': extra_settings
+                }, 'debug_workflow': workflow}), 500
             # Copy to static/comfyui_output/
             static_dir = os.path.join(current_app.root_path, 'static', 'comfyui_output')
             os.makedirs(static_dir, exist_ok=True)
@@ -642,7 +659,9 @@ def generate_image():
             dest = os.path.join(static_dir, fname)
             shutil.copy2(found, dest)
             image_url = f'/static/comfyui_output/{fname}'
-            return jsonify({'image_url': image_url, 'provider': 'sd', 'debug': debug_info})
+            return jsonify({'image_url': image_url, 'provider': 'sd', 'debug': debug_info, 'debug_prompt': prompt, 'debug_settings': {
+                'width': width, 'height': height, 'steps': steps, 'guidance_scale': guidance_scale, 'extra_settings': extra_settings
+            }, 'debug_workflow': workflow})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
     elif provider == 'openai':
