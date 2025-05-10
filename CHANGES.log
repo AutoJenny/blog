@@ -494,3 +494,9 @@ All notable changes to this project are documented in this file.
 2024-07-09: Implemented inline admin review and override panel for generated images in blog workflow UI (develop.html), and updated implementation plan to reflect this progress.
 
 2024-07-09: Improved error handling, logging, and user feedback in the admin image review workflow (develop.html), and updated implementation plan to reflect this progress.
+
+2025-05-XX
+- Updated docs/temp/llm_images_mini_project.md:
+  - Checked off all completed items to reflect current project state
+  - Added a note at the top referring users to llm_images_implementation_plan.md for the authoritative plan
+  - Marked the file as archived to prevent confusion
