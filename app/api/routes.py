@@ -550,6 +550,8 @@ def generate_image():
         return jsonify({'error': 'Prompt is required'}), 400
     if provider == 'sd':
         # Compose workflow for SD3.5
+        import time as _time
+        unique_prefix = f"webui_sd35_{int(_time.time())}"
         workflow = {
             "prompt": {
                 "1": {
@@ -597,7 +599,7 @@ def generate_image():
                     "class_type": "SaveImage",
                     "inputs": {
                         "images": ["6", 0],
-                        "filename_prefix": "webui_sd35"
+                        "filename_prefix": unique_prefix
                     }
                 }
             }
@@ -618,7 +620,7 @@ def generate_image():
                 return jsonify({'error': f'ComfyUI error: {res.text}', 'debug': debug_info}), 500
             # Wait for image to appear (poll for up to 30s)
             output_dir = os.path.expanduser('~/ComfyUI/output/')
-            prefix = 'webui_sd35'
+            prefix = unique_prefix
             found = None
             files_checked = []
             for _ in range(30):
@@ -630,7 +632,9 @@ def generate_image():
                         break
                 time.sleep(1)
             if not found:
-                return jsonify({'error': 'No image generated', 'debug': debug_info, 'files_checked': files_checked}), 500
+                # Add more debug info: list all files in output dir
+                all_files = sorted(glob.glob(os.path.join(output_dir, '*.png')), key=os.path.getmtime, reverse=True)
+                return jsonify({'error': 'No image generated', 'debug': debug_info, 'files_checked': files_checked, 'all_png_files': all_files}), 500
             # Copy to static/comfyui_output/
             static_dir = os.path.join(current_app.root_path, 'static', 'comfyui_output')
             os.makedirs(static_dir, exist_ok=True)
