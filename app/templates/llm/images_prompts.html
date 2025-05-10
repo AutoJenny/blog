@@ -175,6 +175,11 @@
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
+                <div class="flex gap-2 items-center mb-2">
+                    <input type="text" id="imageSettingNameField" class="form-input w-full"
+                        placeholder="Setting Name" />
+                    <button type="button" class="btn btn-primary" id="saveImageSettingMainBtn">Save</button>
+                </div>
                 <div id="selectedImageSettingDisplay" class="text-sm text-gray-400 mt-1" style="min-height:1.5em;">
                 </div>
             </div>
@@ -333,27 +338,142 @@
 
         // --- ImageSetting logic ---
         const imageSettingSelect = document.getElementById('imageSettingSelect');
-        const newImageSettingBtn = document.getElementById('newImageSettingBtn');
+        const imageSettingNameField = document.getElementById('imageSettingNameField');
+        const saveImageSettingMainBtn = document.getElementById('saveImageSettingMainBtn');
         const editImageSettingBtn = document.getElementById('editImageSettingBtn');
         const deleteImageSettingBtn = document.getElementById('deleteImageSettingBtn');
         const selectedImageSettingDisplay = document.getElementById('selectedImageSettingDisplay');
         let imageSettingLibrary = {};
-        // Modal elements
-        const imageSettingModalBg = document.getElementById('imageSettingModalBg');
-        const imageSettingModalTitle = document.getElementById('imageSettingModalTitle');
-        const imageSettingNameInput = document.getElementById('imageSettingNameInput');
-        const imageSettingStyleInput = document.getElementById('imageSettingStyleInput');
-        const imageSettingFormatInput = document.getElementById('imageSettingFormatInput');
-        const saveImageSettingBtn = document.getElementById('saveImageSettingBtn');
-        const cancelImageSettingBtn = document.getElementById('cancelImageSettingBtn');
-        const imageSettingModalError = document.getElementById('imageSettingModalError');
         let editingImageSettingId = null;
 
-        // --- Only use modal-specific style/format selects in modals ---
-        function populateImageSettingStyleFormat() {
-            // These selects are only in the modal, not the main form
-            // If you want to load styles/formats, do it here for the modal
+        async function loadImageSettings() {
+            imageSettingSelect.innerHTML = '<option value="">-- Select an Image Setting --</option>';
+            imageSettingLibrary = {};
+            try {
+                const res = await fetch('/api/v1/images/settings');
+                const settings = await res.json();
+                settings.forEach(s => {
+                    imageSettingLibrary[s.id] = s;
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.name + (s.width ? ` (${s.width}x${s.height}, ${s.steps} steps)` : '');
+                    imageSettingSelect.appendChild(opt);
+                });
+            } catch (e) {
+                imageSettingSelect.innerHTML = '<option value="">(Failed to load settings)</option>';
+            }
+            editImageSettingBtn.style.display = 'none';
+            deleteImageSettingBtn.style.display = 'none';
         }
+        loadImageSettings();
+
+        // Populate ComfyUI fields when a setting is selected
+        imageSettingSelect.addEventListener('change', function () {
+            const val = imageSettingSelect.value;
+            if (val && imageSettingLibrary[val]) {
+                const s = imageSettingLibrary[val];
+                imageSettingNameField.value = s.name || '';
+                document.getElementById('inputWidth').value = s.width || '';
+                document.getElementById('inputHeight').value = s.height || '';
+                document.getElementById('inputSteps').value = s.steps || '';
+                document.getElementById('inputGuidance').value = s.guidance_scale || '';
+                // extra_settings is not shown in UI by default, but could be added
+                selectedImageSettingDisplay.innerHTML = `<strong>${s.name}</strong>: ${s.width}x${s.height}, ${s.steps} steps, guidance ${s.guidance_scale}`;
+                editImageSettingBtn.style.display = '';
+                deleteImageSettingBtn.style.display = '';
+                editingImageSettingId = s.id;
+            } else {
+                imageSettingNameField.value = '';
+                document.getElementById('inputWidth').value = '';
+                document.getElementById('inputHeight').value = '';
+                document.getElementById('inputSteps').value = '';
+                document.getElementById('inputGuidance').value = '';
+                selectedImageSettingDisplay.textContent = '';
+                editImageSettingBtn.style.display = 'none';
+                deleteImageSettingBtn.style.display = 'none';
+                editingImageSettingId = null;
+            }
+        });
+
+        // Save (create or update) Image Setting
+        saveImageSettingMainBtn.addEventListener('click', async function () {
+            const name = imageSettingNameField.value.trim();
+            const width = parseInt(document.getElementById('inputWidth').value) || null;
+            const height = parseInt(document.getElementById('inputHeight').value) || null;
+            const steps = parseInt(document.getElementById('inputSteps').value) || null;
+            const guidance_scale = parseFloat(document.getElementById('inputGuidance').value) || null;
+            // For now, style/format are not editable here (could be added)
+            let style_id = null, format_id = null;
+            if (editingImageSettingId && imageSettingLibrary[editingImageSettingId]) {
+                style_id = imageSettingLibrary[editingImageSettingId].style_id;
+                format_id = imageSettingLibrary[editingImageSettingId].format_id;
+            } else {
+                // Default to first available style/format if needed
+                style_id = 1;
+                format_id = 1;
+            }
+            if (!name || !style_id || !format_id) {
+                alert('Name, style, and format are required.');
+                return;
+            }
+            const payload = { name, style_id, format_id, width, height, steps, guidance_scale };
+            let url = '/api/v1/images/settings';
+            let method = 'POST';
+            if (editingImageSettingId) {
+                url += '/' + editingImageSettingId;
+                method = 'PUT';
+            }
+            saveImageSettingMainBtn.disabled = true;
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to save setting');
+                await loadImageSettings();
+                imageSettingSelect.value = data.id;
+                imageSettingSelect.dispatchEvent(new Event('change'));
+                alert('Image Setting saved!');
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                saveImageSettingMainBtn.disabled = false;
+            }
+        });
+
+        // Delete Image Setting
+        deleteImageSettingBtn.addEventListener('click', async function () {
+            if (!editingImageSettingId) return;
+            if (!confirm('Delete this image setting? This cannot be undone.')) return;
+            deleteImageSettingBtn.disabled = true;
+            try {
+                const res = await fetch('/api/v1/images/settings/' + editingImageSettingId, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Failed to delete');
+                await loadImageSettings();
+                imageSettingSelect.value = '';
+                imageSettingSelect.dispatchEvent(new Event('change'));
+                alert('Image Setting deleted.');
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                deleteImageSettingBtn.disabled = false;
+            }
+        });
+
+        // New button clears fields for new setting
+        newImageSettingBtn.addEventListener('click', function () {
+            imageSettingSelect.value = '';
+            imageSettingSelect.dispatchEvent(new Event('change'));
+            imageSettingNameField.value = '';
+            editingImageSettingId = null;
+        });
+
+        // Edit button just focuses the name field
+        editImageSettingBtn.addEventListener('click', function () {
+            imageSettingNameField.focus();
+        });
 
         // --- Prompt Example Library Logic ---
         let promptExampleLibrary = {};
@@ -382,6 +502,112 @@
 
         // ... rest of the code for image setting and prompt example modals ...
         // ... main form logic for Test button and ComfyUI settings remains unchanged ...
+
+        // --- Add Test button image generation logic ---
+        document.getElementById('testPromptBtn').addEventListener('click', async function () {
+            const desc = document.getElementById('promptDescription').value.trim();
+            const imageSettingId = document.getElementById('imageSettingSelect').value;
+            const testResultDiv = document.getElementById('test-image-result');
+            if (!desc) {
+                testResultDiv.innerHTML = '<span class="text-red-400">Please enter a description.</span>';
+                return;
+            }
+            // Get selected image setting if any
+            const s = imageSettingId && window.imageSettingLibrary ? window.imageSettingLibrary[imageSettingId] : {};
+            // Build prompt as: <desc>, in the style of <style>, <format>
+            let prompt = desc;
+            if (s) {
+                let style = s.style?.title || '';
+                let format = s.format?.title || '';
+                if (style && format) {
+                    prompt = `${desc}, in the style of ${style}, ${format}`;
+                } else if (style) {
+                    prompt = `${desc}, in the style of ${style}`;
+                } else if (format) {
+                    prompt = `${desc}, ${format}`;
+                }
+            }
+            // Get ComfyUI settings from the form (override ImageSetting if present)
+            let width = parseInt(document.getElementById('inputWidth').value) || s?.width;
+            let height = parseInt(document.getElementById('inputHeight').value) || s?.height;
+            let steps = parseInt(document.getElementById('inputSteps').value) || s?.steps;
+            let guidance_scale = parseFloat(document.getElementById('inputGuidance').value) || s?.guidance_scale;
+            let extra_settings = s?.extra_settings;
+            let seed = null;
+            if (!document.getElementById('inputSeedRandom').checked) {
+                seed = parseInt(document.getElementById('inputSeed').value) || null;
+            }
+            // Get selected providers
+            const providerCheckboxes = document.querySelectorAll('.provider-checkbox');
+            const selectedProviders = Array.from(providerCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            if (!selectedProviders.length) {
+                testResultDiv.innerHTML = '<span class="text-red-400">Please select at least one provider.</span>';
+                return;
+            }
+            // Show loading states
+            testResultDiv.innerHTML = selectedProviders.map(p => `<div id="result-${p}" class="mb-6"><span class="text-gray-400">Generating image with <b>${p}</b>...</span></div>`).join('');
+            // For each provider, send request and update result
+            selectedProviders.forEach(async provider => {
+                const resultDiv = document.getElementById(`result-${provider}`);
+                try {
+                    const res = await fetch('/api/v1/images/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prompt,
+                            provider,
+                            image_setting_id: imageSettingId,
+                            width,
+                            height,
+                            steps,
+                            guidance_scale,
+                            extra_settings,
+                            seed
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.image_url) {
+                        const debugId = `debug-${provider}-${Date.now()}`;
+                        let debugHtml = '';
+                        if (data.debug_prompt || data.debug_settings || data.debug_workflow) {
+                            debugHtml = `
+                                <div class=\"mt-4 text-left\">
+                                    <button class=\"btn btn-xs btn-secondary\" type=\"button\" onclick=\"const dbg=document.getElementById('${debugId}'); dbg.style.display=dbg.style.display==='none'?'block':'none';\">Show Debug</button>
+                                    <div id=\"${debugId}\" style=\"display:none; background:#181c22; color:#b5b5b5; font-size:0.95em; margin-top:0.5em; padding:1em; border-radius:0.5em;\">
+                                        <div><b>Prompt Sent:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_prompt ? data.debug_prompt : ''}</pre></div>
+                                        <div><b>Settings:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_settings ? JSON.stringify(data.debug_settings, null, 2) : ''}</pre></div>
+                                        <div><b>Workflow JSON:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_workflow ? JSON.stringify(data.debug_workflow, null, 2) : ''}</pre></div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        resultDiv.innerHTML = `
+                            <div class="mb-2 text-sm text-gray-400">Provider: <b>${data.provider || provider}</b></div>
+                            <img src="${data.image_url}" class="mx-auto rounded shadow mt-4" style="max-width:400px;" />
+                            ${debugHtml}
+                        `;
+                    } else {
+                        const debugId = `debug-${provider}-${Date.now()}`;
+                        let debugHtml = '';
+                        if (data.debug_prompt || data.debug_settings || data.debug_workflow) {
+                            debugHtml = `
+                                <div class=\"mt-4 text-left\">
+                                    <button class=\"btn btn-xs btn-secondary\" type=\"button\" onclick=\"const dbg=document.getElementById('${debugId}'); dbg.style.display=dbg.style.display==='none'?'block':'none';\">Show Debug</button>
+                                    <div id=\"${debugId}\" style=\"display:none; background:#181c22; color:#b5b5b5; font-size:0.95em; margin-top:0.5em; padding:1em; border-radius:0.5em;\">
+                                        <div><b>Prompt Sent:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_prompt ? data.debug_prompt : ''}</pre></div>
+                                        <div><b>Settings:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_settings ? JSON.stringify(data.debug_settings, null, 2) : ''}</pre></div>
+                                        <div><b>Workflow JSON:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_workflow ? JSON.stringify(data.debug_workflow, null, 2) : ''}</pre></div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        resultDiv.innerHTML = `<span class="text-red-400">Error (${provider}): ${data.error || 'Unknown error'}</span>` + debugHtml;
+                    }
+                } catch (err) {
+                    resultDiv.innerHTML = `<span class="text-red-400">Error (${provider}): ${err.message}</span>`;
+                }
+            });
+        });
     });
 </script>
 {% endblock %}
