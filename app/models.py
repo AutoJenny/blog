@@ -149,6 +149,10 @@ class PostSection(db.Model):
     watermarking = db.Column(db.Text)
     image_meta_descriptions = db.Column(db.Text)
     image_captions = db.Column(db.Text)
+    # New for image generation workflow
+    image_prompt_example_id = db.Column(db.Integer, db.ForeignKey('image_prompt_example.id'), nullable=True)
+    generated_image_url = db.Column(db.String(512), nullable=True)
+    image_generation_metadata = db.Column(JSON, nullable=True)
 
 
 class PostDevelopment(db.Model):
@@ -334,6 +338,11 @@ class ImageSetting(db.Model):
     name = db.Column(db.String(100), unique=True, nullable=False)
     style_id = db.Column(db.Integer, db.ForeignKey('image_style.id'), nullable=False)
     format_id = db.Column(db.Integer, db.ForeignKey('image_format.id'), nullable=False)
+    width = db.Column(db.Integer, nullable=True)  # SD/ComfyUI
+    height = db.Column(db.Integer, nullable=True) # SD/ComfyUI
+    steps = db.Column(db.Integer, nullable=True)  # SD/ComfyUI
+    guidance_scale = db.Column(db.Float, nullable=True) # SD/ComfyUI
+    extra_settings = db.Column(db.Text, nullable=True)  # JSON or freeform for advanced/provider-specific options
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -346,8 +355,45 @@ class ImageSetting(db.Model):
             'name': self.name,
             'style_id': self.style_id,
             'format_id': self.format_id,
+            'width': self.width,
+            'height': self.height,
+            'steps': self.steps,
+            'guidance_scale': self.guidance_scale,
+            'extra_settings': self.extra_settings,
             'style': self.style.to_dict() if self.style else None,
             'format': self.format.to_dict() if self.format else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+# New: Prompt Example model
+class ImagePromptExample(db.Model):
+    __tablename__ = 'image_prompt_example'
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.Text, nullable=False)
+    style_id = db.Column(db.Integer, db.ForeignKey('image_style.id'), nullable=False)
+    format_id = db.Column(db.Integer, db.ForeignKey('image_format.id'), nullable=False)
+    provider = db.Column(db.String(50), nullable=False)  # e.g., 'sd', 'openai'
+    image_setting_id = db.Column(db.Integer, db.ForeignKey('image_setting.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    style = db.relationship('ImageStyle')
+    format = db.relationship('ImageFormat')
+    image_setting = db.relationship('ImageSetting')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'description': self.description,
+            'style_id': self.style_id,
+            'format_id': self.format_id,
+            'provider': self.provider,
+            'image_setting_id': self.image_setting_id,
+            'style': self.style.to_dict() if self.style else None,
+            'format': self.format.to_dict() if self.format else None,
+            'image_setting': self.image_setting.to_dict() if self.image_setting else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }

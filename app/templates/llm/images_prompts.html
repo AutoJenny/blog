@@ -149,6 +149,15 @@
                 class="images-level2-tab{% if active_tab == 'previews' %} active{% endif %}">Image Previews</a>
         </div>
         <form id="imagePromptForm" class="mb-10 bg-dark-bg p-6 rounded-lg shadow border border-dark-border">
+            <!-- PROVIDER MULTI-SELECT -->
+            <div class="mb-6">
+                <label class="form-label block mb-2">Providers</label>
+                <div id="providerCheckboxes" class="flex gap-4">
+                    <label><input type="checkbox" class="provider-checkbox" value="sd" checked> SD (local)</label>
+                    <label><input type="checkbox" class="provider-checkbox" value="openai"> OpenAI DALL·E</label>
+                    <!-- Add more providers as needed -->
+                </div>
+            </div>
             <!-- IMAGE SETTING MENU -->
             <div class="mb-6">
                 <label class="form-label block mb-2" for="imageSettingSelect">Image Setting</label>
@@ -271,6 +280,51 @@
             <button type="button" class="btn btn-primary" id="saveImageSettingBtn">Save</button>
         </div>
         <div id="imageSettingModalError" class="text-red-400 mt-2"></div>
+    </div>
+</div>
+<!-- PROMPT EXAMPLE LIBRARY -->
+<div class="admin-card mb-10">
+    <h2 class="text-lg font-semibold mb-4">Prompt Example Library</h2>
+    <div id="promptExampleList" class="mb-4"></div>
+    <button type="button" class="btn btn-secondary mb-2" id="newPromptExampleBtn">
+        <i class="fas fa-plus"></i> New Example
+    </button>
+    <button type="button" class="btn btn-secondary mb-2" id="editPromptExampleBtn" style="display:none;">
+        <i class="fas fa-edit"></i> Edit Selected
+    </button>
+    <button type="button" class="btn btn-danger mb-2" id="deletePromptExampleBtn" style="display:none;">
+        <i class="fas fa-trash"></i> Delete Selected
+    </button>
+</div>
+<!-- PROMPT EXAMPLE MODAL -->
+<div id="promptExampleModalBg" class="modal-bg" style="display:none;">
+    <div class="modal">
+        <h2 class="text-xl font-semibold mb-4" id="promptExampleModalTitle">Add Prompt Example</h2>
+        <textarea id="promptExampleDescriptionInput" rows="2" placeholder="Image Description" class="mb-2"></textarea>
+        <div class="mb-2">
+            <label class="block text-sm mb-1">Style</label>
+            <select id="promptExampleStyleInput" class="form-input w-full"></select>
+        </div>
+        <div class="mb-2">
+            <label class="block text-sm mb-1">Format</label>
+            <select id="promptExampleFormatInput" class="form-input w-full"></select>
+        </div>
+        <div class="mb-2">
+            <label class="block text-sm mb-1">Provider</label>
+            <select id="promptExampleProviderInput" class="form-input w-full">
+                <option value="sd">Stable Diffusion (local)</option>
+                <option value="openai">OpenAI DALL·E</option>
+            </select>
+        </div>
+        <div class="mb-2">
+            <label class="block text-sm mb-1">Image Setting (optional)</label>
+            <select id="promptExampleImageSettingInput" class="form-input w-full"></select>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="cancelPromptExampleBtn">Cancel</button>
+            <button type="button" class="btn btn-primary" id="savePromptExampleBtn">Save</button>
+        </div>
+        <div id="promptExampleModalError" class="text-red-400 mt-2"></div>
     </div>
 </div>
 <script>
@@ -741,26 +795,256 @@
             const s = imageSettingLibrary[imageSettingId];
             let prompt = desc;
             if (s) {
-                prompt += '\nStyle: ' + (s.style?.title || '');
-                prompt += '\nFormat: ' + (s.format?.title || '');
-            }
-            testResultDiv.innerHTML = '<span class="text-gray-400">Generating image...</span>';
-            try {
-                const res = await fetch('/api/v1/images/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt })
-                });
-                const data = await res.json();
-                if (data.image_url) {
-                    testResultDiv.innerHTML = `<img src="${data.image_url}" class="mx-auto rounded shadow mt-4" style="max-width:400px;" />`;
-                } else {
-                    testResultDiv.innerHTML = `<span class="text-red-400">Error: ${data.error || 'Unknown error'}</span>`;
+                let style = s.style?.title || '';
+                let format = s.format?.title || '';
+                if (style && format) {
+                    prompt = `${desc}, in the style of ${style}, ${format}`;
+                } else if (style) {
+                    prompt = `${desc}, in the style of ${style}`;
+                } else if (format) {
+                    prompt = `${desc}, ${format}`;
                 }
-            } catch (err) {
-                testResultDiv.innerHTML = `<span class="text-red-400">Error: ${err.message}</span>`;
+            }
+            let width = s?.width;
+            let height = s?.height;
+            let steps = s?.steps;
+            let guidance_scale = s?.guidance_scale;
+            let extra_settings = s?.extra_settings;
+            // Get selected providers
+            const providerCheckboxes = document.querySelectorAll('.provider-checkbox');
+            const selectedProviders = Array.from(providerCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            if (!selectedProviders.length) {
+                testResultDiv.innerHTML = '<span class="text-red-400">Please select at least one provider.</span>';
+                return;
+            }
+            // Show loading states
+            testResultDiv.innerHTML = selectedProviders.map(p => `<div id="result-${p}" class="mb-6"><span class="text-gray-400">Generating image with <b>${p}</b>...</span></div>`).join('');
+            // For each provider, send request and update result
+            selectedProviders.forEach(async provider => {
+                const resultDiv = document.getElementById(`result-${provider}`);
+                try {
+                    const res = await fetch('/api/v1/images/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prompt,
+                            provider,
+                            image_setting_id: imageSettingId,
+                            width,
+                            height,
+                            steps,
+                            guidance_scale,
+                            extra_settings
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.image_url) {
+                        const debugId = `debug-${provider}-${Date.now()}`;
+                        let debugHtml = '';
+                        if (data.debug_prompt || data.debug_settings || data.debug_workflow) {
+                            debugHtml = `
+                                <div class=\"mt-4 text-left\">
+                                    <button class=\"btn btn-xs btn-secondary\" type=\"button\" onclick=\"const dbg=document.getElementById('${debugId}'); dbg.style.display=dbg.style.display==='none'?'block':'none';\">Show Debug</button>
+                                    <div id=\"${debugId}\" style=\"display:none; background:#181c22; color:#b5b5b5; font-size:0.95em; margin-top:0.5em; padding:1em; border-radius:0.5em;\">
+                                        <div><b>Prompt Sent:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_prompt ? data.debug_prompt : ''}</pre></div>
+                                        <div><b>Settings:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_settings ? JSON.stringify(data.debug_settings, null, 2) : ''}</pre></div>
+                                        <div><b>Workflow JSON:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_workflow ? JSON.stringify(data.debug_workflow, null, 2) : ''}</pre></div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        resultDiv.innerHTML = `
+                            <div class="mb-2 text-sm text-gray-400">Provider: <b>${data.provider || provider}</b></div>
+                            <img src="${data.image_url}" class="mx-auto rounded shadow mt-4" style="max-width:400px;" />
+                            ${debugHtml}
+                        `;
+                    } else {
+                        const debugId = `debug-${provider}-${Date.now()}`;
+                        let debugHtml = '';
+                        if (data.debug_prompt || data.debug_settings || data.debug_workflow) {
+                            debugHtml = `
+                                <div class=\"mt-4 text-left\">
+                                    <button class=\"btn btn-xs btn-secondary\" type=\"button\" onclick=\"const dbg=document.getElementById('${debugId}'); dbg.style.display=dbg.style.display==='none'?'block':'none';\">Show Debug</button>
+                                    <div id=\"${debugId}\" style=\"display:none; background:#181c22; color:#b5b5b5; font-size:0.95em; margin-top:0.5em; padding:1em; border-radius:0.5em;\">
+                                        <div><b>Prompt Sent:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_prompt ? data.debug_prompt : ''}</pre></div>
+                                        <div><b>Settings:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_settings ? JSON.stringify(data.debug_settings, null, 2) : ''}</pre></div>
+                                        <div><b>Workflow JSON:</b><pre style=\"white-space:pre-wrap;word-break:break-all;\">${data.debug_workflow ? JSON.stringify(data.debug_workflow, null, 2) : ''}</pre></div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        resultDiv.innerHTML = `<span class="text-red-400">Error (${provider}): ${data.error || 'Unknown error'}</span>` + debugHtml;
+                    }
+                } catch (err) {
+                    resultDiv.innerHTML = `<span class="text-red-400">Error (${provider}): ${err.message}</span>`;
+                }
+            });
+        });
+
+        // --- Prompt Example Library Logic ---
+        let promptExampleLibrary = {};
+        let selectedPromptExampleId = null;
+        const promptExampleListDiv = document.getElementById('promptExampleList');
+        const newPromptExampleBtn = document.getElementById('newPromptExampleBtn');
+        const editPromptExampleBtn = document.getElementById('editPromptExampleBtn');
+        const deletePromptExampleBtn = document.getElementById('deletePromptExampleBtn');
+        const promptExampleModalBg = document.getElementById('promptExampleModalBg');
+        const promptExampleModalTitle = document.getElementById('promptExampleModalTitle');
+        const promptExampleDescriptionInput = document.getElementById('promptExampleDescriptionInput');
+        const promptExampleStyleInput = document.getElementById('promptExampleStyleInput');
+        const promptExampleFormatInput = document.getElementById('promptExampleFormatInput');
+        const promptExampleProviderInput = document.getElementById('promptExampleProviderInput');
+        const promptExampleImageSettingInput = document.getElementById('promptExampleImageSettingInput');
+        const savePromptExampleBtn = document.getElementById('savePromptExampleBtn');
+        const cancelPromptExampleBtn = document.getElementById('cancelPromptExampleBtn');
+        const promptExampleModalError = document.getElementById('promptExampleModalError');
+        let editingPromptExampleId = null;
+
+        // Populate style/format/image setting selects in modal
+        function populatePromptExampleSelects() {
+            promptExampleStyleInput.innerHTML = styleSelect.innerHTML;
+            promptExampleFormatInput.innerHTML = formatSelect.innerHTML;
+            promptExampleImageSettingInput.innerHTML = imageSettingSelect.innerHTML;
+        }
+
+        async function loadPromptExamples() {
+            promptExampleListDiv.innerHTML = 'Loading...';
+            promptExampleLibrary = {};
+            try {
+                const res = await fetch('/api/v1/images/prompt_examples');
+                const examples = await res.json();
+                if (!Array.isArray(examples)) throw new Error('Invalid response');
+                promptExampleListDiv.innerHTML = '';
+                examples.forEach(e => {
+                    promptExampleLibrary[e.id] = e;
+                    const div = document.createElement('div');
+                    div.className = 'prompt-example-item mb-2 p-2 rounded border cursor-pointer' + (selectedPromptExampleId === e.id ? ' border-blue-400 bg-blue-50' : ' border-gray-600 bg-gray-800');
+                    div.textContent = `${e.description} [${e.provider}]`;
+                    div.onclick = function () {
+                        selectedPromptExampleId = e.id;
+                        loadPromptExampleToForm(e.id);
+                        updatePromptExampleButtons();
+                        loadPromptExamples(); // Refresh highlight
+                    };
+                    promptExampleListDiv.appendChild(div);
+                });
+                if (!examples.length) promptExampleListDiv.innerHTML = '<span class="text-gray-400">No examples saved yet.</span>';
+            } catch (e) {
+                promptExampleListDiv.innerHTML = '<span class="text-red-400">Failed to load examples.</span>';
+            }
+            updatePromptExampleButtons();
+        }
+        function updatePromptExampleButtons() {
+            if (selectedPromptExampleId) {
+                editPromptExampleBtn.style.display = '';
+                deletePromptExampleBtn.style.display = '';
+            } else {
+                editPromptExampleBtn.style.display = 'none';
+                deletePromptExampleBtn.style.display = 'none';
+            }
+        }
+        function loadPromptExampleToForm(id) {
+            const e = promptExampleLibrary[id];
+            if (!e) return;
+            document.getElementById('promptDescription').value = e.description;
+            styleSelect.value = e.style_id;
+            formatSelect.value = e.format_id;
+            document.getElementById('providerSelect').value = e.provider;
+            if (e.image_setting_id) imageSettingSelect.value = e.image_setting_id;
+            styleSelect.dispatchEvent(new Event('change'));
+            formatSelect.dispatchEvent(new Event('change'));
+            imageSettingSelect.dispatchEvent(new Event('change'));
+        }
+        function openPromptExampleModal(editId = null) {
+            editingPromptExampleId = editId;
+            promptExampleModalError.textContent = '';
+            populatePromptExampleSelects();
+            if (editId && promptExampleLibrary[editId]) {
+                promptExampleModalTitle.textContent = 'Edit Prompt Example';
+                const e = promptExampleLibrary[editId];
+                promptExampleDescriptionInput.value = e.description;
+                promptExampleStyleInput.value = e.style_id;
+                promptExampleFormatInput.value = e.format_id;
+                promptExampleProviderInput.value = e.provider;
+                promptExampleImageSettingInput.value = e.image_setting_id || '';
+            } else {
+                promptExampleModalTitle.textContent = 'Add Prompt Example';
+                promptExampleDescriptionInput.value = '';
+                promptExampleStyleInput.value = styleSelect.value;
+                promptExampleFormatInput.value = formatSelect.value;
+                promptExampleProviderInput.value = document.getElementById('providerSelect').value;
+                promptExampleImageSettingInput.value = imageSettingSelect.value;
+            }
+            promptExampleModalBg.style.display = '';
+            promptExampleDescriptionInput.focus();
+        }
+        function closePromptExampleModal() {
+            promptExampleModalBg.style.display = 'none';
+        }
+        newPromptExampleBtn.addEventListener('click', function () {
+            openPromptExampleModal();
+        });
+        editPromptExampleBtn.addEventListener('click', function () {
+            if (selectedPromptExampleId) openPromptExampleModal(selectedPromptExampleId);
+        });
+        deletePromptExampleBtn.addEventListener('click', async function () {
+            if (!selectedPromptExampleId) return;
+            if (!confirm('Delete this prompt example? This cannot be undone.')) return;
+            deletePromptExampleBtn.disabled = true;
+            try {
+                const res = await fetch(`/api/v1/images/prompt_examples/${selectedPromptExampleId}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Failed to delete');
+                selectedPromptExampleId = null;
+                await loadPromptExamples();
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                deletePromptExampleBtn.disabled = false;
             }
         });
+        cancelPromptExampleBtn.addEventListener('click', closePromptExampleModal);
+        promptExampleModalBg.addEventListener('click', function (e) {
+            if (e.target === promptExampleModalBg) closePromptExampleModal();
+        });
+        savePromptExampleBtn.addEventListener('click', async function () {
+            const description = promptExampleDescriptionInput.value.trim();
+            const style_id = promptExampleStyleInput.value;
+            const format_id = promptExampleFormatInput.value;
+            const provider = promptExampleProviderInput.value;
+            const image_setting_id = promptExampleImageSettingInput.value || null;
+            if (!description || !style_id || !format_id || !provider) {
+                promptExampleModalError.textContent = 'All fields except Image Setting are required.';
+                return;
+            }
+            savePromptExampleBtn.disabled = true;
+            try {
+                let res, data;
+                if (editingPromptExampleId) {
+                    res = await fetch(`/api/v1/images/prompt_examples/${editingPromptExampleId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ description, style_id, format_id, provider, image_setting_id })
+                    });
+                } else {
+                    res = await fetch('/api/v1/images/prompt_examples', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ description, style_id, format_id, provider, image_setting_id })
+                    });
+                }
+                data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to save prompt example');
+                closePromptExampleModal();
+                await loadPromptExamples();
+                if (!editingPromptExampleId) selectedPromptExampleId = data.id;
+            } catch (e) {
+                promptExampleModalError.textContent = e.message;
+            } finally {
+                savePromptExampleBtn.disabled = false;
+            }
+        });
+        // Load prompt examples on page load
+        loadPromptExamples();
     });
 </script>
 {% endblock %}
