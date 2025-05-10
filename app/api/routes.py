@@ -9,7 +9,7 @@ import requests
 import time
 import openai
 from app.services.llm_service import ServiceAuth
-from app.models import Post, ImageStyle, ImageFormat, ImageSetting
+from app.models import Post, ImageStyle, ImageFormat, ImageSetting, ImagePromptExample, PostSection
 from slugify import slugify
 import subprocess
 import glob
@@ -530,88 +530,265 @@ def comfyui_start():
 def generate_image():
     data = request.get_json() or {}
     prompt = data.get('prompt', '').strip()
+    provider = data.get('provider', 'sd')  # Default to SD
+    image_setting_id = data.get('image_setting_id')
+    width = data.get('width')
+    height = data.get('height')
+    steps = data.get('steps')
+    guidance_scale = data.get('guidance_scale')
+    extra_settings = data.get('extra_settings')
+    # If image_setting_id is provided, load settings from DB
+    if image_setting_id:
+        setting = ImageSetting.query.get(image_setting_id)
+        if setting:
+            width = width or setting.width
+            height = height or setting.height
+            steps = steps or setting.steps
+            guidance_scale = guidance_scale or setting.guidance_scale
+            extra_settings = extra_settings or setting.extra_settings
     if not prompt:
         return jsonify({'error': 'Prompt is required'}), 400
-    # Compose workflow for SD3.5
-    workflow = {
-        "prompt": {
-            "1": {
-                "class_type": "CheckpointLoaderSimple",
-                "inputs": {"ckpt_name": "sd3.5_large.safetensors"}
-            },
-            "2": {
-                "class_type": "CLIPLoader",
-                "inputs": {"clip_name": "clip_g.safetensors"}
-            },
-            "3": {
-                "class_type": "CLIPTextEncode",
-                "inputs": {
-                    "text": prompt,
-                    "clip": ["2", 0]
-                }
-            },
-            "4": {
-                "class_type": "EmptyLatentImage",
-                "inputs": {"width": 512, "height": 512, "batch_size": 1}
-            },
-            "5": {
-                "class_type": "KSampler",
-                "inputs": {
-                    "model": ["1", 0],
-                    "positive": ["3", 0],
-                    "negative": ["3", 0],
-                    "latent_image": ["4", 0],
-                    "steps": 20,
-                    "cfg": 7.0,
-                    "sampler_name": "euler",
-                    "scheduler": "normal",
-                    "seed": 42,
-                    "denoise": 1.0
-                }
-            },
-            "6": {
-                "class_type": "VAEDecode",
-                "inputs": {
-                    "samples": ["5", 0],
-                    "vae": ["1", 2]
-                }
-            },
-            "7": {
-                "class_type": "SaveImage",
-                "inputs": {
-                    "images": ["6", 0],
-                    "filename_prefix": "webui_sd35"
+    if provider == 'sd':
+        # Compose workflow for SD3.5
+        workflow = {
+            "prompt": {
+                "1": {
+                    "class_type": "CheckpointLoaderSimple",
+                    "inputs": {"ckpt_name": "sd3.5_large.safetensors"}
+                },
+                "2": {
+                    "class_type": "CLIPLoader",
+                    "inputs": {"clip_name": "clip_g.safetensors", "type": "sd3"}
+                },
+                "3": {
+                    "class_type": "CLIPTextEncode",
+                    "inputs": {
+                        "text": prompt,
+                        "clip": ["2", 0]
+                    }
+                },
+                "4": {
+                    "class_type": "EmptyLatentImage",
+                    "inputs": {"width": width or 512, "height": height or 512, "batch_size": 1}
+                },
+                "5": {
+                    "class_type": "KSampler",
+                    "inputs": {
+                        "model": ["1", 0],
+                        "positive": ["3", 0],
+                        "negative": ["3", 0],
+                        "latent_image": ["4", 0],
+                        "steps": steps or 20,
+                        "cfg": guidance_scale or 7.0,
+                        "sampler_name": "euler",
+                        "scheduler": "normal",
+                        "seed": 42,
+                        "denoise": 1.0
+                    }
+                },
+                "6": {
+                    "class_type": "VAEDecode",
+                    "inputs": {
+                        "samples": ["5", 0],
+                        "vae": ["1", 2]
+                    }
+                },
+                "7": {
+                    "class_type": "SaveImage",
+                    "inputs": {
+                        "images": ["6", 0],
+                        "filename_prefix": "webui_sd35"
+                    }
                 }
             }
         }
-    }
-    try:
-        res = requests.post('http://localhost:8188/prompt', json=workflow, timeout=60)
-        debug_info = {'comfyui_status_code': res.status_code, 'comfyui_response': res.text}
-        if res.status_code != 200:
-            return jsonify({'error': f'ComfyUI error: {res.text}', 'debug': debug_info}), 500
-        # Wait for image to appear (poll for up to 30s)
-        output_dir = os.path.expanduser('~/ComfyUI/output/')
-        prefix = 'webui_sd35'
-        found = None
-        files_checked = []
-        for _ in range(30):
-            files = sorted(glob.glob(os.path.join(output_dir, f'{prefix}_*.png')), key=os.path.getmtime, reverse=True)
-            files_checked = files
-            if files:
-                found = files[0]
-                if os.path.getsize(found) > 0:
-                    break
-            time.sleep(1)
-        if not found:
-            return jsonify({'error': 'No image generated', 'debug': debug_info, 'files_checked': files_checked}), 500
-        # Copy to static/comfyui_output/
-        static_dir = os.path.join(current_app.root_path, 'static', 'comfyui_output')
-        os.makedirs(static_dir, exist_ok=True)
-        fname = os.path.basename(found)
-        dest = os.path.join(static_dir, fname)
-        shutil.copy2(found, dest)
-        image_url = f'/static/comfyui_output/{fname}'
-        return jsonify({'image_url': image_url, 'debug': debug_info})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Optionally merge extra_settings (if JSON)
+        import json
+        if extra_settings:
+            try:
+                extra = json.loads(extra_settings) if isinstance(extra_settings, str) else extra_settings
+                # Merge into workflow as needed (advanced users only)
+                # For now, ignore unless you want to support custom nodes/params
+            except Exception:
+                pass
+        try:
+            res = requests.post('http://localhost:8188/prompt', json=workflow, timeout=60)
+            debug_info = {'comfyui_status_code': res.status_code, 'comfyui_response': res.text}
+            if res.status_code != 200:
+                return jsonify({'error': f'ComfyUI error: {res.text}', 'debug': debug_info}), 500
+            # Wait for image to appear (poll for up to 30s)
+            output_dir = os.path.expanduser('~/ComfyUI/output/')
+            prefix = 'webui_sd35'
+            found = None
+            files_checked = []
+            for _ in range(30):
+                files = sorted(glob.glob(os.path.join(output_dir, f'{prefix}_*.png')), key=os.path.getmtime, reverse=True)
+                files_checked = files
+                if files:
+                    found = files[0]
+                    if os.path.getsize(found) > 0:
+                        break
+                time.sleep(1)
+            if not found:
+                return jsonify({'error': 'No image generated', 'debug': debug_info, 'files_checked': files_checked}), 500
+            # Copy to static/comfyui_output/
+            static_dir = os.path.join(current_app.root_path, 'static', 'comfyui_output')
+            os.makedirs(static_dir, exist_ok=True)
+            fname = os.path.basename(found)
+            dest = os.path.join(static_dir, fname)
+            shutil.copy2(found, dest)
+            image_url = f'/static/comfyui_output/{fname}'
+            return jsonify({'image_url': image_url, 'provider': 'sd', 'debug': debug_info})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    elif provider == 'openai':
+        # OpenAI DALL·E (v2/v3) - requires OPENAI_API_KEY in config
+        api_key = current_app.config.get('OPENAI_AUTH_TOKEN')
+        if not api_key:
+            return jsonify({'error': 'OpenAI API key not configured'}), 500
+        size = f"{width or 1024}x{height or 1024}"
+        try:
+            import openai
+            client = openai.OpenAI(api_key=api_key)
+            response = client.images.generate(
+                model="dall-e-3",
+                prompt=prompt,
+                size=size,
+                quality="standard",
+                n=1
+            )
+            image_url = response.data[0].url if response.data and response.data[0].url else None
+            return jsonify({'image_url': image_url, 'provider': 'openai', 'debug': {}})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    else:
+        return jsonify({'error': f'Unknown provider: {provider}'}), 400
+
+# --- ImagePromptExample CRUD API endpoints ---
+@bp.route('/images/prompt_examples', methods=['GET'])
+def list_prompt_examples():
+    examples = ImagePromptExample.query.order_by(ImagePromptExample.created_at.desc()).all()
+    return jsonify([e.to_dict() for e in examples]), 200
+
+@bp.route('/images/prompt_examples/<int:example_id>', methods=['GET'])
+def get_prompt_example(example_id):
+    e = ImagePromptExample.query.get(example_id)
+    if not e:
+        return jsonify({'error': 'Not found'}), 404
+    return jsonify(e.to_dict()), 200
+
+@bp.route('/images/prompt_examples', methods=['POST'])
+def create_prompt_example():
+    data = request.get_json() or {}
+    description = data.get('description')
+    style_id = data.get('style_id')
+    format_id = data.get('format_id')
+    provider = data.get('provider')
+    image_setting_id = data.get('image_setting_id')
+    if not description or not style_id or not format_id or not provider:
+        return jsonify({'error': 'Missing required fields'}), 400
+    style = ImageStyle.query.get(style_id)
+    fmt = ImageFormat.query.get(format_id)
+    if not style or not fmt:
+        return jsonify({'error': 'Invalid style or format'}), 400
+    example = ImagePromptExample(
+        description=description,
+        style_id=style_id,
+        format_id=format_id,
+        provider=provider,
+        image_setting_id=image_setting_id
+    )
+    db.session.add(example)
+    db.session.commit()
+    return jsonify(example.to_dict()), 201
+
+@bp.route('/images/prompt_examples/<int:example_id>', methods=['PUT'])
+def update_prompt_example(example_id):
+    e = ImagePromptExample.query.get(example_id)
+    if not e:
+        return jsonify({'error': 'Not found'}), 404
+    data = request.get_json() or {}
+    if 'description' in data:
+        e.description = data['description']
+    if 'style_id' in data:
+        style = ImageStyle.query.get(data['style_id'])
+        if not style:
+            return jsonify({'error': 'Invalid style'}), 400
+        e.style_id = data['style_id']
+    if 'format_id' in data:
+        fmt = ImageFormat.query.get(data['format_id'])
+        if not fmt:
+            return jsonify({'error': 'Invalid format'}), 400
+        e.format_id = data['format_id']
+    if 'provider' in data:
+        e.provider = data['provider']
+    if 'image_setting_id' in data:
+        e.image_setting_id = data['image_setting_id']
+    db.session.commit()
+    return jsonify(e.to_dict()), 200
+
+@bp.route('/images/prompt_examples/<int:example_id>', methods=['DELETE'])
+def delete_prompt_example(example_id):
+    e = ImagePromptExample.query.get(example_id)
+    if not e:
+        return jsonify({'error': 'Not found'}), 404
+    db.session.delete(e)
+    db.session.commit()
+    return jsonify({'success': True}), 200
+
+@bp.route('/api/v1/posts/<int:post_id>/generate_images', methods=['POST'])
+def generate_images_for_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    sections = PostSection.query.filter_by(post_id=post_id).order_by(PostSection.section_order).all()
+    results = []
+    for section in sections:
+        # Get linked prompt example
+        prompt_example = None
+        if section.image_prompt_example_id:
+            prompt_example = ImagePromptExample.query.get(section.image_prompt_example_id)
+        # Fallback: use section heading as description if no prompt example
+        description = prompt_example.description if prompt_example else (section.section_heading or '')
+        style_id = prompt_example.style_id if prompt_example else None
+        format_id = prompt_example.format_id if prompt_example else None
+        provider = prompt_example.provider if prompt_example else 'sd'
+        image_setting_id = prompt_example.image_setting_id if prompt_example else None
+        # Get image setting
+        setting = ImageSetting.query.get(image_setting_id) if image_setting_id else None
+        width = setting.width if setting else None
+        height = setting.height if setting else None
+        steps = setting.steps if setting else None
+        guidance_scale = setting.guidance_scale if setting else None
+        extra_settings = setting.extra_settings if setting else None
+        # Compose prompt
+        prompt = description
+        if setting:
+            prompt += f"\nStyle: {setting.style.title if setting.style else ''}"
+            prompt += f"\nFormat: {setting.format.title if setting.format else ''}"
+        # Call image generation endpoint
+        try:
+            import requests
+            resp = requests.post(
+                request.url_root.rstrip('/') + '/api/v1/images/generate',
+                json={
+                    'prompt': prompt,
+                    'provider': provider,
+                    'image_setting_id': image_setting_id,
+                    'width': width,
+                    'height': height,
+                    'steps': steps,
+                    'guidance_scale': guidance_scale,
+                    'extra_settings': extra_settings
+                },
+                timeout=120
+            )
+            data = resp.json()
+            if resp.status_code == 200 and data.get('image_url'):
+                section.generated_image_url = data['image_url']
+                section.image_generation_metadata = data
+                db.session.commit()
+                results.append({'section_id': section.id, 'image_url': data['image_url'], 'provider': provider, 'status': 'success'})
+            else:
+                results.append({'section_id': section.id, 'error': data.get('error', 'Unknown error'), 'provider': provider, 'status': 'error'})
+        except Exception as e:
+            results.append({'section_id': section.id, 'error': str(e), 'provider': provider, 'status': 'error'})
+    return jsonify({'results': results})
