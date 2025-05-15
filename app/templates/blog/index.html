@@ -81,6 +81,7 @@
     <div class="flex items-center justify-between mb-8">
         <h1 class="text-3xl font-bold text-dark-text">Posts</h1>
         <div class="flex items-center space-x-4">
+            <a href="{{ url_for('preview.landing') }}" class="admin-button admin-button-secondary">Preview</a>
             <label class="flex items-center cursor-pointer select-none">
                 <span class="mr-2 text-sm text-dark-text">Show deleted</span>
                 <input type="checkbox" id="showDeletedToggle" class="hidden">

@@ -43,6 +43,15 @@
             </svg>
             JSON
         </a>
+        <a href="{{ url_for('blog.post_view', post_id=post.id, view='preview') }}"
+            class="admin-button admin-button-secondary" title="Preview">
+            <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 10l4.553-2.276A2 2 0 0020 6.382V5a2 2 0 00-2-2H6a2 2 0 00-2 2v1.382a2 2 0 00.447 1.342L9 10m6 0v10m0 0H9m6 0a2 2 0 01-2 2H9a2 2 0 01-2-2V10m8 0H9" />
+            </svg>
+            Preview
+        </a>
     </div>
 </div>
 {% endmacro %}

@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhancement: Automatic database backup now runs after every commit (insert, update, or delete), with old backups rotated to prevent bloat. This uses a SQLAlchemy event listener and the existing backup script.
 - UI: Section Generate buttons now show 'Generating...' and are disabled while the request is in progress, preventing double-clicks and giving clear feedback to the user.
 - Enhancement: Added drag-and-drop reordering for prompt templates with visible gap indicator. Order is now persisted in the database and respected in all selection menus. Added /api/v1/llm/prompts/order endpoint to update order.
+- UI: Added 'Preview' link to the main header navigation menu, the main blog landing page, and the post header macro for quick access to post previews.
+- UI: Added Preview panel/link to the main welcome page at /, linking to the Preview landing page.
 
 ### Changed
 - Updated all workflow documentation for asynchronous model

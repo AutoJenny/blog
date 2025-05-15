@@ -319,6 +319,11 @@ class ImageFormat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.String(255), nullable=True)
+    width = db.Column(db.Integer, nullable=True)  # SD/ComfyUI
+    height = db.Column(db.Integer, nullable=True) # SD/ComfyUI
+    steps = db.Column(db.Integer, nullable=True)  # SD/ComfyUI
+    guidance_scale = db.Column(db.Float, nullable=True) # SD/ComfyUI
+    extra_settings = db.Column(db.Text, nullable=True)  # JSON or freeform for advanced/provider-specific options
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -327,6 +332,11 @@ class ImageFormat(db.Model):
             'id': self.id,
             'title': self.title,
             'description': self.description,
+            'width': self.width,
+            'height': self.height,
+            'steps': self.steps,
+            'guidance_scale': self.guidance_scale,
+            'extra_settings': self.extra_settings,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
