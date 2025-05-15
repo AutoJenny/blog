@@ -377,11 +377,24 @@ def create_image_format():
     data = request.get_json() or {}
     title = data.get("title")
     description = data.get("description")
+    width = data.get("width")
+    height = data.get("height")
+    steps = data.get("steps")
+    guidance_scale = data.get("guidance_scale")
+    extra_settings = data.get("extra_settings")
     if not title:
         return jsonify({"error": "Title is required"}), 400
     if ImageFormat.query.filter_by(title=title).first():
         return jsonify({"error": "Format with this title already exists"}), 400
-    fmt = ImageFormat(title=title, description=description)
+    fmt = ImageFormat(
+        title=title,
+        description=description,
+        width=width,
+        height=height,
+        steps=steps,
+        guidance_scale=guidance_scale,
+        extra_settings=extra_settings
+    )
     db.session.add(fmt)
     db.session.commit()
     return jsonify(fmt.to_dict()), 201
@@ -394,6 +407,11 @@ def update_image_format(format_id):
     data = request.get_json() or {}
     title = data.get("title")
     description = data.get("description")
+    width = data.get("width")
+    height = data.get("height")
+    steps = data.get("steps")
+    guidance_scale = data.get("guidance_scale")
+    extra_settings = data.get("extra_settings")
     if title:
         existing = ImageFormat.query.filter_by(title=title).first()
         if existing and existing.id != format_id:
@@ -401,6 +419,16 @@ def update_image_format(format_id):
         fmt.title = title
     if description is not None:
         fmt.description = description
+    if width is not None:
+        fmt.width = width
+    if height is not None:
+        fmt.height = height
+    if steps is not None:
+        fmt.steps = steps
+    if guidance_scale is not None:
+        fmt.guidance_scale = guidance_scale
+    if extra_settings is not None:
+        fmt.extra_settings = extra_settings
     db.session.commit()
     return jsonify(fmt.to_dict()), 200
 
@@ -433,6 +461,11 @@ def create_image_setting():
     name = data.get('name')
     style_id = data.get('style_id')
     format_id = data.get('format_id')
+    width = data.get('width')
+    height = data.get('height')
+    steps = data.get('steps')
+    guidance_scale = data.get('guidance_scale')
+    extra_settings = data.get('extra_settings')
     if not name or not style_id or not format_id:
         return jsonify({'error': 'Missing required fields'}), 400
     if ImageSetting.query.filter_by(name=name).first():
@@ -441,7 +474,16 @@ def create_image_setting():
     fmt = ImageFormat.query.get(format_id)
     if not style or not fmt:
         return jsonify({'error': 'Invalid style or format'}), 400
-    s = ImageSetting(name=name, style_id=style_id, format_id=format_id)
+    s = ImageSetting(
+        name=name,
+        style_id=style_id,
+        format_id=format_id,
+        width=width,
+        height=height,
+        steps=steps,
+        guidance_scale=guidance_scale,
+        extra_settings=extra_settings
+    )
     db.session.add(s)
     db.session.commit()
     return jsonify(s.to_dict()), 201
@@ -455,6 +497,11 @@ def update_image_setting(setting_id):
     name = data.get('name')
     style_id = data.get('style_id')
     format_id = data.get('format_id')
+    width = data.get('width')
+    height = data.get('height')
+    steps = data.get('steps')
+    guidance_scale = data.get('guidance_scale')
+    extra_settings = data.get('extra_settings')
     if name:
         existing = ImageSetting.query.filter_by(name=name).first()
         if existing and existing.id != setting_id:
@@ -470,6 +517,16 @@ def update_image_setting(setting_id):
         if not fmt:
             return jsonify({'error': 'Invalid format'}), 400
         s.format_id = format_id
+    if width is not None:
+        s.width = width
+    if height is not None:
+        s.height = height
+    if steps is not None:
+        s.steps = steps
+    if guidance_scale is not None:
+        s.guidance_scale = guidance_scale
+    if extra_settings is not None:
+        s.extra_settings = extra_settings
     db.session.commit()
     return jsonify(s.to_dict())
 

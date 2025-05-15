@@ -178,6 +178,12 @@
                 <div class="flex gap-2 items-center mb-2">
                     <input type="text" id="imageSettingNameField" class="form-input w-full"
                         placeholder="Setting Name" />
+                    <select id="imageSettingStyleField" class="form-input">
+                        <option value="">-- Style --</option>
+                    </select>
+                    <select id="imageSettingFormatField" class="form-input">
+                        <option value="">-- Format --</option>
+                    </select>
                     <button type="button" class="btn btn-primary" id="saveImageSettingMainBtn">Save</button>
                 </div>
                 <div id="selectedImageSettingDisplay" class="text-sm text-gray-400 mt-1" style="min-height:1.5em;">
@@ -345,6 +351,8 @@
         const selectedImageSettingDisplay = document.getElementById('selectedImageSettingDisplay');
         let imageSettingLibrary = {};
         let editingImageSettingId = null;
+        const imageSettingStyleField = document.getElementById('imageSettingStyleField');
+        const imageSettingFormatField = document.getElementById('imageSettingFormatField');
 
         async function loadImageSettings() {
             imageSettingSelect.innerHTML = '<option value="">-- Select an Image Setting --</option>';
@@ -367,6 +375,38 @@
         }
         loadImageSettings();
 
+        async function loadStylesAndFormats() {
+            // Populate styles
+            imageSettingStyleField.innerHTML = '<option value="">-- Style --</option>';
+            try {
+                const res = await fetch('/api/v1/images/styles');
+                const styles = await res.json();
+                styles.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.title;
+                    imageSettingStyleField.appendChild(opt);
+                });
+            } catch (e) {
+                imageSettingStyleField.innerHTML = '<option value="">(Failed to load styles)</option>';
+            }
+            // Populate formats
+            imageSettingFormatField.innerHTML = '<option value="">-- Format --</option>';
+            try {
+                const res = await fetch('/api/v1/images/formats');
+                const formats = await res.json();
+                formats.forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.id;
+                    opt.textContent = f.title;
+                    imageSettingFormatField.appendChild(opt);
+                });
+            } catch (e) {
+                imageSettingFormatField.innerHTML = '<option value="">(Failed to load formats)</option>';
+            }
+        }
+        loadStylesAndFormats();
+
         // Populate ComfyUI fields when a setting is selected
         imageSettingSelect.addEventListener('change', function () {
             const val = imageSettingSelect.value;
@@ -377,7 +417,8 @@
                 document.getElementById('inputHeight').value = s.height || '';
                 document.getElementById('inputSteps').value = s.steps || '';
                 document.getElementById('inputGuidance').value = s.guidance_scale || '';
-                // extra_settings is not shown in UI by default, but could be added
+                imageSettingStyleField.value = s.style_id || '';
+                imageSettingFormatField.value = s.format_id || '';
                 selectedImageSettingDisplay.innerHTML = `<strong>${s.name}</strong>: ${s.width}x${s.height}, ${s.steps} steps, guidance ${s.guidance_scale}`;
                 editImageSettingBtn.style.display = '';
                 deleteImageSettingBtn.style.display = '';
@@ -388,6 +429,8 @@
                 document.getElementById('inputHeight').value = '';
                 document.getElementById('inputSteps').value = '';
                 document.getElementById('inputGuidance').value = '';
+                imageSettingStyleField.value = '';
+                imageSettingFormatField.value = '';
                 selectedImageSettingDisplay.textContent = '';
                 editImageSettingBtn.style.display = 'none';
                 deleteImageSettingBtn.style.display = 'none';
@@ -402,16 +445,8 @@
             const height = parseInt(document.getElementById('inputHeight').value) || null;
             const steps = parseInt(document.getElementById('inputSteps').value) || null;
             const guidance_scale = parseFloat(document.getElementById('inputGuidance').value) || null;
-            // For now, style/format are not editable here (could be added)
-            let style_id = null, format_id = null;
-            if (editingImageSettingId && imageSettingLibrary[editingImageSettingId]) {
-                style_id = imageSettingLibrary[editingImageSettingId].style_id;
-                format_id = imageSettingLibrary[editingImageSettingId].format_id;
-            } else {
-                // Default to first available style/format if needed
-                style_id = 1;
-                format_id = 1;
-            }
+            const style_id = imageSettingStyleField.value;
+            const format_id = imageSettingFormatField.value;
             if (!name || !style_id || !format_id) {
                 alert('Name, style, and format are required.');
                 return;

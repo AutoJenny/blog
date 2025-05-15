@@ -138,6 +138,10 @@ def create_app(config_class=Config):
 
     app.register_blueprint(db_bp)
 
+    from app.preview import bp as preview_bp
+
+    app.register_blueprint(preview_bp, url_prefix='/preview')
+
     return app
 
 
