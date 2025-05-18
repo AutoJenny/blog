@@ -8,7 +8,7 @@ from flask import (
     current_app,
 )
 from app import db
-from sqlalchemy import text
+from sqlalchemy import text, inspect
 import subprocess
 import os
 import json
@@ -148,3 +148,27 @@ def replication():
             flash("Error reading replication configuration", "error")
 
     return render_template("db/replication.html", status=status, config=config)
+
+
+@bp.route("/tables")
+def list_tables():
+    inspector = inspect(db.engine)
+    tables = inspector.get_table_names(schema="public")
+    result = []
+    for table in tables:
+        columns = [
+            {"name": col["name"], "type": str(col["type"])}
+            for col in inspector.get_columns(table, schema="public")
+        ]
+        # Fetch up to 20 rows of data
+        try:
+            rows = db.session.execute(text(f'SELECT * FROM "{table}" LIMIT 20')).fetchall()
+            row_dicts = [dict(row) for row in rows]
+        except Exception as e:
+            row_dicts = []
+        result.append({
+            "name": table,
+            "columns": columns,
+            "rows": row_dicts
+        })
+    return {"tables": result}
