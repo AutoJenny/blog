@@ -87,28 +87,28 @@
     </header>
     <!-- Blog post list -->
     <ul class="post-list">
-        {% for post in posts|sort(attribute='created_at', reverse=True) %}
-            {% if post.published or post.status == 'in_process' %}
-            <li class="post-list-item mb-10 pb-6 border-b border-gray-200">
-                <h2 class="text-2xl font-semibold mb-1">
-                    <a href="{{ url_for('blog.post_view', post_id=post.id) }}" class="hover:underline">{{ post.title }}</a>
-                </h2>
-                <p class="post-meta text-sm text-gray-600 mb-2">
-                    <span class="post-meta__date">
-                        <time datetime="{{ post.created_at.strftime('%Y-%m-%d') }}">{{ post.created_at.strftime('%B %d, %Y') }}</time>
-                    </span>
-                    {% if post.author %}
-                    <span class="post-meta__separator"> | </span>
-                    <span class="post-meta__author">By {{ post.author }}</span>
-                    {% endif %}
-                </p>
-                <div class="post-summary text-base text-gray-700 mb-2">
-                    {{ post.summary|safe }}
-                </div>
-            </li>
-            {% endif %}
+        {% for post in posts %}
+        {% if post.published or post.status == 'in_process' %}
+        <li class="post-list-item mb-10 pb-6 border-b border-gray-200">
+            <h2 class="text-2xl font-semibold mb-1">
+                <a href="{{ url_for('blog.post_view', post_id=post.id) }}" class="hover:underline">{{ post.title }}</a>
+            </h2>
+            <p class="post-meta text-sm text-gray-600 mb-2">
+                <span class="post-meta__date">
+                    <time datetime="{{ post.created_at }}">{{ post.created_at[:10] if post.created_at else '' }}</time>
+                </span>
+                {% if post.author %}
+                <span class="post-meta__separator"> | </span>
+                <span class="post-meta__author">By {{ post.author }}</span>
+                {% endif %}
+            </p>
+            <div class="post-summary text-base text-gray-700 mb-2">
+                {{ post.summary|default('')|safe }}
+            </div>
+        </li>
+        {% endif %}
         {% else %}
-            <li class="text-gray-400 text-center text-lg">No posts yet</li>
+        <li class="text-gray-400 text-center text-lg">No posts yet</li>
         {% endfor %}
     </ul>
 </div>

@@ -1,0 +1,218 @@
+HTTP/1.1 200 OK
+Server: Werkzeug/3.0.1 Python/3.12.2
+Date: Sun, 18 May 2025 10:38:51 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 11580
+Connection: close
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <!-- Tailwind CSS -->
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    <!-- Header -->
+    <header class="bg-indigo-950 border-b border-dark-border py-4">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+                <div class="flex items-center space-x-8 flex-1 min-w-0">
+                    <!-- Home Icon -->
+                    <a href="/" class="text-white hover:text-yellow-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                        </svg>
+                    </a>
+                    <!-- Navigation Links -->
+                    <div class="flex space-x-4">
+                        <a href="/"
+                            class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                        <div class="relative group">
+                            <button
+                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">Blog
+                                ▾</button>
+                            <div
+                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <a href="/blog/"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Posts</a>
+                                <a href="/preview/"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Preview</a>
+                                <a href="/db/"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Database</a>
+                            </div>
+                        </div>
+                        <div class="relative group">
+                            <button
+                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">LLM
+                                ▾</button>
+                            <div
+                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <a href="/llm/" class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">LLMs</a>
+                                <a href="/llm/actions"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Actions</a>
+                                <a href="/llm/images"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Images</a>
+                            </div>
+                        </div>
+                        <div class="relative group">
+                            <button
+                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">Help
+                                ▾</button>
+                            <div
+                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <a href="/docs/"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Documentation</a>
+                                <a href="/CHANGES.log"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Changelog</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white bg-opacity-90 rounded-lg shadow-lg p-8 mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-indigo-900 mb-2">Welcome to Blog CMS</h1>
+                <p class="text-gray-700 text-lg">A modern content management system for creating and managing blog posts
+                    with AI assistance.</p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <input type="text" placeholder="Search posts, actions, images..."
+                    class="rounded-md border border-indigo-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+            </div>
+        </div>
+        <div class="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-12 my-8">
+            <!-- Create -->
+            <div class="bg-blue-50 rounded-lg p-4 flex flex-col items-center shadow">
+                <svg class="w-5 h-5 text-blue-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                <a href="/blog/"
+                    class="text-lg font-semibold text-blue-900 hover:text-blue-700 mt-1">New Post</a>
+                <span class="text-xs text-blue-700">Create a new blog post or draft</span>
+            </div>
+            <!-- Develop -->
+            <div class="bg-green-50 rounded-lg p-4 flex flex-col items-center shadow">
+                <svg class="w-5 h-5 text-green-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.232 5.232l3.536 3.536M9 11l6 6M3 21h18" />
+                </svg>
+                <a href="/llm/"
+                    class="text-lg font-semibold text-green-900 hover:text-green-700 mt-1">LLM Assistance</a>
+                <span class="text-xs text-green-700">AI-powered content development</span>
+            </div>
+            <!-- Preview -->
+            <div class="bg-yellow-50 rounded-lg p-4 flex flex-col items-center shadow">
+                <svg class="w-5 h-5 text-yellow-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15 10l4.553-2.276A2 2 0 0021 6.382V5a2 2 0 00-2-2H5a2 2 0 00-2 2v1.382a2 2 0 001.447 1.342L9 10m6 0v10a2 2 0 01-2 2H7a2 2 0 01-2-2V10m6 0l-6 3" />
+                </svg>
+                <a href="/preview/"
+                    class="text-lg font-semibold text-yellow-900 hover:text-yellow-700 mt-1">Preview</a>
+                <span class="text-xs text-yellow-700">Preview and review your posts</span>
+            </div>
+            <!-- Publish -->
+            <div class="bg-purple-50 rounded-lg p-4 flex flex-col items-center shadow">
+                <svg class="w-5 h-5 text-purple-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <a href="#" class="text-lg font-semibold text-purple-900 hover:text-purple-700 mt-1">Publish</a>
+                <span class="text-xs text-purple-700">Publish and syndicate posts</span>
+            </div>
+            <!-- Admin -->
+            <div class="bg-red-50 rounded-lg p-4 flex flex-col items-center shadow">
+                <svg class="w-5 h-5 text-red-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3 7v4a1 1 0 001 1h3m10-5h3a1 1 0 011 1v4a1 1 0 01-1 1h-3m-10 0v6a2 2 0 002 2h8a2 2 0 002-2v-6m-10 0h10" />
+                </svg>
+                <a href="/db/"
+                    class="text-lg font-semibold text-red-900 hover:text-red-700 mt-1">Database</a>
+                <span class="text-xs text-red-700">Manage your content database</span>
+            </div>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Recent Activity -->
+        <div class="bg-indigo-50 rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-indigo-900 mb-4">Recent Activity</h2>
+            <ul class="text-indigo-800 text-sm space-y-2">
+                <li>No recent activity to display.</li>
+            </ul>
+        </div>
+        <!-- Help Section -->
+        <div class="bg-gray-50 rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Help & Resources</h2>
+            <ul class="text-blue-800 text-sm space-y-2">
+                <li><a href="/docs/" class="hover:underline">Documentation</a></li>
+                <li><a href="/CHANGES.log" class="hover:underline">Changelog</a></li>
+                <li><a href="https://github.com/nickfiddes/blog" class="hover:underline" target="_blank">Project
+                        GitHub</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">&copy; 2025 Blog CMS. All rights reserved.</p>
+        </div>
+    </footer>
+
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var newPostBtn = document.getElementById('newPostBtn');
+            if (newPostBtn) {
+                newPostBtn.addEventListener('click', async () => {
+                    const basicIdea = prompt('Enter your basic idea for the post:');
+                    if (!basicIdea) return;
+                    try {
+                        const response = await fetch("/blog/new", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ basic_idea: basicIdea })
+                        });
+                        const data = await response.json();
+                        if (response.ok) {
+                            window.location.href = `/blog/${data.id}/develop`;
+                        } else {
+                            alert(data.error || 'Failed to create post');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to create post');
+                    }
+                });
+            }
+        });
+    </script>
+    
+</body>
+
+</html>

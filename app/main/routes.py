@@ -6,17 +6,33 @@ import time
 import sqlalchemy
 from sqlalchemy import create_engine
 import redis
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from dotenv import load_dotenv
 
+# Load DATABASE_URL from assistant_config.env
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+def get_db_conn():
+    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
 @bp.route("/")
 def index():
     """Home page with direct access to admin features."""
-    # Get all posts without filtering
-    posts = Post.query.order_by(Post.created_at.desc()).all()
-
-    # Get all categories
-    categories = Category.query.order_by(Category.name).all()
-
+    posts = []
+    categories = []
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post ORDER BY created_at DESC")
+                posts = cur.fetchall()
+                cur.execute("SELECT * FROM category ORDER BY name ASC")
+                categories = cur.fetchall()
+    except Exception as e:
+        posts = []
+        categories = []
     return render_template(
         "main/index.html",
         title="Home",

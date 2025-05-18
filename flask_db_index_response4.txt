@@ -1,0 +1,255 @@
+HTTP/1.1 200 OK
+Server: Werkzeug/3.0.1 Python/3.12.2
+Date: Sun, 18 May 2025 10:35:28 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 12330
+Connection: close
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Management</title>
+    <!-- Tailwind CSS -->
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    <!-- Header -->
+    <header class="bg-indigo-950 border-b border-dark-border py-4">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+                <div class="flex items-center space-x-8 flex-1 min-w-0">
+                    <!-- Home Icon -->
+                    <a href="/" class="text-white hover:text-yellow-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                        </svg>
+                    </a>
+                    <!-- Navigation Links -->
+                    <div class="flex space-x-4">
+                        <a href="/"
+                            class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                        <div class="relative group">
+                            <button
+                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">Blog
+                                ▾</button>
+                            <div
+                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <a href="/blog/"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Posts</a>
+                                <a href="/preview/"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Preview</a>
+                                <a href="/db/"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Database</a>
+                            </div>
+                        </div>
+                        <div class="relative group">
+                            <button
+                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">LLM
+                                ▾</button>
+                            <div
+                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <a href="/llm/" class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">LLMs</a>
+                                <a href="/llm/actions"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Actions</a>
+                                <a href="/llm/images"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Images</a>
+                            </div>
+                        </div>
+                        <div class="relative group">
+                            <button
+                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">Help
+                                ▾</button>
+                            <div
+                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <a href="/docs/"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Documentation</a>
+                                <a href="/CHANGES.log"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Changelog</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+<div class="max-w-5xl mx-auto py-8 px-4">
+    <h1 class="admin-title mb-8">Database Management</h1>
+
+    <!-- DB Content Accordion -->
+    <div id="db-content-accordion" class="mb-10">
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <i class="fas fa-table text-dark-accent"></i> Database Content
+        </h2>
+        <div id="db-tables-accordion" class="space-y-4"></div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 space-y-8">
+        <!-- Backup & Restore -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-database text-dark-accent"></i> Backup & Restore
+            </h2>
+            <div class="flex flex-col gap-3">
+                
+                <a href="/db/restore" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-upload"></i> Restore from Backup
+                </a>
+            </div>
+        </div>
+        <!-- Maintenance -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-tools text-dark-accent"></i> Maintenance
+            </h2>
+            <div class="flex flex-col gap-3">
+                
+            </div>
+        </div>
+        <!-- Monitoring -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-chart-bar text-dark-accent"></i> Monitoring
+            </h2>
+            <div class="flex flex-col gap-3">
+                <a href="/db/stats" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-chart-bar"></i> Database Statistics
+                </a>
+                <a href="/db/logs" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-list"></i> View Logs
+                </a>
+            </div>
+        </div>
+        <!-- Advanced -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-cogs text-dark-accent"></i> Advanced
+            </h2>
+            <div class="flex flex-col gap-3">
+                <a href="/db/migrations" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-code-branch"></i> Manage Migrations
+                </a>
+                <a href="/db/replication" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-sync"></i> Replication Status
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    async function fetchTables() {
+        const accordion = document.getElementById('db-tables-accordion');
+        accordion.innerHTML = '<div class="text-gray-400 py-8 text-center">Loading database tables...</div>';
+        try {
+            const res = await fetch('/db/tables');
+            const data = await res.json();
+            if (!data.tables || !data.tables.length) {
+                accordion.innerHTML = '<div class="text-gray-400 py-8 text-center">No tables found.</div>';
+                return;
+            }
+            accordion.innerHTML = '';
+            data.tables.forEach((table, idx) => {
+                const panel = document.createElement('div');
+                panel.className = 'border rounded-lg shadow bg-dark-surface';
+                panel.innerHTML = `
+                <button class="w-full flex justify-between items-center px-6 py-4 text-lg font-bold text-dark-accent focus:outline-none focus:ring-2 focus:ring-dark-accent transition-colors duration-200 hover:bg-dark-bg rounded-t-lg accordion-toggle" data-idx="${idx}">
+                    <span>
+                        <i class="fas fa-table mr-2"></i>${table.name}
+                    </span>
+                    <span class="chevron transition-transform duration-200">&#9654;</span>
+                </button>
+                <div class="accordion-content hidden px-6 pb-6 pt-2">
+                    <table class="w-full border-collapse mb-4 text-sm">
+                        <thead>
+                            <tr class="bg-dark-bg text-dark-accent">
+                                ${table.columns.map(col => `<th class="p-2 text-left">${col.name}<br><span class="text-xs text-gray-500">${col.type}</span></th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${table.rows && table.rows.length ? table.rows.map(row => `
+                                <tr class="border-b border-dark-border">
+                                    ${table.columns.map(col => `<td class="p-2 font-mono truncate">${row[col.name] ?? ''}</td>`).join('')}
+                                </tr>
+                            `).join('') : `<tr><td colspan="${table.columns.length}" class="text-center text-gray-500 py-4">No rows</td></tr>`}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+                accordion.appendChild(panel);
+            });
+            // Accordion toggle logic
+            accordion.querySelectorAll('.accordion-toggle').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const content = this.parentElement.querySelector('.accordion-content');
+                    const chevron = this.querySelector('.chevron');
+                    if (content.classList.contains('hidden')) {
+                        content.classList.remove('hidden');
+                        chevron.style.transform = 'rotate(90deg)';
+                    } else {
+                        content.classList.add('hidden');
+                        chevron.style.transform = '';
+                    }
+                });
+            });
+        } catch (e) {
+            accordion.innerHTML = `<div class="text-red-500 py-8 text-center">Error loading tables: ${e}</div>`;
+        }
+    }
+    fetchTables();
+</script>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">&copy; 2025 Blog CMS. All rights reserved.</p>
+        </div>
+    </footer>
+
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var newPostBtn = document.getElementById('newPostBtn');
+            if (newPostBtn) {
+                newPostBtn.addEventListener('click', async () => {
+                    const basicIdea = prompt('Enter your basic idea for the post:');
+                    if (!basicIdea) return;
+                    try {
+                        const response = await fetch("/blog/new", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ basic_idea: basicIdea })
+                        });
+                        const data = await response.json();
+                        if (response.ok) {
+                            window.location.href = `/blog/${data.id}/develop`;
+                        } else {
+                            alert(data.error || 'Failed to create post');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to create post');
+                    }
+                });
+            }
+        });
+    </script>
+    
+</body>
+
+</html>

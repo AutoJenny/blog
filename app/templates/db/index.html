@@ -14,16 +14,16 @@
         <div id="db-tables-accordion" class="space-y-4"></div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 gap-8 space-y-8">
         <!-- Backup & Restore -->
         <div class="admin-card">
             <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
                 <i class="fas fa-database text-dark-accent"></i> Backup & Restore
             </h2>
             <div class="flex flex-col gap-3">
-                <a href="{{ url_for('db.backup') }}" class="btn btn-primary flex items-center gap-2">
+                {# <a href="{{ url_for('db.backup') }}" class="btn btn-primary flex items-center gap-2">
                     <i class="fas fa-download"></i> Create Backup
-                </a>
+                </a> #}
                 <a href="{{ url_for('db.restore') }}" class="btn btn-secondary flex items-center gap-2">
                     <i class="fas fa-upload"></i> Restore from Backup
                 </a>
@@ -35,12 +35,12 @@
                 <i class="fas fa-tools text-dark-accent"></i> Maintenance
             </h2>
             <div class="flex flex-col gap-3">
-                <a href="{{ url_for('db.vacuum') }}" class="btn btn-secondary flex items-center gap-2">
+                {# <a href="{{ url_for('db.vacuum') }}" class="btn btn-secondary flex items-center gap-2">
                     <i class="fas fa-broom"></i> Vacuum Database
                 </a>
                 <a href="{{ url_for('db.check_integrity') }}" class="btn btn-secondary flex items-center gap-2">
                     <i class="fas fa-check-circle"></i> Check Integrity
-                </a>
+                </a> #}
             </div>
         </div>
         <!-- Monitoring -->

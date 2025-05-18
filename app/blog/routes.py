@@ -1,20 +1,37 @@
 from flask import render_template, jsonify, request, redirect, url_for, abort
 from app.blog import bp
-from app.models import Post, PostDevelopment, PostSection
-from app import db
 from slugify import slugify
 import logging
 from datetime import datetime
 from app.blog.fields import WORKFLOW_FIELDS
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from dotenv import load_dotenv
 
+# Load DATABASE_URL from assistant_config.env
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+def get_db_conn():
+    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
 @bp.route("/")
 def index():
     # Only show published or in-process posts (not deleted/draft)
-    posts = Post.query.filter(
-        (Post.published == True) | (Post.status == 'in_process'),
-        Post.deleted == False
-    ).order_by(Post.created_at.desc()).all()
+    posts = []
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT * FROM post
+                    WHERE (published = TRUE OR status = 'in_process')
+                    AND deleted = FALSE
+                    ORDER BY created_at DESC
+                """)
+                posts = cur.fetchall()
+    except Exception as e:
+        posts = []
     return render_template("blog/index.html", posts=posts)
 
 
@@ -28,64 +45,85 @@ def new_post():
         base_slug = slugify(temp_title)
         counter = 0
         slug = base_slug
-        while Post.query.filter_by(slug=slug).first():
-            counter += 1
-            slug = f"{base_slug}-{counter}"
-        post = Post()
-        post.title = temp_title
-        post.slug = slug
-        post.published = False
-        post.deleted = False
-        post.content = ""
-        db.session.add(post)
-        db.session.flush()
-        dev = PostDevelopment(post_id=post.id, basic_idea=data["basic_idea"])
-        db.session.add(dev)
-        db.session.commit()
-        return jsonify(
-            {"message": "Post created successfully", "slug": post.slug, "id": post.id}
-        )
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Ensure slug uniqueness
+                while True:
+                    cur.execute("SELECT 1 FROM post WHERE slug = %s", (slug,))
+                    if not cur.fetchone():
+                        break
+                    counter += 1
+                    slug = f"{base_slug}-{counter}"
+                # Insert post
+                cur.execute(
+                    """
+                    INSERT INTO post (title, slug, published, deleted, content, created_at, updated_at)
+                    VALUES (%s, %s, FALSE, FALSE, '', NOW(), NOW()) RETURNING id
+                    """,
+                    (temp_title, slug)
+                )
+                post_id = cur.fetchone()["id"]
+                # Insert post development
+                cur.execute(
+                    """
+                    INSERT INTO post_development (post_id, basic_idea)
+                    VALUES (%s, %s)
+                    RETURNING id
+                    """,
+                    (post_id, data["basic_idea"])
+                )
+                conn.commit()
+        return jsonify({
+            "message": "Post created successfully",
+            "slug": slug,
+            "id": post_id
+        })
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 
 @bp.route("/<int:post_id>/", defaults={'view': 'preview'})
 @bp.route("/<int:post_id>/<view>")
 def post_view(post_id, view):
-    post = Post.query.get_or_404(post_id)
+    post = None
+    dev = None
+    sections = []
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Fetch post
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+                if not post:
+                    abort(404)
+                # Fetch post_development
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                dev = cur.fetchone()
+                if not dev and view == 'develop':
+                    # Create post_development if missing
+                    cur.execute("INSERT INTO post_development (post_id) VALUES (%s) RETURNING *", (post_id,))
+                    dev = cur.fetchone()
+                    conn.commit()
+                # Fetch sections
+                cur.execute("SELECT * FROM post_section WHERE post_id = %s ORDER BY section_order", (post_id,))
+                sections = cur.fetchall()
+    except Exception as e:
+        abort(500, str(e))
     if view == 'develop':
-        dev = PostDevelopment.query.filter_by(post_id=post_id).first()
-        if not dev:
-            dev = PostDevelopment(post_id=post_id)
-            db.session.add(dev)
-            db.session.commit()
-        sections = (
-            PostSection.query.filter_by(post_id=post_id)
-            .order_by(PostSection.section_order)
-            .all()
-        )
         return render_template("blog/develop.html", post=post, dev=dev, sections=sections, active_view='develop', workflow_fields=WORKFLOW_FIELDS)
     elif view == 'json':
         post_json = {
-            "id": post.id,
-            "slug": post.slug,
-            "title": post.title,
-            "content": post.content,
-            "published": post.published,
-            "deleted": post.deleted,
-            "created_at": post.created_at.isoformat() if post.created_at else None,
-            "updated_at": post.updated_at.isoformat() if post.updated_at else None,
+            "id": post["id"],
+            "slug": post["slug"],
+            "title": post["title"],
+            "content": post["content"],
+            "published": post["published"],
+            "deleted": post["deleted"],
+            "created_at": post["created_at"].isoformat() if post["created_at"] else None,
+            "updated_at": post["updated_at"].isoformat() if post["updated_at"] else None,
         }
         return render_template("blog/json.html", post=post, post_json=post_json, active_view='json')
     elif view == 'preview':
-        # For now, just render the develop template as a placeholder for preview
-        dev = PostDevelopment.query.filter_by(post_id=post_id).first()
-        sections = (
-            PostSection.query.filter_by(post_id=post_id)
-            .order_by(PostSection.section_order)
-            .all()
-        )
         return render_template("blog/develop.html", post=post, dev=dev, sections=sections, active_view='preview', workflow_fields=WORKFLOW_FIELDS)
     else:
         abort(404)
@@ -98,199 +136,305 @@ def legacy_develop(post_id):
 
 @bp.route('/<slug>')
 def legacy_slug(slug):
-    post = Post.query.filter_by(slug=slug).first_or_404()
-    return redirect(url_for('blog.post_view', post_id=post.id, view='preview'), code=301)
+    post = None
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE slug = %s", (slug,))
+                post = cur.fetchone()
+                if not post:
+                    abort(404)
+    except Exception as e:
+        abort(500, str(e))
+    if post:
+        return redirect(url_for('blog.post_view', post_id=post["id"], view='preview'), code=301)
+    else:
+        abort(404)
 
 
 @bp.route("/api/v1/post/<int:post_id>/development", methods=["GET"])
 def get_post_development(post_id):
-    dev = PostDevelopment.query.filter_by(post_id=post_id).first_or_404()
-    columns = [
-        c.key
-        for c in db.inspect(PostDevelopment).mapper.column_attrs
-        if c.key not in ["id", "post_id"]
-    ]
-    return jsonify({c: getattr(dev, c) for c in columns})
+    dev = None
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                dev = cur.fetchone()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    if not dev:
+        return jsonify({"error": "Not found"}), 404
+    # Exclude id and post_id
+    return jsonify({k: v for k, v in dev.items() if k not in ["id", "post_id"]})
 
 
 @bp.route("/api/v1/post/<int:post_id>/development", methods=["POST"])
 def update_post_development(post_id):
-    dev = PostDevelopment.query.filter_by(post_id=post_id).first_or_404()
     data = request.get_json()
-    columns = [
-        c.key
-        for c in db.inspect(PostDevelopment).mapper.column_attrs
-        if c.key not in ["id", "post_id"]
-    ]
-    for field in columns:
-        if field in data:
-            setattr(dev, field, data[field])
-    # Also update the parent Post's updated_at
-    post = Post.query.get(post_id)
-    if post:
-        post.updated_at = datetime.utcnow()
-    db.session.commit()
-    return jsonify({"status": "success", "updated_at": post.updated_at.isoformat() if post and post.updated_at else None})
+    updated_at = None
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Get columns except id, post_id
+                cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development' AND column_name NOT IN ('id', 'post_id')")
+                columns = [row["column_name"] for row in cur.fetchall()]
+                # Build update statement
+                set_clauses = []
+                values = []
+                for field in columns:
+                    if field in data:
+                        set_clauses.append(f"{field} = %s")
+                        values.append(data[field])
+                if set_clauses:
+                    values.append(post_id)
+                    cur.execute(f"UPDATE post_development SET {', '.join(set_clauses)} WHERE post_id = %s RETURNING *", tuple(values))
+                    dev = cur.fetchone()
+                # Also update parent post's updated_at
+                cur.execute("UPDATE post SET updated_at = NOW() WHERE id = %s RETURNING updated_at", (post_id,))
+                updated_at = cur.fetchone()["updated_at"]
+                conn.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return jsonify({"status": "success", "updated_at": updated_at.isoformat() if updated_at else None})
 
 
 @bp.route("/api/v1/post/<int:post_id>/sections", methods=["GET"])
 def get_sections(post_id):
-    sections = (
-        PostSection.query.filter_by(post_id=post_id)
-        .order_by(PostSection.section_order)
-        .all()
-    )
-    columns = [
-        c.key for c in db.inspect(PostSection).mapper.column_attrs if c.key != "post_id"
-    ]
-    return jsonify([{c: getattr(s, c) for c in columns} for s in sections])
+    sections = []
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post_section WHERE post_id = %s ORDER BY section_order", (post_id,))
+                sections = cur.fetchall()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    # Exclude post_id from each section
+    return jsonify([{k: v for k, v in s.items() if k != "post_id"} for s in sections])
 
 
 @bp.route("/api/v1/post/<int:post_id>/sections", methods=["POST"])
 def add_section(post_id):
     data = request.get_json() or {}
-    section = PostSection(
-        post_id=post_id,
-        section_order=data.get("section_order", 0),
-        section_heading=data.get("section_heading", ""),
-    )
-    db.session.add(section)
-    db.session.commit()
-    return jsonify({"id": section.id})
+    section_id = None
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO post_section (post_id, section_order, section_heading)
+                    VALUES (%s, %s, %s)
+                    RETURNING id
+                    """,
+                    (post_id, data.get("section_order", 0), data.get("section_heading", ""))
+                )
+                section_id = cur.fetchone()["id"]
+                conn.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return jsonify({"id": section_id})
 
 
 @bp.route("/api/v1/section/<int:section_id>", methods=["POST"])
 def update_section(section_id):
-    section = PostSection.query.get_or_404(section_id)
     data = request.get_json()
-    columns = [
-        c.key
-        for c in db.inspect(PostSection).mapper.column_attrs
-        if c.key not in ["id", "post_id"]
-    ]
-    for field in columns:
-        if field in data:
-            setattr(section, field, data[field])
-    db.session.commit()
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Get columns except id, post_id
+                cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_section' AND column_name NOT IN ('id', 'post_id')")
+                columns = [row["column_name"] for row in cur.fetchall()]
+                set_clauses = []
+                values = []
+                for field in columns:
+                    if field in data:
+                        set_clauses.append(f"{field} = %s")
+                        values.append(data[field])
+                if set_clauses:
+                    values.append(section_id)
+                    cur.execute(f"UPDATE post_section SET {', '.join(set_clauses)} WHERE id = %s RETURNING *", tuple(values))
+                    conn.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     return jsonify({"status": "success"})
+
+
+@bp.route("/api/v1/section/<int:section_id>", methods=["DELETE"])
+def delete_section(section_id):
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM post_section WHERE id = %s", (section_id,))
+                conn.commit()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
 
 
 @bp.route("/test_insert", methods=["GET"])
 def test_insert():
     try:
-        post = Post()
-        post.title = "Test Post"
-        post.slug = "test-post"
-        post.content = ""
-        db.session.add(post)
-        db.session.commit()
-        return jsonify({"success": True, "message": "Test post created", "id": post.id})
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO post (title, slug, published, deleted, content, created_at, updated_at)
+                    VALUES (%s, %s, FALSE, FALSE, '', NOW(), NOW()) RETURNING id
+                """, ("Test Post", "test-post"))
+                post_id = cur.fetchone()["id"]
+                # Insert post development
+                cur.execute(
+                    """
+                    INSERT INTO post_development (post_id, basic_idea)
+                    VALUES (%s, %s)
+                    RETURNING id
+                """,
+                    (post_id, "")
+                )
+                conn.commit()
+        return jsonify({"success": True, "message": "Test post created", "id": post_id})
     except Exception as e:
-        db.session.rollback()
         return jsonify({"success": False, "error": str(e)}), 500
 
 
 @bp.route("/<slug>", methods=["GET"])
 def get_post(slug):
-    post = Post.query.filter_by(slug=slug, deleted=False).first()
-    if not post:
+    post = None
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE slug = %s", (slug,))
+                post = cur.fetchone()
+                if not post:
+                    abort(404)
+    except Exception as e:
+        abort(500, str(e))
+    if post:
+        return jsonify(
+            {
+                "id": post["id"],
+                "slug": post["slug"],
+                "title": post["title"],
+                "content": post["content"],
+                "published": post["published"],
+                "deleted": post["deleted"],
+                "created_at": post["created_at"].isoformat() if post["created_at"] else None,
+                "updated_at": post["updated_at"].isoformat() if post["updated_at"] else None,
+            }
+        )
+    else:
         return jsonify({"error": "Post not found"}), 404
-    return jsonify(
-        {
-            "id": post.id,
-            "slug": post.slug,
-            "title": post.title,
-            "content": post.content,
-            "published": post.published,
-            "deleted": post.deleted,
-            "created_at": post.created_at.isoformat() if post.created_at else None,
-            "updated_at": post.updated_at.isoformat() if post.updated_at else None,
-        }
-    )
 
 
 @bp.route("/<slug>", methods=["PUT"])
 def update_post(slug):
-    post = Post.query.filter_by(slug=slug, deleted=False).first()
-    if not post:
-        return jsonify({"error": "Post not found"}), 404
-    data = request.get_json() or {}
-    if "title" in data:
-        post.title = data["title"]
-    if "content" in data:
-        post.content = data["content"]
-    db.session.commit()
+    post = None
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE slug = %s", (slug,))
+                post = cur.fetchone()
+                if not post:
+                    abort(404)
+                data = request.get_json() or {}
+                if "title" in data:
+                    cur.execute("UPDATE post SET title = %s WHERE id = %s", (data["title"], post["id"]))
+                if "content" in data:
+                    cur.execute("UPDATE post SET content = %s WHERE id = %s", (data["content"], post["id"]))
+                cur.execute("UPDATE post SET updated_at = NOW() WHERE id = %s", (post["id"],))
+                conn.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     return jsonify(
         {
-            "id": post.id,
-            "slug": post.slug,
-            "title": post.title,
-            "content": post.content,
-            "published": post.published,
-            "deleted": post.deleted,
-            "created_at": post.created_at.isoformat() if post.created_at else None,
-            "updated_at": post.updated_at.isoformat() if post.updated_at else None,
+            "id": post["id"],
+            "slug": post["slug"],
+            "title": post["title"],
+            "content": post["content"],
+            "published": post["published"],
+            "deleted": post["deleted"],
+            "created_at": post["created_at"].isoformat() if post["created_at"] else None,
+            "updated_at": post["updated_at"].isoformat() if post["updated_at"] else None,
         }
     )
 
 
 @bp.route("/<slug>", methods=["DELETE"])
 def delete_post(slug):
-    post = Post.query.filter_by(slug=slug, deleted=False).first()
-    if not post:
-        return jsonify({"error": "Post not found"}), 404
-    post.deleted = True
-    db.session.commit()
-    return jsonify({"message": "Post deleted"})
+    post = None
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE slug = %s", (slug,))
+                post = cur.fetchone()
+                if not post:
+                    abort(404)
+                cur.execute("UPDATE post SET deleted = TRUE WHERE id = %s", (post["id"],))
+                conn.commit()
+        return jsonify({"message": "Post deleted"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @bp.route("/api/v1/posts/<int:post_id>/fields/<field>", methods=["PUT"])
 def update_post_development_field(post_id, field):
-    dev = PostDevelopment.query.filter_by(post_id=post_id).first_or_404()
     data = request.get_json()
-    # Only allow updating valid fields
-    valid_fields = [c.key for c in db.inspect(PostDevelopment).mapper.column_attrs if c.key not in ["id", "post_id"]]
-    if field not in valid_fields:
-        return jsonify({"error": "Invalid field"}), 400
-    setattr(dev, field, data.get("value", ""))
-    # Update parent post's updated_at
-    post = Post.query.get(post_id)
-    if post:
-        post.updated_at = datetime.utcnow()
-    db.session.commit()
-    return jsonify({"status": "success", "updated_at": post.updated_at.isoformat() if post and post.updated_at else None})
-
-
-@bp.route("/api/v1/section/<int:section_id>", methods=["DELETE"])
-def delete_section(section_id):
-    section = PostSection.query.get_or_404(section_id)
+    updated_at = None
     try:
-        db.session.delete(section)
-        db.session.commit()
-        return jsonify({"status": "success"})
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Only allow updating valid fields
+                cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development' AND column_name NOT IN ('id', 'post_id')")
+                valid_fields = [row["column_name"] for row in cur.fetchall()]
+                if field not in valid_fields:
+                    return jsonify({"error": "Invalid field"}), 400
+                cur.execute(f"UPDATE post_development SET {field} = %s WHERE post_id = %s RETURNING *", (data.get("value", ""), post_id))
+                # Update parent post's updated_at
+                cur.execute("UPDATE post SET updated_at = NOW() WHERE id = %s RETURNING updated_at", (post_id,))
+                updated_at = cur.fetchone()["updated_at"]
+                conn.commit()
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"status": "error", "error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
+    return jsonify({"status": "success", "updated_at": updated_at.isoformat() if updated_at else None})
 
 
 @bp.route("/api/v1/posts/<int:post_id>/sections/<int:section_id>/fields/<field>", methods=["PUT"])
 def update_section_field(post_id, section_id, field):
-    section = PostSection.query.filter_by(id=section_id, post_id=post_id).first_or_404()
     data = request.get_json()
-    valid_fields = [c.key for c in db.inspect(PostSection).mapper.column_attrs if c.key not in ["id", "post_id"]]
-    if field not in valid_fields:
-        return jsonify({"error": "Invalid field"}), 400
-    setattr(section, field, data.get("value", ""))
-    db.session.commit()
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_section' AND column_name NOT IN ('id', 'post_id')")
+                valid_fields = [row["column_name"] for row in cur.fetchall()]
+                if field not in valid_fields:
+                    return jsonify({"error": "Invalid field"}), 400
+                cur.execute(f"UPDATE post_section SET {field} = %s WHERE id = %s AND post_id = %s RETURNING *", (data.get("value", ""), section_id, post_id))
+                conn.commit()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     return jsonify({"status": "success"})
 
 
 # Public-facing post detail view
 @bp.route("/public/<int:post_id>/")
 def post_public(post_id):
-    post = Post.query.get_or_404(post_id)
-    if not (post.published or post.status == 'in_process') or post.deleted:
-        abort(404)
-    # Fetch sections, images, etc. as needed
-    sections = PostSection.query.filter_by(post_id=post_id).order_by(PostSection.section_order).all()
-    return render_template("blog/post_public.html", post=post, sections=sections)
+    post = None
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+                if not post or not (post["published"] or post["status"] == 'in_process') or post["deleted"]:
+                    abort(404)
+    except Exception as e:
+        abort(500, str(e))
+    sections = None
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post_section WHERE post_id = %s ORDER BY section_order", (post_id,))
+                sections = cur.fetchall()
+    except Exception as e:
+        sections = []
+    if sections:
+        return render_template("blog/post_public.html", post=post, sections=sections)
+    else:
+        abort(500, "Sections not found")
