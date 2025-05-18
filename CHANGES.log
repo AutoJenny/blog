@@ -515,3 +515,5 @@ All notable changes to this project are documented in this file.
 
 2025-05-XX
 - Enhancement: The Image Setting dropdown in /llm/images/prompts now supports saving, editing, and deleting full ComfyUI settings (width, height, steps, guidance scale, etc.) with a Name field and Save button. Selecting a setting populates all fields. All changes are synced with the backend.
+
+2025-05-18: Fixed a BuildError in main/index.html by updating url_for('preview.landing') to url_for('preview.listing') to match the correct endpoint. Site now loads successfully.

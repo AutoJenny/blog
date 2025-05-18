@@ -823,6 +823,12 @@
 {% block scripts %}
 {{ super() }}
 <script>
+    // Define postId at the top level
+    const postId = document.getElementById('stage-accordion')?.dataset.postId;
+    if (!postId) {
+        console.error('Post ID not found in stage-accordion element');
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         // 'updated-ago' formatter
         document.querySelectorAll('.updated-ago').forEach(el => {
@@ -1538,7 +1544,6 @@
     });
 
     // Helpers
-    const postId = document.getElementById('stage-accordion').dataset.postId;
     function saveGlobalField(field) {
         const value = document.getElementById(field).value;
         fetch(`/blog/api/v1/posts/${postId}/fields/${field}`, {

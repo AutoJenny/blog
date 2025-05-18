@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}{{ post.title }} | Preview{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
+{% endblock %}
+{% block content %}
+<div class="site-header">
+    <img src="/static/images/site/header.jpg" alt="CLAN Blog Header" class="site-header-image">
+</div>
+<div class="post-navigation-top">
+    <a href="{{ url_for('preview.listing') }}">&larr; Back to Blog Listing</a>
+</div>
+<article class="blog-post">
+    <div class="blog-post__header">
+        <h1>{{ post.title }}</h1>
+        {% if post.development and post.development.subtitle %}
+        <div class="blog-post__subtitle">{{ post.development.subtitle }}</div>
+        {% endif %}
+        
+        <div class="post-meta">
+            <span>{{ post.created_at.strftime('%B %d, %Y') }}</span>
+            {% if post.development and post.development.basic_metadata %}
+            <span class="post-meta__separator">&bull;</span>
+            <span>{{ post.development.basic_metadata }}</span>
+            {% endif %}
+            {% if post.status %}
+            <span class="post-meta__separator">&bull;</span>
+            <span>Status: {{ post.status.value }}</span>
+            {% endif %}
+        </div>
+        
+        {% if post.summary %}
+        <div class="blog-post__summary">
+            {{ post.summary|safe }}
+        </div>
+        {% endif %}
+        
+        {% if post.header_image %}
+        <figure class="blog-post__header-image">
+            <img src="{{ post.header_image.path }}" alt="{{ post.header_image.alt_text or post.title }}" class="site-header-image">
+            {% if post.header_image.caption %}
+            <figcaption>{{ post.header_image.caption }}</figcaption>
+            {% endif %}
+        </figure>
+        {% endif %}
+    </div>
+
+    <div class="blog-sections">
+        {% for section in sections %}
+        <section class="blog-section">
+            {% if section.section_heading %}
+            <h2>{{ section.section_heading }}</h2>
+            {% endif %}
+            
+            {% if section.optimization %}
+            <div class="section-text">
+                {{ section.optimization|safe }}
+            </div>
+            {% elif section.generation %}
+            <div class="section-text">
+                {{ section.generation|safe }}
+            </div>
+            {% elif section.uk_british %}
+            <div class="section-text">
+                {{ section.uk_british|safe }}
+            </div>
+            {% elif section.first_draft %}
+            <div class="section-text">
+                {{ section.first_draft|safe }}
+            </div>
+            {% endif %}
+            
+            {% if section.image %}
+            <figure class="section-image">
+                <img src="{{ section.image.path }}" alt="{{ section.image.alt_text or section.section_heading }}">
+                {% if section.image.caption %}
+                <figcaption>{{ section.image.caption }}</figcaption>
+                {% endif %}
+            </figure>
+            {% endif %}
+        </section>
+        {% endfor %}
+    </div>
+
+    {% if post.conclusion %}
+    <section class="blog-section blog-section--conclusion">
+        <h2>Conclusion</h2>
+        <div class="section-text">
+            {{ post.conclusion|safe }}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if post.footer %}
+    <footer class="blog-post__footer">
+        {{ post.footer|safe }}
+    </footer>
+    {% endif %}
+
+    {% if post.tags %}
+    <div class="blog-post__tags">
+        {% for tag in post.tags %}
+        <span class="tag">#{{ tag.name }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+</article>
+<div class="site-footer">
+    <img src="/static/images/site/footer.jpg" alt="CLAN Blog Footer" class="site-footer-image">
+</div>
+{% endblock %} 

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 import subprocess
 import os
 from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.orm import relationship
 
 
 class WorkflowStage(str, enum.Enum):
@@ -42,6 +43,13 @@ class Tag(db.Model):
     description = db.Column(db.Text)
 
 
+class PostStatus(enum.Enum):
+    DRAFT = 'draft'
+    IN_PROCESS = 'in_process'
+    PUBLISHED = 'published'
+    ARCHIVED = 'archived'
+
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(200), nullable=False)
@@ -59,6 +67,9 @@ class Post(db.Model):
     llm_metadata = db.Column(JSON)
     seo_metadata = db.Column(JSON)
     syndication_status = db.Column(JSON)
+    status = db.Column(db.Enum(PostStatus), default=PostStatus.DRAFT, nullable=False)
+    conclusion = db.Column(db.Text)
+    footer = db.Column(db.Text)
 
     # Relationships
     header_image = db.relationship("Image", foreign_keys=[header_image_id])
@@ -153,6 +164,8 @@ class PostSection(db.Model):
     image_prompt_example_id = db.Column(db.Integer, db.ForeignKey('image_prompt_example.id'), nullable=True)
     generated_image_url = db.Column(db.String(512), nullable=True)
     image_generation_metadata = db.Column(JSON, nullable=True)
+    image_id = db.Column(db.Integer, db.ForeignKey('image.id'), nullable=True)
+    image = db.relationship('Image', backref='sections', foreign_keys=[image_id])
 
 
 class PostDevelopment(db.Model):
@@ -424,3 +437,19 @@ try:
     event.listen(Session, "after_commit", backup_after_commit)
 except Exception as e:
     print(f"[Backup Trigger] Could not register after_commit event: {e}")
+
+
+class WorkflowStatus(db.Model):
+    __tablename__ = 'workflow_status'
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), unique=True, nullable=False)
+    conceptualisation = db.Column(db.String(32), default='not_started')
+    authoring = db.Column(db.String(32), default='not_started')
+    meta_status = db.Column(db.String(32), default='not_started')
+    images = db.Column(db.String(32), default='not_started')
+    validation = db.Column(db.String(32), default='not_started')
+    publishing = db.Column(db.String(32), default='not_started')
+    syndication = db.Column(db.String(32), default='not_started')
+    log = db.Column(db.Text)
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    post = db.relationship('Post', backref=db.backref('workflow_status', uselist=False))

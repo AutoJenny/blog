@@ -14,7 +14,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  color: #333 !important;
+  color: #333;
   background-color: #FAF8F1; /* Linen/Warm Off-white */
   line-height: 1.7;
   letter-spacing: 0.015em;
@@ -58,7 +58,6 @@ main {
   padding: 1.5rem 2rem;
   background-color: #fff;
   box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-  color: #333 !important;
 }
 
 /* --- ADDED/MODIFIED: Post Navigation Top Link --- */
@@ -86,7 +85,6 @@ main {
   border-bottom: 2px solid #d9534f;
   padding-bottom: 1.5rem;
    /* NOTE: H1 margin top might be affected by nav link margin */
-  color: #333 !important;
 }
 
 .blog-sections {
@@ -95,7 +93,6 @@ main {
 
 .blog-section {
   margin-bottom: 3rem;
-  color: #333 !important;
 }
 .blog-section:last-of-type {
    border-bottom: none;
@@ -138,7 +135,6 @@ h2 {
   font-weight: normal;
   letter-spacing: normal;
   line-height: 1.4;
-  color: #333 !important;
 }
 
 .blog-post__summary p,
@@ -198,12 +194,7 @@ li:last-child {
   background-color: #f8f8f8; /* Light grey background */
   border-radius: 4px; /* Slightly rounded corners */
   border: 1px solid #eee; /* Subtle border */
-  color: #333 !important;
 }
 .post-meta__separator {
   margin: 0 0.75em; /* Slightly more space around separator */
-}
-
-body, .blog-post, .blog-section, .section-text, .post-meta, .blog-post__header, .blog-post__subtitle, .post-footer, .post-tags, .blog-listing, .site-header, .site-footer {
-  color: #333 !important;
 } 
