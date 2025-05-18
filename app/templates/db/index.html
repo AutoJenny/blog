@@ -3,97 +3,63 @@
 {% block title %}Database Management{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4">Database Management</h1>
-
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Backup & Restore</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <a href="{{ url_for('db.backup') }}" class="text-decoration-none">
-                                <i class="fas fa-download me-2"></i>Create Backup
-                            </a>
-                        </li>
-                        <li class="list-group-item">
-                            <a href="{{ url_for('db.restore') }}" class="text-decoration-none">
-                                <i class="fas fa-upload me-2"></i>Restore from Backup
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+<div class="max-w-5xl mx-auto py-8 px-4">
+    <h1 class="admin-title mb-8">Database Management</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Backup & Restore -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-database text-dark-accent"></i> Backup & Restore
+            </h2>
+            <div class="flex flex-col gap-3">
+                <a href="{{ url_for('db.backup') }}" class="btn btn-primary flex items-center gap-2">
+                    <i class="fas fa-download"></i> Create Backup
+                </a>
+                <a href="{{ url_for('db.restore') }}" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-upload"></i> Restore from Backup
+                </a>
             </div>
         </div>
-
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Maintenance</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <a href="{{ url_for('db.vacuum') }}" class="text-decoration-none">
-                                <i class="fas fa-broom me-2"></i>Vacuum Database
-                            </a>
-                        </li>
-                        <li class="list-group-item">
-                            <a href="{{ url_for('db.check_integrity') }}" class="text-decoration-none">
-                                <i class="fas fa-check-circle me-2"></i>Check Integrity
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+        <!-- Maintenance -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-tools text-dark-accent"></i> Maintenance
+            </h2>
+            <div class="flex flex-col gap-3">
+                <a href="{{ url_for('db.vacuum') }}" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-broom"></i> Vacuum Database
+                </a>
+                <a href="{{ url_for('db.check_integrity') }}" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-check-circle"></i> Check Integrity
+                </a>
             </div>
         </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Monitoring</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <a href="{{ url_for('db.stats') }}" class="text-decoration-none">
-                                <i class="fas fa-chart-bar me-2"></i>Database Statistics
-                            </a>
-                        </li>
-                        <li class="list-group-item">
-                            <a href="{{ url_for('db.logs') }}" class="text-decoration-none">
-                                <i class="fas fa-list me-2"></i>View Logs
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+        <!-- Monitoring -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-chart-bar text-dark-accent"></i> Monitoring
+            </h2>
+            <div class="flex flex-col gap-3">
+                <a href="{{ url_for('db.stats') }}" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-chart-bar"></i> Database Statistics
+                </a>
+                <a href="{{ url_for('db.logs') }}" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-list"></i> View Logs
+                </a>
             </div>
         </div>
-
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Advanced</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <a href="{{ url_for('db.migrations') }}" class="text-decoration-none">
-                                <i class="fas fa-code-branch me-2"></i>Manage Migrations
-                            </a>
-                        </li>
-                        <li class="list-group-item">
-                            <a href="{{ url_for('db.replication') }}" class="text-decoration-none">
-                                <i class="fas fa-sync me-2"></i>Replication Status
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+        <!-- Advanced -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-cogs text-dark-accent"></i> Advanced
+            </h2>
+            <div class="flex flex-col gap-3">
+                <a href="{{ url_for('db.migrations') }}" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-code-branch"></i> Manage Migrations
+                </a>
+                <a href="{{ url_for('db.replication') }}" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-sync"></i> Replication Status
+                </a>
             </div>
         </div>
     </div>
