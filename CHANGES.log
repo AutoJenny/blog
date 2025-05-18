@@ -519,3 +519,5 @@ All notable changes to this project are documented in this file.
 2025-05-18: Fixed a BuildError in main/index.html by updating url_for('preview.landing') to url_for('preview.listing') to match the correct endpoint. Site now loads successfully.
 
 2025-05-18: Major redesign of intranet landing page and navigation bar. Added workflow-based sections, icons, colour accents, search bar, recent activity, and help links. Navigation now features grouped dropdowns and a vibrant gradient background.
+
+2025-05-18: Added modern_index.html and /modern route for a new, vibrant intranet landing page UI test.

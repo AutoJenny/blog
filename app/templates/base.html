@@ -12,10 +12,10 @@
 
 <body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
     <!-- Header -->
-    <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-purple-900 border-b border-dark-border">
+    <header class="bg-indigo-950 border-b border-dark-border py-4">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center space-x-8">
+            <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+                <div class="flex items-center space-x-8 flex-1 min-w-0">
                     <!-- Home Icon -->
                     <a href="{{ url_for('main.index') }}" class="text-white hover:text-yellow-300">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -70,7 +70,7 @@
                     </div>
                 </div>
                 {% if request.endpoint == 'blog.index' %}
-                <div class="flex-1 flex justify-end">
+                <div class="flex-shrink-0 flex justify-end ml-4">
                     <button class="admin-button bg-yellow-400 text-black hover:bg-yellow-500" id="newPostBtn">
                         <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
@@ -90,7 +90,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark-surface border-t border-dark-border py-4">
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <p class="text-center text-sm text-dark-text">&copy; {{ year }} Blog CMS. All rights reserved.</p>
         </div>
