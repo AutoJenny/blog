@@ -13,6 +13,7 @@ import subprocess
 import os
 import json
 from pathlib import Path
+from app.database import routes
 
 bp = Blueprint("db", __name__, url_prefix="/db")
 
