@@ -1,0 +1,9 @@
+-- Dumped from database version 14.17 (Homebrew)
+-- Dumped by pg_dump version 14.17 (Homebrew)
+SELECT pg_catalog.set_config('search_path', '', false);
+CREATE TYPE public.post_status AS ENUM (
+CREATE TYPE public.poststatus AS ENUM (
+CREATE TYPE public.workflow_stage AS ENUM (
+CREATE TYPE public.workflowstage AS ENUM (
+-- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: nickfiddes
+CREATE FUNCTION public.update_updated_at_column() RETURNS trigger

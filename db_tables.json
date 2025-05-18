@@ -1,0 +1,1381 @@
+{
+  "tables": [
+    {
+      "columns": [
+        {
+          "name": "post_id",
+          "type": "integer"
+        },
+        {
+          "name": "category_id",
+          "type": "integer"
+        }
+      ],
+      "name": "post_categories",
+      "rows": []
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "name",
+          "type": "character varying"
+        },
+        {
+          "name": "slug",
+          "type": "character varying"
+        },
+        {
+          "name": "description",
+          "type": "text"
+        }
+      ],
+      "name": "tag",
+      "rows": [
+        {
+          "description": "General tag",
+          "id": 1,
+          "name": "General",
+          "slug": "general"
+        },
+        {
+          "description": "Artificial Intelligence",
+          "id": 6,
+          "name": "AI",
+          "slug": "ai"
+        },
+        {
+          "description": "Python programming",
+          "id": 7,
+          "name": "Python",
+          "slug": "python"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "post_id",
+          "type": "integer"
+        },
+        {
+          "name": "basic_idea",
+          "type": "text"
+        },
+        {
+          "name": "provisional_title",
+          "type": "text"
+        },
+        {
+          "name": "idea_scope",
+          "type": "text"
+        },
+        {
+          "name": "topics_to_cover",
+          "type": "text"
+        },
+        {
+          "name": "interesting_facts",
+          "type": "text"
+        },
+        {
+          "name": "tartans_products",
+          "type": "text"
+        },
+        {
+          "name": "section_planning",
+          "type": "text"
+        },
+        {
+          "name": "section_headings",
+          "type": "text"
+        },
+        {
+          "name": "section_order",
+          "type": "text"
+        },
+        {
+          "name": "main_title",
+          "type": "text"
+        },
+        {
+          "name": "subtitle",
+          "type": "text"
+        },
+        {
+          "name": "intro_blurb",
+          "type": "text"
+        },
+        {
+          "name": "conclusion",
+          "type": "text"
+        },
+        {
+          "name": "basic_metadata",
+          "type": "text"
+        },
+        {
+          "name": "tags",
+          "type": "text"
+        },
+        {
+          "name": "categories",
+          "type": "text"
+        },
+        {
+          "name": "image_captions",
+          "type": "text"
+        },
+        {
+          "name": "seo_optimization",
+          "type": "text"
+        },
+        {
+          "name": "self_review",
+          "type": "text"
+        },
+        {
+          "name": "peer_review",
+          "type": "text"
+        },
+        {
+          "name": "final_check",
+          "type": "text"
+        },
+        {
+          "name": "scheduling",
+          "type": "text"
+        },
+        {
+          "name": "deployment",
+          "type": "text"
+        },
+        {
+          "name": "verification",
+          "type": "text"
+        },
+        {
+          "name": "feedback_collection",
+          "type": "text"
+        },
+        {
+          "name": "content_updates",
+          "type": "text"
+        },
+        {
+          "name": "version_control",
+          "type": "text"
+        },
+        {
+          "name": "platform_selection",
+          "type": "text"
+        },
+        {
+          "name": "content_adaptation",
+          "type": "text"
+        },
+        {
+          "name": "distribution",
+          "type": "text"
+        },
+        {
+          "name": "engagement_tracking",
+          "type": "text"
+        }
+      ],
+      "name": "post_development",
+      "rows": [
+        {
+          "basic_idea": "Direct SQL test post",
+          "basic_metadata": null,
+          "categories": null,
+          "conclusion": null,
+          "content_adaptation": null,
+          "content_updates": null,
+          "deployment": null,
+          "distribution": null,
+          "engagement_tracking": null,
+          "feedback_collection": null,
+          "final_check": null,
+          "id": 1,
+          "idea_scope": null,
+          "image_captions": null,
+          "interesting_facts": null,
+          "intro_blurb": null,
+          "main_title": null,
+          "peer_review": null,
+          "platform_selection": null,
+          "post_id": 2,
+          "provisional_title": null,
+          "scheduling": null,
+          "section_headings": null,
+          "section_order": null,
+          "section_planning": null,
+          "self_review": null,
+          "seo_optimization": null,
+          "subtitle": null,
+          "tags": null,
+          "tartans_products": null,
+          "topics_to_cover": null,
+          "verification": null,
+          "version_control": null
+        },
+        {
+          "basic_idea": "Sample idea",
+          "basic_metadata": null,
+          "categories": null,
+          "conclusion": null,
+          "content_adaptation": null,
+          "content_updates": null,
+          "deployment": null,
+          "distribution": null,
+          "engagement_tracking": null,
+          "feedback_collection": null,
+          "final_check": null,
+          "id": 4,
+          "idea_scope": null,
+          "image_captions": null,
+          "interesting_facts": null,
+          "intro_blurb": null,
+          "main_title": null,
+          "peer_review": null,
+          "platform_selection": null,
+          "post_id": 1,
+          "provisional_title": "Sample Title",
+          "scheduling": null,
+          "section_headings": null,
+          "section_order": null,
+          "section_planning": null,
+          "self_review": null,
+          "seo_optimization": null,
+          "subtitle": null,
+          "tags": null,
+          "tartans_products": null,
+          "topics_to_cover": null,
+          "verification": null,
+          "version_control": null
+        },
+        {
+          "basic_idea": "Tech idea",
+          "basic_metadata": null,
+          "categories": null,
+          "conclusion": null,
+          "content_adaptation": null,
+          "content_updates": null,
+          "deployment": null,
+          "distribution": null,
+          "engagement_tracking": null,
+          "feedback_collection": null,
+          "final_check": null,
+          "id": 6,
+          "idea_scope": null,
+          "image_captions": null,
+          "interesting_facts": null,
+          "intro_blurb": null,
+          "main_title": null,
+          "peer_review": null,
+          "platform_selection": null,
+          "post_id": 7,
+          "provisional_title": "Tech Title",
+          "scheduling": null,
+          "section_headings": null,
+          "section_order": null,
+          "section_planning": null,
+          "self_review": null,
+          "seo_optimization": null,
+          "subtitle": null,
+          "tags": null,
+          "tartans_products": null,
+          "topics_to_cover": null,
+          "verification": null,
+          "version_control": null
+        },
+        {
+          "basic_idea": "Opinion idea",
+          "basic_metadata": null,
+          "categories": null,
+          "conclusion": null,
+          "content_adaptation": null,
+          "content_updates": null,
+          "deployment": null,
+          "distribution": null,
+          "engagement_tracking": null,
+          "feedback_collection": null,
+          "final_check": null,
+          "id": 7,
+          "idea_scope": null,
+          "image_captions": null,
+          "interesting_facts": null,
+          "intro_blurb": null,
+          "main_title": null,
+          "peer_review": null,
+          "platform_selection": null,
+          "post_id": 8,
+          "provisional_title": "Opinion Title",
+          "scheduling": null,
+          "section_headings": null,
+          "section_order": null,
+          "section_planning": null,
+          "self_review": null,
+          "seo_optimization": null,
+          "subtitle": null,
+          "tags": null,
+          "tartans_products": null,
+          "topics_to_cover": null,
+          "verification": null,
+          "version_control": null
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "action_id",
+          "type": "integer"
+        },
+        {
+          "name": "post_id",
+          "type": "integer"
+        },
+        {
+          "name": "input_text",
+          "type": "text"
+        },
+        {
+          "name": "output_text",
+          "type": "text"
+        },
+        {
+          "name": "status",
+          "type": "character varying"
+        },
+        {
+          "name": "error_message",
+          "type": "text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "llm_action_history",
+      "rows": []
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "name",
+          "type": "character varying"
+        },
+        {
+          "name": "description",
+          "type": "text"
+        },
+        {
+          "name": "prompt_text",
+          "type": "text"
+        },
+        {
+          "name": "system_prompt",
+          "type": "text"
+        },
+        {
+          "name": "parameters",
+          "type": "jsonb"
+        },
+        {
+          "name": "order",
+          "type": "integer"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "llm_prompt",
+      "rows": []
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "username",
+          "type": "character varying"
+        },
+        {
+          "name": "email",
+          "type": "character varying"
+        },
+        {
+          "name": "password_hash",
+          "type": "character varying"
+        },
+        {
+          "name": "is_active",
+          "type": "boolean"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "user",
+      "rows": [
+        {
+          "created_at": "Sun, 18 May 2025 10:23:58 GMT",
+          "email": "admin@example.com",
+          "id": 1,
+          "is_active": true,
+          "password_hash": "pbkdf2:sha256:150000",
+          "updated_at": "Sun, 18 May 2025 10:23:58 GMT",
+          "username": "admin"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "field_name",
+          "type": "character varying"
+        },
+        {
+          "name": "prompt_template",
+          "type": "text"
+        },
+        {
+          "name": "prompt_template_id",
+          "type": "integer"
+        },
+        {
+          "name": "llm_model",
+          "type": "character varying"
+        },
+        {
+          "name": "temperature",
+          "type": "double precision"
+        },
+        {
+          "name": "max_tokens",
+          "type": "integer"
+        },
+        {
+          "name": "order",
+          "type": "integer"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "llm_action",
+      "rows": []
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "provider_type",
+          "type": "character varying"
+        },
+        {
+          "name": "model_name",
+          "type": "character varying"
+        },
+        {
+          "name": "api_base",
+          "type": "character varying"
+        },
+        {
+          "name": "auth_token",
+          "type": "character varying"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "llm_config",
+      "rows": [
+        {
+          "api_base": "http://localhost:11434",
+          "auth_token": null,
+          "created_at": "Sun, 18 May 2025 08:42:49 GMT",
+          "id": 1,
+          "model_name": "mistral",
+          "provider_type": "ollama",
+          "updated_at": "Sun, 18 May 2025 08:42:49 GMT"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "title",
+          "type": "character varying"
+        },
+        {
+          "name": "description",
+          "type": "text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "image_style",
+      "rows": []
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "title",
+          "type": "character varying"
+        },
+        {
+          "name": "slug",
+          "type": "character varying"
+        },
+        {
+          "name": "content",
+          "type": "text"
+        },
+        {
+          "name": "summary",
+          "type": "text"
+        },
+        {
+          "name": "published",
+          "type": "boolean"
+        },
+        {
+          "name": "deleted",
+          "type": "boolean"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "published_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "header_image_id",
+          "type": "integer"
+        },
+        {
+          "name": "llm_metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "seo_metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "syndication_status",
+          "type": "jsonb"
+        },
+        {
+          "name": "status",
+          "type": "USER-DEFINED"
+        },
+        {
+          "name": "conclusion",
+          "type": "text"
+        },
+        {
+          "name": "footer",
+          "type": "text"
+        }
+      ],
+      "name": "post",
+      "rows": [
+        {
+          "conclusion": null,
+          "content": "",
+          "created_at": "Sun, 18 May 2025 11:40:06 GMT",
+          "deleted": false,
+          "footer": null,
+          "header_image_id": null,
+          "id": 2,
+          "llm_metadata": null,
+          "published": false,
+          "published_at": null,
+          "seo_metadata": null,
+          "slug": "direct-sql-test-post",
+          "status": "draft",
+          "summary": null,
+          "syndication_status": null,
+          "title": "Direct SQL test post...",
+          "updated_at": "Sun, 18 May 2025 11:40:06 GMT"
+        },
+        {
+          "conclusion": null,
+          "content": "This is a sample post.",
+          "created_at": "Sun, 18 May 2025 10:23:58 GMT",
+          "deleted": false,
+          "footer": null,
+          "header_image_id": null,
+          "id": 1,
+          "llm_metadata": null,
+          "published": true,
+          "published_at": null,
+          "seo_metadata": null,
+          "slug": "sample-post",
+          "status": "draft",
+          "summary": "Sample summary",
+          "syndication_status": null,
+          "title": "Sample Post",
+          "updated_at": "Sun, 18 May 2025 12:01:41 GMT"
+        },
+        {
+          "conclusion": null,
+          "content": "Latest in tech.",
+          "created_at": "Sun, 18 May 2025 12:01:41 GMT",
+          "deleted": false,
+          "footer": null,
+          "header_image_id": null,
+          "id": 7,
+          "llm_metadata": null,
+          "published": true,
+          "published_at": null,
+          "seo_metadata": null,
+          "slug": "tech-trends",
+          "status": "published",
+          "summary": "Tech summary",
+          "syndication_status": null,
+          "title": "Tech Trends",
+          "updated_at": "Sun, 18 May 2025 12:01:41 GMT"
+        },
+        {
+          "conclusion": null,
+          "content": "My opinion.",
+          "created_at": "Sun, 18 May 2025 12:01:41 GMT",
+          "deleted": false,
+          "footer": null,
+          "header_image_id": null,
+          "id": 8,
+          "llm_metadata": null,
+          "published": false,
+          "published_at": null,
+          "seo_metadata": null,
+          "slug": "opinion-piece",
+          "status": "draft",
+          "summary": "Opinion summary",
+          "syndication_status": null,
+          "title": "Opinion Piece",
+          "updated_at": "Sun, 18 May 2025 12:01:41 GMT"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "filename",
+          "type": "character varying"
+        },
+        {
+          "name": "original_filename",
+          "type": "character varying"
+        },
+        {
+          "name": "path",
+          "type": "character varying"
+        },
+        {
+          "name": "alt_text",
+          "type": "character varying"
+        },
+        {
+          "name": "caption",
+          "type": "text"
+        },
+        {
+          "name": "image_prompt",
+          "type": "text"
+        },
+        {
+          "name": "notes",
+          "type": "text"
+        },
+        {
+          "name": "image_metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "watermarked",
+          "type": "boolean"
+        },
+        {
+          "name": "watermarked_path",
+          "type": "character varying"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "image",
+      "rows": []
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "prompt_id",
+          "type": "integer"
+        },
+        {
+          "name": "input_text",
+          "type": "text"
+        },
+        {
+          "name": "output_text",
+          "type": "text"
+        },
+        {
+          "name": "parameters_used",
+          "type": "jsonb"
+        },
+        {
+          "name": "interaction_metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "llm_interaction",
+      "rows": []
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "name",
+          "type": "character varying"
+        },
+        {
+          "name": "slug",
+          "type": "character varying"
+        },
+        {
+          "name": "description",
+          "type": "text"
+        }
+      ],
+      "name": "category",
+      "rows": [
+        {
+          "description": "News category",
+          "id": 1,
+          "name": "News",
+          "slug": "news"
+        },
+        {
+          "description": "Technology category",
+          "id": 7,
+          "name": "Tech",
+          "slug": "tech"
+        },
+        {
+          "description": "Opinion pieces",
+          "id": 8,
+          "name": "Opinion",
+          "slug": "opinion"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "post_id",
+          "type": "integer"
+        },
+        {
+          "name": "tag_id",
+          "type": "integer"
+        }
+      ],
+      "name": "post_tags",
+      "rows": []
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "post_id",
+          "type": "integer"
+        },
+        {
+          "name": "section_order",
+          "type": "integer"
+        },
+        {
+          "name": "section_heading",
+          "type": "text"
+        },
+        {
+          "name": "ideas_to_include",
+          "type": "text"
+        },
+        {
+          "name": "facts_to_include",
+          "type": "text"
+        },
+        {
+          "name": "first_draft",
+          "type": "text"
+        },
+        {
+          "name": "uk_british",
+          "type": "text"
+        },
+        {
+          "name": "highlighting",
+          "type": "text"
+        },
+        {
+          "name": "image_concepts",
+          "type": "text"
+        },
+        {
+          "name": "image_prompts",
+          "type": "text"
+        },
+        {
+          "name": "generation",
+          "type": "text"
+        },
+        {
+          "name": "optimization",
+          "type": "text"
+        },
+        {
+          "name": "watermarking",
+          "type": "text"
+        },
+        {
+          "name": "image_meta_descriptions",
+          "type": "text"
+        },
+        {
+          "name": "image_captions",
+          "type": "text"
+        },
+        {
+          "name": "image_prompt_example_id",
+          "type": "integer"
+        },
+        {
+          "name": "generated_image_url",
+          "type": "character varying"
+        },
+        {
+          "name": "image_generation_metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "image_id",
+          "type": "integer"
+        }
+      ],
+      "name": "post_section",
+      "rows": [
+        {
+          "facts_to_include": null,
+          "first_draft": null,
+          "generated_image_url": null,
+          "generation": null,
+          "highlighting": null,
+          "id": 1,
+          "ideas_to_include": null,
+          "image_captions": null,
+          "image_concepts": null,
+          "image_generation_metadata": null,
+          "image_id": null,
+          "image_meta_descriptions": null,
+          "image_prompt_example_id": null,
+          "image_prompts": null,
+          "optimization": null,
+          "post_id": 1,
+          "section_heading": "Introduction",
+          "section_order": 1,
+          "uk_british": null,
+          "watermarking": null
+        },
+        {
+          "facts_to_include": null,
+          "first_draft": null,
+          "generated_image_url": null,
+          "generation": null,
+          "highlighting": null,
+          "id": 2,
+          "ideas_to_include": null,
+          "image_captions": null,
+          "image_concepts": null,
+          "image_generation_metadata": null,
+          "image_id": null,
+          "image_meta_descriptions": null,
+          "image_prompt_example_id": null,
+          "image_prompts": null,
+          "optimization": null,
+          "post_id": 1,
+          "section_heading": "Section 1 for post 1",
+          "section_order": 1,
+          "uk_british": null,
+          "watermarking": null
+        },
+        {
+          "facts_to_include": null,
+          "first_draft": null,
+          "generated_image_url": null,
+          "generation": null,
+          "highlighting": null,
+          "id": 3,
+          "ideas_to_include": null,
+          "image_captions": null,
+          "image_concepts": null,
+          "image_generation_metadata": null,
+          "image_id": null,
+          "image_meta_descriptions": null,
+          "image_prompt_example_id": null,
+          "image_prompts": null,
+          "optimization": null,
+          "post_id": 1,
+          "section_heading": "Section 2 for post 1",
+          "section_order": 2,
+          "uk_british": null,
+          "watermarking": null
+        },
+        {
+          "facts_to_include": null,
+          "first_draft": null,
+          "generated_image_url": null,
+          "generation": null,
+          "highlighting": null,
+          "id": 4,
+          "ideas_to_include": null,
+          "image_captions": null,
+          "image_concepts": null,
+          "image_generation_metadata": null,
+          "image_id": null,
+          "image_meta_descriptions": null,
+          "image_prompt_example_id": null,
+          "image_prompts": null,
+          "optimization": null,
+          "post_id": 1,
+          "section_heading": "Section 3 for post 1",
+          "section_order": 3,
+          "uk_british": null,
+          "watermarking": null
+        },
+        {
+          "facts_to_include": null,
+          "first_draft": null,
+          "generated_image_url": null,
+          "generation": null,
+          "highlighting": null,
+          "id": 5,
+          "ideas_to_include": null,
+          "image_captions": null,
+          "image_concepts": null,
+          "image_generation_metadata": null,
+          "image_id": null,
+          "image_meta_descriptions": null,
+          "image_prompt_example_id": null,
+          "image_prompts": null,
+          "optimization": null,
+          "post_id": 7,
+          "section_heading": "Section 1 for post 7",
+          "section_order": 1,
+          "uk_british": null,
+          "watermarking": null
+        },
+        {
+          "facts_to_include": null,
+          "first_draft": null,
+          "generated_image_url": null,
+          "generation": null,
+          "highlighting": null,
+          "id": 6,
+          "ideas_to_include": null,
+          "image_captions": null,
+          "image_concepts": null,
+          "image_generation_metadata": null,
+          "image_id": null,
+          "image_meta_descriptions": null,
+          "image_prompt_example_id": null,
+          "image_prompts": null,
+          "optimization": null,
+          "post_id": 7,
+          "section_heading": "Section 2 for post 7",
+          "section_order": 2,
+          "uk_british": null,
+          "watermarking": null
+        },
+        {
+          "facts_to_include": null,
+          "first_draft": null,
+          "generated_image_url": null,
+          "generation": null,
+          "highlighting": null,
+          "id": 7,
+          "ideas_to_include": null,
+          "image_captions": null,
+          "image_concepts": null,
+          "image_generation_metadata": null,
+          "image_id": null,
+          "image_meta_descriptions": null,
+          "image_prompt_example_id": null,
+          "image_prompts": null,
+          "optimization": null,
+          "post_id": 7,
+          "section_heading": "Section 3 for post 7",
+          "section_order": 3,
+          "uk_british": null,
+          "watermarking": null
+        },
+        {
+          "facts_to_include": null,
+          "first_draft": null,
+          "generated_image_url": null,
+          "generation": null,
+          "highlighting": null,
+          "id": 8,
+          "ideas_to_include": null,
+          "image_captions": null,
+          "image_concepts": null,
+          "image_generation_metadata": null,
+          "image_id": null,
+          "image_meta_descriptions": null,
+          "image_prompt_example_id": null,
+          "image_prompts": null,
+          "optimization": null,
+          "post_id": 8,
+          "section_heading": "Section 1 for post 8",
+          "section_order": 1,
+          "uk_british": null,
+          "watermarking": null
+        },
+        {
+          "facts_to_include": null,
+          "first_draft": null,
+          "generated_image_url": null,
+          "generation": null,
+          "highlighting": null,
+          "id": 9,
+          "ideas_to_include": null,
+          "image_captions": null,
+          "image_concepts": null,
+          "image_generation_metadata": null,
+          "image_id": null,
+          "image_meta_descriptions": null,
+          "image_prompt_example_id": null,
+          "image_prompts": null,
+          "optimization": null,
+          "post_id": 8,
+          "section_heading": "Section 2 for post 8",
+          "section_order": 2,
+          "uk_british": null,
+          "watermarking": null
+        },
+        {
+          "facts_to_include": null,
+          "first_draft": null,
+          "generated_image_url": null,
+          "generation": null,
+          "highlighting": null,
+          "id": 10,
+          "ideas_to_include": null,
+          "image_captions": null,
+          "image_concepts": null,
+          "image_generation_metadata": null,
+          "image_id": null,
+          "image_meta_descriptions": null,
+          "image_prompt_example_id": null,
+          "image_prompts": null,
+          "optimization": null,
+          "post_id": 8,
+          "section_heading": "Section 3 for post 8",
+          "section_order": 3,
+          "uk_british": null,
+          "watermarking": null
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "description",
+          "type": "text"
+        },
+        {
+          "name": "style_id",
+          "type": "integer"
+        },
+        {
+          "name": "format_id",
+          "type": "integer"
+        },
+        {
+          "name": "provider",
+          "type": "character varying"
+        },
+        {
+          "name": "image_setting_id",
+          "type": "integer"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "image_prompt_example",
+      "rows": []
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "post_id",
+          "type": "integer"
+        },
+        {
+          "name": "conceptualisation",
+          "type": "character varying"
+        },
+        {
+          "name": "authoring",
+          "type": "character varying"
+        },
+        {
+          "name": "meta_status",
+          "type": "character varying"
+        },
+        {
+          "name": "images",
+          "type": "character varying"
+        },
+        {
+          "name": "validation",
+          "type": "character varying"
+        },
+        {
+          "name": "publishing",
+          "type": "character varying"
+        },
+        {
+          "name": "syndication",
+          "type": "character varying"
+        },
+        {
+          "name": "log",
+          "type": "text"
+        },
+        {
+          "name": "last_updated",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "workflow_status",
+      "rows": []
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "name",
+          "type": "character varying"
+        },
+        {
+          "name": "style_id",
+          "type": "integer"
+        },
+        {
+          "name": "format_id",
+          "type": "integer"
+        },
+        {
+          "name": "width",
+          "type": "integer"
+        },
+        {
+          "name": "height",
+          "type": "integer"
+        },
+        {
+          "name": "steps",
+          "type": "integer"
+        },
+        {
+          "name": "guidance_scale",
+          "type": "double precision"
+        },
+        {
+          "name": "extra_settings",
+          "type": "text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "image_setting",
+      "rows": []
+    },
+    {
+      "columns": [
+        {
+          "name": "version_num",
+          "type": "character varying"
+        }
+      ],
+      "name": "alembic_version",
+      "rows": [
+        {
+          "version_num": "2a69ac33fec9"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "title",
+          "type": "character varying"
+        },
+        {
+          "name": "description",
+          "type": "character varying"
+        },
+        {
+          "name": "width",
+          "type": "integer"
+        },
+        {
+          "name": "height",
+          "type": "integer"
+        },
+        {
+          "name": "steps",
+          "type": "integer"
+        },
+        {
+          "name": "guidance_scale",
+          "type": "double precision"
+        },
+        {
+          "name": "extra_settings",
+          "type": "text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone"
+        }
+      ],
+      "name": "image_format",
+      "rows": []
+    }
+  ]
+}

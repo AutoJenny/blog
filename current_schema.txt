@@ -1,0 +1,42 @@
+                                                   List of relations
+ Schema |            Name             |   Type   |   Owner    | Persistence | Access method |    Size    | Description 
+--------+-----------------------------+----------+------------+-------------+---------------+------------+-------------
+ public | alembic_version             | table    | postgres   | permanent   | heap          | 8192 bytes | 
+ public | category                    | table    | nickfiddes | permanent   | heap          | 16 kB      | 
+ public | category_id_seq             | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | image                       | table    | nickfiddes | permanent   | heap          | 8192 bytes | 
+ public | image_format                | table    | nickfiddes | permanent   | heap          | 8192 bytes | 
+ public | image_format_id_seq         | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | image_id_seq                | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | image_prompt_example        | table    | nickfiddes | permanent   | heap          | 8192 bytes | 
+ public | image_prompt_example_id_seq | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | image_setting               | table    | nickfiddes | permanent   | heap          | 8192 bytes | 
+ public | image_setting_id_seq        | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | image_style                 | table    | nickfiddes | permanent   | heap          | 8192 bytes | 
+ public | image_style_id_seq          | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | llm_action                  | table    | nickfiddes | permanent   | heap          | 8192 bytes | 
+ public | llm_action_history          | table    | nickfiddes | permanent   | heap          | 8192 bytes | 
+ public | llm_action_history_id_seq   | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | llm_action_id_seq           | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | llm_config                  | table    | nickfiddes | permanent   | heap          | 16 kB      | 
+ public | llm_config_id_seq           | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | llm_interaction             | table    | nickfiddes | permanent   | heap          | 8192 bytes | 
+ public | llm_interaction_id_seq      | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | llm_prompt                  | table    | nickfiddes | permanent   | heap          | 8192 bytes | 
+ public | llm_prompt_id_seq           | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | post                        | table    | nickfiddes | permanent   | heap          | 16 kB      | 
+ public | post_categories             | table    | nickfiddes | permanent   | heap          | 0 bytes    | 
+ public | post_development            | table    | nickfiddes | permanent   | heap          | 16 kB      | 
+ public | post_development_id_seq     | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | post_id_seq                 | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | post_section                | table    | nickfiddes | permanent   | heap          | 16 kB      | 
+ public | post_section_id_seq         | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | post_tags                   | table    | nickfiddes | permanent   | heap          | 0 bytes    | 
+ public | tag                         | table    | nickfiddes | permanent   | heap          | 16 kB      | 
+ public | tag_id_seq                  | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | user                        | table    | nickfiddes | permanent   | heap          | 8192 bytes | 
+ public | user_id_seq                 | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+ public | workflow_status             | table    | nickfiddes | permanent   | heap          | 8192 bytes | 
+ public | workflow_status_id_seq      | sequence | nickfiddes | permanent   |               | 8192 bytes | 
+(37 rows)
+

@@ -16,6 +16,7 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
    - [Quick Start Guide](guides/quick_start.md)
    - [Technical Setup](guides/technical_setup.md)
    - [Environment Configuration](guides/environment.md)
+   - **Assistant Config:** The assistant and automated tools use `assistant_config.env` at the project root for database connection info.
    - [FAQ & Troubleshooting](guides/faq.md)
 
 3. **Content Creation & Management**
@@ -40,7 +41,9 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
    - [Database Models](database/README.md)
    - [Schema Reference](database/schema.md)
    - [Direct SQL Management](database/sql_management.md)
+   - **Assistant Config:** See `assistant_config.env` for the database connection string used by the assistant/tools.
    - [Migration Guide](guides/migration.md)
+   - **Deprecation Notice:** SQLAlchemy ORM and Flask-SQLAlchemy have been fully removed. All database operations now use direct SQL via psycopg2.
 
 7. **Frontend & Styling**
    - [Template Structure](frontend/templates.md)

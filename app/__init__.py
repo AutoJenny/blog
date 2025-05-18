@@ -134,7 +134,7 @@ def create_app(config_class=Config):
 
     app.register_blueprint(errors_bp)
 
-    from app.database import bp as db_bp
+    from app.database.routes import bp as db_bp
 
     app.register_blueprint(db_bp)
 

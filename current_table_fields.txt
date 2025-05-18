@@ -1,0 +1,15 @@
+                                             Table "public.llm_interaction"
+        Column        |            Type             | Collation | Nullable |                   Default                   
+----------------------+-----------------------------+-----------+----------+---------------------------------------------
+ id                   | integer                     |           | not null | nextval('llm_interaction_id_seq'::regclass)
+ prompt_id            | integer                     |           |          | 
+ input_text           | text                        |           | not null | 
+ output_text          | text                        |           |          | 
+ parameters_used      | jsonb                       |           |          | 
+ interaction_metadata | jsonb                       |           |          | 
+ created_at           | timestamp without time zone |           |          | CURRENT_TIMESTAMP
+Indexes:
+    "llm_interaction_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "llm_interaction_prompt_id_fkey" FOREIGN KEY (prompt_id) REFERENCES llm_prompt(id)
+
