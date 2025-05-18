@@ -12,12 +12,12 @@
 
 <body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
     <!-- Header -->
-    <header class="bg-dark-surface border-b border-dark-border">
+    <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-purple-900 border-b border-dark-border">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-8">
                     <!-- Home Icon -->
-                    <a href="{{ url_for('main.index') }}" class="text-dark-text hover:text-dark-accent">
+                    <a href="{{ url_for('main.index') }}" class="text-white hover:text-yellow-300">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -26,21 +26,52 @@
                     </a>
                     <!-- Navigation Links -->
                     <div class="flex space-x-4">
-                        <a href="{{ url_for('preview.listing') }}"
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium">Preview</a>
-                        <a href="{{ url_for('blog.index') }}"
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium{% if request.endpoint == 'blog.index' %} bg-dark-accent text-white{% endif %}">Posts</a>
-                        <a href="{{ url_for('llm.actions') }}"
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium{% if request.endpoint == 'llm.actions' %} bg-dark-accent text-white{% endif %}">Actions</a>
-                        <a href="/llm/"
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium{% if request.path.startswith('/llm/') and not request.path.startswith('/llm/images') %} bg-dark-accent text-white{% endif %}">LLMs</a>
-                        <a href="/llm/images"
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium{% if request.path.startswith('/llm/images') %} bg-dark-accent text-white{% endif %}">Images</a>
+                        <a href="{{ url_for('main.index') }}"
+                            class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                        <div class="relative group">
+                            <button
+                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">Blog
+                                ▾</button>
+                            <div
+                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <a href="{{ url_for('blog.index') }}"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Posts</a>
+                                <a href="{{ url_for('preview.listing') }}"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Preview</a>
+                                <a href="{{ url_for('db.index') }}"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Database</a>
+                            </div>
+                        </div>
+                        <div class="relative group">
+                            <button
+                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">LLM
+                                ▾</button>
+                            <div
+                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <a href="/llm/" class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">LLMs</a>
+                                <a href="{{ url_for('llm.actions') }}"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Actions</a>
+                                <a href="/llm/images"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Images</a>
+                            </div>
+                        </div>
+                        <div class="relative group">
+                            <button
+                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">Help
+                                ▾</button>
+                            <div
+                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <a href="/docs/"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Documentation</a>
+                                <a href="/CHANGES.log"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Changelog</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {% if request.endpoint == 'blog.index' %}
                 <div class="flex-1 flex justify-end">
-                    <button class="admin-button" id="newPostBtn">
+                    <button class="admin-button bg-yellow-400 text-black hover:bg-yellow-500" id="newPostBtn">
                         <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
