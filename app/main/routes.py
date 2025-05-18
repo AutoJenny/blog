@@ -86,3 +86,8 @@ def detailed_health_check():
 @bp.route("/dashboard")
 def dashboard():
     return render_template("main/dashboard.html")
+
+
+@bp.route('/modern')
+def modern_index():
+    return render_template('main/modern_index.html')
