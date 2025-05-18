@@ -10,19 +10,23 @@
             A modern content management system for creating and managing blog posts with AI assistance.
         </p>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <a href="{{ url_for('preview.landing') }}" class="block p-6 bg-dark-bg rounded-lg border border-dark-border hover:border-dark-accent transition-colors">
+            <a href="{{ url_for('preview.listing') }}"
+                class="block p-6 bg-dark-bg rounded-lg border border-dark-border hover:border-dark-accent transition-colors">
                 <h2 class="text-xl font-semibold mb-2">Preview</h2>
                 <p class="text-sm text-gray-400">Preview your blog posts and publishing workflow</p>
             </a>
-            <a href="{{ url_for('blog.index') }}" class="block p-6 bg-dark-bg rounded-lg border border-dark-border hover:border-dark-accent transition-colors">
+            <a href="{{ url_for('blog.index') }}"
+                class="block p-6 bg-dark-bg rounded-lg border border-dark-border hover:border-dark-accent transition-colors">
                 <h2 class="text-xl font-semibold mb-2">Posts</h2>
                 <p class="text-sm text-gray-400">Create and manage your blog posts</p>
             </a>
-            <a href="{{ url_for('llm.index') }}" class="block p-6 bg-dark-bg rounded-lg border border-dark-border hover:border-dark-accent transition-colors">
+            <a href="{{ url_for('llm.index') }}"
+                class="block p-6 bg-dark-bg rounded-lg border border-dark-border hover:border-dark-accent transition-colors">
                 <h2 class="text-xl font-semibold mb-2">LLMs</h2>
                 <p class="text-sm text-gray-400">AI-powered content assistance</p>
             </a>
-            <a href="{{ url_for('db.index') }}" class="block p-6 bg-dark-bg rounded-lg border border-dark-border hover:border-dark-accent transition-colors">
+            <a href="{{ url_for('db.index') }}"
+                class="block p-6 bg-dark-bg rounded-lg border border-dark-border hover:border-dark-accent transition-colors">
                 <h2 class="text-xl font-semibold mb-2">Database</h2>
                 <p class="text-sm text-gray-400">Manage your content database</p>
             </a>

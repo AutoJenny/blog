@@ -10,7 +10,11 @@ from app.blog.fields import WORKFLOW_FIELDS
 
 @bp.route("/")
 def index():
-    posts = Post.query.order_by(Post.created_at.desc()).all()
+    # Only show published or in-process posts (not deleted/draft)
+    posts = Post.query.filter(
+        (Post.published == True) | (Post.status == 'in_process'),
+        Post.deleted == False
+    ).order_by(Post.created_at.desc()).all()
     return render_template("blog/index.html", posts=posts)
 
 
@@ -279,3 +283,14 @@ def update_section_field(post_id, section_id, field):
     setattr(section, field, data.get("value", ""))
     db.session.commit()
     return jsonify({"status": "success"})
+
+
+# Public-facing post detail view
+@bp.route("/public/<int:post_id>/")
+def post_public(post_id):
+    post = Post.query.get_or_404(post_id)
+    if not (post.published or post.status == 'in_process') or post.deleted:
+        abort(404)
+    # Fetch sections, images, etc. as needed
+    sections = PostSection.query.filter_by(post_id=post_id).order_by(PostSection.section_order).all()
+    return render_template("blog/post_public.html", post=post, sections=sections)
