@@ -1,5 +1,4 @@
 from flask import (
-    Blueprint,
     render_template,
     flash,
     redirect,
@@ -13,8 +12,7 @@ import subprocess
 import os
 import json
 from pathlib import Path
-
-bp = Blueprint("db", __name__, url_prefix="/db")
+from app.database import bp
 
 
 @bp.route("/")
