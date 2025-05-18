@@ -81,54 +81,118 @@
         try {
             const res = await fetch('/db/tables');
             const data = await res.json();
-            if (!data.tables || !data.tables.length) {
-                accordion.innerHTML = '<div class="text-gray-400 py-8 text-center">No tables found.</div>';
+            // Prefer groups if present and non-empty
+            if (data.groups && data.groups.length) {
+                accordion.innerHTML = '';
+                data.groups.forEach((group, gidx) => {
+                    if (!group.tables || !group.tables.length) return;
+                    // Group heading
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'mb-6';
+                    groupDiv.innerHTML = `
+                        <h3 class="text-xl font-semibold mb-2 flex items-center gap-2">
+                            <i class="fas fa-layer-group text-dark-accent"></i> ${group.group}
+                        </h3>
+                        <div class="space-y-4" id="group-tables-${gidx}"></div>
+                    `;
+                    accordion.appendChild(groupDiv);
+                    const groupTablesDiv = groupDiv.querySelector(`#group-tables-${gidx}`);
+                    group.tables.forEach((table, idx) => {
+                        const panel = document.createElement('div');
+                        panel.className = 'border rounded-lg shadow bg-dark-surface';
+                        panel.innerHTML = `
+                        <button class="w-full flex justify-between items-center px-6 py-4 text-lg font-bold text-dark-accent focus:outline-none focus:ring-2 focus:ring-dark-accent transition-colors duration-200 hover:bg-dark-bg rounded-t-lg accordion-toggle" data-idx="${gidx}-${idx}">
+                            <span>
+                                <i class="fas fa-table mr-2"></i>${table.name}
+                            </span>
+                            <span class="chevron transition-transform duration-200">&#9654;</span>
+                        </button>
+                        <div class="accordion-content hidden px-6 pb-6 pt-2">
+                            <table class="w-full border-collapse mb-4 text-sm">
+                                <thead>
+                                    <tr class="bg-dark-bg text-dark-accent">
+                                        ${table.columns.map(col => `<th class="p-2 text-left">${col.name}<br><span class="text-xs text-gray-500">${col.type}</span></th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${table.rows && table.rows.length ? table.rows.map(row => `
+                                        <tr class="border-b border-dark-border">
+                                            ${table.columns.map(col => `<td class="p-2 font-mono truncate">${row[col.name] ?? ''}</td>`).join('')}
+                                        </tr>
+                                    `).join('') : `<tr><td colspan="${table.columns.length}" class="text-center text-gray-500 py-4">No rows</td></tr>`}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                        groupTablesDiv.appendChild(panel);
+                    });
+                });
+                // Accordion toggle logic (for all toggles)
+                accordion.querySelectorAll('.accordion-toggle').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const content = this.parentElement.querySelector('.accordion-content');
+                        const chevron = this.querySelector('.chevron');
+                        if (content.classList.contains('hidden')) {
+                            content.classList.remove('hidden');
+                            chevron.style.transform = 'rotate(90deg)';
+                        } else {
+                            content.classList.add('hidden');
+                            chevron.style.transform = '';
+                        }
+                    });
+                });
                 return;
             }
-            accordion.innerHTML = '';
-            data.tables.forEach((table, idx) => {
-                const panel = document.createElement('div');
-                panel.className = 'border rounded-lg shadow bg-dark-surface';
-                panel.innerHTML = `
-                <button class="w-full flex justify-between items-center px-6 py-4 text-lg font-bold text-dark-accent focus:outline-none focus:ring-2 focus:ring-dark-accent transition-colors duration-200 hover:bg-dark-bg rounded-t-lg accordion-toggle" data-idx="${idx}">
-                    <span>
-                        <i class="fas fa-table mr-2"></i>${table.name}
-                    </span>
-                    <span class="chevron transition-transform duration-200">&#9654;</span>
-                </button>
-                <div class="accordion-content hidden px-6 pb-6 pt-2">
-                    <table class="w-full border-collapse mb-4 text-sm">
-                        <thead>
-                            <tr class="bg-dark-bg text-dark-accent">
-                                ${table.columns.map(col => `<th class="p-2 text-left">${col.name}<br><span class="text-xs text-gray-500">${col.type}</span></th>`).join('')}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${table.rows && table.rows.length ? table.rows.map(row => `
-                                <tr class="border-b border-dark-border">
-                                    ${table.columns.map(col => `<td class="p-2 font-mono truncate">${row[col.name] ?? ''}</td>`).join('')}
+            // Fallback: flat tables list
+            if (data.tables && data.tables.length) {
+                accordion.innerHTML = '';
+                data.tables.forEach((table, idx) => {
+                    const panel = document.createElement('div');
+                    panel.className = 'border rounded-lg shadow bg-dark-surface';
+                    panel.innerHTML = `
+                    <button class="w-full flex justify-between items-center px-6 py-4 text-lg font-bold text-dark-accent focus:outline-none focus:ring-2 focus:ring-dark-accent transition-colors duration-200 hover:bg-dark-bg rounded-t-lg accordion-toggle" data-idx="${idx}">
+                        <span>
+                            <i class="fas fa-table mr-2"></i>${table.name}
+                        </span>
+                        <span class="chevron transition-transform duration-200">&#9654;</span>
+                    </button>
+                    <div class="accordion-content hidden px-6 pb-6 pt-2">
+                        <table class="w-full border-collapse mb-4 text-sm">
+                            <thead>
+                                <tr class="bg-dark-bg text-dark-accent">
+                                    ${table.columns.map(col => `<th class="p-2 text-left">${col.name}<br><span class="text-xs text-gray-500">${col.type}</span></th>`).join('')}
                                 </tr>
-                            `).join('') : `<tr><td colspan="${table.columns.length}" class="text-center text-gray-500 py-4">No rows</td></tr>`}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-                accordion.appendChild(panel);
-            });
-            // Accordion toggle logic
-            accordion.querySelectorAll('.accordion-toggle').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const content = this.parentElement.querySelector('.accordion-content');
-                    const chevron = this.querySelector('.chevron');
-                    if (content.classList.contains('hidden')) {
-                        content.classList.remove('hidden');
-                        chevron.style.transform = 'rotate(90deg)';
-                    } else {
-                        content.classList.add('hidden');
-                        chevron.style.transform = '';
-                    }
+                            </thead>
+                            <tbody>
+                                ${table.rows && table.rows.length ? table.rows.map(row => `
+                                    <tr class="border-b border-dark-border">
+                                        ${table.columns.map(col => `<td class="p-2 font-mono truncate">${row[col.name] ?? ''}</td>`).join('')}
+                                    </tr>
+                                `).join('') : `<tr><td colspan="${table.columns.length}" class="text-center text-gray-500 py-4">No rows</td></tr>`}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                    accordion.appendChild(panel);
                 });
-            });
+                // Accordion toggle logic
+                accordion.querySelectorAll('.accordion-toggle').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const content = this.parentElement.querySelector('.accordion-content');
+                        const chevron = this.querySelector('.chevron');
+                        if (content.classList.contains('hidden')) {
+                            content.classList.remove('hidden');
+                            chevron.style.transform = 'rotate(90deg)';
+                        } else {
+                            content.classList.add('hidden');
+                            chevron.style.transform = '';
+                        }
+                    });
+                });
+                return;
+            }
+            // No tables at all
+            accordion.innerHTML = '<div class="text-gray-400 py-8 text-center">No tables found.</div>';
         } catch (e) {
             accordion.innerHTML = `<div class="text-red-500 py-8 text-center">Error loading tables: ${e}</div>`;
         }

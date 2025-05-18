@@ -135,7 +135,8 @@ def replication():
 
 @bp.route("/tables")
 def list_tables():
-    result = []
+    tables = []
+    groups = []
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
@@ -144,8 +145,9 @@ def list_tables():
                     SELECT table_name FROM information_schema.tables
                     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
                 """)
-                tables = [row['table_name'] for row in cur.fetchall()]
-                for table in tables:
+                table_names = [row['table_name'] for row in cur.fetchall()]
+                table_data = {}
+                for table in table_names:
                     # Get columns
                     cur.execute(f"""
                         SELECT column_name, data_type
@@ -162,11 +164,38 @@ def list_tables():
                         row_dicts = cur.fetchall()
                     except Exception:
                         row_dicts = []
-                    result.append({
+                    table_data[table] = {
                         "name": table,
                         "columns": columns,
                         "rows": row_dicts
-                    })
+                    }
+                # Flat list for compatibility
+                tables = list(table_data.values())
+                # Grouping logic
+                group_defs = [
+                    ("Image Related", ["image", "image_format", "image_setting", "image_style", "image_prompt_example"]),
+                    ("LLM Related", ["llm_action", "llm_action_history", "llm_config", "llm_interaction", "llm_prompt"]),
+                    ("Blog/Post Related", ["post", "post_section", "post_development", "category", "tag", "post_tags", "post_categories"]),
+                    ("User/Workflow", ["user", "workflow_status"]),
+                ]
+                grouped_tables = set()
+                for group_name, table_list in group_defs:
+                    group_tables = [table_data[t] for t in table_list if t in table_data]
+                    if group_tables:
+                        groups.append({"group": group_name, "tables": group_tables})
+                        grouped_tables.update([t["name"] for t in group_tables])
+                # Add any remaining tables to 'Other'
+                other_tables = [table_data[t] for t in table_data if t not in grouped_tables]
+                if other_tables:
+                    groups.append({"group": "Other", "tables": other_tables})
+                # Sort groups alphabetically by group name
+                groups.sort(key=lambda g: g["group"].lower())
     except Exception as e:
         flash(f"Error fetching tables: {str(e)}", "error")
-    return {"tables": result}
+        tables = []
+        groups = []
+    # Always return both for compatibility
+    if groups:
+        return {"tables": tables, "groups": groups}
+    else:
+        return {"tables": tables}

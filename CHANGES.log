@@ -543,3 +543,13 @@ All notable changes to this project are documented in this file.
 - Skip importing posts/images that already exist in the database.
 - Copy image files to app/static/images/posts/.
 - Print a summary of imported and skipped items.
+
+- Restored /tables route in blog/app/database/routes.py to previous working version (flat list, no grouping) after grouped version caused all tables to vanish from DB Content page.
+
+- Reintroduced grouping in /tables route (blog/app/database/routes.py), but now omits empty groups and falls back to a flat list if no groups have tables. This prevents the DB Content page from being empty if grouping fails.
+
+- /tables route now always returns both a flat 'tables' list and a 'groups' list (if grouping is possible), ensuring compatibility with the frontend and preventing empty DB Content display.
+
+- DB Content UI now displays tables grouped by theme if available, with a fallback to a flat list. Updated blog/app/templates/db/index.html JavaScript to support this.
+
+- /tables route now returns groups ordered alphabetically by group name (A-Z), so 'Blog/Post Related' comes first in the UI.
