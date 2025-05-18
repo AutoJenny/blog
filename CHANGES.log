@@ -517,3 +517,5 @@ All notable changes to this project are documented in this file.
 - Enhancement: The Image Setting dropdown in /llm/images/prompts now supports saving, editing, and deleting full ComfyUI settings (width, height, steps, guidance scale, etc.) with a Name field and Save button. Selecting a setting populates all fields. All changes are synced with the backend.
 
 2025-05-18: Fixed a BuildError in main/index.html by updating url_for('preview.landing') to url_for('preview.listing') to match the correct endpoint. Site now loads successfully.
+
+2025-05-18: Major redesign of intranet landing page and navigation bar. Added workflow-based sections, icons, colour accents, search bar, recent activity, and help links. Navigation now features grouped dropdowns and a vibrant gradient background.
