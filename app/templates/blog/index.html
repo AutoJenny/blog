@@ -54,28 +54,7 @@
 {% block content %}
 <div class="min-h-screen bg-dark-bg text-dark-text">
     <div class="max-w-7xl mx-auto px-4 py-10">
-        <!-- Header -->
-        <header
-            class="gradient-header rounded-2xl shadow-lg p-8 mb-12 flex flex-col md:flex-row md:items-center md:justify-between border border-dark-border">
-            <div class="flex flex-col gap-2">
-                <h1 class="text-4xl font-extrabold text-white flex items-center gap-3">
-                    <span class="icon-circle"><i
-                            class="fa-solid fa-feather-pointed text-dark-accent text-2xl"></i></span>
-                    CLAN.com Blog
-                </h1>
-                <p class="text-lg text-dark-accent">Content creation, workflow, and tools</p>
-            </div>
-            <div class="flex flex-col md:flex-row md:items-center gap-4 mt-6 md:mt-0">
-                <input type="text" placeholder="Search posts, actions, images..."
-                    class="input-dark rounded-lg px-4 py-2 shadow" />
-                <button id="floatingNewPostBtn"
-                    class="bg-dark-accent hover:bg-dark-bg text-white font-semibold px-6 py-2 rounded-lg shadow flex items-center gap-2 border border-dark-accent transition">
-                    <i class="fa-solid fa-plus"></i> New Post
-                </button>
-            </div>
-        </header>
-
-        <!-- Workflow -->
+        <!-- Workflow (now at the top) -->
         <section class="mb-12">
             <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-sitemap"></i> Workflow
             </h2>
@@ -106,7 +85,6 @@
                 </a>
             </div>
         </section>
-
         <!-- Technical Modules -->
         <section class="mb-12">
             <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Technical
@@ -138,7 +116,6 @@
                 </a>
             </div>
         </section>
-
         <!-- Documentation -->
         <section class="mb-12">
             <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-book"></i>
@@ -153,7 +130,6 @@
                     Docs</a>
             </div>
         </section>
-
         <!-- Recent Posts -->
         <section>
             <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-clock"></i> Recent
