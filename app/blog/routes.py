@@ -354,19 +354,28 @@ def post_public(post_id):
 def posts_listing():
     posts = []
     substages = {}
+    show_deleted = request.args.get('show_deleted', '0') == '1'
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 # Get all substages
                 cur.execute("SELECT id, name FROM workflow_sub_stage_entity ORDER BY id;")
                 substages = {row['id']: row['name'] for row in cur.fetchall()}
-                # Get posts with substage_id, exclude those with status 'deleted'
-                cur.execute("""
-                    SELECT id, idea_seed, title, status, created_at, updated_at, slug, substage_id
-                    FROM post
-                    WHERE status != 'deleted'
-                    ORDER BY created_at DESC
-                """)
+                # Get posts with substage_id, filter by deleted status
+                if show_deleted:
+                    cur.execute("""
+                        SELECT id, idea_seed, title, status, created_at, updated_at, slug, substage_id
+                        FROM post
+                        WHERE status = 'deleted'
+                        ORDER BY created_at DESC
+                    """)
+                else:
+                    cur.execute("""
+                        SELECT id, idea_seed, title, status, created_at, updated_at, slug, substage_id
+                        FROM post
+                        WHERE status != 'deleted'
+                        ORDER BY created_at DESC
+                    """)
                 posts = cur.fetchall()
     except Exception as e:
         posts = []
@@ -382,4 +391,4 @@ def posts_listing():
             updated = london.localize(updated)
         post['created_ago'] = naturaltime(now - created) if created else ''
         post['updated_ago'] = naturaltime(now - updated) if updated else ''
-    return render_template('blog/posts_list.html', posts=posts, substages=substages)
+    return render_template('blog/posts_list.html', posts=posts, substages=substages, show_deleted=show_deleted)

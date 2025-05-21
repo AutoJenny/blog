@@ -94,6 +94,12 @@
     <h1 class="text-3xl font-bold text-white mb-8 flex items-center gap-3">
         <i class="fa-solid fa-list"></i> Posts
     </h1>
+    <div class="mb-4 flex items-center gap-4">
+        <label class="flex items-center gap-2 text-dark-accent text-lg font-medium">
+            <input type="checkbox" id="showDeleted" {% if show_deleted %}checked{% endif %}>
+            Show Deleted
+        </label>
+    </div>
     <div class="overflow-x-auto rounded-xl shadow-lg">
         <table class="posts-table">
             <thead>
@@ -156,6 +162,17 @@
                 alert('Failed to delete post');
             }
         });
+    });
+
+    document.getElementById('showDeleted').addEventListener('change', function() {
+        const checked = this.checked;
+        const url = new URL(window.location.href);
+        if (checked) {
+            url.searchParams.set('show_deleted', '1');
+        } else {
+            url.searchParams.delete('show_deleted');
+        }
+        window.location.href = url.toString();
     });
 </script>
 {% endblock %}
