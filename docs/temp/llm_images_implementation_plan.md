@@ -21,7 +21,7 @@ This plan covers the implementation of a robust, production-ready system for gen
 ### 3. UI/UX
 - [x] Provider dropdown and prompt example library in `/llm/images/prompts`
 - [x] Multi-provider batch test/compare in `/llm/images/prompts`
-- [x] Integrate batch image generation into blog post workflow UI (develop.html)
+- [x] Integrate batch image generation into blog post workflow UI (develop.html) [DEPRECATED: now handled by workflow substages, develop.html removed]
 
 ### 4. Production Integration
 - [x] Automated image generation for new/updated posts

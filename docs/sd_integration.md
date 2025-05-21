@@ -12,7 +12,7 @@
 - `app/static/comfyui_output/` — Generated images for UI display.
 - `app/api/routes.py` — Flask endpoints for ComfyUI, DALL·E, and image workflow.
 - `app/templates/llm/images_prompts.html` — UI for prompt/settings library, batch/multi-provider testing.
-- `app/templates/blog/develop.html` — Blog workflow UI: batch image generation, admin review/override.
+- `app/templates/blog/develop.html` — Blog workflow UI: batch image generation, admin review/override. [DEPRECATED: now handled by workflow substages, develop.html removed]
 
 ## Installation & Setup
 
