@@ -14,6 +14,14 @@
     <div class="mb-8">
         {{ post_header(post, None) }}
     </div>
+    <div class="mb-8">
+        <div class="rounded-xl p-6 shadow-lg" style="background: #23273a; border: 1.5px solid #31364a;">
+            <h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-align-left text-indigo-400"></i> Summary
+            </h2>
+            <div class="text-gray-200 text-base whitespace-pre-line">{{ post.summary or 'No summary yet.' }}</div>
+        </div>
+    </div>
     {% endif %}
 </div>
 {% endblock %}
