@@ -34,17 +34,14 @@ def cleanup_old_drafts(days=30):
         cutoff_date = datetime.utcnow() - timedelta(days=days)
         old_drafts = Post.query.filter(
             Post.published == False,
-            Post.deleted == False,
             Post.published_at == None,
             Post.updated_at < cutoff_date
         ).all()
         
         for draft in old_drafts:
-            draft.deleted = True
+            draft.status = 'deleted'
             logger.info(f"Marked old draft {draft.id} as deleted")
-            
         db.session.commit()
-        
     except Exception as e:
         logger.error(f"Error cleaning up old drafts: {str(e)}")
         db.session.rollback()

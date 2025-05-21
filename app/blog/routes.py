@@ -286,23 +286,6 @@ def update_post(slug):
     )
 
 
-@bp.route("/<slug>", methods=["DELETE"])
-def delete_post(slug):
-    post = None
-    try:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT * FROM post WHERE slug = %s", (slug,))
-                post = cur.fetchone()
-                if not post:
-                    abort(404)
-                cur.execute("UPDATE post SET deleted = TRUE WHERE id = %s", (post["id"],))
-                conn.commit()
-        return jsonify({"message": "Post deleted"})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
 @bp.route("/api/v1/posts/<int:post_id>/fields/<field>", methods=["PUT"])
 def update_post_development_field(post_id, field):
     data = request.get_json()
