@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "workflow/workflow_indicator.html" as indicator %}
+{% from "blog/_post_header.html" import post_header %}
 
 {% block title %}Planning: Idea{% endblock %}
 
@@ -7,26 +8,7 @@
 <div class="container mx-auto px-6 py-8">
     {{ indicator.process_indicator(substages, stages, current_substage_id) }}
     {% if post %}
-    <div class="blog-card mb-8">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-            <div class="flex-1 min-w-0">
-                <span class="blog-card__title text-2xl font-bold truncate">{{ post.title or 'Untitled Post' }}</span>
-                <div class="flex items-center space-x-2 mt-2">
-                    {% if post.status == 'published' %}
-                    <span class="badge-published px-2 py-1 rounded text-xs font-semibold">Published</span>
-                    {% else %}
-                    <span class="badge-draft px-2 py-1 rounded text-xs font-semibold">Draft</span>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="flex flex-col items-start md:items-end gap-1">
-                <div class="text-sm text-gray-400">Created: {{ post.created_at.strftime('%Y-%m-%d') }}</div>
-                <div class="text-sm text-gray-400">Updated: <span class="updated-ago"
-                        data-updated="{{ post.updated_at.isoformat() if post.updated_at else '' }}">{{
-                        post.updated_at.strftime('%Y-%m-%d') if post.updated_at else '' }}</span></div>
-            </div>
-        </div>
-    </div>
+    {{ post_header(post, None) }}
     {% endif %}
     <div class="card-dark rounded-xl p-8 mt-8 shadow-lg">
         <h1 class="text-2xl font-bold text-white mb-4 flex items-center gap-2"><i
