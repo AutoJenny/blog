@@ -22,4 +22,10 @@ The Blog CMS uses Jinja2 templates for all HTML rendering. This document describ
 
 ## Customization
 - Add new templates in the appropriate subdirectory.
-- Use Tailwind utility classes for styling. 
+- Use Tailwind utility classes for styling.
+
+## Blog Index & Dashboard
+- The main blog index is now served at the root URL (`/`).
+- The dashboard and blog listing are unified in a single, modern, and intuitive design.
+- Navigation and template references to the old `/blog/` index have been updated to `/`.
+- The new design uses subtle colors, icons, and a card-based layout for clarity and style. 

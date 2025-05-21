@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -9,76 +9,90 @@
     <link href="{{ url_for('static', filename='css/dist/main.css') }}" rel="stylesheet">
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        integrity="sha512-1ycn6IcaQQ40/MKB4Imkb9h6Y5l9OQ5l9Q5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+    </style>
     {% block styles %}{% endblock %}
 </head>
 
 <body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
     <!-- Header -->
-    <header class="bg-indigo-950 border-b border-dark-border py-4">
+    <header class="header-gradient shadow-lg border-b border-dark-border py-4">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
                 <div class="flex items-center space-x-8 flex-1 min-w-0">
-                    <!-- Home Icon -->
-                    <a href="{{ url_for('main.index') }}" class="text-white hover:text-yellow-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                        </svg>
+                    <!-- Home Icon & Logo -->
+                    <a href="/"
+                        class="flex items-center gap-3 text-white hover:text-dark-accent text-2xl font-bold tracking-tight">
+                        <span class="bg-dark-accent rounded-full p-2 shadow"><i
+                                class="fa-solid fa-feather-pointed"></i></span>
+                        <span class="hidden sm:inline">CLAN.com Blog</span>
                     </a>
                     <!-- Navigation Links -->
-                    <div class="flex space-x-4">
-                        <a href="{{ url_for('main.index') }}"
-                            class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                    <div class="flex space-x-4 ml-8">
+                        <a href="/"
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Dashboard</a>
                         <div class="relative group">
                             <button
-                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">Blog
+                                class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium focus:outline-none transition">Blog
                                 ▾</button>
                             <div
-                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <a href="/" class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Posts</a>
+                                class="nav-dropdown absolute left-0 mt-2 w-44 rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10 py-2">
+                                <a href="/" class="block px-4 py-2 rounded transition">Posts</a>
                                 <a href="{{ url_for('preview.listing') }}"
-                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Preview</a>
+                                    class="block px-4 py-2 rounded transition">Preview</a>
                                 <a href="{{ url_for('db.index') }}"
-                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Database</a>
+                                    class="block px-4 py-2 rounded transition">Database</a>
                             </div>
                         </div>
                         <div class="relative group">
                             <button
-                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">LLM
+                                class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium focus:outline-none transition">LLM
                                 ▾</button>
                             <div
-                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <a href="/llm/" class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">LLMs</a>
+                                class="nav-dropdown absolute left-0 mt-2 w-44 rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10 py-2">
+                                <a href="/llm/" class="block px-4 py-2 rounded transition">LLMs</a>
                                 <a href="{{ url_for('llm.actions') }}"
-                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Actions</a>
-                                <a href="/llm/images"
-                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Images</a>
+                                    class="block px-4 py-2 rounded transition">Actions</a>
+                                <a href="/llm/images" class="block px-4 py-2 rounded transition">Images</a>
                             </div>
                         </div>
                         <div class="relative group">
                             <button
-                                class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium focus:outline-none">Help
+                                class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium focus:outline-none transition">Help
                                 ▾</button>
                             <div
-                                class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <a href="/docs/"
-                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Documentation</a>
-                                <a href="/CHANGES.log"
-                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Changelog</a>
+                                class="nav-dropdown absolute left-0 mt-2 w-44 rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10 py-2">
+                                <a href="/docs/" class="block px-4 py-2 rounded transition">Documentation</a>
+                                <a href="/CHANGES.log" class="block px-4 py-2 rounded transition">Changelog</a>
                             </div>
                         </div>
                     </div>
                 </div>
                 {% if request.endpoint == 'main.index' %}
                 <div class="flex-shrink-0 flex justify-end ml-4">
-                    <button class="admin-button bg-yellow-400 text-black hover:bg-yellow-500" id="newPostBtn">
-                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
+                    <button
+                        class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition"
+                        id="newPostBtn">
+                        <i class="fa-solid fa-plus"></i>
                         New Post
                     </button>
                 </div>

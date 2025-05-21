@@ -581,3 +581,11 @@ All notable changes to this project are documented in this file.
   - authoring: content, meta_info, images
   - publishing: preflight, launch, syndication
 - Ensured all stages and sub-stages are ordered and normalized for future workflow logic
+
+2024-05-21
+- Blog index moved from /blog/ to root URL (/).
+- Fully redesigned the main page with a modern, stylish, and intuitive UI (see app/templates/blog/index.html).
+- Navigation in base.html updated to use root for blog listing.
+- Removed old blog.index endpoint and root_link.html template.
+- Updated /docs/frontend/templates.md to reflect new structure and design.
+- All references to the blog index now point to the root URL.
