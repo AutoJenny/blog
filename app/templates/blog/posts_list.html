@@ -145,7 +145,7 @@
         btn.addEventListener('click', async (e) => {
             if (!confirm('Are you sure you want to delete this post?')) return;
             const postId = btn.dataset.postId;
-            const resp = await fetch(`/blog/api/v1/posts/${postId}/fields/status`, {
+            const resp = await fetch(`/blog/api/v1/post/${postId}/fields/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ value: 'deleted' })
