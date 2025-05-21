@@ -43,6 +43,7 @@ All notable changes to this project are documented in this file.
   - Updated documentation in docs/api/llm_endpoints.md
   - Updated test cases in tests/test_llm.py
 - Change: Removed LLM Config from the main menu; LLMs now links to a new landing page with a tabbed sub-header for Templates, Images, and Config. All LLM sub-pages now have consistent tabbed navigation.
+- Completely rewrote the database display UI front-end code in app/templates/db/index.html from scratch for robustness, clarity, and accessibility. Replicates all previous functionality with modern, maintainable, and accessible JavaScript. Updated documentation accordingly.
 
 ### Fixed
 - Fixed incorrect route registration for /blog/develop/<post_id>
@@ -553,3 +554,30 @@ All notable changes to this project are documented in this file.
 - DB Content UI now displays tables grouped by theme if available, with a fallback to a flat list. Updated blog/app/templates/db/index.html JavaScript to support this.
 
 - /tables route now returns groups ordered alphabetically by group name (A-Z), so 'Blog/Post Related' comes first in the UI.
+
+2025-05-20: Unified styling with blogforge
+- Replaced app/static/css/src/main.css with blogforge's globals.css structure and variables.
+- Removed all content from blog.css, style.css, and admin.css to disable legacy styles.
+- Updated tailwind.config.js to add custom color tokens for border, background, etc. to support new utilities.
+- Rebuilt Tailwind CSS output.
+- Site now uses a modern, utility-first, variable-driven design matching blogforge.
+
+2025-05-20: Workflow table migration
+- Dropped old workflow_status table (multi-column, JSON-style, deprecated)
+- Added new workflow table with columns:
+    - id (PK)
+    - post_id (FK to post.id, unique)
+    - stage (ENUM: idea, research, structure, content, meta_information, images, preflight, publishing, syndication)
+    - status (ENUM: draft, published, review, deleted)
+    - created (timestamp, default now)
+    - updated (timestamp, auto-updated)
+- Updated create_tables.sql and docs/database/schema.md
+- All future workflow tracking and API endpoints should use the new workflow table
+
+2025-05-21: Normalized workflow stages and sub-stages
+- Removed legacy stages from workflow_stage_entity, keeping only: planning, authoring, publishing
+- Seeded workflow_sub_stage_entity with ordered sub-stages for each main stage:
+  - planning: idea, research, structure
+  - authoring: content, meta_info, images
+  - publishing: preflight, launch, syndication
+- Ensured all stages and sub-stages are ordered and normalized for future workflow logic
