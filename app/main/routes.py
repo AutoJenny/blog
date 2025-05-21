@@ -1,4 +1,4 @@
-from flask import render_template, current_app, jsonify, redirect, url_for
+from flask import render_template, current_app, jsonify, redirect, url_for, request, session
 from app.main import bp
 from app.models import Post, Category
 import psutil
@@ -22,7 +22,21 @@ def get_db_conn():
 
 @bp.route("/")
 def index():
-    return render_template("main/root_link.html")
+    # Only show published or in-process posts (not deleted/draft)
+    posts = []
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT * FROM post
+                    WHERE (published = TRUE OR status = 'in_process')
+                    AND deleted = FALSE
+                    ORDER BY created_at DESC
+                """)
+                posts = cur.fetchall()
+    except Exception as e:
+        posts = []
+    return render_template("blog/index.html", posts=posts)
 
 
 @bp.route("/health")
@@ -91,18 +105,55 @@ def dashboard():
 def modern_index():
     return render_template('main/modern_index.html')
 
-@bp.route('/workflow/planning/')
+@bp.route('/workflow/planning/', methods=['GET', 'POST'])
 def workflow_planning():
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT * FROM workflow_stage_entity ORDER BY stage_order ASC;")
-            stages = cur.fetchall()
-            cur.execute("SELECT * FROM workflow_sub_stage_entity ORDER BY stage_id, sub_stage_order ASC;")
-            substages = cur.fetchall()
-            cur.execute("SELECT * FROM workflow_sub_stage_entity WHERE stage_id = (SELECT id FROM workflow_stage_entity WHERE name = 'planning') ORDER BY sub_stage_order ASC;")
-            sub_stages = cur.fetchall()
-    current_substage = sub_stages[0]['id'] if sub_stages else None
-    return render_template('workflow/planning/index.html', stages=stages, substages=substages, sub_stages=sub_stages, current_stage='planning', current_substage=current_substage)
+    # Canonical sub-stages for Planning
+    sub_stages = [
+        {
+            'name': 'idea',
+            'label': 'Idea',
+            'icon': 'fa-lightbulb',
+            'color': 'purple',
+            'description': 'Initial concept',
+            'instructions': 'Describe the core idea for your post. What is it about? Why does it matter?',
+            'required': True,
+        },
+        {
+            'name': 'research',
+            'label': 'Research',
+            'icon': 'fa-search',
+            'color': 'blue',
+            'description': 'Research and fact-finding',
+            'instructions': 'Add research notes, links, or files that support your idea.',
+            'required': True,
+        },
+        {
+            'name': 'structure',
+            'label': 'Structure',
+            'icon': 'fa-bars',
+            'color': 'yellow',
+            'description': 'Outline and structure',
+            'instructions': 'Outline the main sections and flow of your post.',
+            'required': True,
+        },
+    ]
+    # Navigation logic
+    current_idx = int(request.args.get('step', 0))
+    if request.method == 'POST':
+        if 'next' in request.form and current_idx < len(sub_stages) - 1:
+            current_idx += 1
+        elif 'prev' in request.form and current_idx > 0:
+            current_idx -= 1
+        elif 'goto' in request.form:
+            try:
+                goto_idx = int(request.form['goto'])
+                if 0 <= goto_idx < len(sub_stages):
+                    current_idx = goto_idx
+            except Exception:
+                pass
+        return redirect(url_for('main.workflow_planning', step=current_idx))
+    current_substage = sub_stages[current_idx] if sub_stages else None
+    return render_template('workflow/planning/index.html', sub_stages=sub_stages, current_substage=current_substage, current_idx=current_idx, total=len(sub_stages))
 
 @bp.route('/workflow/authoring/')
 def workflow_authoring():
