@@ -129,9 +129,15 @@
                             title="Preview">
                             <i class="fa-solid fa-eye"></i>
                         </a>
+                        {% if post.status == 'deleted' %}
+                        <button class="icon-btn restore-btn" title="Restore" data-post-id="{{ post.id }}">
+                            <i class="fa-solid fa-check" style="color:#22c55e;"></i>
+                        </button>
+                        {% else %}
                         <button class="icon-btn delete-btn" title="Delete" data-post-id="{{ post.id }}">
                             <i class="fa-solid fa-xmark" style="color:#ef4444;"></i>
                         </button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% else %}
@@ -163,8 +169,22 @@
             }
         });
     });
-
-    document.getElementById('showDeleted').addEventListener('change', function() {
+    document.querySelectorAll('.restore-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const postId = btn.dataset.postId;
+            const resp = await fetch(`/blog/api/v1/post/${postId}/fields/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: 'draft' })
+            });
+            if (resp.ok) {
+                btn.closest('tr').remove();
+            } else {
+                alert('Failed to restore post');
+            }
+        });
+    });
+    document.getElementById('showDeleted').addEventListener('change', function () {
         const checked = this.checked;
         const url = new URL(window.location.href);
         if (checked) {
