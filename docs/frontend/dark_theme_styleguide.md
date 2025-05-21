@@ -123,4 +123,16 @@ This styleguide defines the visual and UX standards for the CLAN.com Blog CMS da
 
 ---
 
+## 13. Workflow Process Indicator
+- **Structure:** 9 substages grouped into 3 conceptual stages, each with a subtly different dark background.
+- **Appearance:** Shallow, horizontally oriented, touchscreen-friendly, and visually cohesive with the dark theme.
+- **Stage Grouping:** Each stage is visually grouped with a unique but subtle background shade, separated by soft accent gradients.
+- **Substages:** Each substage is a clickable step, with the current one highlighted using accent color and shadow.
+- **Progress:** Subtle progress bars/arrows between substages and stages suggest direction and flow.
+- **Accessibility:** Large touch targets, clear focus/active states, and high contrast.
+- **Responsiveness:** Fully responsive, adapts to mobile and desktop layouts.
+- **Implementation:** See `workflow_indicator.html` macro and usage in workflow templates.
+
+---
+
 > **All new features and UI changes must be reviewed for compliance with this styleguide.** 
