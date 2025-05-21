@@ -105,100 +105,70 @@ def dashboard():
 def modern_index():
     return render_template('main/modern_index.html')
 
-@bp.route('/workflow/planning/', methods=['GET', 'POST'])
-def workflow_planning():
-    # Define the three main stages
-    stages = [
-        {'id': 1, 'name': 'planning', 'label': 'Planning'},
-        {'id': 2, 'name': 'authoring', 'label': 'Authoring'},
-        {'id': 3, 'name': 'publishing', 'label': 'Publishing'},
-    ]
-    # Define all nine substages, grouped by stage
-    substages = [
-        # Planning
-        {'id': 1, 'stage_id': 1, 'name': 'idea', 'label': 'Idea', 'icon': 'fa-lightbulb', 'color': 'purple', 'url': '/workflow/planning/?step=0'},
-        {'id': 2, 'stage_id': 1, 'name': 'research', 'label': 'Research', 'icon': 'fa-search', 'color': 'blue', 'url': '/workflow/planning/?step=1'},
-        {'id': 3, 'stage_id': 1, 'name': 'structure', 'label': 'Structure', 'icon': 'fa-bars', 'color': 'yellow', 'url': '/workflow/planning/?step=2'},
-        # Authoring
-        {'id': 4, 'stage_id': 2, 'name': 'content', 'label': 'Content', 'icon': 'fa-pen-nib', 'color': 'indigo', 'url': '/workflow/authoring/?step=0'},
-        {'id': 5, 'stage_id': 2, 'name': 'meta_info', 'label': 'Meta Info', 'icon': 'fa-info-circle', 'color': 'cyan', 'url': '/workflow/authoring/?step=1'},
-        {'id': 6, 'stage_id': 2, 'name': 'images', 'label': 'Images', 'icon': 'fa-image', 'color': 'pink', 'url': '/workflow/authoring/?step=2'},
-        # Publishing
-        {'id': 7, 'stage_id': 3, 'name': 'preflight', 'label': 'Preflight', 'icon': 'fa-plane-departure', 'color': 'green', 'url': '/workflow/publishing/?step=0'},
-        {'id': 8, 'stage_id': 3, 'name': 'launch', 'label': 'Launch', 'icon': 'fa-rocket', 'color': 'orange', 'url': '/workflow/publishing/?step=1'},
-        {'id': 9, 'stage_id': 3, 'name': 'syndication', 'label': 'Syndication', 'icon': 'fa-share-nodes', 'color': 'teal', 'url': '/workflow/publishing/?step=2'},
-    ]
-    # Canonical sub-stages for Planning (for the card content)
-    sub_stages = [
-        {
-            'name': 'idea',
-            'label': 'Idea',
-            'icon': 'fa-lightbulb',
-            'color': 'purple',
-            'description': 'Initial concept',
-            'instructions': 'Describe the core idea for your post. What is it about? Why does it matter?',
-            'required': True,
-        },
-        {
-            'name': 'research',
-            'label': 'Research',
-            'icon': 'fa-search',
-            'color': 'blue',
-            'description': 'Research and fact-finding',
-            'instructions': 'Add research notes, links, or files that support your idea.',
-            'required': True,
-        },
-        {
-            'name': 'structure',
-            'label': 'Structure',
-            'icon': 'fa-bars',
-            'color': 'yellow',
-            'description': 'Outline and structure',
-            'instructions': 'Outline the main sections and flow of your post.',
-            'required': True,
-        },
-    ]
-    current_idx = int(request.args.get('step', 0))
-    if request.method == 'POST':
-        if 'next' in request.form and current_idx < len(sub_stages) - 1:
-            current_idx += 1
-        elif 'prev' in request.form and current_idx > 0:
-            current_idx -= 1
-        elif 'goto' in request.form:
-            try:
-                goto_idx = int(request.form['goto'])
-                if 0 <= goto_idx < len(sub_stages):
-                    current_idx = goto_idx
-            except Exception:
-                pass
-        return redirect(url_for('main.workflow_planning', step=current_idx))
-    current_substage = sub_stages[current_idx] if sub_stages else None
-    # Find the global substage id for the current planning substage
-    current_substage_id = next((s['id'] for s in substages if s['name'] == current_substage['name']), 1) if current_substage else 1
-    return render_template('workflow/planning/index.html', sub_stages=sub_stages, current_substage=current_substage, current_idx=current_idx, total=len(sub_stages), stages=stages, substages=substages, current_substage_id=current_substage_id)
+# --- Workflow Substage Routes ---
+# Shared workflow context
+WORKFLOW_STAGES = [
+    {'id': 1, 'name': 'planning', 'label': 'Planning'},
+    {'id': 2, 'name': 'authoring', 'label': 'Authoring'},
+    {'id': 3, 'name': 'publishing', 'label': 'Publishing'},
+]
+WORKFLOW_SUBSTAGES = [
+    # Planning
+    {'id': 1, 'stage_id': 1, 'name': 'idea', 'label': 'Idea', 'icon': 'fa-lightbulb', 'color': 'purple', 'url': '/workflow/idea/'},
+    {'id': 2, 'stage_id': 1, 'name': 'research', 'label': 'Research', 'icon': 'fa-search', 'color': 'blue', 'url': '/workflow/research/'},
+    {'id': 3, 'stage_id': 1, 'name': 'structure', 'label': 'Structure', 'icon': 'fa-bars', 'color': 'yellow', 'url': '/workflow/structure/'},
+    # Authoring
+    {'id': 4, 'stage_id': 2, 'name': 'content', 'label': 'Content', 'icon': 'fa-pen-nib', 'color': 'indigo', 'url': '/workflow/content/'},
+    {'id': 5, 'stage_id': 2, 'name': 'meta_info', 'label': 'Meta Info', 'icon': 'fa-info-circle', 'color': 'cyan', 'url': '/workflow/meta_info/'},
+    {'id': 6, 'stage_id': 2, 'name': 'images', 'label': 'Images', 'icon': 'fa-image', 'color': 'pink', 'url': '/workflow/images/'},
+    # Publishing
+    {'id': 7, 'stage_id': 3, 'name': 'preflight', 'label': 'Preflight', 'icon': 'fa-plane-departure', 'color': 'green', 'url': '/workflow/preflight/'},
+    {'id': 8, 'stage_id': 3, 'name': 'launch', 'label': 'Launch', 'icon': 'fa-rocket', 'color': 'orange', 'url': '/workflow/launch/'},
+    {'id': 9, 'stage_id': 3, 'name': 'syndication', 'label': 'Syndication', 'icon': 'fa-share-nodes', 'color': 'teal', 'url': '/workflow/syndication/'},
+]
 
-@bp.route('/workflow/authoring/')
-def workflow_authoring():
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT * FROM workflow_stage_entity ORDER BY stage_order ASC;")
-            stages = cur.fetchall()
-            cur.execute("SELECT * FROM workflow_sub_stage_entity ORDER BY stage_id, sub_stage_order ASC;")
-            substages = cur.fetchall()
-            cur.execute("SELECT * FROM workflow_sub_stage_entity WHERE stage_id = (SELECT id FROM workflow_stage_entity WHERE name = 'authoring') ORDER BY sub_stage_order ASC;")
-            sub_stages = cur.fetchall()
-    current_substage = sub_stages[0]['id'] if sub_stages else None
-    return render_template('workflow/authoring/index.html', stages=stages, substages=substages, sub_stages=sub_stages, current_stage='authoring', current_substage=current_substage)
+# Helper to get substage id by name
+substage_id_by_name = {s['name']: s['id'] for s in WORKFLOW_SUBSTAGES}
 
-@bp.route('/workflow/publishing/')
-def workflow_publishing():
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT * FROM workflow_stage_entity ORDER BY stage_order ASC;")
-            stages = cur.fetchall()
-            cur.execute("SELECT * FROM workflow_sub_stage_entity ORDER BY stage_id, sub_stage_order ASC;")
-            substages = cur.fetchall()
-            cur.execute("SELECT * FROM workflow_sub_stage_entity WHERE stage_id = (SELECT id FROM workflow_stage_entity WHERE name = 'publishing') ORDER BY sub_stage_order ASC;")
-            sub_stages = cur.fetchall()
-    current_substage = sub_stages[0]['id'] if sub_stages else None
-    return render_template('workflow/publishing/index.html', stages=stages, substages=substages, sub_stages=sub_stages, current_stage='publishing', current_substage=current_substage)
+def workflow_context(substage_name):
+    return {
+        'substages': WORKFLOW_SUBSTAGES,
+        'stages': WORKFLOW_STAGES,
+        'current_substage_id': substage_id_by_name.get(substage_name)
+    }
+
+@bp.route('/workflow/idea/')
+def workflow_idea():
+    return render_template('workflow/planning/idea/index.html', **workflow_context('idea'))
+
+@bp.route('/workflow/research/')
+def workflow_research():
+    return render_template('workflow/planning/research/index.html', **workflow_context('research'))
+
+@bp.route('/workflow/structure/')
+def workflow_structure():
+    return render_template('workflow/planning/structure/index.html', **workflow_context('structure'))
+
+@bp.route('/workflow/content/')
+def workflow_content():
+    return render_template('workflow/authoring/content/index.html', **workflow_context('content'))
+
+@bp.route('/workflow/meta_info/')
+def workflow_meta_info():
+    return render_template('workflow/authoring/meta_info/index.html', **workflow_context('meta_info'))
+
+@bp.route('/workflow/images/')
+def workflow_images():
+    return render_template('workflow/authoring/images/index.html', **workflow_context('images'))
+
+@bp.route('/workflow/preflight/')
+def workflow_preflight():
+    return render_template('workflow/publishing/preflight/index.html', **workflow_context('preflight'))
+
+@bp.route('/workflow/launch/')
+def workflow_launch():
+    return render_template('workflow/publishing/launch/index.html', **workflow_context('launch'))
+
+@bp.route('/workflow/syndication/')
+def workflow_syndication():
+    return render_template('workflow/publishing/syndication/index.html', **workflow_context('syndication'))
