@@ -39,25 +39,19 @@
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
                 <div class="flex items-center space-x-8 flex-1 min-w-0">
-                    <!-- Home Icon & Logo -->
-                    <a href="/"
-                        class="flex items-center gap-3 text-white hover:text-dark-accent text-2xl font-bold tracking-tight">
-                        <span class="bg-dark-accent rounded-full p-2 shadow"><i
-                                class="fa-solid fa-feather-pointed"></i></span>
-                        <span class="hidden sm:inline">CLAN.com Blog</span>
+                    <!-- Logo and Title -->
+                    <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+                        <img src="/static/images/site/brand-logo.png" alt="BlogForge Logo"
+                            class="h-10 w-10 rounded-full shadow" style="background:#23273a;" />
+                        <span class="font-bold text-white">BlogForge</span>
                     </a>
-                    <!-- Navigation Links -->
-                    <div class="flex space-x-4 ml-8">
-                        <a href="/"
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Dashboard</a>
-                        <a href="/"
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
-                        <a href="{{ url_for('preview.listing') }}"
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Preview</a>
-                    </div>
                 </div>
-                {% if request.endpoint == 'main.index' %}
-                <div class="flex-shrink-0 flex justify-end ml-4">
+                <div class="flex items-center space-x-4 ml-8">
+                    <!-- Only Preview link remains, right-aligned -->
+                </div>
+                <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+                    <a href="{{ url_for('preview.listing') }}"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Preview</a>
                     <button
                         class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition"
                         id="newPostBtn">
@@ -65,7 +59,6 @@
                         New Post
                     </button>
                 </div>
-                {% endif %}
             </div>
         </nav>
     </header>
