@@ -9,6 +9,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 from humanize import naturaltime
+import pytz
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
@@ -378,18 +379,26 @@ def posts_listing():
                 # Get all substages
                 cur.execute("SELECT id, name FROM workflow_sub_stage_entity ORDER BY id;")
                 substages = {row['id']: row['name'] for row in cur.fetchall()}
-                # Get posts with substage_id
+                # Get posts with substage_id, exclude those with status 'deleted'
                 cur.execute("""
                     SELECT id, idea_seed, title, status, created_at, updated_at, slug, substage_id
                     FROM post
+                    WHERE status != 'deleted'
                     ORDER BY created_at DESC
                 """)
                 posts = cur.fetchall()
     except Exception as e:
         posts = []
-    # Format dates as 'ago' using humanize
-    now = datetime.utcnow()
+    # Format dates as 'ago' using humanize, with Europe/London timezone
+    london = pytz.timezone('Europe/London')
+    now = datetime.now(london)
     for post in posts:
-        post['created_ago'] = naturaltime(now - post['created_at']) if post['created_at'] else ''
-        post['updated_ago'] = naturaltime(now - post['updated_at']) if post['updated_at'] else ''
+        created = post['created_at']
+        updated = post['updated_at']
+        if created and created.tzinfo is None:
+            created = london.localize(created)
+        if updated and updated.tzinfo is None:
+            updated = london.localize(updated)
+        post['created_ago'] = naturaltime(now - created) if created else ''
+        post['updated_ago'] = naturaltime(now - updated) if updated else ''
     return render_template('blog/posts_list.html', posts=posts, substages=substages)
