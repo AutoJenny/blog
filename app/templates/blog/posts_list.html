@@ -115,7 +115,7 @@
                     <td>{{ post.created_ago }}</td>
                     <td>{{ post.updated_ago }}</td>
                     <td class="actions">
-                        <a href="{{ url_for('blog.post_view', post_id=post.id, view='develop') }}" class="icon-btn"
+                        <a href="/workflow/{{ substages[post.substage_id] }}/?post_id={{ post.id }}" class="icon-btn"
                             title="Edit">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </a>
@@ -123,6 +123,9 @@
                             title="Preview">
                             <i class="fa-solid fa-eye"></i>
                         </a>
+                        <button class="icon-btn delete-btn" title="Delete" data-post-id="{{ post.id }}">
+                            <i class="fa-solid fa-xmark" style="color:#ef4444;"></i>
+                        </button>
                     </td>
                 </tr>
                 {% else %}
@@ -134,4 +137,31 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.delete-btn').forEach(function (btn) {
+            btn.addEventListener('click', async function () {
+                if (!confirm('Are you sure you want to delete this post?')) return;
+                const postId = btn.getAttribute('data-post-id');
+                try {
+                    const response = await fetch(`/blog/api/v1/posts/${postId}/fields/status`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ value: 'deleted' })
+                    });
+                    if (response.ok) {
+                        btn.closest('tr').remove();
+                    } else {
+                        alert('Failed to delete post.');
+                    }
+                } catch (e) {
+                    alert('Error deleting post.');
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

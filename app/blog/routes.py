@@ -58,53 +58,8 @@ def new_post():
 @bp.route("/<int:post_id>/", defaults={'view': 'preview'})
 @bp.route("/<int:post_id>/<view>")
 def post_view(post_id, view):
-    post = None
-    dev = None
-    sections = []
-    try:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                # Fetch post
-                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
-                post = cur.fetchone()
-                if not post:
-                    abort(404)
-                # Fetch post_development
-                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
-                dev = cur.fetchone()
-                if not dev and view == 'develop':
-                    # Create post_development if missing
-                    cur.execute("INSERT INTO post_development (post_id) VALUES (%s) RETURNING *", (post_id,))
-                    dev = cur.fetchone()
-                    conn.commit()
-                # Fetch sections
-                cur.execute("SELECT * FROM post_section WHERE post_id = %s ORDER BY section_order", (post_id,))
-                sections = cur.fetchall()
-    except Exception as e:
-        abort(500, str(e))
-    if view == 'develop':
-        return render_template("blog/develop.html", post=post, dev=dev, sections=sections, active_view='develop', workflow_fields=WORKFLOW_FIELDS)
-    elif view == 'json':
-        post_json = {
-            "id": post["id"],
-            "slug": post["slug"],
-            "title": post["title"],
-            "content": post["content"],
-            "published": post["published"],
-            "deleted": post["deleted"],
-            "created_at": post["created_at"].isoformat() if post["created_at"] else None,
-            "updated_at": post["updated_at"].isoformat() if post["updated_at"] else None,
-        }
-        return render_template("blog/json.html", post=post, post_json=post_json, active_view='json')
-    elif view == 'preview':
-        return render_template("blog/develop.html", post=post, dev=dev, sections=sections, active_view='preview', workflow_fields=WORKFLOW_FIELDS)
-    else:
-        abort(404)
-
-
-@bp.route('/develop/<int:post_id>')
-def legacy_develop(post_id):
-    return redirect(url_for('blog.post_view', post_id=post_id, view='develop'), code=301)
+    # Deprecated: develop.html is no longer used
+    abort(404)
 
 
 @bp.route('/<slug>')
@@ -416,11 +371,16 @@ def post_public(post_id):
 @bp.route('/posts', methods=['GET'])
 def posts_listing():
     posts = []
+    substages = {}
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
+                # Get all substages
+                cur.execute("SELECT id, name FROM workflow_sub_stage_entity ORDER BY id;")
+                substages = {row['id']: row['name'] for row in cur.fetchall()}
+                # Get posts with substage_id
                 cur.execute("""
-                    SELECT id, idea_seed, title, status, created_at, updated_at, slug
+                    SELECT id, idea_seed, title, status, created_at, updated_at, slug, substage_id
                     FROM post
                     ORDER BY created_at DESC
                 """)
@@ -432,4 +392,4 @@ def posts_listing():
     for post in posts:
         post['created_ago'] = naturaltime(now - post['created_at']) if post['created_at'] else ''
         post['updated_ago'] = naturaltime(now - post['updated_at']) if post['updated_at'] else ''
-    return render_template('blog/posts_list.html', posts=posts)
+    return render_template('blog/posts_list.html', posts=posts, substages=substages)
