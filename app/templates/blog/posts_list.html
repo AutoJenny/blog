@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Posts List{% endblock %}
+
+{% block styles %}
+<style>
+    .posts-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: #181c2a;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .posts-table th,
+    .posts-table td {
+        padding: 1rem 1.25rem;
+        text-align: left;
+    }
+
+    .posts-table th {
+        background: #23273a;
+        color: #a5b4fc;
+        font-weight: 700;
+        border-bottom: 2px solid #31364a;
+    }
+
+    .posts-table tr {
+        transition: background 0.2s;
+    }
+
+    .posts-table tr:nth-child(even) {
+        background: #20243a;
+    }
+
+    .posts-table tr:nth-child(odd) {
+        background: #181c2a;
+    }
+
+    .posts-table tr:hover {
+        background: #23273a;
+    }
+
+    .posts-table td {
+        color: #e0e0e0;
+        border-bottom: 1px solid #23273a;
+        vertical-align: middle;
+    }
+
+    .posts-table td.actions {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.5rem;
+        background: none;
+        color: #a5b4fc;
+        border: 1px solid transparent;
+        transition: background 0.15s, color 0.15s, border 0.15s;
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
+        font-size: 1.2rem;
+    }
+
+    .icon-btn:hover {
+        background: #23273a;
+        color: #6366f1;
+        border: 1px solid #6366f1;
+    }
+
+    .status {
+        display: inline-block;
+        padding: 0.25em 0.75em;
+        border-radius: 0.5em;
+        font-size: 0.95em;
+        font-weight: 600;
+        background: #23273a;
+        color: #a5b4fc;
+        border: 1px solid #31364a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-10">
+    <h1 class="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+        <i class="fa-solid fa-list"></i> Posts
+    </h1>
+    <div class="overflow-x-auto rounded-xl shadow-lg">
+        <table class="posts-table">
+            <thead>
+                <tr>
+                    <th>Idea Seed</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                <tr>
+                    <td>{{ post.idea_seed or '' }}</td>
+                    <td>{{ post.title or '' }}</td>
+                    <td><span class="status">{{ post.status or '—' }}</span></td>
+                    <td>{{ post.created_ago }}</td>
+                    <td>{{ post.updated_ago }}</td>
+                    <td class="actions">
+                        <a href="{{ url_for('blog.post_view', post_id=post.id, view='develop') }}" class="icon-btn"
+                            title="Edit">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <a href="{{ url_for('blog.post_view', post_id=post.id, view='preview') }}" class="icon-btn"
+                            title="Preview">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-dark-accent py-8">No posts found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

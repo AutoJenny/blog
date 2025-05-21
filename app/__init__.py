@@ -142,6 +142,10 @@ def create_app(config_class=Config):
 
     app.register_blueprint(preview_bp, url_prefix='/preview')
 
+    from app.posts import bp as posts_bp
+
+    app.register_blueprint(posts_bp, url_prefix='/posts')
+
     return app
 
 
