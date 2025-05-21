@@ -1,5 +1,6 @@
 -- Drop existing tables if they exist
 DROP TABLE IF EXISTS workflow_status CASCADE;
+DROP TABLE IF EXISTS workflow CASCADE;
 DROP TABLE IF EXISTS post_categories CASCADE;
 DROP TABLE IF EXISTS post_tags CASCADE;
 DROP TABLE IF EXISTS post_section CASCADE;
@@ -20,8 +21,8 @@ DROP TABLE IF EXISTS tag CASCADE;
 DROP TABLE IF EXISTS "user" CASCADE;
 
 -- Create enum types
-CREATE TYPE workflow_stage AS ENUM ('idea', 'research', 'outlining', 'authoring', 'images', 'metadata', 'review', 'publishing', 'updates', 'syndication');
 CREATE TYPE post_status AS ENUM ('draft', 'in_process', 'published', 'archived');
+CREATE TYPE workflow_status_enum AS ENUM ('draft', 'published', 'review', 'deleted');
 
 -- Create tables
 CREATE TABLE category (
@@ -257,28 +258,71 @@ CREATE TABLE image_prompt_example (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE workflow_status (
+-- Remove old workflow_stage ENUM
+do $$
+begin
+    if exists (select 1 from pg_type where typname = 'workflow_stage') then
+        drop type workflow_stage cascade;
+    end if;
+end$$;
+
+-- Add normalized workflow tables
+CREATE TABLE workflow_stage_entity (
     id SERIAL PRIMARY KEY,
-    post_id INTEGER REFERENCES post(id) UNIQUE NOT NULL,
-    conceptualisation VARCHAR(32) DEFAULT 'not_started',
-    authoring VARCHAR(32) DEFAULT 'not_started',
-    meta_status VARCHAR(32) DEFAULT 'not_started',
-    images VARCHAR(32) DEFAULT 'not_started',
-    validation VARCHAR(32) DEFAULT 'not_started',
-    publishing VARCHAR(32) DEFAULT 'not_started',
-    syndication VARCHAR(32) DEFAULT 'not_started',
-    log TEXT,
-    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    stage_order INTEGER NOT NULL
 );
 
--- Create indexes
+CREATE TABLE workflow_sub_stage_entity (
+    id SERIAL PRIMARY KEY,
+    stage_id INTEGER REFERENCES workflow_stage_entity(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    sub_stage_order INTEGER NOT NULL
+);
+
+CREATE TABLE post_workflow_stage (
+    id SERIAL PRIMARY KEY,
+    post_id INTEGER REFERENCES post(id) ON DELETE CASCADE,
+    stage_id INTEGER REFERENCES workflow_stage_entity(id) ON DELETE CASCADE,
+    started_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    status VARCHAR(32),
+    UNIQUE(post_id, stage_id)
+);
+
+CREATE TABLE post_workflow_sub_stage (
+    id SERIAL PRIMARY KEY,
+    post_workflow_stage_id INTEGER REFERENCES post_workflow_stage(id) ON DELETE CASCADE,
+    sub_stage_id INTEGER REFERENCES workflow_sub_stage_entity(id) ON DELETE CASCADE,
+    content TEXT,
+    status VARCHAR(32),
+    started_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    notes TEXT,
+    UNIQUE(post_workflow_stage_id, sub_stage_id)
+);
+
+-- Update workflow table to use stage_id instead of ENUM
+DROP TABLE IF EXISTS workflow CASCADE;
+CREATE TABLE workflow (
+    id SERIAL PRIMARY KEY,
+    post_id INTEGER REFERENCES post(id) UNIQUE NOT NULL,
+    stage_id INTEGER REFERENCES workflow_stage_entity(id) NOT NULL,
+    status workflow_status_enum NOT NULL DEFAULT 'draft',
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_workflow_post ON workflow(post_id);
+CREATE INDEX idx_workflow_stage_id ON workflow(stage_id);
+
 CREATE INDEX idx_post_slug ON post(slug);
 CREATE INDEX idx_post_created ON post(created_at);
 CREATE INDEX idx_post_status ON post(status);
 CREATE INDEX idx_image_path ON image(path);
 CREATE INDEX idx_llm_action_field ON llm_action(field_name);
 CREATE INDEX idx_llm_action_history_status ON llm_action_history(status);
-CREATE INDEX idx_workflow_status_post ON workflow_status(post_id);
 
 -- Add triggers for updated_at timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -332,4 +376,38 @@ CREATE TRIGGER update_image_setting_updated_at
 CREATE TRIGGER update_image_prompt_example_updated_at
     BEFORE UPDATE ON image_prompt_example
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column(); 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Add trigger for updated_at timestamps on workflow
+CREATE OR REPLACE FUNCTION update_workflow_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_workflow_updated_at
+    BEFORE UPDATE ON workflow
+    FOR EACH ROW
+    EXECUTE FUNCTION update_workflow_updated_at_column();
+
+-- Seed workflow_stage_entity
+INSERT INTO workflow_stage_entity (name, description, stage_order) VALUES
+    ('planning', 'Planning phase', 1),
+    ('authoring', 'Authoring phase', 2),
+    ('publishing', 'Publishing phase', 3)
+ON CONFLICT (name) DO NOTHING;
+
+-- Seed workflow_sub_stage_entity
+INSERT INTO workflow_sub_stage_entity (name, description, sub_stage_order, stage_id) VALUES
+    ('idea', 'Initial concept', 1, (SELECT id FROM workflow_stage_entity WHERE name = 'planning')),
+    ('research', 'Research and fact-finding', 2, (SELECT id FROM workflow_stage_entity WHERE name = 'planning')),
+    ('structure', 'Outline and structure', 3, (SELECT id FROM workflow_stage_entity WHERE name = 'planning')),
+    ('content', 'Content authoring', 1, (SELECT id FROM workflow_stage_entity WHERE name = 'authoring')),
+    ('meta_info', 'Metadata and SEO', 2, (SELECT id FROM workflow_stage_entity WHERE name = 'authoring')),
+    ('images', 'Image creation', 3, (SELECT id FROM workflow_stage_entity WHERE name = 'authoring')),
+    ('preflight', 'Pre-publication checks', 1, (SELECT id FROM workflow_stage_entity WHERE name = 'publishing')),
+    ('launch', 'Publishing', 2, (SELECT id FROM workflow_stage_entity WHERE name = 'publishing')),
+    ('syndication', 'Syndication and distribution', 3, (SELECT id FROM workflow_stage_entity WHERE name = 'publishing'))
+ON CONFLICT (name, stage_id) DO NOTHING; 

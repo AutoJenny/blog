@@ -13,14 +13,22 @@ from pathlib import Path
 from app.database.__init__ import bp
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
+import logging
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 def get_db_conn():
-    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    # Always reload assistant_config.env and ignore pre-existing env
+    config = dotenv_values(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
+    db_url = config.get('DATABASE_URL')
+    if not db_url or db_url.strip() == '':
+        print("[ERROR] DATABASE_URL is not set or is empty! Please check your assistant_config.env or environment variables.")
+        raise RuntimeError("DATABASE_URL is not set or is empty! Please check your assistant_config.env or environment variables.")
+    print(f"[DEBUG] DATABASE_URL used: {db_url}")
+    return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
 
 @bp.route("/")
 def index():
@@ -33,7 +41,7 @@ def index():
                     SELECT 
                         (SELECT COUNT(*) FROM post) as post_count,
                         (SELECT COUNT(*) FROM image) as image_count,
-                        (SELECT COUNT(*) FROM workflow_status) as workflow_count,
+                        (SELECT COUNT(*) FROM workflow) as workflow_count,
                         (SELECT COUNT(*) FROM llm_interaction) as llm_count
                 """)
                 stats = dict(cur.fetchone())
@@ -146,37 +154,30 @@ def list_tables():
                     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
                 """)
                 table_names = [row['table_name'] for row in cur.fetchall()]
+                print(f"[DEBUG] table_names: {table_names}")
                 table_data = {}
                 for table in table_names:
                     # Get columns
                     cur.execute(f"""
                         SELECT column_name, data_type
                         FROM information_schema.columns
-                        WHERE table_name = %s AND table_schema = 'public'
+                        WHERE table_name = %s
+                        ORDER BY ordinal_position
                     """, (table,))
-                    columns = [
-                        {"name": col["column_name"], "type": col["data_type"]}
-                        for col in cur.fetchall()
-                    ]
+                    columns = [{'name': r['column_name'], 'type': r['data_type']} for r in cur.fetchall()]
                     # Get up to 20 rows
-                    try:
-                        cur.execute(f'SELECT * FROM "{table}" LIMIT 20')
-                        row_dicts = cur.fetchall()
-                    except Exception:
-                        row_dicts = []
-                    table_data[table] = {
-                        "name": table,
-                        "columns": columns,
-                        "rows": row_dicts
-                    }
+                    cur.execute(f'SELECT * FROM {table} LIMIT 20;')
+                    rows = cur.fetchall()
+                    table_data[table] = {'name': table, 'columns': columns, 'rows': rows}
+                print(f"[DEBUG] table_data keys: {list(table_data.keys())}")
                 # Flat list for compatibility
                 tables = list(table_data.values())
                 # Grouping logic
                 group_defs = [
                     ("Image Related", ["image", "image_format", "image_setting", "image_style", "image_prompt_example"]),
                     ("LLM Related", ["llm_action", "llm_action_history", "llm_config", "llm_interaction", "llm_prompt"]),
-                    ("Blog/Post Related", ["post", "post_section", "post_development", "category", "tag", "post_tags", "post_categories"]),
-                    ("User/Workflow", ["user", "workflow_status"]),
+                    ("Blog/Post Related", ["post", "post_section", "post_development", "category", "tag", "post_tags", "post_categories", "post_workflow_stage", "post_workflow_sub_stage"]),
+                    ("User/Workflow", ["user", "workflow", "workflow_stage_entity", "workflow_sub_stage_entity"]),
                 ]
                 grouped_tables = set()
                 for group_name, table_list in group_defs:
@@ -191,6 +192,7 @@ def list_tables():
                 # Sort groups alphabetically by group name
                 groups.sort(key=lambda g: g["group"].lower())
     except Exception as e:
+        print(f"[DEBUG] Exception in /db/tables: {e}")
         flash(f"Error fetching tables: {str(e)}", "error")
         tables = []
         groups = []
@@ -199,3 +201,24 @@ def list_tables():
         return {"tables": tables, "groups": groups}
     else:
         return {"tables": tables}
+
+@bp.route("/debug")
+def db_debug():
+    debug_info = {}
+    debug_info['DATABASE_URL'] = DATABASE_URL
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT table_name FROM information_schema.tables
+                    WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+                """)
+                table_names = [row['table_name'] for row in cur.fetchall()]
+                debug_info['table_names'] = table_names
+    except Exception as e:
+        debug_info['error'] = str(e)
+    return debug_info
+
+@bp.route("/raw")
+def db_raw():
+    return render_template("db/raw.html")

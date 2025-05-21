@@ -16,25 +16,6 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 def get_db_conn():
     return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
-@bp.route("/")
-def index():
-    # Only show published or in-process posts (not deleted/draft)
-    posts = []
-    try:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT * FROM post
-                    WHERE (published = TRUE OR status = 'in_process')
-                    AND deleted = FALSE
-                    ORDER BY created_at DESC
-                """)
-                posts = cur.fetchall()
-    except Exception as e:
-        posts = []
-    return render_template("blog/index.html", posts=posts)
-
-
 @bp.route("/new", methods=["POST"])
 def new_post():
     try:

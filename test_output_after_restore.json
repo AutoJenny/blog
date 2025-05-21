@@ -4,14 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Blog CMS{% endblock %}</title>
+    <title>DB Raw Data</title>
     <!-- Tailwind CSS -->
-    <link href="{{ url_for('static', filename='css/dist/main.css') }}" rel="stylesheet">
-    <!-- FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        integrity="sha512-1ycn6IcaQQ40/MKB4Imkb9h6Y5l9OQ5l9Q5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ5l9OQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    {% block styles %}{% endblock %}
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    
 </head>
 
 <body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
@@ -21,16 +17,13 @@
             <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
                 <div class="flex items-center space-x-8 flex-1 min-w-0">
                     <!-- Home Icon -->
-                    <a href="{{ url_for('main.index') }}" class="text-white hover:text-yellow-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                        </svg>
+                    <a href="/" class="text-white hover:text-yellow-300 flex items-center">
+                        <img src="/static/images/logo/logo.png" alt="Home Logo"
+                            class="h-10 w-auto" style="max-height:40px;" />
                     </a>
                     <!-- Navigation Links -->
                     <div class="flex space-x-4">
-                        <a href="{{ url_for('main.index') }}"
+                        <a href="/"
                             class="text-white hover:text-yellow-300 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
                         <div class="relative group">
                             <button
@@ -38,10 +31,11 @@
                                 ▾</button>
                             <div
                                 class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <a href="/" class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Posts</a>
-                                <a href="{{ url_for('preview.listing') }}"
+                                <a href="/blog/"
+                                    class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Posts</a>
+                                <a href="/preview/"
                                     class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Preview</a>
-                                <a href="{{ url_for('db.index') }}"
+                                <a href="/db/"
                                     class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Database</a>
                             </div>
                         </div>
@@ -52,7 +46,7 @@
                             <div
                                 class="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                 <a href="/llm/" class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">LLMs</a>
-                                <a href="{{ url_for('llm.actions') }}"
+                                <a href="/llm/actions"
                                     class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Actions</a>
                                 <a href="/llm/images"
                                     class="block px-4 py-2 text-gray-800 hover:bg-indigo-100">Images</a>
@@ -72,34 +66,39 @@
                         </div>
                     </div>
                 </div>
-                {% if request.endpoint == 'main.index' %}
-                <div class="flex-shrink-0 flex justify-end ml-4">
-                    <button class="admin-button bg-yellow-400 text-black hover:bg-yellow-500" id="newPostBtn">
-                        <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        New Post
-                    </button>
-                </div>
-                {% endif %}
+                
             </div>
         </nav>
     </header>
 
     <!-- Main Content -->
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {% block content %}{% endblock %}
+        
+<h1>DB Raw Data Debug</h1>
+<pre id="db-raw-data">Loading...</pre>
+<script type="module">
+    (async function () {
+        const pre = document.getElementById('db-raw-data');
+        try {
+            const res = await fetch('/db/tables');
+            const data = await res.json();
+            pre.textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+            pre.textContent = 'Error: ' + e;
+        }
+    })();
+</script>
+
     </main>
 
     <!-- Footer -->
     <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p class="text-center text-sm text-dark-text">&copy; {{ year }} Blog CMS. All rights reserved.</p>
+            <p class="text-center text-sm text-dark-text">&copy; 2025 Blog CMS. All rights reserved.</p>
         </div>
     </footer>
 
-    {% block scripts %}
+    
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var newPostBtn = document.getElementById('newPostBtn');
@@ -108,7 +107,7 @@
                     const basicIdea = prompt('Enter your basic idea for the post:');
                     if (!basicIdea) return;
                     try {
-                        const response = await fetch("{{ url_for('blog.new_post') }}", {
+                        const response = await fetch("/blog/new", {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -129,7 +128,7 @@
             }
         });
     </script>
-    {% endblock %}
+    
 </body>
 
 </html>

@@ -1,220 +1,179 @@
 {% extends "base.html" %}
 
-{% block title %}Blog{% endblock %}
+{% block title %}Blog Home{% endblock %}
 
 {% block styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
 <style>
-    /* Extra dark theme fixes */
-    .blog-card,
-    .post-card {
-        background-color: var(--admin-bg-card, #23272F) !important;
-        color: var(--admin-text, #E0E0E0) !important;
+    .gradient-header {
+        background: linear-gradient(90deg, #f3f4f6 0%, #e0e7ff 100%);
     }
 
-    .blog-card__title {
-        color: var(--admin-text, #E0E0E0) !important;
-    }
-
-    .admin-button,
-    .admin-button-secondary {
-        background-color: var(--admin-primary, #1B4B73) !important;
-        color: #fff !important;
-        border: none;
-    }
-
-    .admin-button-secondary {
-        background-color: var(--admin-accent, #6366F1) !important;
-        color: #fff !important;
-    }
-
-    .admin-button:disabled,
-    .admin-button-secondary:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-
-    .badge-published {
-        background: #166534 !important;
-        color: #bbf7d0 !important;
-    }
-
-    .badge-draft {
-        background: #374151 !important;
-        color: #d1d5db !important;
-    }
-
-    .badge-deleted {
-        background: #7f1d1d !important;
-        color: #fecaca !important;
-    }
-
-    .admin-delete-btn {
-        background: #ef4444 !important;
-        color: #fff !important;
+    .icon-circle {
+        background: #eef2ff;
         border-radius: 9999px;
-        padding: 0.5rem;
-        width: 2.5rem;
-        height: 2.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background 0.2s;
-        margin-left: 0.25rem;
-    }
-
-    .admin-delete-btn:hover {
-        background: #b91c1c !important;
-    }
-
-    .admin-delete-btn svg {
-        width: 1.25rem;
-        height: 1.25rem;
-        stroke: #fff;
+        width: 3rem;
+        height: 3rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto py-10">
-    <!-- Header image and blog title -->
-    <header class="site-header mb-8">
-        <a href="/" aria-label="CLAN.com Blog Home">
-            <img src="/static/images/site/header.jpg" alt="CLAN.com Blog Header" class="site-header-image mb-4">
-        </a>
-        <h1 class="text-4xl font-bold text-center mb-2">CLAN.com Blog</h1>
-    </header>
-    <!-- Blog post list -->
-    <ul class="post-list">
-        {% for post in posts %}
-        {% if post.published or post.status == 'in_process' %}
-        <li class="post-list-item mb-10 pb-6 border-b border-gray-200">
-            <h2 class="text-2xl font-semibold mb-1">
-                <a href="{{ url_for('blog.post_view', post_id=post.id) }}" class="hover:underline">{{ post.title }}</a>
-            </h2>
-            <p class="post-meta text-sm text-gray-600 mb-2">
-                <span class="post-meta__date">
-                    <time datetime="{{ post.created_at }}">{{ post.created_at[:10] if post.created_at else '' }}</time>
-                </span>
-                {% if post.author %}
-                <span class="post-meta__separator"> | </span>
-                <span class="post-meta__author">By {{ post.author }}</span>
-                {% endif %}
-            </p>
-            <div class="post-summary text-base text-gray-700 mb-2">
-                {{ post.summary|default('')|safe }}
+<div class="min-h-screen bg-gray-50 text-gray-900">
+    <div class="max-w-7xl mx-auto px-4 py-10">
+        <!-- Header -->
+        <header
+            class="gradient-header rounded-2xl shadow-lg p-8 mb-12 flex flex-col md:flex-row md:items-center md:justify-between">
+            <div class="flex flex-col gap-2">
+                <h1 class="text-4xl font-extrabold text-indigo-900 flex items-center gap-3">
+                    <span class="icon-circle"><i
+                            class="fa-solid fa-feather-pointed text-indigo-600 text-2xl"></i></span>
+                    CLAN.com Blog
+                </h1>
+                <p class="text-lg text-indigo-700">Content creation, workflow, and tools</p>
             </div>
-        </li>
-        {% endif %}
-        {% else %}
-        <li class="text-gray-400 text-center text-lg">No posts yet</li>
-        {% endfor %}
-    </ul>
+            <div class="flex flex-col md:flex-row md:items-center gap-4 mt-6 md:mt-0">
+                <input type="text" placeholder="Search posts, actions, images..."
+                    class="rounded-lg border border-indigo-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow" />
+                <button id="floatingNewPostBtn"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2 rounded-lg shadow flex items-center gap-2 transition">
+                    <i class="fa-solid fa-plus"></i> New Post
+                </button>
+            </div>
+        </header>
+
+        <!-- Workflow -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-indigo-700 mb-6 flex items-center gap-2"><i
+                    class="fa-solid fa-sitemap"></i> Workflow</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="/workflow/planning/" class="block group">
+                    <div
+                        class="bg-white border border-indigo-100 rounded-xl p-6 shadow group-hover:shadow-lg transition flex flex-col items-center gap-2">
+                        <span class="icon-circle"><i class="fa-solid fa-lightbulb text-yellow-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-indigo-900">Planning</span>
+                        <p class="text-indigo-700 text-sm text-center">Outline your post structure and key points</p>
+                    </div>
+                </a>
+                <a href="/workflow/authoring/" class="block group">
+                    <div
+                        class="bg-white border border-indigo-100 rounded-xl p-6 shadow group-hover:shadow-lg transition flex flex-col items-center gap-2">
+                        <span class="icon-circle"><i class="fa-solid fa-pen-nib text-green-500 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-indigo-900">Authoring</span>
+                        <p class="text-indigo-700 text-sm text-center">Write and enhance your content with AI</p>
+                    </div>
+                </a>
+                <a href="/workflow/publishing/" class="block group">
+                    <div
+                        class="bg-white border border-indigo-100 rounded-xl p-6 shadow group-hover:shadow-lg transition flex flex-col items-center gap-2">
+                        <span class="icon-circle"><i class="fa-solid fa-paper-plane text-blue-500 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-indigo-900">Publishing</span>
+                        <p class="text-indigo-700 text-sm text-center">Prepare and publish your post</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Technical Modules -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-indigo-700 mb-6 flex items-center gap-2"><i
+                    class="fa-solid fa-cubes"></i> Technical Modules</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="/db/" class="block group">
+                    <div
+                        class="bg-white border border-indigo-100 rounded-xl p-6 shadow group-hover:shadow-lg transition flex flex-col items-center gap-2">
+                        <span class="icon-circle"><i class="fa-solid fa-database text-purple-500 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-indigo-900">Database</span>
+                        <p class="text-indigo-700 text-sm text-center">Manage schemas, data, and migrations</p>
+                    </div>
+                </a>
+                <a href="/llm/" class="block group">
+                    <div
+                        class="bg-white border border-indigo-100 rounded-xl p-6 shadow group-hover:shadow-lg transition flex flex-col items-center gap-2">
+                        <span class="icon-circle"><i class="fa-solid fa-brain text-pink-500 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-indigo-900">AI</span>
+                        <p class="text-indigo-700 text-sm text-center">Configure models, prompts, and assistance</p>
+                    </div>
+                </a>
+                <a href="/llm/images/" class="block group">
+                    <div
+                        class="bg-white border border-indigo-100 rounded-xl p-6 shadow group-hover:shadow-lg transition flex flex-col items-center gap-2">
+                        <span class="icon-circle"><i class="fa-solid fa-image text-indigo-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-indigo-900">Images</span>
+                        <p class="text-indigo-700 text-sm text-center">Generate and manage blog images</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Documentation -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-indigo-700 mb-6 flex items-center gap-2"><i class="fa-solid fa-book"></i>
+                Documentation</h2>
+            <div
+                class="bg-white border border-indigo-100 rounded-xl p-8 flex flex-col md:flex-row items-center justify-between shadow group-hover:shadow-lg transition">
+                <div class="flex items-center gap-3 mb-4 md:mb-0">
+                    <span class="icon-circle"><i class="fa-solid fa-book-open text-indigo-600 text-xl"></i></span>
+                    <span class="text-lg font-semibold text-indigo-900">Project Documentation</span>
+                </div>
+                <a href="/docs/"
+                    class="bg-indigo-100 hover:bg-indigo-200 text-indigo-900 font-semibold px-5 py-2 rounded-lg transition">View
+                    Docs</a>
+            </div>
+        </section>
+
+        <!-- Recent Posts -->
+        <section>
+            <h2 class="text-2xl font-bold text-indigo-700 mb-6 flex items-center gap-2"><i
+                    class="fa-solid fa-clock"></i> Recent Posts</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {% for post in posts[:3] %}
+                <a href="{{ url_for('blog.post_view', post_id=post.id) }}" class="block group">
+                    <div
+                        class="bg-white border border-indigo-100 rounded-xl p-6 shadow group-hover:shadow-lg transition flex flex-col gap-2 h-full">
+                        <h3 class="text-lg font-bold mb-1 text-indigo-900 flex items-center gap-2">
+                            <i class="fa-solid fa-file-lines text-indigo-400"></i> {{ post.title }}
+                        </h3>
+                        <p class="text-indigo-700 text-sm mb-2">{{ post.summary|default('No summary')|safe }}</p>
+                        <span class="text-xs text-gray-500">{{ post.created_at[:10] if post.created_at else '' }}</span>
+                    </div>
+                </a>
+                {% else %}
+                <div class="text-indigo-400 text-center text-lg col-span-3">No posts yet</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-    // Modern toggle switch logic
-    const showDeletedToggle = document.getElementById('showDeletedToggle');
-    const toggleSwitch = document.getElementById('toggleSwitch');
-    const postGrid = document.getElementById('postGrid');
-    function updateSwitch() {
-        if (showDeletedToggle.checked) {
-            toggleSwitch.classList.add('bg-dark-accent');
-            toggleSwitch.querySelector('.dot').classList.add('translate-x-4');
-        } else {
-            toggleSwitch.classList.remove('bg-dark-accent');
-            toggleSwitch.querySelector('.dot').classList.remove('translate-x-4');
-        }
-    }
-    function filterPosts() {
-        const showDeleted = showDeletedToggle.checked;
-        postGrid.querySelectorAll('.post-row').forEach(row => {
-            if (row.dataset.deleted === 'True' && !showDeleted) {
-                row.style.display = 'none';
-            } else {
-                row.style.display = '';
-            }
-        });
-    }
-    showDeletedToggle.addEventListener('change', () => {
-        updateSwitch();
-        filterPosts();
-    });
-    window.addEventListener('DOMContentLoaded', () => {
-        updateSwitch();
-        filterPosts();
-        // Format updated date as 'ago'
-        document.querySelectorAll('.updated-ago').forEach(function (el) {
-            const iso = el.dataset.updated;
-            if (!iso) return;
-            const date = new Date(iso);
-            const now = new Date();
-            const diff = Math.floor((now - date) / 1000);
-            let str = '';
-            if (diff < 60) str = diff + ' seconds ago';
-            else if (diff < 3600) str = Math.floor(diff / 60) + ' minutes ago';
-            else if (diff < 86400) str = Math.floor(diff / 3600) + ' hours ago';
-            else if (diff < 2592000) str = Math.floor(diff / 86400) + ' days ago';
-            else if (diff < 31536000) str = Math.floor(diff / 2592000) + ' months ago';
-            else str = Math.floor(diff / 31536000) + ' years ago';
-            el.textContent = str;
-        });
-    });
-    // Delete button logic
-    postGrid.addEventListener('click', async function (e) {
-        if (e.target.closest('.delete-btn')) {
-            const btn = e.target.closest('.delete-btn');
-            const slug = btn.dataset.slug;
-            if (!confirm('Are you sure you want to delete this post?')) return;
+    // Floating new post button logic
+    const newPostBtn = document.getElementById('floatingNewPostBtn');
+    if (newPostBtn) {
+        newPostBtn.addEventListener('click', async () => {
+            const basicIdea = prompt('Enter your basic idea for the post:');
+            if (!basicIdea) return;
             try {
-                const response = await fetch(`/blog/${slug}`, { method: 'DELETE' });
-                if (response.ok) {
-                    // Mark as deleted in UI
-                    const row = btn.closest('.post-row');
-                    row.dataset.deleted = 'True';
-                    row.querySelectorAll('.badge-published, .badge-draft').forEach(el => el.className = 'badge-deleted px-2 py-1 rounded text-xs font-semibold ml-1');
-                    let deletedTag = row.querySelector('.badge-deleted');
-                    if (!deletedTag) {
-                        const tag = document.createElement('span');
-                        tag.className = 'badge-deleted px-2 py-1 rounded text-xs font-semibold ml-1';
-                        tag.textContent = 'Deleted';
-                        btn.parentNode.insertBefore(tag, btn.nextSibling);
-                    }
-                    filterPosts();
+                const response = await fetch('/blog/new', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ basic_idea: basicIdea })
+                });
+                const data = await response.json();
+                if (data && data.slug) {
+                    window.location.href = `/blog/${data.id}/develop`;
                 } else {
-                    alert('Failed to delete post');
+                    alert('Failed to create post');
                 }
             } catch (err) {
-                alert('Error deleting post');
+                alert('Error creating post');
             }
-        }
-    });
-    // Floating new post button logic
-    document.getElementById('floatingNewPostBtn').addEventListener('click', async () => {
-        const basicIdea = prompt('Enter your basic idea for the post:');
-        if (!basicIdea) return;
-        try {
-            const response = await fetch("{{ url_for('blog.new_post') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ basic_idea: basicIdea })
-            });
-            const data = await response.json();
-            if (response.ok) {
-                window.location.href = `/blog/develop/${data.id}`;
-            } else {
-                alert(data.error || 'Failed to create post');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to create post');
-        }
-    });
+        });
+    }
 </script>
 {% endblock %}
