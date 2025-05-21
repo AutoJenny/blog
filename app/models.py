@@ -50,7 +50,6 @@ class Post(db.Model):
     content = db.Column(db.Text)
     summary = db.Column(db.Text)
     published = db.Column(db.Boolean, default=False)
-    deleted = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow

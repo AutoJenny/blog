@@ -15,7 +15,6 @@ class Post(db.Model):
     concept = db.Column(db.Text)
     basic_idea = db.Column(db.Text)
     published = db.Column(db.Boolean, default=False)
-    deleted = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     published_at = db.Column(db.DateTime)

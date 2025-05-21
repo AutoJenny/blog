@@ -19,7 +19,6 @@ The `Post` model represents a blog post in the system. It serves as the main con
 | published_at | DateTime | Publication timestamp | |
 | author_id | Integer | Reference to User | FOREIGN KEY |
 | header_image_id | Integer | Reference to Image | FOREIGN KEY |
-| is_deleted | Boolean | Soft delete flag | NOT NULL, DEFAULT false |
 
 ### Metadata Fields
 | Field | Type | Description |

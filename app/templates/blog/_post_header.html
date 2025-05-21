@@ -9,9 +9,9 @@
                 {% else %}
                 <span class="badge-draft px-2 py-1 rounded text-xs font-semibold">Draft</span>
                 {% endif %}
-                {% if post.deleted %}
+                {%- if post.status == 'deleted' %}
                 <span class="badge-deleted px-2 py-1 rounded text-xs font-semibold ml-1">Deleted</span>
-                {% endif %}
+                {%- endif %}
             </div>
         </div>
         <div class="flex flex-col items-start md:items-end gap-1">
