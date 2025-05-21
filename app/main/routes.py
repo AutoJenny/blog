@@ -97,9 +97,12 @@ def workflow_planning():
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM workflow_stage_entity ORDER BY stage_order ASC;")
             stages = cur.fetchall()
+            cur.execute("SELECT * FROM workflow_sub_stage_entity ORDER BY stage_id, sub_stage_order ASC;")
+            substages = cur.fetchall()
             cur.execute("SELECT * FROM workflow_sub_stage_entity WHERE stage_id = (SELECT id FROM workflow_stage_entity WHERE name = 'planning') ORDER BY sub_stage_order ASC;")
             sub_stages = cur.fetchall()
-    return render_template('workflow/planning/index.html', stages=stages, sub_stages=sub_stages, current_stage='planning')
+    current_substage = sub_stages[0]['id'] if sub_stages else None
+    return render_template('workflow/planning/index.html', stages=stages, substages=substages, sub_stages=sub_stages, current_stage='planning', current_substage=current_substage)
 
 @bp.route('/workflow/authoring/')
 def workflow_authoring():
@@ -107,9 +110,12 @@ def workflow_authoring():
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM workflow_stage_entity ORDER BY stage_order ASC;")
             stages = cur.fetchall()
+            cur.execute("SELECT * FROM workflow_sub_stage_entity ORDER BY stage_id, sub_stage_order ASC;")
+            substages = cur.fetchall()
             cur.execute("SELECT * FROM workflow_sub_stage_entity WHERE stage_id = (SELECT id FROM workflow_stage_entity WHERE name = 'authoring') ORDER BY sub_stage_order ASC;")
             sub_stages = cur.fetchall()
-    return render_template('workflow/authoring/index.html', stages=stages, sub_stages=sub_stages, current_stage='authoring')
+    current_substage = sub_stages[0]['id'] if sub_stages else None
+    return render_template('workflow/authoring/index.html', stages=stages, substages=substages, sub_stages=sub_stages, current_stage='authoring', current_substage=current_substage)
 
 @bp.route('/workflow/publishing/')
 def workflow_publishing():
@@ -117,6 +123,9 @@ def workflow_publishing():
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM workflow_stage_entity ORDER BY stage_order ASC;")
             stages = cur.fetchall()
+            cur.execute("SELECT * FROM workflow_sub_stage_entity ORDER BY stage_id, sub_stage_order ASC;")
+            substages = cur.fetchall()
             cur.execute("SELECT * FROM workflow_sub_stage_entity WHERE stage_id = (SELECT id FROM workflow_stage_entity WHERE name = 'publishing') ORDER BY sub_stage_order ASC;")
             sub_stages = cur.fetchall()
-    return render_template('workflow/publishing/index.html', stages=stages, sub_stages=sub_stages, current_stage='publishing')
+    current_substage = sub_stages[0]['id'] if sub_stages else None
+    return render_template('workflow/publishing/index.html', stages=stages, substages=substages, sub_stages=sub_stages, current_stage='publishing', current_substage=current_substage)

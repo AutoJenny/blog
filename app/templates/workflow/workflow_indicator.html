@@ -1,12 +1,31 @@
-{% macro render(stages, current_stage) %}
-<div class="flex items-center justify-center mb-8">
-    {% for stage in stages %}
-    <a href="/workflow/{{ stage.name }}/"
-        class="px-6 py-2 rounded-t-lg font-bold
-              {% if stage.name == current_stage %}bg-purple-600 text-white{% else %}bg-dark-bg text-purple-300 hover:bg-purple-800{% endif %}
-              border-b-4 {% if stage.name == current_stage %}border-yellow-400{% else %}border-transparent{% endif %} transition-colors">
-        {{ stage.name|capitalize }}
-    </a>
-    {% endfor %}
+{% macro stepper(substages, stages, current_substage) %}
+<div class="w-full flex flex-col items-center mb-8">
+    <nav aria-label="Workflow" class="w-full">
+        <ol class="flex flex-row flex-wrap justify-center w-full">
+            {% set stage_colors = ['purple', 'blue', 'yellow'] %}
+            {% set stage_idx = 0 %}
+            {% for stage in stages %}
+            {% set color = stage_colors[loop.index0 % stage_colors|length] %}
+            {% set stage_subs = substages|selectattr('stage_id', 'equalto', stage.id)|list %}
+            {% for sub in stage_subs %}
+            <li class="flex-1 flex flex-col items-center group">
+                <a href="#" class="flex items-center px-4 py-2 rounded-full font-semibold transition-colors
+              {% if sub.id == current_substage %}
+                bg-{{ color }}-600 text-white shadow-lg
+              {% else %}
+                bg-dark-bg text-{{ color }}-300 hover:bg-{{ color }}-700
+              {% endif %}
+              border-2 border-{{ color }}-500 mb-1">
+                    {{ sub.name|capitalize }}
+                </a>
+                <span class="text-xs text-{{ color }}-400 group-hover:text-white">{{ stage.name|capitalize }}</span>
+            </li>
+            {% if not loop.last or not stage_subs|last == substages|last %}
+            <span class="w-6 h-1 bg-{{ color }}-500 mx-1 my-3 rounded"></span>
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+        </ol>
+    </nav>
 </div>
 {% endmacro %}
