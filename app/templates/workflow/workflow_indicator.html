@@ -1,0 +1,12 @@
+{% macro render(stages, current_stage) %}
+<div class="flex items-center justify-center mb-8">
+    {% for stage in stages %}
+    <a href="/workflow/{{ stage.name }}/"
+        class="px-6 py-2 rounded-t-lg font-bold
+              {% if stage.name == current_stage %}bg-purple-600 text-white{% else %}bg-dark-bg text-purple-300 hover:bg-purple-800{% endif %}
+              border-b-4 {% if stage.name == current_stage %}border-yellow-400{% else %}border-transparent{% endif %} transition-colors">
+        {{ stage.name|capitalize }}
+    </a>
+    {% endfor %}
+</div>
+{% endmacro %}
