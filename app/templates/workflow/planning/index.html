@@ -5,29 +5,8 @@
 
 {% block content %}
 <div class="container mx-auto px-6 py-8">
-    <!-- Stepper -->
-    <ol class="flex flex-row justify-center items-center mb-8">
-        {% for sub in sub_stages %}
-        <li class="flex flex-col items-center mx-2">
-            <form method="post">
-                <input type="hidden" name="goto" value="{{ loop.index0 }}">
-                <button type="submit" class="focus:outline-none">
-                    <div
-                        class="flex items-center justify-center w-12 h-12 rounded-full bg-{{ sub.color }}-600 text-white text-2xl shadow-lg {% if loop.index0 == current_idx %}ring-4 ring-{{ sub.color }}-300{% endif %}">
-                        <i class="fa {{ sub.icon }}"></i>
-                        {% if loop.index0 < current_idx %} <i
-                            class="fa fa-check absolute text-green-300 text-lg -right-2 -top-2"></i>
-                            {% endif %}
-                    </div>
-                </button>
-            </form>
-            <span class="mt-2 text-sm font-semibold text-{{ sub.color }}-700">{{ sub.label }}</span>
-            {% if not loop.last %}
-            <span class="w-8 h-1 bg-{{ sub.color }}-300 mx-1 my-3 rounded"></span>
-            {% endif %}
-        </li>
-        {% endfor %}
-    </ol>
+    <!-- New Process Indicator -->
+    {{ indicator.process_indicator(sub_stages, stages, current_substage.id) }}
     <!-- Current Sub-stage Card -->
     {% if current_substage %}
     <div
