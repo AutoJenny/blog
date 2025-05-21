@@ -9,37 +9,20 @@ import redis
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 def get_db_conn():
-    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    config = dotenv_values(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
+    db_url = config.get('DATABASE_URL')
+    return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
 
 @bp.route("/")
 def index():
-    """Home page with direct access to admin features."""
-    posts = []
-    categories = []
-    try:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT * FROM post ORDER BY created_at DESC")
-                posts = cur.fetchall()
-                cur.execute("SELECT * FROM category ORDER BY name ASC")
-                categories = cur.fetchall()
-    except Exception as e:
-        posts = []
-        categories = []
-    return render_template(
-        "main/index.html",
-        title="Home",
-        posts=posts,
-        categories=categories,
-        show_admin=True,  # Always show admin features
-    )
+    return render_template("main/root_link.html")
 
 
 @bp.route("/health")
@@ -107,3 +90,33 @@ def dashboard():
 @bp.route('/modern')
 def modern_index():
     return render_template('main/modern_index.html')
+
+@bp.route('/workflow/planning/')
+def workflow_planning():
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM workflow_stage_entity ORDER BY stage_order ASC;")
+            stages = cur.fetchall()
+            cur.execute("SELECT * FROM workflow_sub_stage_entity WHERE stage_id = (SELECT id FROM workflow_stage_entity WHERE name = 'planning') ORDER BY sub_stage_order ASC;")
+            sub_stages = cur.fetchall()
+    return render_template('workflow/planning/index.html', stages=stages, sub_stages=sub_stages, current_stage='planning')
+
+@bp.route('/workflow/authoring/')
+def workflow_authoring():
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM workflow_stage_entity ORDER BY stage_order ASC;")
+            stages = cur.fetchall()
+            cur.execute("SELECT * FROM workflow_sub_stage_entity WHERE stage_id = (SELECT id FROM workflow_stage_entity WHERE name = 'authoring') ORDER BY sub_stage_order ASC;")
+            sub_stages = cur.fetchall()
+    return render_template('workflow/authoring/index.html', stages=stages, sub_stages=sub_stages, current_stage='authoring')
+
+@bp.route('/workflow/publishing/')
+def workflow_publishing():
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM workflow_stage_entity ORDER BY stage_order ASC;")
+            stages = cur.fetchall()
+            cur.execute("SELECT * FROM workflow_sub_stage_entity WHERE stage_id = (SELECT id FROM workflow_stage_entity WHERE name = 'publishing') ORDER BY sub_stage_order ASC;")
+            sub_stages = cur.fetchall()
+    return render_template('workflow/publishing/index.html', stages=stages, sub_stages=sub_stages, current_stage='publishing')
