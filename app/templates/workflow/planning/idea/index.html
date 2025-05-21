@@ -19,7 +19,8 @@
             <h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2">
                 <i class="fa-solid fa-align-left text-indigo-400"></i> Summary
             </h2>
-            <div class="text-gray-200 text-base whitespace-pre-line">{{ post.summary or 'No summary yet.' }}</div>
+            <div class="text-gray-200 text-base whitespace-pre-line">{{ post.summary|safe if post.summary else 'No
+                summary yet.' }}</div>
         </div>
     </div>
     {% endif %}
