@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container mx-auto px-6 py-8">
     <!-- New Process Indicator -->
-    {{ indicator.process_indicator(sub_stages, stages, current_substage.id) }}
+    {{ indicator.process_indicator(substages, stages, current_substage_id) }}
     <!-- Current Sub-stage Card -->
     {% if current_substage %}
     <div

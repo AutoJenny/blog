@@ -107,7 +107,28 @@ def modern_index():
 
 @bp.route('/workflow/planning/', methods=['GET', 'POST'])
 def workflow_planning():
-    # Canonical sub-stages for Planning
+    # Define the three main stages
+    stages = [
+        {'id': 1, 'name': 'planning', 'label': 'Planning'},
+        {'id': 2, 'name': 'authoring', 'label': 'Authoring'},
+        {'id': 3, 'name': 'publishing', 'label': 'Publishing'},
+    ]
+    # Define all nine substages, grouped by stage
+    substages = [
+        # Planning
+        {'id': 1, 'stage_id': 1, 'name': 'idea', 'label': 'Idea', 'icon': 'fa-lightbulb', 'color': 'purple', 'url': '/workflow/planning/?step=0'},
+        {'id': 2, 'stage_id': 1, 'name': 'research', 'label': 'Research', 'icon': 'fa-search', 'color': 'blue', 'url': '/workflow/planning/?step=1'},
+        {'id': 3, 'stage_id': 1, 'name': 'structure', 'label': 'Structure', 'icon': 'fa-bars', 'color': 'yellow', 'url': '/workflow/planning/?step=2'},
+        # Authoring
+        {'id': 4, 'stage_id': 2, 'name': 'content', 'label': 'Content', 'icon': 'fa-pen-nib', 'color': 'indigo', 'url': '/workflow/authoring/?step=0'},
+        {'id': 5, 'stage_id': 2, 'name': 'meta_info', 'label': 'Meta Info', 'icon': 'fa-info-circle', 'color': 'cyan', 'url': '/workflow/authoring/?step=1'},
+        {'id': 6, 'stage_id': 2, 'name': 'images', 'label': 'Images', 'icon': 'fa-image', 'color': 'pink', 'url': '/workflow/authoring/?step=2'},
+        # Publishing
+        {'id': 7, 'stage_id': 3, 'name': 'preflight', 'label': 'Preflight', 'icon': 'fa-plane-departure', 'color': 'green', 'url': '/workflow/publishing/?step=0'},
+        {'id': 8, 'stage_id': 3, 'name': 'launch', 'label': 'Launch', 'icon': 'fa-rocket', 'color': 'orange', 'url': '/workflow/publishing/?step=1'},
+        {'id': 9, 'stage_id': 3, 'name': 'syndication', 'label': 'Syndication', 'icon': 'fa-share-nodes', 'color': 'teal', 'url': '/workflow/publishing/?step=2'},
+    ]
+    # Canonical sub-stages for Planning (for the card content)
     sub_stages = [
         {
             'name': 'idea',
@@ -137,7 +158,6 @@ def workflow_planning():
             'required': True,
         },
     ]
-    # Navigation logic
     current_idx = int(request.args.get('step', 0))
     if request.method == 'POST':
         if 'next' in request.form and current_idx < len(sub_stages) - 1:
@@ -153,7 +173,9 @@ def workflow_planning():
                 pass
         return redirect(url_for('main.workflow_planning', step=current_idx))
     current_substage = sub_stages[current_idx] if sub_stages else None
-    return render_template('workflow/planning/index.html', sub_stages=sub_stages, current_substage=current_substage, current_idx=current_idx, total=len(sub_stages))
+    # Find the global substage id for the current planning substage
+    current_substage_id = next((s['id'] for s in substages if s['name'] == current_substage['name']), 1) if current_substage else 1
+    return render_template('workflow/planning/index.html', sub_stages=sub_stages, current_substage=current_substage, current_idx=current_idx, total=len(sub_stages), stages=stages, substages=substages, current_substage_id=current_substage_id)
 
 @bp.route('/workflow/authoring/')
 def workflow_authoring():

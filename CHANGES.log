@@ -592,3 +592,7 @@ All notable changes to this project are documented in this file.
 - Removed old blog.index endpoint and root_link.html template.
 - Updated /docs/frontend/templates.md to reflect new structure and design.
 - All references to the blog index now point to the root URL.
+
+2024-05-21
+- Redesigned workflow process indicator for dark theme: shallow, touchscreen-friendly, with three stage backgrounds and nine substages.
+- Updated planning/index.html to use new indicator macro for process navigation.
