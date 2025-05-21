@@ -59,20 +59,11 @@ CREATE TABLE post (
     id SERIAL PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     slug VARCHAR(200) NOT NULL UNIQUE,
-    content TEXT,
     summary TEXT,
-    published BOOLEAN DEFAULT FALSE,
-    deleted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    published_at TIMESTAMP,
     header_image_id INTEGER REFERENCES image(id),
-    llm_metadata JSONB,
-    seo_metadata JSONB,
-    syndication_status JSONB,
-    status post_status DEFAULT 'draft' NOT NULL,
-    conclusion TEXT,
-    footer TEXT
+    status post_status DEFAULT 'draft' NOT NULL
 );
 
 CREATE TABLE post_categories (
