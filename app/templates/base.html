@@ -50,41 +50,10 @@
                     <div class="flex space-x-4 ml-8">
                         <a href="/"
                             class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Dashboard</a>
-                        <div class="relative group">
-                            <button
-                                class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium focus:outline-none transition">Blog
-                                ▾</button>
-                            <div
-                                class="nav-dropdown absolute left-0 mt-2 w-44 rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10 py-2">
-                                <a href="/" class="block px-4 py-2 rounded transition">Posts</a>
-                                <a href="{{ url_for('preview.listing') }}"
-                                    class="block px-4 py-2 rounded transition">Preview</a>
-                                <a href="{{ url_for('db.index') }}"
-                                    class="block px-4 py-2 rounded transition">Database</a>
-                            </div>
-                        </div>
-                        <div class="relative group">
-                            <button
-                                class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium focus:outline-none transition">LLM
-                                ▾</button>
-                            <div
-                                class="nav-dropdown absolute left-0 mt-2 w-44 rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10 py-2">
-                                <a href="/llm/" class="block px-4 py-2 rounded transition">LLMs</a>
-                                <a href="{{ url_for('llm.actions') }}"
-                                    class="block px-4 py-2 rounded transition">Actions</a>
-                                <a href="/llm/images" class="block px-4 py-2 rounded transition">Images</a>
-                            </div>
-                        </div>
-                        <div class="relative group">
-                            <button
-                                class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium focus:outline-none transition">Help
-                                ▾</button>
-                            <div
-                                class="nav-dropdown absolute left-0 mt-2 w-44 rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10 py-2">
-                                <a href="/docs/" class="block px-4 py-2 rounded transition">Documentation</a>
-                                <a href="/CHANGES.log" class="block px-4 py-2 rounded transition">Changelog</a>
-                            </div>
-                        </div>
+                        <a href="/"
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
+                        <a href="{{ url_for('preview.listing') }}"
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Preview</a>
                     </div>
                 </div>
                 {% if request.endpoint == 'main.index' %}
