@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% import "workflow/workflow_indicator.html" as indicator %}
+
+{% block title %}Authoring: Content{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    {{ indicator.process_indicator(substages, stages, current_substage_id) }}
+    <div class="card-dark rounded-xl p-8 mt-8 shadow-lg">
+        <h1 class="text-2xl font-bold text-white mb-4 flex items-center gap-2"><i
+                class="fa fa-pen-nib text-indigo-400"></i> Content</h1>
+        <p class="text-dark-accent mb-2">Write the main content for your post.</p>
+        <div class="text-gray-400 italic">[Content substage content goes here]</div>
+    </div>
+</div>
+{% endblock %}

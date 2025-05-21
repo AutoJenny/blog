@@ -1,4 +1,21 @@
 {% macro process_indicator(substages, stages, current_substage) %}
+<style>
+  .indicator-glow {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25), 0 4px 24px 0 rgba(40, 40, 60, 0.25);
+    transition: box-shadow 0.2s, background 0.2s;
+  }
+
+  .indicator-glow:hover,
+  .indicator-glow:focus {
+    box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.45), 0 4px 32px 0 rgba(99, 102, 241, 0.15);
+    background: rgba(99, 102, 241, 0.12) !important;
+    outline: none;
+  }
+
+  .indicator-active {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0.10) 100%) !important;
+  }
+</style>
 <div class="w-full flex flex-col items-center mb-4">
   <nav aria-label="Workflow" class="w-full">
     <ol class="flex flex-row flex-wrap justify-center w-full gap-0">
@@ -18,9 +35,9 @@
           style="box-shadow: 0 4px 24px 0 rgba(40,40,60,0.25);">
           {% for sub in stage_subs %}
           <li class="flex flex-col items-center min-w-0">
-            <a href="{{ sub.url }}" class="flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
+            <a href="{{ sub.url }}" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
                   {% if sub.id == current_substage %}
-                    bg-{{ accent }}-600 border-{{ accent }}-300 text-white shadow-2xl ring-4 ring-{{ accent }}-400 scale-110 z-10
+                    bg-{{ accent }}-600 border-{{ accent }}-300 text-white shadow-2xl ring-4 ring-{{ accent }}-400 scale-110 z-10 indicator-active
                   {% else %}
                     bg-[#23273a] border-{{ accent }}-800 text-{{ accent }}-200 hover:bg-{{ accent }}-800 hover:text-white opacity-80
                   {% endif %}
