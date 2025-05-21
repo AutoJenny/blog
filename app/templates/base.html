@@ -85,7 +85,7 @@
                     const basicIdea = prompt('Enter your basic idea for the post:');
                     if (!basicIdea) return;
                     try {
-                        const response = await fetch("{{ url_for('blog.new_post') }}", {
+                        const response = await fetch("/blog/new", {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -93,8 +93,8 @@
                             body: JSON.stringify({ basic_idea: basicIdea })
                         });
                         const data = await response.json();
-                        if (response.ok) {
-                            window.location.href = `/blog/${data.id}/develop`;
+                        if (response.ok && data.id) {
+                            window.location.href = `/workflow/idea/?post_id=${data.id}`;
                         } else {
                             alert(data.error || 'Failed to create post');
                         }
