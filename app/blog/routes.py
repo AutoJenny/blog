@@ -286,21 +286,19 @@ def update_post(slug):
     )
 
 
-@bp.route("/api/v1/posts/<int:post_id>/fields/<field>", methods=["PUT"])
-def update_post_development_field(post_id, field):
+@bp.route("/api/v1/post/<int:post_id>/fields/<field>", methods=["PUT"])
+def update_post_field(post_id, field):
     data = request.get_json()
     updated_at = None
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
-                # Only allow updating valid fields
-                cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development' AND column_name NOT IN ('id', 'post_id')")
+                # Only allow updating valid fields in post table
+                cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post'")
                 valid_fields = [row["column_name"] for row in cur.fetchall()]
                 if field not in valid_fields:
                     return jsonify({"error": "Invalid field"}), 400
-                cur.execute(f"UPDATE post_development SET {field} = %s WHERE post_id = %s RETURNING *", (data.get("value", ""), post_id))
-                # Update parent post's updated_at
-                cur.execute("UPDATE post SET updated_at = NOW() WHERE id = %s RETURNING updated_at", (post_id,))
+                cur.execute(f"UPDATE post SET {field} = %s, updated_at = NOW() WHERE id = %s RETURNING updated_at", (data.get("value", ""), post_id))
                 updated_at = cur.fetchone()["updated_at"]
                 conn.commit()
     except Exception as e:
