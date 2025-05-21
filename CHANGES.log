@@ -583,6 +583,9 @@ All notable changes to this project are documented in this file.
 - Ensured all stages and sub-stages are ordered and normalized for future workflow logic
 
 2024-05-21
+- Blog index and header redesigned for a true dark theme.
+- Unified header, navigation, and cards for a premium, cohesive look.
+- All sections now use dark backgrounds, accent borders, and light text.
 - Blog index moved from /blog/ to root URL (/).
 - Fully redesigned the main page with a modern, stylish, and intuitive UI (see app/templates/blog/index.html).
 - Navigation in base.html updated to use root for blog listing.
