@@ -13,9 +13,9 @@
   }
 
   .indicator-active {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.45) 0%, rgba(99, 102, 241, 0.18) 100%) !important;
-    border-color: #a5b4fc !important;
-    box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.25), 0 8px 32px 0 rgba(99, 102, 241, 0.18);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.35) 0%, rgba(239, 68, 68, 0.15) 100%) !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.25), 0 8px 32px 0 rgba(239, 68, 68, 0.18);
     z-index: 20;
   }
 
@@ -55,7 +55,7 @@
           <li class="flex flex-col items-center min-w-0">
             <a href="{{ sub.url }}" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
                   {% if sub.id == current_substage %}
-                    bg-{{ accent }}-600 border-{{ accent }}-300 text-white shadow-2xl ring-4 ring-{{ accent }}-400 scale-110 indicator-active
+                    bg-red-600 border-red-400 text-white shadow-2xl ring-4 ring-red-400 scale-110 indicator-active
                   {% else %}
                     bg-[#23273a] border-{{ accent }}-800 text-{{ accent }}-200 hover:bg-{{ accent }}-800 hover:text-white opacity-80
                   {% endif %}
