@@ -67,6 +67,10 @@ The admin interface at `/db/` provides a modern, grouped view of your database t
 - **Live Data:**
   - Data is fetched from the `/db/tables` backend route, which returns both `groups` and a flat `tables` list for compatibility.
   - The UI prefers `groups` if present, otherwise falls back to `tables`.
+- **Modern, Accessible Front-End:**
+  - The front-end code for the DB display UI was completely rewritten from scratch (2025-05-XX) for robustness, clarity, and accessibility, while replicating all previous functionality.
+  - Uses modern, accessible JavaScript, robust error handling, and defensive coding for missing/empty data.
+  - Accordion panels are keyboard accessible and expand the first group/table by default.
 
 ## Technical Details
 - **Backend:**
@@ -78,6 +82,7 @@ The admin interface at `/db/` provides a modern, grouped view of your database t
   - See `app/templates/db/index.html`.
   - JavaScript fetches `/db/tables` and renders groups/tables as accordions.
   - If no groups or tables are found, a message is shown.
+  - The UI is robust to errors and empty states, and is fully accessible.
 
 ## Usage
 - Visit `/db/` in your browser (admin access required).
