@@ -8,6 +8,7 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
+from humanize import naturaltime
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
@@ -410,3 +411,25 @@ def post_public(post_id):
         return render_template("blog/post_public.html", post=post, sections=sections)
     else:
         abort(500, "Sections not found")
+
+
+@bp.route('/posts', methods=['GET'])
+def posts_listing():
+    posts = []
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, idea_seed, title, status, created_at, updated_at, slug
+                    FROM post
+                    ORDER BY created_at DESC
+                """)
+                posts = cur.fetchall()
+    except Exception as e:
+        posts = []
+    # Format dates as 'ago' using humanize
+    now = datetime.utcnow()
+    for post in posts:
+        post['created_ago'] = naturaltime(now - post['created_at']) if post['created_at'] else ''
+        post['updated_ago'] = naturaltime(now - post['updated_at']) if post['updated_at'] else ''
+    return render_template('blog/posts_list.html', posts=posts)
