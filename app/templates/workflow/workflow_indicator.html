@@ -15,6 +15,19 @@
   .indicator-active {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0.10) 100%) !important;
   }
+
+  .stage-highlight,
+  .stage-highlight:hover {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.10) 0%, rgba(99, 102, 241, 0.05) 100%) !important;
+    box-shadow: 0 2px 16px 0 rgba(99, 102, 241, 0.10);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+
+  .stage-group:hover,
+  .stage-group:focus-within {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.18) 0%, rgba(99, 102, 241, 0.10) 100%) !important;
+    box-shadow: 0 4px 24px 0 rgba(99, 102, 241, 0.18);
+  }
 </style>
 <div class="w-full flex flex-col items-center mb-4">
   <nav aria-label="Workflow" class="w-full">
@@ -25,7 +38,9 @@
       {% set bg = stage_bg[loop.index0 % stage_bg|length] %}
       {% set accent = stage_accent[loop.index0 % stage_accent|length] %}
       {% set stage_subs = substages|selectattr('stage_id', 'equalto', stage.id)|list %}
-      <div class="flex flex-col items-center mx-4 min-w-0">
+      {% set is_active_stage = stage_subs|selectattr('id', 'equalto', current_substage)|list|length > 0 %}
+      <div
+        class="flex flex-col items-center mx-4 min-w-0 stage-group {% if is_active_stage %}stage-highlight{% endif %}">
         <!-- Stage label above group -->
         <span
           class="mb-2 text-sm font-bold text-{{ accent }}-300 tracking-wide bg-transparent px-3 py-1 rounded select-none"

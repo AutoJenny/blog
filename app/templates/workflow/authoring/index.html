@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="container mx-auto px-6 py-8">
-    {{ indicator.stepper(substages, stages, substages[0].id) }}
+    {{ indicator.process_indicator(substages, stages, current_substage_id) }}
     <h1 class="text-3xl font-bold mb-2 text-purple-400">Authoring Workflow</h1>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         {% for sub in sub_stages %}
