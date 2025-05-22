@@ -46,11 +46,11 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Example rows, replace with dynamic data -->
+                {% for prompt in prompts %}
                 <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                    <td class="py-2 px-3 font-semibold text-white">Summarize Post</td>
-                    <td class="py-2 px-3"><span class="prompt-type">Summary</span></td>
-                    <td class="py-2 px-3">12 uses</td>
+                    <td class="py-2 px-3 font-semibold text-white">{{ prompt.name }}</td>
+                    <td class="py-2 px-3">{{ prompt.description }}</td>
+                    <td class="py-2 px-3">{{ prompt.prompt_text }}</td>
                     <td class="py-2 px-3">2025-05-21</td>
                     <td class="py-2 px-3 flex gap-2">
                         <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
@@ -59,30 +59,7 @@
                         <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
-                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                    <td class="py-2 px-3 font-semibold text-white">SEO Description</td>
-                    <td class="py-2 px-3"><span class="prompt-type">SEO</span></td>
-                    <td class="py-2 px-3">8 uses</td>
-                    <td class="py-2 px-3">2025-05-20</td>
-                    <td class="py-2 px-3 flex gap-2">
-                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
-                        <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
-                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                <tr class="hover:bg-indigo-950/30">
-                    <td class="py-2 px-3 font-semibold text-white">Tag Generator</td>
-                    <td class="py-2 px-3"><span class="prompt-type">Tags</span></td>
-                    <td class="py-2 px-3">5 uses</td>
-                    <td class="py-2 px-3">2025-05-19</td>
-                    <td class="py-2 px-3 flex gap-2">
-                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
-                        <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
-                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>

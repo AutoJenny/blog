@@ -1,3 +1,7 @@
+# LLM Framework Hybrid Refactor
+
+> **NOTE:** This project uses PostgreSQL only. All database changes are made via direct SQL. No ORM or migration tools (Alembic, SQLAlchemy, SQLite) are used or supported.
+
 # Hybrid LLM Framework Refactor & Extension: Implementation Plan
 
 > **Purpose:**

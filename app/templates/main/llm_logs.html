@@ -65,43 +65,20 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Example rows, replace with dynamic data -->
+                {% for log in logs %}
                 <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                    <td class="py-2 px-3">2025-05-21 14:32</td>
-                    <td class="py-2 px-3">OpenAI</td>
-                    <td class="py-2 px-3">gpt-3.5-turbo</td>
-                    <td class="py-2 px-3">Summarize Body</td>
-                    <td class="py-2 px-3"><span class="log-status status-success">Success</span></td>
-                    <td class="py-2 px-3">512</td>
-                    <td class="py-2 px-3">1.2s</td>
+                    <td class="py-2 px-3">{{ log.timestamp }}</td>
+                    <td class="py-2 px-3">{{ log.provider }}</td>
+                    <td class="py-2 px-3">{{ log.model }}</td>
+                    <td class="py-2 px-3">{{ log.action_name }}</td>
+                    <td class="py-2 px-3"><span class="log-status status-{{ log.status }}">{{ log.status }}</span></td>
+                    <td class="py-2 px-3">{{ log.tokens }}</td>
+                    <td class="py-2 px-3">{{ log.latency }}</td>
                     <td class="py-2 px-3">
                         <button class="action-btn" title="View"><i class="fa-solid fa-eye"></i></button>
                     </td>
                 </tr>
-                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                    <td class="py-2 px-3">2025-05-20 10:15</td>
-                    <td class="py-2 px-3">Ollama</td>
-                    <td class="py-2 px-3">mistral</td>
-                    <td class="py-2 px-3">SEO Description</td>
-                    <td class="py-2 px-3"><span class="log-status status-error">Error</span></td>
-                    <td class="py-2 px-3">256</td>
-                    <td class="py-2 px-3">0.8s</td>
-                    <td class="py-2 px-3">
-                        <button class="action-btn" title="View"><i class="fa-solid fa-eye"></i></button>
-                    </td>
-                </tr>
-                <tr class="hover:bg-indigo-950/30">
-                    <td class="py-2 px-3">2025-05-19 09:00</td>
-                    <td class="py-2 px-3">Anthropic</td>
-                    <td class="py-2 px-3">claude-3-opus</td>
-                    <td class="py-2 px-3">Tag Generator</td>
-                    <td class="py-2 px-3"><span class="log-status status-pending">Pending</span></td>
-                    <td class="py-2 px-3">128</td>
-                    <td class="py-2 px-3">-</td>
-                    <td class="py-2 px-3">
-                        <button class="action-btn" title="View"><i class="fa-solid fa-eye"></i></button>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>

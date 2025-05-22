@@ -62,6 +62,11 @@ def actions():
         workflow_fields=WORKFLOW_FIELDS
     )
 
+@bp.route('/actions/<int:action_id>')
+def action_detail(action_id):
+    action = LLMAction.query.get_or_404(action_id)
+    return render_template('llm/action_detail.html', action=action)
+
 @bp.route('/api/v1/llm/test', methods=['POST'])
 def test_llm_action():
     """Test an LLM action with provided input."""
@@ -232,11 +237,3 @@ def llm_images_prompts():
 @bp.route('/images/previews')
 def llm_images_previews():
     return render_template('llm/images_previews.html')
-
-@bp.route('/actions/generate-summary-idea-seed')
-def mvp_action_detail():
-    action = {
-        'name': 'Generate Summary from idea_seed',
-        'description': 'Takes the idea_seed and generates a summary using the selected LLM and prompts.'
-    }
-    return render_template('llm/action_detail.html', action=action)
