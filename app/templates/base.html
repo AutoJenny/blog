@@ -107,6 +107,24 @@
         });
     </script>
     {% endblock %}
+    <!-- Mermaid.js for diagrams in markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.mermaid) {
+                mermaid.initialize({ startOnLoad: false });
+                document.querySelectorAll('pre > code.language-mermaid').forEach(function (block, i) {
+                    var parent = block.parentElement;
+                    var code = block.textContent;
+                    var d = document.createElement('div');
+                    d.className = 'mermaid';
+                    d.textContent = code;
+                    parent.replaceWith(d);
+                });
+                mermaid.run();
+            }
+        });
+    </script>
 </body>
 
 </html>
