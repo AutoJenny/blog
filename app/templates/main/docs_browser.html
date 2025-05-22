@@ -1,35 +1,56 @@
-{% set fullwidth_mode = true %}
-{% extends 'base.html' %}
-{% block fullwidth %}
-<div class="flex w-full h-[calc(100vh-8rem)] bg-gray-900 text-gray-100 rounded-xl shadow-lg overflow-hidden">
-    <!-- Sidebar: Directory Tree -->
-    <aside class="w-72 bg-gray-800 border-r border-gray-700 p-4 h-full overflow-y-auto">
-        <h2 class="text-lg font-bold mb-4 text-purple-300">Documentation</h2>
-        <nav>
-            <ul class="space-y-1">
-                {% include 'main/_tree.html' with context %}
-            </ul>
-        </nav>
-    </aside>
+<!DOCTYPE html>
+<html lang="en">
 
-    <!-- Main: Markdown Content -->
-    <main class="flex-1 p-8 h-full overflow-y-auto">
-        {% if file_html %}
-        <div
-            class="prose prose-invert max-w-4xl mx-auto bg-gray-800/80 rounded-lg shadow-lg p-8 border border-purple-700">
-            <div class="mb-4 text-sm text-purple-300">Viewing: <span class="font-mono">{{ file_path }}</span></div>
-            {{ file_html|safe }}
-        </div>
-        {% else %}
-        <div class="max-w-2xl mx-auto text-center mt-24">
-            <h1 class="text-3xl font-bold text-purple-300 mb-4">Welcome to the Documentation Browser</h1>
-            <p class="text-lg text-gray-300 mb-8">Browse the documentation using the sidebar. Click any <span
-                    class="text-purple-200">.md</span> file to view its contents, beautifully rendered in dark mode.</p>
-            <i class="fa-solid fa-book-open text-5xl text-purple-500"></i>
-        </div>
-        {% endif %}
-    </main>
-</div>
-{% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <title>Documentation Browser</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: #181c2a;
+            color: #e0e0e0;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .docs-frame-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .docs-nav-frame {
+            width: 300px;
+            min-width: 220px;
+            max-width: 400px;
+            height: 100vh;
+            border: none;
+            background: #23273a;
+        }
+
+        .docs-content-frame {
+            flex: 1;
+            height: 100vh;
+            border: none;
+            background: #181c2a;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="docs-frame-container">
+        <iframe class="docs-nav-frame" src="/docs/nav/" name="docs-nav"></iframe>
+        <iframe class="docs-content-frame" src="/docs/view/README.md" name="docs-content"></iframe>
+    </div>
+</body>
+
+</html>
 
 {% set parent_path = '' %}
