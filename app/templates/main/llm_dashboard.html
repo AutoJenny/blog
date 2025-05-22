@@ -1,5 +1,43 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+    .dashboard-title {
+        font-size: 2.2rem;
+        font-weight: bold;
+        color: #a5b4fc;
+        margin-bottom: 1.5rem;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 2rem;
+    }
+
+    .card {
+        background: #23273a;
+        border-radius: 0.75rem;
+        border: 1px solid #31364a;
+        padding: 1.5rem;
+        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.18);
+        transition: box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .card .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #38bdf8;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+    }
+
+    .card .icon {
+        color: #fbbf24;
+        font-size: 1.3em;
+    }
+</style>
 <div class="container mx-auto py-10 px-4">
     <div class="dashboard-title flex items-center gap-4">
         <i class="fa-solid fa-brain"></i>
