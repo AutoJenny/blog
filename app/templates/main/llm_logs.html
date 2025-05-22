@@ -1,16 +1,129 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+    .log-status {
+        display: inline-block;
+        padding: 0.25em 0.75em;
+        border-radius: 9999px;
+        font-size: 0.95em;
+        font-weight: 600;
+    }
+
+    .status-success {
+        background: #22c55e;
+        color: #fff;
+    }
+
+    .status-error {
+        background: #ef4444;
+        color: #fff;
+    }
+
+    .status-pending {
+        background: #64748b;
+        color: #fff;
+    }
+
+    .action-btn {
+        @apply text-indigo-400 hover:text-indigo-200 px-2;
+    }
+
+    .action-btn[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .modal-bg {
+        background: rgba(24, 28, 42, 0.85);
+    }
+</style>
 <div class="container mx-auto py-10 px-4">
-    <div class="text-2xl font-bold text-indigo-300 mb-6 flex items-center gap-3">
-        <i class="fa-solid fa-list"></i> LLM Interaction Logs
-    </div>
-    <div class="bg-dark-card rounded-xl p-6 shadow mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <div class="text-lg font-semibold text-white">Interaction Logs</div>
-            <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow"><i
-                    class="fa-solid fa-eye"></i> View Logs</button>
+    <div class="flex justify-between items-center mb-8">
+        <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+            <i class="fa-solid fa-list"></i> LLM Interaction Logs
         </div>
-        <div class="text-dark-accent">(Interaction log list will appear here)</div>
+        <div class="flex gap-2">
+            <input type="text" class="rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                placeholder="Search logs..." />
+            <button
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow flex items-center gap-2"><i
+                    class="fa-solid fa-arrow-down"></i> Export</button>
+        </div>
+    </div>
+    <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+        <table class="min-w-full text-left">
+            <thead>
+                <tr class="text-indigo-200 border-b border-dark-border">
+                    <th class="py-2 px-3">Timestamp</th>
+                    <th class="py-2 px-3">Provider</th>
+                    <th class="py-2 px-3">Model</th>
+                    <th class="py-2 px-3">Action</th>
+                    <th class="py-2 px-3">Status</th>
+                    <th class="py-2 px-3">Tokens</th>
+                    <th class="py-2 px-3">Latency</th>
+                    <th class="py-2 px-3">View</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Example rows, replace with dynamic data -->
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3">2025-05-21 14:32</td>
+                    <td class="py-2 px-3">OpenAI</td>
+                    <td class="py-2 px-3">gpt-3.5-turbo</td>
+                    <td class="py-2 px-3">Summarize Body</td>
+                    <td class="py-2 px-3"><span class="log-status status-success">Success</span></td>
+                    <td class="py-2 px-3">512</td>
+                    <td class="py-2 px-3">1.2s</td>
+                    <td class="py-2 px-3">
+                        <button class="action-btn" title="View"><i class="fa-solid fa-eye"></i></button>
+                    </td>
+                </tr>
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3">2025-05-20 10:15</td>
+                    <td class="py-2 px-3">Ollama</td>
+                    <td class="py-2 px-3">mistral</td>
+                    <td class="py-2 px-3">SEO Description</td>
+                    <td class="py-2 px-3"><span class="log-status status-error">Error</span></td>
+                    <td class="py-2 px-3">256</td>
+                    <td class="py-2 px-3">0.8s</td>
+                    <td class="py-2 px-3">
+                        <button class="action-btn" title="View"><i class="fa-solid fa-eye"></i></button>
+                    </td>
+                </tr>
+                <tr class="hover:bg-indigo-950/30">
+                    <td class="py-2 px-3">2025-05-19 09:00</td>
+                    <td class="py-2 px-3">Anthropic</td>
+                    <td class="py-2 px-3">claude-3-opus</td>
+                    <td class="py-2 px-3">Tag Generator</td>
+                    <td class="py-2 px-3"><span class="log-status status-pending">Pending</span></td>
+                    <td class="py-2 px-3">128</td>
+                    <td class="py-2 px-3">-</td>
+                    <td class="py-2 px-3">
+                        <button class="action-btn" title="View"><i class="fa-solid fa-eye"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- Log Details Modal (placeholder) -->
+    <div id="logDetailsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-2xl relative">
+            <button id="closeLogDetails" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-eye"></i>
+                Log Details</div>
+            <div class="mb-4 text-dark-accent">(Full request/response, prompt, and output will appear here)</div>
+            <div class="flex justify-end">
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Close</button>
+            </div>
+        </div>
     </div>
 </div>
+<script>
+    // Modal open/close logic (placeholder)
+    document.getElementById('closeLogDetails').onclick = function () {
+        document.getElementById('logDetailsModal').classList.add('hidden');
+    };
+    // Add more modal logic as needed
+</script>
 {% endblock %}

@@ -1,16 +1,101 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+    .settings-section {
+        background: #23273a;
+        border-radius: 0.75rem;
+        border: 1px solid #31364a;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.18);
+    }
+
+    .settings-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #38bdf8;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+    }
+</style>
 <div class="container mx-auto py-10 px-4">
-    <div class="text-2xl font-bold text-indigo-300 mb-6 flex items-center gap-3">
+    <div class="text-2xl font-bold text-indigo-300 mb-8 flex items-center gap-3">
         <i class="fa-solid fa-gear"></i> LLM Settings
     </div>
-    <div class="bg-dark-card rounded-xl p-6 shadow mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <div class="text-lg font-semibold text-white">Global Settings</div>
-            <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow"><i
-                    class="fa-solid fa-sliders-h"></i> Edit Settings</button>
+    <form>
+        <div class="settings-section mb-6">
+            <div class="settings-title"><i class="fa-solid fa-sliders-h"></i> Global Settings</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-dark-accent mb-1">Default Provider</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
+                        <option>OpenAI</option>
+                        <option>Ollama</option>
+                        <option>Anthropic</option>
+                        <option>Custom</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-dark-accent mb-1">Default Model</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
+                        <option>gpt-3.5-turbo</option>
+                        <option>mistral</option>
+                        <option>claude-3-opus</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-dark-accent mb-1">API Key</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="Enter API key..." />
+                </div>
+                <div>
+                    <label class="block text-dark-accent mb-1">Timeout (seconds)</label>
+                    <input type="number"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="30" />
+                </div>
+            </div>
         </div>
-        <div class="text-dark-accent">(Settings form will appear here)</div>
-    </div>
+        <div class="settings-section mb-6">
+            <div class="settings-title"><i class="fa-solid fa-shield-halved"></i> Advanced Options</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-dark-accent mb-1">Rate Limit (requests/min)</label>
+                    <input type="number"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="60" />
+                </div>
+                <div>
+                    <label class="block text-dark-accent mb-1">Logging Level</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
+                        <option>INFO</option>
+                        <option>DEBUG</option>
+                        <option>WARNING</option>
+                        <option>ERROR</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-dark-accent mb-1">Security (role-based access)</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
+                        <option>Admin Only</option>
+                        <option>All Editors</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-dark-accent mb-1">Webhook URL</label>
+                    <input type="url" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="https://example.com/webhook" />
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end gap-2">
+            <button type="submit"
+                class="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded shadow">Save</button>
+            <button type="button"
+                class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded shadow">Cancel</button>
+        </div>
+    </form>
 </div>
 {% endblock %}

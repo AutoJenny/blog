@@ -201,3 +201,147 @@ got prompt
 Prompt executed in 14.42 seconds
   0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.72s/it] 50%|█████     | 2/4 [00:05<00:05,  2.94s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.90s/it]100%|██████████| 4/4 [00:11<00:00,  2.87s/it]100%|██████████| 4/4 [00:11<00:00,  2.88s/it]
 Prompt executed in 12.80 seconds
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.4.32:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 102-272-974
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/bin/flask", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 1107, in main
+    cli.main()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1688, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/decorators.py", line 92, in new_func
+    return ctx.invoke(f, obj, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 967, in run_command
+    run_simple(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/serving.py", line 1099, in run_simple
+    run_with_reloader(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 446, in run_with_reloader
+    ensure_echo_on()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 426, in ensure_echo_on
+    termios.tcsetattr(sys.stdin, termios.TCSANOW, attributes)
+termios.error: (4, 'Interrupted system call')
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.4.32:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [22/May/2025 10:50:52] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:50:53] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:50:53] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:50:54] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:50:54] "GET /static/css/admin.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:50:54] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:50:54] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:50:56] "GET /llm/providers HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:50:56] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:50:56] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:51:03] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:51:03] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:51:03] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:54:17] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:17] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:17] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:17] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:18] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:54:18] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:18] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:18] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:19] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:54:19] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:19] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:42] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:54:57] "GET /llm/templates HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:04] "GET /llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:10] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:14] "GET /llm/test HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:19] "GET /llm/images HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:25] "GET /llm/images/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:30] "GET /llm/images/configs HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:35] "GET /llm/images/previews HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:39] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:47] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:54] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:56:00] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:56:11] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:56:14] "GET /llm/templates HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:56:18] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:58:41] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:58:41] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:41] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:43] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:58:43] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:43] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:43] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:43] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:45] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:58:45] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:45] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:45] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:46] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:58:46] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:46] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:59:20] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:59:20] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:59:20] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.4.32:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [22/May/2025 11:02:47] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:02:51] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:02:55] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:05] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:15] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:20] "GET /llm/templates HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:24] "GET /llm/templates HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:26] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:31] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:12:45] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:12:45] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:45] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:47] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:12:47] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:47] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:49] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:12:49] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:49] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:49] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:50] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:12:50] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:50] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.4.32:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [22/May/2025 11:14:44] "GET /llm/ HTTP/1.1" 200 -
