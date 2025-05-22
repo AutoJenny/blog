@@ -8,44 +8,22 @@ This document provides a visual and written overview of the LLM framework archit
 
 ```mermaid
 graph TD
-  subgraph Data Models
-    PromptPart["LLMPromptPart"]
-    Provider["LLMProvider"]
-    Model["LLMModel"]
-    Message["LLMMessage"]
-    Task["LLMTask"]
+  subgraph DataModels
+    PromptPart
+    Provider
   end
 
-  subgraph Service Layer
-    PromptAssembly["Prompt Assembly"]
-    ProviderAdapter["Provider/Model Adapter"]
-    TaskRunner["Task Runner"]
+  subgraph ServiceLayer
+    PromptAssembly
   end
 
   subgraph API
-    API["RESTful API (Flask-RESTful)"]
+    api_node[API]
   end
 
   subgraph UI
-    Dashboard["LLM Dashboard"]
-    PromptUI["Prompt Assembly UI"]
-    TaskUI["Task Runner UI"]
-    WorkflowUI["Workflow Integration"]
+    dashboard_node[Dashboard]
   end
-
-  PromptPart -->|used by| PromptAssembly
-  Provider -->|registered in| ProviderAdapter
-  Model -->|registered in| ProviderAdapter
-  Message -->|used by| PromptAssembly
-  PromptAssembly -->|calls| ProviderAdapter
-  ProviderAdapter -->|executes| TaskRunner
-  TaskRunner -->|exposes| API
-  API -->|serves| Dashboard
-  API -->|serves| PromptUI
-  API -->|serves| TaskUI
-  API -->|serves| WorkflowUI
-  Task -->|tracked by| TaskRunner
-  WorkflowUI -->|integrates with| Dashboard
 ```
 
 ---

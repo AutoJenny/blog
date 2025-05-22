@@ -33,14 +33,75 @@
             margin-bottom: 1.5rem;
             font-family: monospace;
         }
+
+        .mermaid {
+            all: initial !important;
+        }
+
+        .mermaid-warning {
+            background: #f87171;
+            color: #fff;
+            padding: 1em;
+            border-radius: 0.5em;
+            margin-bottom: 1em;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
     </style>
 </head>
 
 <body>
+    <div id="mermaid-warning-container"></div>
     <div class="file-path">{{ file_path }}</div>
     <div class="prose prose-invert">
         {{ file_html|safe }}
     </div>
+    <div class="mermaid" id="static-mermaid-test">
+        graph TD
+        subgraph StaticTest
+        X
+        Y
+        end
+    </div>
 </body>
+
+<!-- Mermaid.js for diagrams in markdown -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
+<script>
+    window.addEventListener("unhandledrejection", event => {
+        console.error("Unhandled rejection:", event.reason);
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        // Mermaid subgraph/node name collision warning
+        function checkMermaidNameCollisions() {
+            const mermaidBlocks = Array.from(document.querySelectorAll('.mermaid'));
+            for (const block of mermaidBlocks) {
+                const code = block.innerText;
+                // Find all subgraph names
+                const subgraphNames = Array.from(code.matchAll(/subgraph\s+([A-Za-z0-9_\-]+)/g)).map(m => m[1]);
+                // Find all node names (simple heuristic: lines with just a word)
+                const nodeNames = Array.from(code.matchAll(/^\s*([A-Za-z0-9_\-]+)\s*$/gm)).map(m => m[1]);
+                for (const sub of subgraphNames) {
+                    if (nodeNames.includes(sub)) {
+                        const container = document.getElementById('mermaid-warning-container');
+                        container.innerHTML = `<div class='mermaid-warning'>Warning: Mermaid diagram contains a subgraph and a node with the same name ('<b>${sub}</b>'). This will cause a render error. Please use a different node name or an alias (e.g., <code>${sub}_node[${sub}]</code>).</div>`;
+                        return;
+                    }
+                }
+            }
+        }
+        checkMermaidNameCollisions();
+        if (window.mermaid) {
+            mermaid.initialize({
+                startOnLoad: true,
+                logLevel: 'debug',
+                securityLevel: 'loose',
+            });
+            setTimeout(() => {
+                mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+            }, 200);
+        }
+    });
+</script>
 
 </html>
