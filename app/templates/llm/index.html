@@ -240,9 +240,12 @@
 
 {% block content %}
 <div class="max-w-3xl mx-auto py-10">
-    <h1 class="text-3xl font-bold mb-8 text-center">LLM Admin</h1>
+    <div class="flex flex-col items-center gap-4 mb-8">
+        <i class="fa-solid fa-brain text-[#a5b4fc] text-5xl"></i>
+        <h1 class="text-3xl font-bold mb-2 text-[#a5b4fc]">LLM Admin</h1>
+    </div>
     <div class="text-center text-lg text-gray-400 mt-12">
-        <p>Select a tab above to manage LLM prompt templates, image workflows, or configuration.</p>
+        <p>Select a panel above to manage LLM prompt templates, image workflows, or configuration.</p>
     </div>
 </div>
 {% endblock %}

@@ -68,7 +68,12 @@
     {% if fullwidth_mode %}
     {% block fullwidth %}{% endblock %}
     {% else %}
-    {% block area_nav %}{% endblock %}
+    {# Auto area nav for LLM and workflow, but not on /llm/ landing #}
+    {% if request.path.startswith('/llm') and request.path != '/llm/' %}
+    {% include 'llm/_llm_nav.html' %}
+    {% elif request.path.startswith('/workflow') %}
+    {% include 'workflow/_workflow_nav.html' ignore missing %}
+    {% endif %}
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {% block content %}{% endblock %}
     </main>
