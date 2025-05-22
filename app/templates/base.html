@@ -65,7 +65,8 @@
     </header>
 
     <!-- Main Content -->
-    {% block fullwidth %}{% endblock %}
+    {% block fullwidth %}
+    {% endblock %}
     {% if not self.fullwidth() %}
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {% block content %}{% endblock %}
@@ -115,20 +116,25 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (window.mermaid) {
-                mermaid.initialize({ startOnLoad: false });
-                document.querySelectorAll('pre > code.language-mermaid').forEach(function (block, i) {
-                    var parent = block.parentElement;
-                    var code = block.innerText;
-                    var d = document.createElement('div');
-                    d.className = 'mermaid';
-                    d.innerText = code;
-                    parent.replaceWith(d);
-                });
-                try {
-                    mermaid.run();
-                } catch (e) {
-                    console.error('Mermaid render error:', e);
-                }
+                setTimeout(function () {
+                    mermaid.initialize({ startOnLoad: false });
+                    document.querySelectorAll('pre > code.language-mermaid').forEach(function (block, i) {
+                        var parent = block.parentElement;
+                        var code = block.innerText;
+                        var d = document.createElement('div');
+                        d.className = 'mermaid';
+                        d.innerText = code;
+                        parent.replaceWith(d);
+                    });
+                    try {
+                        mermaid.run();
+                    } catch (e) {
+                        console.error('Mermaid render error:', e);
+                        document.querySelectorAll('.mermaid').forEach(function (el) {
+                            el.innerHTML = '<div style="color:#f87171;background:#23273a;padding:1em;border-radius:.5em;">Mermaid render error:<br>' + e.message + '</div>';
+                        });
+                    }
+                }, 100);
             }
         });
     </script>
