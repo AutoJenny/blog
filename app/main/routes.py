@@ -265,9 +265,9 @@ def llm_models():
 def llm_prompts():
     return render_template('main/llm_prompts.html')
 
-@bp.route('/llm/actions')
-def llm_actions():
-    return render_template('main/llm_actions.html')
+# @bp.route('/llm/actions')
+# def llm_actions():
+#     return render_template('main/llm_actions.html')
 
 @bp.route('/llm/logs')
 def llm_logs():

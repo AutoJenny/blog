@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app
 from app.llm.services import LLMService, execute_llm_request
-from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPrompt, LLMActionHistory, PostDevelopment
+from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPrompt, LLMActionHistory, PostDevelopment, LLMPromptPart, LLMActionPromptPart
 from app import db
 import requests
 import traceback
@@ -468,3 +468,98 @@ def update_action_order():
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/prompt_parts', methods=['GET', 'POST'])
+def handle_prompt_parts():
+    if request.method == 'GET':
+        parts = LLMPromptPart.query.order_by(LLMPromptPart.order, LLMPromptPart.id).all()
+        return jsonify([{
+            'id': p.id,
+            'type': p.type,
+            'content': p.content,
+            'description': p.description,
+            'tags': p.tags,
+            'order': p.order,
+            'created_at': p.created_at,
+            'updated_at': p.updated_at
+        } for p in parts])
+    if request.method == 'POST':
+        data = request.get_json()
+        part = LLMPromptPart(
+            type=data['type'],
+            content=data['content'],
+            description=data.get('description'),
+            tags=data.get('tags', []),
+            order=data.get('order', 0)
+        )
+        db.session.add(part)
+        db.session.commit()
+        return jsonify({'status': 'success', 'part': part.id})
+
+
+@bp.route('/prompt_parts/<int:part_id>', methods=['GET', 'PUT', 'DELETE'])
+def handle_prompt_part(part_id):
+    part = LLMPromptPart.query.get_or_404(part_id)
+    if request.method == 'GET':
+        return jsonify({
+            'id': part.id,
+            'type': part.type,
+            'content': part.content,
+            'description': part.description,
+            'tags': part.tags,
+            'order': part.order,
+            'created_at': part.created_at,
+            'updated_at': part.updated_at
+        })
+    if request.method == 'PUT':
+        data = request.get_json()
+        part.type = data.get('type', part.type)
+        part.content = data.get('content', part.content)
+        part.description = data.get('description', part.description)
+        part.tags = data.get('tags', part.tags)
+        part.order = data.get('order', part.order)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    if request.method == 'DELETE':
+        db.session.delete(part)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+
+
+@bp.route('/actions/<int:action_id>/prompt_parts', methods=['GET', 'POST'])
+def action_prompt_parts(action_id):
+    if request.method == 'GET':
+        links = LLMActionPromptPart.query.filter_by(action_id=action_id).order_by(LLMActionPromptPart.order).all()
+        return jsonify([{
+            'prompt_part_id': l.prompt_part_id,
+            'order': l.order,
+            'type': l.prompt_part.type,
+            'content': l.prompt_part.content,
+            'description': l.prompt_part.description,
+            'tags': l.prompt_part.tags
+        } for l in links])
+    if request.method == 'POST':
+        data = request.get_json()
+        link = LLMActionPromptPart(
+            action_id=action_id,
+            prompt_part_id=data['prompt_part_id'],
+            order=data.get('order', 0)
+        )
+        db.session.add(link)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+
+
+@bp.route('/actions/<int:action_id>/prompt_parts/<int:part_id>', methods=['PUT', 'DELETE'])
+def update_action_prompt_part(action_id, part_id):
+    link = LLMActionPromptPart.query.filter_by(action_id=action_id, prompt_part_id=part_id).first_or_404()
+    if request.method == 'PUT':
+        data = request.get_json()
+        link.order = data.get('order', link.order)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    if request.method == 'DELETE':
+        db.session.delete(link)
+        db.session.commit()
+        return jsonify({'status': 'success'})

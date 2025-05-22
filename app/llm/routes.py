@@ -43,7 +43,7 @@ def templates():
 def actions():
     """Render the LLM Actions management page."""
     actions = [action.to_dict() for action in LLMAction.query.all()]
-    logger.info(f"[ACTIONS] Loaded actions: {actions}")
+    logger.info(f"[ACTIONS] Loaded {len(actions)} actions: {actions}")
     prompts = LLMPrompt.query.order_by(LLMPrompt.order.is_(None), LLMPrompt.order, LLMPrompt.id).all()
     config = LLMConfig.query.first()
     if not config:

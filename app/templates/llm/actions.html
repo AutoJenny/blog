@@ -3,115 +3,99 @@
 {% block title %}LLM Actions{% endblock %}
 
 {% block styles %}
+<link href="/static/css/dist/main.css" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js">
 <style>
-    /* Tab Navigation */
-    .tab-nav {
-        border-bottom: 2px solid var(--admin-border, #404040);
+    body {
+        background: #18181b;
+    }
+
+    .admin-card {
+        background: #23272F;
+        border-radius: 1rem;
+        box-shadow: 0 6px 32px rgba(0, 0, 0, 0.18);
+        padding: 2.5rem 2rem 2rem 2rem;
         margin-bottom: 2rem;
     }
 
-    .tab-button {
-        position: relative;
-        padding: 1rem 2rem;
-        font-weight: 500;
-        color: var(--admin-text-secondary, #9CA3AF);
-        border: none;
-        background: none;
-        cursor: pointer;
-        transition: color 0.2s;
+    .action-card {
+        background: #26293a;
+        border: 1.5px solid #35395a;
+        border-radius: 1rem;
+        padding: 2rem 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 12px rgba(56, 189, 248, 0.08);
     }
 
-    .tab-button[aria-selected="true"] {
-        color: var(--admin-text, #E0E0E0);
-    }
-
-    .tab-button[aria-selected="true"]::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background-color: var(--admin-primary, #1B4B73);
-    }
-
-    /* Action Cards */
-    .action-accordion-item {
-        background: var(--admin-bg-card, #23272F);
-        border: 1px solid var(--admin-border, #404040);
-        border-radius: 0.75rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
-    }
-
-    .action-accordion-header {
+    .action-list {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        cursor: pointer;
-        user-select: none;
-        padding: 1rem 2rem;
-        background: #23272F;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .action-accordion-item {
+        background: #23273a;
+        border: 1.5px solid #35395a;
         border-radius: 0.75rem;
-        border-bottom: 1px solid var(--admin-border, #404040);
-        color: var(--admin-accent, #6366F1);
-        font-weight: 600;
-        font-size: 1.1rem;
-        transition: background 0.2s;
+        padding: 1.25rem 1.5rem;
+        transition: box-shadow 0.2s, border 0.2s, background 0.2s;
+        box-shadow: 0 2px 8px rgba(56, 189, 248, 0.06);
+        cursor: pointer;
     }
 
-    .action-accordion-header:hover {
-        background: #3730a3 !important;
-        color: #fff;
+    .action-accordion-item:hover {
+        border-color: #38bdf8;
+        background: #23273aee;
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.13);
     }
 
-    .action-accordion-header.active {
-        background: #312e81 !important;
-        color: #fff;
+    .action-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
     }
 
-    .chevron {
-        transition: transform 0.3s;
-        margin-right: 0.75em;
-        font-size: 1.2em;
+    .action-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #e0e0e0;
+        letter-spacing: 0.01em;
+    }
+
+    .action-model {
         color: #a5b4fc;
+        font-size: 1em;
+        margin-left: 1.5rem;
+        font-weight: 500;
     }
 
-    .chevron.open {
-        transform: rotate(90deg);
+    .action-actions {
+        display: flex;
+        gap: 0.75rem;
     }
 
-    .drag-handle {
-        cursor: grab;
-        font-size: 1.2em;
-        color: #a3a3a3;
-        margin-right: 0.75em;
-    }
-
-    .sortable-ghost {
-        opacity: 0.4;
-        background: #6366F1 !important;
-    }
-
-    .sortable-chosen {
-        border-top: 6px solid #6366F1 !important;
-        margin-top: -6px;
-        box-shadow: 0 0 0 2px #6366F1;
-        transition: border 0.2s, box-shadow 0.2s;
+    .action-prompt {
+        font-family: 'Monaco', 'Menlo', monospace;
+        background: #18181b;
+        padding: 1.1rem 1.25rem;
+        border-radius: 0.5rem;
+        font-size: 0.95em;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        color: #e0e0e0;
+        border: 1px solid #35395a;
+        margin-top: 0.5rem;
     }
 
     .action-accordion-content {
+        margin-top: 1rem;
         display: none;
-        padding: 1.5rem 2rem 2rem 2rem;
-        background: #18181b;
-        border-radius: 0 0 0.75rem 0.75rem;
-        color: var(--admin-text, #E0E0E0);
     }
 
-    .action-accordion-content.active {
+    .action-accordion-content.active,
+    .action-accordion-content[style*='block'] {
         display: block;
         animation: fadeIn 0.3s;
     }
@@ -126,71 +110,180 @@
         }
     }
 
-    /* Form Styling */
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .form-label {
-        display: block;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--admin-text, #E0E0E0);
-        margin-bottom: 0.5rem;
-    }
-
-    .form-input {
-        width: 100%;
-        padding: 0.75rem;
-        background-color: var(--admin-bg-input, #2D333B);
-        border: 1px solid var(--admin-border, #404040);
-        border-radius: 0.5rem;
-        color: var(--admin-text, #E0E0E0);
-        transition: border-color 0.2s;
-    }
-
-    .form-input:focus {
-        border-color: var(--admin-primary, #1B4B73);
-        outline: none;
-    }
-
-    /* Buttons */
     .btn {
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.4rem;
         font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
         cursor: pointer;
-        transition: background-color 0.2s;
+        font-size: 0.95em;
     }
 
     .btn-primary {
-        background-color: var(--admin-primary, #1B4B73);
+        background: linear-gradient(90deg, #6366f1 0%, #38bdf8 100%);
         color: #fff;
         border: none;
+        font-weight: 700;
     }
 
     .btn-primary:hover {
-        background-color: var(--admin-primary-hover, #1a4469);
+        background: linear-gradient(90deg, #38bdf8 0%, #6366f1 100%);
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.18);
+        color: #fff;
     }
 
     .btn-secondary {
-        background-color: var(--admin-accent, #6366F1);
-        color: #fff;
-        border: none;
+        background: #23273a;
+        border: 1.5px solid #35395a;
+        color: #a5b4fc;
     }
 
     .btn-secondary:hover {
-        background-color: var(--admin-accent-hover, #4F46E5);
+        background: #3730a3;
+        border-color: #38bdf8;
+        color: #fff;
     }
 
     .btn-danger {
-        background-color: var(--admin-danger, #DC2626);
-        color: #fff;
+        background: #DC2626;
+        color: white;
         border: none;
     }
 
     .btn-danger:hover {
-        background-color: var(--admin-danger-hover, #B91C1C);
+        background: #B91C1C;
+        color: #fff;
+    }
+
+    .sortable-ghost {
+        opacity: 0.4;
+        background: #6366F1 !important;
+    }
+
+    .sortable-chosen {
+        border-top: 6px solid #6366F1 !important;
+        margin-top: -6px;
+        box-shadow: 0 0 0 2px #6366F1;
+        transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    /* Modal Styling */
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: #23273a;
+        border-radius: 1rem;
+        padding: 2.5rem 2rem 2rem 2rem;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 8px 32px rgba(56, 189, 248, 0.18);
+        border: 1.5px solid #35395a;
+        position: relative;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #35395a;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #e0e0e0;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        color: #a5b4fc;
+        cursor: pointer;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+        background: #3730a3;
+        color: #fff;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        display: block;
+        color: #a5b4fc;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.97em;
+    }
+
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        background: #18181b;
+        border: 1.5px solid #35395a;
+        color: #e0e0e0;
+        padding: 0.7rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 1em;
+        margin-bottom: 0.1rem;
+        transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+        border-color: #38bdf8;
+        outline: none;
+        box-shadow: 0 0 0 2px #38bdf8aa;
+    }
+
+    .form-textarea {
+        min-height: 110px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        line-height: 1.5;
+        resize: vertical;
+    }
+
+    .flex.justify-end.gap-4 {
+        margin-top: 2rem;
+    }
+
+    @media (max-width: 600px) {
+
+        .admin-card,
+        .modal-content {
+            padding: 1.2rem;
+        }
+
+        .action-card {
+            padding: 1rem;
+        }
     }
 </style>
 {% endblock %}
@@ -200,255 +293,233 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold">LLM Actions Manager</h1>
-        <button id="show-action-form-btn" class="btn btn-primary">
-            <span class="mr-2">+</span> New Action
-        </button>
+<div class="max-w-5xl mx-auto py-10">
+    <div class="admin-content">
+        <div class="admin-card">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="admin-title">
+                    <i class="fas fa-bolt mr-2"></i>
+                    LLM Actions
+                </h1>
+                <button class="btn btn-primary" id="newActionBtn">
+                    <i class="fas fa-plus"></i>
+                    New Action
+                </button>
+            </div>
+            <div class="action-card">
+                <div class="action-list" id="actionAccordionList">
+                    {% if actions|length == 0 %}
+                    <div class="text-center text-gray-400 py-8">No actions found in the database.</div>
+                    {% endif %}
+                    {% for action in actions %}
+                    <div class="action-accordion-item" data-id="{{ action.id }}" draggable="true">
+                        <div class="action-header flex items-center justify-between select-none">
+                            <span class="flex items-center">
+                                <span class="drag-handle mr-2" title="Drag to reorder"
+                                    style="cursor:grab;font-size:1.2em;">☰</span>
+                                <span class="chevron mr-2" style="transition:transform 0.2s;">&#9654;</span>
+                                <span class="action-name">{{ action.field_name }}</span>
+                                <span class="action-model">Model: {{ action.llm_model }}</span>
+                            </span>
+                            <div class="action-actions">
+                                <a href="/llm/actions/{{ action.id }}" class="btn btn-primary ml-2"
+                                    title="View Details">
+                                    <i class="fas fa-eye"></i> Details
+                                </a>
+                                <button class="btn btn-secondary edit-action-btn ml-2" data-id="{{ action.id }}">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-danger delete-action-btn ml-2" data-id="{{ action.id }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                        <div class="action-accordion-content">
+                            <div class="action-prompt"><strong>Prompt Template:</strong><br>{{ action.prompt_template }}
+                            </div>
+                            <div class="text-xs text-gray-500 mt-2">Temperature: {{ action.temperature }}, Max Tokens:
+                                {{ action.max_tokens }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- New Action Form (hidden by default, appears above the list when triggered) -->
-    <div id="action-form-container" class="mb-8 p-6 bg-[#23272F] rounded-lg shadow-lg border border-gray-700 hidden">
-        <h2 class="text-xl font-semibold mb-4 text-white" id="action-form-title">New Action</h2>
-        <form id="action-form">
-            <input type="hidden" id="action_id" name="action_id">
-            <div class="form-group">
-                <label class="form-label" for="field_name">Field Name</label>
-                <input type="text" id="field_name" name="field_name" class="form-input">
+
+    <!-- New/Edit Action Modal -->
+    <div id="actionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalActionTitle">New Action</h2>
+                <button type="button" class="modal-close" id="modalActionCloseBtn">×</button>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="prompt_template_id">Prompt Template</label>
-                <select id="prompt_template_id" name="prompt_template_id" class="form-input"></select>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="llm_model">LLM Model</label>
-                <select id="llm_model" name="llm_model" class="form-input"></select>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
+            <form id="actionForm">
+                <input type="hidden" id="actionId" name="id">
                 <div class="form-group">
-                    <label class="form-label" for="temperature">Temperature</label>
-                    <input type="number" id="temperature" name="temperature" class="form-input" min="0" max="2"
+                    <label class="form-label" for="actionFieldName">Field Name</label>
+                    <input type="text" id="actionFieldName" name="field_name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="actionModel">LLM Model</label>
+                    <input type="text" id="actionModel" name="llm_model" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="actionPromptTemplate">Prompt Template</label>
+                    <textarea id="actionPromptTemplate" name="prompt_template" class="form-textarea"
+                        required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="actionTemperature">Temperature</label>
+                    <input type="number" id="actionTemperature" name="temperature" class="form-input" min="0" max="2"
                         step="0.1" value="0.7">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="max_tokens">Max Tokens</label>
-                    <input type="number" id="max_tokens" name="max_tokens" class="form-input" min="1" max="4096"
+                    <label class="form-label" for="actionMaxTokens">Max Tokens</label>
+                    <input type="number" id="actionMaxTokens" name="max_tokens" class="form-input" min="1" max="4096"
                         value="1000">
                 </div>
-            </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" id="cancel-action-form-btn" class="btn btn-secondary">Cancel</button>
-                <button type="reset" class="btn btn-secondary">Clear</button>
-                <button type="submit" class="btn btn-primary">Save</button>
-            </div>
-        </form>
-    </div>
-    <div id="actionAccordionList">
-        {% for action in actions %}
-        <div class="template-item flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-            <div>
-                <span class="font-bold">{{ action.field_name }}</span>
-                <div class="text-sm text-gray-400">Model: {{ action.llm_model }}, Temp: {{ action.temperature }}, Max
-                    Tokens: {{ action.max_tokens }}</div>
-                <div class="text-xs text-gray-500">Prompt Template ID: {{ action.prompt_template_id }}</div>
-            </div>
-            <a href="/llm/actions/{{ action.id }}" class="btn btn-secondary">View Details</a>
+                <div class="flex justify-end gap-4">
+                    <button type="button" class="btn btn-secondary" id="cancelActionBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Action</button>
+                </div>
+            </form>
         </div>
-        {% endfor %}
     </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-<script>
-    let currentConfig = null;
-    let availableModels = [];
-    let availablePrompts = [];
-
-    async function initializeData() {
-        try {
-            // Load configuration
-            const configResponse = await fetch('/api/v1/llm/config');
-            currentConfig = await configResponse.json();
-
-            // Load models
-            const modelsResponse = await fetch('/api/v1/llm/models/ollama');
-            const modelsData = await modelsResponse.json();
-            availableModels = modelsData.models || [];
-            updateModelSelects(currentConfig, modelsData);
-
-            // Load prompts
-            const promptsResponse = await fetch('/api/v1/llm/prompts');
-            availablePrompts = await promptsResponse.json();
-            updatePromptSelect(availablePrompts);
-        } catch (error) {
-            handleFetchError(error, 'Error initializing data');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // Initialize data
-        initializeData();
-
-        // Show/Hide New Action form
-        const showFormBtn = document.getElementById('show-action-form-btn');
-        const formContainer = document.getElementById('action-form-container');
-        const cancelFormBtn = document.getElementById('cancel-action-form-btn');
-        const actionForm = document.getElementById('action-form');
-        const formTitle = document.getElementById('action-form-title');
-        showFormBtn.addEventListener('click', function () {
-            formTitle.textContent = 'New Action';
-            actionForm.reset();
-            document.getElementById('action_id').value = '';
-            formContainer.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-        cancelFormBtn.addEventListener('click', function () {
-            formContainer.classList.add('hidden');
-            actionForm.reset();
-            document.getElementById('action_id').value = '';
-        });
-
-        // New Action form submission handler
-        if (actionForm) {
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Accordion logic
+            document.querySelectorAll('.action-header').forEach(header => {
+                header.addEventListener('click', function (e) {
+                    if (e.target.closest('.edit-action-btn') || e.target.closest('.delete-action-btn')) return;
+                    const item = header.parentElement;
+                    const content = item.querySelector('.action-accordion-content');
+                    const chevron = header.querySelector('.chevron');
+                    const isOpen = content.classList.contains('active') || content.style.display === 'block';
+                    document.querySelectorAll('.action-accordion-content').forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll('.chevron').forEach(ch => ch.style.transform = 'rotate(0deg)');
+                    if (!isOpen) {
+                        content.classList.add('active');
+                        chevron.style.transform = 'rotate(90deg)';
+                    }
+                });
+            });
+            // Drag-and-drop with SortableJS
+            const el = document.getElementById('actionAccordionList');
+            if (el) {
+                new Sortable(el, {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    onEnd: function (evt) {
+                        const ids = Array.from(el.querySelectorAll('.action-accordion-item')).map(item => item.dataset.id);
+                        fetch('/api/v1/llm/actions/order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ order: ids })
+                        }).then(r => r.json()).then(data => {
+                            if (!data.success) {
+                                alert('Failed to save order: ' + (data.error || 'Unknown error'));
+                            }
+                        }).catch(err => {
+                            alert('Error saving order: ' + err);
+                        });
+                    }
+                });
+            }
+            // Modal logic
+            const actionModal = document.getElementById('actionModal');
+            const newActionBtn = document.getElementById('newActionBtn');
+            const modalActionCloseBtn = document.getElementById('modalActionCloseBtn');
+            const cancelActionBtn = document.getElementById('cancelActionBtn');
+            const actionForm = document.getElementById('actionForm');
+            newActionBtn.addEventListener('click', function () {
+                document.getElementById('modalActionTitle').textContent = 'New Action';
+                actionForm.reset();
+                document.getElementById('actionId').value = '';
+                actionModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+            modalActionCloseBtn.addEventListener('click', function () {
+                actionModal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            cancelActionBtn.addEventListener('click', function () {
+                actionModal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            // Edit Action
+            document.querySelectorAll('.edit-action-btn').forEach(btn => {
+                btn.addEventListener('click', async function (e) {
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    const response = await fetch(`/api/v1/llm/actions/${id}`);
+                    if (!response.ok) return alert('Failed to load action');
+                    const data = await response.json();
+                    document.getElementById('modalActionTitle').textContent = 'Edit Action';
+                    document.getElementById('actionId').value = data.action.id;
+                    document.getElementById('actionFieldName').value = data.action.field_name;
+                    document.getElementById('actionModel').value = data.action.llm_model;
+                    document.getElementById('actionPromptTemplate').value = data.action.prompt_template;
+                    document.getElementById('actionTemperature').value = data.action.temperature;
+                    document.getElementById('actionMaxTokens').value = data.action.max_tokens;
+                    actionModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+            // Delete Action
+            document.querySelectorAll('.delete-action-btn').forEach(btn => {
+                btn.addEventListener('click', async function (e) {
+                    e.stopPropagation();
+                    if (!confirm('Are you sure you want to delete this action?')) return;
+                    const id = btn.dataset.id;
+                    const response = await fetch(`/api/v1/llm/actions/${id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to delete action');
+                    }
+                });
+            });
+            // Form submit
             actionForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
-                const submitButton = actionForm.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Saving...';
-                const formData = new FormData(this);
-                const data = {
-                    field_name: formData.get('field_name'),
-                    prompt_template_id: formData.get('prompt_template_id'),
-                    llm_model: formData.get('llm_model'),
-                    temperature: parseFloat(formData.get('temperature')),
-                    max_tokens: parseInt(formData.get('max_tokens'))
-                };
-                const actionId = formData.get('action_id');
+                const actionId = document.getElementById('actionId').value;
                 const method = actionId ? 'PUT' : 'POST';
                 const url = actionId ? `/api/v1/llm/actions/${actionId}` : '/api/v1/llm/actions';
                 try {
                     const response = await fetch(url, {
                         method: method,
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
+                        body: JSON.stringify({
+                            field_name: document.getElementById('actionFieldName').value,
+                            llm_model: document.getElementById('actionModel').value,
+                            prompt_template: document.getElementById('actionPromptTemplate').value,
+                            temperature: parseFloat(document.getElementById('actionTemperature').value),
+                            max_tokens: parseInt(document.getElementById('actionMaxTokens').value)
+                        })
                     });
-                    const result = await response.json();
-                    if (result.status === 'success') {
+                    if (response.ok) {
                         window.location.reload();
-                        return;
+                    } else {
+                        throw new Error('Failed to save action');
                     }
-                    alert('Error saving action: ' + (result.error || 'Unknown error'));
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Save';
                 } catch (error) {
-                    alert('Error saving action: ' + error.message);
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Save';
+                    console.error('Error:', error);
+                    alert('Error saving action');
                 }
             });
-        }
-
-        // Accordion logic for actions
-        document.querySelectorAll('.action-accordion-header').forEach(header => {
-            header.addEventListener('click', function (e) {
-                if (e.target.closest('.btn')) return; // Don't toggle if Edit/Delete clicked
-                const item = header.parentElement;
-                const content = item.querySelector('.action-accordion-content');
-                const chevron = header.querySelector('.chevron');
-                const isOpen = content.classList.contains('active');
-                document.querySelectorAll('.action-accordion-content').forEach(c => c.classList.remove('active'));
-                document.querySelectorAll('.action-accordion-header').forEach(h => h.classList.remove('active'));
-                document.querySelectorAll('.chevron').forEach(ch => ch.classList.remove('open'));
-                if (!isOpen) {
-                    content.classList.add('active');
-                    header.classList.add('active');
-                    chevron.classList.add('open');
+            // Close modal when clicking outside
+            actionModal.addEventListener('click', function (e) {
+                if (e.target === this) {
+                    actionModal.classList.remove('active');
+                    document.body.style.overflow = '';
                 }
             });
         });
-
-        // Drag-and-drop with SortableJS for actions
-        const el = document.getElementById('actionAccordionList');
-        if (el) {
-            new Sortable(el, {
-                animation: 150,
-                handle: '.drag-handle',
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                onEnd: function (evt) {
-                    const ids = Array.from(el.querySelectorAll('.action-accordion-item')).map(item => item.dataset.id);
-                    fetch('/api/v1/llm/actions/order', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ order: ids })
-                    }).then(r => r.json()).then(data => {
-                        if (!data.success) {
-                            alert('Failed to save order: ' + (data.error || 'Unknown error'));
-                        }
-                    }).catch(err => {
-                        alert('Error saving order: ' + err);
-                    });
-                }
-            });
-        }
-    });
-
-    function updateModelSelects(config, modelsData) {
-        const modelSelects = document.querySelectorAll('select[name="llm_model"]');
-        modelSelects.forEach(select => {
-            select.innerHTML = '';
-            modelsData.models.forEach(model => {
-                const option = document.createElement('option');
-                option.value = model;
-                option.text = model;
-                if (model === config.model_name) {
-                    option.selected = true;
-                }
-                select.appendChild(option);
-            });
-        });
-    }
-
-    function updatePromptSelect(prompts) {
-        const promptSelects = document.querySelectorAll('select[name="prompt_template_id"]');
-        promptSelects.forEach(select => {
-            select.innerHTML = '';
-            prompts.forEach(prompt => {
-                const option = document.createElement('option');
-                option.value = prompt.id;
-                option.text = prompt.name;
-                option.dataset.prompt = prompt.prompt_text;
-                select.appendChild(option);
-            });
-        });
-    }
-
-    function handleFetchError(error, message) {
-        console.error(message, error);
-        alert(message + ': ' + error.message);
-    }
-
-    // Edit Action logic: loads action into the form for editing
-    window.editAction = async function (actionId) {
-        try {
-            await initializeData();
-            const response = await fetch(`/api/v1/llm/actions/${actionId}`);
-            const data = await response.json();
-            // Fill form fields
-            document.getElementById('action_id').value = actionId;
-            document.getElementById('field_name').value = data.action.field_name;
-            document.getElementById('prompt_template_id').value = data.action.prompt_template_id;
-            document.getElementById('llm_model').value = data.action.llm_model;
-            document.getElementById('temperature').value = data.action.temperature;
-            document.getElementById('max_tokens').value = data.action.max_tokens;
-            document.getElementById('action-form-title').textContent = 'Edit Action';
-            document.getElementById('action-form-container').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } catch (error) {
-            handleFetchError(error, 'Error loading action data');
-        }
-    }
-</script>
+    </script>
+</div>
 {% endblock %}
