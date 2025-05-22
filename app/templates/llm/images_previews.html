@@ -100,6 +100,36 @@
 </style>
 {% endblock %}
 {% block content %}
+<div class="llm-nav flex justify-center gap-4 mb-8">
+    <a href="/llm/" class="llm-nav-link{% if request.path == '/llm/' %} active{% endif %}" title="LLM Home">
+        <i class="fas fa-robot"></i>
+        <span>Home</span>
+    </a>
+    <a href="/llm/templates" class="llm-nav-link{% if '/llm/templates' in request.path %} active{% endif %}"
+        title="Prompt Templates">
+        <i class="fas fa-scroll"></i>
+        <span>Templates</span>
+    </a>
+    <a href="/llm/config" class="llm-nav-link{% if '/llm/config' in request.path %} active{% endif %}"
+        title="Configuration">
+        <i class="fas fa-cog"></i>
+        <span>Config</span>
+    </a>
+    <a href="/llm/actions" class="llm-nav-link{% if '/llm/actions' in request.path %} active{% endif %}"
+        title="Actions & Tasks">
+        <i class="fas fa-bolt"></i>
+        <span>Actions</span>
+    </a>
+    <a href="/llm/test" class="llm-nav-link{% if '/llm/test' in request.path %} active{% endif %}" title="Test LLM">
+        <i class="fas fa-vial"></i>
+        <span>Test</span>
+    </a>
+    <a href="/llm/images" class="llm-nav-link{% if '/llm/images' in request.path %} active{% endif %}"
+        title="Image Tools">
+        <i class="fas fa-image"></i>
+        <span>Images</span>
+    </a>
+</div>
 <div class="max-w-3xl mx-auto py-10">
     <div class="admin-card">
         <h1 class="admin-title mb-6">
