@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="flex min-h-[80vh] h-[80vh] bg-gray-900 text-gray-100 rounded-xl shadow-lg overflow-hidden">
+<div class="flex w-full h-[calc(100vh-8rem)] bg-gray-900 text-gray-100 rounded-xl shadow-lg overflow-hidden">
     <!-- Sidebar: Directory Tree -->
-    <aside class="w-72 bg-gray-800 border-r border-gray-700 p-4 overflow-y-auto h-full max-h-full"
-        style="min-height:0;">
+    <aside class="w-72 bg-gray-800 border-r border-gray-700 p-4 h-full overflow-y-auto">
         <h2 class="text-lg font-bold mb-4 text-purple-300">Documentation</h2>
         <nav>
             <ul class="space-y-1">
@@ -13,7 +12,7 @@
     </aside>
 
     <!-- Main: Markdown Content -->
-    <main class="flex-1 p-8 overflow-y-auto h-full max-h-full" style="min-height:0;">
+    <main class="flex-1 p-8 h-full overflow-y-auto">
         {% if file_html %}
         <div
             class="prose prose-invert max-w-4xl mx-auto bg-gray-800/80 rounded-lg shadow-lg p-8 border border-purple-700">
