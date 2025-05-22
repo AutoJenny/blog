@@ -232,3 +232,11 @@ def llm_images_prompts():
 @bp.route('/images/previews')
 def llm_images_previews():
     return render_template('llm/images_previews.html')
+
+@bp.route('/actions/generate-summary-idea-seed')
+def mvp_action_detail():
+    action = {
+        'name': 'Generate Summary from idea_seed',
+        'description': 'Takes the idea_seed and generates a summary using the selected LLM and prompts.'
+    }
+    return render_template('llm/action_detail.html', action=action)

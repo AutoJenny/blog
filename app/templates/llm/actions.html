@@ -244,37 +244,27 @@
         </form>
     </div>
     <div id="actionAccordionList">
+        <!-- Hardcoded MVP Action -->
+        <div class="template-item flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div>
+                <span class="font-bold text-[#38bdf8]">Generate Summary from idea_seed</span>
+                <span class="ml-2 text-xs text-gray-400">(MVP Test Action)</span>
+                <div class="text-sm text-gray-400">Takes the idea_seed and generates a summary using the selected LLM
+                    and prompts.</div>
+            </div>
+            <a href="/llm/actions/generate-summary-idea-seed" class="llm-action-btn">
+                <i class="fa-solid fa-bolt mr-2"></i> View Details
+            </a>
+        </div>
+        <!-- Existing specimen actions (leave in place) -->
         {% for action in actions %}
-        <div class="action-accordion-item" data-id="{{ action.id }}">
-            <div class="action-accordion-header flex items-center justify-between">
-                <span class="flex items-center">
-                    <span class="drag-handle" title="Drag to reorder">☰</span>
-                    <span class="chevron">&#9654;</span>
-                    <span class="action-title ml-2">{{ action.field_name }}</span>
-                </span>
-                <button onclick="editAction('{{ action.id }}')" class="btn btn-secondary ml-2">Edit</button>
+        <div class="template-item flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div>
+                <span class="font-bold">{{ action.name }}</span>
+                <span class="ml-2 text-xs text-gray-400">({{ action.status or 'Specimen' }})</span>
+                <div class="text-sm text-gray-400">{{ action.description }}</div>
             </div>
-            <div class="action-accordion-content">
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <span class="detail-label">Model</span><br>
-                        <span class="detail-value">{{ action.llm_model }}</span>
-                    </div>
-                    <div>
-                        <span class="detail-label">Temperature</span><br>
-                        <span class="detail-value">{{ action.temperature }}</span>
-                    </div>
-                    <div>
-                        <span class="detail-label">Max Tokens</span><br>
-                        <span class="detail-value">{{ action.max_tokens }}</span>
-                    </div>
-                </div>
-                <div class="mb-2">
-                    <span class="detail-label">Prompt Template</span>
-                    <pre
-                        class="mt-2 p-3 bg-gray-900 rounded text-xs overflow-x-auto whitespace-pre-wrap">{{ action.prompt_template }}</pre>
-                </div>
-            </div>
+            <a href="/llm/actions/{{ action.id }}" class="btn btn-secondary">View Details</a>
         </div>
         {% endfor %}
     </div>
