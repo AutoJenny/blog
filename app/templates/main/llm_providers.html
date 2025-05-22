@@ -1,32 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>LLM Providers</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="/static/css/dist/main.css">
-</head>
-
-<body class="bg-dark-bg text-dark-text min-h-screen">
-    <div class="container mx-auto py-10 px-4">
-        <div class="text-2xl font-bold text-indigo-300 mb-6 flex items-center gap-3">
-            <i class="fa-solid fa-server"></i> LLM Providers
-        </div>
-        <div class="bg-dark-card rounded-xl p-6 shadow mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <div class="text-lg font-semibold text-white">Configured Providers</div>
-                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow"><i
-                        class="fa-solid fa-plus"></i> Add Provider</button>
-            </div>
-            <div class="text-dark-accent">(Provider list will appear here)</div>
-        </div>
-        <div class="bg-dark-card rounded-xl p-6 shadow">
-            <div class="text-lg font-semibold text-white mb-2">Test Provider Connection</div>
-            <div class="text-dark-accent">(Provider test form will appear here)</div>
-        </div>
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto py-10 px-4">
+    <div class="text-2xl font-bold text-indigo-300 mb-6 flex items-center gap-3">
+        <i class="fa-solid fa-server"></i> LLM Providers
     </div>
-</body>
-
-</html>
+    <div class="bg-dark-card rounded-xl p-6 shadow mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <div class="text-lg font-semibold text-white">Configured Providers</div>
+            <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow"><i
+                    class="fa-solid fa-plus"></i> Add Provider</button>
+        </div>
+        <div class="text-dark-accent">(Provider list will appear here)</div>
+    </div>
+    <div class="bg-dark-card rounded-xl p-6 shadow">
+        <div class="text-lg font-semibold text-white mb-2">Test Provider Connection</div>
+        <div class="text-dark-accent">(Provider test form will appear here)</div>
+    </div>
+</div>
+{% endblock %}
