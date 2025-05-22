@@ -1,16 +1,189 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+    .action-status {
+        display: inline-block;
+        padding: 0.25em 0.75em;
+        border-radius: 9999px;
+        font-size: 0.95em;
+        font-weight: 600;
+        background: #6366f1;
+        color: #fff;
+    }
+
+    .action-btn {
+        @apply text-indigo-400 hover:text-indigo-200 px-2;
+    }
+
+    .action-btn[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .modal-bg {
+        background: rgba(24, 28, 42, 0.85);
+    }
+</style>
 <div class="container mx-auto py-10 px-4">
-    <div class="text-2xl font-bold text-indigo-300 mb-6 flex items-center gap-3">
-        <i class="fa-solid fa-bolt"></i> LLM Actions & Tasks
-    </div>
-    <div class="bg-dark-card rounded-xl p-6 shadow mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <div class="text-lg font-semibold text-white">Actions & Tasks</div>
-            <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow"><i
-                    class="fa-solid fa-plus"></i> New Action</button>
+    <div class="flex justify-between items-center mb-8">
+        <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+            <i class="fa-solid fa-bolt"></i> LLM Actions & Tasks
         </div>
-        <div class="text-dark-accent">(Action/task list will appear here)</div>
+        <button id="addActionBtn"
+            class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> New Action
+        </button>
+    </div>
+    <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+        <table class="min-w-full text-left">
+            <thead>
+                <tr class="text-indigo-200 border-b border-dark-border">
+                    <th class="py-2 px-3">Name</th>
+                    <th class="py-2 px-3">Input → Output</th>
+                    <th class="py-2 px-3">Prompt</th>
+                    <th class="py-2 px-3">Model</th>
+                    <th class="py-2 px-3">Status</th>
+                    <th class="py-2 px-3">Last Run</th>
+                    <th class="py-2 px-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Example rows, replace with dynamic data -->
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">Summarize Body</td>
+                    <td class="py-2 px-3">body → summary</td>
+                    <td class="py-2 px-3">Summarize Post</td>
+                    <td class="py-2 px-3">gpt-3.5-turbo</td>
+                    <td class="py-2 px-3"><span class="action-status">Active</span></td>
+                    <td class="py-2 px-3">2025-05-21</td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">SEO Description</td>
+                    <td class="py-2 px-3">body → seo_description</td>
+                    <td class="py-2 px-3">SEO Description</td>
+                    <td class="py-2 px-3">mistral</td>
+                    <td class="py-2 px-3"><span class="action-status">Active</span></td>
+                    <td class="py-2 px-3">2025-05-20</td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                <tr class="hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">Tag Generator</td>
+                    <td class="py-2 px-3">body → tags</td>
+                    <td class="py-2 px-3">Tag Generator</td>
+                    <td class="py-2 px-3">claude-3-opus</td>
+                    <td class="py-2 px-3"><span class="action-status">Inactive</span></td>
+                    <td class="py-2 px-3">2025-05-19</td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- Add Action Modal (placeholder) -->
+    <div id="addActionModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+            <button id="closeAddAction" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-plus"></i>
+                New Action/Task</div>
+            <form>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Action Name</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. Summarize Body" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Input Field</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. body" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Output Field</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. summary" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Prompt Template</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
+                        <option>Summarize Post</option>
+                        <option>SEO Description</option>
+                        <option>Tag Generator</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Model</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
+                        <option>gpt-3.5-turbo</option>
+                        <option>mistral</option>
+                        <option>claude-3-opus</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="submit"
+                        class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Action Run Modal (placeholder) -->
+    <div id="runActionModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <button id="closeRunAction" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-play"></i>
+                Run/Test Action</div>
+            <div class="mb-4 text-dark-accent">(Action run/test result will appear here)</div>
+            <div class="flex justify-end">
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Close</button>
+            </div>
+        </div>
+    </div>
+    <!-- Action History Modal (placeholder) -->
+    <div id="actionHistoryModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <button id="closeActionHistory" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i
+                    class="fa-solid fa-clock-rotate-left"></i> Action History</div>
+            <div class="mb-4 text-dark-accent">(Action history will appear here)</div>
+            <div class="flex justify-end">
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Close</button>
+            </div>
+        </div>
     </div>
 </div>
+<script>
+    // Modal open/close logic (placeholder)
+    document.getElementById('addActionBtn').onclick = function () {
+        document.getElementById('addActionModal').classList.remove('hidden');
+    };
+    document.getElementById('closeAddAction').onclick = function () {
+        document.getElementById('addActionModal').classList.add('hidden');
+    };
+    document.getElementById('closeRunAction').onclick = function () {
+        document.getElementById('runActionModal').classList.add('hidden');
+    };
+    document.getElementById('closeActionHistory').onclick = function () {
+        document.getElementById('actionHistoryModal').classList.add('hidden');
+    };
+    // Add more modal logic as needed
+</script>
 {% endblock %}

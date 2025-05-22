@@ -1,20 +1,174 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+    .provider-status {
+        display: inline-block;
+        padding: 0.25em 0.75em;
+        border-radius: 9999px;
+        font-size: 0.95em;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: #22c55e;
+        color: #fff;
+    }
+
+    .status-error {
+        background: #ef4444;
+        color: #fff;
+    }
+
+    .status-inactive {
+        background: #64748b;
+        color: #fff;
+    }
+
+    .status-default {
+        background: #6366f1;
+        color: #fff;
+    }
+
+    .action-btn {
+        @apply text-indigo-400 hover:text-indigo-200 px-2;
+    }
+
+    .action-btn[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .modal-bg {
+        background: rgba(24, 28, 42, 0.85);
+    }
+</style>
 <div class="container mx-auto py-10 px-4">
-    <div class="text-2xl font-bold text-indigo-300 mb-6 flex items-center gap-3">
-        <i class="fa-solid fa-server"></i> LLM Providers
-    </div>
-    <div class="bg-dark-card rounded-xl p-6 shadow mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <div class="text-lg font-semibold text-white">Configured Providers</div>
-            <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow"><i
-                    class="fa-solid fa-plus"></i> Add Provider</button>
+    <div class="flex justify-between items-center mb-8">
+        <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+            <i class="fa-solid fa-server"></i> LLM Providers
         </div>
-        <div class="text-dark-accent">(Provider list will appear here)</div>
+        <button id="addProviderBtn"
+            class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Add Provider
+        </button>
     </div>
-    <div class="bg-dark-card rounded-xl p-6 shadow">
-        <div class="text-lg font-semibold text-white mb-2">Test Provider Connection</div>
-        <div class="text-dark-accent">(Provider test form will appear here)</div>
+    <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+        <table class="min-w-full text-left">
+            <thead>
+                <tr class="text-indigo-200 border-b border-dark-border">
+                    <th class="py-2 px-3">Provider</th>
+                    <th class="py-2 px-3">Type</th>
+                    <th class="py-2 px-3">Status</th>
+                    <th class="py-2 px-3">Last Tested</th>
+                    <th class="py-2 px-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Example rows, replace with dynamic data -->
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">OpenAI</td>
+                    <td class="py-2 px-3">OpenAI</td>
+                    <td class="py-2 px-3">
+                        <span class="provider-status status-active">Active</span>
+                        <span class="provider-status status-default ml-2">Default</span>
+                    </td>
+                    <td class="py-2 px-3">2m ago</td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Test"><i class="fa-solid fa-vial"></i></button>
+                        <button class="action-btn" title="Set Default"><i class="fa-solid fa-star"></i></button>
+                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">Ollama</td>
+                    <td class="py-2 px-3">Local</td>
+                    <td class="py-2 px-3"><span class="provider-status status-error">Error</span></td>
+                    <td class="py-2 px-3">1d ago</td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Test"><i class="fa-solid fa-vial"></i></button>
+                        <button class="action-btn" title="Set Default"><i class="fa-solid fa-star"></i></button>
+                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                <tr class="hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">Anthropic</td>
+                    <td class="py-2 px-3">Cloud</td>
+                    <td class="py-2 px-3"><span class="provider-status status-inactive">Inactive</span></td>
+                    <td class="py-2 px-3">-</td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Test"><i class="fa-solid fa-vial"></i></button>
+                        <button class="action-btn" title="Set Default"><i class="fa-solid fa-star"></i></button>
+                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- Add Provider Modal (placeholder) -->
+    <div id="addProviderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+            <button id="closeAddProvider" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-plus"></i>
+                Add Provider</div>
+            <form>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Provider Name</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. OpenAI" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Type</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
+                        <option>OpenAI</option>
+                        <option>Ollama</option>
+                        <option>Anthropic</option>
+                        <option>Custom</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">API Key / Endpoint</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="API Key or URL" />
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button"
+                        class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Test
+                        Connection</button>
+                    <button type="submit"
+                        class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Test Provider Modal (placeholder) -->
+    <div id="testProviderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <button id="closeTestProvider" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-vial"></i>
+                Test Provider</div>
+            <div class="mb-4 text-dark-accent">(Test result will appear here)</div>
+            <div class="flex justify-end">
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Close</button>
+            </div>
+        </div>
     </div>
 </div>
+<script>
+    // Modal open/close logic (placeholder)
+    document.getElementById('addProviderBtn').onclick = function () {
+        document.getElementById('addProviderModal').classList.remove('hidden');
+    };
+    document.getElementById('closeAddProvider').onclick = function () {
+        document.getElementById('addProviderModal').classList.add('hidden');
+    };
+    document.getElementById('closeTestProvider').onclick = function () {
+        document.getElementById('testProviderModal').classList.add('hidden');
+    };
+    // Add more modal logic as needed
+</script>
 {% endblock %}

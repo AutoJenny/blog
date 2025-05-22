@@ -8,9 +8,9 @@ Welcome to the LLM (Large Language Model) documentation hub for BlogForge. This 
 - Serve as the onboarding entry point for new contributors to the LLM stack.
 
 ## Key Resources
-- [Hybrid LLM Framework Refactor & Extension: Implementation Plan](../temp/llm_framework_hybrid_refactor.md)   The main step-by-step checklist and architecture plan.
-- [Dark Theme UI Styleguide](../frontend/dark_theme_styleguide.md)  UI/UX and engineering rules for all LLM-related UI.
-- [LLM Service Refactor Notes](../llm_service_refactor.md)  Additional notes on LLM service design.
+- [Hybrid LLM Framework Refactor & Extension: Implementation Plan](../temp/llm_framework_hybrid_refactor.md)  ᐧ The main step-by-step checklist and architecture plan.
+- [Dark Theme UI Styleguide](../frontend/dark_theme_styleguide.md) ᐧ UI/UX and engineering rules for all LLM-related UI.
+- [LLM Service Refactor Notes](../llm_service_refactor.md) ᐧ Additional notes on LLM service design.
 
 ## Diagrams
 - (Add diagrams here as .md or .png files as the architecture evolves)
@@ -35,6 +35,54 @@ A modern, unified admin interface is now available at `/llm/` in the web app. Th
 - **Settings** (`/llm/settings`): Configure global LLM settings, API keys, and advanced options.
 
 See the diagrams and detailed docs in this folder for architecture, workflow, and extensibility details.
+
+---
+
+## LLM Admin Implementation & Extension Log
+
+This section tracks the planned and in-progress implementation for each LLM admin sub-page. Update as features are scaffolded, extended, or completed.
+
+**2025-05-22: All LLM admin sub-pages (Providers, Models, Prompts, Actions, Logs, Settings) are now scaffolded with modern, accessible, dark-themed UI, placeholder tables, modals, and forms. Backend/API integration is the next step.**
+
+### 1. Providers
+- **UI:** Responsive table/grid, status badges, action buttons, add/edit/test modals (**scaffolded**)
+- **Backend:** CRUD endpoints for providers (planned)
+- **API Integration:** Test connection, set default, validation (planned)
+- **Extension:** Real-time status, error reporting, provider-specific config fields
+
+### 2. Models
+- **UI:** Table/grid of models per provider, add/edit/remove, set default, enable/disable (**scaffolded**)
+- **Backend:** CRUD endpoints for models (planned)
+- **API Integration:** Fetch models from provider, validate config (planned)
+- **Extension:** Model details, cost/context info, analytics
+
+### 3. Prompt Templates
+- **UI:** List, add, edit, delete, organize by type, versioning/history, preview (**scaffolded**)
+- **Backend:** CRUD endpoints for prompt templates (planned)
+- **API Integration:** Assign to actions/tasks, preview rendering (planned)
+- **Extension:** Template variables, live preview, usage stats
+
+### 4. Actions & Tasks
+- **UI:** List, add, edit, delete, assign prompt/model/provider, schedule/trigger, status/history, run/test (**scaffolded**)
+- **Backend:** CRUD endpoints for actions/tasks (planned)
+- **API Integration:** Manual/batch run, workflow integration (planned)
+- **Extension:** Action chaining, advanced scheduling, audit trail
+
+### 5. Interaction Logs
+- **UI:** List/filter/search logs, view request/response, analytics, export (**scaffolded**)
+- **Backend:** Log storage, query endpoints (planned)
+- **API Integration:** Token/cost/latency analytics, error reporting (planned)
+- **Extension:** Advanced filtering, export formats, alerting
+
+### 6. Settings
+- **UI:** Global settings, API keys, advanced options, security, integration (**scaffolded**)
+- **Backend:** Settings storage, validation, audit (planned)
+- **API Integration:** Webhooks, callback URLs, rate limits (planned)
+- **Extension:** Role-based access, change history, environment profiles
+
+---
+
+*Update this log as you scaffold, extend, and implement each area of the LLM admin.*
 
 ---
 
