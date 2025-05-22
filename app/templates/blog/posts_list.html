@@ -125,8 +125,7 @@
                             title="Edit">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </a>
-                        <a href="{{ url_for('blog.post_view', post_id=post.id, view='preview') }}" class="icon-btn"
-                            title="Preview">
+                        <a href="{{ url_for('blog.post_public', post_id=post.id) }}" class="icon-btn" title="Preview">
                             <i class="fa-solid fa-eye"></i>
                         </a>
                         {% if post.status == 'deleted' %}
