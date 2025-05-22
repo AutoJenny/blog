@@ -65,9 +65,12 @@
     </header>
 
     <!-- Main Content -->
+    {% block fullwidth %}{% endblock %}
+    {% if not self.fullwidth() %}
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {% block content %}{% endblock %}
     </main>
+    {% endif %}
 
     <!-- Footer -->
     <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
@@ -115,13 +118,17 @@
                 mermaid.initialize({ startOnLoad: false });
                 document.querySelectorAll('pre > code.language-mermaid').forEach(function (block, i) {
                     var parent = block.parentElement;
-                    var code = block.textContent;
+                    var code = block.innerText;
                     var d = document.createElement('div');
                     d.className = 'mermaid';
-                    d.textContent = code;
+                    d.innerText = code;
                     parent.replaceWith(d);
                 });
-                mermaid.run();
+                try {
+                    mermaid.run();
+                } catch (e) {
+                    console.error('Mermaid render error:', e);
+                }
             }
         });
     </script>
