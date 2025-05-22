@@ -252,3 +252,27 @@ def mermaid_standalone():
 def llm_dashboard():
     """LLM Admin Dashboard: main entry for all LLM management."""
     return render_template('main/llm_dashboard.html')
+
+@bp.route('/llm/providers')
+def llm_providers():
+    return render_template('main/llm_providers.html')
+
+@bp.route('/llm/models')
+def llm_models():
+    return render_template('main/llm_models.html')
+
+@bp.route('/llm/prompts')
+def llm_prompts():
+    return render_template('main/llm_prompts.html')
+
+@bp.route('/llm/actions')
+def llm_actions():
+    return render_template('main/llm_actions.html')
+
+@bp.route('/llm/logs')
+def llm_logs():
+    return render_template('main/llm_logs.html')
+
+@bp.route('/llm/settings')
+def llm_settings():
+    return render_template('main/llm_settings.html')
