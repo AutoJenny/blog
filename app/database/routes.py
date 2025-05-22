@@ -5,6 +5,7 @@ from flask import (
     url_for,
     request,
     current_app,
+    jsonify
 )
 import subprocess
 import os
@@ -15,6 +16,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv, dotenv_values
 import logging
+import sys
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
@@ -222,3 +224,20 @@ def db_debug():
 @bp.route("/raw")
 def db_raw():
     return render_template("db/raw.html")
+
+@bp.route('/backup', methods=['POST'])
+def backup():
+    """Trigger a database backup and return the backup file path or error."""
+    try:
+        result = subprocess.run([sys.executable, 'scripts/db_backup.py'], capture_output=True, text=True)
+        if result.returncode == 0:
+            # Try to find the latest backup file
+            from pathlib import Path
+            backup_dir = Path('backups')
+            backups = sorted(backup_dir.glob('blog_backup_*.sql'))
+            latest = str(backups[-1]) if backups else None
+            return jsonify({'success': True, 'backup': latest, 'stdout': result.stdout})
+        else:
+            return jsonify({'success': False, 'error': result.stderr or result.stdout}), 500
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
