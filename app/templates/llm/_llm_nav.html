@@ -1,30 +1,57 @@
 <div class="llm-nav flex justify-center gap-4 mb-8">
-    <a href="/llm/" class="llm-nav-link{% if request.path == '/llm/' %} active{% endif %}" title="LLM Home">
-        <i class="fas fa-robot"></i>
-        <span>Home</span>
+    <a href="/llm/providers"
+        class="llm-nav-link flex items-center gap-2{% if '/llm/providers' in request.path %} active{% endif %}"
+        title="Provider Management">
+        <i class="fa-solid fa-server icon text-[#fbbf24]"></i>
+        <span>Providers</span>
     </a>
-    <a href="/llm/templates" class="llm-nav-link{% if '/llm/templates' in request.path %} active{% endif %}"
+    <a href="/llm/models"
+        class="llm-nav-link flex items-center gap-2{% if '/llm/models' in request.path %} active{% endif %}"
+        title="Model Management">
+        <i class="fa-solid fa-cubes icon text-[#fbbf24]"></i>
+        <span>Models</span>
+    </a>
+    <a href="/llm/prompts"
+        class="llm-nav-link flex items-center gap-2{% if '/llm/prompts' in request.path %} active{% endif %}"
         title="Prompt Templates">
-        <i class="fas fa-scroll"></i>
-        <span>Templates</span>
+        <i class="fa-solid fa-scroll icon text-[#fbbf24]"></i>
+        <span>Prompts</span>
     </a>
-    <a href="/llm/config" class="llm-nav-link{% if '/llm/config' in request.path %} active{% endif %}"
-        title="Configuration">
-        <i class="fas fa-cog"></i>
-        <span>Config</span>
-    </a>
-    <a href="/llm/actions" class="llm-nav-link{% if '/llm/actions' in request.path %} active{% endif %}"
+    <a href="/llm/actions"
+        class="llm-nav-link flex items-center gap-2{% if '/llm/actions' in request.path %} active{% endif %}"
         title="Actions & Tasks">
-        <i class="fas fa-bolt"></i>
+        <i class="fa-solid fa-bolt icon text-[#fbbf24]"></i>
         <span>Actions</span>
     </a>
-    <a href="/llm/test" class="llm-nav-link{% if '/llm/test' in request.path %} active{% endif %}" title="Test LLM">
-        <i class="fas fa-vial"></i>
-        <span>Test</span>
+    <a href="/llm/logs"
+        class="llm-nav-link flex items-center gap-2{% if '/llm/logs' in request.path %} active{% endif %}"
+        title="Interaction Logs">
+        <i class="fa-solid fa-list icon text-[#fbbf24]"></i>
+        <span>Logs</span>
     </a>
-    <a href="/llm/images" class="llm-nav-link{% if '/llm/images' in request.path %} active{% endif %}"
-        title="Image Tools">
-        <i class="fas fa-image"></i>
-        <span>Images</span>
+    <a href="/llm/settings"
+        class="llm-nav-link flex items-center gap-2{% if '/llm/settings' in request.path %} active{% endif %}"
+        title="Settings">
+        <i class="fa-solid fa-gear icon text-[#fbbf24]"></i>
+        <span>Settings</span>
     </a>
 </div>
+<style>
+    .llm-nav-link.active {
+        color: #38bdf8 !important;
+    }
+
+    .llm-nav-link {
+        color: #e0e0e0;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        transition: background 0.2s, color 0.2s;
+        text-decoration: none;
+    }
+
+    .llm-nav-link:hover {
+        background: rgba(99, 102, 241, 0.08);
+        color: #a5b4fc;
+    }
+</style>
