@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ file_path }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/static/css/dist/main.css">
+    <style>
+        body {
+            background: #181c2a;
+            color: #e0e0e0;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .prose {
+            background: #23273a;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+            padding: 2rem;
+            border: 1px solid #31364a;
+        }
+
+        .file-path {
+            color: #a5b4fc;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="file-path">{{ file_path }}</div>
+    <div class="prose prose-invert">
+        {{ file_html|safe }}
+    </div>
+</body>
+
+</html>
