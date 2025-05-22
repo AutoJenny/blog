@@ -48,14 +48,14 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Example rows, replace with dynamic data -->
+                {% for action in actions %}
                 <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                    <td class="py-2 px-3 font-semibold text-white">Summarize Body</td>
-                    <td class="py-2 px-3">body → summary</td>
-                    <td class="py-2 px-3">Summarize Post</td>
-                    <td class="py-2 px-3">gpt-3.5-turbo</td>
-                    <td class="py-2 px-3"><span class="action-status">Active</span></td>
-                    <td class="py-2 px-3">2025-05-21</td>
+                    <td class="py-2 px-3 font-semibold text-white">{{ action.field_name }}</td>
+                    <td class="py-2 px-3">{{ action.input_field }} → {{ action.output_field }}</td>
+                    <td class="py-2 px-3">{{ action.prompt_name }}</td>
+                    <td class="py-2 px-3">{{ action.llm_model }}</td>
+                    <td class="py-2 px-3"><span class="action-status">{{ action.status }}</span></td>
+                    <td class="py-2 px-3">{{ action.last_run or '' }}</td>
                     <td class="py-2 px-3 flex gap-2">
                         <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
                         <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
@@ -64,36 +64,7 @@
                         <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
-                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                    <td class="py-2 px-3 font-semibold text-white">SEO Description</td>
-                    <td class="py-2 px-3">body → seo_description</td>
-                    <td class="py-2 px-3">SEO Description</td>
-                    <td class="py-2 px-3">mistral</td>
-                    <td class="py-2 px-3"><span class="action-status">Active</span></td>
-                    <td class="py-2 px-3">2025-05-20</td>
-                    <td class="py-2 px-3 flex gap-2">
-                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
-                        <button class="action-btn" title="History"><i
-                                class="fa-solid fa-clock-rotate-left"></i></button>
-                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                <tr class="hover:bg-indigo-950/30">
-                    <td class="py-2 px-3 font-semibold text-white">Tag Generator</td>
-                    <td class="py-2 px-3">body → tags</td>
-                    <td class="py-2 px-3">Tag Generator</td>
-                    <td class="py-2 px-3">claude-3-opus</td>
-                    <td class="py-2 px-3"><span class="action-status">Inactive</span></td>
-                    <td class="py-2 px-3">2025-05-19</td>
-                    <td class="py-2 px-3 flex gap-2">
-                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
-                        <button class="action-btn" title="History"><i
-                                class="fa-solid fa-clock-rotate-left"></i></button>
-                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -122,10 +93,9 @@
                 </div>
                 <div class="mb-4">
                     <label class="block text-dark-accent mb-1">Prompt Template</label>
-                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
-                        <option>Summarize Post</option>
-                        <option>SEO Description</option>
-                        <option>Tag Generator</option>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        id="promptTemplateSelect">
+                        <!-- Options to be populated dynamically from DB -->
                     </select>
                 </div>
                 <div class="mb-4">

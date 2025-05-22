@@ -1,5 +1,7 @@
 # LLM Action MVP Implementation Plan
 
+> **NOTE:** This project uses PostgreSQL only. All database changes are made via direct SQL. No ORM or migration tools (Alembic, SQLAlchemy, SQLite) are used or supported.
+
 ## Purpose
 Build a robust, transparent, and extensible MVP for an LLM-powered Action (e.g., "Generate Summary from idea_seed") within the /llm interface and workflow pages. This will serve as a test bed for sustainable, scalable LLM workflow development.
 
@@ -29,7 +31,6 @@ Build a robust, transparent, and extensible MVP for an LLM-powered Action (e.g.,
     - [ ] LLMAction (id, name, description, config, input_field, output_field, prompt_ids, model, status, etc.)
     - [ ] LLMActionRun (id, action_id, input_data, output_data, status, diagnostics, timestamps)
     - [ ] Link to existing LLMPrompt, LLMConfig, LLMModel tables
-- [ ] Write Alembic migrations for new/changed tables.
 
 ---
 

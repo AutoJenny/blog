@@ -1,5 +1,7 @@
 # Template Structure
 
+> **NOTE:** This project uses PostgreSQL only. All database changes are made via direct SQL. No ORM or migration tools (Alembic, SQLAlchemy, SQLite) are used or supported.
+
 The Blog CMS uses Jinja2 templates for all HTML rendering. This document describes the organization and usage of templates.
 
 ## Main Template Locations

@@ -45,6 +45,9 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
    - [Migration Guide](guides/migration.md)
    - **Deprecation Notice:** SQLAlchemy ORM and Flask-SQLAlchemy have been fully removed. All database operations now use direct SQL via psycopg2.
 
+**IMPORTANT:**
+- This project uses PostgreSQL only. All database changes are made via direct SQL. No ORM or migration tools (Alembic, Flask-Migrate, SQLAlchemy, SQLite) are used or supported.
+
 7. **Frontend & Styling**
    - [Template Structure](frontend/templates.md)
    - [Tailwind CSS Integration](frontend/tailwind.md)

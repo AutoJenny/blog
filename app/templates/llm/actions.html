@@ -244,25 +244,13 @@
         </form>
     </div>
     <div id="actionAccordionList">
-        <!-- Hardcoded MVP Action -->
-        <div class="template-item flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-            <div>
-                <span class="font-bold text-[#38bdf8]">Generate Summary from idea_seed</span>
-                <span class="ml-2 text-xs text-gray-400">(MVP Test Action)</span>
-                <div class="text-sm text-gray-400">Takes the idea_seed and generates a summary using the selected LLM
-                    and prompts.</div>
-            </div>
-            <a href="/llm/actions/generate-summary-idea-seed" class="llm-action-btn">
-                <i class="fa-solid fa-bolt mr-2"></i> View Details
-            </a>
-        </div>
-        <!-- Existing specimen actions (leave in place) -->
         {% for action in actions %}
         <div class="template-item flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
             <div>
-                <span class="font-bold">{{ action.name }}</span>
-                <span class="ml-2 text-xs text-gray-400">({{ action.status or 'Specimen' }})</span>
-                <div class="text-sm text-gray-400">{{ action.description }}</div>
+                <span class="font-bold">{{ action.field_name }}</span>
+                <div class="text-sm text-gray-400">Model: {{ action.llm_model }}, Temp: {{ action.temperature }}, Max
+                    Tokens: {{ action.max_tokens }}</div>
+                <div class="text-xs text-gray-500">Prompt Template ID: {{ action.prompt_template_id }}</div>
             </div>
             <a href="/llm/actions/{{ action.id }}" class="btn btn-secondary">View Details</a>
         </div>

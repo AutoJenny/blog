@@ -1,5 +1,8 @@
 # Hybrid LLM Framework Refactor & Extension: Implementation Plan
- 
+
+> **NOTE:** This project uses PostgreSQL only. All database changes are made via direct SQL. No ORM or migration tools (Alembic, SQLAlchemy, SQLite) are used or supported.
+> **IMPORTANT:** All specimen, sample, and hardcoded data must be removed from the UI and codebase. All LLM actions, prompts, and logs must be DB-driven only. No fallback or placeholder data is permitted in production or development UIs.
+
 > **Purpose:**
 > This document provides a step-by-step, checkbox-based implementation plan for refactoring and extending the LLM operations framework in the BlogForge project. It is designed for clarity and onboarding, so any developer can understand the rationale, architecture, and precise steps required. All work should follow the [Flask Project Engineering Rules](../frontend/dark_theme_styleguide.md) and project conventions.
 
@@ -33,7 +36,6 @@
 - [ ] **Message-Based Prompts:**
   - [ ] Extend prompt/template models to support message roles (system, user, assistant, etc.).
 - [ ] **Migration:**
-  - [ ] Write Alembic migrations for all new/changed models.
   - [ ] Document migration steps and data transfer for legacy prompts/configs.
 
 ### **3. Service Layer Refactor**
@@ -56,6 +58,7 @@
 - [ ] **LLM Dashboard:**
   - [ ] Build a new `/llm/` dashboard for managing providers, models, prompt parts, templates, and tasks.
   - [ ] Use a modern, dark-themed, touch-friendly design (see [dark_theme_styleguide.md](../frontend/dark_theme_styleguide.md)).
+  - [ ] **Ensure all specimen, sample, and hardcoded data is removed from the UI. All actions, prompts, and logs must be DB-driven only.**
 - [ ] **Prompt Assembly UI:**
   - [ ] Allow users to create/edit prompt parts and assemble them into templates.
   - [ ] Support message-based prompt preview and editing.
