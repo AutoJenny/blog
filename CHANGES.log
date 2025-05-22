@@ -599,4 +599,4 @@ All notable changes to this project are documented in this file.
 
 2024-06-13: Created a comprehensive hybrid LLM framework refactor/extension implementation plan in docs/temp/llm_framework_hybrid_refactor.md. The plan documents rationale, step-by-step checklists, and onboarding notes for new developers, covering data model enhancements, service refactor, RESTful API design, UI/UX modernization, testing, documentation, and migration. This will guide the sustainable redevelopment of LLM operations in line with project conventions.
 
-2025-05-22: Scaffolded LLM Actions, Logs, and Settings admin pages with modern UI, placeholder tables, modals, and forms. All LLM admin sub-pages are now scaffolded.
+2025-05-22: Scaffolded LLM Actions, Logs, and Settings admin pages with modern UI, placeholder tables, modals, and forms. All LLM admin sub-pages are now scaffolded.## [$(date +%Y-%m-%d)] LLM navbar: matches dashboard icons/colors, removed from landing page, robust site-wide nav logic.
