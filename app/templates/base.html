@@ -65,9 +65,9 @@
     </header>
 
     <!-- Main Content -->
-    {% block fullwidth %}
-    {% endblock %}
-    {% if not self.fullwidth() %}
+    {% if self.fullwidth() %}
+    {{ self.fullwidth() }}
+    {% else %}
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {% block content %}{% endblock %}
     </main>
