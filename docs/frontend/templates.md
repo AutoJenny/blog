@@ -29,4 +29,12 @@ The Blog CMS uses Jinja2 templates for all HTML rendering. This document describ
 - The dashboard and blog listing are unified in a single, modern, and intuitive design.
 - Navigation and template references to the old `/blog/` index have been updated to `/`.
 - The new design uses subtle colors, icons, and a card-based layout for clarity and style.
-- The UI now uses a true dark theme throughout, with unified header, navigation, and card styling for a premium, cohesive look. 
+- The UI now uses a true dark theme throughout, with unified header, navigation, and card styling for a premium, cohesive look.
+
+## Area Navigation (LLM & Workflow)
+- Area navbars for LLM and Workflow are now auto-included in `base.html` for all subpages (e.g., `/llm/*`, `/workflow/*`).
+- The navbars use the same icons and color styling as their respective dashboards for a unified look.
+- The navbar is **not** shown on the landing page (e.g., `/llm/`), only on subpages.
+- To add or update area nav links, edit the relevant partial (e.g., `llm/_llm_nav.html`).
+- Do **not** set `fullwidth_mode` unless you want to suppress all navigation for a page (e.g., docs browser).
+- For new sub-areas, follow this pattern for robust, site-wide navigation. 
