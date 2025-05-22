@@ -29,8 +29,8 @@ A modern, unified admin interface is now available at `/llm/` in the web app. Th
 
 - **Provider Management** (`/llm/providers`): Add, configure, and test LLM providers (OpenAI, Ollama, Anthropic, etc).
 - **Model Management** (`/llm/models`): Manage available models, set defaults, and view model details.
-- **Prompt Templates** (`/llm/prompts`): Create and edit reusable prompt templates for LLM actions.
-- **Actions & Tasks** (`/llm/actions`): Define, schedule, and manage LLM-powered actions and workflows.
+- **Prompt Templates** (`/llm/prompts`): Create and edit reusable prompt templates for LLM actions. **Prompt templates and actions now use modular, ordered prompt parts (system, style, instructions, etc.), which are assembled into prompts/messages for LLMs.**
+- **Actions & Tasks** (`/llm/actions`): Define, schedule, and manage LLM-powered actions and workflows. **Actions now support modular prompt parts: each action specifies input_field, output_field, and an ordered list of prompt parts (system, style, instructions, etc.). The backend assembles these for execution.**
 - **Interaction Logs** (`/llm/logs`): View and audit all LLM interactions, results, and errors.
 - **Settings** (`/llm/settings`): Configure global LLM settings, API keys, and advanced options.
 
@@ -42,7 +42,7 @@ See the diagrams and detailed docs in this folder for architecture, workflow, an
 
 This section tracks the planned and in-progress implementation for each LLM admin sub-page. Update as features are scaffolded, extended, or completed.
 
-**2025-05-22: All LLM admin sub-pages (Providers, Models, Prompts, Actions, Logs, Settings) are now scaffolded with modern, accessible, dark-themed UI, placeholder tables, modals, and forms. Backend/API integration is the next step.**
+**2025-05-22: All LLM admin sub-pages (Providers, Models, Prompts, Actions, Logs, Settings) are now scaffolded with modern, accessible, dark-themed UI, placeholder tables, modals, and forms. Backend/API integration is the next step. Modular prompt part support is being implemented in the backend and UI.**
 
 ### 1. Providers
 - **UI:** Responsive table/grid, status badges, action buttons, add/edit/test modals (**scaffolded**)
@@ -86,4 +86,7 @@ This section tracks the planned and in-progress implementation for each LLM admi
 
 ---
 
-*This directory is a living reference. Please keep it up to date as you build and extend the LLM features in BlogForge.* 
+*This directory is a living reference. Please keep it up to date as you build and extend the LLM features in BlogForge.*
+
+- **Prompt Parts**: Modular prompt parts can be created, edited, and linked to actions. Each part has a type (system, style, instructions, etc.), content, and order. Actions can have any number of prompt parts, which are assembled in order for LLM execution.
+- **API**: The API exposes CRUD for prompt parts and action-prompt part linking. Action details endpoints now return input_field, output_field, and all prompt parts for robust UI display and editing. 

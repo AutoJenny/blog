@@ -401,4 +401,35 @@ INSERT INTO workflow_sub_stage_entity (name, description, sub_stage_order, stage
     ('preflight', 'Pre-publication checks', 1, (SELECT id FROM workflow_stage_entity WHERE name = 'publishing')),
     ('launch', 'Publishing', 2, (SELECT id FROM workflow_stage_entity WHERE name = 'publishing')),
     ('syndication', 'Syndication and distribution', 3, (SELECT id FROM workflow_stage_entity WHERE name = 'publishing'))
-ON CONFLICT (name, stage_id) DO NOTHING; 
+ON CONFLICT (name, stage_id) DO NOTHING;
+
+-- Add ENUM for prompt part type
+DO $$ BEGIN
+    CREATE TYPE prompt_part_type AS ENUM ('system', 'style', 'instructions', 'user', 'assistant', 'other');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- Modular prompt part table
+CREATE TABLE llm_prompt_part (
+    id SERIAL PRIMARY KEY,
+    type prompt_part_type NOT NULL,
+    content TEXT NOT NULL,
+    description TEXT,
+    tags TEXT[],
+    "order" INTEGER DEFAULT 0 NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Join table for action <-> prompt part (ordered)
+CREATE TABLE llm_action_prompt_part (
+    action_id INTEGER REFERENCES llm_action(id) ON DELETE CASCADE,
+    prompt_part_id INTEGER REFERENCES llm_prompt_part(id) ON DELETE CASCADE,
+    "order" INTEGER DEFAULT 0 NOT NULL,
+    PRIMARY KEY (action_id, prompt_part_id)
+);
+
+-- Add input_field and output_field to llm_action
+ALTER TABLE llm_action ADD COLUMN input_field VARCHAR(128);
+ALTER TABLE llm_action ADD COLUMN output_field VARCHAR(128); 

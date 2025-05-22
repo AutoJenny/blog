@@ -345,3 +345,123 @@ termios.error: (4, 'Interrupted system call')
  * Running on http://10.0.4.32:5000
 [33mPress CTRL+C to quit[0m
 127.0.0.1 - - [22/May/2025 11:14:44] "GET /llm/ HTTP/1.1" 200 -
+Stopping any existing servers...
+Activating virtual environment...
+Starting server on http://127.0.0.1:5000
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 124-703-649
+127.0.0.1 - - [22/May/2025 15:50:27] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:50:37] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:51:51] "GET /llm/actions HTTP/1.1" 200 -
+ * Detected change in '/Users/nickfiddes/Code/projects/blog/app/main/routes.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 124-703-649
+Stopping any existing servers...
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+Activating virtual environment...
+Starting server on http://127.0.0.1:5000
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 124-703-649
+127.0.0.1 - - [22/May/2025 15:52:52] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:53:02] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:53:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:53:02] "GET /static/css/admin.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:53:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:53:02] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:53:02] "[35m[1mGET /api/v1/llm/models/ollama HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/May/2025 15:53:02] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:11] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:11] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:11] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:11] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:11] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:11] "[35m[1mGET /api/v1/llm/models/ollama HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/May/2025 15:55:11] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:13] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:13] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:13] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:13] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:13] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:13] "[35m[1mGET /api/v1/llm/models/ollama HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/May/2025 15:55:13] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /static/css/admin.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "[35m[1mGET /api/v1/llm/models/ollama HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:56:43] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:56:46] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:13] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:13] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:57:13] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:57:13] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:57:13] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:13] "GET /api/v1/llm/models/ollama HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:13] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:16] "GET /llm/actions/9 HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:16] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:57:16] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:19] "GET /llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:19] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:19] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:22] "[36mGET /llm/actions?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "[36mGET /llm/actions?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:22] "GET /api/v1/llm/models/ollama HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:22] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:23] "GET /llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:23] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:23] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:26] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 15:58:26] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 15:58:26] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 16:00:33] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:00:33] "[36mGET /llm/actions?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:00:33] "[36mGET /llm/actions?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:00:33] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:00:33] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:00:33] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:00:40] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:00:40] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:00:40] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:00:40] "GET /static/css/admin.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:00:40] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:04:11] "GET /api/v1/llm/actions/9 HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:05:42] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 16:05:42] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 16:05:42] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 16:06:11] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:06:14] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:06:19] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:06:49] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:06:51] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:06:53] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:07:02] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:07:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:07:02] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:07:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:07:11] "GET /api/v1/llm/actions/9 HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:07:56] "POST /api/v1/llm/actions/order HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:13:30] "GET /api/v1/llm/actions/9 HTTP/1.1" 200 -

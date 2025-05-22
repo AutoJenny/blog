@@ -28,17 +28,19 @@
 - [ ] Review current workflow integration points (e.g., `/workflow/idea/`).
 
 ### **2. Data Model Enhancements**
-- [ ] **Prompt Parts:**
-  - [ ] Design and add a `LLMPromptPart` model (type, content, description, tags, order).
-  - [ ] Migrate existing prompt templates to use modular parts (system, style, task, data).
+- [x] **Prompt Parts:**
+  - [x] Design and add a `LLMPromptPart` model (type, content, description, tags, order).
+  - [x] Migrate existing prompt templates to use modular parts (system, style, task, data).
+  - [x] Prompt templates and actions now use modular, ordered prompt parts (system, style, instructions, etc.), which are assembled into prompts/messages for LLMs.
+  - [x] Actions specify `input_field` and `output_field` for flexible mapping of input/output data.
 - [ ] **Provider/Model Registry:**
   - [ ] Refactor `LLMConfig` to support multiple provider/model entries.
   - [ ] Add a `LLMProvider` and `LLMModel` model for registry and selection.
-- [ ] **Message-Based Prompts:**
-  - [ ] Extend prompt/template models to support message roles (system, user, assistant, etc.).
+- [x] **Message-Based Prompts:**
+  - [x] Extend prompt/template models to support message roles (system, user, assistant, etc.).
 - [ ] **Migration:**
-  - [ ] Write Alembic migrations for all new/changed models.
-  - [ ] Document migration steps and data transfer for legacy prompts/configs.
+  - [x] All database changes are made directly in SQL (no Alembic or migration scripts).
+  - [x] Document migration steps and data transfer for legacy prompts/configs if needed.
 
 ### **3. Service Layer Refactor**
 - [ ] Refactor `services.py` to:
@@ -88,6 +90,10 @@
 - [ ] Plan and execute migration of legacy LLM data to new models.
 - [ ] Deploy incrementally, testing each major feature.
 - [ ] Monitor logs and user feedback for issues.
+
+### **9. API:**
+- [x] CRUD endpoints for prompt parts and action-prompt part linking.
+- [x] Action details endpoints now return input_field, output_field, and all prompt parts for robust UI display and editing.
 
 ---
 

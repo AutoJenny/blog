@@ -3,9 +3,10 @@
 import httpx
 import logging
 from flask import current_app
-from app.models import LLMConfig, LLMInteraction, LLMActionHistory
+from app.models import LLMConfig, LLMInteraction, LLMActionHistory, LLMAction, LLMActionPromptPart, LLMPromptPart
 from app import db
 from datetime import datetime
+from jinja2 import Template
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,36 @@ Please provide your response based on the above input topic, following the instr
         logger.exception(f"Error executing LLM request: {str(e)}")
         return {'error': str(e)}
 
+def assemble_prompt_from_parts(action, fields: dict):
+    """
+    Assemble a prompt or message list from all prompt parts for an action, ordered.
+    For OpenAI: returns a list of {role, content} dicts.
+    For Ollama: returns a single concatenated string.
+    """
+    prompt_parts = (
+        LLMActionPromptPart.query.filter_by(action_id=action.id)
+        .order_by(LLMActionPromptPart.order)
+        .all()
+    )
+    messages = []
+    for part_link in prompt_parts:
+        part = part_link.prompt_part
+        # Render with Jinja2
+        try:
+            content = Template(part.content).render(**fields)
+        except Exception as e:
+            logger.error(f"Error rendering prompt part {part.id}: {e}")
+            content = part.content
+        # For OpenAI, use role; for Ollama, just concatenate
+        if part.type in ('system', 'user', 'assistant'):
+            messages.append({'role': part.type, 'content': content})
+        else:
+            # For style/instructions/other, treat as user message
+            messages.append({'role': 'user', 'content': content})
+    # For Ollama, concatenate all content
+    ollama_prompt = '\n\n'.join([m['content'] for m in messages])
+    return {'openai': messages, 'ollama': ollama_prompt}
+
 class LLMService:
     """Service for interacting with LLM providers."""
 
@@ -68,12 +99,10 @@ class LLMService:
             )
 
     def generate(self, prompt, model_name=None, temperature=0.7, max_tokens=1000):
-        """Generate text using configured LLM, optionally specifying a model name."""
+        """Generate text using configured LLM, supporting both OpenAI (messages) and Ollama (string)."""
         if not model_name:
             model_name = self.config.model_name
-            
         logger.info(f"Generating with model: {model_name}, temperature: {temperature}, max_tokens: {max_tokens}")
-
         if self.config.provider_type == "ollama":
             return self._generate_ollama(prompt, model_name, temperature, max_tokens)
         elif self.config.provider_type == "openai":
@@ -129,7 +158,7 @@ class LLMService:
             client = openai.OpenAI(api_key=current_app.config["OPENAI_API_KEY"])
             response = client.chat.completions.create(
                 model=model_name,
-                messages=[{"role": "user", "content": prompt}],
+                messages=prompt,
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
@@ -138,46 +167,22 @@ class LLMService:
             logger.error(f"Error generating with OpenAI: {str(e)}")
             raise
 
-    def execute_action(self, action, post_id, fields):
-        """Execute an LLM action on a post field, using a fields dict for template substitution.
-        Args:
-            action: LLMAction instance
-            post_id: Post ID
-            fields: dict of all fields for prompt substitution (should include 'input')
-        Returns:
-            Output from LLM
-        """
-        try:
-            # Format the prompt template with the fields
-            prompt = action.process_template(fields)
-            # Create history record
-            history = LLMActionHistory(
-                action_id=action.id,
-                post_id=post_id,
-                input_text=fields.get('input', ''),
-                status="pending"
-            )
-            db.session.add(history)
-            db.session.commit()
-            try:
-                # Generate the output
-                output = self.generate(
-                    prompt,
-                    model_name=action.llm_model,
-                    temperature=action.temperature,
-                    max_tokens=action.max_tokens
-                )
-                # Update history record
-                history.output_text = output
-                history.status = "success"
-                db.session.commit()
-                return output
-            except Exception as e:
-                # Update history record with error
-                history.status = "error"
-                history.error_message = str(e)
-                db.session.commit()
-                raise
-        except Exception as e:
-            logger.error(f"Error executing action: {str(e)}")
-            raise 
+    def execute_action(self, action, fields: dict, post_id=None):
+        # Assemble prompt/messages from modular prompt parts
+        prompt, messages = assemble_prompt_from_parts(action, fields)
+        # Choose input/output fields
+        input_field = getattr(action, 'input_field', None) or 'input'
+        output_field = getattr(action, 'output_field', None) or 'output'
+        # Call LLM (OpenAI or Ollama)
+        if action.llm_model and 'gpt' in action.llm_model:
+            # OpenAI: use messages
+            result = self.generate(messages, model_name=action.llm_model, temperature=action.temperature, max_tokens=action.max_tokens)
+        else:
+            # Ollama: use prompt string
+            result = self.generate(prompt, model_name=action.llm_model, temperature=action.temperature, max_tokens=action.max_tokens)
+        # Map output to output_field
+        if isinstance(result, dict) and 'output' in result:
+            result = {output_field: result['output'], **{k: v for k, v in result.items() if k != 'output'}}
+        elif isinstance(result, str):
+            result = {output_field: result}
+        return result 

@@ -212,48 +212,68 @@ class LLMConfig(db.Model):
         return f"<LLMConfig {self.provider_type}:{self.model_name}>"
 
 
+class LLMPromptPart(db.Model):
+    __tablename__ = 'llm_prompt_part'
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.Enum('system', 'style', 'instructions', 'user', 'assistant', 'other', name='prompt_part_type'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    description = db.Column(db.Text)
+    tags = db.Column(db.ARRAY(db.Text))
+    order = db.Column(db.Integer, default=0, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class LLMActionPromptPart(db.Model):
+    __tablename__ = 'llm_action_prompt_part'
+    action_id = db.Column(db.Integer, db.ForeignKey('llm_action.id'), primary_key=True)
+    prompt_part_id = db.Column(db.Integer, db.ForeignKey('llm_prompt_part.id'), primary_key=True)
+    order = db.Column(db.Integer, default=0, nullable=False)
+    prompt_part = db.relationship('LLMPromptPart')
+
+
 class LLMAction(db.Model):
     """Model for storing LLM action configurations."""
     id = db.Column(db.Integer, primary_key=True)
-    field_name = db.Column(db.String(128), nullable=False)
-    prompt_template = db.Column(db.Text, nullable=False)
-    prompt_template_id = db.Column(db.Integer, db.ForeignKey('llm_prompt.id'), nullable=False)
+    input_field = db.Column(db.String(128))
+    output_field = db.Column(db.String(128))
     llm_model = db.Column(db.String(128), nullable=False)
     temperature = db.Column(db.Float, default=0.7)
     max_tokens = db.Column(db.Integer, default=1000)
     order = db.Column(db.Integer, default=0, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+    # Relationship to prompt parts
+    prompt_parts = db.relationship('LLMActionPromptPart', backref='action', lazy='dynamic', order_by='LLMActionPromptPart.order')
     # Relationship to history
     history = db.relationship('LLMActionHistory', backref='action', lazy='dynamic')
-    
-    def process_template(self, fields: dict) -> str:
-        """Process the prompt template with the given fields dict.
-        Supports {{field}} syntax for any field in the dict.
-        """
-        try:
-            template = Template(self.prompt_template)
-            return template.render(**fields)
-        except Exception as e:
-            # Log the template and fields for debugging
-            current_app.logger.error(f"Template rendering error: {e}\nTemplate: {self.prompt_template}\nFields: {fields}")
-            raise ValueError(f"Error processing prompt template: {e}")
-    
     def to_dict(self):
-        """Convert the model to a dictionary."""
-        return {
+        # Basic fields
+        d = {
             'id': self.id,
-            'field_name': self.field_name,
-            'prompt_template': self.prompt_template,
-            'prompt_template_id': self.prompt_template_id,
+            'input_field': self.input_field,
+            'output_field': self.output_field,
             'llm_model': self.llm_model,
             'temperature': self.temperature,
             'max_tokens': self.max_tokens,
             'order': self.order,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
+        # Add prompt parts (ordered)
+        links = LLMActionPromptPart.query.filter_by(action_id=self.id).order_by(LLMActionPromptPart.order).all()
+        d['prompt_parts'] = [
+            {
+                'id': l.prompt_part.id,
+                'type': l.prompt_part.type,
+                'content': l.prompt_part.content,
+                'description': l.prompt_part.description,
+                'tags': l.prompt_part.tags,
+                'order': l.order
+            }
+            for l in links
+        ]
+        return d
 
 
 class LLMActionHistory(db.Model):
