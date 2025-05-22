@@ -56,13 +56,6 @@ def new_post():
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 
-@bp.route("/<int:post_id>/", defaults={'view': 'preview'})
-@bp.route("/<int:post_id>/<view>")
-def post_view(post_id, view):
-    # Deprecated: develop.html is no longer used
-    abort(404)
-
-
 @bp.route('/<slug>')
 def legacy_slug(slug):
     post = None

@@ -596,3 +596,5 @@ All notable changes to this project are documented in this file.
 2024-05-21
 - Redesigned workflow process indicator for dark theme: shallow, touchscreen-friendly, with three stage backgrounds and nine substages.
 - Updated planning/index.html to use new indicator macro for process navigation.
+
+2024-06-13: Created a comprehensive hybrid LLM framework refactor/extension implementation plan in docs/temp/llm_framework_hybrid_refactor.md. The plan documents rationale, step-by-step checklists, and onboarding notes for new developers, covering data model enhancements, service refactor, RESTful API design, UI/UX modernization, testing, documentation, and migration. This will guide the sustainable redevelopment of LLM operations in line with project conventions.
