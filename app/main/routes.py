@@ -11,6 +11,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv, dotenv_values
 import markdown
+import re
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
@@ -236,4 +237,18 @@ def docs_content(file_path):
         content = f.read()
     import markdown
     html = markdown.markdown(content, extensions=['fenced_code', 'tables'])
+    # Post-process Mermaid code blocks
+    def mermaid_replacer(match):
+        code = match.group(1)
+        return f'<div class="mermaid">{code}</div>'
+    html = re.sub(r'<pre><code class="language-mermaid">([\s\S]*?)</code></pre>', mermaid_replacer, html)
     return render_template('main/docs_content.html', file_html=html, file_path=file_path)
+
+@bp.route('/mermaid-standalone')
+def mermaid_standalone():
+    return render_template('main/mermaid_standalone.html')
+
+@bp.route('/llm/')
+def llm_dashboard():
+    """LLM Admin Dashboard: main entry for all LLM management."""
+    return render_template('main/llm_dashboard.html')

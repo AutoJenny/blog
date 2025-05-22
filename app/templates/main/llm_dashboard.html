@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>LLM Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/static/css/dist/main.css">
+    <style>
+        body {
+            background: #181c2a;
+            color: #e0e0e0;
+            font-family: sans-serif;
+        }
+
+        .dashboard-section {
+            background: #23273a;
+            border-radius: 1rem;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+            padding: 2rem;
+            border: 1px solid #31364a;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #a5b4fc;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #fbbf24;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+
+        .icon {
+            color: #a5b4fc;
+            font-size: 1.3em;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: #23273a;
+            border-radius: 0.75rem;
+            border: 1px solid #31364a;
+            padding: 1.5rem;
+            box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.18);
+        }
+
+        .card .section-title {
+            color: #38bdf8;
+        }
+
+        .card .icon {
+            color: #fbbf24;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mx-auto py-10 px-4">
+        <div class="dashboard-title flex items-center gap-4">
+            <i class="fa-solid fa-brain"></i>
+            LLM Admin Dashboard
+        </div>
+        <div class="dashboard-grid">
+            <!-- Provider Management -->
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-server icon"></i> Provider Management</div>
+                <p class="text-dark-accent mb-2">Add, configure, and test LLM providers (OpenAI, Ollama, Anthropic,
+                    etc).</p>
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow mt-2"><i
+                        class="fa-solid fa-plus"></i> Add Provider</button>
+            </div>
+            <!-- Model Management -->
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-cubes icon"></i> Model Management</div>
+                <p class="text-dark-accent mb-2">Manage available models, set defaults, and view model details.</p>
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow mt-2"><i
+                        class="fa-solid fa-plus"></i> Add Model</button>
+            </div>
+            <!-- Prompt Templates -->
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-scroll icon"></i> Prompt Templates</div>
+                <p class="text-dark-accent mb-2">Create and edit reusable prompt templates for LLM actions.</p>
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow mt-2"><i
+                        class="fa-solid fa-plus"></i> New Prompt</button>
+            </div>
+            <!-- Actions/Tasks -->
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-bolt icon"></i> Actions & Tasks</div>
+                <p class="text-dark-accent mb-2">Define, schedule, and manage LLM-powered actions and workflows.</p>
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow mt-2"><i
+                        class="fa-solid fa-plus"></i> New Action</button>
+            </div>
+            <!-- Interaction Logs -->
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-list icon"></i> Interaction Logs</div>
+                <p class="text-dark-accent mb-2">View and audit all LLM interactions, results, and errors.</p>
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow mt-2"><i
+                        class="fa-solid fa-eye"></i> View Logs</button>
+            </div>
+            <!-- Settings -->
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-gear icon"></i> Settings</div>
+                <p class="text-dark-accent mb-2">Configure global LLM settings, API keys, and advanced options.</p>
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow mt-2"><i
+                        class="fa-solid fa-sliders-h"></i> Edit Settings</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
