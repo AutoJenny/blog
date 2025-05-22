@@ -23,6 +23,19 @@ Welcome to the LLM (Large Language Model) documentation hub for BlogForge. This 
 - Follow the links above for style, API, and service details.
 - Update this README and add new resources as the LLM stack evolves.
 
+## LLM Admin Dashboard
+
+A modern, unified admin interface is now available at `/llm/` in the web app. This dashboard provides access to:
+
+- **Provider Management** (`/llm/providers`): Add, configure, and test LLM providers (OpenAI, Ollama, Anthropic, etc).
+- **Model Management** (`/llm/models`): Manage available models, set defaults, and view model details.
+- **Prompt Templates** (`/llm/prompts`): Create and edit reusable prompt templates for LLM actions.
+- **Actions & Tasks** (`/llm/actions`): Define, schedule, and manage LLM-powered actions and workflows.
+- **Interaction Logs** (`/llm/logs`): View and audit all LLM interactions, results, and errors.
+- **Settings** (`/llm/settings`): Configure global LLM settings, API keys, and advanced options.
+
+See the diagrams and detailed docs in this folder for architecture, workflow, and extensibility details.
+
 ---
 
 *This directory is a living reference. Please keep it up to date as you build and extend the LLM features in BlogForge.* 
