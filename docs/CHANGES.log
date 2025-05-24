@@ -1,0 +1,9 @@
+2025-05-22: LLM admin UI refactor — All LLM dashboard and sub-pages now use base.html for consistent header/footer. Dashboard cards are clickable links to sub-pages. Updated docs/llm/README.md.
+
+2025-05-22: Added unified icon-based navigation bar to all /llm admin pages for consistent, accessible navigation. Navigation is visible at the top of all LLM admin and image tool pages, styled per dark theme and workflow nav conventions.
+
+2025-05-24: Began migration to direct SQL (psycopg2) for all LLM modular prompt features. Deprecated ORM models in app/models.py and removed SQLAlchemy imports from app/__init__.py. Marked app/llm/services.py, app/llm/routes.py, and app/api/llm.py for direct SQL refactor.
+
+2025-05-23: Removed all remaining SQLAlchemy/ORM imports and usage from the codebase, including scripts, config, and API routes. Fully migrated to direct SQL (psycopg2) for all database access as part of the LLM modular prompt refactor. Cleaned up dependencies and configuration. [LLM Modular Prompt Refactor]
+
+2025-05-24: Fixed critical /db route registration issue. Canonicalized db Blueprint definition by moving Blueprint creation and all route attachments to app/database/routes.py, and registering the Blueprint directly from there in the app factory. This robust pattern ensures all /db endpoints are always available and eliminates circular import issues. Verified with print_routes.py and curl. [Database Admin Robustness] 

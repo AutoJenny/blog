@@ -5,18 +5,20 @@ from flask import (
     url_for,
     request,
     current_app,
-    jsonify
+    jsonify,
+    Blueprint
 )
 import subprocess
 import os
 import json
 from pathlib import Path
-from app.database.__init__ import bp
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv, dotenv_values
 import logging
 import sys
+
+bp = Blueprint("db", __name__, url_prefix="/db")
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
@@ -35,6 +37,7 @@ def get_db_conn():
 @bp.route("/")
 def index():
     """Database management interface."""
+    logging.basicConfig(level=logging.DEBUG)
     stats = {}
     try:
         with get_db_conn() as conn:
@@ -48,7 +51,9 @@ def index():
                 """)
                 stats = dict(cur.fetchone())
     except Exception as e:
+        logging.error(f"Error fetching database stats: {str(e)}")
         flash(f"Error fetching database stats: {str(e)}", "error")
+    logging.debug(f"/db/ stats: {stats}")
     return render_template("db/index.html", stats=stats)
 
 @bp.route("/restore")
@@ -145,6 +150,8 @@ def replication():
 
 @bp.route("/tables")
 def list_tables():
+    """Database tables interface."""
+    logging.basicConfig(level=logging.DEBUG)
     tables = []
     groups = []
     try:
@@ -156,7 +163,7 @@ def list_tables():
                     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
                 """)
                 table_names = [row['table_name'] for row in cur.fetchall()]
-                print(f"[DEBUG] table_names: {table_names}")
+                logging.debug(f"[DEBUG] table_names: {table_names}")
                 table_data = {}
                 for table in table_names:
                     # Get columns
@@ -171,7 +178,7 @@ def list_tables():
                     cur.execute(f'SELECT * FROM {table} LIMIT 20;')
                     rows = cur.fetchall()
                     table_data[table] = {'name': table, 'columns': columns, 'rows': rows}
-                print(f"[DEBUG] table_data keys: {list(table_data.keys())}")
+                logging.debug(f"[DEBUG] table_data keys: {list(table_data.keys())}")
                 # Flat list for compatibility
                 tables = list(table_data.values())
                 # Grouping logic
@@ -194,15 +201,16 @@ def list_tables():
                 # Sort groups alphabetically by group name
                 groups.sort(key=lambda g: g["group"].lower())
     except Exception as e:
-        print(f"[DEBUG] Exception in /db/tables: {e}")
+        logging.error(f"Exception in /db/tables: {e}")
         flash(f"Error fetching tables: {str(e)}", "error")
         tables = []
         groups = []
     # Always return both for compatibility
+    logging.debug(f"/db/tables response: tables={len(tables)}, groups={len(groups)}")
     if groups:
-        return {"tables": tables, "groups": groups}
+        return jsonify({"tables": tables, "groups": groups})
     else:
-        return {"tables": tables}
+        return jsonify({"tables": tables})
 
 @bp.route("/debug")
 def db_debug():
@@ -241,3 +249,16 @@ def backup():
             return jsonify({'success': False, 'error': result.stderr or result.stdout}), 500
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route("/debug/routes")
+def debug_db_routes():
+    from flask import current_app, jsonify
+    output = []
+    for rule in current_app.url_map.iter_rules():
+        if rule.rule.startswith("/db"):
+            output.append({
+                "endpoint": rule.endpoint,
+                "rule": rule.rule,
+                "methods": sorted([m for m in rule.methods if m not in ("HEAD", "OPTIONS")]),
+            })
+    return jsonify(sorted(output, key=lambda x: x["rule"])), 200

@@ -122,6 +122,11 @@ def create_app(config_class=Config):
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
 
+    from app.database.routes import bp as db_bp
+    print("[DEBUG] Registering db Blueprint...")
+    app.register_blueprint(db_bp)
+    print("[DEBUG] db Blueprint registered.")
+
     return app
 
 # from app import models
