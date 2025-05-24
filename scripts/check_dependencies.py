@@ -29,7 +29,6 @@ def get_latest_versions():
         'langchain-core': None,
         'openai': None,
         'flask': None,
-        'sqlalchemy': None,
         'gunicorn': None,
         'redis': None,
         'celery': None

@@ -9,7 +9,6 @@ from app import create_app, db
 from app.models import Post, PostSection, Image
 from flask import Flask
 from datetime import datetime
-from sqlalchemy import exists
 
 OLD_POSTS_DIR = '__blog_old/posts/'
 IMAGE_LIBRARY_PATH = '__blog_old/_data/image_library.json'

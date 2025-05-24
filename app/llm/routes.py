@@ -1,15 +1,17 @@
+# MIGRATION: This file is being refactored to use direct SQL (psycopg2) instead of ORM models.
+
 """Routes for LLM-powered content generation and enhancement."""
 
+print('DEBUG: Loaded app/llm/routes.py from', __file__)
 from flask import jsonify, request, current_app, render_template, redirect, url_for
 import logging
-from app.models import Post, PostSection, LLMPrompt, LLMInteraction, LLMConfig, db, LLMAction, LLMActionHistory
-from datetime import datetime
 from app.llm import bp
 from app.llm.services import execute_llm_request
 import httpx
 from app.blog.fields import WORKFLOW_FIELDS
 
 logger = logging.getLogger(__name__)
+# All ORM model imports removed. Use direct SQL via psycopg2 for any DB access.
 
 @bp.route("/")
 def index():
@@ -19,13 +21,12 @@ def index():
 @bp.route("/config")
 def config_page():
     """LLM configuration interface."""
-    config = LLMConfig.query.first()
-    return render_template("llm/config.html", config=config)
+    return render_template("llm/config.html", config=None)
 
 @bp.route('/templates')
 def templates():
     """Show prompt templates"""
-    prompts = LLMPrompt.query.order_by(LLMPrompt.order.is_(None), LLMPrompt.order, LLMPrompt.id).all()
+    prompts = []  # TODO: Replace with direct SQL query for prompt templates
     logger.info(f"RAW WORKFLOW_FIELDS: {WORKFLOW_FIELDS}")
     def clean_workflow_fields(fields):
         return {
@@ -42,29 +43,18 @@ def templates():
 @bp.route('/actions')
 def actions():
     """Render the LLM Actions management page."""
-    actions = [action.to_dict() for action in LLMAction.query.all()]
-    logger.info(f"[ACTIONS] Loaded {len(actions)} actions: {actions}")
-    prompts = LLMPrompt.query.order_by(LLMPrompt.order.is_(None), LLMPrompt.order, LLMPrompt.id).all()
-    config = LLMConfig.query.first()
-    if not config:
-        config = LLMConfig(
-            provider_type="ollama",
-            model_name="mistral",
-            api_base="http://localhost:11434"
-        )
-        db.session.add(config)
-        db.session.commit()
+    actions = []  # TODO: Replace with direct SQL query for actions
+    prompts = []  # TODO: Replace with direct SQL query for prompt templates
     return render_template(
         'llm/actions.html',
         actions=actions,
         prompts=prompts,
-        config=config,
         workflow_fields=WORKFLOW_FIELDS
     )
 
 @bp.route('/actions/<int:action_id>')
 def action_detail(action_id):
-    action = LLMAction.query.get_or_404(action_id)
+    action = None  # TODO: Replace with direct SQL query for action
     return render_template('llm/action_detail.html', action=action)
 
 @bp.route('/api/v1/llm/test', methods=['POST'])
@@ -92,7 +82,7 @@ def test_llm_action():
         logger.info(f"[TEST ENDPOINT] Temperature: {data.get('temperature', 0.7)}")
             
         # Get the configuration
-        config = LLMConfig.query.first()
+        config = None
         if not config:
             logger.error("[TEST ENDPOINT] LLM configuration not found")
             return jsonify({'error': 'LLM configuration not found'}), 500
@@ -148,9 +138,8 @@ def test_llm_action():
 @bp.route('/test')
 def test_page():
     """Dead simple prompt testing interface."""
-    config = LLMConfig.query.first()
-    prompts = LLMPrompt.query.all()
-    return render_template('llm/test.html', config=config, prompts=prompts)
+    prompts = []  # TODO: Replace with direct SQL query for prompt templates
+    return render_template('llm/test.html', config=None, prompts=prompts)
 
 @bp.route('/api/test', methods=['POST'])
 def test_prompt():
@@ -165,13 +154,13 @@ def test_prompt():
             return jsonify({'error': 'Missing prompt_id or input'}), 400
             
         # Get the prompt template
-        prompt = LLMPrompt.query.get(data['prompt_id'])
+        prompt = None  # TODO: Replace with direct SQL query for prompt
         if not prompt:
             logger.error(f"[TEST] Prompt template not found for ID: {data['prompt_id']}")
             return jsonify({'error': 'Prompt template not found'}), 404
             
         # Get LLM config
-        config = LLMConfig.query.first()
+        config = None
         if not config:
             logger.error("[TEST] LLM configuration not found")
             return jsonify({'error': 'LLM configuration not found'}), 500

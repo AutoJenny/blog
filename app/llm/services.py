@@ -3,12 +3,13 @@
 import httpx
 import logging
 from flask import current_app
-from app.models import LLMConfig, LLMInteraction, LLMActionHistory, LLMAction, LLMActionPromptPart, LLMPromptPart
-from app import db
 from datetime import datetime
 from jinja2 import Template
+import psycopg2
+import psycopg2.extras
 
 logger = logging.getLogger(__name__)
+# All ORM model imports removed. Use direct SQL via psycopg2 for any DB access.
 
 def execute_llm_request(request_data):
     """Execute an LLM request with the given parameters."""
@@ -90,25 +91,20 @@ class LLMService:
 
     def __init__(self):
         """Initialize the LLM service."""
-        self.config = LLMConfig.query.first()
-        if not self.config:
-            self.config = LLMConfig(
-                provider_type="ollama",
-                model_name="mistral",
-                api_base="http://localhost:11434",
-            )
+        self.config = None  # provider type (e.g., 'ollama', 'openai')
+        self.api_url = None  # provider API URL
 
     def generate(self, prompt, model_name=None, temperature=0.7, max_tokens=1000):
         """Generate text using configured LLM, supporting both OpenAI (messages) and Ollama (string)."""
         if not model_name:
-            model_name = self.config.model_name
+            model_name = self.config
         logger.info(f"Generating with model: {model_name}, temperature: {temperature}, max_tokens: {max_tokens}")
-        if self.config.provider_type == "ollama":
+        if self.config == "ollama":
             return self._generate_ollama(prompt, model_name, temperature, max_tokens)
-        elif self.config.provider_type == "openai":
+        elif self.config == "openai":
             return self._generate_openai(prompt, model_name, temperature, max_tokens)
         else:
-            raise ValueError(f"Unsupported provider type: {self.config.provider_type}")
+            raise ValueError(f"Unsupported provider type: {self.config}")
 
     def _generate_ollama(self, prompt, model_name, temperature=0.7, max_tokens=1000):
         """Generate text using Ollama."""
@@ -121,17 +117,16 @@ class LLMService:
                 "stream": False  # Ensure we get a complete response
             }
             logger.debug(f"Sending request to Ollama: {request_data}")
-            
+            if not self.api_url:
+                raise ValueError("Ollama API URL not set on LLMService")
             response = httpx.post(
-                f"{self.config.api_base}/api/generate",
+                f"{self.api_url}/api/generate",
                 json=request_data,
                 timeout=180.0,
             )
             response.raise_for_status()
-            
             response_data = response.json()
             logger.debug(f"Received response from Ollama: {response_data}")
-            
             # Handle both response formats
             if "response" in response_data:
                 return response_data["response"]
@@ -140,7 +135,6 @@ class LLMService:
             else:
                 logger.error(f"Unexpected response format from Ollama: {response_data}")
                 raise ValueError("Unexpected response format from Ollama")
-            
         except httpx.TimeoutError:
             logger.error(f"Timeout while generating with Ollama (model: {model_name})")
             raise TimeoutError("Request to Ollama timed out")
@@ -167,22 +161,90 @@ class LLMService:
             logger.error(f"Error generating with OpenAI: {str(e)}")
             raise
 
-    def execute_action(self, action, fields: dict, post_id=None):
+    def execute_action(self, action, fields: dict, post_id=None, model_name=None):
+        # --- PATCH: Resolve model/provider from registry ---
+        model = None
+        provider = None
+        # Use model_name if provided, else resolve from action.llm_model
+        if model_name:
+            model = model_name
+            # Try to resolve provider from model name
+            model_obj = LLMModel.query.filter(LLMModel.name == model_name).first()
+            if not model_obj:
+                raise ValueError(f"LLM model '{model_name}' not found in registry")
+            provider = LLMProvider.query.get(model_obj.provider_id)
+        elif action.llm_model:
+            # PATCH: Use .name or .id if action.llm_model is an object
+            if isinstance(action.llm_model, LLMModel):
+                model_obj = action.llm_model
+            elif isinstance(action.llm_model, str):
+                model_obj = LLMModel.query.filter(LLMModel.name == action.llm_model).first()
+            elif isinstance(action.llm_model, int):
+                model_obj = LLMModel.query.filter(LLMModel.id == action.llm_model).first()
+            else:
+                raise ValueError(f"Invalid type for action.llm_model: {type(action.llm_model)}")
+            if not model_obj:
+                raise ValueError(f"LLM model '{action.llm_model}' not found in registry")
+            model = model_obj.name  # Use string only
+            provider = LLMProvider.query.get(model_obj.provider_id)
+        else:
+            raise ValueError(f"LLM model not set on action {action.id}")
+        if not provider:
+            raise ValueError(f"LLM provider for model '{model}' not found in registry")
+        # Set config and api_url for routing
+        provider_type = provider.name.lower() if provider.name else None
+        self.config = provider_type  # 'ollama' or 'openai'
+        self.api_url = provider.api_url
         # Assemble prompt/messages from modular prompt parts
-        prompt, messages = assemble_prompt_from_parts(action, fields)
+        prompt_parts = (
+            LLMActionPromptPart.query.filter_by(action_id=action.id)
+            .order_by(LLMActionPromptPart.order)
+            .all()
+        )
+        messages = []
+        for part_link in prompt_parts:
+            part = part_link.prompt_part
+            # Render with Jinja2
+            try:
+                content = Template(part.content).render(**fields)
+            except Exception as e:
+                logger.error(f"Error rendering prompt part {part.id}: {e}")
+                content = part.content
+            # For OpenAI, use role; for Ollama, just concatenate
+            if part.type in ('system', 'user', 'assistant'):
+                messages.append({'role': part.type, 'content': content})
+            else:
+                # For style/instructions/other, treat as user message
+                messages.append({'role': 'user', 'content': content})
+        ollama_prompt = '\n\n'.join([m['content'] for m in messages])
         # Choose input/output fields
         input_field = getattr(action, 'input_field', None) or 'input'
         output_field = getattr(action, 'output_field', None) or 'output'
         # Call LLM (OpenAI or Ollama)
-        if action.llm_model and 'gpt' in action.llm_model:
+        if provider_type == 'openai':
             # OpenAI: use messages
-            result = self.generate(messages, model_name=action.llm_model, temperature=action.temperature, max_tokens=action.max_tokens)
-        else:
+            result = self.generate(messages, model_name=model, temperature=action.temperature, max_tokens=action.max_tokens)
+        elif provider_type == 'ollama':
             # Ollama: use prompt string
-            result = self.generate(prompt, model_name=action.llm_model, temperature=action.temperature, max_tokens=action.max_tokens)
+            result = self.generate(ollama_prompt, model_name=model, temperature=action.temperature, max_tokens=action.max_tokens)
+        else:
+            raise ValueError(f"Unsupported provider type: {provider_type}")
         # Map output to output_field
         if isinstance(result, dict) and 'output' in result:
             result = {output_field: result['output'], **{k: v for k, v in result.items() if k != 'output'}}
         elif isinstance(result, str):
             result = {output_field: result}
-        return result 
+        # At the end, before returning result:
+        def make_json_safe(obj):
+            if isinstance(obj, db.Model):
+                if hasattr(obj, 'to_dict'):
+                    return obj.to_dict()
+                return str(obj)
+            elif isinstance(obj, dict):
+                return {k: make_json_safe(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [make_json_safe(i) for i in obj]
+            return obj
+        return make_json_safe(result)
+
+# Remove all ORM model usage below, stub out as needed for migration. 

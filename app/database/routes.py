@@ -177,7 +177,7 @@ def list_tables():
                 # Grouping logic
                 group_defs = [
                     ("Image Related", ["image", "image_format", "image_setting", "image_style", "image_prompt_example"]),
-                    ("LLM Related", ["llm_action", "llm_action_history", "llm_config", "llm_interaction", "llm_prompt"]),
+                    ("LLM Related", ["llm_action", "llm_action_history", "llm_provider", "llm_model", "llm_interaction", "llm_prompt"]),
                     ("Blog/Post Related", ["post", "post_section", "post_development", "category", "tag", "post_tags", "post_categories", "post_workflow_stage", "post_workflow_sub_stage"]),
                     ("User/Workflow", ["user", "workflow", "workflow_stage_entity", "workflow_sub_stage_entity"]),
                 ]

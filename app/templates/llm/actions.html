@@ -329,6 +329,9 @@
                                 <button class="btn btn-secondary edit-action-btn ml-2" data-id="{{ action.id }}">
                                     <i class="fas fa-edit"></i> Edit
                                 </button>
+                                <button class="btn btn-secondary prompt-parts-btn ml-2" data-id="{{ action.id }}">
+                                    <i class="fas fa-layer-group"></i> Prompt Parts
+                                </button>
                                 <button class="btn btn-danger delete-action-btn ml-2" data-id="{{ action.id }}">
                                     <i class="fas fa-trash"></i> Delete
                                 </button>
@@ -361,8 +364,12 @@
                     <input type="text" id="actionFieldName" name="field_name" class="form-input" required>
                 </div>
                 <div class="form-group">
+                    <label class="form-label" for="actionProvider">LLM Provider</label>
+                    <select id="actionProvider" name="provider_id" class="form-input" required></select>
+                </div>
+                <div class="form-group">
                     <label class="form-label" for="actionModel">LLM Model</label>
-                    <input type="text" id="actionModel" name="llm_model" class="form-input" required>
+                    <select id="actionModel" name="llm_model" class="form-input" required></select>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="actionPromptTemplate">Prompt Template</label>
@@ -387,8 +394,82 @@
         </div>
     </div>
 
+    <!-- Action Details Modal (Prompt Parts Management) -->
+    <div id="actionDetailsModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" id="closeActionDetails">&times;</span>
+            <h2>Action Details: <span id="detailsActionName"></span></h2>
+            <div>
+                <label>Input Field:</label> <span id="detailsInputField"></span><br>
+                <label>Output Field:</label> <span id="detailsOutputField"></span>
+            </div>
+            <h3>Prompt Parts</h3>
+            <ul id="promptPartsList" class="draggable-list"></ul>
+            <button id="addPromptPartBtn">+ Add Prompt Part</button>
+            <div id="promptPartEditForm" style="display:none;">
+                <h4 id="promptPartFormTitle">Add/Edit Prompt Part</h4>
+                <form>
+                    <label>Type:
+                        <select id="promptPartType">
+                            <option value="system">system</option>
+                            <option value="style">style</option>
+                            <option value="instructions">instructions</option>
+                            <option value="user">user</option>
+                            <option value="assistant">assistant</option>
+                            <option value="other">other</option>
+                        </select>
+                    </label>
+                    <label>Role:
+                        <select id="promptPartRole">
+                            <option value="system">system</option>
+                            <option value="user">user</option>
+                            <option value="assistant">assistant</option>
+                            <option value="tool">tool</option>
+                            <option value="function">function</option>
+                            <option value="other">other</option>
+                        </select>
+                    </label>
+                    <label>Content:<br>
+                        <textarea id="promptPartContent" rows="3"></textarea>
+                    </label>
+                    <label>Description:<br>
+                        <input id="promptPartDescription" type="text" />
+                    </label>
+                    <label>Tags:<br>
+                        <input id="promptPartTags" type="text" placeholder="Comma-separated" />
+                    </label>
+                    <button type="button" id="savePromptPartBtn">Save</button>
+                    <button type="button" id="cancelPromptPartBtn">Cancel</button>
+                </form>
+            </div>
+            <div style="margin-top:1em;">
+                <button id="savePromptPartsOrderBtn">Save Order</button>
+            </div>
+            <hr>
+            <h3>Test Action</h3>
+            <label>Test Input:<br><textarea id="testActionInput" rows="2"></textarea></label>
+            <button id="testActionBtn">Run Test</button>
+            <div id="testActionOutput" style="margin-top:1em;"></div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script>
+        async function loadProviders(selectedProviderId) {
+            const providerSelect = document.getElementById('actionProvider');
+            providerSelect.innerHTML = '<option value="">Loading...</option>';
+            const resp = await fetch('/api/v1/llm/providers');
+            const providers = await resp.json();
+            providerSelect.innerHTML = providers.map(p => `<option value="${p.id}" ${selectedProviderId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+        }
+        async function loadModels(providerId, selectedModelId) {
+            const modelSelect = document.getElementById('actionModel');
+            modelSelect.innerHTML = '<option value="">Loading...</option>';
+            const resp = await fetch('/api/v1/llm/models');
+            const models = await resp.json();
+            const filtered = models.filter(m => m.provider_id == providerId);
+            modelSelect.innerHTML = filtered.map(m => `<option value="${m.name}" data-model-id="${m.id}" ${selectedModelId == m.name ? 'selected' : ''}>${m.name} (${m.description || ''})</option>`).join('');
+        }
         document.addEventListener('DOMContentLoaded', function () {
             // Accordion logic
             document.querySelectorAll('.action-header').forEach(header => {
@@ -440,8 +521,15 @@
                 document.getElementById('modalActionTitle').textContent = 'New Action';
                 actionForm.reset();
                 document.getElementById('actionId').value = '';
+                loadProviders().then(() => {
+                    const providerId = document.getElementById('actionProvider').value;
+                    loadModels(providerId);
+                });
                 actionModal.classList.add('active');
                 document.body.style.overflow = 'hidden';
+            });
+            document.getElementById('actionProvider').addEventListener('change', function () {
+                loadModels(this.value);
             });
             modalActionCloseBtn.addEventListener('click', function () {
                 actionModal.classList.remove('active');
@@ -462,7 +550,16 @@
                     document.getElementById('modalActionTitle').textContent = 'Edit Action';
                     document.getElementById('actionId').value = data.action.id;
                     document.getElementById('actionFieldName').value = data.action.field_name;
-                    document.getElementById('actionModel').value = data.action.llm_model;
+                    // Find model and provider
+                    const modelName = data.action.llm_model;
+                    const resp = await fetch('/api/v1/llm/models');
+                    const models = await resp.json();
+                    const model = models.find(m => m.name === modelName);
+                    const providerId = model ? model.provider_id : '';
+                    await loadProviders(providerId);
+                    await loadModels(providerId, modelName);
+                    document.getElementById('actionProvider').value = providerId;
+                    document.getElementById('actionModel').value = modelName;
                     document.getElementById('actionPromptTemplate').value = data.action.prompt_template;
                     document.getElementById('actionTemperature').value = data.action.temperature;
                     document.getElementById('actionMaxTokens').value = data.action.max_tokens;
@@ -519,6 +616,151 @@
                     document.body.style.overflow = '';
                 }
             });
+            // Prompt Parts modal open/close logic
+            function closeActionDetailsModal() {
+                document.getElementById('actionDetailsModal').style.display = 'none';
+                document.getElementById('promptPartEditForm').style.display = 'none';
+                document.getElementById('testActionOutput').textContent = '';
+            }
+            document.getElementById('closeActionDetails').onclick = closeActionDetailsModal;
+            document.getElementById('actionDetailsModal').onclick = function (e) {
+                if (e.target === this) closeActionDetailsModal();
+            };
+            document.querySelectorAll('.prompt-parts-btn').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    openActionDetails(btn.dataset.id);
+                });
+            });
+            // Prompt Part CRUD logic
+            function refreshPromptParts(actionId) {
+                fetch(`/api/v1/llm/actions/${actionId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        const action = data.action || data;
+                        const list = document.getElementById('promptPartsList');
+                        list.innerHTML = '';
+                        (action.prompt_parts || []).forEach((part, idx) => {
+                            const li = document.createElement('li');
+                            li.draggable = true;
+                            li.dataset.id = part.id;
+                            li.dataset.order = part.order;
+                            li.innerHTML = `<b>${part.type}</b> [${part.role}]<br>${part.content}<br><button type='button' class='btn btn-secondary btn-xs' onclick='editPromptPart(${actionId},${part.id})'>Edit</button> <button type='button' class='btn btn-danger btn-xs' onclick='removePromptPart(${actionId},${part.id})'>Remove</button>`;
+                            list.appendChild(li);
+                        });
+                    });
+            }
+            window.editPromptPart = function (actionId, partId) {
+                fetch(`/api/v1/llm/prompt_parts/${partId}`)
+                    .then(r => r.json())
+                    .then(part => {
+                        document.getElementById('promptPartType').value = part.type;
+                        document.getElementById('promptPartRole').value = part.role;
+                        document.getElementById('promptPartContent').value = part.content;
+                        document.getElementById('promptPartDescription').value = part.description || '';
+                        document.getElementById('promptPartTags').value = (part.tags || []).join(', ');
+                        document.getElementById('promptPartEditForm').style.display = 'block';
+                        document.getElementById('promptPartEditForm').dataset.editing = partId;
+                        document.getElementById('promptPartEditForm').dataset.actionId = actionId;
+                    });
+            };
+            window.removePromptPart = function (actionId, partId) {
+                if (!confirm('Remove this prompt part from the action?')) return;
+                fetch(`/api/v1/llm/actions/${actionId}/prompt_parts/${partId}`, { method: 'DELETE' })
+                    .then(r => r.json())
+                    .then(() => refreshPromptParts(actionId));
+            };
+            document.getElementById('addPromptPartBtn').onclick = function () {
+                document.getElementById('promptPartType').value = 'system';
+                document.getElementById('promptPartRole').value = 'user';
+                document.getElementById('promptPartContent').value = '';
+                document.getElementById('promptPartDescription').value = '';
+                document.getElementById('promptPartTags').value = '';
+                document.getElementById('promptPartEditForm').style.display = 'block';
+                document.getElementById('promptPartEditForm').dataset.editing = '';
+                document.getElementById('promptPartEditForm').dataset.actionId = document.getElementById('actionDetailsModal').dataset.actionId;
+            };
+            document.getElementById('cancelPromptPartBtn').onclick = function () {
+                document.getElementById('promptPartEditForm').style.display = 'none';
+            };
+            document.getElementById('savePromptPartBtn').onclick = function () {
+                const type = document.getElementById('promptPartType').value;
+                const role = document.getElementById('promptPartRole').value;
+                const content = document.getElementById('promptPartContent').value;
+                const description = document.getElementById('promptPartDescription').value;
+                const tags = document.getElementById('promptPartTags').value.split(',').map(t => t.trim()).filter(Boolean);
+                const editing = document.getElementById('promptPartEditForm').dataset.editing;
+                const actionId = document.getElementById('promptPartEditForm').dataset.actionId;
+                let url, method, body;
+                if (editing) {
+                    url = `/api/v1/llm/prompt_parts/${editing}`;
+                    method = 'PUT';
+                    body = JSON.stringify({ type, role, content, description, tags });
+                } else {
+                    url = `/api/v1/llm/prompt_parts`;
+                    method = 'POST';
+                    body = JSON.stringify({ type, role, content, description, tags });
+                }
+                fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body })
+                    .then(r => r.json())
+                    .then(part => {
+                        if (!editing) {
+                            // Link to action
+                            fetch(`/api/v1/llm/actions/${actionId}/prompt_parts`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ prompt_part_id: part.id })
+                            }).then(() => refreshPromptParts(actionId));
+                        } else {
+                            refreshPromptParts(actionId);
+                        }
+                        document.getElementById('promptPartEditForm').style.display = 'none';
+                    });
+            };
+            // Drag-and-drop reordering for prompt parts
+            new Sortable(document.getElementById('promptPartsList'), {
+                animation: 150,
+                onEnd: function (evt) {
+                    const actionId = document.getElementById('actionDetailsModal').dataset.actionId;
+                    const ids = Array.from(document.getElementById('promptPartsList').children).map(li => li.dataset.id);
+                    fetch(`/api/v1/llm/actions/${actionId}/prompt_parts/order`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ order: ids })
+                    }).then(r => r.json()).then(data => {
+                        if (!data.success) alert('Failed to save prompt part order: ' + (data.error || 'Unknown error'));
+                    });
+                }
+            });
+            document.getElementById('savePromptPartsOrderBtn').onclick = function () {
+                const actionId = document.getElementById('actionDetailsModal').dataset.actionId;
+                const ids = Array.from(document.getElementById('promptPartsList').children).map(li => li.dataset.id);
+                fetch(`/api/v1/llm/actions/${actionId}/prompt_parts/order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order: ids })
+                }).then(r => r.json()).then(data => {
+                    if (!data.success) alert('Failed to save prompt part order: ' + (data.error || 'Unknown error'));
+                });
+            };
+            // Test Action logic
+            document.getElementById('testActionBtn').onclick = function () {
+                const actionId = document.getElementById('actionDetailsModal').dataset.actionId;
+                const input = document.getElementById('testActionInput').value;
+                document.getElementById('testActionOutput').textContent = 'Running...';
+                fetch(`/api/v1/llm/actions/${actionId}/execute`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        document.getElementById('testActionOutput').textContent = data.output || data.result || JSON.stringify(data);
+                    })
+                    .catch(err => {
+                        document.getElementById('testActionOutput').textContent = 'Error: ' + err;
+                    });
+            };
         });
     </script>
 </div>

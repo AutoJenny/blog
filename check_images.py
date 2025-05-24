@@ -6,32 +6,36 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
-from app.models import Post, Image, PostSection
 
 
 def create_image(filename, post_slug):
     """Create an Image record if it doesn't exist."""
-    image = Image.query.filter_by(filename=filename).first()
+    image = db.session.execute(
+        "SELECT * FROM images WHERE filename = :filename",
+        {"filename": filename}
+    ).fetchone()
     if not image:
         # Create new image with all required fields
-        image = Image()
-        image.filename = filename
-        image.original_filename = filename
-        image.path = f"images/posts/{post_slug}/{filename}"
-        image.alt_text = filename.replace(".jpg", "").replace("_", " ").title()
-        image.caption = filename.replace(".jpg", "").replace("_", " ").title()
-        image.image_prompt = ""  # Optional AI generation prompt
-        image.notes = "Created by check_images.py script"
-        image.image_metadata = {
-            "created_at": datetime.utcnow().isoformat(),
-            "post_slug": post_slug,
-            "source": "check_images.py",
-        }
-        image.watermarked = False
-        image.watermarked_path = ""
+        image = db.session.execute(
+            "INSERT INTO images (filename, original_filename, path, alt_text, caption, image_prompt, notes, image_metadata, watermarked, watermarked_path) "
+            "VALUES (:filename, :filename, :path, :alt_text, :caption, :image_prompt, :notes, :image_metadata, :watermarked, :watermarked_path) RETURNING *",
+            {
+                "filename": filename,
+                "path": f"images/posts/{post_slug}/{filename}",
+                "alt_text": filename.replace(".jpg", "").replace("_", " ").title(),
+                "caption": filename.replace(".jpg", "").replace("_", " ").title(),
+                "image_prompt": "",  # Optional AI generation prompt
+                "notes": "Created by check_images.py script",
+                "image_metadata": {
+                    "created_at": datetime.utcnow().isoformat(),
+                    "post_slug": post_slug,
+                    "source": "check_images.py",
+                },
+                "watermarked": False,
+                "watermarked_path": ""
+            }
+        ).fetchone()
 
-        db.session.add(image)
-        db.session.flush()  # Get the ID without committing
     return image
 
 
@@ -40,21 +44,33 @@ def main():
     app = create_app()
     with app.app_context():
         # Process quaich-traditions post
-        post = Post.query.filter_by(slug="quaich-traditions").first()
+        post = db.session.execute(
+            "SELECT * FROM posts WHERE slug = :slug",
+            {"slug": "quaich-traditions"}
+        ).fetchone()
         if post:
             # Set header image by adding it first to the images relationship
             header_image = create_image(
                 "quaich-traditions_header-collage.jpg", "quaich-traditions"
             )
-            if header_image not in post.images.all():
-                post.images.append(header_image)
+            if not db.session.execute(
+                "SELECT * FROM post_images WHERE post_id = :post_id AND image_id = :image_id",
+                {"post_id": post[0], "image_id": header_image[0]}
+            ).fetchone():
+                db.session.execute(
+                    "INSERT INTO post_images (post_id, image_id) VALUES (:post_id, :image_id)",
+                    {"post_id": post[0], "image_id": header_image[0]}
+                )
 
             # Process section images
-            for section in post.sections:
-                if section.title:
+            for section in db.session.execute(
+                "SELECT * FROM sections WHERE post_id = :post_id",
+                {"post_id": post[0]}
+            ).fetchall():
+                if section[2]:
                     # Convert section title to filename format
                     section_slug = (
-                        section.title.lower()
+                        section[2].lower()
                         .replace(":", "")
                         .replace(" and ", "-")
                         .replace(" ", "-")
@@ -70,24 +86,42 @@ def main():
                             image_filename,
                         )
                     ):
-                        section.image = create_image(
-                            image_filename, "quaich-traditions"
-                        )
+                        section_image = create_image(image_filename, "quaich-traditions")
+                        if not db.session.execute(
+                            "SELECT * FROM section_images WHERE section_id = :section_id AND image_id = :image_id",
+                            {"section_id": section[0], "image_id": section_image[0]}
+                        ).fetchone():
+                            db.session.execute(
+                                "INSERT INTO section_images (section_id, image_id) VALUES (:section_id, :image_id)",
+                                {"section_id": section[0], "image_id": section_image[0]}
+                            )
 
         # Process kilt-evolution post
-        post = Post.query.filter_by(slug="kilt-evolution").first()
+        post = db.session.execute(
+            "SELECT * FROM posts WHERE slug = :slug",
+            {"slug": "kilt-evolution"}
+        ).fetchone()
         if post:
             # Set header image by adding it first to the images relationship
             header_image = create_image("kilt-evolution_header.jpg", "kilt-evolution")
-            if header_image not in post.images.all():
-                post.images.append(header_image)
+            if not db.session.execute(
+                "SELECT * FROM post_images WHERE post_id = :post_id AND image_id = :image_id",
+                {"post_id": post[0], "image_id": header_image[0]}
+            ).fetchone():
+                db.session.execute(
+                    "INSERT INTO post_images (post_id, image_id) VALUES (:post_id, :image_id)",
+                    {"post_id": post[0], "image_id": header_image[0]}
+                )
 
             # Process section images
-            for section in post.sections:
-                if section.title:
+            for section in db.session.execute(
+                "SELECT * FROM sections WHERE post_id = :post_id",
+                {"post_id": post[0]}
+            ).fetchall():
+                if section[2]:
                     # Convert section title to filename format
                     section_slug = (
-                        section.title.lower()
+                        section[2].lower()
                         .replace(":", "")
                         .replace(" and ", "-")
                         .replace(" ", "-")
@@ -103,7 +137,15 @@ def main():
                             image_filename,
                         )
                     ):
-                        section.image = create_image(image_filename, "kilt-evolution")
+                        section_image = create_image(image_filename, "kilt-evolution")
+                        if not db.session.execute(
+                            "SELECT * FROM section_images WHERE section_id = :section_id AND image_id = :image_id",
+                            {"section_id": section[0], "image_id": section_image[0]}
+                        ).fetchone():
+                            db.session.execute(
+                                "INSERT INTO section_images (section_id, image_id) VALUES (:section_id, :image_id)",
+                                {"section_id": section[0], "image_id": section_image[0]}
+                            )
 
         # Commit all changes
         try:

@@ -1,5 +1,4 @@
 from app import create_app
-from app.models import Post
 from flask import current_app
 
 app = create_app()

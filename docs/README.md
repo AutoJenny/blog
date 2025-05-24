@@ -86,4 +86,8 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
 
 ---
 
-*This documentation is a living document and will be updated as the project evolves.* 
+*This documentation is a living document and will be updated as the project evolves.*
+
+## Database Access
+
+- As of 2025-05-23, all database access is performed using direct SQL via psycopg2. SQLAlchemy and ORM models are no longer used anywhere in the codebase. All data access, migrations, and queries are handled with raw SQL and psycopg2 connections. 

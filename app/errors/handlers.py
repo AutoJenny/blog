@@ -1,6 +1,5 @@
 from flask import render_template, request, jsonify
 from app.errors import bp
-from app import db
 
 def wants_json_response():
     return request.accept_mimetypes.accept_json and \
@@ -14,7 +13,6 @@ def not_found_error(error):
 
 @bp.app_errorhandler(500)
 def internal_error(error):
-    db.session.rollback()
     if wants_json_response():
         return jsonify({'error': 'Internal server error'}), 500
     return render_template('errors/500.html'), 500

@@ -6,7 +6,6 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain.chains import LLMChain
 from pydantic import BaseModel, Field
-from app.models import Post, PostSection
 import json
 
 class ContentIdea(BaseModel):

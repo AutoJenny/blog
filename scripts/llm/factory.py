@@ -1,5 +1,5 @@
 from typing import Dict, Type, Optional
-from .base import LLMProvider, LLMConfig
+from .base import LLMProvider
 from .ollama import OllamaProvider
 
 class LLMFactory:
@@ -17,7 +17,7 @@ class LLMFactory:
         cls._providers[name] = provider_class
     
     @classmethod
-    def create_provider(cls, config: LLMConfig) -> Optional[LLMProvider]:
+    def create_provider(cls, config) -> Optional[LLMProvider]:
         """Create a new provider instance based on configuration."""
         provider_type = config.provider_type
         
@@ -25,7 +25,7 @@ class LLMFactory:
             raise ValueError(f"Unknown provider type: {provider_type}")
             
         # Check if we already have an instance for this config
-        instance_key = f"{provider_type}_{config.model_name}_{config.api_base}"
+        instance_key = f"{provider_type}_{getattr(config, 'model_name', '')}_{getattr(config, 'api_base', '')}"
         
         if instance_key in cls._instances:
             return cls._instances[instance_key]
@@ -40,4 +40,6 @@ class LLMFactory:
     @classmethod
     def get_available_providers(cls) -> Dict[str, Type[LLMProvider]]:
         """Get dictionary of registered provider types."""
-        return cls._providers.copy() 
+        return cls._providers.copy()
+
+# LLMConfig is deprecated. Use new provider/model config if needed. 
