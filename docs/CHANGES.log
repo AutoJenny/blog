@@ -6,4 +6,6 @@
 
 2025-05-23: Removed all remaining SQLAlchemy/ORM imports and usage from the codebase, including scripts, config, and API routes. Fully migrated to direct SQL (psycopg2) for all database access as part of the LLM modular prompt refactor. Cleaned up dependencies and configuration. [LLM Modular Prompt Refactor]
 
-2025-05-24: Fixed critical /db route registration issue. Canonicalized db Blueprint definition by moving Blueprint creation and all route attachments to app/database/routes.py, and registering the Blueprint directly from there in the app factory. This robust pattern ensures all /db endpoints are always available and eliminates circular import issues. Verified with print_routes.py and curl. [Database Admin Robustness] 
+2025-05-24: Fixed critical /db route registration issue. Canonicalized db Blueprint definition by moving Blueprint creation and all route attachments to app/database/routes.py, and registering the Blueprint directly from there in the app factory. This robust pattern ensures all /db endpoints are always available and eliminates circular import issues. Verified with print_routes.py and curl. [Database Admin Robustness]
+
+2025-05-24: Refactored /api/v1/llm/actions and /actions/<id> endpoints to use robust direct SQL (psycopg2) with parameterized queries and error handling. Registered llm_api Blueprint in the app factory to ensure all LLM API endpoints are available. Verified endpoint registration and correct JSON output with curl and print_routes.py. Updated modular prompt refactor plan. [LLM Modular Prompt Refactor] 
