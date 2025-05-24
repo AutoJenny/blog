@@ -4,6 +4,8 @@ from app.llm.services import LLMService, execute_llm_request
 import requests
 import traceback
 import logging
+from app.database.routes import get_db_conn
+import json
 
 bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 
@@ -196,38 +198,48 @@ def generate_social(section_id):
 def handle_actions():
     """Handle LLM actions list and creation."""
     if request.method == 'GET':
-        actions = LLMAction.query.all()
-        return jsonify([action.to_dict() for action in actions])
-    
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order"
+                    FROM llm_action
+                    ORDER BY "order", id
+                """)
+                actions = cur.fetchall()
+        return jsonify(actions)
     data = request.get_json()
     try:
-        # Validate required fields
         required_fields = ['field_name', 'prompt_template_id', 'llm_model']
         for field in required_fields:
             if field not in data:
                 return jsonify({'status': 'error', 'error': f'Missing required field: {field}'}), 400
-        
-        # Get the prompt template
-        prompt_template = LLMPrompt.query.get_or_404(data['prompt_template_id'])
-        
-        # Create the action
-        action = LLMAction(
-            field_name=data['field_name'],
-            prompt_template=prompt_template.prompt_text,
-            prompt_template_id=prompt_template.id,
-            llm_model=data['llm_model'],
-            temperature=float(data.get('temperature', 0.7)),
-            max_tokens=int(data.get('max_tokens', 1000))
-        )
-        
-        db.session.add(action)
-        db.session.commit()
-        
-        current_app.logger.info(f"Created new LLM action: {action.to_dict()}")
-        return jsonify({'status': 'success', 'action': action.to_dict()})
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT prompt_text FROM llm_prompt WHERE id = %s
+                """, (data['prompt_template_id'],))
+                prompt_row = cur.fetchone()
+                if not prompt_row:
+                    return jsonify({'status': 'error', 'error': 'Prompt template not found'}), 404
+                prompt_template = prompt_row['prompt_text']
+                cur.execute("""
+                    INSERT INTO llm_action (field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order")
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+                """, (
+                    data['field_name'],
+                    prompt_template,
+                    data['prompt_template_id'],
+                    data['llm_model'],
+                    float(data.get('temperature', 0.7)),
+                    int(data.get('max_tokens', 1000)),
+                    data.get('input_field'),
+                    data.get('output_field'),
+                    data.get('order', 0)
+                ))
+                action_id = cur.fetchone()['id']
+                conn.commit()
+        return jsonify({'status': 'success', 'action': action_id})
     except Exception as e:
-        current_app.logger.error(f"Error creating action: {str(e)}")
-        db.session.rollback()
         return jsonify({'status': 'error', 'error': str(e)}), 400
 
 
@@ -330,42 +342,43 @@ def get_prompt(prompt_id):
 @bp.route('/actions/<int:action_id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_action(action_id):
     """Handle individual LLM action operations."""
-    action = LLMAction.query.get_or_404(action_id)
-    
     if request.method == 'GET':
-        try:
-            return jsonify({'status': 'success', 'action': action.to_dict()})
-        except Exception as e:
-            return jsonify({'status': 'error', 'error': str(e)}), 400
-    
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order"
+                    FROM llm_action WHERE id = %s
+                """, (action_id,))
+                action = cur.fetchone()
+        if not action:
+            return jsonify({'status': 'error', 'error': 'Not found'}), 404
+        return jsonify({'status': 'success', 'action': action})
     elif request.method == 'PUT':
         data = request.get_json()
-        current_app.logger.debug(f"[DEBUG] Incoming PUT data for action {action_id}: {data}")
-        current_app.logger.debug(f"[DEBUG] action.input_field BEFORE: {action.input_field}")
-        # Update action fields
-        for field in ['field_name', 'prompt_template', 'llm_model', 'temperature', 'max_tokens', 'input_field', 'output_field']:
-            if field in data:
-                setattr(action, field, data[field])
-        current_app.logger.debug(f"[DEBUG] action.input_field AFTER: {action.input_field}")
-        if 'prompt_template_id' in data:
-            prompt_template = LLMPrompt.query.get_or_404(data['prompt_template_id'])
-            action.prompt_template_id = prompt_template.id
-            action.prompt_template = prompt_template.prompt_text
-        
         try:
-            db.session.commit()
-            return jsonify({'status': 'success', 'action': action.to_dict()})
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'status': 'error', 'error': str(e)}), 400
-    
-    elif request.method == 'DELETE':
-        try:
-            db.session.delete(action)
-            db.session.commit()
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    update_fields = ['field_name', 'prompt_template', 'prompt_template_id', 'llm_model', 'temperature', 'max_tokens', 'input_field', 'output_field', 'order']
+                    set_clause = ', '.join([f'{f}=%s' for f in update_fields if f in data])
+                    values = [data[f] for f in update_fields if f in data]
+                    if not set_clause:
+                        return jsonify({'status': 'error', 'error': 'No fields to update'}), 400
+                    values.append(action_id)
+                    cur.execute(f"""
+                        UPDATE llm_action SET {set_clause}, updated_at=NOW() WHERE id=%s
+                    """, tuple(values))
+                    conn.commit()
             return jsonify({'status': 'success'})
         except Exception as e:
-            db.session.rollback()
+            return jsonify({'status': 'error', 'error': str(e)}), 400
+    elif request.method == 'DELETE':
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("DELETE FROM llm_action WHERE id=%s", (action_id,))
+                    conn.commit()
+            return jsonify({'status': 'success'})
+        except Exception as e:
             return jsonify({'status': 'error', 'error': str(e)}), 400
 
 
@@ -476,57 +489,69 @@ def update_action_order():
 @bp.route('/prompt_parts', methods=['GET', 'POST'])
 def handle_prompt_parts():
     if request.method == 'GET':
-        parts = LLMPromptPart.query.order_by(LLMPromptPart.order, LLMPromptPart.id).all()
-        return jsonify([{
-            'id': p.id,
-            'type': p.type,
-            'content': p.content,
-            'description': p.description,
-            'tags': p.tags,
-            'order': p.order,
-            'created_at': p.created_at,
-            'updated_at': p.updated_at
-        } for p in parts])
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, type, content, description, tags, "order", created_at, updated_at
+                    FROM llm_prompt_part
+                    ORDER BY "order", id
+                """)
+                parts = cur.fetchall()
+        return jsonify(parts)
     if request.method == 'POST':
         data = request.get_json()
-        part = LLMPromptPart(
-            type=data['type'],
-            content=data['content'],
-            description=data.get('description'),
-            tags=data.get('tags', []),
-            order=data.get('order', 0)
-        )
-        db.session.add(part)
-        db.session.commit()
-        return jsonify({'status': 'success', 'part': part.id})
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO llm_prompt_part (type, content, description, tags, "order", created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, NOW(), NOW()) RETURNING id
+                """, (
+                    data['type'],
+                    data['content'],
+                    data.get('description'),
+                    json.dumps(data.get('tags', [])),
+                    data.get('order', 0)
+                ))
+                part_id = cur.fetchone()['id']
+                conn.commit()
+        return jsonify({'status': 'success', 'part': part_id})
 
 
 @bp.route('/prompt_parts/<int:part_id>', methods=['GET', 'PUT', 'DELETE'])
 def handle_prompt_part(part_id):
-    part = LLMPromptPart.query.get_or_404(part_id)
     if request.method == 'GET':
-        return jsonify({
-            'id': part.id,
-            'type': part.type,
-            'content': part.content,
-            'description': part.description,
-            'tags': part.tags,
-            'order': part.order,
-            'created_at': part.created_at,
-            'updated_at': part.updated_at
-        })
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, type, content, description, tags, "order", created_at, updated_at
+                    FROM llm_prompt_part WHERE id = %s
+                """, (part_id,))
+                part = cur.fetchone()
+        if not part:
+            return jsonify({'error': 'Not found'}), 404
+        return jsonify(part)
     if request.method == 'PUT':
         data = request.get_json()
-        part.type = data.get('type', part.type)
-        part.content = data.get('content', part.content)
-        part.description = data.get('description', part.description)
-        part.tags = data.get('tags', part.tags)
-        part.order = data.get('order', part.order)
-        db.session.commit()
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE llm_prompt_part SET type=%s, content=%s, description=%s, tags=%s, "order"=%s, updated_at=NOW()
+                    WHERE id=%s
+                """, (
+                    data.get('type'),
+                    data.get('content'),
+                    data.get('description'),
+                    json.dumps(data.get('tags', [])),
+                    data.get('order', 0),
+                    part_id
+                ))
+                conn.commit()
         return jsonify({'status': 'success'})
     if request.method == 'DELETE':
-        db.session.delete(part)
-        db.session.commit()
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM llm_prompt_part WHERE id=%s", (part_id,))
+                conn.commit()
         return jsonify({'status': 'success'})
 
 
