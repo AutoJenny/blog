@@ -119,6 +119,11 @@ def create_app(config_class=Config):
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1')
 
+    from app.api.llm import bp as llm_api_bp
+    print("[DEBUG] Registering llm_api Blueprint...")
+    app.register_blueprint(llm_api_bp)
+    print("[DEBUG] llm_api Blueprint registered.")
+
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
 

@@ -44,28 +44,17 @@ Track the plan and rationale for refactoring LLM prompt handling to support modu
 9. **[IN PROGRESS]** Test all endpoints and UI flows with curl and browser to ensure no regressions
 10. **[IN PROGRESS]** Update documentation and diagrams to reflect direct SQL usage and new patterns
 
-## Risks/Questions
-- How to handle legacy actions/prompts? (Plan: support both for a transition period)
-- Should prompt parts be global (reusable) or per-action? (Plan: global, reusable)
-- How to handle prompt part ordering? (Use 'order' field in join table)
-- **[ONGOING]** Ensure all transactional logic and error handling is robust in direct SQL
+## API Refactor Progress
+- [x] Refactor /api/v1/llm/prompt_parts and /prompt_parts/<id> endpoints to use direct SQL
+- [x] Refactor /api/v1/llm/actions and /actions/<id> endpoints to use direct SQL (robust, tested, returns correct JSON)
+- [ ] Refactor /api/v1/llm/actions/<id>/prompt_parts and linking endpoints to use direct SQL
+- [ ] Refactor /api/v1/llm/actions/<id>/execute endpoint to use direct SQL
+- [ ] Test all endpoints with curl to ensure correct behavior
 
-## References
-- docs/llm/llm_framework_hybrid_refactor.md
-- create_tables.sql
-- app/models.py (to be deprecated)
-- app/llm/services.py
-- app/llm/routes.py
-- app/api/llm.py
-
-## Progress
-- [x] Backend: Models and schema for modular prompt parts
-- [x] Backend: Service layer (assemble, execute, input/output fields)
-- [x] Backend: API endpoints for CRUD and linking
+## UI Progress
 - [ ] UI: Action Details page (display, edit, reorder prompt parts)
 - [ ] UI: Prompt part CRUD and linking in Action Details
 - [ ] UI: Test Action button and output display
-- [x] Backend: Remove all ORM usage and switch to direct SQL for all LLM features
 
 ## Restore Progress (2025-05-23)
 - Successfully performed a lossless restore of all post and action data from the most recent backup (blog_backup_20250523_082634.sql).
@@ -79,6 +68,8 @@ Track the plan and rationale for refactoring LLM prompt handling to support modu
 - [x] Remove all SQLAlchemy/ORM imports and model definitions from app/models.py, app/__init__.py, and related files
 - [x] Refactor app/llm/services.py to use direct SQL for all LLMAction, LLMPromptPart, and LLMActionPromptPart logic
 - [x] Refactor app/llm/routes.py and app/api/llm.py to use direct SQL for all endpoints
+- [x] Refactor /api/v1/llm/prompt_parts endpoints to use direct SQL
+- [ ] Refactor /api/v1/llm/actions and linking endpoints to use direct SQL
 - [ ] Test all LLM endpoints with curl to ensure correct behavior
 - [ ] Update documentation and /docs/CHANGES.log after each major step
 - [ ] Continue UI wiring for modular prompt part management
