@@ -47,7 +47,7 @@ Track the plan and rationale for refactoring LLM prompt handling to support modu
 ## API Refactor Progress
 - [x] Refactor /api/v1/llm/prompt_parts and /prompt_parts/<id> endpoints to use direct SQL
 - [x] Refactor /api/v1/llm/actions and /actions/<id> endpoints to use direct SQL (robust, tested, returns correct JSON)
-- [ ] Refactor /api/v1/llm/actions/<id>/prompt_parts and linking endpoints to use direct SQL
+- [x] Refactor /api/v1/llm/actions/<id>/prompt_parts and linking endpoints to use direct SQL (robust, tested, supports linking/unlinking)
 - [ ] Refactor /api/v1/llm/actions/<id>/execute endpoint to use direct SQL
 - [ ] Test all endpoints with curl to ensure correct behavior
 

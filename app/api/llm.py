@@ -509,7 +509,7 @@ def handle_prompt_parts():
                     data['type'],
                     data['content'],
                     data.get('description'),
-                    json.dumps(data.get('tags', [])),
+                    data.get('tags', []),
                     data.get('order', 0)
                 ))
                 part_id = cur.fetchone()['id']
@@ -541,7 +541,7 @@ def handle_prompt_part(part_id):
                     data.get('type'),
                     data.get('content'),
                     data.get('description'),
-                    json.dumps(data.get('tags', [])),
+                    data.get('tags', []),
                     data.get('order', 0),
                     part_id
                 ))
@@ -558,39 +558,68 @@ def handle_prompt_part(part_id):
 @bp.route('/actions/<int:action_id>/prompt_parts', methods=['GET', 'POST'])
 def action_prompt_parts(action_id):
     if request.method == 'GET':
-        links = LLMActionPromptPart.query.filter_by(action_id=action_id).order_by(LLMActionPromptPart.order).all()
-        return jsonify([{
-            'prompt_part_id': l.prompt_part_id,
-            'order': l.order,
-            'type': l.prompt_part.type,
-            'content': l.prompt_part.content,
-            'description': l.prompt_part.description,
-            'tags': l.prompt_part.tags
-        } for l in links])
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT l.prompt_part_id, l.order, p.type, p.content, p.description, p.tags
+                    FROM llm_action_prompt_part l
+                    JOIN llm_prompt_part p ON l.prompt_part_id = p.id
+                    WHERE l.action_id = %s
+                    ORDER BY l.order, l.prompt_part_id
+                """, (action_id,))
+                links = cur.fetchall()
+        return jsonify(links)
     if request.method == 'POST':
         data = request.get_json()
-        link = LLMActionPromptPart(
-            action_id=action_id,
-            prompt_part_id=data['prompt_part_id'],
-            order=data.get('order', 0)
-        )
-        db.session.add(link)
-        db.session.commit()
-        return jsonify({'status': 'success'})
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        INSERT INTO llm_action_prompt_part (action_id, prompt_part_id, "order")
+                        VALUES (%s, %s, %s)
+                    """, (
+                        action_id,
+                        data['prompt_part_id'],
+                        data.get('order', 0)
+                    ))
+                    conn.commit()
+            return jsonify({'status': 'success'})
+        except Exception as e:
+            return jsonify({'status': 'error', 'error': str(e)}), 400
 
 
 @bp.route('/actions/<int:action_id>/prompt_parts/<int:part_id>', methods=['PUT', 'DELETE'])
 def update_action_prompt_part(action_id, part_id):
-    link = LLMActionPromptPart.query.filter_by(action_id=action_id, prompt_part_id=part_id).first_or_404()
     if request.method == 'PUT':
         data = request.get_json()
-        link.order = data.get('order', link.order)
-        db.session.commit()
-        return jsonify({'status': 'success'})
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        UPDATE llm_action_prompt_part SET "order"=%s WHERE action_id=%s AND prompt_part_id=%s
+                    """, (
+                        data.get('order', 0),
+                        action_id,
+                        part_id
+                    ))
+                    conn.commit()
+            return jsonify({'status': 'success'})
+        except Exception as e:
+            return jsonify({'status': 'error', 'error': str(e)}), 400
     if request.method == 'DELETE':
-        db.session.delete(link)
-        db.session.commit()
-        return jsonify({'status': 'success'})
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        DELETE FROM llm_action_prompt_part WHERE action_id=%s AND prompt_part_id=%s
+                    """, (
+                        action_id,
+                        part_id
+                    ))
+                    conn.commit()
+            return jsonify({'status': 'success'})
+        except Exception as e:
+            return jsonify({'status': 'error', 'error': str(e)}), 400
 
 
 # --- LLM Provider CRUD ---
