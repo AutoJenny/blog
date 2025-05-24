@@ -48,8 +48,8 @@ Track the plan and rationale for refactoring LLM prompt handling to support modu
 - [x] Refactor /api/v1/llm/prompt_parts and /prompt_parts/<id> endpoints to use direct SQL
 - [x] Refactor /api/v1/llm/actions and /actions/<id> endpoints to use direct SQL (robust, tested, returns correct JSON)
 - [x] Refactor /api/v1/llm/actions/<id>/prompt_parts and linking endpoints to use direct SQL (robust, tested, supports linking/unlinking)
-- [ ] Refactor /api/v1/llm/actions/<id>/execute endpoint to use direct SQL
-- [ ] Test all endpoints with curl to ensure correct behavior
+- [x] Refactor /api/v1/llm/actions/<id>/execute endpoint to use direct SQL (robust, ORM-free, returns dummy response for now)
+- [x] Test all endpoints with curl to ensure correct behavior (all endpoints robust, ORM-free, and tested end-to-end)
 
 ## UI Progress
 - [ ] UI: Action Details page (display, edit, reorder prompt parts)
@@ -69,9 +69,9 @@ Track the plan and rationale for refactoring LLM prompt handling to support modu
 - [x] Refactor app/llm/services.py to use direct SQL for all LLMAction, LLMPromptPart, and LLMActionPromptPart logic
 - [x] Refactor app/llm/routes.py and app/api/llm.py to use direct SQL for all endpoints
 - [x] Refactor /api/v1/llm/prompt_parts endpoints to use direct SQL
-- [ ] Refactor /api/v1/llm/actions and linking endpoints to use direct SQL
-- [ ] Test all LLM endpoints with curl to ensure correct behavior
-- [ ] Update documentation and /docs/CHANGES.log after each major step
+- [x] Refactor /api/v1/llm/actions and linking endpoints to use direct SQL
+- [x] Test all LLM endpoints with curl to ensure correct behavior
+- [x] Update documentation and /docs/CHANGES.log after each major step
 - [ ] Continue UI wiring for modular prompt part management
 
 ## Next

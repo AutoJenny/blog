@@ -9,6 +9,9 @@ from app.llm import bp
 from app.llm.services import execute_llm_request
 import httpx
 from app.blog.fields import WORKFLOW_FIELDS
+import psycopg2
+import psycopg2.extras
+from app.database.routes import get_db_conn
 
 logger = logging.getLogger(__name__)
 # All ORM model imports removed. Use direct SQL via psycopg2 for any DB access.
@@ -43,8 +46,14 @@ def templates():
 @bp.route('/actions')
 def actions():
     """Render the LLM Actions management page."""
-    actions = []  # TODO: Replace with direct SQL query for actions
-    prompts = []  # TODO: Replace with direct SQL query for prompt templates
+    actions = []
+    prompts = []
+    with get_db_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT * FROM llm_action ORDER BY id")
+            actions = cur.fetchall()
+            cur.execute("SELECT * FROM llm_prompt ORDER BY id")
+            prompts = cur.fetchall()
     return render_template(
         'llm/actions.html',
         actions=actions,
@@ -54,8 +63,29 @@ def actions():
 
 @bp.route('/actions/<int:action_id>')
 def action_detail(action_id):
-    action = None  # TODO: Replace with direct SQL query for action
-    return render_template('llm/action_detail.html', action=action)
+    action = None
+    action_prompt_parts = []
+    all_prompt_parts = []
+    with get_db_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT * FROM llm_action WHERE id = %s
+            """, (action_id,))
+            action = cur.fetchone()
+            if action:
+                cur.execute("""
+                    SELECT l.prompt_part_id, l.order, p.type, p.content, p.description, p.tags
+                    FROM llm_action_prompt_part l
+                    JOIN llm_prompt_part p ON l.prompt_part_id = p.id
+                    WHERE l.action_id = %s
+                    ORDER BY l.order, l.prompt_part_id
+                """, (action_id,))
+                action_prompt_parts = cur.fetchall()
+            cur.execute("""
+                SELECT * FROM llm_prompt_part ORDER BY "order", id
+            """)
+            all_prompt_parts = cur.fetchall()
+    return render_template('llm/action_detail.html', action=action, action_prompt_parts=action_prompt_parts, all_prompt_parts=all_prompt_parts)
 
 @bp.route('/api/v1/llm/test', methods=['POST'])
 def test_llm_action():
@@ -226,3 +256,57 @@ def llm_images_prompts():
 @bp.route('/images/previews')
 def llm_images_previews():
     return render_template('llm/images_previews.html')
+
+@bp.route('/api/v1/llm/models', methods=['GET'])
+def api_llm_models():
+    # Only Ollama local models for now
+    models = [
+        {"id": 1, "name": "llama3", "provider_id": 1, "description": "Ollama Llama 3 (local)"},
+        {"id": 2, "name": "mistral", "provider_id": 1, "description": "Ollama Mistral (local)"},
+        {"id": 3, "name": "phi3", "provider_id": 1, "description": "Ollama Phi-3 (local)"}
+    ]
+    return jsonify(models)
+
+@bp.route('/api/v1/llm/providers', methods=['GET'])
+def api_llm_providers():
+    # Only Ollama local provider for now
+    providers = [
+        {"id": 1, "name": "Ollama (local)"}
+    ]
+    return jsonify(providers)
+
+@bp.route('/api/v1/llm/actions/<int:action_id>', methods=['GET'])
+def api_llm_action_detail(action_id):
+    try:
+        logger.info(f"[API] Fetching LLM action detail for id={action_id}")
+        action = None
+        prompt_parts = []
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("SELECT * FROM llm_action WHERE id = %s", (action_id,))
+                action = cur.fetchone()
+                logger.info(f"[API] SQL result for action: {action}")
+                if action:
+                    cur.execute("""
+                        SELECT p.*
+                        FROM llm_action_prompt_part l
+                        JOIN llm_prompt_part p ON l.prompt_part_id = p.id
+                        WHERE l.action_id = %s
+                        ORDER BY l.order, l.prompt_part_id
+                    """, (action_id,))
+                    prompt_parts = cur.fetchall()
+                    logger.info(f"[API] SQL result for prompt_parts: {prompt_parts}")
+        if not action:
+            logger.error(f"[API] Action not found for id={action_id}")
+            return jsonify({'error': 'Action not found'}), 404
+        # Ensure all required fields are present
+        required_fields = ['id', 'field_name', 'llm_model', 'prompt_template', 'temperature', 'max_tokens']
+        for field in required_fields:
+            if field not in action or action[field] is None:
+                logger.error(f"[API] Action missing required field: {field}")
+                return jsonify({'error': f'Missing required field: {field}'}), 500
+        action['prompt_parts'] = prompt_parts
+        return jsonify({'action': action})
+    except Exception as e:
+        logger.exception(f"[API] Exception in api_llm_action_detail for id={action_id}")
+        return jsonify({'error': f'Internal server error: {str(e)}'}), 500

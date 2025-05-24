@@ -308,6 +308,8 @@
             </div>
             <div class="action-card">
                 <div class="action-list" id="actionAccordionList">
+                    <pre
+                        style="color:lime;background:#222;padding:1em;overflow-x:auto;">{{ actions|tojson(indent=2) }}</pre>
                     {% if actions|length == 0 %}
                     <div class="text-center text-gray-400 py-8">No actions found in the database.</div>
                     {% endif %}
@@ -761,6 +763,32 @@
                         document.getElementById('testActionOutput').textContent = 'Error: ' + err;
                     });
             };
+            function openActionDetails(actionId) {
+                // Open the modal and load action details
+                const modal = document.getElementById('actionDetailsModal');
+                modal.style.display = 'flex';
+                modal.dataset.actionId = actionId;
+                // Fetch action details and populate modal fields
+                fetch(`/api/v1/llm/actions/${actionId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        const action = data.action || {};
+                        document.getElementById('detailsActionName').textContent = action.field_name || '';
+                        document.getElementById('detailsInputField').textContent = action.input_field || '';
+                        document.getElementById('detailsOutputField').textContent = action.output_field || '';
+                        // Populate prompt parts list
+                        const list = document.getElementById('promptPartsList');
+                        list.innerHTML = '';
+                        (action.prompt_parts || []).forEach((part, idx) => {
+                            const li = document.createElement('li');
+                            li.draggable = true;
+                            li.dataset.id = part.id;
+                            li.dataset.order = part.order;
+                            li.innerHTML = `<b>${part.type}</b> [${part.role || ''}]<br>${part.content}<br>`;
+                            list.appendChild(li);
+                        });
+                    });
+            }
         });
     </script>
 </div>

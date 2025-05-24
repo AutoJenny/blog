@@ -1,0 +1,5 @@
+ id |           field_name            | prompt_template | prompt_template_id | llm_model | temperature | max_tokens | order |        created_at         |        updated_at         | input_field | output_field 
+----+---------------------------------+-----------------+--------------------+-----------+-------------+------------+-------+---------------------------+---------------------------+-------------+--------------
+  9 | Generate Summary from idea_seed | {{ idea_seed }} |                 11 | gpt-4     |         0.7 |       1000 |     0 | 2025-05-22 13:43:58.53529 | 2025-05-22 13:43:58.53529 |             | 
+(1 row)
+

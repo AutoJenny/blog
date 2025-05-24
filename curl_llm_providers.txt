@@ -1,0 +1,11 @@
+[
+  {
+    "api_url": "http://localhost:11434",
+    "auth_token": null,
+    "created_at": null,
+    "description": "Local Ollama server",
+    "id": 1,
+    "name": "Ollama (local)",
+    "updated_at": null
+  }
+]

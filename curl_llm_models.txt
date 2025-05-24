@@ -1,0 +1,20 @@
+[
+  {
+    "description": "Ollama Llama 3 (local)",
+    "id": 1,
+    "name": "llama3",
+    "provider_id": 1
+  },
+  {
+    "description": "Ollama Mistral (local)",
+    "id": 2,
+    "name": "mistral",
+    "provider_id": 1
+  },
+  {
+    "description": "Ollama Phi-3 (local)",
+    "id": 3,
+    "name": "phi3",
+    "provider_id": 1
+  }
+]
