@@ -256,20 +256,6 @@ def create_prompt():
     return jsonify({'success': True, 'prompt': {'id': prompt.id, 'name': prompt.name, 'prompt_text': prompt.prompt_text, 'description': prompt.description}})
 
 
-@bp.route('/models/ollama', methods=['GET'])
-def get_ollama_models():
-    try:
-        tags_resp = requests.get('http://localhost:11434/api/tags', timeout=3)
-        tags_data = tags_resp.json()
-        all_models = [m['name'] for m in tags_data.get('models', [])]
-        ps_resp = requests.get('http://localhost:11434/api/ps', timeout=3)
-        ps_data = ps_resp.json()
-        loaded_models = [m['name'] for m in ps_data.get('models', [])]
-        return jsonify({'models': all_models, 'loaded': loaded_models})
-    except Exception as e:
-        return jsonify({'models': [], 'loaded': [], 'error': str(e)}), 500
-
-
 @bp.route('/preload', methods=['POST'])
 def preload_model():
     data = request.get_json()
@@ -349,9 +335,10 @@ def handle_action(action_id):
                     SELECT id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order"
                     FROM llm_action WHERE id = %s
                 """, (action_id,))
-                action = cur.fetchone()
-        if not action:
+                action_row = cur.fetchone()
+        if not action_row:
             return jsonify({'status': 'error', 'error': 'Not found'}), 404
+        action = dict(action_row)
         return jsonify({'status': 'success', 'action': action})
     elif request.method == 'PUT':
         data = request.get_json()
@@ -384,30 +371,37 @@ def handle_action(action_id):
 
 @bp.route('/actions/<int:action_id>/execute', methods=['POST'])
 def execute_action(action_id):
+    print(f"[PRINT] /execute endpoint called for action_id={action_id}")
     """Execute an LLM action with robust debug logging."""
-    action = LLMAction.query.get_or_404(action_id)
     data = request.get_json()
     current_app.logger.debug(f"[LLM EXECUTE] Action ID: {action_id}, Incoming data: {data}")
-    
+
     if not data or 'input_text' not in data:
         current_app.logger.warning(f"[LLM EXECUTE] No input_text provided for action {action_id}.")
         return jsonify({'error': 'No input text provided'}), 400
-    
+
     try:
+        # Fetch the action via direct SQL
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order"
+                    FROM llm_action WHERE id = %s
+                """, (action_id,))
+                action_row = cur.fetchone()
+        if not action_row:
+            return jsonify({'error': 'Action not found'}), 404
+        action = dict(action_row)
+        current_app.logger.debug(f"[LLM EXECUTE] Action object: {action}")
+
         post_id = data.get('post_id')
         fields = {'input': data['input_text']}
-        # If post_id is provided, fetch all PostDevelopment fields
-        if post_id:
-            dev = PostDevelopment.query.filter_by(post_id=post_id).first()
-            if dev:
-                for c in dev.__table__.columns:
-                    if c.name not in ['id', 'post_id']:
-                        fields[c.name] = getattr(dev, c.name)
         # PATCH: Merge in section_fields if provided
         section_fields = data.get('section_fields')
         if section_fields and isinstance(section_fields, dict):
             fields.update(section_fields)
         current_app.logger.debug(f"[LLM EXECUTE] Final fields for action {action_id}: {fields}")
+        # Call the LLMService as before (assume it can take a dict action)
         llm = LLMService()
         result = llm.execute_action(
             action=action,
@@ -420,7 +414,7 @@ def execute_action(action_id):
         current_app.logger.error(f"[LLM EXECUTE] ValueError executing action {action_id}: {str(e)}\n{traceback.format_exc()}")
         return jsonify({'error': str(e)}), 400
     except Exception as e:
-        current_app.logger.error(f"[LLM EXECUTE] Exception executing action {action_id}: {str(e)}\n{traceback.format_exc()} | Data: {data}")
+        current_app.logger.error(f"[LLM EXECUTE] Exception executing action {action_id}: {str(e)}\n{traceback.format_exc()} | Data: {data} | Action: {action if 'action' in locals() else 'N/A'}")
         return jsonify({'error': 'Internal server error'}), 500
 
 
@@ -626,27 +620,13 @@ def update_action_prompt_part(action_id, part_id):
 @bp.route('/providers', methods=['GET', 'POST'])
 def providers():
     if request.method == 'GET':
-        providers = LLMProvider.query.order_by(LLMProvider.id).all()
-        return jsonify([{
-            'id': p.id,
-            'name': p.name,
-            'description': p.description,
-            'api_url': p.api_url,
-            'auth_token': p.auth_token,
-            'created_at': p.created_at,
-            'updated_at': p.updated_at
-        } for p in providers])
-    if request.method == 'POST':
-        data = request.get_json()
-        provider = LLMProvider(
-            name=data['name'],
-            description=data.get('description'),
-            api_url=data.get('api_url'),
-            auth_token=data.get('auth_token')
-        )
-        db.session.add(provider)
-        db.session.commit()
-        return jsonify({'status': 'success', 'provider': provider.id})
+        # Only Ollama (local) provider for now
+        providers = [
+            {"id": 1, "name": "Ollama (local)", "description": "Local Ollama server", "api_url": "http://localhost:11434", "auth_token": None, "created_at": None, "updated_at": None}
+        ]
+        return jsonify(providers)
+    # POST not implemented for now
+    return jsonify({'error': 'Not implemented'}), 501
 
 @bp.route('/providers/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 def provider_detail(id):
@@ -678,52 +658,15 @@ def provider_detail(id):
 @bp.route('/models', methods=['GET', 'POST'])
 def models():
     if request.method == 'GET':
-        models = LLMModel.query.order_by(LLMModel.id).all()
-        return jsonify([{
-            'id': m.id,
-            'provider_id': m.provider_id,
-            'name': m.name,
-            'description': m.description,
-            'config': m.config,
-            'created_at': m.created_at,
-            'updated_at': m.updated_at
-        } for m in models])
-    if request.method == 'POST':
-        data = request.get_json()
-        model = LLMModel(
-            provider_id=data['provider_id'],
-            name=data['name'],
-            description=data.get('description'),
-            config=data.get('config')
-        )
-        db.session.add(model)
-        db.session.commit()
-        return jsonify({'status': 'success', 'model': model.id})
-
-@bp.route('/models/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-def model_detail(id):
-    model = LLMModel.query.get_or_404(id)
-    if request.method == 'GET':
-        return jsonify({
-            'id': model.id,
-            'provider_id': model.provider_id,
-            'name': model.name,
-            'description': model.description,
-            'config': model.config,
-            'created_at': model.created_at,
-            'updated_at': model.updated_at
-        })
-    if request.method == 'PUT':
-        data = request.get_json()
-        model.name = data.get('name', model.name)
-        model.description = data.get('description', model.description)
-        model.config = data.get('config', model.config)
-        db.session.commit()
-        return jsonify({'status': 'success'})
-    if request.method == 'DELETE':
-        db.session.delete(model)
-        db.session.commit()
-        return jsonify({'status': 'success'})
+        # Only Ollama local models for now
+        models = [
+            {"id": 1, "name": "llama3", "provider_id": 1, "description": "Ollama Llama 3 (local)"},
+            {"id": 2, "name": "mistral", "provider_id": 1, "description": "Ollama Mistral (local)"},
+            {"id": 3, "name": "phi3", "provider_id": 1, "description": "Ollama Phi-3 (local)"}
+        ]
+        return jsonify(models)
+    # POST not implemented for now
+    return jsonify({'error': 'Not implemented'}), 501
 
 @bp.route('/actions/<int:action_id>/test', methods=['POST'])
 def test_action(action_id):

@@ -1,3 +1,10 @@
+HTTP/1.1 404 NOT FOUND
+Server: Werkzeug/3.0.1 Python/3.12.2
+Date: Sat, 24 May 2025 08:42:30 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 6160
+Connection: close
+
 <!DOCTYPE html>
 <html lang="en" class="dark">
 

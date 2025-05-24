@@ -256,7 +256,7 @@ def llm_providers():
 
 @bp.route('/llm/models')
 def llm_models():
-    return render_template('main/llm_models.html')
+    return render_template('llm/llm_models.html')
 
 @bp.route('/llm/prompts')
 def llm_prompts():

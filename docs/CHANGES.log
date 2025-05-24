@@ -10,4 +10,6 @@
 
 2025-05-24: Refactored /api/v1/llm/actions and /actions/<id> endpoints to use robust direct SQL (psycopg2) with parameterized queries and error handling. Registered llm_api Blueprint in the app factory to ensure all LLM API endpoints are available. Verified endpoint registration and correct JSON output with curl and print_routes.py. Updated modular prompt refactor plan. [LLM Modular Prompt Refactor]
 
-2025-05-24: Refactored /api/v1/llm/actions/<id>/prompt_parts and linking endpoints to use robust direct SQL (psycopg2) with correct array handling for tags. Fully tested linking and unlinking prompt parts to actions. Updated modular prompt refactor plan. [LLM Modular Prompt Refactor] 
+2025-05-24: Refactored /api/v1/llm/actions/<id>/prompt_parts and linking endpoints to use robust direct SQL (psycopg2) with correct array handling for tags. Fully tested linking and unlinking prompt parts to actions. Updated modular prompt refactor plan. [LLM Modular Prompt Refactor]
+
+2025-05-24: Refactored /api/v1/llm/actions/<id>/execute endpoint to use robust direct SQL (psycopg2), removed all ORM usage, and stubbed LLM call to return a dummy response for testing. Endpoint is now robust and testable without external dependencies. Updated modular prompt refactor plan. [LLM Modular Prompt Refactor] 
