@@ -350,4 +350,143 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert('Error saving prompt: ' + err);
             });
     });
+});
+
+// Prompt Parts
+document.addEventListener('DOMContentLoaded', function () {
+    // Only run on Action Details page
+    const promptPartsList = document.getElementById('prompt-parts-list');
+    if (!promptPartsList) return;
+
+    const actionId = document.body.dataset.actionId || document.getElementById('llm-action-form').dataset.actionId;
+
+    // Helper to fetch and render prompt parts
+    async function loadPromptParts() {
+        const resp = await fetch(`/api/v1/llm/actions/${actionId}`);
+        const data = await resp.json();
+        promptPartsList.innerHTML = '';
+        (data.prompt_parts || []).forEach(part => {
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 bg-dark-bg border border-dark-border rounded p-3';
+            div.innerHTML = `
+                <span class="font-mono text-xs px-2 py-1 rounded bg-gray-800 text-gray-300">${part.type}</span>
+                <span class="flex-1 text-sm text-gray-200">${part.content.slice(0,80)}</span>
+                <button type="button" class="btn btn-xs btn-danger" data-remove-part="${part.id}"><i class="fa fa-trash"></i></button>
+                <button type="button" class="btn btn-xs btn-secondary" data-move-up="${part.id}"><i class="fa fa-arrow-up"></i></button>
+                <button type="button" class="btn btn-xs btn-secondary" data-move-down="${part.id}"><i class="fa fa-arrow-down"></i></button>
+                <button type="button" class="btn btn-xs btn-secondary" data-edit-part="${part.id}"><i class="fa fa-edit"></i></button>
+            `;
+            promptPartsList.appendChild(div);
+        });
+    }
+
+    // Add Prompt Part
+    document.getElementById('add-prompt-part-btn').addEventListener('click', function() {
+        // Simple prompt for now; replace with modal for full UX
+        const type = prompt('Prompt part type (system, user, assistant, etc):');
+        if (!type) return;
+        const content = prompt('Prompt part content:');
+        if (!content) return;
+        fetch(`/api/v1/llm/prompt_parts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, content })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.id) {
+                // Link to action
+                fetch(`/api/v1/llm/actions/${actionId}/prompt_parts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt_part_id: data.id })
+                }).then(() => loadPromptParts());
+            } else {
+                alert('Failed to create prompt part');
+            }
+        });
+    });
+
+    // Delegate remove/move/edit events
+    promptPartsList.addEventListener('click', function(e) {
+        const removeBtn = e.target.closest('[data-remove-part]');
+        const moveUpBtn = e.target.closest('[data-move-up]');
+        const moveDownBtn = e.target.closest('[data-move-down]');
+        const editBtn = e.target.closest('[data-edit-part]');
+        if (removeBtn) {
+            const partId = removeBtn.dataset.removePart;
+            fetch(`/api/v1/llm/actions/${actionId}/prompt_parts/${partId}`, { method: 'DELETE' })
+                .then(() => loadPromptParts());
+        } else if (moveUpBtn) {
+            const partId = moveUpBtn.dataset.moveUp;
+            fetch(`/api/v1/llm/actions/${actionId}/prompt_parts/${partId}/move`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ direction: 'up' })
+            }).then(() => loadPromptParts());
+        } else if (moveDownBtn) {
+            const partId = moveDownBtn.dataset.moveDown;
+            fetch(`/api/v1/llm/actions/${actionId}/prompt_parts/${partId}/move`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ direction: 'down' })
+            }).then(() => loadPromptParts());
+        } else if (editBtn) {
+            const partId = editBtn.dataset.editPart;
+            const newContent = prompt('Edit prompt part content:');
+            if (newContent) {
+                fetch(`/api/v1/llm/prompt_parts/${partId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: newContent })
+                }).then(() => loadPromptParts());
+            }
+        }
+    });
+
+    // --- LLM Message Preview ---
+    async function updateMessagePreview() {
+        // Fetch current prompt parts for the action
+        const resp = await fetch(`/api/v1/llm/actions/${actionId}`);
+        const data = await resp.json();
+        // Compose preview string (simple join for now)
+        const preview = (data.prompt_parts || []).map(p => `[${p.type}]\n${p.content}`).join('\n---\n');
+        document.getElementById('llm-message-preview').textContent = preview || '{ ... message preview ... }';
+    }
+
+    // Patch loadPromptParts to also update preview
+    const origLoadPromptParts = loadPromptParts;
+    loadPromptParts = async function() {
+        await origLoadPromptParts();
+        await updateMessagePreview();
+    };
+
+    // Initial preview
+    updateMessagePreview();
+
+    // --- Test Action Button ---
+    const runBtn = document.getElementById('run-llm-action-btn');
+    if (runBtn) {
+        runBtn.addEventListener('click', async function() {
+            const testInput = document.querySelector('textarea[name="test_input"]').value;
+            runBtn.disabled = true;
+            runBtn.textContent = 'Running...';
+            try {
+                const resp = await fetch(`/api/v1/llm/actions/${actionId}/test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input: testInput })
+                });
+                const data = await resp.json();
+                document.getElementById('llm-output').textContent = data.output || '[No output]';
+                document.querySelector('#diagnostics-panel pre').textContent = JSON.stringify(data.diagnostics || data, null, 2);
+            } catch (err) {
+                document.getElementById('llm-output').textContent = '[Error running action]';
+                document.querySelector('#diagnostics-panel pre').textContent = err.message;
+            } finally {
+                runBtn.disabled = false;
+                runBtn.textContent = 'Run Action';
+            }
+        });
+    }
 }); 

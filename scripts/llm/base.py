@@ -41,27 +41,29 @@ class LLMResponse:
             "prompt": self.prompt
         }
 
-class LLMConfig:
-    """Configuration class for LLM providers."""
-    
-    def __init__(self, 
-                 provider_type: str,
-                 model_name: str,
-                 api_base: Optional[str] = None,
-                 api_key: Optional[str] = None,
-                 **kwargs):
-        self.provider_type = provider_type
-        self.model_name = model_name
-        self.api_base = api_base
-        self.api_key = api_key
-        self.additional_config = kwargs
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert config to dictionary format."""
-        return {
-            "provider_type": self.provider_type,
-            "model_name": self.model_name,
-            "api_base": self.api_base,
-            "api_key": self.api_key,
-            **self.additional_config
-        } 
+# All LLMConfig references removed. Config is now handled by llm_provider/llm_model.
+
+# class LLMConfig:
+#     """Configuration class for LLM providers."""
+#     
+#     def __init__(self, 
+#                  provider_type: str,
+#                  model_name: str,
+#                  api_base: Optional[str] = None,
+#                  api_key: Optional[str] = None,
+#                  **kwargs):
+#         self.provider_type = provider_type
+#         self.model_name = model_name
+#         self.api_base = api_base
+#         self.api_key = api_key
+#         self.additional_config = kwargs
+#     
+#     def to_dict(self) -> Dict[str, Any]:
+#         """Convert config to dictionary format."""
+#         return {
+#             "provider_type": self.provider_type,
+#             "model_name": self.model_name,
+#             "api_base": self.api_base,
+#             "api_key": self.api_key,
+#             **self.additional_config
+#         } 

@@ -4,8 +4,6 @@ from dotenv import load_dotenv
 import logging
 from logging.handlers import RotatingFileHandler
 from config import get_config
-import sqlalchemy
-from sqlalchemy import create_engine
 import redis
 import psutil
 import time

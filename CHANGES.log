@@ -610,3 +610,17 @@ All notable changes to this project are documented in this file.
 [2025-05-22] Refactor: Updated LLMAction.to_dict() to include input_field, output_field, and full prompt part details. Refactored LLMService.execute_action to use modular prompt parts and input/output fields for robust, flexible action execution.
 
 [2025-05-22] Add: CRUD API endpoints for LLMPromptPart and LLMActionPromptPart, including endpoints to manage prompt parts for a given action (add, reorder, remove, list).
+
+[2025-05-22] Fix: LLMAction model and serialization now include 'field_name' for action name display in list and details UI. DB, model, and UI are now aligned.
+
+[2025-05-22] Add: Script scripts/llm_workflow_fields_introspect.py outputs workflow substages and valid fields by introspecting the DB and cross-checking with WORKFLOW_FIELDS. Warns about mismatches for robust admin/UX use.
+
+2025-05-23: Fixed critical DB privilege issue for llm_provider_id_seq (see docs/llm/llm_framework_hybrid_refactor.md). Granted superuser to postgres to prevent future permission errors. Successfully tested /api/v1/llm/providers CRUD endpoint. Updated implementation plan doc with progress.
+
+2025-05-23: LLM Action modal now uses provider/model dropdowns, filtered by provider, and is fully registry-driven. Updated implementation plan doc with this progress.
+
+2025-05-23: Added 'role' field (ENUM) to llm_prompt_part for message-based prompts. Updated implementation plan doc with this progress.
+
+2025-05-23: Scaffolded Action Details modal for prompt part management (CRUD, reordering, test action) in LLM Actions UI. Updated implementation plan doc with this progress.
+
+2025-05-23: Successfully performed a lossless restore of post and action data from backup, including all fields. llm_prompt_part was empty in the backup. Updated modular prompt refactor plan doc with details.

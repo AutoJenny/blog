@@ -1,9 +1,52 @@
 # Direct SQL Management
 
+> **SAFETY WARNING:**
+> Always make a full backup using `pg_dump` before running `create_tables.sql`. Never run this script on production or important data without a backup and a tested restore plan. Restore data as needed after schema changes.
+
+## Database Ownership and Permissions
+- The owner of the main `blog` database is usually `nickfiddes` (see output of `psql -U postgres -c "\l"`).
+- All destructive or schema-changing operations (e.g., `dropdb`, `createdb`, `psql -f ...`) **must be run as the database owner** (typically `nickfiddes`).
+- If you use the wrong user (e.g., `postgres`), you will get 'must be owner' errors.
+- **Checklist for DB operations:**
+  1. Confirm the owner of the database:
+     ```bash
+     psql -U postgres -c "\l"
+     # Look for the 'Owner' column for 'blog'
+     ```
+  2. Use the owner for all DB commands:
+     ```bash
+     dropdb -U nickfiddes blog
+     createdb -U nickfiddes blog
+     psql -U nickfiddes -d blog -f create_tables.sql
+     psql -U nickfiddes -d blog -f blog_backup_YYYYMMDD_HHMMSS.sql
+     ```
+  3. If you get permission errors, check and fix ownership before proceeding.
+
 This project manages the PostgreSQL database schema using direct SQL scripts instead of migration tools.
 
 ## Key Script
 - `create_tables.sql`: Drops and recreates all tables, types, and triggers as needed for a clean schema.
+
+## Safe Schema Change Process
+1. **Make a Full Backup**
+   - Run:
+     ```bash
+     pg_dump -U <user> -d blog > blog_backup_YYYYMMDD.sql
+     ```
+   - Replace `<user>` with your PostgreSQL username (default: `postgres`).
+   - Store the backup in a safe location.
+2. **Apply Schema Changes**
+   - Edit `create_tables.sql` as needed.
+   - Run:
+     ```bash
+     psql -U <user> -d blog -f create_tables.sql
+     ```
+   - This will drop and recreate all tables, erasing all data.
+3. **Restore Data**
+   - Use the backup to restore posts, images, and other critical data as needed.
+   - For new tables, seed as appropriate.
+
+> **Never run `create_tables.sql` on production or important data without a backup and a tested restore plan.**
 
 ## Usage
 - To reset the database:

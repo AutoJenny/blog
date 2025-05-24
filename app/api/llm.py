@@ -1,9 +1,9 @@
+# MIGRATION: This file is being refactored to use direct SQL (psycopg2) instead of ORM models.
 from flask import Blueprint, jsonify, request, current_app
 from app.llm.services import LLMService, execute_llm_request
-from app.models import LLMConfig, LLMInteraction, PostSection, LLMAction, LLMPrompt, LLMActionHistory, PostDevelopment, LLMPromptPart, LLMActionPromptPart
-from app import db
 import requests
 import traceback
+import logging
 
 bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 
@@ -11,7 +11,8 @@ bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 @bp.route("/config", methods=["GET"])
 def get_config():
     """Get current LLM configuration"""
-    config = LLMConfig.query.first()
+    # LLMConfig and llm_config are deprecated. Use llm_provider/llm_model instead. Refactor config logic as needed.
+    config = None
     if not config:
         return jsonify(
             {
@@ -34,7 +35,7 @@ def update_config():
     """Update LLM configuration"""
     data = request.get_json()
 
-    config = LLMConfig.query.first()
+    config = None
     if not config:
         config = LLMConfig()
         db.session.add(config)
@@ -339,11 +340,13 @@ def handle_action(action_id):
     
     elif request.method == 'PUT':
         data = request.get_json()
-        
+        current_app.logger.debug(f"[DEBUG] Incoming PUT data for action {action_id}: {data}")
+        current_app.logger.debug(f"[DEBUG] action.input_field BEFORE: {action.input_field}")
         # Update action fields
-        for field in ['field_name', 'prompt_template', 'llm_model', 'temperature', 'max_tokens']:
+        for field in ['field_name', 'prompt_template', 'llm_model', 'temperature', 'max_tokens', 'input_field', 'output_field']:
             if field in data:
                 setattr(action, field, data[field])
+        current_app.logger.debug(f"[DEBUG] action.input_field AFTER: {action.input_field}")
         if 'prompt_template_id' in data:
             prompt_template = LLMPrompt.query.get_or_404(data['prompt_template_id'])
             action.prompt_template_id = prompt_template.id
@@ -563,3 +566,159 @@ def update_action_prompt_part(action_id, part_id):
         db.session.delete(link)
         db.session.commit()
         return jsonify({'status': 'success'})
+
+
+# --- LLM Provider CRUD ---
+@bp.route('/providers', methods=['GET', 'POST'])
+def providers():
+    if request.method == 'GET':
+        providers = LLMProvider.query.order_by(LLMProvider.id).all()
+        return jsonify([{
+            'id': p.id,
+            'name': p.name,
+            'description': p.description,
+            'api_url': p.api_url,
+            'auth_token': p.auth_token,
+            'created_at': p.created_at,
+            'updated_at': p.updated_at
+        } for p in providers])
+    if request.method == 'POST':
+        data = request.get_json()
+        provider = LLMProvider(
+            name=data['name'],
+            description=data.get('description'),
+            api_url=data.get('api_url'),
+            auth_token=data.get('auth_token')
+        )
+        db.session.add(provider)
+        db.session.commit()
+        return jsonify({'status': 'success', 'provider': provider.id})
+
+@bp.route('/providers/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+def provider_detail(id):
+    provider = LLMProvider.query.get_or_404(id)
+    if request.method == 'GET':
+        return jsonify({
+            'id': provider.id,
+            'name': provider.name,
+            'description': provider.description,
+            'api_url': provider.api_url,
+            'auth_token': provider.auth_token,
+            'created_at': provider.created_at,
+            'updated_at': provider.updated_at
+        })
+    if request.method == 'PUT':
+        data = request.get_json()
+        provider.name = data.get('name', provider.name)
+        provider.description = data.get('description', provider.description)
+        provider.api_url = data.get('api_url', provider.api_url)
+        provider.auth_token = data.get('auth_token', provider.auth_token)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    if request.method == 'DELETE':
+        db.session.delete(provider)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+
+# --- LLM Model CRUD ---
+@bp.route('/models', methods=['GET', 'POST'])
+def models():
+    if request.method == 'GET':
+        models = LLMModel.query.order_by(LLMModel.id).all()
+        return jsonify([{
+            'id': m.id,
+            'provider_id': m.provider_id,
+            'name': m.name,
+            'description': m.description,
+            'config': m.config,
+            'created_at': m.created_at,
+            'updated_at': m.updated_at
+        } for m in models])
+    if request.method == 'POST':
+        data = request.get_json()
+        model = LLMModel(
+            provider_id=data['provider_id'],
+            name=data['name'],
+            description=data.get('description'),
+            config=data.get('config')
+        )
+        db.session.add(model)
+        db.session.commit()
+        return jsonify({'status': 'success', 'model': model.id})
+
+@bp.route('/models/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+def model_detail(id):
+    model = LLMModel.query.get_or_404(id)
+    if request.method == 'GET':
+        return jsonify({
+            'id': model.id,
+            'provider_id': model.provider_id,
+            'name': model.name,
+            'description': model.description,
+            'config': model.config,
+            'created_at': model.created_at,
+            'updated_at': model.updated_at
+        })
+    if request.method == 'PUT':
+        data = request.get_json()
+        model.name = data.get('name', model.name)
+        model.description = data.get('description', model.description)
+        model.config = data.get('config', model.config)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    if request.method == 'DELETE':
+        db.session.delete(model)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+
+@bp.route('/actions/<int:action_id>/test', methods=['POST'])
+def test_action(action_id):
+    """Test an LLM action with modular prompt parts and return diagnostics."""
+    from app.models import LLMModel
+    from app import db
+    import logging
+    action = LLMAction.query.get_or_404(action_id)
+    data = request.get_json() or {}
+    input_text = data.get('input', '')
+    fields = {'input': input_text}
+    diagnostics = {}
+
+    try:
+        # Use a local variable for the model name, never reference action.llm_model in diagnostics or response
+        if hasattr(action.llm_model, 'name'):
+            safe_model_name = action.llm_model.name
+        elif isinstance(action.llm_model, str):
+            safe_model_name = action.llm_model
+        else:
+            safe_model_name = str(action.llm_model_id)
+        # Assemble prompt/messages from modular prompt parts
+        from app.llm.services import assemble_prompt_from_parts, LLMService
+        prompt, messages = assemble_prompt_from_parts(action, fields)
+        diagnostics['assembled_prompt'] = prompt
+        diagnostics['messages'] = messages
+        diagnostics['input'] = input_text
+        diagnostics['model'] = safe_model_name
+        # Execute the action using the safe model name
+        service = LLMService()
+        result = service.execute_action(action, fields, model_name=safe_model_name)
+        # Ensure diagnostics and result are JSON serializable
+        def make_json_safe(obj):
+            if isinstance(obj, db.Model):
+                if hasattr(obj, 'to_dict'):
+                    return obj.to_dict()
+                return str(obj)
+            elif isinstance(obj, dict):
+                return {k: make_json_safe(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [make_json_safe(i) for i in obj]
+            return obj
+        safe_result = make_json_safe(result)
+        safe_diag = make_json_safe(diagnostics)
+        logging.error(f"[DEBUG] Sanitized diagnostics: {safe_diag}")
+        logging.error(f"[DEBUG] Sanitized result: {safe_result}")
+        return jsonify({
+            'result': safe_result,
+            'diagnostics': safe_diag
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

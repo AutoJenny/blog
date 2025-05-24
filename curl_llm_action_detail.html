@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog CMS</title>
+    <title>LLM Action Details</title>
     <!-- Tailwind CSS -->
     <link href="/static/css/dist/main.css" rel="stylesheet">
     <!-- FontAwesome for icons -->
@@ -150,11 +150,78 @@
     
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-    <div class="container error-page">
-        <h1>Page Not Found</h1>
-        <p>The page you are looking for does not exist.</p>
-        <p><a href="/">Return to Home</a></p>
-    </div>
+<div class="max-w-4xl mx-auto py-10">
+    <h1 class="text-2xl font-bold mb-6 flex items-center gap-2">
+        <i class="fa-solid fa-bolt text-[#fbbf24]"></i> LLM Action: <span class="text-[#38bdf8]">Generate Summary from idea_seed</span>
+    </h1>
+    <form id="llm-action-form" class="space-y-8">
+        <!-- Input/Output Field Selectors -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block font-semibold mb-2">Input Field</label>
+                <input class="form-input w-full" name="input_field" value=""
+                    placeholder="e.g. idea_seed" />
+            </div>
+            <div>
+                <label class="block font-semibold mb-2">Output Field</label>
+                <input class="form-input w-full" name="output_field" value=""
+                    placeholder="e.g. summary" />
+            </div>
+        </div>
+        <!-- LLM Model and Config -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block font-semibold mb-2">LLM Model</label>
+                <input class="form-input w-full" name="llm_model" value="gpt-4" />
+            </div>
+            <div>
+                <label class="block font-semibold mb-2">Temperature</label>
+                <input class="form-input w-full" name="temperature" type="number" step="0.01" min="0" max="2"
+                    value="0.7" />
+            </div>
+        </div>
+        <!-- Modular Prompt Parts Management -->
+        <div>
+            <label class="block font-semibold mb-2">Prompt Parts (ordered)</label>
+            <div id="prompt-parts-list" class="space-y-2">
+                
+            </div>
+            <button type="button" class="btn btn-primary mt-2" id="add-prompt-part-btn"><i class="fa fa-plus"></i> Add
+                Prompt Part</button>
+        </div>
+        <!-- Preview of Full LLM Message -->
+        <div>
+            <label class="block font-semibold mb-2">LLM Message Preview</label>
+            <pre class="bg-dark-bg border border-dark-border rounded p-4 text-sm text-gray-200 overflow-x-auto"
+                id="llm-message-preview">{ ... message preview ... }</pre>
+        </div>
+        <!-- Test Field for Sample Data -->
+        <div>
+            <label class="block font-semibold mb-2">Test Input</label>
+            <textarea class="form-input w-full" rows="3" name="test_input"
+                placeholder="Enter test input here..."></textarea>
+            <button type="button" class="llm-action-btn mt-4" id="run-llm-action-btn">
+                <i class="fa-solid fa-play mr-2"></i> Run Action
+            </button>
+        </div>
+        <!-- Output and Diagnostics Display -->
+        <div>
+            <label class="block font-semibold mb-2">LLM Output</label>
+            <pre class="bg-dark-bg border border-dark-border rounded p-4 text-sm text-green-200 overflow-x-auto"
+                id="llm-output">{ ... output ... }</pre>
+        </div>
+        <div>
+            <button type="button" class="text-xs text-blue-400 underline"
+                onclick="document.getElementById('diagnostics-panel').classList.toggle('hidden')">Show/Hide
+                Diagnostics</button>
+            <div id="diagnostics-panel" class="hidden mt-2">
+                <label class="block font-semibold mb-2">Diagnostics</label>
+                <pre
+                    class="bg-dark-bg border border-dark-border rounded p-4 text-xs text-yellow-200 overflow-x-auto">{ ... diagnostics ... }</pre>
+            </div>
+        </div>
+    </form>
+</div>
 
     </main>
     

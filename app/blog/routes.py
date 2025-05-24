@@ -1,3 +1,4 @@
+print('DEBUG: Loaded app/blog/routes.py from', __file__)
 from flask import render_template, jsonify, request, redirect, url_for, abort
 from app.blog import bp
 from slugify import slugify
@@ -385,3 +386,8 @@ def posts_listing():
         post['created_ago'] = naturaltime(now - created) if created else ''
         post['updated_ago'] = naturaltime(now - updated) if updated else ''
     return render_template('blog/posts_list.html', posts=posts, substages=substages, show_deleted=show_deleted)
+
+
+@bp.route('/blog/<int:post_id>/develop')
+def deprecated_develop(post_id):
+    abort(404)

@@ -3,18 +3,18 @@ from typing import Dict, Any, Optional
 import json
 import logging
 
-from .base import LLMProvider, LLMResponse, LLMConfig
+# LLMConfig is deprecated. Use new provider/model config if needed.
 
 logger = logging.getLogger(__name__)
 
 class OllamaProvider(LLMProvider):
     """Implementation of LLMProvider for Ollama."""
     
-    def __init__(self, config: LLMConfig):
+    def __init__(self, config):
         """Initialize Ollama provider with configuration."""
         self.config = config
-        self.api_base = config.api_base or "http://localhost:11434"
-        self.model = config.model_name
+        self.api_base = getattr(config, 'api_base', None) or "http://localhost:11434"
+        self.model = getattr(config, 'model_name', None)
         
         # Validate connection
         self._validate_connection()

@@ -9,7 +9,6 @@ DROP TABLE IF EXISTS llm_action_history CASCADE;
 DROP TABLE IF EXISTS llm_action CASCADE;
 DROP TABLE IF EXISTS llm_interaction CASCADE;
 DROP TABLE IF EXISTS llm_prompt CASCADE;
-DROP TABLE IF EXISTS llm_config CASCADE;
 DROP TABLE IF EXISTS image_prompt_example CASCADE;
 DROP TABLE IF EXISTS image_setting CASCADE;
 DROP TABLE IF EXISTS image_style CASCADE;
@@ -157,16 +156,6 @@ CREATE TABLE llm_interaction (
     parameters_used JSONB,
     interaction_metadata JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE llm_config (
-    id SERIAL PRIMARY KEY,
-    provider_type VARCHAR(50) NOT NULL,
-    model_name VARCHAR(100) NOT NULL,
-    api_base VARCHAR(200) NOT NULL,
-    auth_token VARCHAR(200),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE llm_action (
@@ -334,11 +323,6 @@ CREATE TRIGGER update_image_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_llm_config_updated_at
-    BEFORE UPDATE ON llm_config
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER update_llm_action_updated_at
     BEFORE UPDATE ON llm_action
     FOR EACH ROW
@@ -410,10 +394,18 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
+-- Add ENUM for prompt role type
+DO $$ BEGIN
+    CREATE TYPE prompt_role_type AS ENUM ('system', 'user', 'assistant', 'tool', 'function', 'other');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 -- Modular prompt part table
 CREATE TABLE llm_prompt_part (
     id SERIAL PRIMARY KEY,
     type prompt_part_type NOT NULL,
+    role prompt_role_type NOT NULL DEFAULT 'user',
     content TEXT NOT NULL,
     description TEXT,
     tags TEXT[],
@@ -432,4 +424,58 @@ CREATE TABLE llm_action_prompt_part (
 
 -- Add input_field and output_field to llm_action
 ALTER TABLE llm_action ADD COLUMN input_field VARCHAR(128);
-ALTER TABLE llm_action ADD COLUMN output_field VARCHAR(128); 
+ALTER TABLE llm_action ADD COLUMN output_field VARCHAR(128);
+
+-- LLM Provider Registry
+CREATE TABLE llm_provider (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    api_url VARCHAR(255),
+    auth_token VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- LLM Model Registry
+CREATE TABLE llm_model (
+    id SERIAL PRIMARY KEY,
+    provider_id INTEGER REFERENCES llm_provider(id) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    config JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT _provider_model_uc UNIQUE (provider_id, name)
+);
+
+-- CREATE TABLE llm_config is deprecated and replaced by llm_provider/llm_model
+-- CREATE TABLE llm_config (
+--     id SERIAL PRIMARY KEY,
+--     provider_type VARCHAR(50) NOT NULL,
+--     model_name VARCHAR(100) NOT NULL,
+--     api_base VARCHAR(200) NOT NULL,
+--     auth_token VARCHAR(200),
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- ); 
+
+-- Add ENUM for provider type
+DO $$ BEGIN
+    CREATE TYPE provider_type_enum AS ENUM ('openai', 'ollama', 'other');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+ALTER TABLE llm_provider ADD COLUMN IF NOT EXISTS type provider_type_enum NOT NULL DEFAULT 'other';
+
+-- Enforce unique (provider_id, name) on llm_model
+DO $$ BEGIN
+    ALTER TABLE llm_model ADD CONSTRAINT unique_provider_model UNIQUE (provider_id, name);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- Add llm_model_id to llm_action, migrate data, drop old llm_model string column
+ALTER TABLE llm_action ADD COLUMN IF NOT EXISTS llm_model_id INTEGER REFERENCES llm_model(id);
+-- Data migration and drop of old column will be handled in Python migration script. 

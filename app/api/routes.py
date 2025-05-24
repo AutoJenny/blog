@@ -1,7 +1,5 @@
 from flask import jsonify, current_app, request
 from app.api import bp
-from app import db
-from sqlalchemy import text
 import datetime
 import psutil
 import os
@@ -9,12 +7,13 @@ import requests
 import time
 import openai
 from app.services.llm_service import ServiceAuth
-from app.models import Post, ImageStyle, ImageFormat, ImageSetting, ImagePromptExample, PostSection
 from slugify import slugify
 import subprocess
 import glob
 import shutil
 import random as _random
+from app.blog.routes import get_db_conn
+import sys
 
 
 def check_ollama_performance():
@@ -233,19 +232,6 @@ def health_check():
         "llm_services": {},
     }
 
-    # Check database connection
-    try:
-        db.session.execute(text("SELECT 1"))
-        health_status["database_details"] = {
-            "uri": current_app.config["SQLALCHEMY_DATABASE_URI"].split("@")[-1],
-            "pool_size": db.engine.pool.size(),
-        }
-    except Exception as e:
-        current_app.logger.error(f"Database health check failed: {str(e)}")
-        health_status["database"] = "unhealthy"
-        health_status["database_error"] = str(e)
-        health_status["status"] = "degraded"
-
     # Check Ollama (primary LLM)
     health_status["llm_services"]["ollama"] = check_ollama_performance()
     if health_status["llm_services"]["ollama"]["status"] == "degraded":
@@ -263,6 +249,36 @@ def health_check():
     response = jsonify(health_status)
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     return response
+
+
+@bp.route("/posts", methods=["GET"])
+def list_posts():
+    print("[DEBUG] Entered list_posts endpoint", flush=True)
+    # Return all posts as JSON, including idea_seed and substage_id.
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, title, slug, summary, created_at, updated_at, header_image_id, status, idea_seed, substage_id
+                FROM post
+                ORDER BY created_at DESC
+            """)
+            posts = cur.fetchall()
+            # Convert datetime to isoformat and return as list of dicts
+            result = []
+            for post in posts:
+                result.append({
+                    "id": post["id"],
+                    "title": post["title"],
+                    "slug": post["slug"],
+                    "summary": post["summary"],
+                    "created_at": post["created_at"].isoformat() if post["created_at"] else None,
+                    "updated_at": post["updated_at"].isoformat() if post["updated_at"] else None,
+                    "header_image_id": post["header_image_id"],
+                    "status": post["status"],
+                    "idea_seed": post["idea_seed"],
+                    "substage_id": post["substage_id"],
+                })
+            return jsonify(result), 200
 
 
 @bp.route("/posts", methods=["POST"])
@@ -882,3 +898,18 @@ def generate_images_for_post(post_id):
         except Exception as e:
             results.append({'section_id': section.id, 'error': str(e), 'provider': provider, 'status': 'error'})
     return jsonify({'results': results})
+
+@bp.route("/debug/routes", methods=["GET"])
+def debug_list_routes():
+    """Return all registered routes and their methods for debugging."""
+    from flask import current_app
+    output = []
+    for rule in current_app.url_map.iter_rules():
+        # Only show routes for this blueprint (api/v1)
+        if rule.rule.startswith("/api/v1"):
+            output.append({
+                "endpoint": rule.endpoint,
+                "rule": rule.rule,
+                "methods": sorted([m for m in rule.methods if m not in ("HEAD", "OPTIONS")]),
+            })
+    return jsonify(sorted(output, key=lambda x: x["rule"])), 200

@@ -1,6 +1,4 @@
 from flask import current_app
-from app.models import LLMPrompt, LLMInteraction, Post
-from app import db
 import openai
 import time
 from typing import Optional, Dict, Any
@@ -39,12 +37,7 @@ class LLMService:
     ) -> Dict[str, Any]:
         """Process a blog post with a specific LLM prompt."""
         try:
-            post = Post.query.get_or_404(post_id)
-            prompt = LLMPrompt.query.filter_by(name=prompt_name).first_or_404()
-
-            formatted_prompt = prompt.get_formatted_prompt(
-                post_title=post.title, post_content=post.content, **kwargs
-            )
+            formatted_prompt = f"You are a helpful AI assistant for blog content processing. Post ID: {post_id}, Prompt Name: {prompt_name}, **kwargs: {kwargs}"
 
             start_time = time.time()
             with get_openai_callback() as cb:
@@ -59,27 +52,23 @@ class LLMService:
             duration = time.time() - start_time
 
             # Record the interaction
-            interaction = LLMInteraction(
-                prompt_id=prompt.id,
-                post_id=post.id,
-                input_text=formatted_prompt,
-                output_text=response.content,
-                model_used=current_app.config["LLM_MODEL"],
-                parameters={
+            interaction = {
+                "prompt_id": post_id,
+                "post_id": post_id,
+                "input_text": formatted_prompt,
+                "output_text": response.content,
+                "model_used": current_app.config["LLM_MODEL"],
+                "parameters": {
                     "temperature": current_app.config["LLM_TEMPERATURE"],
                     "max_tokens": current_app.config["LLM_MAX_TOKENS"],
                     **kwargs,
                 },
-                tokens_used=cb.total_tokens,
-                duration=duration,
-            )
-            db.session.add(interaction)
-            db.session.commit()
-
-            return interaction.to_dict()
+                "tokens_used": cb.total_tokens,
+                "duration": duration,
+            }
+            return interaction
         except Exception as e:
             current_app.logger.error(f"Error processing post content: {str(e)}")
-            db.session.rollback()
             raise
 
     def generate_post_summary(

@@ -1,6 +1,4 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from flask_caching import Cache
 from flask_mail import Mail
 from celery import Celery
@@ -12,12 +10,12 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta, datetime
 
+# DEPRECATED: SQLAlchemy ORM is being removed. Use direct SQL (psycopg2) for all DB access.
+
 # Load environment variables
 load_dotenv()
 
 # Initialize extensions
-db = SQLAlchemy()
-migrate = Migrate()
 cache = Cache()
 mail = Mail()
 celery = Celery(__name__)
@@ -28,10 +26,9 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    db.init_app(app)
-    migrate.init_app(app, db)
     cache.init_app(app)
     mail.init_app(app)
+    swagger.init_app(app)
 
     # Make config available to all templates
     @app.context_processor
@@ -111,42 +108,20 @@ def create_app(config_class=Config):
 
     # Register blueprints
     from app.main import bp as main_bp
-
     app.register_blueprint(main_bp)
 
     from app.blog import bp as blog_bp
-
-    app.register_blueprint(blog_bp, url_prefix="/blog")
+    app.register_blueprint(blog_bp, url_prefix='/blog')
 
     from app.llm import bp as llm_bp
-
-    app.register_blueprint(llm_bp, url_prefix="/llm")
+    app.register_blueprint(llm_bp, url_prefix='/llm')
 
     from app.api import bp as api_bp
-
-    app.register_blueprint(api_bp, url_prefix="/api/v1")
-
-    from app.api.llm import bp as llm_api_bp
-
-    app.register_blueprint(llm_api_bp, url_prefix="/api/v1/llm")
+    app.register_blueprint(api_bp, url_prefix='/api/v1')
 
     from app.errors import bp as errors_bp
-
     app.register_blueprint(errors_bp)
-
-    from app.database.routes import bp as db_bp
-
-    app.register_blueprint(db_bp)
-
-    from app.preview import bp as preview_bp
-
-    app.register_blueprint(preview_bp, url_prefix='/preview')
-
-    from app.posts import bp as posts_bp
-
-    app.register_blueprint(posts_bp, url_prefix='/posts')
 
     return app
 
-
-from app import models
+# from app import models

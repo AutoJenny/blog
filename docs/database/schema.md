@@ -1,5 +1,8 @@
 # Database Schema Reference
 
+> **SAFETY WARNING:**
+> Always make a full backup using `pg_dump` before running `create_tables.sql`. Never run this script on production or important data without a backup and a tested restore plan. Restore data as needed after schema changes.
+
 The Blog CMS uses PostgreSQL (or SQLite in dev) for all persistent storage. Below is an overview of the main tables and their relationships.
 
 ## Main Tables

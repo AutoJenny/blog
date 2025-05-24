@@ -1,10 +1,7 @@
 from flask import render_template, current_app, jsonify, redirect, url_for, request, session, send_from_directory
 from app.main import bp
-from app.models import Post, Category
 import psutil
 import time
-import sqlalchemy
-from sqlalchemy import create_engine
 import redis
 import os
 import psycopg2

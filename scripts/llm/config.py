@@ -3,9 +3,9 @@ from pathlib import Path
 import json
 import os
 
-from .base import LLMConfig
+from .base import LLMProvider
 
-def load_config(config_path: Optional[str] = None) -> Dict[str, LLMConfig]:
+def load_config(config_path: Optional[str] = None) -> Dict[str, LLMProvider]:
     """Load LLM configurations from a JSON file or environment variables."""
     configs = {}
     
@@ -15,7 +15,7 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, LLMConfig]:
             with open(config_path) as f:
                 config_data = json.load(f)
                 for name, data in config_data.items():
-                    configs[name] = LLMConfig(**data)
+                    configs[name] = LLMProvider(**data)
         except (FileNotFoundError, json.JSONDecodeError) as e:
             print(f"Warning: Could not load config file: {e}")
     
@@ -28,7 +28,7 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, LLMConfig]:
     
     # Create default config if none loaded from file
     if not configs:
-        configs["default"] = LLMConfig(
+        configs["default"] = LLMProvider(
             provider_type=provider_type,
             model_name=model_name,
             api_base=api_base,
@@ -37,7 +37,7 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, LLMConfig]:
     
     return configs
 
-def save_config(configs: Dict[str, LLMConfig], config_path: str) -> None:
+def save_config(configs: Dict[str, LLMProvider], config_path: str) -> None:
     """Save LLM configurations to a JSON file."""
     config_data = {
         name: config.to_dict()
