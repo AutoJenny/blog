@@ -29,4 +29,10 @@
 - Action Details UI fully supports modular prompt part CRUD, linking, unlinking, reordering, and test execution.
 - All endpoints tested with curl and browser; no ORM code remains.
 - Updated docs/llm/README.md and docs/temp/llm_modular_prompt_refactor_plan.md to reflect completion.
-[LLM Modular Prompt Refactor] 
+[LLM Modular Prompt Refactor]
+
+2025-05-25: LLM Actions dropdown on /workflow/idea now fetches and displays all available actions from the backend.
+- Removed green JSON debug text from /llm/actions page.
+- Fixed modal CSS and Action creation bugs in previous steps.
+- /api/v1/llm/prompts endpoint now uses direct SQL, restoring prompt template selection.
+- All changes follow project engineering rules (no ORM, no destructive migration, direct SQL only). 

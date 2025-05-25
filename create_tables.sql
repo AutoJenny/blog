@@ -478,4 +478,21 @@ END $$;
 
 -- Add llm_model_id to llm_action, migrate data, drop old llm_model string column
 ALTER TABLE llm_action ADD COLUMN IF NOT EXISTS llm_model_id INTEGER REFERENCES llm_model(id);
--- Data migration and drop of old column will be handled in Python migration script. 
+-- Data migration and drop of old column will be handled in Python migration script.
+
+-- Table to define available LLM Actions per post and substage (for multiple buttons)
+CREATE TABLE IF NOT EXISTS post_substage_action (
+    id SERIAL PRIMARY KEY,
+    post_id INTEGER REFERENCES post(id) ON DELETE CASCADE,
+    substage VARCHAR(64) NOT NULL,
+    action_id INTEGER REFERENCES llm_action(id),
+    button_label TEXT,
+    button_order INTEGER DEFAULT 0
+);
+
+-- Table for default action per substage (location-specific, post-agnostic)
+CREATE TABLE IF NOT EXISTS substage_action_default (
+    id SERIAL PRIMARY KEY,
+    substage VARCHAR(64) UNIQUE NOT NULL,
+    action_id INTEGER REFERENCES llm_action(id)
+); 

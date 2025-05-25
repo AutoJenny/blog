@@ -24,9 +24,30 @@
                 <button id="backupNowBtn" class="btn btn-primary flex items-center gap-2">
                     <i class="fas fa-download"></i> Backup Now
                 </button>
-                <a href="{{ url_for('db.restore') }}" class="btn btn-secondary flex items-center gap-2">
-                    <i class="fas fa-upload"></i> Restore from Backup
-                </a>
+                <div class="flex flex-col md:flex-row gap-2 items-center">
+                    <select id="restoreBackupSelect"
+                        class="form-input px-4 py-2 rounded border border-gray-600 bg-dark-card text-white">
+                        <option value="">Select backup file...</option>
+                        {% set backup_files = [
+                        'blog_backup_20250523_082634.sql',
+                        'blog_backup_20250524_151434.sql',
+                        'blog_backup_20250522_190110.sql',
+                        'blog_backup_20250522_190041.sql',
+                        'blog_backup_20250521_141125_postrestore.sql',
+                        'blog_backup_20250518_184147.sql',
+                        'blog_backup_20250518_172746.sql',
+                        'blog_backup_20250518_172740.sql',
+                        'blog_backup_20250518_103247.sql',
+                        'blog_llm_prompt_action_current.sql',
+                        ] %}
+                        {% for f in backup_files %}
+                        <option value="{{ f }}">{{ f }}</option>
+                        {% endfor %}
+                    </select>
+                    <button id="restoreBackupBtn" class="btn btn-secondary flex items-center gap-2">
+                        <i class="fas fa-upload"></i> Restore
+                    </button>
+                </div>
                 <div id="backupStatus" class="mt-2 text-sm"></div>
             </div>
         </div>
@@ -234,6 +255,39 @@
                 backupBtn.disabled = false;
                 backupBtn.innerHTML = '<i class="fas fa-download"></i> Backup Now';
             }
+        });
+    }
+
+    // Restore from Backup logic
+    const restoreBtn = document.getElementById('restoreBackupBtn');
+    const restoreSelect = document.getElementById('restoreBackupSelect');
+    if (restoreBtn && restoreSelect) {
+        restoreBtn.addEventListener('click', async function () {
+            const file = restoreSelect.value;
+            if (!file) {
+                backupStatus.innerHTML = `<span class='text-red-400'>Please select a backup file.</span>`;
+                return;
+            }
+            restoreBtn.disabled = true;
+            restoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Restoring...';
+            backupStatus.textContent = '';
+            try {
+                const res = await fetch('/db/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    backupStatus.innerHTML = `<span class='text-green-400'>Restore complete: ${data.restored}</span>`;
+                } else {
+                    backupStatus.innerHTML = `<span class='text-red-400'>Restore failed: ${data.error || 'Unknown error'}</span>`;
+                }
+            } catch (e) {
+                backupStatus.innerHTML = `<span class='text-red-400'>Restore failed: ${e}</span>`;
+            }
+            restoreBtn.disabled = false;
+            restoreBtn.innerHTML = '<i class="fas fa-upload"></i> Restore';
         });
     }
 

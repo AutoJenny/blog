@@ -90,4 +90,11 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
 
 ## Database Access
 
-- As of 2025-05-23, all database access is performed using direct SQL via psycopg2. SQLAlchemy and ORM models are no longer used anywhere in the codebase. All data access, migrations, and queries are handled with raw SQL and psycopg2 connections. 
+- As of 2025-05-23, all database access is performed using direct SQL via psycopg2. SQLAlchemy and ORM models are no longer used anywhere in the codebase. All data access, migrations, and queries are handled with raw SQL and psycopg2 connections.
+
+## Recent Changes (2025-05-25)
+- The LLM Actions dropdown on `/workflow/idea` now dynamically fetches and displays all available actions from the backend (`/api/v1/llm/actions`).
+- The green JSON debug text has been removed from the `/llm/actions` admin page for a cleaner UI.
+- Modal CSS and Action creation bugs have been fixed for a better user experience.
+- The `/api/v1/llm/prompts` endpoint now uses direct SQL (psycopg2), restoring prompt template selection and ensuring ORM is not used.
+- All changes follow the project engineering rules: no ORM, no destructive migration, direct SQL only, and robust backup-first, additive schema management. 
