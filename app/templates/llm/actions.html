@@ -194,6 +194,11 @@
         box-shadow: 0 8px 32px rgba(56, 189, 248, 0.18);
         border: 1.5px solid #35395a;
         position: relative;
+        max-height: 90vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
     .modal-header {
@@ -295,6 +300,25 @@
 {% block content %}
 <div class="max-w-5xl mx-auto py-10">
     <div class="admin-content">
+        <div class="bg-indigo-900/80 text-indigo-100 rounded-xl p-6 mb-8 shadow-lg">
+            <h2 class="text-xl font-bold mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info"></i> How to Create and Use LLM Actions
+            </h2>
+            <ol class="list-decimal ml-6 mb-2">
+                <li><b>Add a New Action:</b> Click <span class="btn btn-primary btn-xs"><i class="fa-solid fa-plus"></i>
+                        New Action</span> and fill in the basic settings (field name, model, etc.).</li>
+                <li><b>Edit Prompt Parts:</b> Click <span class="btn btn-secondary btn-xs"><i
+                            class="fa-solid fa-layer-group"></i> Prompt Parts</span> to build your prompt from multiple
+                    parts. <span class="text-indigo-200">(See below for detailed instructions.)</span></li>
+                <li><b>Test Your Action:</b> Click <span class="btn btn-secondary btn-xs"><i
+                            class="fa-solid fa-play"></i> Run/Test</span> to try it out with sample input.</li>
+                <li><b>Use in Posts:</b> Select your action in the post editor and click <b>Generate</b> to use it for
+                    real content.</li>
+            </ol>
+            <div class="text-sm text-indigo-200">Tip: Use <b>Prompt Parts</b> to break your prompt into logical steps
+                (system, user, assistant, etc.) for better LLM results. You can use variables like
+                <code>{{input}}</code> or <code>{{idea_seed}}</code> in your prompt parts.</div>
+        </div>
         <div class="admin-card">
             <div class="flex items-center justify-between mb-6">
                 <h1 class="admin-title">
@@ -308,11 +332,6 @@
             </div>
             <div class="action-card">
                 <div class="action-list" id="actionAccordionList">
-                    <pre
-                        style="color:lime;background:#222;padding:1em;overflow-x:auto;">{{ actions|tojson(indent=2) }}</pre>
-                    {% if actions|length == 0 %}
-                    <div class="text-center text-gray-400 py-8">No actions found in the database.</div>
-                    {% endif %}
                     {% for action in actions %}
                     <div class="action-accordion-item" data-id="{{ action.id }}" draggable="true">
                         <div class="action-header flex items-center justify-between select-none">
@@ -374,9 +393,13 @@
                     <select id="actionModel" name="llm_model" class="form-input" required></select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="actionPromptTemplate">Prompt Template</label>
+                    <label class="form-label" for="actionPromptTemplateId">Prompt Template</label>
+                    <select id="actionPromptTemplateId" name="prompt_template_id" class="form-input" required></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="actionPromptTemplate">Prompt Template Text (preview only)</label>
                     <textarea id="actionPromptTemplate" name="prompt_template" class="form-textarea"
-                        required></textarea>
+                        readonly></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="actionTemperature">Temperature</label>
@@ -399,6 +422,22 @@
     <!-- Action Details Modal (Prompt Parts Management) -->
     <div id="actionDetailsModal" class="modal" style="display:none;">
         <div class="modal-content">
+            <div class="bg-indigo-800/90 text-indigo-100 rounded-lg p-4 mb-4">
+                <h3 class="font-bold mb-1 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Prompt Parts
+                    Editor</h3>
+                <ul class="list-disc ml-6 text-sm">
+                    <li><b>Prompt Parts</b> are the building blocks of your LLM prompt. Each part can be a <b>System</b>
+                        (instructions), <b>User</b> (input), or <b>Assistant</b> (expected response).</li>
+                    <li><b>Add</b> parts in the order you want them sent to the AI. Use <b>System</b> for instructions,
+                        <b>User</b> for the main request, and <b>Assistant</b> for expected responses (optional).</li>
+                    <li>You can use variables like <code>{{input}}</code> or <code>{{idea_seed}}</code> to insert data
+                        from your post.</li>
+                    <li><b>Drag</b> parts to reorder, or use the up/down arrows.</li>
+                    <li>The <b>Preview</b> panel shows how your full prompt will look to the AI.</li>
+                </ul>
+                <div class="mt-2 text-xs text-indigo-200">Need help? Hover over any <i
+                        class="fa-solid fa-circle-question"></i> icon for more info.</div>
+            </div>
             <span class="close" id="closeActionDetails">&times;</span>
             <h2>Action Details: <span id="detailsActionName"></span></h2>
             <div>
@@ -411,17 +450,10 @@
             <div id="promptPartEditForm" style="display:none;">
                 <h4 id="promptPartFormTitle">Add/Edit Prompt Part</h4>
                 <form>
-                    <label>Type:
-                        <select id="promptPartType">
-                            <option value="system">system</option>
-                            <option value="style">style</option>
-                            <option value="instructions">instructions</option>
-                            <option value="user">user</option>
-                            <option value="assistant">assistant</option>
-                            <option value="other">other</option>
-                        </select>
-                    </label>
-                    <label>Role:
+                    <label class="form-label flex items-center gap-1">Type <i
+                            class="fa-solid fa-circle-question text-indigo-300"
+                            title="System: sets AI behavior. User: main instruction. Assistant: (optional) expected response."></i></label>
+                    <label class="form-label flex items-center gap-1">Role:
                         <select id="promptPartRole">
                             <option value="system">system</option>
                             <option value="user">user</option>
@@ -431,13 +463,13 @@
                             <option value="other">other</option>
                         </select>
                     </label>
-                    <label>Content:<br>
-                        <textarea id="promptPartContent" rows="3"></textarea>
-                    </label>
-                    <label>Description:<br>
+                    <label class="form-label flex items-center gap-1">Content <i
+                            class="fa-solid fa-circle-question text-indigo-300"
+                            title="Write what you want this part to say. Use variables like {{input}} or {{idea_seed}}."></i></label>
+                    <label class="form-label flex items-center gap-1">Description:<br>
                         <input id="promptPartDescription" type="text" />
                     </label>
-                    <label>Tags:<br>
+                    <label class="form-label flex items-center gap-1">Tags:<br>
                         <input id="promptPartTags" type="text" placeholder="Comma-separated" />
                     </label>
                     <button type="button" id="savePromptPartBtn">Save</button>
@@ -452,6 +484,13 @@
             <label>Test Input:<br><textarea id="testActionInput" rows="2"></textarea></label>
             <button id="testActionBtn">Run Test</button>
             <div id="testActionOutput" style="margin-top:1em;"></div>
+            <div class="bg-dark-card rounded p-4 mt-4 mb-2">
+                <h4 class="font-bold mb-1 flex items-center gap-2"><i class="fa-solid fa-eye"></i> Prompt Preview</h4>
+                <div id="promptPreview" class="whitespace-pre-line text-indigo-100 text-sm">{ ... message preview ... }
+                </div>
+                <div class="text-xs text-indigo-200 mt-1">This is how your full prompt will look to the AI, with
+                    variables replaced at runtime.</div>
+            </div>
         </div>
     </div>
 
@@ -471,6 +510,25 @@
             const models = await resp.json();
             const filtered = models.filter(m => m.provider_id == providerId);
             modelSelect.innerHTML = filtered.map(m => `<option value="${m.name}" data-model-id="${m.id}" ${selectedModelId == m.name ? 'selected' : ''}>${m.name} (${m.description || ''})</option>`).join('');
+        }
+        async function loadPromptTemplates(selectedId) {
+            const select = document.getElementById('actionPromptTemplateId');
+            select.innerHTML = '<option value="">Loading...</option>';
+            const resp = await fetch('/api/v1/llm/prompts');
+            const prompts = await resp.json();
+            select.innerHTML = prompts.map(p => `<option value="${p.id}" ${selectedId == p.id ? 'selected' : ''}>${p.name} (${p.description || ''})</option>`).join('');
+            // Set preview textarea to selected prompt text
+            select.addEventListener('change', function () {
+                const prompt = prompts.find(p => p.id == select.value);
+                document.getElementById('actionPromptTemplate').value = prompt ? prompt.prompt_text : '';
+            });
+            // Set initial preview
+            if (selectedId) {
+                const prompt = prompts.find(p => p.id == selectedId);
+                document.getElementById('actionPromptTemplate').value = prompt ? prompt.prompt_text : '';
+            } else {
+                document.getElementById('actionPromptTemplate').value = '';
+            }
         }
         document.addEventListener('DOMContentLoaded', function () {
             // Accordion logic
@@ -527,6 +585,7 @@
                     const providerId = document.getElementById('actionProvider').value;
                     loadModels(providerId);
                 });
+                loadPromptTemplates();
                 actionModal.classList.add('active');
                 document.body.style.overflow = 'hidden';
             });
@@ -562,6 +621,9 @@
                     await loadModels(providerId, modelName);
                     document.getElementById('actionProvider').value = providerId;
                     document.getElementById('actionModel').value = modelName;
+                    // Load prompt templates and set selected
+                    await loadPromptTemplates(data.action.prompt_template_id);
+                    document.getElementById('actionPromptTemplateId').value = data.action.prompt_template_id;
                     document.getElementById('actionPromptTemplate').value = data.action.prompt_template;
                     document.getElementById('actionTemperature').value = data.action.temperature;
                     document.getElementById('actionMaxTokens').value = data.action.max_tokens;
@@ -589,26 +651,39 @@
                 const actionId = document.getElementById('actionId').value;
                 const method = actionId ? 'PUT' : 'POST';
                 const url = actionId ? `/api/v1/llm/actions/${actionId}` : '/api/v1/llm/actions';
+                // Always collect all fields, even if empty
+                const field_name = document.getElementById('actionFieldName').value || '';
+                const llm_model = document.getElementById('actionModel').value || '';
+                const prompt_template_id = parseInt(document.getElementById('actionPromptTemplateId').value) || null;
+                const temperature = parseFloat(document.getElementById('actionTemperature').value) || 0.7;
+                const max_tokens = parseInt(document.getElementById('actionMaxTokens').value) || 1000;
+                if (!prompt_template_id) {
+                    alert('Please select a prompt template.');
+                    return;
+                }
+                // Defensive: always send all required fields
+                const payload = {
+                    field_name,
+                    llm_model,
+                    prompt_template_id,
+                    temperature,
+                    max_tokens
+                };
                 try {
                     const response = await fetch(url, {
                         method: method,
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            field_name: document.getElementById('actionFieldName').value,
-                            llm_model: document.getElementById('actionModel').value,
-                            prompt_template: document.getElementById('actionPromptTemplate').value,
-                            temperature: parseFloat(document.getElementById('actionTemperature').value),
-                            max_tokens: parseInt(document.getElementById('actionMaxTokens').value)
-                        })
+                        body: JSON.stringify(payload)
                     });
                     if (response.ok) {
                         window.location.reload();
                     } else {
-                        throw new Error('Failed to save action');
+                        const err = await response.json().catch(() => ({}));
+                        throw new Error('Failed to save action: ' + (err.error || response.statusText));
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('Error saving action');
+                    alert('Error saving action: ' + (error.message || error));
                 }
             });
             // Close modal when clicking outside
