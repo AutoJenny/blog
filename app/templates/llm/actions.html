@@ -511,7 +511,8 @@
                         <textarea id="wizTestInput" class="form-textarea" rows="2"></textarea>
                     </div>
                     <button type="button" class="btn btn-primary mb-2" id="wizRunTestBtn">Run Test</button>
-                    <div id="wizTestOutput" class="bg-dark-card rounded p-4 mt-2 text-indigo-100 text-sm"></div>
+                    <div id="wizTestOutput" class="bg-dark-card rounded p-4 mt-2 text-indigo-100 text-sm"
+                        style="white-space: pre-wrap; min-height: 2em;"></div>
                     <div class="flex justify-between gap-4 mt-6">
                         <button type="button" class="btn btn-secondary" id="wizBack4">← Back</button>
                         <button type="submit" class="btn btn-primary">Save Action</button>
@@ -930,22 +931,40 @@
                 });
             };
             // Test Action logic
-            document.getElementById('testActionBtn').onclick = function () {
-                const actionId = document.getElementById('actionDetailsModal').dataset.actionId;
-                const input = document.getElementById('testActionInput').value;
-                document.getElementById('testActionOutput').textContent = 'Running...';
-                fetch(`/api/v1/llm/actions/${actionId}/execute`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ input })
-                })
-                    .then(r => r.json())
-                    .then(data => {
-                        document.getElementById('testActionOutput').textContent = data.output || data.result || JSON.stringify(data);
-                    })
-                    .catch(err => {
-                        document.getElementById('testActionOutput').textContent = 'Error: ' + err;
+            const wizRunTestBtn = document.getElementById('wizRunTestBtn');
+            const wizTestInput = document.getElementById('wizTestInput');
+            const wizTestOutput = document.getElementById('wizTestOutput');
+            wizRunTestBtn.onclick = async function () {
+                wizTestOutput.textContent = 'Running...';
+                const provider_type = document.getElementById('wizProvider').selectedOptions[0]?.textContent.toLowerCase().includes('ollama') ? 'ollama' : document.getElementById('wizProvider').value;
+                const model = document.getElementById('wizModel').value;
+                const temperature = parseFloat(document.getElementById('wizTemperature').value) || 0.7;
+                const max_tokens = parseInt(document.getElementById('wizMaxTokens').value) || 1000;
+                const input = wizTestInput.value;
+                // Build prompt from parts (simple join for now)
+                const prompt = window.wizPromptParts.map(p => `[${p.type}] ${p.content}`).join('\n');
+                try {
+                    const resp = await fetch('/api/v1/llm/test', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prompt,
+                            model_name: model,
+                            provider_type,
+                            input,
+                            temperature,
+                            max_tokens
+                        })
                     });
+                    const data = await resp.json();
+                    if (resp.ok && data.response) {
+                        wizTestOutput.textContent = data.response;
+                    } else {
+                        wizTestOutput.textContent = data.error || 'No output.';
+                    }
+                } catch (e) {
+                    wizTestOutput.textContent = 'Error: ' + e;
+                }
             };
             function openActionDetails(actionId) {
                 // Open the modal and load action details
@@ -973,6 +992,134 @@
                         });
                     });
             }
+            // --- Wizard Prompt Parts Logic ---
+            const wizPromptParts = [];
+            window.wizPromptParts = wizPromptParts;
+            const wizPromptPartsList = document.getElementById('wizPromptPartsList');
+            const wizPromptPartForm = document.getElementById('wizPromptPartForm');
+            const wizAddPromptPartBtn = document.getElementById('wizAddPromptPartBtn');
+            const wizPromptPartType = document.getElementById('wizPromptPartType');
+            const wizPromptPartContent = document.getElementById('wizPromptPartContent');
+            const wizPromptPartFormSave = document.getElementById('wizSavePromptPartBtn');
+            const wizPromptPartFormCancel = document.getElementById('wizCancelPromptPartBtn');
+            const wizPromptPreview = document.getElementById('wizPromptPreview');
+            let editingPromptPartIdx = null;
+
+            function renderWizPromptParts() {
+                wizPromptPartsList.innerHTML = '';
+                window.wizPromptParts.forEach((part, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-dark-card rounded p-2 mb-2 flex items-center justify-between';
+                    div.innerHTML = `<span><b>${part.type}</b>: ${part.content}</span>
+                        <span>
+                            <button type="button" class="btn btn-secondary btn-xs" data-idx="${idx}" onclick="window.editWizPromptPart(${idx})">Edit</button>
+                            <button type="button" class="btn btn-danger btn-xs" data-idx="${idx}" onclick="window.deleteWizPromptPart(${idx})">Delete</button>
+                        </span>`;
+                    wizPromptPartsList.appendChild(div);
+                });
+                renderWizPromptPreview();
+            }
+            function renderWizPromptPreview() {
+                wizPromptPreview.textContent = window.wizPromptParts.map(p => `[${p.type}] ${p.content}`).join('\n');
+            }
+            wizAddPromptPartBtn.onclick = function () {
+                wizPromptPartType.value = 'system';
+                wizPromptPartContent.value = '';
+                wizPromptPartForm.style.display = '';
+                editingPromptPartIdx = null;
+            };
+            wizPromptPartFormCancel.onclick = function () {
+                wizPromptPartForm.style.display = 'none';
+            };
+            wizPromptPartFormSave.onclick = function () {
+                const type = wizPromptPartType.value;
+                const content = wizPromptPartContent.value;
+                if (!content.trim()) {
+                    alert('Content is required.');
+                    return;
+                }
+                if (editingPromptPartIdx !== null) {
+                    window.wizPromptParts[editingPromptPartIdx] = { type, content };
+                } else {
+                    window.wizPromptParts.push({ type, content });
+                }
+                wizPromptPartForm.style.display = 'none';
+                renderWizPromptParts();
+            };
+            window.editWizPromptPart = function (idx) {
+                const part = window.wizPromptParts[idx];
+                wizPromptPartType.value = part.type;
+                wizPromptPartContent.value = part.content;
+                wizPromptPartForm.style.display = '';
+                editingPromptPartIdx = idx;
+            };
+            window.deleteWizPromptPart = function (idx) {
+                if (confirm('Delete this prompt part?')) {
+                    window.wizPromptParts.splice(idx, 1);
+                    renderWizPromptParts();
+                }
+            };
+            // Render on wizard open
+            showWizardStep = (function (orig) {
+                return function (idx) {
+                    orig(idx);
+                    if (idx === 2) renderWizPromptParts();
+                };
+            })(showWizardStep);
+            // Wizard Save Action logic
+            const actionWizardForm = document.getElementById('actionWizardForm');
+            actionWizardForm.onsubmit = async function (e) {
+                e.preventDefault();
+                // Gather all fields
+                const field_name = document.getElementById('wizFieldName').value;
+                const description = document.getElementById('wizDescription').value;
+                const provider_id = document.getElementById('wizProvider').value;
+                const llm_model = document.getElementById('wizModel').value;
+                const prompt_template_id = document.getElementById('wizPromptTemplateId').value;
+                const temperature = parseFloat(document.getElementById('wizTemperature').value) || 0.7;
+                const max_tokens = parseInt(document.getElementById('wizMaxTokens').value) || 1000;
+                // Prompt parts
+                const prompt_parts = window.wizPromptParts.map((p, i) => ({ ...p, order: i }));
+                // POST to backend
+                const btn = actionWizardForm.querySelector('button[type="submit"]');
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
+                try {
+                    const resp = await fetch('/api/v1/llm/actions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            field_name,
+                            description,
+                            provider_id,
+                            llm_model,
+                            prompt_template_id,
+                            temperature,
+                            max_tokens,
+                            prompt_parts
+                        })
+                    });
+                    const data = await resp.json();
+                    if (resp.ok && data.status === 'success') {
+                        btn.textContent = 'Saved!';
+                        setTimeout(() => {
+                            btn.disabled = false;
+                            btn.textContent = 'Save Action';
+                            actionWizardModal.classList.remove('active');
+                            document.body.style.overflow = '';
+                            location.reload();
+                        }, 800);
+                    } else {
+                        btn.disabled = false;
+                        btn.textContent = 'Save Action';
+                        alert(data.error || 'Error saving action');
+                    }
+                } catch (e) {
+                    btn.disabled = false;
+                    btn.textContent = 'Save Action';
+                    alert('Error: ' + e);
+                }
+            };
         });
     </script>
 </div>
