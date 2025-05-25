@@ -92,7 +92,7 @@ def test_llm():
             temperature=data.get("temperature", 0.7),
             max_tokens=data.get("max_tokens", 1000)
         )
-        return jsonify(result)
+        return jsonify({"response": result})
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
