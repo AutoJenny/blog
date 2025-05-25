@@ -262,7 +262,28 @@ def llm_models():
 
 @bp.route('/llm/prompts')
 def llm_prompts():
-    return render_template('main/llm_prompts.html')
+    # Fetch prompt data from the database
+    prompts = []
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('''
+                SELECT id, name, description, prompt_text
+                FROM llm_prompt
+                ORDER BY ("order" IS NULL), "order", id
+            ''')
+            rows = cur.fetchall()
+            for row in rows:
+                # Support both dict and tuple row formats
+                if isinstance(row, dict):
+                    prompts.append(row)
+                else:
+                    prompts.append({
+                        'id': row[0],
+                        'name': row[1],
+                        'description': row[2],
+                        'prompt_text': row[3],
+                    })
+    return render_template('main/llm_prompts.html', prompts=prompts)
 
 # @bp.route('/llm/actions')
 # def llm_actions():
