@@ -48,4 +48,19 @@ The Blog CMS uses PostgreSQL (or SQLite in dev) for all persistent storage. Belo
 | authoring  | content, meta_info, images        |
 | publishing | preflight, launch, syndication    |
 
-All workflow logic should reference these tables for stage and sub-stage lists, not hard-coded values. 
+All workflow logic should reference these tables for stage and sub-stage lists, not hard-coded values.
+
+## Table: post_substage_action
+
+Tracks LLM action button settings for each post and workflow substage. Used to store which LLM action is selected for a given substage of a post, and the button label/order for the UI.
+
+| Column        | Type         | Description                                      |
+|--------------|--------------|--------------------------------------------------|
+| id           | SERIAL (PK)  | Unique row ID                                    |
+| post_id      | INTEGER      | References post(id)                              |
+| substage     | VARCHAR(64)  | Name of the workflow substage (e.g. 'idea')      |
+| action_id    | INTEGER      | References llm_action(id)                        |
+| button_label | TEXT         | Label for the action button                      |
+| button_order | INTEGER      | Order for button display (default 0)             |
+
+Example usage: Allows the UI to save and restore which LLM action is selected for a post's substage, and how it appears in the workflow editor. 

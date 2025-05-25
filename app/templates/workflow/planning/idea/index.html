@@ -14,6 +14,18 @@
     <div class="mb-8">
         {{ post_header(post, None) }}
     </div>
+    <!-- LLM Action Controls -->
+    <div id="llm-action-controls" class="flex flex-col md:flex-row items-center gap-4 mb-8 justify-center">
+        <select id="llm-action-select"
+            class="form-input px-4 py-2 rounded border border-gray-600 bg-dark-card text-white focus:ring-2 focus:ring-green-400">
+            <option value="">Select Action...</option>
+        </select>
+        <button id="llm-action-run"
+            class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg shadow transition duration-150 ease-in-out flex items-center gap-2"
+            style="background:#22c55e !important; border:none;">
+            <i class="fa-solid fa-bolt"></i> Run Action
+        </button>
+    </div>
     <div class="mb-8">
         <div class="rounded-xl p-6 shadow-lg" style="background: #23273a; border: 1.5px solid #31364a;">
             <h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2">
@@ -25,4 +37,77 @@
     </div>
     {% endif %}
 </div>
+<script>
+    (function () {
+        // Use post_id for per-post persistence
+        const postIdStr = '{{ post.id if post else "" }}';
+        const postId = postIdStr ? parseInt(postIdStr, 10) : null;
+        const select = document.getElementById('llm-action-select');
+        const storageKey = postId ? `llm_action_selected_${postId}` : null;
+        // Fetch and populate actions
+        async function loadActions() {
+            try {
+                const res = await fetch('/api/v1/llm/actions');
+                const actions = await res.json();
+                select.innerHTML = '<option value="">Select Action...</option>' +
+                    actions.map(a => `<option value="${a.id}">${a.field_name} (${a.llm_model})</option>`).join('');
+                // Restore selection
+                if (storageKey) {
+                    const saved = localStorage.getItem(storageKey);
+                    if (saved) select.value = saved;
+                }
+            } catch (e) {
+                select.innerHTML = '<option value="">Failed to load actions</option>';
+            }
+        }
+        if (select && postId) {
+            loadActions();
+            // Save on change (localStorage)
+            select.addEventListener('change', function () {
+                localStorage.setItem(storageKey, select.value);
+            });
+            // Save on change (backend)
+            select.addEventListener('change', async function () {
+                const actionId = select.value;
+                if (!actionId || isNaN(Number(actionId))) return;
+                const payload = {
+                    post_id: postId,
+                    substage: 'idea',
+                    action_id: actionId,
+                    button_label: 'Action',
+                    button_order: 0
+                };
+                try {
+                    const res = await fetch('/api/v1/llm/post_substage_actions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        showToast('Action selection saved.', 'success');
+                    } else {
+                        showToast('Failed to save action: ' + (data.error || 'Unknown error'), 'error');
+                    }
+                } catch (e) {
+                    showToast('Failed to save action: ' + e, 'error');
+                }
+            });
+        }
+        // Toast helper
+        function showToast(msg, type) {
+            let toast = document.getElementById('llm-action-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'llm-action-toast';
+                toast.className = 'fixed top-4 right-4 z-50 px-4 py-2 rounded shadow-lg text-white';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = msg;
+            toast.style.background = type === 'success' ? '#22c55e' : '#ef4444';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+    })();
+</script>
 {% endblock %}
