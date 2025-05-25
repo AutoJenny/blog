@@ -1,100 +1,290 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
 {% block title %}LLM Action Details{% endblock %}
+
+{% block area_nav %}
+{% include 'llm/_llm_nav.html' %}
+{% endblock %}
+
 {% block content %}
 <div class="max-w-4xl mx-auto py-10">
-    <h1 class="text-2xl font-bold mb-6 flex items-center gap-2">
-        <i class="fa-solid fa-bolt text-[#fbbf24]"></i> LLM Action: <span class="text-[#38bdf8]">{{ action.field_name or
-            'Action Name' }}</span>
-    </h1>
-    <form id="llm-action-form" class="space-y-8">
-        <!-- Input/Output Field Selectors -->
-        <div class="card-dark rounded-xl p-6 mb-6" style="background:#23273a;border:1.5px solid #6366f1;">
-            <h2 class="text-lg section-title mb-4 flex items-center gap-2"><i
-                    class="fa-solid fa-arrow-right-arrow-left"></i> Input/Output Fields</h2>
+    <div class="admin-card">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="admin-title">
+                <i class="fas fa-bolt mr-2"></i>
+                Action Details: {{ action.field_name }}
+            </h1>
+            <a href="/llm/actions" class="btn btn-secondary">Back to Actions</a>
+        </div>
+        <form id="actionFieldsForm" class="mb-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block font-semibold mb-2">Input Field</label>
-                    <input class="form-input w-full" name="input_field" value="{{ action.input_field or '' }}"
-                        placeholder="e.g. idea_seed" />
+                    <label class="form-label">Field Name</label>
+                    <input type="text" class="form-input" id="fieldName" value="{{ action.field_name }}">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-2">Output Field</label>
-                    <input class="form-input w-full" name="output_field" value="{{ action.output_field or '' }}"
-                        placeholder="e.g. summary" />
-                </div>
-            </div>
-        </div>
-        <!-- LLM Model and Config -->
-        <div class="card-dark rounded-xl p-6 mb-6" style="background:#23273a;border:1.5px solid #6366f1;">
-            <h2 class="text-lg section-title mb-4 flex items-center gap-2"><i class="fa-solid fa-microchip"></i> LLM
-                Model & Config</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block font-semibold mb-2">LLM Model</label>
-                    <input class="form-input w-full" name="llm_model" value="{{ action.llm_model or '' }}" />
+                    <label class="form-label">Model</label>
+                    <input type="text" class="form-input" id="llmModel" value="{{ action.llm_model }}">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-2">Temperature</label>
-                    <input class="form-input w-full" name="temperature" type="number" step="0.01" min="0" max="2"
-                        value="{{ action.temperature or 0.7 }}" />
+                    <label class="form-label">Input Field</label>
+                    <input type="text" class="form-input" id="inputField" value="{{ action.input_field or '' }}">
+                </div>
+                <div>
+                    <label class="form-label">Output Field</label>
+                    <input type="text" class="form-input" id="outputField" value="{{ action.output_field or '' }}">
                 </div>
             </div>
-        </div>
-        <!-- Modular Prompt Parts Management -->
-        <div class="card-dark rounded-xl p-6 mb-6" style="background:#23273a;border:1.5px solid #6366f1;">
-            <h2 class="text-lg section-title mb-4 flex items-center gap-2"><i class="fa-solid fa-scroll"></i> Prompt
-                Parts</h2>
-            <label class="block font-semibold mb-2">Prompt Parts (ordered)</label>
-            <div id="prompt-parts-list" class="space-y-2">
-                {% for part in action.prompt_parts %}
-                <div class="flex items-center gap-2 bg-dark-bg border border-dark-border rounded p-3">
-                    <span class="font-mono text-xs px-2 py-1 rounded bg-gray-800 text-gray-300">{{ part.type }}</span>
-                    <span class="flex-1 text-sm text-gray-200">{{ part.content|truncate(80) }}</span>
-                    <button type="button" class="btn btn-xs btn-danger" data-remove-part="{{ part.id }}"><i
-                            class="fa fa-trash"></i></button>
-                    <button type="button" class="btn btn-xs btn-secondary" data-move-up="{{ part.id }}"><i
-                            class="fa fa-arrow-up"></i></button>
-                    <button type="button" class="btn btn-xs btn-secondary" data-move-down="{{ part.id }}"><i
-                            class="fa fa-arrow-down"></i></button>
+            <div class="flex justify-end gap-4 mt-4">
+                <button type="button" class="btn btn-primary" id="saveActionFieldsBtn">Save Action Fields</button>
+            </div>
+        </form>
+        <h2 class="text-lg font-bold mb-2 mt-8">Linked Prompt Parts</h2>
+        <ul id="linkedPromptPartsList" class="mb-4">
+            {% for part in action_prompt_parts %}
+            <li class="bg-dark-card rounded p-3 mb-2 flex items-center justify-between" data-id="{{ part.id }}">
+                <div>
+                    <span class="font-bold text-indigo-300">{{ part.type }}</span>
+                    <span class="text-xs text-gray-400 ml-2">Order: {{ part.order }}</span><br>
+                    <span class="text-sm text-gray-200">{{ part.content|truncate(80) }}</span>
                 </div>
-                {% endfor %}
-            </div>
-            <button type="button" class="btn btn-primary mt-2" id="add-prompt-part-btn"><i class="fa fa-plus"></i> Add
-                Prompt Part</button>
-            <div class="mt-6">
-                <label class="block font-semibold mb-2">LLM Message Preview</label>
-                <pre class="bg-dark-bg border border-dark-border rounded p-4 text-sm text-gray-200 overflow-x-auto"
-                    id="llm-message-preview">{ ... message preview ... }</pre>
-            </div>
-        </div>
-        <!-- Test Field for Sample Data -->
-        <div class="card-dark rounded-xl p-6 mb-6" style="background:#23273a;border:1.5px solid #6366f1;">
-            <h2 class="text-lg section-title mb-4 flex items-center gap-2"><i class="fa-solid fa-vial"></i> Test Action
-            </h2>
-            <div>
-                <label class="block font-semibold mb-2">Test Input</label>
-                <textarea class="form-input w-full" rows="3" name="test_input"
-                    placeholder="Enter test input here..."></textarea>
-                <button type="button" class="llm-action-btn mt-4" id="run-llm-action-btn">
-                    <i class="fa-solid fa-play mr-2"></i> Run Action
-                </button>
-            </div>
-            <div class="mt-6">
-                <label class="block font-semibold mb-2">LLM Output</label>
-                <pre class="bg-dark-bg border border-dark-border rounded p-4 text-sm text-green-200 overflow-x-auto"
-                    id="llm-output">{ ... output ... }</pre>
-            </div>
-            <div class="mt-4">
-                <button type="button" class="text-xs text-blue-400 underline"
-                    onclick="document.getElementById('diagnostics-panel').classList.toggle('hidden')">Show/Hide
-                    Diagnostics</button>
-                <div id="diagnostics-panel" class="hidden mt-2">
-                    <label class="block font-semibold mb-2">Diagnostics</label>
-                    <pre
-                        class="bg-dark-bg border border-dark-border rounded p-4 text-xs text-yellow-200 overflow-x-auto">{ ... diagnostics ... }</pre>
+                <div class="flex gap-2">
+                    <button class="btn btn-secondary btn-xs reorder-up" title="Move Up">&#8593;</button>
+                    <button class="btn btn-secondary btn-xs reorder-down" title="Move Down">&#8595;</button>
+                    <button class="btn btn-secondary btn-xs edit-part" title="Edit">Edit</button>
+                    <button class="btn btn-danger btn-xs unlink-part" title="Unlink">Unlink</button>
                 </div>
-            </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="mb-6">
+            <button class="btn btn-primary" id="addPromptPartBtn">+ Add New Prompt Part</button>
         </div>
-    </form>
+        <h2 class="text-lg font-bold mb-2">Available Prompt Parts</h2>
+        <ul id="availablePromptPartsList" class="mb-6">
+            {% for part in all_prompt_parts %}
+            <li class="bg-dark-card rounded p-3 mb-2 flex items-center justify-between" data-id="{{ part.id }}">
+                <div>
+                    <span class="font-bold text-indigo-300">{{ part.type }}</span>
+                    <span class="text-xs text-gray-400 ml-2">Order: {{ part.order }}</span><br>
+                    <span class="text-sm text-gray-200">{{ part.content|truncate(80) }}</span>
+                </div>
+                <div>
+                    <button class="btn btn-primary btn-xs link-part" title="Link">Link</button>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <div id="promptPartFormContainer" style="display:none;" class="mb-8">
+            <h3 id="promptPartFormTitle" class="text-md font-bold mb-2">Add/Edit Prompt Part</h3>
+            <form id="promptPartForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Type</label>
+                        <select class="form-input" id="promptPartType">
+                            <option value="system">system</option>
+                            <option value="style">style</option>
+                            <option value="instructions">instructions</option>
+                            <option value="user">user</option>
+                            <option value="assistant">assistant</option>
+                            <option value="other">other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Content</label>
+                        <textarea class="form-input" id="promptPartContent" rows="3"></textarea>
+                    </div>
+                    <div>
+                        <label class="form-label">Description</label>
+                        <input class="form-input" id="promptPartDescription" type="text" />
+                    </div>
+                    <div>
+                        <label class="form-label">Tags (comma-separated)</label>
+                        <input class="form-input" id="promptPartTags" type="text" />
+                    </div>
+                </div>
+                <div class="flex justify-end gap-4 mt-4">
+                    <button type="button" class="btn btn-primary" id="savePromptPartBtn">Save</button>
+                    <button type="button" class="btn btn-secondary" id="cancelPromptPartBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+        <h2 class="text-lg font-bold mb-2">Test Action</h2>
+        <div class="mb-4">
+            <label class="form-label">Test Input</label>
+            <textarea class="form-input" id="testActionInput" rows="2"></textarea>
+        </div>
+        <div class="flex gap-4 mb-4">
+            <button class="btn btn-primary" id="testActionBtn">Run Test</button>
+            <div id="testActionOutput" class="bg-dark-card rounded p-3 text-green-300"></div>
+        </div>
+    </div>
 </div>
+<script>
+    const actionId = {{ action.id }};
+
+    function showMessage(msg, color = 'green') {
+        const out = document.getElementById('testActionOutput');
+        out.textContent = msg;
+        out.style.color = color === 'green' ? '#4ade80' : '#f87171';
+        setTimeout(() => { out.textContent = ''; }, 2500);
+    }
+
+    // Save action fields
+    function saveActionFields() {
+        fetch(`/api/v1/llm/actions/${actionId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                field_name: document.getElementById('fieldName').value,
+                llm_model: document.getElementById('llmModel').value,
+                input_field: document.getElementById('inputField').value,
+                output_field: document.getElementById('outputField').value
+            })
+        }).then(r => r.json()).then(data => {
+            if (data.status === 'success') showMessage('Saved!', 'green');
+            else showMessage(data.error || 'Error saving', 'red');
+        });
+    }
+    document.getElementById('saveActionFieldsBtn').onclick = saveActionFields;
+
+    // Reorder prompt parts
+    function reorderPromptPart(partId, direction) {
+        const list = Array.from(document.querySelectorAll('#linkedPromptPartsList li'));
+        const idx = list.findIndex(li => li.dataset.id == partId);
+        if (idx < 0) return;
+        const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+        if (swapIdx < 0 || swapIdx >= list.length) return;
+        list[idx].parentNode.insertBefore(list[swapIdx], list[idx]);
+        savePromptPartsOrder();
+    }
+    function savePromptPartsOrder() {
+        const ids = Array.from(document.querySelectorAll('#linkedPromptPartsList li')).map(li => li.dataset.id);
+        fetch(`/api/v1/llm/actions/${actionId}/prompt_parts/order`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order: ids })
+        }).then(r => r.json()).then(data => {
+            if (!data.success) showMessage(data.error || 'Order save error', 'red');
+        });
+    }
+    document.querySelectorAll('.reorder-up').forEach(btn => {
+        btn.onclick = e => {
+            const li = e.target.closest('li');
+            reorderPromptPart(li.dataset.id, 'up');
+        };
+    });
+    document.querySelectorAll('.reorder-down').forEach(btn => {
+        btn.onclick = e => {
+            const li = e.target.closest('li');
+            reorderPromptPart(li.dataset.id, 'down');
+        };
+    });
+
+    // Unlink prompt part
+    function unlinkPromptPart(partId) {
+        fetch(`/api/v1/llm/actions/${actionId}/prompt_parts/${partId}`, { method: 'DELETE' })
+            .then(r => r.json()).then(() => location.reload());
+    }
+    document.querySelectorAll('.unlink-part').forEach(btn => {
+        btn.onclick = e => {
+            const li = e.target.closest('li');
+            unlinkPromptPart(li.dataset.id);
+        };
+    });
+
+    // Link available prompt part
+    function linkPromptPart(partId) {
+        fetch(`/api/v1/llm/actions/${actionId}/prompt_parts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt_part_id: partId })
+        }).then(r => r.json()).then(() => location.reload());
+    }
+    document.querySelectorAll('.link-part').forEach(btn => {
+        btn.onclick = e => {
+            const li = e.target.closest('li');
+            linkPromptPart(li.dataset.id);
+        };
+    });
+
+    // Add/edit prompt part
+    const promptPartFormContainer = document.getElementById('promptPartFormContainer');
+    const promptPartForm = document.getElementById('promptPartForm');
+    document.getElementById('addPromptPartBtn').onclick = function () {
+        promptPartForm.reset();
+        promptPartFormContainer.style.display = '';
+        promptPartFormContainer.dataset.editing = '';
+    };
+    document.getElementById('cancelPromptPartBtn').onclick = function () {
+        promptPartFormContainer.style.display = 'none';
+    };
+    document.querySelectorAll('.edit-part').forEach(btn => {
+        btn.onclick = e => {
+            const li = e.target.closest('li');
+            fetch(`/api/v1/llm/prompt_parts/${li.dataset.id}`)
+                .then(r => r.json())
+                .then(part => {
+                    document.getElementById('promptPartType').value = part.type;
+                    document.getElementById('promptPartContent').value = part.content;
+                    document.getElementById('promptPartDescription').value = part.description || '';
+                    document.getElementById('promptPartTags').value = (part.tags || []).join(', ');
+                    promptPartFormContainer.style.display = '';
+                    promptPartFormContainer.dataset.editing = li.dataset.id;
+                });
+        };
+    });
+    document.getElementById('savePromptPartBtn').onclick = function () {
+        const type = document.getElementById('promptPartType').value;
+        const content = document.getElementById('promptPartContent').value;
+        const description = document.getElementById('promptPartDescription').value;
+        const tags = document.getElementById('promptPartTags').value.split(',').map(t => t.trim()).filter(Boolean);
+        const editing = promptPartFormContainer.dataset.editing;
+        let url, method, body;
+        if (editing) {
+            url = `/api/v1/llm/prompt_parts/${editing}`;
+            method = 'PUT';
+            body = JSON.stringify({ type, content, description, tags });
+        } else {
+            url = `/api/v1/llm/prompt_parts`;
+            method = 'POST';
+            body = JSON.stringify({ type, content, description, tags });
+        }
+        fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body })
+            .then(r => r.json())
+            .then(part => {
+                if (!editing) {
+                    // Link to action
+                    fetch(`/api/v1/llm/actions/${actionId}/prompt_parts`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt_part_id: part.part || part.id })
+                    }).then(() => location.reload());
+                } else {
+                    location.reload();
+                }
+            });
+        promptPartFormContainer.style.display = 'none';
+    };
+
+    // Test action
+    function testAction() {
+        const input = document.getElementById('testActionInput').value;
+        const out = document.getElementById('testActionOutput');
+        out.textContent = 'Running...';
+        fetch(`/api/v1/llm/actions/${actionId}/execute`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input_text: input })
+        })
+            .then(r => r.json())
+            .then(data => {
+                out.textContent = data.output || data.result || JSON.stringify(data);
+            })
+            .catch(err => {
+                out.textContent = 'Error: ' + err;
+            });
+    }
+    document.getElementById('testActionBtn').onclick = testAction;
+</script>
 {% endblock %}

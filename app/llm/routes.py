@@ -74,7 +74,7 @@ def action_detail(action_id):
             action = cur.fetchone()
             if action:
                 cur.execute("""
-                    SELECT l.prompt_part_id, l.order, p.type, p.content, p.description, p.tags
+                    SELECT l.prompt_part_id, l.order, p.type, p.content, p.description, p.tags, p.id
                     FROM llm_action_prompt_part l
                     JOIN llm_prompt_part p ON l.prompt_part_id = p.id
                     WHERE l.action_id = %s

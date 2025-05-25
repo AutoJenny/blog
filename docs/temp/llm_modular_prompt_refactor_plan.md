@@ -50,11 +50,22 @@ Track the plan and rationale for refactoring LLM prompt handling to support modu
 - [x] Refactor /api/v1/llm/actions/<id>/prompt_parts and linking endpoints to use direct SQL (robust, tested, supports linking/unlinking)
 - [x] Refactor /api/v1/llm/actions/<id>/execute endpoint to use direct SQL (robust, ORM-free, returns dummy response for now)
 - [x] Test all endpoints with curl to ensure correct behavior (all endpoints robust, ORM-free, and tested end-to-end)
+- [x] Refactor /api/v1/llm/models and /api/v1/llm/providers endpoints to return static Ollama-only data (no ORM, no DB dependency)
+- [x] Remove all ORM/SQLAlchemy usage from provider/model endpoints
+- [x] Add /llm/models UI page, linked in LLM nav, to display available models from API
+- [x] Fix Edit Action modal on /llm/actions by making /api/v1/llm/providers and /api/v1/llm/models return static JSON
+- [x] Update /llm/_llm_nav.html to include Models link and highlight active state
+- [x] All endpoints and UI now robust, API-first, and ready for further modular prompt work
 
 ## UI Progress
-- [ ] UI: Action Details page (display, edit, reorder prompt parts)
-- [ ] UI: Prompt part CRUD and linking in Action Details
-- [ ] UI: Test Action button and output display
+- [x] UI: Action Details page (display, edit, reorder prompt parts)
+- [x] UI: Prompt part CRUD and linking in Action Details
+- [x] UI: Test Action button and output display
+
+## Status (2025-05-25)
+- All backend and API endpoints for LLM modular prompt management are now direct SQL (psycopg2) and ORM-free.
+- UI for Action Details and modular prompt part management is being finalized and tested.
+- Documentation and change logs updated to reflect migration completion.
 
 ## Restore Progress (2025-05-23)
 - Successfully performed a lossless restore of all post and action data from the most recent backup (blog_backup_20250523_082634.sql).
