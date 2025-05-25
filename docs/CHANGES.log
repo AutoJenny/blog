@@ -12,4 +12,14 @@
 
 2025-05-24: Refactored /api/v1/llm/actions/<id>/prompt_parts and linking endpoints to use robust direct SQL (psycopg2) with correct array handling for tags. Fully tested linking and unlinking prompt parts to actions. Updated modular prompt refactor plan. [LLM Modular Prompt Refactor]
 
-2025-05-24: Refactored /api/v1/llm/actions/<id>/execute endpoint to use robust direct SQL (psycopg2), removed all ORM usage, and stubbed LLM call to return a dummy response for testing. Endpoint is now robust and testable without external dependencies. Updated modular prompt refactor plan. [LLM Modular Prompt Refactor] 
+2025-05-24: Refactored /api/v1/llm/actions/<id>/execute endpoint to use robust direct SQL (psycopg2), removed all ORM usage, and stubbed LLM call to return a dummy response for testing. Endpoint is now robust and testable without external dependencies. Updated modular prompt refactor plan. [LLM Modular Prompt Refactor]
+
+2025-05-24: LLM Model/Provider Refactor & UI
+- Refactored all LLM model and provider endpoints to use static Ollama-only data (no ORM, no DB dependency).
+- Removed all SQLAlchemy/ORM usage from LLM provider/model endpoints.
+- Fixed Edit Action modal on /llm/actions by making /api/v1/llm/providers and /api/v1/llm/models return static JSON.
+- Added /llm/models UI page, linked in LLM nav, to display available models from API.
+- Updated /llm/_llm_nav.html to include Models link and highlight active state.
+- All endpoints and UI now robust, API-first, and ready for further modular prompt work.
+
+2025-05-25: Completed removal of all SQLAlchemy/ORM usage and migrated all LLM modular prompt features to direct SQL (psycopg2). Updated all API endpoints and service logic. UI for Action Details and modular prompt part management is now being wired up and tested. Updated docs and migration plan. [LLM Modular Prompt Refactor] 
