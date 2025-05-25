@@ -624,3 +624,9 @@ All notable changes to this project are documented in this file.
 2025-05-23: Scaffolded Action Details modal for prompt part management (CRUD, reordering, test action) in LLM Actions UI. Updated implementation plan doc with this progress.
 
 2025-05-23: Successfully performed a lossless restore of post and action data from backup, including all fields. llm_prompt_part was empty in the backup. Updated modular prompt refactor plan doc with details.
+
+2025-05-25
+- Fixed workflow action save bug: created post_substage_action table in PostgreSQL (not SQLite!)
+- Removed all SQLite code and files; project is now PostgreSQL-only as per docs
+- Updated docs/database/schema.md to document post_substage_action table
+- Ensured all schema changes are non-destructive and follow backup-first policy
