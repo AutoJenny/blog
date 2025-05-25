@@ -696,7 +696,8 @@
                 try {
                     const resp = await fetch('/api/v1/llm/models');
                     const models = await resp.json();
-                    const filtered = models.filter(m => m.provider_id == providerId);
+                    console.log('Fetched models:', models, 'ProviderId:', providerId);
+                    const filtered = models.filter(m => String(m.provider_id) == String(providerId));
                     wizModel.innerHTML = filtered.map(m => `<option value="${m.name}" ${selectedModelName == m.name ? 'selected' : ''}>${m.name} (${m.description || ''})</option>`).join('');
                 } catch (e) {
                     wizModel.innerHTML = '<option value="">Failed to load models</option>';
@@ -715,7 +716,14 @@
             // When wizard opens, load providers and templates
             newActionBtn.addEventListener('click', function () {
                 resetWizard();
-                loadWizardProviders();
+                loadWizardProviders().then(() => {
+                    // If only one provider, auto-select and load models
+                    if (wizProvider.options.length === 1 || (wizProvider.options.length === 2 && wizProvider.options[0].value === '')) {
+                        // If first option is blank, select the next
+                        wizProvider.selectedIndex = wizProvider.options[0].value === '' ? 1 : 0;
+                        loadWizardModels(wizProvider.value);
+                    }
+                });
                 loadWizardPromptTemplates();
                 actionWizardModal.classList.add('active');
                 document.body.style.overflow = 'hidden';
