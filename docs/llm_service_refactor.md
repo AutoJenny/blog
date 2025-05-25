@@ -15,6 +15,11 @@
 3. **Verified** that all LLM API endpoints and LLM action execution use the new service.
 4. **Tested** LLM action execution and confirmed timeouts and errors are now handled by the new service only.
 
+5. **Update June 2024:**
+   - LLMService now uses `httpx.TimeoutException` (not `TimeoutError`) for timeout handling, matching httpx >=0.24+.
+   - The Ollama API URL (`api_url`) is now set automatically in the `/api/v1/llm/test` endpoint, using the value from the request or defaulting to `http://localhost:11434`.
+   - These changes prevent AttributeError and ValueError seen in previous versions.
+
 ## Next Steps
 - Remove the deprecated file after a transition period if no legacy code depends on it.
 - All future LLM-related development should use `app/llm/services.py` exclusively. 

@@ -62,34 +62,34 @@ def update_config():
 def test_llm():
     """Test an LLM prompt"""
     data = request.get_json()
-    if not data or "prompt" not in data:
+    current_app.logger.error(f"[LLM TEST] Incoming payload: {data}")
+    if not data or "prompt" not in data or not data.get("prompt"):
+        current_app.logger.error("[LLM TEST] No prompt provided or prompt is empty")
         return jsonify({"error": "No prompt provided"}), 400
-
+    if "model_name" not in data or not data.get("model_name"):
+        current_app.logger.error("[LLM TEST] No model_name provided or model_name is empty")
+        return jsonify({"error": "No model_name provided"}), 400
+    if "provider_type" not in data or not data.get("provider_type"):
+        current_app.logger.error("[LLM TEST] No provider_type provided or provider_type is empty")
+        return jsonify({"error": "No provider_type provided"}), 400
     try:
         llm = LLMService()
-        result = llm.generate(data["prompt"], model_name=data.get("model_name"))
+        llm.config = data.get("provider_type")  # Set provider type (e.g., 'ollama')
+        # PATCH: Set api_url for Ollama
+        if llm.config == "ollama":
+            llm.api_url = data.get("api_base") or "http://localhost:11434"
+        result = llm.generate(
+            data["prompt"],
+            model_name=data.get("model_name"),
+            temperature=data.get("temperature", 0.7),
+            max_tokens=data.get("max_tokens", 1000)
+        )
         return jsonify(result)
-    except RuntimeError as e:
-        if "timed out" in str(e).lower():
-            current_app.logger.error(f"LLM test timeout: {e}")
-            return jsonify({
-                "error": "Request timed out. This could be because:\n"
-                "1. The model is not loaded and loading took too long\n"
-                "2. The generation request itself took too long\n"
-                "Try preloading the model first or using a different model."
-            }), 504  # Gateway Timeout
-        current_app.logger.error(f"LLM test runtime error: {e}")
-        return jsonify({"error": str(e)}), 500
-    except requests.exceptions.Timeout:
-        current_app.logger.error("LLM test explicit timeout")
-        return jsonify({
-            "error": "Request timed out while waiting for the LLM service"
-        }), 504
     except Exception as e:
-        current_app.logger.error(f"Unexpected error in LLM test: {type(e).__name__}: {e}")
-        return jsonify({
-            "error": f"An unexpected error occurred: {type(e).__name__}"
-        }), 500
+        import traceback
+        tb = traceback.format_exc()
+        current_app.logger.error(f"[LLM TEST] Exception: {e}\n{tb}")
+        return jsonify({"error": f"{type(e).__name__}: {e}", "traceback": tb}), 500
 
 
 @bp.route('/prompts', methods=['GET'])
@@ -222,6 +222,7 @@ def handle_actions():
         for field in required_fields:
             if field not in data:
                 return jsonify({'status': 'error', 'error': f'Missing required field: {field}'}), 400
+        prompt_parts = data.get('prompt_parts', [])
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
@@ -231,6 +232,7 @@ def handle_actions():
                 if not prompt_row:
                     return jsonify({'status': 'error', 'error': 'Prompt template not found'}), 404
                 prompt_template = prompt_row['prompt_text']
+                # Insert action
                 cur.execute("""
                     INSERT INTO llm_action (field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order")
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
@@ -246,6 +248,28 @@ def handle_actions():
                     data.get('order', 0)
                 ))
                 action_id = cur.fetchone()['id']
+                # Remove any old links for this action
+                cur.execute("DELETE FROM llm_action_prompt_part WHERE action_id = %s", (action_id,))
+                # Insert/update prompt parts and link
+                for i, part in enumerate(prompt_parts):
+                    part_id = part.get('id')
+                    if part_id:
+                        # Update existing part
+                        cur.execute("""
+                            UPDATE llm_prompt_part SET type=%s, content=%s, "order"=%s, updated_at=NOW() WHERE id=%s
+                        """, (part['type'], part['content'], i, part_id))
+                    else:
+                        # Insert new part
+                        cur.execute("""
+                            INSERT INTO llm_prompt_part (type, content, "order", created_at, updated_at)
+                            VALUES (%s, %s, %s, NOW(), NOW()) RETURNING id
+                        """, (part['type'], part['content'], i))
+                        part_id = cur.fetchone()['id']
+                    # Link to action
+                    cur.execute("""
+                        INSERT INTO llm_action_prompt_part (action_id, prompt_part_id, "order")
+                        VALUES (%s, %s, %s)
+                    """, (action_id, part_id, i))
                 conn.commit()
         return jsonify({'status': 'success', 'action': action_id})
     except Exception as e:
