@@ -22,4 +22,11 @@
 - Updated /llm/_llm_nav.html to include Models link and highlight active state.
 - All endpoints and UI now robust, API-first, and ready for further modular prompt work.
 
-2025-05-25: Completed removal of all SQLAlchemy/ORM usage and migrated all LLM modular prompt features to direct SQL (psycopg2). Updated all API endpoints and service logic. UI for Action Details and modular prompt part management is now being wired up and tested. Updated docs and migration plan. [LLM Modular Prompt Refactor] 
+2025-05-25: Completed removal of all SQLAlchemy/ORM usage and migrated all LLM modular prompt features to direct SQL (psycopg2). Updated all API endpoints and service logic. UI for Action Details and modular prompt part management is now being wired up and tested. Updated docs and migration plan. [LLM Modular Prompt Refactor]
+
+2025-05-25: LLM Modular Prompt Part Migration & UI Complete
+- All LLM modular prompt part management (backend and UI) is now direct SQL (psycopg2), ORM-free, and robust.
+- Action Details UI fully supports modular prompt part CRUD, linking, unlinking, reordering, and test execution.
+- All endpoints tested with curl and browser; no ORM code remains.
+- Updated docs/llm/README.md and docs/temp/llm_modular_prompt_refactor_plan.md to reflect completion.
+[LLM Modular Prompt Refactor] 
