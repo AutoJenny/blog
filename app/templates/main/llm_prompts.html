@@ -24,26 +24,54 @@
         background: rgba(24, 28, 42, 0.85);
     }
 
+    .tab-bar {
+        display: flex;
+        border-bottom: 2px solid #373a4d;
+        margin-bottom: 0;
+        background: none;
+    }
+
     .tab-btn {
-        @apply px-4 py-2 rounded-t-lg font-semibold focus:outline-none;
+        @apply font-semibold focus:outline-none transition-colors duration-150;
         background: #23263a;
         color: #a5b4fc;
         border: none;
-        margin-right: 0.5rem;
+        border-radius: 0.75rem 0.75rem 0 0;
+        margin-right: 0.25rem;
+        margin-bottom: -2px;
+        position: relative;
+        top: 2px;
+        z-index: 1;
+        box-shadow: none;
+        font-size: 1.15rem;
+        letter-spacing: 0.01em;
+        padding: 0.85rem 2.5rem;
+        /* fallback for extra padding */
+        min-width: 180px;
+        text-align: center;
     }
 
     .tab-btn.active {
-        background: #6366f1;
+        background: #fff;
+        color: #373a4d;
+        border-bottom: 2px solid #fff;
+        box-shadow: 0 -2px 8px 0 rgba(99, 102, 241, 0.08);
+        z-index: 2;
+    }
+
+    .tab-btn:not(.active):hover,
+    .tab-btn:not(.active):focus {
+        background: #373a4d;
         color: #fff;
     }
 </style>
 <div class="container mx-auto py-10 px-4">
-    <div class="flex gap-4 mb-6">
-        <button class="tab-btn active" id="tabPromptsBtn" type="button">Prompt Templates</button>
-        <button class="tab-btn" id="tabPartsBtn" type="button">Prompt Parts</button>
+    <div class="tab-bar mb-0">
+        <button class="tab-btn active" id="tabPromptsBtn" type="button" tabindex="0">Prompt Templates</button>
+        <button class="tab-btn" id="tabPartsBtn" type="button" tabindex="0">Prompt Parts</button>
     </div>
     <div id="tabPrompts" class="tab-content">
-        <div class="flex justify-between items-center mb-8">
+        <div class="flex justify-between items-center mb-8 mt-0">
             <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
                 <i class="fa-solid fa-scroll"></i> LLM Prompt Templates
             </div>
@@ -83,10 +111,14 @@
         </div>
     </div>
     <div id="tabParts" class="tab-content" style="display:none;">
-        <div class="flex justify-between items-center mb-8">
+        <div class="flex justify-between items-center mb-8 mt-0">
             <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
                 <i class="fa-solid fa-layer-group"></i> LLM Prompt Parts
             </div>
+            <button id="addPromptPartBtn"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> New Prompt Part
+            </button>
         </div>
         <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
             <table class="min-w-full text-left">
@@ -97,11 +129,11 @@
                         <th class="py-2 px-3">Type</th>
                         <th class="py-2 px-3">Content</th>
                         <th class="py-2 px-3">Description</th>
-                        <th class="py-2 px-3">Tags</th>
                         <th class="py-2 px-3">Order</th>
                         <th class="py-2 px-3">Action ID</th>
                         <th class="py-2 px-3">Created</th>
                         <th class="py-2 px-3">Updated</th>
+                        <th class="py-2 px-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -112,11 +144,16 @@
                         <td class="py-2 px-3">{{ part.type }}</td>
                         <td class="py-2 px-3 text-xs">{{ part.content }}</td>
                         <td class="py-2 px-3">{{ part.description }}</td>
-                        <td class="py-2 px-3">{{ part.tags }}</td>
                         <td class="py-2 px-3">{{ part.order }}</td>
                         <td class="py-2 px-3">{{ part.action_id }}</td>
                         <td class="py-2 px-3">{{ part.created_at }}</td>
                         <td class="py-2 px-3">{{ part.updated_at }}</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn edit-part-btn" title="Edit" data-id="{{ part.id }}"><i
+                                    class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn delete-part-btn" title="Delete" data-id="{{ part.id }}"><i
+                                    class="fa-solid fa-trash"></i></button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -170,6 +207,56 @@
             </div>
         </div>
     </div>
+    <!-- Add Prompt Part Modal -->
+    <div id="addPromptPartModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+            <button id="closeAddPromptPart" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-plus"></i>
+                <span id="promptPartModalTitle">New Prompt Part</span>
+            </div>
+            <form id="addPromptPartForm">
+                <input type="hidden" id="promptPartId" value="" />
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Name</label>
+                    <input type="text" id="promptPartName"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. System Instruction" required />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Type</label>
+                    <select id="promptPartType"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white" required>
+                        <option value="system">System</option>
+                        <option value="user">User</option>
+                        <option value="assistant">Assistant</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Content</label>
+                    <textarea id="promptPartContent"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white" rows="4"
+                        placeholder="Enter prompt part content..." required></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Description</label>
+                    <input type="text" id="promptPartDescription"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="Short description (optional)" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Order</label>
+                    <input type="number" id="promptPartOrder"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="Order (0 = first)" value="0" min="0" />
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="submit"
+                        class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -188,6 +275,82 @@
             tabPromptsBtn.classList.remove('active');
             tabPrompts.style.display = 'none';
             tabParts.style.display = '';
+        };
+        // Add Prompt Part Modal logic
+        const addPromptPartBtn = document.getElementById('addPromptPartBtn');
+        const addPromptPartModal = document.getElementById('addPromptPartModal');
+        const closeAddPromptPart = document.getElementById('closeAddPromptPart');
+        const addPromptPartForm = document.getElementById('addPromptPartForm');
+        const promptPartModalTitle = document.getElementById('promptPartModalTitle');
+        const promptPartIdInput = document.getElementById('promptPartId');
+        addPromptPartBtn.onclick = function () {
+            promptPartModalTitle.textContent = 'New Prompt Part';
+            promptPartIdInput.value = '';
+            addPromptPartForm.reset();
+            addPromptPartModal.classList.remove('hidden');
+        };
+        closeAddPromptPart.onclick = function () {
+            addPromptPartModal.classList.add('hidden');
+        };
+        // Edit button logic
+        document.querySelectorAll('.edit-part-btn').forEach(btn => {
+            btn.onclick = function () {
+                const partId = this.dataset.id;
+                fetch(`/api/v1/llm/prompt_parts/${partId}`)
+                    .then(r => r.json())
+                    .then(part => {
+                        promptPartModalTitle.textContent = 'Edit Prompt Part';
+                        promptPartIdInput.value = part.id;
+                        document.getElementById('promptPartName').value = part.name || '';
+                        document.getElementById('promptPartType').value = part.type || 'system';
+                        document.getElementById('promptPartContent').value = part.content || '';
+                        document.getElementById('promptPartDescription').value = part.description || '';
+                        document.getElementById('promptPartOrder').value = part.order || 0;
+                        addPromptPartModal.classList.remove('hidden');
+                    });
+            };
+        });
+        // Delete button logic
+        document.querySelectorAll('.delete-part-btn').forEach(btn => {
+            btn.onclick = function () {
+                const partId = this.dataset.id;
+                if (!confirm('Delete this prompt part?')) return;
+                fetch(`/api/v1/llm/prompt_parts/${partId}`, { method: 'DELETE' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.reload();
+                        } else {
+                            alert('Failed to delete prompt part: ' + (data.error || 'Unknown error'));
+                        }
+                    });
+            };
+        });
+        // Add/Edit form submit logic
+        addPromptPartForm.onsubmit = function (e) {
+            e.preventDefault();
+            const id = promptPartIdInput.value;
+            const name = document.getElementById('promptPartName').value;
+            const type = document.getElementById('promptPartType').value;
+            const content = document.getElementById('promptPartContent').value;
+            const description = document.getElementById('promptPartDescription').value;
+            const order = parseInt(document.getElementById('promptPartOrder').value, 10) || 0;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/v1/llm/prompt_parts/${id}` : '/api/v1/llm/prompt_parts';
+            const body = JSON.stringify({ name, type, content, description, order });
+            fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success' || data.part) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to save prompt part: ' + (data.error || 'Unknown error'));
+                    }
+                });
         };
     });
 </script>
