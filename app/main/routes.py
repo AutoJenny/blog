@@ -9,6 +9,8 @@ from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv, dotenv_values
 import markdown
 import re
+from flask import abort
+import subprocess
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
@@ -273,3 +275,43 @@ def llm_logs():
 @bp.route('/llm/settings')
 def llm_settings():
     return render_template('main/llm_settings.html')
+
+@bp.route('/db/restore', methods=['POST'])
+def db_restore():
+    data = request.get_json() or {}
+    file = data.get('file')
+    # List of allowed backup files (root and backups/)
+    allowed_files = [
+        'blog_backup_20250523_082634.sql',
+        'blog_backup_20250524_151434.sql',
+        'blog_backup_20250522_190110.sql',
+        'blog_backup_20250522_190041.sql',
+        'blog_backup_20250521_141125_postrestore.sql',
+        'blog_backup_20250518_184147.sql',
+        'blog_backup_20250518_172746.sql',
+        'blog_backup_20250518_172740.sql',
+        'blog_backup_20250518_103247.sql',
+        'blog_llm_prompt_action_current.sql',
+    ]
+    # Check root and backups/
+    file_path = None
+    if file in allowed_files and os.path.isfile(file):
+        file_path = file
+    elif file in allowed_files and os.path.isfile(os.path.join('backups', file)):
+        file_path = os.path.join('backups', file)
+    if not file_path:
+        return jsonify({'error': 'Invalid or missing backup file'}), 400
+    try:
+        # Terminate all connections
+        subprocess.run(["psql", "blog", "-c", "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'blog' AND pid <> pg_backend_pid();"], check=True)
+        # Drop and recreate
+        subprocess.run(["dropdb", "blog"], check=True)
+        subprocess.run(["createdb", "blog"], check=True)
+        # Restore
+        with open(file_path, 'rb') as f:
+            subprocess.run(["psql", "blog"], stdin=f, check=True)
+        return jsonify({'restored': file})
+    except subprocess.CalledProcessError as e:
+        return jsonify({'error': f'Restore failed: {e}'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

@@ -95,13 +95,22 @@ def test_llm():
 @bp.route('/prompts', methods=['GET'])
 def get_prompts():
     """Get all prompts, ordered by 'order' (NULLs last), then id."""
-    prompts = LLMPrompt.query.order_by(LLMPrompt.order.is_(None), LLMPrompt.order, LLMPrompt.id).all()
-    return jsonify([{
-        'id': p.id,
-        'name': p.name,
-        'description': p.description,
-        'prompt_text': p.prompt_text
-    } for p in prompts])
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('''
+                SELECT id, name, description, prompt_text
+                FROM llm_prompt
+                ORDER BY ("order" IS NULL), "order", id
+            ''')
+            prompts = cur.fetchall()
+    return jsonify([
+        {
+            'id': p['id'],
+            'name': p['name'],
+            'description': p['description'],
+            'prompt_text': p['prompt_text']
+        } for p in prompts
+    ])
 
 
 @bp.route("/templates", methods=["GET"])
@@ -719,3 +728,151 @@ def test_action(action_id):
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# --- Post Substage Action Endpoints ---
+@bp.route('/post_substage_actions', methods=['GET', 'POST'])
+def post_substage_actions():
+    if request.method == 'GET':
+        post_id = request.args.get('post_id', type=int)
+        substage = request.args.get('substage', type=str)
+        if not post_id or not substage:
+            return jsonify({'error': 'post_id and substage required'}), 400
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, post_id, substage, action_id, button_label, button_order
+                    FROM post_substage_action
+                    WHERE post_id = %s AND substage = %s
+                    ORDER BY button_order, id
+                """, (post_id, substage))
+                rows = cur.fetchall()
+                actions = []
+                for row in rows:
+                    # Try both dict and tuple access for robustness
+                    if isinstance(row, dict):
+                        actions.append({
+                            'id': row['id'],
+                            'post_id': row['post_id'],
+                            'substage': row['substage'],
+                            'action_id': row['action_id'],
+                            'button_label': row['button_label'],
+                            'button_order': row['button_order'],
+                        })
+                    else:
+                        actions.append({
+                            'id': row[0],
+                            'post_id': row[1],
+                            'substage': row[2],
+                            'action_id': row[3],
+                            'button_label': row[4],
+                            'button_order': row[5],
+                        })
+        return jsonify(actions)
+    if request.method == 'POST':
+        data = request.get_json() or {}
+        post_id = data.get('post_id')
+        substage = data.get('substage')
+        action_id = data.get('action_id')
+        button_label = data.get('button_label')
+        button_order = data.get('button_order', 0)
+        if not post_id or not substage or not action_id:
+            return jsonify({'error': 'post_id, substage, and action_id required'}), 400
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    # Upsert: if exists, update; else insert
+                    cur.execute("""
+                        SELECT id FROM post_substage_action WHERE post_id=%s AND substage=%s
+                    """, (post_id, substage))
+                    row = cur.fetchone()
+                    if row:
+                        cur.execute("""
+                            UPDATE post_substage_action
+                            SET action_id=%s, button_label=%s, button_order=%s
+                            WHERE id=%s
+                        """, (action_id, button_label, button_order, row['id'] if isinstance(row, dict) else row[0]))
+                        new_id = row['id'] if isinstance(row, dict) else row[0]
+                    else:
+                        cur.execute("""
+                            INSERT INTO post_substage_action (post_id, substage, action_id, button_label, button_order)
+                            VALUES (%s, %s, %s, %s, %s)
+                            RETURNING id
+                        """, (post_id, substage, action_id, button_label, button_order))
+                        fetch = cur.fetchone()
+                        if not fetch:
+                            print('DEBUG: Insert failed, no id returned')
+                            return jsonify({'status': 'error', 'error': 'Insert failed, no id returned.'}), 500
+                        new_id = fetch[0]
+                    conn.commit()
+            return jsonify({'id': new_id, 'status': 'success'})
+        except Exception as e:
+            import traceback
+            print('DEBUG: Exception in post_substage_actions:', type(e), e)
+            traceback.print_exc()
+            return jsonify({'status': 'error', 'error': f'{type(e).__name__}: {e}'}), 400
+
+@bp.route('/post_substage_actions/<int:psa_id>', methods=['PUT', 'DELETE'])
+def post_substage_action_detail(psa_id):
+    if request.method == 'PUT':
+        data = request.get_json() or {}
+        button_label = data.get('button_label')
+        button_order = data.get('button_order')
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE post_substage_action
+                    SET button_label = %s, button_order = %s
+                    WHERE id = %s
+                """, (button_label, button_order, psa_id))
+                conn.commit()
+        return jsonify({'status': 'success'})
+    if request.method == 'DELETE':
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM post_substage_action WHERE id = %s", (psa_id,))
+                conn.commit()
+        return jsonify({'status': 'success'})
+
+# --- Substage Action Default Endpoints ---
+@bp.route('/substage_action_default', methods=['GET', 'POST'])
+def substage_action_default():
+    if request.method == 'GET':
+        substage = request.args.get('substage', type=str)
+        if not substage:
+            return jsonify({'error': 'substage required'}), 400
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT substage, action_id FROM substage_action_default WHERE substage = %s
+                """, (substage,))
+                row = cur.fetchone()
+                if not row:
+                    return jsonify({'substage': substage, 'action_id': None})
+                # Support both tuple and dict
+                action_id = row['action_id'] if isinstance(row, dict) else row[1]
+                return jsonify({'substage': substage, 'action_id': action_id})
+    if request.method == 'POST':
+        data = request.get_json() or {}
+        substage = data.get('substage')
+        action_id = data.get('action_id')
+        if not substage or not action_id:
+            return jsonify({'error': 'substage and action_id required'}), 400
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    # Upsert logic
+                    cur.execute("""
+                        INSERT INTO substage_action_default (substage, action_id)
+                        VALUES (%s, %s)
+                        ON CONFLICT (substage) DO UPDATE SET action_id = EXCLUDED.action_id
+                        RETURNING id
+                    """, (substage, action_id))
+                    fetch = cur.fetchone()
+                    new_id = fetch['id'] if isinstance(fetch, dict) else fetch[0] if fetch else None
+                    conn.commit()
+            return jsonify({'id': new_id, 'status': 'success'})
+        except Exception as e:
+            import traceback
+            print('DEBUG: Exception in substage_action_default:', type(e), e)
+            traceback.print_exc()
+            return jsonify({'status': 'error', 'error': f'{type(e).__name__}: {e}'}), 400
