@@ -630,3 +630,4 @@ All notable changes to this project are documented in this file.
 - Removed all SQLite code and files; project is now PostgreSQL-only as per docs
 - Updated docs/database/schema.md to document post_substage_action table
 - Ensured all schema changes are non-destructive and follow backup-first policy
+- LLM Action wizard Step 2 now loads Provider and Model dropdowns dynamically from the database, with robust loading and error handling. Improves UX and ensures DB-driven selection.
