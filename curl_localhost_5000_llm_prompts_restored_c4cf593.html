@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog CMS</title>
+    <!-- Tailwind CSS -->
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+    </style>
+    
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    <!-- Header -->
+    <header class="header-gradient shadow-lg border-b border-dark-border py-4">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+                <div class="flex items-center space-x-8 flex-1 min-w-0">
+                    <!-- Logo and Title -->
+                    <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+                        <img src="/static/images/site/brand-logo.png" alt="BlogForge Logo"
+                            class="w-10 h-10 rounded-full shadow"
+                            style="background:#23273a; width: 40px; height: 40px;" />
+                        <span class="font-bold text-white">BlogForge</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4 ml-8">
+                    <!-- Only Preview link remains, right-aligned -->
+                </div>
+                <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+                    <a href="/blog/posts"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
+                    <button
+                        class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition"
+                        id="newPostBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        New Post
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    
+    
+    
+    <div class="llm-nav flex justify-center gap-4 mb-8">
+    <a href="/llm/providers"
+        class="llm-nav-link flex items-center gap-2"
+        title="Provider Management">
+        <i class="fa-solid fa-server icon text-[#fbbf24]"></i>
+        <span>Providers</span>
+    </a>
+    <a href="/llm/models"
+        class="llm-nav-link flex items-center gap-2"
+        title="Model Management">
+        <i class="fa-solid fa-cubes icon text-[#fbbf24]"></i>
+        <span>Models</span>
+    </a>
+    <a href="/llm/prompts"
+        class="llm-nav-link flex items-center gap-2 active"
+        title="Prompt Templates">
+        <i class="fa-solid fa-scroll icon text-[#fbbf24]"></i>
+        <span>Prompts</span>
+    </a>
+    <a href="/llm/actions"
+        class="llm-nav-link flex items-center gap-2"
+        title="Actions & Tasks">
+        <i class="fa-solid fa-bolt icon text-[#fbbf24]"></i>
+        <span>Actions</span>
+    </a>
+    <a href="/llm/logs"
+        class="llm-nav-link flex items-center gap-2"
+        title="Interaction Logs">
+        <i class="fa-solid fa-list icon text-[#fbbf24]"></i>
+        <span>Logs</span>
+    </a>
+    <a href="/llm/settings"
+        class="llm-nav-link flex items-center gap-2"
+        title="Settings">
+        <i class="fa-solid fa-gear icon text-[#fbbf24]"></i>
+        <span>Settings</span>
+    </a>
+</div>
+<style>
+    .llm-nav-link.active {
+        color: #38bdf8 !important;
+    }
+
+    .llm-nav-link {
+        color: #e0e0e0;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        transition: background 0.2s, color 0.2s;
+        text-decoration: none;
+    }
+
+    .llm-nav-link:hover {
+        background: rgba(99, 102, 241, 0.08);
+        color: #a5b4fc;
+    }
+
+    .llm-action-btn {
+        background: linear-gradient(90deg, #6366f1 0%, #38bdf8 100%);
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(56, 189, 248, 0.10);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+    }
+
+    .llm-action-btn:hover {
+        background: linear-gradient(90deg, #38bdf8 0%, #6366f1 100%);
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.18);
+        color: #fff;
+    }
+</style>
+    
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+<style>
+    .prompt-type {
+        display: inline-block;
+        padding: 0.25em 0.75em;
+        border-radius: 9999px;
+        font-size: 0.95em;
+        font-weight: 600;
+        background: #6366f1;
+        color: #fff;
+    }
+
+    .action-btn {
+        @apply text-indigo-400 hover:text-indigo-200 px-2;
+    }
+
+    .action-btn[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .modal-bg {
+        background: rgba(24, 28, 42, 0.85);
+    }
+
+    .tab-btn {
+        @apply px-4 py-2 rounded-t-lg font-semibold focus:outline-none;
+        background: #23263a;
+        color: #a5b4fc;
+        border: none;
+        margin-right: 0.5rem;
+    }
+
+    .tab-btn.active {
+        background: #6366f1;
+        color: #fff;
+    }
+</style>
+<div class="container mx-auto py-10 px-4">
+    <div class="flex gap-4 mb-6">
+        <button class="tab-btn active" id="tabPromptsBtn" type="button">Prompt Templates</button>
+        <button class="tab-btn" id="tabPartsBtn" type="button">Prompt Parts</button>
+    </div>
+    <div id="tabPrompts" class="tab-content">
+        <div class="flex justify-between items-center mb-8">
+            <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+                <i class="fa-solid fa-scroll"></i> LLM Prompt Templates
+            </div>
+            <button id="addPromptBtn"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> New Prompt
+            </button>
+        </div>
+        <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead>
+                    <tr class="text-indigo-200 border-b border-dark-border">
+                        <th class="py-2 px-3">Name</th>
+                        <th class="py-2 px-3">Type</th>
+                        <th class="py-2 px-3">Usage</th>
+                        <th class="py-2 px-3">Last Updated</th>
+                        <th class="py-2 px-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3 font-semibold text-white">Basic Idea to Idea Scope</td>
+                        <td class="py-2 px-3">Expand Basic Idea to Idea Scope</td>
+                        <td class="py-2 px-3">You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article — this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.</td>
+                        <td class="py-2 px-3">2025-05-21</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3 font-semibold text-white">Devise image concept</td>
+                        <td class="py-2 px-3">Devise image concept</td>
+                        <td class="py-2 px-3">You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article.
+
+You will be given:
+	•	The article title, which is: {{provisional_title}}
+
+	•	A summary of the article’s overall scope and themes, which are: {{idea_scope}}
+
+	•	A list of all section titles in the article, which are: 
+{{section_order}}
+
+	•	The specific section title that this will illustrate, which is: {{section_heading}}
+
+	•	The full text of that section, which is: 
+{{first_draft}}
+
+--
+Your task is to produce a single image concept suitable for illustration. The image should be:
+	•	Rooted in Scottish history, culture, and environment
+	•	Distinct from concepts that might be used for other sections
+	•	Visually compelling and engaging for a general audience
+	•	Suitable for use as a featured image or embedded illustration
+
+Format your response as follows:
+
+Section Illustration Prompt:
+&lt;Detailed, descriptive scene for the image generation model, 1-3 sentences. Focus on visual composition, mood, setting, time period, and any symbolic elements relevant to this section’s theme. Use clear and evocative language suitable for stable diffusion or similar tools. Avoid repetition of other sections’ themes.&gt;</td>
+                        <td class="py-2 px-3">2025-05-21</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3 font-semibold text-white">Interesting facts</td>
+                        <td class="py-2 px-3">Generate Interesting facts</td>
+                        <td class="py-2 px-3">You are a researcher specialising in finding curious facts for blog articles for specialist audiences. You have been commissioned to assist with an article about {{basic_idea}} which will examine in depth these ideas {{idea_scope}}.
+
+Please do a deep dive into this topic and provide a list of up to ten unusual and interesting facts that people might not know, to make this article worth reading. 
+
+Return only a JSON array of paragraph titles, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.”</td>
+                        <td class="py-2 px-3">2025-05-21</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3 font-semibold text-white">Allocate Facts to Sections</td>
+                        <td class="py-2 px-3">Allocate each fact to its most relevant section</td>
+                        <td class="py-2 px-3">You are a researcher specialising in sub-editing blog articles for specialist audiences. You have been commissioned to assist with a Scottish-interest article about {{basic_idea}} which will examine in depth these ideas: {{idea_scope}}.
+
+You are given:
+- A list of section headings for a blog post about {{basic_idea}}, with the blog title &#34;{{provisional_title}}&#34;, which discusses the following ideas and themes: {{idea_scope}}.
+
+You must now distribute (to the most appropriate section) each fact from the list of interesting facts in JSON array format, given below.
+
+Your task:
+- Allocate each fact to the most appropriate section heading, using your best judgment.
+- Each fact must be assigned to exactly one section (no duplicates, no omissions).
+- Output a single JSON object where each key is a section heading from {{section_order}}, and the value is an array of facts allocated to that section (can be empty if no facts fit).
+- Do not invent or modify facts or headings.
+- The output must be valid JSON, with all facts used exactly once.
+
+Example output:
+{
+  &#34;Introduction&#34;: [&#34;Fact 1&#34;],
+  &#34;History&#34;: [&#34;Fact 2&#34;, &#34;Fact 3&#34;],
+  &#34;Modern Usage&#34;: []
+}
+
+Begin.
+
+Section Headings:
+{{section_order}}
+
+Interesting Facts:
+{{interesting_facts}}
+
+Output:</td>
+                        <td class="py-2 px-3">2025-05-21</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3 font-semibold text-white">Allocate Ideas to Sections</td>
+                        <td class="py-2 px-3">Allocate each idea to its most relevant section</td>
+                        <td class="py-2 px-3">You are a researcher specialising in sub-editing blog articles for specialist audiences. You have been commissioned to assist with a Scottish-interest article about {{basic_idea}} which will examine in depth these ideas.
+
+You are given:
+- A list of section headings for a blog post about {{basic_idea}}, with the blog title &#34;{{provisional_title}}&#34;, which discusses the ideas and themes listed below.
+
+You must now distribute (to the most appropriate section) each idea from the list of ideas in JSON array format, given below.
+
+Your task:
+- Allocate each idea to the most appropriate section heading, using your best judgment.
+- Each idea must be assigned to exactly one section (no duplicates, no omissions).
+- Output a single JSON object where each key is a section heading from {{section_order}}, and the value is an array of ideas allocated to that section (can be empty if no ideas fit).
+- Do not invent or modify ideas or headings.
+- The output must be valid JSON, with all ideas used exactly once.
+
+Example output:
+{
+  &#34;Introduction&#34;: [&#34;idea 1&#34;],
+  &#34;History&#34;: [&#34;idea 2&#34;, &#34;idea 3&#34;],
+  &#34;Modern Usage&#34;: []
+}
+
+Begin.
+
+Section Headings:
+{{section_order}}
+
+Ideas:
+{{idea_scope}}
+
+Output:</td>
+                        <td class="py-2 px-3">2025-05-21</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3 font-semibold text-white">Catchy title</td>
+                        <td class="py-2 px-3">Expand the basic idea and scope into an engaging title</td>
+                        <td class="py-2 px-3">You are a professional copywriter and editor specializing in digital publishing and historical blogging.
+
+Your task is to generate one catchy and engaging blog title suitable for a wide audience from the ideas provided below. This is especially those interested in Scottish culture and heritage. The title should be compelling, relevant to the content, and appropriate for web publication.
+
+Return only the title with no explanation, commentary, or additional text. Do NOT enclose it in quote marks.
+
+
+Your topic is the following:
+	1.	The basic idea of: {{basic_idea}}
+	2.	Theses topics and angles:
+{{idea_scope}}</td>
+                        <td class="py-2 px-3">2025-05-21</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3 font-semibold text-white">Structuring section headings</td>
+                        <td class="py-2 px-3">Thematic section</td>
+                        <td class="py-2 px-3">You are an experienced editor and content strategist. Your task is to analyze the blog post title and content below intended for a blog article on Scottish culture and heritage.
+Group and organize the content into a logical structure by identifying distinct thematic sections.
+Return only a JSON array of paragraph titles that represent the structure of the final article.
+Each title should be concise, descriptive, and reflect a key theme from the text.
+Do not include any explanation, commentary, or full text of the paragraphs. Return only a JSON array of paragraph titles, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.
+---
+
+Title: {{provisional_title}}
+
+Scope of ideas:
+{{idea_scope}}
+
+Some interesting facts: </td>
+                        <td class="py-2 px-3">2025-05-21</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3 font-semibold text-white">Author Section first draft</td>
+                        <td class="py-2 px-3"></td>
+                        <td class="py-2 px-3">You are a professional historical writer specializing in Scottish culture and heritage.
+Your task is to write 2–3 well-written paragraphs for a blog article based on a specific section. IMPORTANT: you must write very specifically only about the sub-themes of this section heading, and AVOID duplicating or overlapping with topics in other sections. Before starting to write anything, consider exactly how this section DISTINCTLY DIFFERS from other sections and focus only on those ideas.
+
+You are given:
+	•	The overall subject of the blog post, which is: {{basic_idea}}
+
+	•	General background context about the topic, describing the range of content the full blog will cover, which is: {{idea_scope}}
+
+	•	The current section title to write under, which is: {{section_heading}}
+
+	•	Concepts and angles that should guide this section (but that you may also add to and expand) which are: {{ideas_to_include}}
+
+	•	Some interesting factual points that MUST be included in this section (do not omit any!) which are: {{facts_to_include}}
+
+Write clear, informative, and engaging text that suits a public-facing blog while respecting historical accuracy. Use only UK-British spellings and idioms, avoiding Americanisms (eg colour not color, and &#39;s&#39; not &#39;z&#39; in words like authorise). 
+Ensure that all the ideas and facts mentioned above are incorporated meaningfully into the text.
+Do not include any commentary, headings, titles, or formatting — return only the body paragraphs in plain text.</td>
+                        <td class="py-2 px-3">2025-05-21</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="tabParts" class="tab-content" style="display:none;">
+        <div class="flex justify-between items-center mb-8">
+            <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+                <i class="fa-solid fa-layer-group"></i> LLM Prompt Parts
+            </div>
+        </div>
+        <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead>
+                    <tr class="text-indigo-200 border-b border-dark-border">
+                        <th class="py-2 px-3">ID</th>
+                        <th class="py-2 px-3">Name</th>
+                        <th class="py-2 px-3">Type</th>
+                        <th class="py-2 px-3">Content</th>
+                        <th class="py-2 px-3">Description</th>
+                        <th class="py-2 px-3">Tags</th>
+                        <th class="py-2 px-3">Order</th>
+                        <th class="py-2 px-3">Action ID</th>
+                        <th class="py-2 px-3">Created</th>
+                        <th class="py-2 px-3">Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3">2</td>
+                        <td class="py-2 px-3">Poem</td>
+                        <td class="py-2 px-3">assistant</td>
+                        <td class="py-2 px-3 text-xs">write a poem</td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">[]</td>
+                        <td class="py-2 px-3">0</td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">2025-05-25 16:42:03.161838</td>
+                        <td class="py-2 px-3">2025-05-25 17:41:29.851298</td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3">3</td>
+                        <td class="py-2 px-3">Very short story</td>
+                        <td class="py-2 px-3">assistant</td>
+                        <td class="py-2 px-3 text-xs">Write a very short story with a surprise twist</td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">0</td>
+                        <td class="py-2 px-3">20</td>
+                        <td class="py-2 px-3">2025-05-25 17:28:45.174568</td>
+                        <td class="py-2 px-3">2025-05-25 17:28:45.174568</td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3">6</td>
+                        <td class="py-2 px-3">Hootsy</td>
+                        <td class="py-2 px-3">user</td>
+                        <td class="py-2 px-3 text-xs">Make it hootsy Scots</td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">[]</td>
+                        <td class="py-2 px-3">0</td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">2025-05-25 18:11:26.307245</td>
+                        <td class="py-2 px-3">2025-05-25 18:11:26.307245</td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3">7</td>
+                        <td class="py-2 px-3">Historical researcher</td>
+                        <td class="py-2 px-3">system</td>
+                        <td class="py-2 px-3 text-xs">You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage.</td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">[]</td>
+                        <td class="py-2 px-3">0</td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">2025-05-25 19:42:51.572525</td>
+                        <td class="py-2 px-3">2025-05-25 19:42:51.572525</td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3">8</td>
+                        <td class="py-2 px-3">Creative visualiser</td>
+                        <td class="py-2 px-3">system</td>
+                        <td class="py-2 px-3 text-xs">You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. </td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">[]</td>
+                        <td class="py-2 px-3">0</td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">2025-05-25 20:16:54.255069</td>
+                        <td class="py-2 px-3">2025-05-25 20:16:54.255069</td>
+                    </tr>
+                    
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3">4</td>
+                        <td class="py-2 px-3">Scottish style</td>
+                        <td class="py-2 px-3">assistant</td>
+                        <td class="py-2 px-3 text-xs">The style should have a traditional Scottish style</td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">[]</td>
+                        <td class="py-2 px-3">4</td>
+                        <td class="py-2 px-3">None</td>
+                        <td class="py-2 px-3">2025-05-25 17:32:28.035070</td>
+                        <td class="py-2 px-3">2025-05-25 17:32:28.035070</td>
+                    </tr>
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Add Prompt Modal (placeholder) -->
+    <div id="addPromptModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+            <button id="closeAddPrompt" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-plus"></i>
+                New Prompt Template</div>
+            <form>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Prompt Name</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. Summarize Post" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Type</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
+                        <option>Summary</option>
+                        <option>SEO</option>
+                        <option>Tags</option>
+                        <option>Custom</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Prompt Template</label>
+                    <textarea class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white" rows="4"
+                        placeholder="Enter prompt template..."></textarea>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="submit"
+                        class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Prompt Preview Modal (placeholder) -->
+    <div id="promptPreviewModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <button id="closePromptPreview" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-eye"></i>
+                Prompt Preview</div>
+            <div class="mb-4 text-dark-accent">(Prompt preview will appear here)</div>
+            <div class="flex justify-end">
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabPromptsBtn = document.getElementById('tabPromptsBtn');
+        const tabPartsBtn = document.getElementById('tabPartsBtn');
+        const tabPrompts = document.getElementById('tabPrompts');
+        const tabParts = document.getElementById('tabParts');
+        tabPromptsBtn.onclick = function () {
+            tabPromptsBtn.classList.add('active');
+            tabPartsBtn.classList.remove('active');
+            tabPrompts.style.display = '';
+            tabParts.style.display = 'none';
+        };
+        tabPartsBtn.onclick = function () {
+            tabPartsBtn.classList.add('active');
+            tabPromptsBtn.classList.remove('active');
+            tabPrompts.style.display = 'none';
+            tabParts.style.display = '';
+        };
+    });
+</script>
+
+    </main>
+    
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">
+                &copy; 2025 Blog CMS. All rights reserved. |
+                <a href="/docs" class="text-indigo-300 hover:text-indigo-100 underline ml-2">Docs</a>
+            </p>
+        </div>
+    </footer>
+
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var newPostBtn = document.getElementById('newPostBtn');
+            if (newPostBtn) {
+                newPostBtn.addEventListener('click', async () => {
+                    const basicIdea = prompt('Enter your basic idea for the post:');
+                    if (!basicIdea) return;
+                    try {
+                        const response = await fetch("/blog/new", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ basic_idea: basicIdea })
+                        });
+                        const data = await response.json();
+                        if (response.ok && data.id) {
+                            window.location.href = `/workflow/idea/?post_id=${data.id}`;
+                        } else {
+                            alert(data.error || 'Failed to create post');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to create post');
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <!-- Mermaid.js for diagrams in markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.mermaid) {
+                setTimeout(function () {
+                    mermaid.initialize({ startOnLoad: false });
+                    document.querySelectorAll('pre > code.language-mermaid').forEach(function (block, i) {
+                        var parent = block.parentElement;
+                        var code = block.innerText;
+                        var d = document.createElement('div');
+                        d.className = 'mermaid';
+                        d.innerText = code;
+                        parent.replaceWith(d);
+                    });
+                    try {
+                        mermaid.run();
+                    } catch (e) {
+                        console.error('Mermaid render error:', e);
+                        document.querySelectorAll('.mermaid').forEach(function (el) {
+                            el.innerHTML = '<div style="color:#f87171;background:#23273a;padding:1em;border-radius:.5em;">Mermaid render error:<br>' + e.message + '</div>';
+                        });
+                    }
+                }, 100);
+            }
+        });
+    </script>
+</body>
+
+</html>
