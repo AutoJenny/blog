@@ -39,10 +39,10 @@ Track the plan and rationale for refactoring LLM prompt handling to support modu
     - Prompt assembly and execution
     - History logging
 6. **[COMPLETED]** Refactor all API endpoints (app/llm/routes.py, app/api/llm.py) to use direct SQL for all DB operations
-7. **[IN PROGRESS]** Update all Jinja2 templates and JS to use the new API endpoints and data structures
+7. **[COMPLETED]** Update all Jinja2 templates and JS to use the new API endpoints and data structures
 8. **[COMPLETED]** Remove all ORM-based relationships, queries, and session management
-9. **[IN PROGRESS]** Test all endpoints and UI flows with curl and browser to ensure no regressions
-10. **[IN PROGRESS]** Update documentation and diagrams to reflect direct SQL usage and new patterns
+9. **[COMPLETED]** Test all endpoints and UI flows with curl and browser to ensure no regressions
+10. **[COMPLETED]** Update documentation and diagrams to reflect direct SQL usage and new patterns
 
 ## API Refactor Progress
 - [x] Refactor /api/v1/llm/prompt_parts and /prompt_parts/<id> endpoints to use direct SQL
@@ -64,7 +64,7 @@ Track the plan and rationale for refactoring LLM prompt handling to support modu
 
 ## Status (2025-05-25)
 - All backend and API endpoints for LLM modular prompt management are now direct SQL (psycopg2) and ORM-free.
-- UI for Action Details and modular prompt part management is being finalized and tested.
+- UI for Action Details and modular prompt part management is complete, robust, and tested.
 - Documentation and change logs updated to reflect migration completion.
 
 ## Restore Progress (2025-05-23)
@@ -83,7 +83,7 @@ Track the plan and rationale for refactoring LLM prompt handling to support modu
 - [x] Refactor /api/v1/llm/actions and linking endpoints to use direct SQL
 - [x] Test all LLM endpoints with curl to ensure correct behavior
 - [x] Update documentation and /docs/CHANGES.log after each major step
-- [ ] Continue UI wiring for modular prompt part management
+- [x] Continue UI wiring for modular prompt part management
 
 ## Next
-- Scaffold and wire up Action Details UI to display and manage modular prompt parts, input/output fields, and test execution. 
+- All LLM modular prompt features and UI are now robust, ORM-free, and fully tested. Continue with advanced features and documentation as needed. 
