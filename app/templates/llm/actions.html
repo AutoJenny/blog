@@ -333,7 +333,8 @@
             </ol>
             <div class="text-sm text-indigo-200">Tip: Use <b>Prompt Parts</b> to break your prompt into logical steps
                 (system, user, assistant, etc.) for better LLM results. You can use variables like
-                <code>{{input}}</code> or <code>{{idea_seed}}</code> in your prompt parts.</div>
+                <code>{{input}}</code> or <code>{{idea_seed}}</code> in your prompt parts.
+            </div>
         </div>
         <div class="admin-card">
             <div class="flex items-center justify-between mb-6">
@@ -387,49 +388,134 @@
         </div>
     </div>
 
-    <!-- New/Edit Action Modal -->
-    <div id="actionModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="modalActionTitle">New Action</h2>
-                <button type="button" class="modal-close" id="modalActionCloseBtn">×</button>
+    <!-- Wizard Modal for Action Creation/Editing -->
+    <div id="actionWizardModal" class="modal">
+        <div class="modal-content" style="max-width:600px;">
+            <div id="wizardProgress" class="mb-4 flex items-center justify-between text-indigo-200 text-sm">
+                <span id="wizardStep1" class="wizard-step">1. Basic Info</span>
+                <span id="wizardStep2" class="wizard-step">2. Model</span>
+                <span id="wizardStep3" class="wizard-step">3. Prompt Parts</span>
+                <span id="wizardStep4" class="wizard-step">4. Test & Save</span>
             </div>
-            <form id="actionForm">
-                <input type="hidden" id="actionId" name="id">
-                <div class="form-group">
-                    <label class="form-label" for="actionFieldName">Field Name</label>
-                    <input type="text" id="actionFieldName" name="field_name" class="form-input" required>
+            <form id="actionWizardForm">
+                <!-- Step 1: Basic Info -->
+                <div class="wizard-section" id="wizardSection1">
+                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-info-circle"></i>
+                        Step 1: Basic Info</h2>
+                    <div class="mb-4 text-indigo-200">Give your action a name and (optionally) a description. This helps
+                        you find it later.</div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizFieldName">Field Name <i
+                                class="fa-solid fa-circle-question text-indigo-300"
+                                title="The field this action will fill, e.g. 'summary'."></i></label>
+                        <input type="text" id="wizFieldName" name="field_name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizDescription">Description <i
+                                class="fa-solid fa-circle-question text-indigo-300"
+                                title="Describe what this action does."></i></label>
+                        <input type="text" id="wizDescription" name="description" class="form-input">
+                    </div>
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button type="button" class="btn btn-primary" id="wizNext1">Next →</button>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="actionProvider">LLM Provider</label>
-                    <select id="actionProvider" name="provider_id" class="form-input" required></select>
+                <!-- Step 2: Model Settings -->
+                <div class="wizard-section" id="wizardSection2" style="display:none;">
+                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-robot"></i> Step 2:
+                        Model Settings</h2>
+                    <div class="mb-4 text-indigo-200">Choose the AI model and prompt template. Adjust creativity and
+                        output length as needed.</div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizProvider">LLM Provider</label>
+                        <select id="wizProvider" name="provider_id" class="form-input" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizModel">LLM Model</label>
+                        <select id="wizModel" name="llm_model" class="form-input" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizPromptTemplateId">Prompt Template</label>
+                        <select id="wizPromptTemplateId" name="prompt_template_id" class="form-input" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizTemperature">Temperature <i
+                                class="fa-solid fa-circle-question text-indigo-300"
+                                title="Higher = more creative, lower = more predictable."></i></label>
+                        <input type="number" id="wizTemperature" name="temperature" class="form-input" min="0" max="2"
+                            step="0.1" value="0.7">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizMaxTokens">Max Tokens <i
+                                class="fa-solid fa-circle-question text-indigo-300"
+                                title="Maximum length of the AI's response."></i></label>
+                        <input type="number" id="wizMaxTokens" name="max_tokens" class="form-input" min="1" max="4096"
+                            value="1000">
+                    </div>
+                    <div class="flex justify-between gap-4 mt-6">
+                        <button type="button" class="btn btn-secondary" id="wizBack2">← Back</button>
+                        <button type="button" class="btn btn-primary" id="wizNext2">Next →</button>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="actionModel">LLM Model</label>
-                    <select id="actionModel" name="llm_model" class="form-input" required></select>
+                <!-- Step 3: Prompt Parts -->
+                <div class="wizard-section" id="wizardSection3" style="display:none;">
+                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i>
+                        Step 3: Prompt Parts</h2>
+                    <div class="mb-4 text-indigo-200">Build your prompt from multiple parts. Each part is a message to
+                        the AI. Add them in the order you want. Use variables like <code>{{input}}</code> or
+                        <code>{{idea_seed}}</code>.
+                    </div>
+                    <div id="wizPromptPartsList" class="mb-4"></div>
+                    <button type="button" class="btn btn-secondary mb-2" id="wizAddPromptPartBtn">+ Add Prompt
+                        Part</button>
+                    <div id="wizPromptPartForm" style="display:none;" class="bg-dark-card rounded p-4 mb-4">
+                        <h4 class="font-bold mb-2">Add/Edit Prompt Part</h4>
+                        <div class="form-group">
+                            <label class="form-label">Type</label>
+                            <select id="wizPromptPartType" class="form-input">
+                                <option value="system">System</option>
+                                <option value="user">User</option>
+                                <option value="assistant">Assistant</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Content</label>
+                            <textarea id="wizPromptPartContent" class="form-textarea" rows="3"></textarea>
+                        </div>
+                        <div class="flex justify-end gap-4">
+                            <button type="button" class="btn btn-secondary" id="wizCancelPromptPartBtn">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="wizSavePromptPartBtn">Save Part</button>
+                        </div>
+                    </div>
+                    <div class="bg-dark-card rounded p-4 mt-4 mb-2">
+                        <h4 class="font-bold mb-1 flex items-center gap-2"><i class="fa-solid fa-eye"></i> Prompt
+                            Preview</h4>
+                        <div id="wizPromptPreview" class="whitespace-pre-line text-indigo-100 text-sm">{ ... message
+                            preview ... }</div>
+                        <div class="text-xs text-indigo-200 mt-1">This is how your full prompt will look to the AI, with
+                            variables replaced at runtime.</div>
+                    </div>
+                    <div class="flex justify-between gap-4 mt-6">
+                        <button type="button" class="btn btn-secondary" id="wizBack3">← Back</button>
+                        <button type="button" class="btn btn-primary" id="wizNext3">Next →</button>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="actionPromptTemplateId">Prompt Template</label>
-                    <select id="actionPromptTemplateId" name="prompt_template_id" class="form-input" required></select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="actionPromptTemplate">Prompt Template Text (preview only)</label>
-                    <textarea id="actionPromptTemplate" name="prompt_template" class="form-textarea"
-                        readonly></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="actionTemperature">Temperature</label>
-                    <input type="number" id="actionTemperature" name="temperature" class="form-input" min="0" max="2"
-                        step="0.1" value="0.7">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="actionMaxTokens">Max Tokens</label>
-                    <input type="number" id="actionMaxTokens" name="max_tokens" class="form-input" min="1" max="4096"
-                        value="1000">
-                </div>
-                <div class="flex justify-end gap-4">
-                    <button type="button" class="btn btn-secondary" id="cancelActionBtn">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Action</button>
+                <!-- Step 4: Test & Save -->
+                <div class="wizard-section" id="wizardSection4" style="display:none;">
+                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-vial"></i> Step 4:
+                        Test & Save</h2>
+                    <div class="mb-4 text-indigo-200">Try out your action! Enter some sample input and see what the AI
+                        generates. If you're happy, save your action.</div>
+                    <div class="form-group">
+                        <label class="form-label">Test Input</label>
+                        <textarea id="wizTestInput" class="form-textarea" rows="2"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary mb-2" id="wizRunTestBtn">Run Test</button>
+                    <div id="wizTestOutput" class="bg-dark-card rounded p-4 mt-2 text-indigo-100 text-sm"></div>
+                    <div class="flex justify-between gap-4 mt-6">
+                        <button type="button" class="btn btn-secondary" id="wizBack4">← Back</button>
+                        <button type="submit" class="btn btn-primary">Save Action</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -588,128 +674,126 @@
                     }
                 });
             }
-            // Modal logic
-            const actionModal = document.getElementById('actionModal');
+            // Wizard modal logic
+            const actionWizardModal = document.getElementById('actionWizardModal');
             const newActionBtn = document.getElementById('newActionBtn');
-            const modalActionCloseBtn = document.getElementById('modalActionCloseBtn');
-            const cancelActionBtn = document.getElementById('cancelActionBtn');
-            const actionForm = document.getElementById('actionForm');
-            newActionBtn.addEventListener('click', function () {
-                document.getElementById('modalActionTitle').textContent = 'New Action';
-                actionForm.reset();
-                document.getElementById('actionId').value = '';
-                loadProviders().then(() => {
-                    const providerId = document.getElementById('actionProvider').value;
-                    loadModels(providerId);
-                });
-                loadPromptTemplates();
-                actionModal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            });
-            document.getElementById('actionProvider').addEventListener('change', function () {
-                loadModels(this.value);
-            });
-            modalActionCloseBtn.addEventListener('click', function () {
-                actionModal.classList.remove('active');
-                document.body.style.overflow = '';
-            });
-            cancelActionBtn.addEventListener('click', function () {
-                actionModal.classList.remove('active');
-                document.body.style.overflow = '';
-            });
-            // Edit Action
-            document.querySelectorAll('.edit-action-btn').forEach(btn => {
-                btn.addEventListener('click', async function (e) {
-                    e.stopPropagation();
-                    const id = btn.dataset.id;
-                    const response = await fetch(`/api/v1/llm/actions/${id}`);
-                    if (!response.ok) return alert('Failed to load action');
-                    const data = await response.json();
-                    document.getElementById('modalActionTitle').textContent = 'Edit Action';
-                    document.getElementById('actionId').value = data.action.id;
-                    document.getElementById('actionFieldName').value = data.action.field_name;
-                    // Find model and provider
-                    const modelName = data.action.llm_model;
+            const wizProvider = document.getElementById('wizProvider');
+            const wizModel = document.getElementById('wizModel');
+            const wizPromptTemplateId = document.getElementById('wizPromptTemplateId');
+
+            async function loadWizardProviders(selectedProviderId) {
+                wizProvider.innerHTML = '<option value="">Loading...</option>';
+                try {
+                    const resp = await fetch('/api/v1/llm/providers');
+                    const providers = await resp.json();
+                    wizProvider.innerHTML = providers.map(p => `<option value="${p.id}" ${selectedProviderId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+                } catch (e) {
+                    wizProvider.innerHTML = '<option value="">Failed to load providers</option>';
+                }
+            }
+            async function loadWizardModels(providerId, selectedModelName) {
+                wizModel.innerHTML = '<option value="">Loading...</option>';
+                try {
                     const resp = await fetch('/api/v1/llm/models');
                     const models = await resp.json();
-                    const model = models.find(m => m.name === modelName);
-                    const providerId = model ? model.provider_id : '';
-                    await loadProviders(providerId);
-                    await loadModels(providerId, modelName);
-                    document.getElementById('actionProvider').value = providerId;
-                    document.getElementById('actionModel').value = modelName;
-                    // Load prompt templates and set selected
-                    await loadPromptTemplates(data.action.prompt_template_id);
-                    document.getElementById('actionPromptTemplateId').value = data.action.prompt_template_id;
-                    document.getElementById('actionPromptTemplate').value = data.action.prompt_template;
-                    document.getElementById('actionTemperature').value = data.action.temperature;
-                    document.getElementById('actionMaxTokens').value = data.action.max_tokens;
-                    actionModal.classList.add('active');
-                    document.body.style.overflow = 'hidden';
-                });
+                    const filtered = models.filter(m => m.provider_id == providerId);
+                    wizModel.innerHTML = filtered.map(m => `<option value="${m.name}" ${selectedModelName == m.name ? 'selected' : ''}>${m.name} (${m.description || ''})</option>`).join('');
+                } catch (e) {
+                    wizModel.innerHTML = '<option value="">Failed to load models</option>';
+                }
+            }
+            async function loadWizardPromptTemplates(selectedId) {
+                wizPromptTemplateId.innerHTML = '<option value="">Loading...</option>';
+                try {
+                    const resp = await fetch('/api/v1/llm/prompts');
+                    const prompts = await resp.json();
+                    wizPromptTemplateId.innerHTML = prompts.map(p => `<option value="${p.id}" ${selectedId == p.id ? 'selected' : ''}>${p.name} (${p.description || ''})</option>`).join('');
+                } catch (e) {
+                    wizPromptTemplateId.innerHTML = '<option value="">Failed to load templates</option>';
+                }
+            }
+            // When wizard opens, load providers and templates
+            newActionBtn.addEventListener('click', function () {
+                resetWizard();
+                loadWizardProviders();
+                loadWizardPromptTemplates();
+                actionWizardModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
             });
-            // Delete Action
-            document.querySelectorAll('.delete-action-btn').forEach(btn => {
-                btn.addEventListener('click', async function (e) {
-                    e.stopPropagation();
-                    if (!confirm('Are you sure you want to delete this action?')) return;
-                    const id = btn.dataset.id;
-                    const response = await fetch(`/api/v1/llm/actions/${id}`, { method: 'DELETE' });
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        alert('Failed to delete action');
-                    }
-                });
+            // When provider changes, load models
+            wizProvider.addEventListener('change', function () {
+                loadWizardModels(this.value);
             });
-            // Form submit
-            actionForm.addEventListener('submit', async function (e) {
-                e.preventDefault();
-                const actionId = document.getElementById('actionId').value;
-                const method = actionId ? 'PUT' : 'POST';
-                const url = actionId ? `/api/v1/llm/actions/${actionId}` : '/api/v1/llm/actions';
-                // Always collect all fields, even if empty
-                const field_name = document.getElementById('actionFieldName').value || '';
-                const llm_model = document.getElementById('actionModel').value || '';
-                const prompt_template_id = parseInt(document.getElementById('actionPromptTemplateId').value) || null;
-                const temperature = parseFloat(document.getElementById('actionTemperature').value) || 0.7;
-                const max_tokens = parseInt(document.getElementById('actionMaxTokens').value) || 1000;
-                if (!prompt_template_id) {
-                    alert('Please select a prompt template.');
+            // Wizard steps
+            const wizardSections = [
+                document.getElementById('wizardSection1'),
+                document.getElementById('wizardSection2'),
+                document.getElementById('wizardSection3'),
+                document.getElementById('wizardSection4'),
+            ];
+            const wizardSteps = [
+                document.getElementById('wizardStep1'),
+                document.getElementById('wizardStep2'),
+                document.getElementById('wizardStep3'),
+                document.getElementById('wizardStep4'),
+            ];
+            let currentWizardStep = 0;
+            function showWizardStep(idx) {
+                wizardSections.forEach((sec, i) => sec.style.display = i === idx ? '' : 'none');
+                wizardSteps.forEach((step, i) => step.style.fontWeight = i === idx ? 'bold' : 'normal');
+                currentWizardStep = idx;
+            }
+            function resetWizard() {
+                document.getElementById('actionWizardForm').reset();
+                showWizardStep(0);
+            }
+            // Step 1 → 2
+            const wizNext1 = document.getElementById('wizNext1');
+            wizNext1.onclick = function () {
+                // Validate field name
+                if (!document.getElementById('wizFieldName').value.trim()) {
+                    alert('Please enter a field name.');
                     return;
                 }
-                // Defensive: always send all required fields
-                const payload = {
-                    field_name,
-                    llm_model,
-                    prompt_template_id,
-                    temperature,
-                    max_tokens
-                };
-                try {
-                    const response = await fetch(url, {
-                        method: method,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        const err = await response.json().catch(() => ({}));
-                        throw new Error('Failed to save action: ' + (err.error || response.statusText));
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error saving action: ' + (error.message || error));
+                showWizardStep(1);
+            };
+            // Step 2 ← 1, → 3
+            const wizBack2 = document.getElementById('wizBack2');
+            const wizNext2 = document.getElementById('wizNext2');
+            wizBack2.onclick = function () { showWizardStep(0); };
+            wizNext2.onclick = function () {
+                // Validate model and template
+                if (!document.getElementById('wizProvider').value || !document.getElementById('wizModel').value || !document.getElementById('wizPromptTemplateId').value) {
+                    alert('Please select a provider, model, and prompt template.');
+                    return;
                 }
-            });
-            // Close modal when clicking outside
-            actionModal.addEventListener('click', function (e) {
+                showWizardStep(2);
+            };
+            // Step 3 ← 2, → 4
+            const wizBack3 = document.getElementById('wizBack3');
+            const wizNext3 = document.getElementById('wizNext3');
+            wizBack3.onclick = function () { showWizardStep(1); };
+            wizNext3.onclick = function () {
+                // Validate at least one prompt part
+                if (!window.wizPromptParts || window.wizPromptParts.length === 0) {
+                    alert('Please add at least one prompt part.');
+                    return;
+                }
+                showWizardStep(3);
+            };
+            // Step 4 ← 3
+            const wizBack4 = document.getElementById('wizBack4');
+            wizBack4.onclick = function () { showWizardStep(2); };
+            // Close wizard on outside click
+            actionWizardModal.addEventListener('click', function (e) {
                 if (e.target === this) {
-                    actionModal.classList.remove('active');
+                    actionWizardModal.classList.remove('active');
                     document.body.style.overflow = '';
                 }
             });
+            // Hide old modal logic
+            const actionModal = document.getElementById('actionModal');
+            if (actionModal) actionModal.remove();
             // Prompt Parts modal open/close logic
             function closeActionDetailsModal() {
                 document.getElementById('actionDetailsModal').style.display = 'none';
