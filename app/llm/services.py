@@ -135,7 +135,7 @@ class LLMService:
             else:
                 logger.error(f"Unexpected response format from Ollama: {response_data}")
                 raise ValueError("Unexpected response format from Ollama")
-        except httpx.TimeoutError:
+        except httpx.TimeoutException:
             logger.error(f"Timeout while generating with Ollama (model: {model_name})")
             raise TimeoutError("Request to Ollama timed out")
         except httpx.HTTPError as e:

@@ -631,3 +631,5 @@ All notable changes to this project are documented in this file.
 - Updated docs/database/schema.md to document post_substage_action table
 - Ensured all schema changes are non-destructive and follow backup-first policy
 - LLM Action wizard Step 2 now loads Provider and Model dropdowns dynamically from the database, with robust loading and error handling. Improves UX and ensures DB-driven selection.
+
+[2024-06-13] Fixed AttributeError for httpx.TimeoutError (now TimeoutException) in LLMService. Also fixed bug where Ollama API URL was not set in /api/v1/llm/test endpoint, causing ValueError. Verified fix with curl: /api/v1/llm/test now returns a valid LLM response.
