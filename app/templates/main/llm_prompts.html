@@ -95,7 +95,7 @@
                     {% for prompt in prompts %}
                     <tr class="border-b border-dark-border hover:bg-indigo-950/30">
                         <td class="py-2 px-3 font-semibold text-white">{{ prompt.name }}</td>
-                        <td class="py-2 px-3">{{ prompt.description }}</td>
+                        <td class="py-2 px-3">{{ prompt.type }}</td>
                         <td class="py-2 px-3">{{ prompt.prompt_text }}</td>
                         <td class="py-2 px-3">2025-05-21</td>
                         <td class="py-2 px-3 flex gap-2">
@@ -128,7 +128,6 @@
                         <th class="py-2 px-3">Name</th>
                         <th class="py-2 px-3">Type</th>
                         <th class="py-2 px-3">Content</th>
-                        <th class="py-2 px-3">Description</th>
                         <th class="py-2 px-3">Order</th>
                         <th class="py-2 px-3">Action ID</th>
                         <th class="py-2 px-3">Created</th>
@@ -143,7 +142,6 @@
                         <td class="py-2 px-3">{{ part.name }}</td>
                         <td class="py-2 px-3">{{ part.type }}</td>
                         <td class="py-2 px-3 text-xs">{{ part.content }}</td>
-                        <td class="py-2 px-3">{{ part.description }}</td>
                         <td class="py-2 px-3">{{ part.order }}</td>
                         <td class="py-2 px-3">{{ part.action_id }}</td>
                         <td class="py-2 px-3">{{ part.created_at }}</td>
@@ -239,12 +237,6 @@
                         placeholder="Enter prompt part content..." required></textarea>
                 </div>
                 <div class="mb-4">
-                    <label class="block text-dark-accent mb-1">Description</label>
-                    <input type="text" id="promptPartDescription"
-                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
-                        placeholder="Short description (optional)" />
-                </div>
-                <div class="mb-4">
                     <label class="block text-dark-accent mb-1">Order</label>
                     <input type="number" id="promptPartOrder"
                         class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
@@ -304,7 +296,6 @@
                         document.getElementById('promptPartName').value = part.name || '';
                         document.getElementById('promptPartType').value = part.type || 'system';
                         document.getElementById('promptPartContent').value = part.content || '';
-                        document.getElementById('promptPartDescription').value = part.description || '';
                         document.getElementById('promptPartOrder').value = part.order || 0;
                         addPromptPartModal.classList.remove('hidden');
                     });
@@ -333,11 +324,10 @@
             const name = document.getElementById('promptPartName').value;
             const type = document.getElementById('promptPartType').value;
             const content = document.getElementById('promptPartContent').value;
-            const description = document.getElementById('promptPartDescription').value;
             const order = parseInt(document.getElementById('promptPartOrder').value, 10) || 0;
             const method = id ? 'PUT' : 'POST';
             const url = id ? `/api/v1/llm/prompt_parts/${id}` : '/api/v1/llm/prompt_parts';
-            const body = JSON.stringify({ name, type, content, description, order });
+            const body = JSON.stringify({ name, type, content, order });
             fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },

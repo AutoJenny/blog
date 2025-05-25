@@ -268,7 +268,7 @@ def llm_prompts():
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('''
-                SELECT id, name, description, prompt_text
+                SELECT id, name, prompt_text
                 FROM llm_prompt
                 ORDER BY ("order" IS NULL), "order", id
             ''')
@@ -280,12 +280,11 @@ def llm_prompts():
                     prompts.append({
                         'id': row[0],
                         'name': row[1],
-                        'description': row[2],
-                        'prompt_text': row[3],
+                        'prompt_text': row[2],
                     })
             # Fetch prompt parts
             cur.execute('''
-                SELECT id, name, type, content, description, tags, "order", created_at, updated_at, action_id
+                SELECT id, name, type, content, tags, "order", created_at, updated_at, action_id
                 FROM llm_prompt_part
                 ORDER BY "order", id
             ''')
@@ -299,12 +298,11 @@ def llm_prompts():
                         'name': row[1],
                         'type': row[2],
                         'content': row[3],
-                        'description': row[4],
-                        'tags': row[5],
-                        'order': row[6],
-                        'created_at': row[7],
-                        'updated_at': row[8],
-                        'action_id': row[9],
+                        'tags': row[4],
+                        'order': row[5],
+                        'created_at': row[6],
+                        'updated_at': row[7],
+                        'action_id': row[8],
                     })
     return render_template('main/llm_prompts.html', prompts=prompts, prompt_parts=prompt_parts)
 
