@@ -78,8 +78,16 @@ def test_llm():
         # PATCH: Set api_url for Ollama
         if llm.config == "ollama":
             llm.api_url = data.get("api_base") or "http://localhost:11434"
+        # PATCH: Combine prompt and input for test
+        prompt = data["prompt"]
+        if "input" in data and data["input"]:
+            if "{{input}}" in prompt:
+                from jinja2 import Template
+                prompt = Template(prompt).render(input=data["input"])
+            else:
+                prompt = f"{prompt}\n\n{data['input']}"
         result = llm.generate(
-            data["prompt"],
+            prompt,
             model_name=data.get("model_name"),
             temperature=data.get("temperature", 0.7),
             max_tokens=data.get("max_tokens", 1000)
