@@ -290,6 +290,22 @@
             padding: 1rem;
         }
     }
+
+    .example-btn {
+        display: inline-block;
+        background: #6366f1;
+        color: #fff;
+        border-radius: 0.3em;
+        padding: 0.1em 0.6em;
+        font-size: 0.95em;
+        font-weight: 500;
+        margin: 0 0.1em;
+        cursor: default;
+        box-shadow: none;
+        border: none;
+        vertical-align: middle;
+        pointer-events: none;
+    }
 </style>
 {% endblock %}
 
@@ -305,13 +321,13 @@
                 <i class="fa-solid fa-circle-info"></i> How to Create and Use LLM Actions
             </h2>
             <ol class="list-decimal ml-6 mb-2">
-                <li><b>Add a New Action:</b> Click <span class="btn btn-primary btn-xs"><i class="fa-solid fa-plus"></i>
-                        New Action</span> and fill in the basic settings (field name, model, etc.).</li>
-                <li><b>Edit Prompt Parts:</b> Click <span class="btn btn-secondary btn-xs"><i
-                            class="fa-solid fa-layer-group"></i> Prompt Parts</span> to build your prompt from multiple
-                    parts. <span class="text-indigo-200">(See below for detailed instructions.)</span></li>
-                <li><b>Test Your Action:</b> Click <span class="btn btn-secondary btn-xs"><i
-                            class="fa-solid fa-play"></i> Run/Test</span> to try it out with sample input.</li>
+                <li><b>Add a New Action:</b> Click <span class="example-btn"><i class="fa-solid fa-plus"></i> New
+                        Action</span> and fill in the basic settings (field name, model, etc.).</li>
+                <li><b>Edit Prompt Parts:</b> Click <span class="example-btn"><i class="fa-solid fa-layer-group"></i>
+                        Prompt Parts</span> to build your prompt from multiple parts. <span class="text-indigo-200">(See
+                        below for detailed instructions.)</span></li>
+                <li><b>Test Your Action:</b> Click <span class="example-btn"><i class="fa-solid fa-play"></i>
+                        Run/Test</span> to try it out with sample input.</li>
                 <li><b>Use in Posts:</b> Select your action in the post editor and click <b>Generate</b> to use it for
                     real content.</li>
             </ol>
@@ -429,7 +445,8 @@
                     <li><b>Prompt Parts</b> are the building blocks of your LLM prompt. Each part can be a <b>System</b>
                         (instructions), <b>User</b> (input), or <b>Assistant</b> (expected response).</li>
                     <li><b>Add</b> parts in the order you want them sent to the AI. Use <b>System</b> for instructions,
-                        <b>User</b> for the main request, and <b>Assistant</b> for expected responses (optional).</li>
+                        <b>User</b> for the main request, and <b>Assistant</b> for expected responses (optional).
+                    </li>
                     <li>You can use variables like <code>{{input}}</code> or <code>{{idea_seed}}</code> to insert data
                         from your post.</li>
                     <li><b>Drag</b> parts to reorder, or use the up/down arrows.</li>
