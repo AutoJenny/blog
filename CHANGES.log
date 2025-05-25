@@ -635,3 +635,7 @@ All notable changes to this project are documented in this file.
 [2024-06-13] Fixed AttributeError for httpx.TimeoutError (now TimeoutException) in LLMService. Also fixed bug where Ollama API URL was not set in /api/v1/llm/test endpoint, causing ValueError. Verified fix with curl: /api/v1/llm/test now returns a valid LLM response.
 
 [2024-06-13] Fixed /api/v1/llm/test to combine prompt and input: supports {{input}} template substitution or appends input as user message. Verified with curl that LLM responds to test data (e.g., 'dogs').
+
+[2024-06-13] /api/v1/llm/test now always returns {response: ...} for UI compatibility; wizard test output now displays correctly. Next: remodel Action Details page as a static version of the wizard.
+
+[2024-06-13] Refactored Action Details page to use wizard-style panels and disabled dropdowns for provider/model/template, matching the wizard visually. All fields are read-only except the test area. UI is now consistent and user-friendly.
