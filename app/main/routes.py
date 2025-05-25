@@ -264,6 +264,7 @@ def llm_models():
 def llm_prompts():
     # Fetch prompt data from the database
     prompts = []
+    prompt_parts = []
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('''
@@ -273,7 +274,6 @@ def llm_prompts():
             ''')
             rows = cur.fetchall()
             for row in rows:
-                # Support both dict and tuple row formats
                 if isinstance(row, dict):
                     prompts.append(row)
                 else:
@@ -283,7 +283,30 @@ def llm_prompts():
                         'description': row[2],
                         'prompt_text': row[3],
                     })
-    return render_template('main/llm_prompts.html', prompts=prompts)
+            # Fetch prompt parts
+            cur.execute('''
+                SELECT id, name, type, content, description, tags, "order", created_at, updated_at, action_id
+                FROM llm_prompt_part
+                ORDER BY "order", id
+            ''')
+            part_rows = cur.fetchall()
+            for row in part_rows:
+                if isinstance(row, dict):
+                    prompt_parts.append(row)
+                else:
+                    prompt_parts.append({
+                        'id': row[0],
+                        'name': row[1],
+                        'type': row[2],
+                        'content': row[3],
+                        'description': row[4],
+                        'tags': row[5],
+                        'order': row[6],
+                        'created_at': row[7],
+                        'updated_at': row[8],
+                        'action_id': row[9],
+                    })
+    return render_template('main/llm_prompts.html', prompts=prompts, prompt_parts=prompt_parts)
 
 # @bp.route('/llm/actions')
 # def llm_actions():

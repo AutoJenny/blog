@@ -23,45 +23,105 @@
     .modal-bg {
         background: rgba(24, 28, 42, 0.85);
     }
+
+    .tab-btn {
+        @apply px-4 py-2 rounded-t-lg font-semibold focus:outline-none;
+        background: #23263a;
+        color: #a5b4fc;
+        border: none;
+        margin-right: 0.5rem;
+    }
+
+    .tab-btn.active {
+        background: #6366f1;
+        color: #fff;
+    }
 </style>
 <div class="container mx-auto py-10 px-4">
-    <div class="flex justify-between items-center mb-8">
-        <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
-            <i class="fa-solid fa-scroll"></i> LLM Prompt Templates
-        </div>
-        <button id="addPromptBtn"
-            class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
-            <i class="fa-solid fa-plus"></i> New Prompt
-        </button>
+    <div class="flex gap-4 mb-6">
+        <button class="tab-btn active" id="tabPromptsBtn" type="button">Prompt Templates</button>
+        <button class="tab-btn" id="tabPartsBtn" type="button">Prompt Parts</button>
     </div>
-    <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
-        <table class="min-w-full text-left">
-            <thead>
-                <tr class="text-indigo-200 border-b border-dark-border">
-                    <th class="py-2 px-3">Name</th>
-                    <th class="py-2 px-3">Type</th>
-                    <th class="py-2 px-3">Usage</th>
-                    <th class="py-2 px-3">Last Updated</th>
-                    <th class="py-2 px-3">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for prompt in prompts %}
-                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                    <td class="py-2 px-3 font-semibold text-white">{{ prompt.name }}</td>
-                    <td class="py-2 px-3">{{ prompt.description }}</td>
-                    <td class="py-2 px-3">{{ prompt.prompt_text }}</td>
-                    <td class="py-2 px-3">2025-05-21</td>
-                    <td class="py-2 px-3 flex gap-2">
-                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
-                        <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
-                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div id="tabPrompts" class="tab-content">
+        <div class="flex justify-between items-center mb-8">
+            <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+                <i class="fa-solid fa-scroll"></i> LLM Prompt Templates
+            </div>
+            <button id="addPromptBtn"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> New Prompt
+            </button>
+        </div>
+        <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead>
+                    <tr class="text-indigo-200 border-b border-dark-border">
+                        <th class="py-2 px-3">Name</th>
+                        <th class="py-2 px-3">Type</th>
+                        <th class="py-2 px-3">Usage</th>
+                        <th class="py-2 px-3">Last Updated</th>
+                        <th class="py-2 px-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prompt in prompts %}
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3 font-semibold text-white">{{ prompt.name }}</td>
+                        <td class="py-2 px-3">{{ prompt.description }}</td>
+                        <td class="py-2 px-3">{{ prompt.prompt_text }}</td>
+                        <td class="py-2 px-3">2025-05-21</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="tabParts" class="tab-content" style="display:none;">
+        <div class="flex justify-between items-center mb-8">
+            <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+                <i class="fa-solid fa-layer-group"></i> LLM Prompt Parts
+            </div>
+        </div>
+        <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead>
+                    <tr class="text-indigo-200 border-b border-dark-border">
+                        <th class="py-2 px-3">ID</th>
+                        <th class="py-2 px-3">Name</th>
+                        <th class="py-2 px-3">Type</th>
+                        <th class="py-2 px-3">Content</th>
+                        <th class="py-2 px-3">Description</th>
+                        <th class="py-2 px-3">Tags</th>
+                        <th class="py-2 px-3">Order</th>
+                        <th class="py-2 px-3">Action ID</th>
+                        <th class="py-2 px-3">Created</th>
+                        <th class="py-2 px-3">Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for part in prompt_parts %}
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3">{{ part.id }}</td>
+                        <td class="py-2 px-3">{{ part.name }}</td>
+                        <td class="py-2 px-3">{{ part.type }}</td>
+                        <td class="py-2 px-3 text-xs">{{ part.content }}</td>
+                        <td class="py-2 px-3">{{ part.description }}</td>
+                        <td class="py-2 px-3">{{ part.tags }}</td>
+                        <td class="py-2 px-3">{{ part.order }}</td>
+                        <td class="py-2 px-3">{{ part.action_id }}</td>
+                        <td class="py-2 px-3">{{ part.created_at }}</td>
+                        <td class="py-2 px-3">{{ part.updated_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     <!-- Add Prompt Modal (placeholder) -->
     <div id="addPromptModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
@@ -112,16 +172,23 @@
     </div>
 </div>
 <script>
-    // Modal open/close logic (placeholder)
-    document.getElementById('addPromptBtn').onclick = function () {
-        document.getElementById('addPromptModal').classList.remove('hidden');
-    };
-    document.getElementById('closeAddPrompt').onclick = function () {
-        document.getElementById('addPromptModal').classList.add('hidden');
-    };
-    document.getElementById('closePromptPreview').onclick = function () {
-        document.getElementById('promptPreviewModal').classList.add('hidden');
-    };
-    // Add more modal logic as needed
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabPromptsBtn = document.getElementById('tabPromptsBtn');
+        const tabPartsBtn = document.getElementById('tabPartsBtn');
+        const tabPrompts = document.getElementById('tabPrompts');
+        const tabParts = document.getElementById('tabParts');
+        tabPromptsBtn.onclick = function () {
+            tabPromptsBtn.classList.add('active');
+            tabPartsBtn.classList.remove('active');
+            tabPrompts.style.display = '';
+            tabParts.style.display = 'none';
+        };
+        tabPartsBtn.onclick = function () {
+            tabPartsBtn.classList.add('active');
+            tabPromptsBtn.classList.remove('active');
+            tabPrompts.style.display = 'none';
+            tabParts.style.display = '';
+        };
+    });
 </script>
 {% endblock %}
