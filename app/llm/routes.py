@@ -12,6 +12,7 @@ from app.blog.fields import WORKFLOW_FIELDS
 import psycopg2
 import psycopg2.extras
 from app.database.routes import get_db_conn
+import requests
 
 logger = logging.getLogger(__name__)
 # All ORM model imports removed. Use direct SQL via psycopg2 for any DB access.
@@ -259,13 +260,22 @@ def llm_images_previews():
 
 @bp.route('/api/v1/llm/models', methods=['GET'])
 def api_llm_models():
-    # Only Ollama local models for now
-    models = [
-        {"id": 1, "name": "llama3", "provider_id": 1, "description": "Ollama Llama 3 (local)"},
-        {"id": 2, "name": "mistral", "provider_id": 1, "description": "Ollama Mistral (local)"},
-        {"id": 3, "name": "phi3", "provider_id": 1, "description": "Ollama Phi-3 (local)"}
-    ]
-    return jsonify(models)
+    # Fetch models live from Ollama
+    try:
+        resp = requests.get('http://localhost:11434/api/tags', timeout=3)
+        resp.raise_for_status()
+        data = resp.json()
+        models = []
+        for idx, m in enumerate(data.get('models', []), 1):
+            models.append({
+                'id': idx,
+                'name': m.get('name'),
+                'provider_id': 1,
+                'description': f"Ollama {m.get('name')} (local)"
+            })
+        return jsonify(models)
+    except Exception as e:
+        return jsonify([])
 
 @bp.route('/api/v1/llm/providers', methods=['GET'])
 def api_llm_providers():
