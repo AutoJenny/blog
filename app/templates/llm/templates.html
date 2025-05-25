@@ -87,13 +87,6 @@
         gap: 0.75rem;
     }
 
-    .template-description {
-        color: var(--admin-text-secondary);
-        margin-bottom: 1rem;
-        font-size: 0.875rem;
-        line-height: 1.5;
-    }
-
     .template-text {
         font-family: 'Monaco', 'Menlo', monospace;
         background: var(--admin-bg-card);
@@ -444,9 +437,6 @@
                             </button>
                         </div>
                         <div class="template-accordion-content" style="display:none;">
-                            {% if prompt.description %}
-                            <div class="template-description">{{ prompt.description }}</div>
-                            {% endif %}
                             <div class="template-text">{{ prompt.prompt_text }}</div>
                         </div>
                     </div>
@@ -469,11 +459,6 @@
                 <div class="form-group">
                     <label class="form-label" for="templateName">Template Name</label>
                     <input type="text" id="templateName" name="name" class="form-input" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="templateDescription">Description</label>
-                    <textarea id="templateDescription" name="description" class="form-textarea"></textarea>
                 </div>
 
                 <div class="form-group">
@@ -589,7 +574,6 @@
                 document.getElementById('modalTitle').textContent = 'Edit Template';
                 document.getElementById('templateId').value = template.id;
                 document.getElementById('templateName').value = template.name;
-                document.getElementById('templateDescription').value = template.description || '';
                 document.getElementById('templateText').value = template.prompt_text;
 
                 // Show the modal
@@ -777,7 +761,6 @@
                         },
                         body: JSON.stringify({
                             name: document.getElementById('templateName').value,
-                            description: document.getElementById('templateDescription').value,
                             prompt_text: document.getElementById('templateText').value
                         })
                     });

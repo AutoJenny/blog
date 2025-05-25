@@ -106,7 +106,7 @@ def get_prompts():
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('''
-                SELECT id, name, description, prompt_text
+                SELECT id, name, prompt_text
                 FROM llm_prompt
                 ORDER BY ("order" IS NULL), "order", id
             ''')
@@ -115,7 +115,6 @@ def get_prompts():
         {
             'id': p['id'],
             'name': p['name'],
-            'description': p['description'],
             'prompt_text': p['prompt_text']
         } for p in prompts
     ])
@@ -128,7 +127,6 @@ def get_templates():
     return jsonify([{
         'id': p.id,
         'name': p.name,
-        'description': p.description,
         'prompt_text': p.prompt_text
     } for p in prompts])
 
@@ -140,7 +138,6 @@ def update_template(template_id):
     template = PromptTemplate.query.get_or_404(template_id)
 
     template.prompt_text = data.get("prompt_text", template.prompt_text)
-    template.description = data.get("description", template.description)
 
     try:
         db.session.commit()
@@ -325,7 +322,6 @@ def update_prompt(prompt_id):
     
     prompt = LLMPrompt.query.get_or_404(prompt_id)
     prompt.name = data['name']
-    prompt.description = data.get('description', '')
     prompt.prompt_text = data['prompt_text']
     
     try:
@@ -333,7 +329,6 @@ def update_prompt(prompt_id):
         return jsonify({'success': True, 'prompt': {
             'id': prompt.id,
             'name': prompt.name,
-            'description': prompt.description,
             'prompt_text': prompt.prompt_text
         }})
     except Exception as e:
@@ -361,7 +356,6 @@ def get_prompt(prompt_id):
     return jsonify({
         'id': prompt.id,
         'name': prompt.name,
-        'description': prompt.description,
         'prompt_text': prompt.prompt_text
     })
 
@@ -527,7 +521,7 @@ def handle_prompt_parts():
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, type, content, description, tags, "order", created_at, updated_at
+                    SELECT id, type, content, tags, "order", created_at, updated_at
                     FROM llm_prompt_part
                     ORDER BY "order", id
                 """)
@@ -538,12 +532,11 @@ def handle_prompt_parts():
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    INSERT INTO llm_prompt_part (type, content, description, tags, "order", created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, %s, NOW(), NOW()) RETURNING id
+                    INSERT INTO llm_prompt_part (type, content, tags, "order", created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, NOW(), NOW()) RETURNING id
                 """, (
                     data['type'],
                     data['content'],
-                    data.get('description'),
                     data.get('tags', []),
                     data.get('order', 0)
                 ))
@@ -558,7 +551,7 @@ def handle_prompt_part(part_id):
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, type, content, description, tags, "order", created_at, updated_at
+                    SELECT id, type, content, tags, "order", created_at, updated_at
                     FROM llm_prompt_part WHERE id = %s
                 """, (part_id,))
                 part = cur.fetchone()
@@ -570,12 +563,11 @@ def handle_prompt_part(part_id):
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    UPDATE llm_prompt_part SET type=%s, content=%s, description=%s, tags=%s, "order"=%s, updated_at=NOW()
+                    UPDATE llm_prompt_part SET type=%s, content=%s, tags=%s, "order"=%s, updated_at=NOW()
                     WHERE id=%s
                 """, (
                     data.get('type'),
                     data.get('content'),
-                    data.get('description'),
                     data.get('tags', []),
                     data.get('order', 0),
                     part_id
@@ -596,7 +588,7 @@ def action_prompt_parts(action_id):
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT l.prompt_part_id, l.order, p.type, p.content, p.description, p.tags
+                    SELECT l.prompt_part_id, l.order, p.type, p.content, p.tags
                     FROM llm_action_prompt_part l
                     JOIN llm_prompt_part p ON l.prompt_part_id = p.id
                     WHERE l.action_id = %s
