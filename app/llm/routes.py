@@ -73,15 +73,6 @@ def action_detail(action_id):
                 SELECT * FROM llm_action WHERE id = %s
             """, (action_id,))
             action = cur.fetchone()
-            if action:
-                cur.execute("""
-                    SELECT l.prompt_part_id, l.order, p.type, p.content, p.description, p.tags, p.id
-                    FROM llm_action_prompt_part l
-                    JOIN llm_prompt_part p ON l.prompt_part_id = p.id
-                    WHERE l.action_id = %s
-                    ORDER BY l.order, l.prompt_part_id
-                """, (action_id,))
-                action_prompt_parts = cur.fetchall()
             cur.execute("""
                 SELECT * FROM llm_prompt_part ORDER BY "order", id
             """)
