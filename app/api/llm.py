@@ -6,6 +6,7 @@ import traceback
 import logging
 from app.database.routes import get_db_conn
 import json
+from app.database.models import LLMPrompt
 
 bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 
