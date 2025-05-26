@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Management</title>
+    <!-- Tailwind CSS -->
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+    </style>
+    
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    <!-- Header -->
+    <header class="header-gradient shadow-lg border-b border-dark-border py-4">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+                <div class="flex items-center space-x-8 flex-1 min-w-0">
+                    <!-- Logo and Title -->
+                    <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+                        <img src="/static/images/site/brand-logo.png" alt="BlogForge Logo"
+                            class="w-10 h-10 rounded-full shadow"
+                            style="background:#23273a; width: 40px; height: 40px;" />
+                        <span class="font-bold text-white">BlogForge</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4 ml-8">
+                    <!-- Only Preview link remains, right-aligned -->
+                </div>
+                <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+                    <a href="/blog/posts"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
+                    <button
+                        class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition"
+                        id="newPostBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        New Post
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    
+    
+    
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+<div class="max-w-5xl mx-auto py-8 px-4">
+    <h1 class="admin-title mb-8">Database Management</h1>
+
+    <!-- DB Content Accordion -->
+    <div id="db-content-accordion" class="mb-10">
+        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+            <i class="fas fa-table text-dark-accent"></i> Database Content
+        </h2>
+        <div id="db-tables-accordion" class="space-y-4"></div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 space-y-8">
+        <!-- Backup & Restore -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-database text-dark-accent"></i> Backup & Restore
+            </h2>
+            <div class="flex flex-col gap-3">
+                <button id="backupNowBtn" class="btn btn-primary flex items-center gap-2">
+                    <i class="fas fa-download"></i> Backup Now
+                </button>
+                <div class="flex flex-col md:flex-row gap-2 items-center">
+                    <select id="restoreBackupSelect"
+                        class="form-input px-4 py-2 rounded border border-gray-600 bg-dark-card text-white">
+                        <option value="">Select backup file...</option>
+                        
+                        <option value="backups/blog_backup_20250503_133805.sql">backups/blog_backup_20250503_133805.sql</option>
+                        
+                        <option value="backups/blog_backup_20250526_191248.sql">backups/blog_backup_20250526_191248.sql</option>
+                        
+                        <option value="blog_backup_20250526_125653_after_seqfix.sql">blog_backup_20250526_125653_after_seqfix.sql</option>
+                        
+                        <option value="blog_backup_before_seqfix.sql">blog_backup_before_seqfix.sql</option>
+                        
+                        <option value="backups/blog_backup_20250526_123422.sql">backups/blog_backup_20250526_123422.sql</option>
+                        
+                        <option value="backups/blog_backup_20250526_123405.sql">backups/blog_backup_20250526_123405.sql</option>
+                        
+                        <option value="backups/blog_backup_20250526_122600.sql">backups/blog_backup_20250526_122600.sql</option>
+                        
+                        <option value="backups/blog_backup_20250526_121617_postfix.sql">backups/blog_backup_20250526_121617_postfix.sql</option>
+                        
+                        <option value="backups/blog_backup_20250526_110741.sql">backups/blog_backup_20250526_110741.sql</option>
+                        
+                        <option value="backups/blog_backup_20250526_102850.sql">backups/blog_backup_20250526_102850.sql</option>
+                        
+                        <option value="backups/blog_backup_20250526_075315.sql">backups/blog_backup_20250526_075315.sql</option>
+                        
+                        <option value="backups/blog_backup_20250526_075235.sql">backups/blog_backup_20250526_075235.sql</option>
+                        
+                        <option value="blog_backup_20250526_075112.sql">blog_backup_20250526_075112.sql</option>
+                        
+                        <option value="blog_backup_20250523_082634.sql">blog_backup_20250523_082634.sql</option>
+                        
+                    </select>
+                    <button id="restoreBackupBtn" class="btn btn-secondary flex items-center gap-2">
+                        <i class="fas fa-upload"></i> Restore
+                    </button>
+                </div>
+                <div id="backupStatus" class="mt-2 text-sm"></div>
+            </div>
+        </div>
+        <!-- Maintenance -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-tools text-dark-accent"></i> Maintenance
+            </h2>
+            <div class="flex flex-col gap-3">
+                
+            </div>
+        </div>
+        <!-- Monitoring -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-chart-bar text-dark-accent"></i> Monitoring
+            </h2>
+            <div class="flex flex-col gap-3">
+                <a href="/db/stats" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-chart-bar"></i> Database Statistics
+                </a>
+                <a href="/db/logs" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-list"></i> View Logs
+                </a>
+            </div>
+        </div>
+        <!-- Advanced -->
+        <div class="admin-card">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-cogs text-dark-accent"></i> Advanced
+            </h2>
+            <div class="flex flex-col gap-3">
+                <a href="/db/migrations" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-code-branch"></i> Manage Migrations
+                </a>
+                <a href="/db/replication" class="btn btn-secondary flex items-center gap-2">
+                    <i class="fas fa-sync"></i> Replication Status
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    // Robust DB UI: fallback to flat tables, use dark theme
+    async function renderDbUi() {
+        const accordion = document.getElementById('db-tables-accordion');
+        accordion.innerHTML = '<div class="text-gray-400 py-8 text-center">Loading database tables...</div>';
+        let data;
+        try {
+            const res = await fetch('/db/tables');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            data = await res.json();
+        } catch (e) {
+            accordion.innerHTML = `<div class="text-red-500 py-8 text-center">Error loading tables: ${e}</div>`;
+            return;
+        }
+        // Prefer groups, fallback to tables
+        if (data.groups && Array.isArray(data.groups) && data.groups.length) {
+            renderGroups(data.groups, accordion);
+        } else if (data.tables && Array.isArray(data.tables) && data.tables.length) {
+            renderFlatTables(data.tables, accordion);
+        } else {
+            accordion.innerHTML = '<div class="text-red-500 py-8 text-center">No tables found or failed to load.</div>';
+        }
+    }
+
+    function renderGroups(groups, accordion) {
+        accordion.innerHTML = '';
+        groups.forEach((group, gidx) => {
+            if (!group.tables || !group.tables.length) return;
+            // Group container
+            const groupSection = document.createElement('section');
+            groupSection.className = 'mb-8 border rounded-lg bg-dark-surface';
+            // Group header
+            const groupHeader = document.createElement('button');
+            groupHeader.type = 'button';
+            groupHeader.className = 'w-full flex justify-between items-center px-6 py-4 text-lg font-bold text-dark-accent bg-dark-bg focus:outline-none focus:ring-2 focus:ring-dark-accent rounded-t-lg group-header';
+            groupHeader.setAttribute('aria-expanded', gidx === 0 ? 'true' : 'false');
+            groupHeader.setAttribute('aria-controls', `group-panel-${gidx}`);
+            groupHeader.innerHTML = `<span><i class="fas fa-layer-group mr-2"></i>${group.group}</span><span class="chevron transition-transform">&#9654;</span>`;
+            // Group panel
+            const groupPanel = document.createElement('div');
+            groupPanel.id = `group-panel-${gidx}`;
+            groupPanel.className = gidx === 0 ? 'block p-4 bg-dark-surface' : 'hidden p-4 bg-dark-surface';
+            // Tables in group
+            group.tables.forEach((table, tidx) => {
+                renderTableAccordion(table, groupPanel, gidx, tidx, gidx === 0 && tidx === 0);
+            });
+            // Compose group section
+            groupSection.appendChild(groupHeader);
+            groupSection.appendChild(groupPanel);
+            accordion.appendChild(groupSection);
+            // Group accordion logic
+            groupHeader.addEventListener('click', function () {
+                const expanded = groupPanel.classList.contains('block');
+                groupPanel.className = expanded ? 'hidden p-4 bg-dark-surface' : 'block p-4 bg-dark-surface';
+                groupHeader.setAttribute('aria-expanded', !expanded);
+                const chevron = groupHeader.querySelector('.chevron');
+                if (chevron) chevron.style.transform = expanded ? '' : 'rotate(90deg)';
+            });
+            // Expand first group by default
+            if (gidx === 0) {
+                setTimeout(() => {
+                    groupPanel.className = 'block p-4 bg-dark-surface';
+                    groupHeader.setAttribute('aria-expanded', 'true');
+                    const chevron = groupHeader.querySelector('.chevron');
+                    if (chevron) chevron.style.transform = 'rotate(90deg)';
+                }, 50);
+            }
+        });
+    }
+
+    function renderFlatTables(tables, accordion) {
+        accordion.innerHTML = '';
+        tables.forEach((table, idx) => {
+            renderTableAccordion(table, accordion, 0, idx, idx === 0);
+        });
+    }
+
+    function renderTableAccordion(table, parent, gidx, tidx, expanded) {
+        const tableSection = document.createElement('section');
+        tableSection.className = 'mb-6 border rounded bg-dark-surface';
+        // Table header
+        const tableHeader = document.createElement('button');
+        tableHeader.type = 'button';
+        tableHeader.className = 'w-full flex justify-between items-center px-4 py-2 text-base font-semibold text-purple-300 bg-dark-bg focus:outline-none focus:ring-2 focus:ring-purple-400 rounded-t table-header';
+        tableHeader.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        tableHeader.setAttribute('aria-controls', `table-panel-${gidx}-${tidx}`);
+        tableHeader.innerHTML = `<span><i class="fas fa-table mr-2"></i>${table.name}</span><span class="chevron transition-transform">&#9654;</span>`;
+        // Table panel
+        const tablePanel = document.createElement('div');
+        tablePanel.id = `table-panel-${gidx}-${tidx}`;
+        tablePanel.className = expanded ? 'block p-2' : 'hidden p-2';
+        // Table content
+        const tableHtml = [];
+        tableHtml.push('<div class="overflow-x-auto"><table class="w-full border-collapse text-sm">');
+        tableHtml.push('<thead><tr>');
+        table.columns.forEach(col => {
+            tableHtml.push(`<th class="p-2 text-left border-b border-dark-border">${col.name}<br><span class="text-xs text-gray-500">${col.type}</span></th>`);
+        });
+        tableHtml.push('</tr></thead>');
+        tableHtml.push('<tbody>');
+        if (Array.isArray(table.rows) && table.rows.length) {
+            table.rows.forEach(row => {
+                tableHtml.push('<tr class="border-b border-dark-border">');
+                table.columns.forEach(col => {
+                    let val = row && row[col.name] !== undefined && row[col.name] !== null ? row[col.name] : '';
+                    tableHtml.push(`<td class="p-2 font-mono truncate">${val}</td>`);
+                });
+                tableHtml.push('</tr>');
+            });
+        } else {
+            tableHtml.push(`<tr><td colspan="${table.columns.length}" class="text-center text-gray-500 py-4">No rows</td></tr>`);
+        }
+        tableHtml.push('</tbody></table></div>');
+        tablePanel.innerHTML = tableHtml.join('');
+        // Compose table section
+        tableSection.appendChild(tableHeader);
+        tableSection.appendChild(tablePanel);
+        parent.appendChild(tableSection);
+        // Table accordion logic
+        tableHeader.addEventListener('click', function () {
+            const isOpen = tablePanel.classList.contains('block');
+            tablePanel.className = isOpen ? 'hidden p-2' : 'block p-2';
+            tableHeader.setAttribute('aria-expanded', !isOpen);
+            const chevron = tableHeader.querySelector('.chevron');
+            if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
+        });
+        // Expand first table by default
+        if (expanded) {
+            setTimeout(() => {
+                tablePanel.className = 'block p-2';
+                tableHeader.setAttribute('aria-expanded', 'true');
+                const chevron = tableHeader.querySelector('.chevron');
+                if (chevron) chevron.style.transform = 'rotate(90deg)';
+            }, 100);
+        }
+    }
+
+    // Backup Now button logic
+    const backupBtn = document.getElementById('backupNowBtn');
+    const backupStatus = document.getElementById('backupStatus');
+    if (backupBtn) {
+        backupBtn.addEventListener('click', async function () {
+            backupBtn.disabled = true;
+            backupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Backing up...';
+            backupStatus.textContent = '';
+            try {
+                const res = await fetch('/db/backup', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    backupStatus.innerHTML = `<span class='text-green-400'>Backup created: ${data.backup}</span>`;
+                } else {
+                    backupStatus.innerHTML = `<span class='text-red-400'>Backup failed: ${data.error || 'Unknown error'}</span>`;
+                }
+            } catch (e) {
+                backupStatus.innerHTML = `<span class='text-red-400'>Backup failed: ${e}</span>`;
+            } finally {
+                backupBtn.disabled = false;
+                backupBtn.innerHTML = '<i class="fas fa-download"></i> Backup Now';
+            }
+        });
+    }
+
+    // Restore from Backup logic
+    const restoreBtn = document.getElementById('restoreBackupBtn');
+    const restoreSelect = document.getElementById('restoreBackupSelect');
+    if (restoreBtn && restoreSelect) {
+        restoreBtn.addEventListener('click', async function () {
+            const file = restoreSelect.value;
+            if (!file) {
+                backupStatus.innerHTML = `<span class='text-red-400'>Please select a backup file.</span>`;
+                return;
+            }
+            restoreBtn.disabled = true;
+            restoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Restoring...';
+            backupStatus.textContent = '';
+            try {
+                const res = await fetch('/db/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    backupStatus.innerHTML = `<span class='text-green-400'>Restore complete: ${data.restored}</span>`;
+                } else {
+                    backupStatus.innerHTML = `<span class='text-red-400'>Restore failed: ${data.error || 'Unknown error'}</span>`;
+                }
+            } catch (e) {
+                backupStatus.innerHTML = `<span class='text-red-400'>Restore failed: ${e}</span>`;
+            }
+            restoreBtn.disabled = false;
+            restoreBtn.innerHTML = '<i class="fas fa-upload"></i> Restore';
+        });
+    }
+
+    renderDbUi();
+</script>
+
+    </main>
+    
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">
+                &copy; 2025 Blog CMS. All rights reserved. |
+                <a href="/docs" class="text-indigo-300 hover:text-indigo-100 underline ml-2">Docs</a>
+            </p>
+        </div>
+    </footer>
+
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var newPostBtn = document.getElementById('newPostBtn');
+            if (newPostBtn) {
+                newPostBtn.addEventListener('click', async () => {
+                    const basicIdea = prompt('Enter your basic idea for the post:');
+                    if (!basicIdea) return;
+                    try {
+                        const response = await fetch("/blog/new", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ basic_idea: basicIdea })
+                        });
+                        const data = await response.json();
+                        if (response.ok && data.id) {
+                            window.location.href = `/workflow/idea/?post_id=${data.id}`;
+                        } else {
+                            alert(data.error || 'Failed to create post');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to create post');
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <!-- Mermaid.js for diagrams in markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.mermaid) {
+                setTimeout(function () {
+                    mermaid.initialize({ startOnLoad: false });
+                    document.querySelectorAll('pre > code.language-mermaid').forEach(function (block, i) {
+                        var parent = block.parentElement;
+                        var code = block.innerText;
+                        var d = document.createElement('div');
+                        d.className = 'mermaid';
+                        d.innerText = code;
+                        parent.replaceWith(d);
+                    });
+                    try {
+                        mermaid.run();
+                    } catch (e) {
+                        console.error('Mermaid render error:', e);
+                        document.querySelectorAll('.mermaid').forEach(function (el) {
+                            el.innerHTML = '<div style="color:#f87171;background:#23273a;padding:1em;border-radius:.5em;">Mermaid render error:<br>' + e.message + '</div>';
+                        });
+                    }
+                }, 100);
+            }
+        });
+    </script>
+</body>
+
+</html>
