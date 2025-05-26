@@ -41,4 +41,6 @@
 
 2025-05-25: BUGFIX: Prompt Part 'Name' field is now correctly saved to the llm_prompt_part table via the API (POST/PUT). Previously, the name was not persisted due to missing SQL fields.
 
-2025-05-26: BUGFIX: /db/backup now works by running pg_dump as the DB owner (nickfiddes), resolving permission errors and 500s in the UI. Backup Now button is functional again. 
+2025-05-26: BUGFIX: /db/backup now works by running pg_dump as the DB owner (nickfiddes), resolving permission errors and 500s in the UI. Backup Now button is functional again.
+
+2025-05-26: RESTORED: Step-by-step Action creation wizard modal, with full instructions and navigation, is now back on /llm/actions. Users are guided through each stage of Action creation with contextual help and prompt part management. 

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog CMS</title>
+    <!-- Tailwind CSS -->
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+    </style>
+    
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    <!-- Header -->
+    <header class="header-gradient shadow-lg border-b border-dark-border py-4">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+                <div class="flex items-center space-x-8 flex-1 min-w-0">
+                    <!-- Logo and Title -->
+                    <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+                        <img src="/static/images/site/brand-logo.png" alt="BlogForge Logo"
+                            class="w-10 h-10 rounded-full shadow"
+                            style="background:#23273a; width: 40px; height: 40px;" />
+                        <span class="font-bold text-white">BlogForge</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4 ml-8">
+                    <!-- Only Preview link remains, right-aligned -->
+                </div>
+                <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+                    <a href="/blog/posts"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
+                    <button
+                        class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition"
+                        id="newPostBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        New Post
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    
+    
+    
+    <div class="llm-nav flex justify-center gap-4 mb-8">
+    <a href="/llm/providers"
+        class="llm-nav-link flex items-center gap-2"
+        title="Provider Management">
+        <i class="fa-solid fa-server icon text-[#fbbf24]"></i>
+        <span>Providers</span>
+    </a>
+    <a href="/llm/models"
+        class="llm-nav-link flex items-center gap-2"
+        title="Model Management">
+        <i class="fa-solid fa-cubes icon text-[#fbbf24]"></i>
+        <span>Models</span>
+    </a>
+    <a href="/llm/prompts"
+        class="llm-nav-link flex items-center gap-2"
+        title="Prompt Templates">
+        <i class="fa-solid fa-scroll icon text-[#fbbf24]"></i>
+        <span>Prompts</span>
+    </a>
+    <a href="/llm/actions"
+        class="llm-nav-link flex items-center gap-2 active"
+        title="Actions & Tasks">
+        <i class="fa-solid fa-bolt icon text-[#fbbf24]"></i>
+        <span>Actions</span>
+    </a>
+    <a href="/llm/logs"
+        class="llm-nav-link flex items-center gap-2"
+        title="Interaction Logs">
+        <i class="fa-solid fa-list icon text-[#fbbf24]"></i>
+        <span>Logs</span>
+    </a>
+    <a href="/llm/settings"
+        class="llm-nav-link flex items-center gap-2"
+        title="Settings">
+        <i class="fa-solid fa-gear icon text-[#fbbf24]"></i>
+        <span>Settings</span>
+    </a>
+</div>
+<style>
+    .llm-nav-link.active {
+        color: #38bdf8 !important;
+    }
+
+    .llm-nav-link {
+        color: #e0e0e0;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        transition: background 0.2s, color 0.2s;
+        text-decoration: none;
+    }
+
+    .llm-nav-link:hover {
+        background: rgba(99, 102, 241, 0.08);
+        color: #a5b4fc;
+    }
+
+    .llm-action-btn {
+        background: linear-gradient(90deg, #6366f1 0%, #38bdf8 100%);
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(56, 189, 248, 0.10);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+    }
+
+    .llm-action-btn:hover {
+        background: linear-gradient(90deg, #38bdf8 0%, #6366f1 100%);
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.18);
+        color: #fff;
+    }
+</style>
+    
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+<style>
+    .action-status {
+        display: inline-block;
+        padding: 0.25em 0.75em;
+        border-radius: 9999px;
+        font-size: 0.95em;
+        font-weight: 600;
+        background: #6366f1;
+        color: #fff;
+    }
+
+    .action-btn {
+        @apply text-indigo-400 hover:text-indigo-200 px-2;
+    }
+
+    .action-btn[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .modal-bg {
+        background: rgba(24, 28, 42, 0.85);
+    }
+</style>
+<div class="container mx-auto py-10 px-4">
+    <div class="flex justify-between items-center mb-8">
+        <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+            <i class="fa-solid fa-bolt"></i> LLM Actions & Tasks
+        </div>
+        <button id="addActionBtn"
+            class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> New Action
+        </button>
+    </div>
+    <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+        <table class="min-w-full text-left">
+            <thead>
+                <tr class="text-indigo-200 border-b border-dark-border">
+                    <th class="py-2 px-3">Name</th>
+                    <th class="py-2 px-3">Input → Output</th>
+                    <th class="py-2 px-3">Prompt</th>
+                    <th class="py-2 px-3">Model</th>
+                    <th class="py-2 px-3">Status</th>
+                    <th class="py-2 px-3">Last Run</th>
+                    <th class="py-2 px-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">Generate Summary from idea_seed</td>
+                    <td class="py-2 px-3">None → None</td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3">gpt-4</td>
+                    <td class="py-2 px-3"><span class="action-status"></span></td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn delete-action-btn" data-id="9" title="Delete"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">test_field</td>
+                    <td class="py-2 px-3">None → None</td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3">test_model</td>
+                    <td class="py-2 px-3"><span class="action-status"></span></td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn delete-action-btn" data-id="10" title="Delete"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">New SEED test</td>
+                    <td class="py-2 px-3">None → None</td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3">llama3</td>
+                    <td class="py-2 px-3"><span class="action-status"></span></td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn delete-action-btn" data-id="12" title="Delete"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">test</td>
+                    <td class="py-2 px-3">None → None</td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3">llama3</td>
+                    <td class="py-2 px-3"><span class="action-status"></span></td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn delete-action-btn" data-id="13" title="Delete"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">asfdf</td>
+                    <td class="py-2 px-3">None → None</td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3">llama3</td>
+                    <td class="py-2 px-3"><span class="action-status"></span></td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn delete-action-btn" data-id="14" title="Delete"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">test_unique2</td>
+                    <td class="py-2 px-3">None → None</td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3">llama3.1:8b</td>
+                    <td class="py-2 px-3"><span class="action-status"></span></td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn delete-action-btn" data-id="15" title="Delete"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">ads</td>
+                    <td class="py-2 px-3">None → None</td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3">llama3</td>
+                    <td class="py-2 px-3"><span class="action-status"></span></td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn delete-action-btn" data-id="16" title="Delete"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">safas</td>
+                    <td class="py-2 px-3">None → None</td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3">llama3</td>
+                    <td class="py-2 px-3"><span class="action-status"></span></td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn delete-action-btn" data-id="17" title="Delete"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">test prompt part</td>
+                    <td class="py-2 px-3">None → None</td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3">llama3</td>
+                    <td class="py-2 px-3"><span class="action-status"></span></td>
+                    <td class="py-2 px-3"></td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
+                        <button class="action-btn" title="History"><i
+                                class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="action-btn delete-action-btn" data-id="20" title="Delete"><i
+                                class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+                
+            </tbody>
+        </table>
+    </div>
+    <!-- Add Action Modal (placeholder) -->
+    <div id="addActionModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+            <button id="closeAddAction" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-plus"></i>
+                New Action/Task</div>
+            <form>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Action Name</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. Summarize Body" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Input Field</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. body" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Output Field</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. summary" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Prompt Template</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        id="promptTemplateSelect">
+                        <!-- Options to be populated dynamically from DB -->
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Model</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
+                        <option>gpt-3.5-turbo</option>
+                        <option>mistral</option>
+                        <option>claude-3-opus</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="submit"
+                        class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Action Run Modal (placeholder) -->
+    <div id="runActionModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <button id="closeRunAction" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-play"></i>
+                Run/Test Action</div>
+            <div class="mb-4 text-dark-accent">(Action run/test result will appear here)</div>
+            <div class="flex justify-end">
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Close</button>
+            </div>
+        </div>
+    </div>
+    <!-- Action History Modal (placeholder) -->
+    <div id="actionHistoryModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <button id="closeActionHistory" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i
+                    class="fa-solid fa-clock-rotate-left"></i> Action History</div>
+            <div class="mb-4 text-dark-accent">(Action history will appear here)</div>
+            <div class="flex justify-end">
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Modal open/close logic (placeholder)
+    document.getElementById('addActionBtn').onclick = function () {
+        document.getElementById('addActionModal').classList.remove('hidden');
+    };
+    document.getElementById('closeAddAction').onclick = function () {
+        document.getElementById('addActionModal').classList.add('hidden');
+    };
+    document.getElementById('closeRunAction').onclick = function () {
+        document.getElementById('runActionModal').classList.add('hidden');
+    };
+    document.getElementById('closeActionHistory').onclick = function () {
+        document.getElementById('actionHistoryModal').classList.add('hidden');
+    };
+    // Add more modal logic as needed
+    // Delete action logic
+    document.querySelectorAll('.delete-action-btn').forEach(btn => {
+        btn.onclick = function () {
+            const actionId = this.dataset.id;
+            if (!confirm('Delete this action?')) return;
+            fetch(`/api/v1/llm/actions/${actionId}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to delete action: ' + (data.error || 'Unknown error'));
+                    }
+                });
+        };
+    });
+</script>
+
+    </main>
+    
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">
+                &copy; 2025 Blog CMS. All rights reserved. |
+                <a href="/docs" class="text-indigo-300 hover:text-indigo-100 underline ml-2">Docs</a>
+            </p>
+        </div>
+    </footer>
+
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var newPostBtn = document.getElementById('newPostBtn');
+            if (newPostBtn) {
+                newPostBtn.addEventListener('click', async () => {
+                    const basicIdea = prompt('Enter your basic idea for the post:');
+                    if (!basicIdea) return;
+                    try {
+                        const response = await fetch("/blog/new", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ basic_idea: basicIdea })
+                        });
+                        const data = await response.json();
+                        if (response.ok && data.id) {
+                            window.location.href = `/workflow/idea/?post_id=${data.id}`;
+                        } else {
+                            alert(data.error || 'Failed to create post');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to create post');
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <!-- Mermaid.js for diagrams in markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.mermaid) {
+                setTimeout(function () {
+                    mermaid.initialize({ startOnLoad: false });
+                    document.querySelectorAll('pre > code.language-mermaid').forEach(function (block, i) {
+                        var parent = block.parentElement;
+                        var code = block.innerText;
+                        var d = document.createElement('div');
+                        d.className = 'mermaid';
+                        d.innerText = code;
+                        parent.replaceWith(d);
+                    });
+                    try {
+                        mermaid.run();
+                    } catch (e) {
+                        console.error('Mermaid render error:', e);
+                        document.querySelectorAll('.mermaid').forEach(function (el) {
+                            el.innerHTML = '<div style="color:#f87171;background:#23273a;padding:1em;border-radius:.5em;">Mermaid render error:<br>' + e.message + '</div>';
+                        });
+                    }
+                }, 100);
+            }
+        });
+    </script>
+</body>
+
+</html>

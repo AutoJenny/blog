@@ -306,9 +306,34 @@ def llm_prompts():
                     })
     return render_template('main/llm_prompts.html', prompts=prompts, prompt_parts=prompt_parts)
 
-# @bp.route('/llm/actions')
-# def llm_actions():
-#     return render_template('main/llm_actions.html')
+@bp.route('/llm/actions')
+def llm_actions():
+    actions = []
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('''
+                SELECT id, field_name, input_field, output_field, llm_model, prompt_template, prompt_template_id, max_tokens, temperature, "order"
+                FROM llm_action
+                ORDER BY "order", id
+            ''')
+            rows = cur.fetchall()
+            for row in rows:
+                if isinstance(row, dict):
+                    actions.append(row)
+                else:
+                    actions.append({
+                        'id': row[0],
+                        'field_name': row[1],
+                        'input_field': row[2],
+                        'output_field': row[3],
+                        'llm_model': row[4],
+                        'prompt_template': row[5],
+                        'prompt_template_id': row[6],
+                        'max_tokens': row[7],
+                        'temperature': row[8],
+                        'order': row[9],
+                    })
+    return render_template('main/llm_actions.html', actions=actions)
 
 @bp.route('/llm/logs')
 def llm_logs():
