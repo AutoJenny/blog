@@ -42,4 +42,5 @@ The Blog CMS uses Jinja2 templates for all HTML rendering. This document describ
 - For new sub-areas, follow this pattern for robust, site-wide navigation.
 
 ## New Feature Note
-- The /llm/prompts page now defaults to the Prompt Parts tab, which features a persistent radio button filter for Type (All, system, user, assistant) above the list. The filter is styled per the dark theme style guide and persists across tab switches. 
+- The /llm/prompts page now defaults to the Prompt Parts tab, which features a persistent radio button filter for Type (All, system, user, assistant) above the list. The filter is styled per the dark theme style guide and persists across tab switches.
+- The /llm/actions page now features a restored, step-by-step Action creation wizard modal. This guides users through each stage (basic info, model, prompt parts, test/save) with contextual help and dynamic prompt part management. The UI is consistent with the dark theme style guide. 

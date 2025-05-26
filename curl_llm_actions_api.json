@@ -1,0 +1,110 @@
+[
+  {
+    "field_name": "Generate Summary from idea_seed",
+    "id": 9,
+    "input_field": null,
+    "llm_model": "gpt-4",
+    "max_tokens": 1000,
+    "order": 0,
+    "output_field": null,
+    "prompt_template": "{{ idea_seed }}",
+    "prompt_template_id": 11,
+    "temperature": 0.7
+  },
+  {
+    "field_name": "test_field",
+    "id": 10,
+    "input_field": null,
+    "llm_model": "test_model",
+    "max_tokens": 1000,
+    "order": 0,
+    "output_field": null,
+    "prompt_template": "You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article \u2014 this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] \u2014 no code blocks or text outside the array.",
+    "prompt_template_id": 7,
+    "temperature": 0.7
+  },
+  {
+    "field_name": "New SEED test",
+    "id": 12,
+    "input_field": null,
+    "llm_model": "llama3",
+    "max_tokens": 1000,
+    "order": 0,
+    "output_field": null,
+    "prompt_template": "You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article \u2014 this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] \u2014 no code blocks or text outside the array.",
+    "prompt_template_id": 7,
+    "temperature": 0.7
+  },
+  {
+    "field_name": "test",
+    "id": 13,
+    "input_field": null,
+    "llm_model": "llama3",
+    "max_tokens": 1000,
+    "order": 0,
+    "output_field": null,
+    "prompt_template": "You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article \u2014 this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] \u2014 no code blocks or text outside the array.",
+    "prompt_template_id": 7,
+    "temperature": 0.7
+  },
+  {
+    "field_name": "asfdf",
+    "id": 14,
+    "input_field": null,
+    "llm_model": "llama3",
+    "max_tokens": 1000,
+    "order": 0,
+    "output_field": null,
+    "prompt_template": "You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article \u2014 this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] \u2014 no code blocks or text outside the array.",
+    "prompt_template_id": 7,
+    "temperature": 0.7
+  },
+  {
+    "field_name": "test_unique2",
+    "id": 15,
+    "input_field": null,
+    "llm_model": "llama3.1:8b",
+    "max_tokens": 1000,
+    "order": 0,
+    "output_field": null,
+    "prompt_template": "You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article \u2014 this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] \u2014 no code blocks or text outside the array.",
+    "prompt_template_id": 7,
+    "temperature": 0.7
+  },
+  {
+    "field_name": "ads",
+    "id": 16,
+    "input_field": null,
+    "llm_model": "llama3",
+    "max_tokens": 1000,
+    "order": 0,
+    "output_field": null,
+    "prompt_template": "You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article \u2014 this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] \u2014 no code blocks or text outside the array.",
+    "prompt_template_id": 7,
+    "temperature": 0.7
+  },
+  {
+    "field_name": "safas",
+    "id": 17,
+    "input_field": null,
+    "llm_model": "llama3",
+    "max_tokens": 1000,
+    "order": 0,
+    "output_field": null,
+    "prompt_template": "You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article \u2014 this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] \u2014 no code blocks or text outside the array.",
+    "prompt_template_id": 7,
+    "temperature": 0.7
+  },
+  {
+    "field_name": "test prompt part",
+    "id": 20,
+    "input_field": null,
+    "llm_model": "llama3",
+    "max_tokens": 1000,
+    "order": 0,
+    "output_field": null,
+    "prompt_template": "You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article \u2014 this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] \u2014 no code blocks or text outside the array.",
+    "prompt_template_id": 7,
+    "temperature": 0.7
+  }
+]

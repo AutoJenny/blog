@@ -61,54 +61,143 @@
                         <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
                         <button class="action-btn" title="History"><i
                                 class="fa-solid fa-clock-rotate-left"></i></button>
-                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        <button class="action-btn delete-action-btn" data-id="{{ action.id }}" title="Delete"><i
+                                class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    <!-- Add Action Modal (placeholder) -->
-    <div id="addActionModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
-        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-lg relative">
-            <button id="closeAddAction" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
-                    class="fa-solid fa-xmark fa-lg"></i></button>
-            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-plus"></i>
-                New Action/Task</div>
-            <form>
-                <div class="mb-4">
-                    <label class="block text-dark-accent mb-1">Action Name</label>
-                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
-                        placeholder="e.g. Summarize Body" />
+    <!-- Wizard Modal for Action Creation/Editing -->
+    <div id="actionWizardModal" class="modal">
+        <div class="modal-content" style="max-width:600px;">
+            <div id="wizardProgress" class="mb-4 flex items-center justify-between text-indigo-200 text-sm">
+                <span id="wizardStep1" class="wizard-step">1. Basic Info</span>
+                <span id="wizardStep2" class="wizard-step">2. Model</span>
+                <span id="wizardStep3" class="wizard-step">3. Prompt Parts</span>
+                <span id="wizardStep4" class="wizard-step">4. Test & Save</span>
+            </div>
+            <form id="actionWizardForm">
+                <!-- Step 1: Basic Info -->
+                <div class="wizard-section" id="wizardSection1">
+                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-info-circle"></i>
+                        Step 1: Basic Info</h2>
+                    <div class="mb-4 text-indigo-200">Give your action a name and (optionally) a description. This helps
+                        you find it later.</div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizFieldName">Field Name <i
+                                class="fa-solid fa-circle-question text-indigo-300"
+                                title="The field this action will fill, e.g. 'summary'."></i></label>
+                        <input type="text" id="wizFieldName" name="field_name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizDescription">Description <i
+                                class="fa-solid fa-circle-question text-indigo-300"
+                                title="Describe what this action does."></i></label>
+                        <input type="text" id="wizDescription" name="description" class="form-input">
+                    </div>
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button type="button" class="btn btn-primary" id="wizNext1">Next →</button>
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-dark-accent mb-1">Input Field</label>
-                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
-                        placeholder="e.g. body" />
+                <!-- Step 2: Model Settings -->
+                <div class="wizard-section" id="wizardSection2" style="display:none;">
+                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-robot"></i> Step 2:
+                        Model Settings</h2>
+                    <div class="mb-4 text-indigo-200">Choose the AI model and prompt template. Adjust creativity and
+                        output length as needed.</div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizProvider">LLM Provider</label>
+                        <select id="wizProvider" name="provider_id" class="form-input" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizModel">LLM Model</label>
+                        <select id="wizModel" name="llm_model" class="form-input" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizPromptTemplateId">Prompt Template</label>
+                        <select id="wizPromptTemplateId" name="prompt_template_id" class="form-input" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizTemperature">Temperature <i
+                                class="fa-solid fa-circle-question text-indigo-300"
+                                title="Higher = more creative, lower = more predictable."></i></label>
+                        <input type="number" id="wizTemperature" name="temperature" class="form-input" min="0" max="2"
+                            step="0.1" value="0.7">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="wizMaxTokens">Max Tokens <i
+                                class="fa-solid fa-circle-question text-indigo-300"
+                                title="Maximum length of the AI's response."></i></label>
+                        <input type="number" id="wizMaxTokens" name="max_tokens" class="form-input" min="1" max="4096"
+                            value="1000">
+                    </div>
+                    <div class="flex justify-between gap-4 mt-6">
+                        <button type="button" class="btn btn-secondary" id="wizBack2">← Back</button>
+                        <button type="button" class="btn btn-primary" id="wizNext2">Next →</button>
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-dark-accent mb-1">Output Field</label>
-                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
-                        placeholder="e.g. summary" />
+                <!-- Step 3: Prompt Parts -->
+                <div class="wizard-section" id="wizardSection3" style="display:none;">
+                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i>
+                        Step 3: Prompt Parts</h2>
+                    <div class="mb-4 text-indigo-200">Build your prompt from multiple parts. Each part is a message to
+                        the AI. Add them in the order you want. Use variables like <code>{{input}}</code> or
+                        <code>{{idea_seed}}</code>.
+                    </div>
+                    <div id="wizPromptPartsList" class="mb-4"></div>
+                    <button type="button" class="btn btn-secondary mb-2" id="wizAddPromptPartBtn">+ Add Prompt
+                        Part</button>
+                    <div id="wizPromptPartForm" style="display:none;" class="bg-dark-card rounded p-4 mb-4">
+                        <h4 class="font-bold mb-2">Add/Edit Prompt Part</h4>
+                        <div class="form-group">
+                            <label class="form-label">Type</label>
+                            <select id="wizPromptPartType" class="form-input">
+                                <option value="system">System</option>
+                                <option value="user">User</option>
+                                <option value="assistant">Assistant</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Content</label>
+                            <textarea id="wizPromptPartContent" class="form-textarea" rows="3"></textarea>
+                        </div>
+                        <div class="flex justify-end gap-4">
+                            <button type="button" class="btn btn-secondary" id="wizCancelPromptPartBtn">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="wizSavePromptPartBtn">Save Part</button>
+                        </div>
+                    </div>
+                    <div class="bg-dark-card rounded p-4 mt-4 mb-2">
+                        <h4 class="font-bold mb-1 flex items-center gap-2"><i class="fa-solid fa-eye"></i> Prompt
+                            Preview</h4>
+                        <div id="wizPromptPreview" class="whitespace-pre-line text-indigo-100 text-sm">{ ... message
+                            preview ... }</div>
+                        <div class="text-xs text-indigo-200 mt-1">This is how your full prompt will look to the AI, with
+                            variables replaced at runtime.</div>
+                    </div>
+                    <div class="flex justify-between gap-4 mt-6">
+                        <button type="button" class="btn btn-secondary" id="wizBack3">← Back</button>
+                        <button type="button" class="btn btn-primary" id="wizNext3">Next →</button>
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-dark-accent mb-1">Prompt Template</label>
-                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
-                        id="promptTemplateSelect">
-                        <!-- Options to be populated dynamically from DB -->
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-dark-accent mb-1">Model</label>
-                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
-                        <option>gpt-3.5-turbo</option>
-                        <option>mistral</option>
-                        <option>claude-3-opus</option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="submit"
-                        class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">Save</button>
+                <!-- Step 4: Test & Save -->
+                <div class="wizard-section" id="wizardSection4" style="display:none;">
+                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-vial"></i> Step 4:
+                        Test & Save</h2>
+                    <div class="mb-4 text-indigo-200">Try out your action! Enter some sample input and see what the AI
+                        generates. If you're happy, save your action.</div>
+                    <div class="form-group">
+                        <label class="form-label">Test Input</label>
+                        <textarea id="wizTestInput" class="form-textarea" rows="2"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary mb-2" id="wizRunTestBtn">Run Test</button>
+                    <div id="wizTestOutput" class="bg-dark-card rounded p-4 mt-2 text-indigo-100 text-sm"
+                        style="white-space: pre-wrap; min-height: 2em;"></div>
+                    <div class="flex justify-between gap-4 mt-6">
+                        <button type="button" class="btn btn-secondary" id="wizBack4">← Back</button>
+                        <button type="submit" class="btn btn-primary">Save Action</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -143,10 +232,7 @@
 <script>
     // Modal open/close logic (placeholder)
     document.getElementById('addActionBtn').onclick = function () {
-        document.getElementById('addActionModal').classList.remove('hidden');
-    };
-    document.getElementById('closeAddAction').onclick = function () {
-        document.getElementById('addActionModal').classList.add('hidden');
+        document.getElementById('actionWizardModal').classList.remove('hidden');
     };
     document.getElementById('closeRunAction').onclick = function () {
         document.getElementById('runActionModal').classList.add('hidden');
@@ -155,5 +241,21 @@
         document.getElementById('actionHistoryModal').classList.add('hidden');
     };
     // Add more modal logic as needed
+    // Delete action logic
+    document.querySelectorAll('.delete-action-btn').forEach(btn => {
+        btn.onclick = function () {
+            const actionId = this.dataset.id;
+            if (!confirm('Delete this action?')) return;
+            fetch(`/api/v1/llm/actions/${actionId}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to delete action: ' + (data.error || 'Unknown error'));
+                    }
+                });
+        };
+    });
 </script>
 {% endblock %}
