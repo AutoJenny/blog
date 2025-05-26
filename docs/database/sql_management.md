@@ -180,4 +180,12 @@ psql $DATABASE_URL -U nickfiddes -c "REASSIGN OWNED BY nickfiddes TO postgres;"
 - The Test button in the Action Builder is only enabled for existing actions (edit mode) and calls the correct endpoint.
 - Test is disabled for new actions, with a tooltip explaining why.
 - Save button always sends all required fields; clear error messages for missing fields or backend errors.
-- The UI and logic are robust and user-friendly. 
+- The UI and logic are robust and user-friendly.
+
+## 2025-06-XX: LLM Action Test Data Variable Support
+
+- The Action Builder Test field now maps to [data:variable] placeholders in prompt templates.
+- The frontend extracts [data:var] and sends test input as { var: value }.
+- The backend replaces [data:var] with {{ var }} and flattens input mapping for Jinja2 rendering.
+- This enables robust, real-world testing of actions with data variables directly from the UI.
+- See CHANGES.log for details. 

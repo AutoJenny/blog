@@ -667,3 +667,9 @@ All notable changes to this project are documented in this file.
 - Test is disabled for new actions, with a tooltip explaining why.
 - Save button always sends all required fields; clear error messages for missing fields or backend errors.
 - UI and logic are robust and user-friendly.
+
+2025-06-XX: LLM Action Test Robust Data Variable Support
+- Test input in the Action Builder now maps to [data:variable] placeholders in prompt templates.
+- Frontend extracts [data:var] and sends test input as { var: value }.
+- Backend replaces [data:var] with {{ var }} and flattens input mapping for Jinja2 rendering.
+- Enables robust, real-world testing of actions with data variables directly from the UI.
