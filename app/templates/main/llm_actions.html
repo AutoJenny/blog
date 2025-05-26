@@ -138,36 +138,17 @@
                 <div class="wizard-section" id="wizardSection3" style="display:none;">
                     <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i>
                         Step 3: Prompt Template</h2>
-                    <div class="mb-4 text-indigo-200">Select or build the prompt template this action will use. You can
-                        assemble a template from multiple parts/messages, or select an existing template. Use variables
-                        like <code>{{input}}</code> or <code>{{idea_seed}}</code> as needed.</div>
-                    <div id="wizPromptPartsList" class="mb-4"></div>
-                    <button type="button" class="btn btn-secondary mb-2" id="wizAddPromptPartBtn">+ Add Prompt
-                        Part</button>
-                    <div id="wizPromptPartForm" style="display:none;" class="bg-dark-card rounded p-4 mb-4">
-                        <h4 class="font-bold mb-2">Add/Edit Prompt Part</h4>
-                        <div class="form-group">
-                            <label class="form-label">Type</label>
-                            <select id="wizPromptPartType" class="form-input">
-                                <option value="system">System</option>
-                                <option value="user">User</option>
-                                <option value="assistant">Assistant</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Content</label>
-                            <textarea id="wizPromptPartContent" class="form-textarea" rows="3"></textarea>
-                        </div>
-                        <div class="flex justify-end gap-4">
-                            <button type="button" class="btn btn-secondary" id="wizCancelPromptPartBtn">Cancel</button>
-                            <button type="button" class="btn btn-primary" id="wizSavePromptPartBtn">Save Part</button>
-                        </div>
+                    <div class="mb-4 text-indigo-200">Select the prompt template this action will use. You can manage
+                        templates on the Prompts page.</div>
+                    <div class="form-group mb-4">
+                        <label class="form-label" for="wizPromptTemplate">Prompt Template</label>
+                        <select id="wizPromptTemplate" name="prompt_template_id" class="form-input" required></select>
                     </div>
                     <div class="bg-dark-card rounded p-4 mt-4 mb-2">
                         <h4 class="font-bold mb-1 flex items-center gap-2"><i class="fa-solid fa-eye"></i> Prompt
                             Preview</h4>
-                        <div id="wizPromptPreview" class="whitespace-pre-line text-indigo-100 text-sm">{ ... message
-                            preview ... }</div>
+                        <div id="wizPromptPreview" class="whitespace-pre-line text-indigo-100 text-sm">{ ... select a
+                            template ... }</div>
                         <div class="text-xs text-indigo-200 mt-1">This is how your full prompt will look to the AI, with
                             variables replaced at runtime.</div>
                     </div>
@@ -292,79 +273,45 @@
         document.getElementById('wizBack3').onclick = function () { showWizardStep(2); };
         document.getElementById('wizNext3').onclick = function () { showWizardStep(4); };
         document.getElementById('wizBack4').onclick = function () { showWizardStep(3); };
-        // Prompt Parts logic
-        const wizPromptParts = [];
-        window.wizPromptParts = wizPromptParts;
-        const wizPromptPartsList = document.getElementById('wizPromptPartsList');
-        const wizPromptPartForm = document.getElementById('wizPromptPartForm');
-        const wizAddPromptPartBtn = document.getElementById('wizAddPromptPartBtn');
-        const wizPromptPartType = document.getElementById('wizPromptPartType');
-        const wizPromptPartContent = document.getElementById('wizPromptPartContent');
-        const wizPromptPartFormSave = document.getElementById('wizSavePromptPartBtn');
-        const wizPromptPartFormCancel = document.getElementById('wizCancelPromptPartBtn');
+        // Wizard Step 3: Populate Prompt Template dropdown and preview
+        const wizPromptTemplate = document.getElementById('wizPromptTemplate');
         const wizPromptPreview = document.getElementById('wizPromptPreview');
-        let editingPromptPartIdx = null;
-        function renderWizPromptParts() {
-            wizPromptPartsList.innerHTML = '';
-            window.wizPromptParts.forEach((part, idx) => {
-                const div = document.createElement('div');
-                div.className = 'bg-dark-card rounded p-2 mb-2 flex items-center justify-between';
-                div.innerHTML = `<span><b>${part.type}</b>: ${part.content}</span>
-                    <span>
-                        <button type="button" class="btn btn-secondary btn-xs" data-idx="${idx}" onclick="window.editWizPromptPart(${idx})">Edit</button>
-                        <button type="button" class="btn btn-danger btn-xs" data-idx="${idx}" onclick="window.deleteWizPromptPart(${idx})">Delete</button>
-                    </span>`;
-                wizPromptPartsList.appendChild(div);
-            });
-            renderWizPromptPreview();
-        }
-        function renderWizPromptPreview() {
-            wizPromptPreview.textContent = window.wizPromptParts.map(p => `[${p.type}] ${p.content}`).join('\n');
-        }
-        wizAddPromptPartBtn.onclick = function () {
-            wizPromptPartType.value = 'system';
-            wizPromptPartContent.value = '';
-            wizPromptPartForm.style.display = '';
-            editingPromptPartIdx = null;
-        };
-        wizPromptPartFormCancel.onclick = function () {
-            wizPromptPartForm.style.display = 'none';
-        };
-        wizPromptPartFormSave.onclick = function () {
-            const type = wizPromptPartType.value;
-            const content = wizPromptPartContent.value;
-            if (!content.trim()) {
-                alert('Content is required.');
-                return;
+        async function loadPromptTemplates(selectedId) {
+            wizPromptTemplate.innerHTML = '<option value="">Loading...</option>';
+            try {
+                const resp = await fetch('/api/v1/llm/prompts');
+                const templates = await resp.json();
+                wizPromptTemplate.innerHTML = templates.map(t => `<option value="${t.id}" ${selectedId == t.id ? 'selected' : ''}>${t.name}</option>`).join('');
+                if (selectedId) {
+                    const selected = templates.find(t => t.id == selectedId);
+                    wizPromptPreview.textContent = selected ? selected.prompt_text : '{ ... select a template ... }';
+                } else {
+                    wizPromptPreview.textContent = '{ ... select a template ... }';
+                }
+            } catch (e) {
+                wizPromptTemplate.innerHTML = '<option value="">Error loading templates</option>';
+                wizPromptPreview.textContent = '{ ... error ... }';
             }
-            if (editingPromptPartIdx !== null) {
-                window.wizPromptParts[editingPromptPartIdx] = { type, content };
+        }
+        wizPromptTemplate && wizPromptTemplate.addEventListener('change', function () {
+            const selected = this.options[this.selectedIndex];
+            if (selected && selected.value) {
+                fetch(`/api/v1/llm/prompts/${selected.value}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        wizPromptPreview.textContent = data.prompt_text || '{ ... select a template ... }';
+                    });
             } else {
-                window.wizPromptParts.push({ type, content });
+                wizPromptPreview.textContent = '{ ... select a template ... }';
             }
-            wizPromptPartForm.style.display = 'none';
-            renderWizPromptParts();
-        };
-        window.editWizPromptPart = function (idx) {
-            const part = window.wizPromptParts[idx];
-            wizPromptPartType.value = part.type;
-            wizPromptPartContent.value = part.content;
-            wizPromptPartForm.style.display = '';
-            editingPromptPartIdx = idx;
-        };
-        window.deleteWizPromptPart = function (idx) {
-            if (confirm('Delete this prompt part?')) {
-                window.wizPromptParts.splice(idx, 1);
-                renderWizPromptParts();
-            }
-        };
-        // Render on wizard open
-        showWizardStep = (function (orig) {
-            return function (idx) {
-                orig(idx);
-                if (idx === 3) renderWizPromptParts();
-            };
-        })(showWizardStep);
+        });
+        // Call loadPromptTemplates() when entering Step 3
+        const wizNext2 = document.getElementById('wizNext2');
+        if (wizNext2) {
+            wizNext2.addEventListener('click', function () {
+                loadPromptTemplates();
+            });
+        }
         // Wizard Save Action logic
         const actionWizardForm = document.getElementById('actionWizardForm');
         actionWizardForm.onsubmit = async function (e) {
@@ -376,8 +323,7 @@
             const llm_model = document.getElementById('wizModel').value;
             const temperature = parseFloat(document.getElementById('wizTemperature').value) || 0.7;
             const max_tokens = parseInt(document.getElementById('wizMaxTokens').value) || 1000;
-            // Prompt parts
-            const prompt_parts = window.wizPromptParts.map((p, i) => ({ ...p, order: i }));
+            const prompt_template_id = document.getElementById('wizPromptTemplate').value;
             // POST to backend
             const btn = actionWizardForm.querySelector('button[type="submit"]');
             btn.disabled = true;
@@ -393,7 +339,7 @@
                         llm_model,
                         temperature,
                         max_tokens,
-                        prompt_parts
+                        prompt_template_id
                     })
                 });
                 const data = await resp.json();
