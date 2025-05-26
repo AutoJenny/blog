@@ -427,38 +427,31 @@ ALTER TABLE llm_action ADD COLUMN input_field VARCHAR(128);
 ALTER TABLE llm_action ADD COLUMN output_field VARCHAR(128);
 
 -- LLM Provider Registry
-CREATE TABLE llm_provider (
+CREATE TABLE IF NOT EXISTS llm_provider (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE,
+    name VARCHAR(128) NOT NULL,
+    type VARCHAR(64) NOT NULL DEFAULT 'local',
+    api_url TEXT,
+    auth_token TEXT,
     description TEXT,
-    api_url VARCHAR(255),
-    auth_token VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- LLM Model Registry
-CREATE TABLE llm_model (
+CREATE TABLE IF NOT EXISTS llm_model (
     id SERIAL PRIMARY KEY,
-    provider_id INTEGER REFERENCES llm_provider(id) NOT NULL,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(128) NOT NULL,
+    provider_id INTEGER NOT NULL REFERENCES llm_provider(id) ON DELETE CASCADE,
     description TEXT,
-    config JSONB,
+    strengths TEXT,
+    weaknesses TEXT,
+    api_params JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT _provider_model_uc UNIQUE (provider_id, name)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- CREATE TABLE llm_config is deprecated and replaced by llm_provider/llm_model
--- CREATE TABLE llm_config (
---     id SERIAL PRIMARY KEY,
---     provider_type VARCHAR(50) NOT NULL,
---     model_name VARCHAR(100) NOT NULL,
---     api_base VARCHAR(200) NOT NULL,
---     auth_token VARCHAR(200),
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- ); 
+CREATE INDEX IF NOT EXISTS idx_llm_model_provider_id ON llm_model(provider_id);
 
 -- Add ENUM for provider type
 DO $$ BEGIN
