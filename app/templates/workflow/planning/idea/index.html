@@ -108,6 +108,66 @@
             toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 2000);
         }
+        const runBtn = document.getElementById('llm-action-run');
+        const summaryPanel = document.querySelector('#summary-panel .text-gray-200');
+        if (runBtn && select && postId) {
+            runBtn.addEventListener('click', async function () {
+                const actionId = select.value;
+                if (!actionId || isNaN(Number(actionId))) {
+                    showToast('Please select an action.', 'error');
+                    return;
+                }
+                // Get idea seed (from post or prompt user)
+                let ideaSeed = '';
+                {% if post and post.idea_seed %}
+                ideaSeed = `{{ post.idea_seed|e }}`;
+                {% else %}
+                ideaSeed = prompt('Enter the idea seed to use:');
+                if (!ideaSeed) return;
+                {% endif %}
+                runBtn.disabled = true;
+                runBtn.textContent = 'Running...';
+                summaryPanel.textContent = 'Running LLM action...';
+                try {
+                    // Fetch action to get prompt template
+                    const actionResp = await fetch(`/api/v1/llm/actions/${actionId}`);
+                    const actionData = await actionResp.json();
+                    if (!actionData.action) throw new Error('Action not found');
+                    const prompt = actionData.action.prompt_template;
+                    // Extract [data:var] from prompt
+                    const match = prompt.match(/\[data:([a-zA-Z0-9_]+)\]/);
+                    let inputPayload = {};
+                    if (match) {
+                        inputPayload[match[1]] = ideaSeed;
+                    } else {
+                        inputPayload['input'] = ideaSeed;
+                    }
+                    // Run test
+                    const resp = await fetch(`/api/v1/llm/actions/${actionId}/test`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ input: inputPayload })
+                    });
+                    const data = await resp.json();
+                    if (resp.ok && data.result) {
+                        summaryPanel.textContent = data.result.output || JSON.stringify(data.result);
+                        showToast('LLM action complete.', 'success');
+                    } else if (data.error) {
+                        summaryPanel.textContent = data.error;
+                        showToast('LLM error: ' + data.error, 'error');
+                    } else {
+                        summaryPanel.textContent = 'Error running action.';
+                        showToast('Unknown error running action.', 'error');
+                    }
+                } catch (e) {
+                    summaryPanel.textContent = 'Error: ' + e;
+                    showToast('Error: ' + e, 'error');
+                } finally {
+                    runBtn.disabled = false;
+                    runBtn.textContent = 'Run Action';
+                }
+            });
+        }
     })();
 </script>
 {% endblock %}
