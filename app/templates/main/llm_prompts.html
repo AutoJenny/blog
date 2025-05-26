@@ -288,7 +288,8 @@
                             <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
                             <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
                             <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
-                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                            <button class="action-btn prompt-delete-btn" title="Delete" data-id="{{ prompt.id }}"><i
+                                    class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -497,21 +498,24 @@
             };
         });
         // Delete button logic
-        document.querySelectorAll('.delete-part-btn').forEach(btn => {
-            btn.onclick = function () {
-                const partId = this.dataset.id;
-                if (!confirm('Delete this prompt part?')) return;
-                fetch(`/api/v1/llm/prompt_parts/${partId}`, { method: 'DELETE' })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            window.location.reload();
-                        } else {
-                            alert('Failed to delete prompt part: ' + (data.error || 'Unknown error'));
-                        }
-                    });
-            };
-        });
+        function attachDeletePartListeners() {
+            document.querySelectorAll('.delete-part-btn').forEach(btn => {
+                btn.onclick = function () {
+                    const partId = this.dataset.id;
+                    if (!confirm('Delete this prompt part?')) return;
+                    fetch(`/api/v1/llm/prompt_parts/${partId}`, { method: 'DELETE' })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                window.location.reload();
+                            } else {
+                                alert('Failed to delete prompt part: ' + (data.error || 'Unknown error'));
+                            }
+                        });
+                };
+            });
+        }
+        attachDeletePartListeners();
         // Add/Edit form submit logic
         addPromptPartForm.onsubmit = function (e) {
             e.preventDefault();
@@ -729,6 +733,26 @@
         // Initial render for assembler (in case user switches immediately)
         renderAssemblerParts();
         renderAssemblerSequence();
+        // Prompt Template delete button logic
+        function attachPromptDeleteListeners() {
+            document.querySelectorAll('.prompt-delete-btn').forEach(btn => {
+                btn.onclick = function () {
+                    const promptId = this.dataset.id;
+                    if (!promptId) return;
+                    if (!confirm('Delete this prompt template?')) return;
+                    fetch(`/api/v1/llm/prompts/${promptId}`, { method: 'DELETE' })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success === true) {
+                                window.location.reload();
+                            } else {
+                                alert('Failed to delete prompt template: ' + (data.error || 'Unknown error'));
+                            }
+                        });
+                };
+            });
+        }
+        attachPromptDeleteListeners();
     });
 </script>
 {% endblock %}
