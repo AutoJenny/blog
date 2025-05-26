@@ -150,3 +150,19 @@ For advanced operations (backups, restores, migrations), see other sections in t
 - The schema migration script (`create_tables.sql`) is fully aligned with the current live database schema and should be used for all future migrations.
 
 psql $DATABASE_URL -U nickfiddes -c "REASSIGN OWNED BY nickfiddes TO postgres;" 
+
+## 2025-06-XX: Sequence Ownership and Permission Recovery
+
+- Resolved a persistent permission error on the llm_prompt_id_seq sequence by granting superuser to the postgres user and recreating the sequence as postgres.
+- If you encounter sequence permission errors, ensure the user performing the operation is a superuser. Use \du to check roles.
+- Steps taken:
+  1. Grant superuser to postgres (as nickfiddes):
+     ALTER USER postgres WITH SUPERUSER;
+  2. Drop and recreate the sequence as postgres:
+     DROP SEQUENCE IF EXISTS llm_prompt_id_seq CASCADE;
+     CREATE SEQUENCE llm_prompt_id_seq OWNED BY llm_prompt.id;
+     ALTER TABLE llm_prompt ALTER COLUMN id SET DEFAULT nextval('llm_prompt_id_seq');
+     SELECT setval('llm_prompt_id_seq', (SELECT COALESCE(MAX(id), 1) FROM llm_prompt), true);
+  3. Create a new backup after the fix:
+     pg_dump -U postgres -d blog > blog_backup_YYYYMMDD_HHMMSS_after_seqfix.sql
+- See CHANGES.log for details. 
