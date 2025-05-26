@@ -26,13 +26,13 @@
             <i class="fa-solid fa-bolt"></i> Run Action
         </button>
     </div>
-    <div class="mb-8">
+    <div id="summary-panel" class="mb-8">
         <div class="rounded-xl p-6 shadow-lg" style="background: #23273a; border: 1.5px solid #31364a;">
             <h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2">
                 <i class="fa-solid fa-align-left text-indigo-400"></i> Summary
             </h2>
-            <div class="text-gray-200 text-base whitespace-pre-line">{{ post.summary|safe if post.summary else 'No
-                summary yet.' }}</div>
+            <div class="text-gray-200 text-base whitespace-pre-line" id="summary-content">{{ post.summary|safe if
+                post.summary else 'No summary yet.' }}</div>
         </div>
     </div>
     {% endif %}
@@ -109,7 +109,7 @@
             setTimeout(() => { toast.style.display = 'none'; }, 2000);
         }
         const runBtn = document.getElementById('llm-action-run');
-        const summaryPanel = document.querySelector('#summary-panel .text-gray-200');
+        const summaryPanel = document.getElementById('summary-content');
         if (runBtn && select && postId) {
             runBtn.addEventListener('click', async function () {
                 const actionId = select.value;
