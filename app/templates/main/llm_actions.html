@@ -1,396 +1,567 @@
-{% extends 'base.html' %}
-{% block content %}
+{% extends "base.html" %}
+
+{% block title %}LLM Actions{% endblock %}
+
+{% block styles %}
+<link href="/static/css/dist/main.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
-    .action-status {
-        display: inline-block;
-        padding: 0.25em 0.75em;
-        border-radius: 9999px;
-        font-size: 0.95em;
+    body {
+        background: #18181b;
+    }
+
+    .admin-card {
+        background: #23272F;
+        border-radius: 1rem;
+        box-shadow: 0 6px 32px rgba(0, 0, 0, 0.18);
+        padding: 2.5rem 2rem 2rem 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .tab-bar {
+        display: flex;
+        border-bottom: 2px solid #373a4d;
+        margin-bottom: 0;
+        background: none;
+    }
+
+    .tab-btn {
+        background: #23263a;
+        color: #a5b4fc;
+        border: none;
+        border-radius: 0.75rem 0.75rem 0 0;
+        margin-right: 0.25rem;
+        margin-bottom: -2px;
+        position: relative;
+        top: 2px;
+        z-index: 1;
+        box-shadow: none;
+        font-size: 1.15rem;
+        letter-spacing: 0.01em;
+        padding: 0.85rem 2.5rem;
+        min-width: 180px;
+        text-align: center;
         font-weight: 600;
-        background: #6366f1;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .tab-btn.active {
+        background: #fff;
+        color: #373a4d;
+        border-bottom: 2px solid #fff;
+        box-shadow: 0 -2px 8px 0 rgba(99, 102, 241, 0.08);
+        z-index: 2;
+    }
+
+    .tab-btn:not(.active):hover,
+    .tab-btn:not(.active):focus {
+        background: #373a4d;
         color: #fff;
     }
 
-    .action-btn {
-        @apply text-indigo-400 hover:text-indigo-200 px-2;
+    .action-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
     }
 
-    .action-btn[disabled] {
-        opacity: 0.5;
-        pointer-events: none;
+    .action-accordion-item {
+        background: #23273a;
+        border: 1.5px solid #35395a;
+        border-radius: 0.75rem;
+        padding: 1.25rem 1.5rem;
+        transition: box-shadow 0.2s, border 0.2s, background 0.2s;
+        box-shadow: 0 2px 8px rgba(56, 189, 248, 0.06);
+        cursor: pointer;
     }
 
-    .modal-bg {
-        background: rgba(24, 28, 42, 0.85);
+    .action-accordion-item:hover {
+        border-color: #38bdf8;
+        background: #23273aee;
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.13);
+    }
+
+    .action-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .action-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #e0e0e0;
+        letter-spacing: 0.01em;
+    }
+
+    .action-model {
+        color: #a5b4fc;
+        font-size: 1em;
+        margin-left: 1.5rem;
+        font-weight: 500;
+    }
+
+    .action-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.4rem;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+        cursor: pointer;
+        font-size: 0.95em;
+    }
+
+    .btn-primary {
+        background: linear-gradient(90deg, #6366f1 0%, #38bdf8 100%);
+        color: #fff;
+        border: none;
+        font-weight: 700;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(90deg, #38bdf8 0%, #6366f1 100%);
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.18);
+        color: #fff;
+    }
+
+    .btn-secondary {
+        background: #23273a;
+        border: 1.5px solid #35395a;
+        color: #a5b4fc;
+    }
+
+    .btn-secondary:hover {
+        background: #3730a3;
+        border-color: #38bdf8;
+        color: #fff;
+    }
+
+    .btn-danger {
+        background: #DC2626;
+        color: white;
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background: #B91C1C;
+        color: #fff;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        display: block;
+        color: #a5b4fc;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.97em;
+    }
+
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        background: #18181b;
+        border: 1.5px solid #35395a;
+        color: #e0e0e0;
+        padding: 0.7rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 1em;
+        margin-bottom: 0.1rem;
+        transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+        border-color: #38bdf8;
+        outline: none;
+        box-shadow: 0 0 0 2px #38bdf8aa;
+    }
+
+    .form-textarea {
+        min-height: 110px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        line-height: 1.5;
+        resize: vertical;
+    }
+
+    .flex.justify-end.gap-4 {
+        margin-top: 2rem;
+    }
+
+    @media (max-width: 600px) {
+        .admin-card {
+            padding: 1.2rem;
+        }
+
+        .action-card {
+            padding: 1rem;
+        }
     }
 </style>
-<div class="container mx-auto py-10 px-4">
-    <div class="flex justify-between items-center mb-8">
-        <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
-            <i class="fa-solid fa-bolt"></i> LLM Actions & Tasks
-        </div>
-        <button id="addActionBtn"
-            class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
-            <i class="fa-solid fa-plus"></i> New Action
-        </button>
+{% endblock %}
+
+{% block area_nav %}
+{% include 'llm/_llm_nav.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-10">
+    <div class="tab-bar mb-0">
+        <button class="tab-btn active" id="tabActionsBtn" type="button" tabindex="0">Actions Table</button>
+        <button class="tab-btn" id="tabDetailsBtn" type="button" tabindex="0">Action Details</button>
     </div>
-    <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
-        <table class="min-w-full text-left">
-            <thead>
-                <tr class="text-indigo-200 border-b border-dark-border">
-                    <th class="py-2 px-3">Name</th>
-                    <th class="py-2 px-3">Prompt</th>
-                    <th class="py-2 px-3">Model</th>
-                    <th class="py-2 px-3">Status</th>
-                    <th class="py-2 px-3">Last Run</th>
-                    <th class="py-2 px-3">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for action in actions %}
-                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                    <td class="py-2 px-3 font-semibold text-white">{{ action.field_name }}</td>
-                    <td class="py-2 px-3">{{ action.prompt_name }}</td>
-                    <td class="py-2 px-3">{{ action.llm_model }}</td>
-                    <td class="py-2 px-3"><span class="action-status">{{ action.status }}</span></td>
-                    <td class="py-2 px-3">{{ action.last_run or '' }}</td>
-                    <td class="py-2 px-3 flex gap-2">
-                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn" title="Run/Test"><i class="fa-solid fa-play"></i></button>
-                        <button class="action-btn" title="History"><i
-                                class="fa-solid fa-clock-rotate-left"></i></button>
-                        <button class="action-btn delete-action-btn" data-id="{{ action.id }}" title="Delete"><i
-                                class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <!-- Wizard Modal for Action Creation/Editing -->
-    <div id="actionWizardModal" class="modal">
-        <div class="modal-content" style="max-width:600px;">
-            <button id="closeActionWizard" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"
-                style="right:1.5rem;top:1.5rem;"><i class="fa-solid fa-xmark fa-lg"></i></button>
-            <div id="wizardProgress" class="mb-4 flex items-center justify-between text-indigo-200 text-sm">
-                <span id="wizardStep1" class="wizard-step">1. Basic Info</span>
-                <span id="wizardStep2" class="wizard-step">2. Model</span>
-                <span id="wizardStep3" class="wizard-step">3. Prompt Template</span>
-                <span id="wizardStep4" class="wizard-step">4. Test & Save</span>
+    <div id="tabActions" class="tab-content">
+        <div class="admin-card">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="admin-title"><i class="fas fa-bolt mr-2"></i>LLM Actions</h1>
+                <button class="btn btn-primary" id="newActionBtn"><i class="fas fa-plus"></i> New Action</button>
             </div>
-            <form id="actionWizardForm">
-                <!-- Step 1: Basic Info -->
-                <div class="wizard-section" id="wizardSection1">
-                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-info-circle"></i>
-                        Step 1: Basic Info</h2>
-                    <div class="mb-4 text-indigo-200">Give your action a name and (optionally) a description. This helps
-                        you find it later.</div>
+            <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+                <table class="min-w-full text-left">
+                    <thead>
+                        <tr class="text-indigo-200 border-b border-dark-border">
+                            <th class="py-2 px-3">Name</th>
+                            <th class="py-2 px-3">Model</th>
+                            <th class="py-2 px-3">Prompt Template</th>
+                            <th class="py-2 px-3">Temperature</th>
+                            <th class="py-2 px-3">Max Tokens</th>
+                            <th class="py-2 px-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for action in actions %}
+                        <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                            <td class="py-2 px-3 font-semibold text-white">{{ action.field_name }}</td>
+                            <td class="py-2 px-3">{{ action.llm_model }}</td>
+                            <td class="py-2 px-3">{{ action.prompt_template }}</td>
+                            <td class="py-2 px-3">{{ action.temperature }}</td>
+                            <td class="py-2 px-3">{{ action.max_tokens }}</td>
+                            <td class="py-2 px-3 flex gap-2">
+                                <button class="btn btn-secondary edit-action-btn" data-id="{{ action.id }}"
+                                    data-mode="edit"><i class="fa-solid fa-pen"></i> Edit</button>
+                                <button class="btn btn-danger delete-action-btn" data-id="{{ action.id }}"><i
+                                        class="fa-solid fa-trash"></i> Delete</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="tabDetails" class="tab-content" style="display:none;">
+        <div class="admin-card mt-10" id="nonModalActionBuilder">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2" id="actionBuilderTitle"><i
+                    class="fa-solid fa-plus"></i> Create New Action (Builder)</h2>
+            <form id="actionBuilderForm" autocomplete="off">
+                <!-- Stage 1: Basic Info -->
+                <div class="mb-8">
+                    <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-info-circle"></i>
+                        1. Basic Info</h3>
                     <div class="form-group">
-                        <label class="form-label" for="wizFieldName">Field Name <i
-                                class="fa-solid fa-circle-question text-indigo-300"
-                                title="The field this action will fill, e.g. 'summary'."></i></label>
-                        <input type="text" id="wizFieldName" name="field_name" class="form-input" required>
+                        <label class="form-label" for="builderFieldName">Field Name</label>
+                        <input type="text" id="builderFieldName" name="field_name" class="form-input" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="wizDescription">Description <i
-                                class="fa-solid fa-circle-question text-indigo-300"
-                                title="Describe what this action does."></i></label>
-                        <input type="text" id="wizDescription" name="description" class="form-input">
-                    </div>
-                    <div class="flex justify-end gap-4 mt-6">
-                        <button type="button" class="btn btn-primary" id="wizNext1">Next →</button>
+                        <label class="form-label" for="builderDescription">Description</label>
+                        <input type="text" id="builderDescription" name="description" class="form-input">
                     </div>
                 </div>
-                <!-- Step 2: Model Settings -->
-                <div class="wizard-section" id="wizardSection2" style="display:none;">
-                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-robot"></i> Step 2:
-                        Model Settings</h2>
-                    <div class="mb-4 text-indigo-200">Choose the AI model and prompt template. Adjust creativity and
-                        output length as needed.</div>
+                <!-- Stage 2: Model Settings -->
+                <div class="mb-8">
+                    <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-robot"></i> 2.
+                        Model Settings</h3>
                     <div class="form-group">
-                        <label class="form-label" for="wizProvider">LLM Provider</label>
-                        <select id="wizProvider" name="provider_id" class="form-input" required></select>
+                        <label class="form-label" for="builderProvider">LLM Provider</label>
+                        <select id="builderProvider" name="provider_id" class="form-input" required></select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="wizModel">LLM Model</label>
-                        <select id="wizModel" name="llm_model" class="form-input" required></select>
+                        <label class="form-label" for="builderModel">LLM Model</label>
+                        <select id="builderModel" name="llm_model" class="form-input" required></select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="wizTemperature">Temperature <i
-                                class="fa-solid fa-circle-question text-indigo-300"
-                                title="Higher = more creative, lower = more predictable."></i></label>
-                        <input type="number" id="wizTemperature" name="temperature" class="form-input" min="0" max="2"
-                            step="0.1" value="0.7">
+                        <label class="form-label" for="builderTemperature">Temperature</label>
+                        <input type="number" id="builderTemperature" name="temperature" class="form-input" min="0"
+                            max="2" step="0.1" value="0.7">
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="wizMaxTokens">Max Tokens <i
-                                class="fa-solid fa-circle-question text-indigo-300"
-                                title="Maximum length of the AI's response."></i></label>
-                        <input type="number" id="wizMaxTokens" name="max_tokens" class="form-input" min="1" max="4096"
-                            value="1000">
-                    </div>
-                    <div class="flex justify-between gap-4 mt-6">
-                        <button type="button" class="btn btn-secondary" id="wizBack2">← Back</button>
-                        <button type="button" class="btn btn-primary" id="wizNext2">Next →</button>
+                        <label class="form-label" for="builderMaxTokens">Max Tokens</label>
+                        <input type="number" id="builderMaxTokens" name="max_tokens" class="form-input" min="1"
+                            max="4096" value="1000">
                     </div>
                 </div>
-                <!-- Step 3: Prompt Template -->
-                <div class="wizard-section" id="wizardSection3" style="display:none;">
-                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i>
-                        Step 3: Prompt Template</h2>
-                    <div class="mb-4 text-indigo-200">Select the prompt template this action will use. You can manage
-                        templates on the Prompts page.</div>
+                <!-- Stage 3: Prompt Template -->
+                <div class="mb-8">
+                    <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i>
+                        3. Prompt Template</h3>
                     <div class="form-group mb-4">
-                        <label class="form-label" for="wizPromptTemplate">Prompt Template</label>
-                        <select id="wizPromptTemplate" name="prompt_template_id" class="form-input" required></select>
+                        <label class="form-label" for="builderPromptTemplate">Prompt Template</label>
+                        <select id="builderPromptTemplate" name="prompt_template_id" class="form-input"
+                            required></select>
                     </div>
                     <div class="bg-dark-card rounded p-4 mt-4 mb-2">
                         <h4 class="font-bold mb-1 flex items-center gap-2"><i class="fa-solid fa-eye"></i> Prompt
                             Preview</h4>
-                        <div id="wizPromptPreview" class="whitespace-pre-line text-indigo-100 text-sm">{ ... select a
-                            template ... }</div>
+                        <div id="builderPromptPreview" class="whitespace-pre-line text-indigo-100 text-sm">{ ... select
+                            a template ... }</div>
                         <div class="text-xs text-indigo-200 mt-1">This is how your full prompt will look to the AI, with
                             variables replaced at runtime.</div>
                     </div>
-                    <div class="flex justify-between gap-4 mt-6">
-                        <button type="button" class="btn btn-secondary" id="wizBack3">← Back</button>
-                        <button type="button" class="btn btn-primary" id="wizNext3">Next →</button>
-                    </div>
                 </div>
-                <!-- Step 4: Test & Save -->
-                <div class="wizard-section" id="wizardSection4" style="display:none;">
-                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-vial"></i> Step 4:
-                        Test & Save</h2>
-                    <div class="mb-4 text-indigo-200">Try out your action! Enter some sample input and see what the AI
-                        generates. If you're happy, save your action.</div>
+                <!-- Stage 4: Test & Save -->
+                <div class="mb-8">
+                    <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-vial"></i> 4. Test
+                        & Save</h3>
                     <div class="form-group">
                         <label class="form-label">Test Input</label>
-                        <textarea id="wizTestInput" class="form-textarea" rows="2"></textarea>
+                        <textarea id="builderTestInput" class="form-textarea" rows="2"></textarea>
                     </div>
-                    <button type="button" class="btn btn-primary mb-2" id="wizRunTestBtn">Run Test</button>
-                    <div id="wizTestOutput" class="bg-dark-card rounded p-4 mt-2 text-indigo-100 text-sm"
+                    <button type="button" class="btn btn-primary mb-2" id="builderRunTestBtn">Run Test</button>
+                    <div id="builderTestOutput" class="bg-dark-card rounded p-4 mt-2 text-indigo-100 text-sm"
                         style="white-space: pre-wrap; min-height: 2em;"></div>
-                    <div class="flex justify-between gap-4 mt-6">
-                        <button type="button" class="btn btn-secondary" id="wizBack4">← Back</button>
+                    <div class="flex justify-end gap-4 mt-6">
                         <button type="submit" class="btn btn-primary">Save Action</button>
                     </div>
                 </div>
             </form>
+            <div id="actionBuilderMsg" class="mt-2 text-sm"></div>
         </div>
     </div>
-    <!-- Action Run Modal (placeholder) -->
-    <div id="runActionModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
-        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-md relative">
-            <button id="closeRunAction" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
-                    class="fa-solid fa-xmark fa-lg"></i></button>
-            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-play"></i>
-                Run/Test Action</div>
-            <div class="mb-4 text-dark-accent">(Action run/test result will appear here)</div>
-            <div class="flex justify-end">
-                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Close</button>
-            </div>
-        </div>
-    </div>
-    <!-- Action History Modal (placeholder) -->
-    <div id="actionHistoryModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
-        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-md relative">
-            <button id="closeActionHistory" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
-                    class="fa-solid fa-xmark fa-lg"></i></button>
-            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i
-                    class="fa-solid fa-clock-rotate-left"></i> Action History</div>
-            <div class="mb-4 text-dark-accent">(Action history will appear here)</div>
-            <div class="flex justify-end">
-                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-<script>
-    // --- Action Wizard Modal Logic ---
-    (function () {
-        // Modal open/close
-        const actionWizardModal = document.getElementById('actionWizardModal');
-        const addActionBtn = document.getElementById('addActionBtn');
-        // --- Provider/Model Dropdown Logic ---
-        const wizProvider = document.getElementById('wizProvider');
-        const wizModel = document.getElementById('wizModel');
+    <script>
+        // Tab logic
+        const tabActionsBtn = document.getElementById('tabActionsBtn');
+        const tabDetailsBtn = document.getElementById('tabDetailsBtn');
+        const tabActions = document.getElementById('tabActions');
+        const tabDetails = document.getElementById('tabDetails');
+        function showTab(tab) {
+            if (tab === 'actions') {
+                tabActionsBtn.classList.add('active');
+                tabDetailsBtn.classList.remove('active');
+                tabActions.style.display = '';
+                tabDetails.style.display = 'none';
+            } else {
+                tabActionsBtn.classList.remove('active');
+                tabDetailsBtn.classList.add('active');
+                tabActions.style.display = 'none';
+                tabDetails.style.display = '';
+            }
+        }
+        tabActionsBtn.onclick = () => showTab('actions');
+        tabDetailsBtn.onclick = () => showTab('details');
+        // --- Dropdown Population Logic ---
         async function loadProviders(selectedProviderId) {
-            wizProvider.innerHTML = '<option value="">Loading...</option>';
+            const providerSelect = document.getElementById('builderProvider');
+            providerSelect.innerHTML = '<option value="">Loading...</option>';
             try {
                 const resp = await fetch('/api/v1/llm/providers');
                 const providers = await resp.json();
-                wizProvider.innerHTML = providers.map(p => `<option value="${p.id}" ${selectedProviderId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+                providerSelect.innerHTML = providers.map(p => `<option value="${p.id}" ${selectedProviderId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+                // If a provider is selected, load models for it
+                const selected = providerSelect.value || selectedProviderId;
+                if (selected) {
+                    loadModels(selected);
+                } else {
+                    document.getElementById('builderModel').innerHTML = '<option value="">Select provider first</option>';
+                }
             } catch (e) {
-                wizProvider.innerHTML = '<option value="">Failed to load providers</option>';
+                providerSelect.innerHTML = '<option value="">Failed to load providers</option>';
+                document.getElementById('builderModel').innerHTML = '<option value="">Select provider first</option>';
             }
         }
-        async function loadModels(providerId, selectedModelName) {
-            wizModel.innerHTML = '<option value="">Loading...</option>';
+        async function loadModels(providerId, selectedModelId) {
+            const modelSelect = document.getElementById('builderModel');
+            modelSelect.innerHTML = '<option value="">Loading...</option>';
             try {
                 const resp = await fetch('/api/v1/llm/models');
                 const models = await resp.json();
                 const filtered = models.filter(m => String(m.provider_id) === String(providerId));
-                wizModel.innerHTML = filtered.map(m => `<option value="${m.name}" ${selectedModelName == m.name ? 'selected' : ''}>${m.name} (${m.description || ''})</option>`).join('');
+                modelSelect.innerHTML = filtered.map(m => `<option value="${m.name}" data-model-id="${m.id}" ${selectedModelId == m.name ? 'selected' : ''}>${m.name} (${m.description || ''})</option>`).join('');
             } catch (e) {
-                wizModel.innerHTML = '<option value="">Failed to load models</option>';
+                modelSelect.innerHTML = '<option value="">Failed to load models</option>';
             }
         }
-        // On modal open, load providers and models
-        addActionBtn.onclick = function () {
-            actionWizardModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            showWizardStep(1);
-            loadProviders().then(() => {
-                // If only one provider, auto-select and load models
-                if (wizProvider.options.length === 1 || (wizProvider.options.length === 2 && wizProvider.options[0].value === '')) {
-                    wizProvider.selectedIndex = wizProvider.options[0].value === '' ? 1 : 0;
-                }
-                loadModels(wizProvider.value);
-            });
-        };
-        // When provider changes, load models
-        wizProvider.addEventListener('change', function () {
-            loadModels(this.value);
-        });
-        // Step navigation
-        const wizardSections = [
-            null,
-            document.getElementById('wizardSection1'),
-            document.getElementById('wizardSection2'),
-            document.getElementById('wizardSection3'),
-            document.getElementById('wizardSection4')
-        ];
-        function showWizardStep(idx) {
-            for (let i = 1; i <= 4; i++) {
-                wizardSections[i].style.display = (i === idx) ? '' : 'none';
-                document.getElementById('wizardStep' + i).classList.toggle('font-bold', i === idx);
-            }
-        }
-        window.showWizardStep = showWizardStep;
-        document.getElementById('wizNext1').onclick = function () { showWizardStep(2); };
-        document.getElementById('wizBack2').onclick = function () { showWizardStep(1); };
-        document.getElementById('wizNext2').onclick = function () { showWizardStep(3); };
-        document.getElementById('wizBack3').onclick = function () { showWizardStep(2); };
-        document.getElementById('wizNext3').onclick = function () { showWizardStep(4); };
-        document.getElementById('wizBack4').onclick = function () { showWizardStep(3); };
-        // Wizard Step 3: Populate Prompt Template dropdown and preview
-        const wizPromptTemplate = document.getElementById('wizPromptTemplate');
-        const wizPromptPreview = document.getElementById('wizPromptPreview');
         async function loadPromptTemplates(selectedId) {
-            wizPromptTemplate.innerHTML = '<option value="">Loading...</option>';
+            const select = document.getElementById('builderPromptTemplate');
+            select.innerHTML = '<option value="">Loading...</option>';
             try {
                 const resp = await fetch('/api/v1/llm/prompts');
-                const templates = await resp.json();
-                wizPromptTemplate.innerHTML = templates.map(t => `<option value="${t.id}" ${selectedId == t.id ? 'selected' : ''}>${t.name}</option>`).join('');
+                const prompts = await resp.json();
+                select.innerHTML = prompts.map(p => `<option value="${p.id}" ${selectedId == p.id ? 'selected' : ''}>${p.name} (${p.description || ''})</option>`).join('');
+                // Set preview if selected
                 if (selectedId) {
-                    const selected = templates.find(t => t.id == selectedId);
-                    wizPromptPreview.textContent = selected ? selected.prompt_text : '{ ... select a template ... }';
+                    const selected = prompts.find(p => p.id == selectedId);
+                    document.getElementById('builderPromptPreview').textContent = selected ? selected.prompt_text : '{ ... select a template ... }';
                 } else {
-                    wizPromptPreview.textContent = '{ ... select a template ... }';
+                    document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
                 }
             } catch (e) {
-                wizPromptTemplate.innerHTML = '<option value="">Error loading templates</option>';
-                wizPromptPreview.textContent = '{ ... error ... }';
+                select.innerHTML = '<option value="">Failed to load templates</option>';
+                document.getElementById('builderPromptPreview').textContent = '{ ... error ... }';
             }
         }
-        wizPromptTemplate && wizPromptTemplate.addEventListener('change', function () {
-            const selected = this.options[this.selectedIndex];
-            if (selected && selected.value) {
-                fetch(`/api/v1/llm/prompts/${selected.value}`)
+        // --- Test & Save Logic ---
+        function updateTestButtonState() {
+            const mode = document.getElementById('actionBuilderForm').dataset.mode;
+            const actionId = document.getElementById('actionBuilderForm').dataset.actionId;
+            const btn = document.getElementById('builderRunTestBtn');
+            if (mode === 'edit' && actionId) {
+                btn.disabled = false;
+                btn.title = '';
+            } else {
+                btn.disabled = true;
+                btn.title = 'Save the action first to enable testing.';
+            }
+        }
+        // Call this after any mode/form change
+        function setBuilderMode(mode, actionId) {
+            document.getElementById('actionBuilderForm').dataset.mode = mode;
+            document.getElementById('actionBuilderForm').dataset.actionId = actionId || '';
+            updateTestButtonState();
+        }
+        // Patch resetBuilderForm and edit logic to call setBuilderMode
+        function resetBuilderForm() {
+            document.getElementById('actionBuilderTitle').innerHTML = '<i class="fa-solid fa-plus"></i> Create New Action (Builder)';
+            document.getElementById('builderFieldName').value = '';
+            document.getElementById('builderDescription').value = '';
+            document.getElementById('builderProvider').value = '';
+            document.getElementById('builderModel').innerHTML = '<option value="">Select provider first</option>';
+            document.getElementById('builderTemperature').value = '0.7';
+            document.getElementById('builderMaxTokens').value = '1000';
+            document.getElementById('builderPromptTemplate').value = '';
+            document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
+            document.getElementById('builderTestInput').value = '';
+            document.getElementById('builderTestOutput').textContent = '';
+            setBuilderMode('new', '');
+            loadProviders(); // Always reload providers and models
+        }
+        document.getElementById('newActionBtn').onclick = function () {
+            resetBuilderForm();
+            showTab('details');
+        };
+        // Edit button logic
+        document.querySelectorAll('.edit-action-btn').forEach(btn => {
+            btn.onclick = function () {
+                const row = this.closest('tr');
+                const actionId = this.dataset.id;
+                fetch(`/api/v1/llm/actions/${actionId}`)
                     .then(r => r.json())
                     .then(data => {
-                        wizPromptPreview.textContent = data.prompt_text || '{ ... select a template ... }';
+                        if (data.status === 'success' && data.action) {
+                            const a = data.action;
+                            document.getElementById('actionBuilderTitle').innerHTML = '<i class="fa-solid fa-pen"></i> Edit Action';
+                            document.getElementById('builderFieldName').value = a.field_name || '';
+                            document.getElementById('builderDescription').value = a.description || '';
+                            loadProviders(a.provider_id).then(() => {
+                                document.getElementById('builderProvider').value = a.provider_id || '';
+                                loadModels(a.provider_id, a.llm_model);
+                            });
+                            document.getElementById('builderModel').value = a.llm_model || '';
+                            document.getElementById('builderTemperature').value = a.temperature || '0.7';
+                            document.getElementById('builderMaxTokens').value = a.max_tokens || '1000';
+                            loadPromptTemplates(a.prompt_template_id);
+                            document.getElementById('builderPromptTemplate').value = a.prompt_template_id || '';
+                            document.getElementById('builderTestInput').value = '';
+                            document.getElementById('builderTestOutput').textContent = '';
+                            setBuilderMode('edit', a.id);
+                            showTab('details');
+                        }
                     });
-            } else {
-                wizPromptPreview.textContent = '{ ... select a template ... }';
-            }
+            };
         });
-        // Call loadPromptTemplates() when entering Step 3
-        const wizNext2 = document.getElementById('wizNext2');
-        if (wizNext2) {
-            wizNext2.addEventListener('click', function () {
-                loadPromptTemplates();
-            });
-        }
-        // Wizard Save Action logic
-        const actionWizardForm = document.getElementById('actionWizardForm');
-        actionWizardForm.onsubmit = async function (e) {
+        updateTestButtonState();
+        document.getElementById('builderRunTestBtn').onclick = async function () {
+            const mode = document.getElementById('actionBuilderForm').dataset.mode;
+            const actionId = document.getElementById('actionBuilderForm').dataset.actionId;
+            if (mode !== 'edit' || !actionId) return;
+            const testInput = document.getElementById('builderTestInput').value;
+            const outputDiv = document.getElementById('builderTestOutput');
+            outputDiv.textContent = 'Running test...';
+            try {
+                const resp = await fetch(`/api/v1/llm/actions/${actionId}/test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input: testInput })
+                });
+                const data = await resp.json();
+                if (resp.ok && data.result) {
+                    outputDiv.textContent = data.result.output || JSON.stringify(data.result);
+                } else if (data.error) {
+                    outputDiv.textContent = data.error;
+                } else {
+                    outputDiv.textContent = 'Error running test.';
+                }
+            } catch (e) {
+                outputDiv.textContent = 'Error: ' + e;
+            }
+        };
+        document.getElementById('actionBuilderForm').onsubmit = async function (e) {
             e.preventDefault();
-            // Gather all fields
-            const field_name = document.getElementById('wizFieldName').value;
-            const description = document.getElementById('wizDescription').value;
-            const provider_id = document.getElementById('wizProvider').value;
-            const llm_model = document.getElementById('wizModel').value;
-            const temperature = parseFloat(document.getElementById('wizTemperature').value) || 0.7;
-            const max_tokens = parseInt(document.getElementById('wizMaxTokens').value) || 1000;
-            const prompt_template_id = document.getElementById('wizPromptTemplate').value;
-            // POST to backend
-            const btn = actionWizardForm.querySelector('button[type="submit"]');
+            const msg = document.getElementById('actionBuilderMsg');
+            msg.textContent = '';
+            const mode = this.dataset.mode || 'new';
+            const actionId = this.dataset.actionId || '';
+            const field_name = document.getElementById('builderFieldName').value;
+            const description = document.getElementById('builderDescription').value;
+            const provider_id = document.getElementById('builderProvider').value;
+            const llm_model = document.getElementById('builderModel').value;
+            const prompt_template_id = document.getElementById('builderPromptTemplate').value;
+            const temperature = parseFloat(document.getElementById('builderTemperature').value) || 0.7;
+            const max_tokens = parseInt(document.getElementById('builderMaxTokens').value) || 1000;
+            if (!field_name || !provider_id || !llm_model || !prompt_template_id) {
+                msg.textContent = 'Please fill in all required fields.';
+                msg.style.color = 'red';
+                return;
+            }
+            const btn = this.querySelector('button[type="submit"]');
             btn.disabled = true;
             btn.textContent = 'Saving...';
             try {
-                const resp = await fetch('/api/v1/llm/actions', {
-                    method: 'POST',
+                let url = '/api/v1/llm/actions';
+                let method = 'POST';
+                if (mode === 'edit' && actionId) {
+                    url = `/api/v1/llm/actions/${actionId}`;
+                    method = 'PUT';
+                }
+                const resp = await fetch(url, {
+                    method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         field_name,
                         description,
                         provider_id,
                         llm_model,
+                        prompt_template_id,
                         temperature,
-                        max_tokens,
-                        prompt_template_id
+                        max_tokens
                     })
                 });
                 const data = await resp.json();
                 if (resp.ok && data.status === 'success') {
-                    btn.textContent = 'Saved!';
-                    setTimeout(() => {
-                        btn.disabled = false;
-                        btn.textContent = 'Save Action';
-                        actionWizardModal.classList.remove('active');
-                        document.body.style.overflow = '';
-                        location.reload();
-                    }, 800);
+                    msg.textContent = 'Action saved!';
+                    msg.style.color = 'green';
+                    setTimeout(() => { window.location.reload(); }, 800);
                 } else {
-                    btn.disabled = false;
-                    btn.textContent = 'Save Action';
-                    alert(data.error || 'Error saving action');
+                    msg.textContent = data.error || 'Error saving action.';
+                    msg.style.color = 'red';
                 }
             } catch (e) {
-                btn.disabled = false;
-                btn.textContent = 'Save Action';
-                alert('Error: ' + e);
+                msg.textContent = 'Error: ' + e;
+                msg.style.color = 'red';
             }
+            btn.disabled = false;
+            btn.textContent = 'Save Action';
         };
-    })();
-    // Modal open/close logic (placeholder)
-    document.getElementById('closeRunAction').onclick = function () {
-        document.getElementById('runActionModal').classList.add('hidden');
-    };
-    document.getElementById('closeActionHistory').onclick = function () {
-        document.getElementById('actionHistoryModal').classList.add('hidden');
-    };
-    // Delete action logic
-    document.querySelectorAll('.delete-action-btn').forEach(btn => {
-        btn.onclick = function () {
-            const actionId = this.dataset.id;
-            if (!confirm('Delete this action?')) return;
-            fetch(`/api/v1/llm/actions/${actionId}`, { method: 'DELETE' })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        window.location.reload();
-                    } else {
-                        alert('Failed to delete action: ' + (data.error || 'Unknown error'));
-                    }
-                });
-        };
-    });
-    const closeActionWizard = document.getElementById('closeActionWizard');
-    closeActionWizard.onclick = function () {
-        actionWizardModal.classList.remove('active');
-        document.body.style.overflow = '';
-    };
-</script>
+    </script>
+</div>
 {% endblock %}
