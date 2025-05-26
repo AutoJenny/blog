@@ -649,3 +649,15 @@ All notable changes to this project are documented in this file.
 2025-06-XX: Fix non-modal LLM Action wizard Provider/Model dropdowns
 - Ensured Provider and Model dropdowns in the non-modal wizard at the bottom of /llm/actions are always visible and populated at step 2, matching the modal wizard behavior.
 - JS now loads providers/models on page load for the non-modal wizard.
+
+2025-06-XX: Add fully functional non-modal Action Builder panel
+- Added a non-modal Action Builder panel to the bottom of /llm/actions.
+- Provider, Model, and Prompt Template dropdowns are now always present and populated, matching the modal wizard behavior.
+- Users can now create new actions directly from the page without using the modal.
+- All changes committed to git.
+
+2025-06-XX: Refactored /llm/actions non-modal Action Builder
+- The non-modal Action Builder panel below the action list now displays all four stages (Basic Info, Model Settings, Prompt Template, Test & Save) as always-visible, vertically stacked sections.
+- UI and logic match the modal wizard: dropdowns, prompt preview, test run, and save are all supported.
+- JavaScript updated for robust dropdown population, preview, test, and save logic in the always-visible layout.
+- Fully accessible and robust; all fields validated; clear error and success feedback.

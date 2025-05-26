@@ -167,8 +167,10 @@ psql $DATABASE_URL -U nickfiddes -c "REASSIGN OWNED BY nickfiddes TO postgres;"
      pg_dump -U postgres -d blog > blog_backup_YYYYMMDD_HHMMSS_after_seqfix.sql
 - See CHANGES.log for details.
 
-## 2025-06-XX: Non-modal Action Builder Dropdowns Always Populated
+## 2025-06-XX: Non-modal Action Builder Panel (Updated)
 
-- Fixed an issue where the Provider, Model, and Prompt Template dropdowns in the non-modal Action builder (bottom of /llm/actions) were not being populated on page load or provider change.
-- Now, the JS loads these dropdowns on page load and when the provider changes, independently of the modal wizard.
+- The /llm/actions page now features a fully functional non-modal Action Builder panel below the action list.
+- All four stages (Basic Info, Model Settings, Prompt Template, Test & Save) are always visible, stacked vertically.
+- The builder supports dropdowns, prompt preview, test run, and save, matching the modal wizard's logic and UI.
+- The panel is fully accessible, robust, and provides clear error and success feedback.
 - See CHANGES.log for details. 
