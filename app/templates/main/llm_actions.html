@@ -39,7 +39,6 @@
             <thead>
                 <tr class="text-indigo-200 border-b border-dark-border">
                     <th class="py-2 px-3">Name</th>
-                    <th class="py-2 px-3">Input → Output</th>
                     <th class="py-2 px-3">Prompt</th>
                     <th class="py-2 px-3">Model</th>
                     <th class="py-2 px-3">Status</th>
@@ -51,7 +50,6 @@
                 {% for action in actions %}
                 <tr class="border-b border-dark-border hover:bg-indigo-950/30">
                     <td class="py-2 px-3 font-semibold text-white">{{ action.field_name }}</td>
-                    <td class="py-2 px-3">{{ action.input_field }} → {{ action.output_field }}</td>
                     <td class="py-2 px-3">{{ action.prompt_name }}</td>
                     <td class="py-2 px-3">{{ action.llm_model }}</td>
                     <td class="py-2 px-3"><span class="action-status">{{ action.status }}</span></td>
@@ -77,7 +75,7 @@
             <div id="wizardProgress" class="mb-4 flex items-center justify-between text-indigo-200 text-sm">
                 <span id="wizardStep1" class="wizard-step">1. Basic Info</span>
                 <span id="wizardStep2" class="wizard-step">2. Model</span>
-                <span id="wizardStep3" class="wizard-step">3. Prompt Parts</span>
+                <span id="wizardStep3" class="wizard-step">3. Prompt Template</span>
                 <span id="wizardStep4" class="wizard-step">4. Test & Save</span>
             </div>
             <form id="actionWizardForm">
@@ -140,14 +138,13 @@
                         <button type="button" class="btn btn-primary" id="wizNext2">Next →</button>
                     </div>
                 </div>
-                <!-- Step 3: Prompt Parts -->
+                <!-- Step 3: Prompt Template -->
                 <div class="wizard-section" id="wizardSection3" style="display:none;">
                     <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i>
-                        Step 3: Prompt Parts</h2>
-                    <div class="mb-4 text-indigo-200">Build your prompt from multiple parts. Each part is a message to
-                        the AI. Add them in the order you want. Use variables like <code>{{input}}</code> or
-                        <code>{{idea_seed}}</code>.
-                    </div>
+                        Step 3: Prompt Template</h2>
+                    <div class="mb-4 text-indigo-200">Select or build the prompt template this action will use. You can
+                        assemble a template from multiple parts/messages, or select an existing template. Use variables
+                        like <code>{{input}}</code> or <code>{{idea_seed}}</code> as needed.</div>
                     <div id="wizPromptPartsList" class="mb-4"></div>
                     <button type="button" class="btn btn-secondary mb-2" id="wizAddPromptPartBtn">+ Add Prompt
                         Part</button>
