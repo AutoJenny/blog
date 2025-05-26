@@ -134,9 +134,19 @@ The admin interface at `/db/` provides a modern, grouped view of your database t
 
 For advanced operations (backups, restores, migrations), see other sections in this document.
 
-## LLM Prompt Assembler UI Improvements (2025-06-XX)
+## LLM Prompt Assembler & Prompt Template UI/Backend Improvements (2025-06-XX)
 
-- The Prompt Assembler on `/llm/prompts` now uses [SortableJS](https://sortablejs.github.io/Sortable/) for robust drag-and-drop of prompt parts.
-- Draggable items are styled with a deep green background and a drag handle for clarity.
-- The UI prevents accidental duplication and provides a smoother, more accessible experience.
-- See `app/templates/main/llm_prompts.html` for implementation details. 
+- The Prompt Assembler on `/llm/prompts` uses [SortableJS](https://sortablejs.github.io/Sortable/) for robust drag-and-drop of prompt parts.
+- Available prompt parts are blue; assembled sequence parts are blue (prompt parts) or green (data fields).
+- The green data field entity can be dragged and dropped into any position in the sequence, with visible drop space.
+- All tab logic (Prompt Parts, Assembler, Templates) is robust and accessible.
+- Prompt template deletion is now robust: the backend uses direct SQL, and the frontend checks for `{ success: true }` in the response, providing clear UI feedback.
+- All changes are committed and tested with curl and browser.
+- See `app/templates/main/llm_prompts.html` for implementation details.
+
+## Changes from 2025-05-26
+- As of 2025-05-26, the `llm_action_prompt_part` table has been dropped from the schema and is no longer present in the LLM group in the /db UI. The LLM group now includes: `llm_action`, `llm_action_history`, `llm_provider`, `llm_model`, `llm_interaction`, `llm_prompt`, `llm_prompt_part`, and `post_substage_action`.
+- The Restore dropdown in `/db` is now dynamic and always lists all available backup files (most recent first) from both the `backups/` directory and the project root.
+- The schema migration script (`create_tables.sql`) is fully aligned with the current live database schema and should be used for all future migrations.
+
+psql $DATABASE_URL -U nickfiddes -c "REASSIGN OWNED BY nickfiddes TO postgres;" 

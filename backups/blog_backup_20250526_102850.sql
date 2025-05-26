@@ -476,45 +476,6 @@ CREATE TABLE public.llm_action_prompt_part (
 ALTER TABLE public.llm_action_prompt_part OWNER TO postgres;
 
 --
--- Name: llm_config; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.llm_config (
-    id integer NOT NULL,
-    provider_type character varying(50) NOT NULL,
-    model_name character varying(100) NOT NULL,
-    api_base character varying(200) NOT NULL,
-    auth_token character varying(200),
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE public.llm_config OWNER TO postgres;
-
---
--- Name: llm_config_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.llm_config_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.llm_config_id_seq OWNER TO postgres;
-
---
--- Name: llm_config_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.llm_config_id_seq OWNED BY public.llm_config.id;
-
-
---
 -- Name: llm_interaction; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -602,11 +563,13 @@ CREATE TABLE public.llm_prompt_part (
     id integer NOT NULL,
     type character varying(32) NOT NULL,
     content text NOT NULL,
-    description text,
     tags text[],
     "order" integer DEFAULT 0 NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    name character varying(128),
+    action_id integer,
+    description text
 );
 
 
@@ -751,6 +714,44 @@ ALTER TABLE public.post_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.post_id_seq OWNED BY public.post.id;
+
+
+--
+-- Name: post_substage_action; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.post_substage_action (
+    id integer NOT NULL,
+    post_id integer,
+    substage character varying(64) NOT NULL,
+    action_id integer,
+    button_label text,
+    button_order integer DEFAULT 0
+);
+
+
+ALTER TABLE public.post_substage_action OWNER TO nickfiddes;
+
+--
+-- Name: post_substage_action_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
+--
+
+CREATE SEQUENCE public.post_substage_action_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.post_substage_action_id_seq OWNER TO nickfiddes;
+
+--
+-- Name: post_substage_action_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
+--
+
+ALTER SEQUENCE public.post_substage_action_id_seq OWNED BY public.post_substage_action.id;
 
 
 --
@@ -1081,13 +1082,6 @@ ALTER TABLE ONLY public.llm_action_history ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
--- Name: llm_config id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.llm_config ALTER COLUMN id SET DEFAULT nextval('public.llm_config_id_seq'::regclass);
-
-
---
 -- Name: llm_interaction id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1120,6 +1114,13 @@ ALTER TABLE ONLY public.post ALTER COLUMN id SET DEFAULT nextval('public.post_id
 --
 
 ALTER TABLE ONLY public.post_development ALTER COLUMN id SET DEFAULT nextval('public.post_development_id_seq'::regclass);
+
+
+--
+-- Name: post_substage_action id; Type: DEFAULT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_substage_action ALTER COLUMN id SET DEFAULT nextval('public.post_substage_action_id_seq'::regclass);
 
 
 --
@@ -1270,15 +1271,6 @@ COPY public.llm_action_prompt_part (action_id, prompt_part_id, "order") FROM std
 
 
 --
--- Data for Name: llm_config; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.llm_config (id, provider_type, model_name, api_base, auth_token, created_at, updated_at) FROM stdin;
-1	ollama	llama3.1:70b	http://localhost:11434	\N	2025-05-01 07:03:20.613924	2025-05-01 07:33:20.294464
-\.
-
-
---
 -- Data for Name: llm_interaction; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1299,6 +1291,13 @@ COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, param
 7	Basic Idea to Idea Scope	Expand Basic Idea to Idea Scope	You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article — this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.	\N	\N	0	2025-05-04 11:18:41.267767	2025-05-05 13:23:08.776355
 12	Author Section first draft		You are a professional historical writer specializing in Scottish culture and heritage.\nYour task is to write 2–3 well-written paragraphs for a blog article based on a specific section. IMPORTANT: you must write very specifically only about the sub-themes of this section heading, and AVOID duplicating or overlapping with topics in other sections. Before starting to write anything, consider exactly how this section DISTINCTLY DIFFERS from other sections and focus only on those ideas.\n\nYou are given:\n\t•\tThe overall subject of the blog post, which is: {{basic_idea}}\n\n\t•\tGeneral background context about the topic, describing the range of content the full blog will cover, which is: {{idea_scope}}\n\n\t•\tThe current section title to write under, which is: {{section_heading}}\n\n\t•\tConcepts and angles that should guide this section (but that you may also add to and expand) which are: {{ideas_to_include}}\n\n\t•\tSome interesting factual points that MUST be included in this section (do not omit any!) which are: {{facts_to_include}}\n\nWrite clear, informative, and engaging text that suits a public-facing blog while respecting historical accuracy. Use only UK-British spellings and idioms, avoiding Americanisms (eg colour not color, and 's' not 'z' in words like authorise). \nEnsure that all the ideas and facts mentioned above are incorporated meaningfully into the text.\nDo not include any commentary, headings, titles, or formatting — return only the body paragraphs in plain text.	\N	\N	6	2025-05-05 10:01:54.864346	2025-05-05 14:04:21.476545
 13	Devise image concept	Devise image concept	You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article.\n\nYou will be given:\n\t•\tThe article title, which is: {{provisional_title}}\n\n\t•\tA summary of the article’s overall scope and themes, which are: {{idea_scope}}\n\n\t•\tA list of all section titles in the article, which are: \n{{section_order}}\n\n\t•\tThe specific section title that this will illustrate, which is: {{section_heading}}\n\n\t•\tThe full text of that section, which is: \n{{first_draft}}\n\n--\nYour task is to produce a single image concept suitable for illustration. The image should be:\n\t•\tRooted in Scottish history, culture, and environment\n\t•\tDistinct from concepts that might be used for other sections\n\t•\tVisually compelling and engaging for a general audience\n\t•\tSuitable for use as a featured image or embedded illustration\n\nFormat your response as follows:\n\nSection Illustration Prompt:\n<Detailed, descriptive scene for the image generation model, 1-3 sentences. Focus on visual composition, mood, setting, time period, and any symbolic elements relevant to this section’s theme. Use clear and evocative language suitable for stable diffusion or similar tools. Avoid repetition of other sections’ themes.>	\N	\N	0	2025-05-06 14:26:46.167752	2025-05-06 14:26:46.167759
+15	Test Assembled		[system] Test system\\n[user] Test user	\N	\N	0	2025-05-26 09:15:42.568304	2025-05-26 09:15:42.568304
+17	Test Assembled 3		[system] Test system\n[user] Test user	\N	\N	0	2025-05-26 09:16:12.890044	2025-05-26 09:16:12.890044
+19	Test Assembled 5		[system] Test system\n[user] Test user	\N	\N	0	2025-05-26 09:17:10.846953	2025-05-26 09:17:10.846953
+20	test		[system] You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage.\n[system] You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article.	\N	\N	0	2025-05-26 09:17:39.043344	2025-05-26 09:17:39.043344
+21	test2		[assistant] write a poem\n[system] You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage.\n[system] You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article.	\N	\N	0	2025-05-26 10:08:57.912017	2025-05-26 10:08:57.912017
+22	blubber		[system] You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage.\n[data:id]\n[system] You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article.\n[assistant] write a poem	\N	\N	0	2025-05-26 10:13:25.219773	2025-05-26 10:13:25.219773
+23	Idea Seed to Brief		[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n\nShort Idea:\n[data:idea_seed]	\N	\N	0	2025-05-26 10:28:14.12568	2025-05-26 10:28:14.12568
 \.
 
 
@@ -1306,7 +1305,20 @@ COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, param
 -- Data for Name: llm_prompt_part; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.llm_prompt_part (id, type, content, description, tags, "order", created_at, updated_at) FROM stdin;
+COPY public.llm_prompt_part (id, type, content, tags, "order", created_at, updated_at, name, action_id, description) FROM stdin;
+14	assistant	Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article — this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. 	{}	10	2025-05-26 07:55:08.615401	2025-05-26 07:55:08.615401	Create 50 ideas	\N	\N
+4	user	The style should have a traditional Scottish style	{}	4	2025-05-25 17:32:28.03507	2025-05-26 07:55:25.936599	Scottish style	\N	\N
+15	system	Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.	{}	10	2025-05-26 07:56:30.930082	2025-05-26 07:56:30.930082	JSON format	\N	\N
+17	user	Here is a JSON list of items:\\n\\n{\\"animals\\": [\\"dog\\", \\"cat\\", \\"bird\\", \\"hamster\\", \\"lizard\\"]}\\n\\nPlease return a JSON object where each animal has an array of three possible names.	{}	1000	2025-05-26 08:36:08.771728	2025-05-26 08:36:08.771728	SPECIMEN USER	\N	\N
+16	system	You are a naming assistant that returns exactly three creative but plausible names for each item provided.	{}	1000	2025-05-26 08:34:59.747679	2025-05-26 08:36:31.968444	SPECIMEN SYSTEM	\N	\N
+18	system	You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.	{}	1	2025-05-26 10:20:26.867218	2025-05-26 10:20:26.867218	Scottish cultural expert	\N	\N
+7	system	You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage.	{}	20	2025-05-25 19:42:51.572525	2025-05-26 10:20:56.682711	Historical researcher	\N	\N
+8	system	You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article. 	{}	20	2025-05-25 20:16:54.255069	2025-05-26 10:21:08.159163	Creative visualiser	\N	\N
+9	system	You are a researcher specialising in finding curious facts for blog articles for specialist audiences.	{}	20	2025-05-26 07:41:45.978276	2025-05-26 10:21:16.303707	Factoid researcher	\N	\N
+11	system	You are a researcher specialising in sub-editing blog articles for specialist audiences. 	{}	20	2025-05-26 07:46:28.823794	2025-05-26 10:21:26.491256	Sub-editor	\N	\N
+12	system	You are a professional copywriter and editor specializing in digital publishing and historical blogging.	{}	20	2025-05-26 07:47:33.873145	2025-05-26 10:21:33.122181	Editor-copywriter	\N	\N
+13	system	You are an experienced Social Media marketeer and content strategist. 	{}	20	2025-05-26 07:48:43.999092	2025-05-26 10:21:40.448863	Social media strategist	\N	\N
+19	system	Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n\nShort Idea: 	{}	2	2025-05-26 10:27:05.283848	2025-05-26 10:27:24.00439	idea_seed expansion	\N	\N
 \.
 
 
@@ -1349,6 +1361,15 @@ COPY public.post_development (id, post_id, basic_idea, provisional_title, idea_s
 5	9	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
 6	11	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
 7	12	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+\.
+
+
+--
+-- Data for Name: post_substage_action; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+--
+
+COPY public.post_substage_action (id, post_id, substage, action_id, button_label, button_order) FROM stdin;
+1	9	idea	9	Action	0
 \.
 
 
@@ -1478,14 +1499,7 @@ SELECT pg_catalog.setval('public.llm_action_history_id_seq', 25, true);
 -- Name: llm_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.llm_action_id_seq', 9, true);
-
-
---
--- Name: llm_config_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.llm_config_id_seq', 1, true);
+SELECT pg_catalog.setval('public.llm_action_id_seq', 20, true);
 
 
 --
@@ -1499,14 +1513,14 @@ SELECT pg_catalog.setval('public.llm_interaction_id_seq', 1, false);
 -- Name: llm_prompt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.llm_prompt_id_seq', 13, true);
+SELECT pg_catalog.setval('public.llm_prompt_id_seq', 23, true);
 
 
 --
 -- Name: llm_prompt_part_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.llm_prompt_part_id_seq', 1, false);
+SELECT pg_catalog.setval('public.llm_prompt_part_id_seq', 19, true);
 
 
 --
@@ -1521,6 +1535,13 @@ SELECT pg_catalog.setval('public.post_development_id_seq', 7, true);
 --
 
 SELECT pg_catalog.setval('public.post_id_seq', 12, true);
+
+
+--
+-- Name: post_substage_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.post_substage_action_id_seq', 1, true);
 
 
 --
@@ -1693,14 +1714,6 @@ ALTER TABLE ONLY public.llm_action_prompt_part
 
 
 --
--- Name: llm_config llm_config_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.llm_config
-    ADD CONSTRAINT llm_config_pkey PRIMARY KEY (id);
-
-
---
 -- Name: llm_interaction llm_interaction_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1762,6 +1775,14 @@ ALTER TABLE ONLY public.post
 
 ALTER TABLE ONLY public.post
     ADD CONSTRAINT post_slug_key UNIQUE (slug);
+
+
+--
+-- Name: post_substage_action post_substage_action_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_substage_action
+    ADD CONSTRAINT post_substage_action_pkey PRIMARY KEY (id);
 
 
 --
@@ -1982,13 +2003,6 @@ CREATE TRIGGER update_llm_action_updated_at BEFORE UPDATE ON public.llm_action F
 
 
 --
--- Name: llm_config update_llm_config_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER update_llm_config_updated_at BEFORE UPDATE ON public.llm_config FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
 -- Name: post update_post_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -2098,6 +2112,14 @@ ALTER TABLE ONLY public.llm_interaction
 
 
 --
+-- Name: llm_prompt_part llm_prompt_part_action_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.llm_prompt_part
+    ADD CONSTRAINT llm_prompt_part_action_id_fkey FOREIGN KEY (action_id) REFERENCES public.llm_action(id) ON DELETE CASCADE;
+
+
+--
 -- Name: post_categories post_categories_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2127,6 +2149,22 @@ ALTER TABLE ONLY public.post_development
 
 ALTER TABLE ONLY public.post
     ADD CONSTRAINT post_header_image_id_fkey FOREIGN KEY (header_image_id) REFERENCES public.image(id);
+
+
+--
+-- Name: post_substage_action post_substage_action_action_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_substage_action
+    ADD CONSTRAINT post_substage_action_action_id_fkey FOREIGN KEY (action_id) REFERENCES public.llm_action(id);
+
+
+--
+-- Name: post_substage_action post_substage_action_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_substage_action
+    ADD CONSTRAINT post_substage_action_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.post(id) ON DELETE CASCADE;
 
 
 --
@@ -2242,13 +2280,6 @@ GRANT SELECT ON TABLE public.llm_action_history TO nickfiddes;
 
 
 --
--- Name: TABLE llm_config; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT ON TABLE public.llm_config TO nickfiddes;
-
-
---
 -- Name: TABLE llm_interaction; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -2281,6 +2312,13 @@ GRANT SELECT ON TABLE public.post_categories TO nickfiddes;
 --
 
 GRANT SELECT ON TABLE public.post_development TO nickfiddes;
+
+
+--
+-- Name: TABLE post_substage_action; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.post_substage_action TO postgres;
 
 
 --

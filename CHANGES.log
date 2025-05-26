@@ -641,8 +641,14 @@ All notable changes to this project are documented in this file.
 [2024-06-13] Refactored Action Details page to use wizard-style panels and disabled dropdowns for provider/model/template, matching the wizard visually. All fields are read-only except the test area. UI is now consistent and user-friendly.
 
 2025-06-XX
-- Upgraded Prompt Assembler on /llm/prompts to use SortableJS for drag-and-drop.
-- Draggable items now have a deep green background and a drag handle.
-- Prevented accidental duplication and improved drag-and-drop UX.
-- Updated docs/database/sql_management.md with new assembler UI details.
-- Fix: Green data field entity now uses robust SortableJS external drag source, can be dropped at any position in the sequence with visible drop space. Restored all assembler and tab UI functionality after regression.
+- Prompt template deletion is now robust: backend uses direct SQL, frontend checks for { success: true } and gives clear UI feedback.
+- Prompt Assembler UI and tab logic fully restored: blue for available/sequence parts, green for data fields, SortableJS for drag-and-drop, visible drop space for data fields.
+- All changes tested with curl and browser.
+- Updated docs/database/sql_management.md with details of all improvements.
+
+2025-05-26
+- Dropped llm_action_prompt_part table from the database and removed its definition from create_tables.sql.
+- Updated /db UI grouping: llm_action_prompt_part removed from LLM Related group; llm_prompt_part and post_substage_action remain.
+- Restore dropdown in /db now dynamically lists all backup files (most recent first) from backups/ and root, no longer hardcoded.
+- Audited and aligned create_tables.sql with current live DB schema (all tables, columns, constraints).
+- Committed all changes and created a new backup of the current state.
