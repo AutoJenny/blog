@@ -132,4 +132,11 @@ The admin interface at `/db/` provides a modern, grouped view of your database t
 - Expand groups and tables to inspect schema and sample data.
 - Use this UI for quick inspection, debugging, and schema review.
 
-For advanced operations (backups, restores, migrations), see other sections in this document. 
+For advanced operations (backups, restores, migrations), see other sections in this document.
+
+## LLM Prompt Assembler UI Improvements (2025-06-XX)
+
+- The Prompt Assembler on `/llm/prompts` now uses [SortableJS](https://sortablejs.github.io/Sortable/) for robust drag-and-drop of prompt parts.
+- Draggable items are styled with a deep green background and a drag handle for clarity.
+- The UI prevents accidental duplication and provides a smoother, more accessible experience.
+- See `app/templates/main/llm_prompts.html` for implementation details. 
