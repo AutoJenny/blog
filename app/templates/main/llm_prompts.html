@@ -67,10 +67,10 @@
 </style>
 <div class="container mx-auto py-10 px-4">
     <div class="tab-bar mb-0">
-        <button class="tab-btn active" id="tabPromptsBtn" type="button" tabindex="0">Prompt Templates</button>
-        <button class="tab-btn" id="tabPartsBtn" type="button" tabindex="0">Prompt Parts</button>
+        <button class="tab-btn" id="tabPromptsBtn" type="button" tabindex="0">Prompt Templates</button>
+        <button class="tab-btn active" id="tabPartsBtn" type="button" tabindex="0">Prompt Parts</button>
     </div>
-    <div id="tabPrompts" class="tab-content">
+    <div id="tabPrompts" class="tab-content" style="display:none;">
         <div class="flex justify-between items-center mb-8 mt-0">
             <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
                 <i class="fa-solid fa-scroll"></i> LLM Prompt Templates
@@ -110,7 +110,7 @@
             </table>
         </div>
     </div>
-    <div id="tabParts" class="tab-content" style="display:none;">
+    <div id="tabParts" class="tab-content">
         <div class="flex justify-between items-center mb-8 mt-0">
             <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
                 <i class="fa-solid fa-layer-group"></i> LLM Prompt Parts
@@ -120,8 +120,28 @@
                 <i class="fa-solid fa-plus"></i> New Prompt Part
             </button>
         </div>
+        <!-- Filter by Type Radio Group -->
+        <div class="mb-4 flex items-center gap-6">
+            <span class="text-dark-accent font-semibold mr-2">Type:</span>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="promptPartType" value="all" class="accent-indigo-500 mr-2" checked>
+                <span class="text-indigo-200">All</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="promptPartType" value="system" class="accent-indigo-500 mr-2">
+                <span class="text-indigo-200">System</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="promptPartType" value="user" class="accent-indigo-500 mr-2">
+                <span class="text-indigo-200">User</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="promptPartType" value="assistant" class="accent-indigo-500 mr-2">
+                <span class="text-indigo-200">Assistant</span>
+            </label>
+        </div>
         <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
-            <table class="min-w-full text-left">
+            <table class="min-w-full text-left" id="promptPartsTable">
                 <thead>
                     <tr class="text-indigo-200 border-b border-dark-border">
                         <th class="py-2 px-3">ID</th>
@@ -252,6 +272,7 @@
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Tab logic: Prompt Parts is default
         const tabPromptsBtn = document.getElementById('tabPromptsBtn');
         const tabPartsBtn = document.getElementById('tabPartsBtn');
         const tabPrompts = document.getElementById('tabPrompts');
@@ -267,6 +288,50 @@
             tabPromptsBtn.classList.remove('active');
             tabPrompts.style.display = 'none';
             tabParts.style.display = '';
+        };
+        // On load, show Prompt Parts tab by default
+        tabPartsBtn.classList.add('active');
+        tabPromptsBtn.classList.remove('active');
+        tabPrompts.style.display = 'none';
+        tabParts.style.display = '';
+        // Prompt Parts filter logic
+        const typeRadios = document.querySelectorAll('input[name="promptPartType"]');
+        const table = document.getElementById('promptPartsTable');
+        let selectedType = localStorage.getItem('promptPartType') || 'all';
+        // Set radio from storage
+        typeRadios.forEach(radio => {
+            radio.checked = (radio.value === selectedType);
+        });
+        function filterPromptParts() {
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const typeCell = row.querySelector('td:nth-child(3)');
+                if (!typeCell) return;
+                const type = typeCell.textContent.trim().toLowerCase();
+                if (selectedType === 'all' || type === selectedType) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        typeRadios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.checked) {
+                    selectedType = this.value;
+                    localStorage.setItem('promptPartType', selectedType);
+                    filterPromptParts();
+                }
+            });
+        });
+        filterPromptParts();
+        // When switching tabs, persist filter
+        tabPartsBtn.onclick = function () {
+            tabPartsBtn.classList.add('active');
+            tabPromptsBtn.classList.remove('active');
+            tabPrompts.style.display = 'none';
+            tabParts.style.display = '';
+            filterPromptParts();
         };
         // Add Prompt Part Modal logic
         const addPromptPartBtn = document.getElementById('addPromptPartBtn');

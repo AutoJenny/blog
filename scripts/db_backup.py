@@ -71,7 +71,7 @@ def backup_database(db_url, backup_dir="backups"):
     
     try:
         # Use pg_dump to create backup
-        result = os.system(f'pg_dump "{db_url}" > "{backup_path}"')
+        result = os.system(f'pg_dump -U nickfiddes -d blog > "{backup_path}"')
         
         if result != 0 or not os.path.exists(backup_path) or os.path.getsize(backup_path) == 0:
             print("Backup failed: Backup file was not created or is empty")

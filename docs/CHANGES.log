@@ -35,4 +35,10 @@
 - Removed green JSON debug text from /llm/actions page.
 - Fixed modal CSS and Action creation bugs in previous steps.
 - /api/v1/llm/prompts endpoint now uses direct SQL, restoring prompt template selection.
-- All changes follow project engineering rules (no ORM, no destructive migration, direct SQL only). 
+- All changes follow project engineering rules (no ORM, no destructive migration, direct SQL only).
+
+2025-05-25: /llm/prompts Prompt Parts tab is now default and includes a persistent radio filter for Type (All, system, user, assistant) above the list. Filtering is client-side and persists across tab switches.
+
+2025-05-25: BUGFIX: Prompt Part 'Name' field is now correctly saved to the llm_prompt_part table via the API (POST/PUT). Previously, the name was not persisted due to missing SQL fields.
+
+2025-05-26: BUGFIX: /db/backup now works by running pg_dump as the DB owner (nickfiddes), resolving permission errors and 500s in the UI. Backup Now button is functional again. 
