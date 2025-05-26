@@ -562,6 +562,23 @@
             btn.disabled = false;
             btn.textContent = 'Save Action';
         };
+        loadProviders();
+        loadPromptTemplates();
+        document.getElementById('builderProvider').addEventListener('change', function () {
+            loadModels(this.value);
+        });
+        document.getElementById('builderPromptTemplate').addEventListener('change', function () {
+            const selected = this.options[this.selectedIndex];
+            if (selected && selected.value) {
+                fetch(`/api/v1/llm/prompts/${selected.value}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        document.getElementById('builderPromptPreview').textContent = data.prompt_text || '{ ... select a template ... }';
+                    });
+            } else {
+                document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
+            }
+        });
     </script>
 </div>
 {% endblock %}

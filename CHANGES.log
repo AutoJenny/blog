@@ -646,9 +646,9 @@ All notable changes to this project are documented in this file.
 - Created a new full database backup after the fix: blog_backup_YYYYMMDD_HHMMSS_after_seqfix.sql
 - All changes committed to git.
 
-2025-06-XX: Fix non-modal LLM Action wizard Provider/Model dropdowns
-- Ensured Provider and Model dropdowns in the non-modal wizard at the bottom of /llm/actions are always visible and populated at step 2, matching the modal wizard behavior.
-- JS now loads providers/models on page load for the non-modal wizard.
+2025-06-XX: Fix LLM Provider/Model dropdowns not loading
+- Removed DOMContentLoaded wrapper from builder JS; now calls loadProviders and loadPromptTemplates directly at script end.
+- Provider and Model dropdowns now reliably populate on page load.
 
 2025-06-XX: Add fully functional non-modal Action Builder panel
 - Added a non-modal Action Builder panel to the bottom of /llm/actions.
