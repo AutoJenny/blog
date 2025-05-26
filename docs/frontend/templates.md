@@ -39,4 +39,7 @@ The Blog CMS uses Jinja2 templates for all HTML rendering. This document describ
 - The navbar is **not** shown on the landing page (e.g., `/llm/`), only on subpages.
 - To add or update area nav links, edit the relevant partial (e.g., `llm/_llm_nav.html`).
 - Do **not** set `fullwidth_mode` unless you want to suppress all navigation for a page (e.g., docs browser).
-- For new sub-areas, follow this pattern for robust, site-wide navigation. 
+- For new sub-areas, follow this pattern for robust, site-wide navigation.
+
+## New Feature Note
+- The /llm/prompts page now defaults to the Prompt Parts tab, which features a persistent radio button filter for Type (All, system, user, assistant) above the list. The filter is styled per the dark theme style guide and persists across tab switches. 

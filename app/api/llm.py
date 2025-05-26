@@ -521,7 +521,7 @@ def handle_prompt_parts():
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, type, content, tags, "order", created_at, updated_at
+                    SELECT id, name, type, content, tags, "order", created_at, updated_at
                     FROM llm_prompt_part
                     ORDER BY "order", id
                 """)
@@ -532,9 +532,10 @@ def handle_prompt_parts():
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    INSERT INTO llm_prompt_part (type, content, tags, "order", created_at, updated_at)
-                    VALUES (%s, %s, %s, %s, NOW(), NOW()) RETURNING id
+                    INSERT INTO llm_prompt_part (name, type, content, tags, "order", created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, NOW(), NOW()) RETURNING id
                 """, (
+                    data.get('name', ''),
                     data['type'],
                     data['content'],
                     data.get('tags', []),
@@ -551,7 +552,7 @@ def handle_prompt_part(part_id):
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, type, content, tags, "order", created_at, updated_at
+                    SELECT id, name, type, content, tags, "order", created_at, updated_at
                     FROM llm_prompt_part WHERE id = %s
                 """, (part_id,))
                 part = cur.fetchone()
@@ -563,9 +564,10 @@ def handle_prompt_part(part_id):
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    UPDATE llm_prompt_part SET type=%s, content=%s, tags=%s, "order"=%s, updated_at=NOW()
+                    UPDATE llm_prompt_part SET name=%s, type=%s, content=%s, tags=%s, "order"=%s, updated_at=NOW()
                     WHERE id=%s
                 """, (
+                    data.get('name', ''),
                     data.get('type'),
                     data.get('content'),
                     data.get('tags', []),

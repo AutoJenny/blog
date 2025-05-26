@@ -1,0 +1,5 @@
+{
+  "backup": "backups/blog_backup_20250526_075235.sql",
+  "stdout": "Backup created at: backups/blog_backup_20250526_075235.sql\nRemoved old backup: backups/blog_backup_20250518_172740.sql\nBackup completed successfully\n",
+  "success": true
+}
