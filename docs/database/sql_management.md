@@ -165,4 +165,10 @@ psql $DATABASE_URL -U nickfiddes -c "REASSIGN OWNED BY nickfiddes TO postgres;"
      SELECT setval('llm_prompt_id_seq', (SELECT COALESCE(MAX(id), 1) FROM llm_prompt), true);
   3. Create a new backup after the fix:
      pg_dump -U postgres -d blog > blog_backup_YYYYMMDD_HHMMSS_after_seqfix.sql
+- See CHANGES.log for details.
+
+## 2025-06-XX: Non-modal LLM Action Wizard Provider/Model Dropdowns
+
+- Fixed an issue where the Provider and Model dropdowns in the non-modal LLM Action wizard (bottom of /llm/actions) were not being populated or visible at step 2.
+- Now, the JS loads providers and models on page load for the non-modal wizard, matching the modal wizard behavior.
 - See CHANGES.log for details. 

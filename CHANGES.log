@@ -645,3 +645,7 @@ All notable changes to this project are documented in this file.
 - Updated documentation in docs/database/sql_management.md to clarify superuser requirements and sequence recovery steps.
 - Created a new full database backup after the fix: blog_backup_YYYYMMDD_HHMMSS_after_seqfix.sql
 - All changes committed to git.
+
+2025-06-XX: Fix non-modal LLM Action wizard Provider/Model dropdowns
+- Ensured Provider and Model dropdowns in the non-modal wizard at the bottom of /llm/actions are always visible and populated at step 2, matching the modal wizard behavior.
+- JS now loads providers/models on page load for the non-modal wizard.

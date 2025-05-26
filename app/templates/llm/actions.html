@@ -1138,6 +1138,16 @@
                     loadWizardModels(wizProvider.value);
                 });
             }
+            // --- Non-modal Action Builder Dropdown Logic ---
+            if (document.getElementById('actionProvider')) {
+                loadProviders();
+                document.getElementById('actionProvider').addEventListener('change', function () {
+                    loadModels(this.value);
+                });
+            }
+            if (document.getElementById('actionPromptTemplateId')) {
+                loadPromptTemplates();
+            }
         });
     </script>
 </div>
