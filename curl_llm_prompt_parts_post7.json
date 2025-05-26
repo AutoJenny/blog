@@ -1,0 +1,9 @@
+{
+  "prompt": {
+    "description": "",
+    "id": 19,
+    "name": "Test Assembled 5",
+    "prompt_text": "[system] Test system\n[user] Test user"
+  },
+  "success": true
+}
