@@ -286,12 +286,24 @@ def create_prompt():
     data = request.get_json()
     name = data.get('name')
     prompt_text = data.get('prompt_text')
+    description = data.get('description', '')
     if not name or not prompt_text:
         return jsonify({'success': False, 'error': 'Name and prompt_text required'}), 400
-    prompt = LLMPrompt(name=name, prompt_text=prompt_text, description=data.get('description', ''))
-    db.session.add(prompt)
-    db.session.commit()
-    return jsonify({'success': True, 'prompt': {'id': prompt.id, 'name': prompt.name, 'prompt_text': prompt.prompt_text, 'description': prompt.description}})
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute('''
+                    INSERT INTO llm_prompt (name, prompt_text, description, created_at, updated_at, "order")
+                    VALUES (%s, %s, %s, NOW(), NOW(), 0)
+                    RETURNING id
+                ''', (name, prompt_text, description))
+                new_id = cur.fetchone()['id']
+                conn.commit()
+        return jsonify({'success': True, 'prompt': {'id': new_id, 'name': name, 'prompt_text': prompt_text, 'description': description}})
+    except Exception as e:
+        import traceback
+        current_app.logger.error(f"[CREATE PROMPT ERROR] {e}\n{traceback.format_exc()}")
+        return jsonify({'success': False, 'error': repr(e), 'traceback': traceback.format_exc()}), 500
 
 
 @bp.route('/preload', methods=['POST'])
@@ -824,11 +836,7 @@ def post_substage_actions():
                             VALUES (%s, %s, %s, %s, %s)
                             RETURNING id
                         """, (post_id, substage, action_id, button_label, button_order))
-                        fetch = cur.fetchone()
-                        if not fetch:
-                            print('DEBUG: Insert failed, no id returned')
-                            return jsonify({'status': 'error', 'error': 'Insert failed, no id returned.'}), 500
-                        new_id = fetch[0]
+                        new_id = cur.fetchone()[0]
                     conn.commit()
             return jsonify({'id': new_id, 'status': 'success'})
         except Exception as e:

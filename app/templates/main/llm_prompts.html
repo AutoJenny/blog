@@ -67,48 +67,9 @@
 </style>
 <div class="container mx-auto py-10 px-4">
     <div class="tab-bar mb-0">
-        <button class="tab-btn" id="tabPromptsBtn" type="button" tabindex="0">Prompt Templates</button>
         <button class="tab-btn active" id="tabPartsBtn" type="button" tabindex="0">Prompt Parts</button>
-    </div>
-    <div id="tabPrompts" class="tab-content" style="display:none;">
-        <div class="flex justify-between items-center mb-8 mt-0">
-            <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
-                <i class="fa-solid fa-scroll"></i> LLM Prompt Templates
-            </div>
-            <button id="addPromptBtn"
-                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
-                <i class="fa-solid fa-plus"></i> New Prompt
-            </button>
-        </div>
-        <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
-            <table class="min-w-full text-left">
-                <thead>
-                    <tr class="text-indigo-200 border-b border-dark-border">
-                        <th class="py-2 px-3">Name</th>
-                        <th class="py-2 px-3">Type</th>
-                        <th class="py-2 px-3">Usage</th>
-                        <th class="py-2 px-3">Last Updated</th>
-                        <th class="py-2 px-3">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for prompt in prompts %}
-                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                        <td class="py-2 px-3 font-semibold text-white">{{ prompt.name }}</td>
-                        <td class="py-2 px-3">{{ prompt.type }}</td>
-                        <td class="py-2 px-3">{{ prompt.prompt_text }}</td>
-                        <td class="py-2 px-3">2025-05-21</td>
-                        <td class="py-2 px-3 flex gap-2">
-                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
-                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
-                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <button class="tab-btn" id="tabAssemblerBtn" type="button" tabindex="0">Prompt Assembler</button>
+        <button class="tab-btn" id="tabPromptsBtn" type="button" tabindex="0">Prompt Templates</button>
     </div>
     <div id="tabParts" class="tab-content">
         <div class="flex justify-between items-center mb-8 mt-0">
@@ -171,6 +132,97 @@
                                     class="fa-solid fa-pen"></i></button>
                             <button class="action-btn delete-part-btn" title="Delete" data-id="{{ part.id }}"><i
                                     class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="tabAssembler" class="tab-content" style="display:none;">
+        <div class="flex justify-between items-center mb-8 mt-0">
+            <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Prompt Assembler
+            </div>
+        </div>
+        <div class="mb-4 text-indigo-200">Build a new prompt by assembling prompt parts in sequence. Drag to reorder.
+            Click a part to add it to the sequence below.</div>
+        <div class="flex gap-8">
+            <div class="w-1/2">
+                <h4 class="font-bold mb-2 text-indigo-200">Available Prompt Parts</h4>
+                <!-- Filter by Type Radio Group (copied from Prompt Parts tab) -->
+                <div class="mb-4 flex items-center gap-6">
+                    <span class="text-dark-accent font-semibold mr-2">Type:</span>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="assemblerPartType" value="all" class="accent-indigo-500 mr-2" checked>
+                        <span class="text-indigo-200">All</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="assemblerPartType" value="system" class="accent-indigo-500 mr-2">
+                        <span class="text-indigo-200">System</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="assemblerPartType" value="user" class="accent-indigo-500 mr-2">
+                        <span class="text-indigo-200">User</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="assemblerPartType" value="assistant" class="accent-indigo-500 mr-2">
+                        <span class="text-indigo-200">Assistant</span>
+                    </label>
+                </div>
+                <div id="assemblerPartsList" class="bg-dark-card rounded p-4 mb-4 max-h-80 overflow-y-auto">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            <div class="w-1/2">
+                <h4 class="font-bold mb-2 text-indigo-200">Assembled Sequence</h4>
+                <div id="assemblerSequenceList" class="bg-dark-card rounded p-4 mb-2 min-h-24"></div>
+                <div class="flex justify-end mt-2">
+                    <button id="assemblerClearBtn" class="btn btn-secondary mr-2">Clear</button>
+                    <button id="assemblerSaveBtn" class="btn btn-primary">Save as Template</button>
+                </div>
+                <div class="bg-dark-card rounded p-4 mt-4">
+                    <h5 class="font-bold mb-1 flex items-center gap-2 text-indigo-200"><i class="fa-solid fa-eye"></i>
+                        Prompt Preview</h5>
+                    <div id="assemblerPromptPreview" class="whitespace-pre-line text-indigo-100 text-sm">{ ... assembled
+                        prompt ... }</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tabPrompts" class="tab-content" style="display:none;">
+        <div class="flex justify-between items-center mb-8 mt-0">
+            <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+                <i class="fa-solid fa-scroll"></i> LLM Prompt Templates
+            </div>
+            <button id="addPromptBtn"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> New Prompt
+            </button>
+        </div>
+        <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead>
+                    <tr class="text-indigo-200 border-b border-dark-border">
+                        <th class="py-2 px-3">Name</th>
+                        <th class="py-2 px-3">Type</th>
+                        <th class="py-2 px-3">Usage</th>
+                        <th class="py-2 px-3">Last Updated</th>
+                        <th class="py-2 px-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prompt in prompts %}
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3 font-semibold text-white">{{ prompt.name }}</td>
+                        <td class="py-2 px-3">{{ prompt.type }}</td>
+                        <td class="py-2 px-3">{{ prompt.prompt_text }}</td>
+                        <td class="py-2 px-3">2025-05-21</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -275,25 +327,33 @@
         // Tab logic: Prompt Parts is default
         const tabPromptsBtn = document.getElementById('tabPromptsBtn');
         const tabPartsBtn = document.getElementById('tabPartsBtn');
+        const tabAssemblerBtn = document.getElementById('tabAssemblerBtn');
         const tabPrompts = document.getElementById('tabPrompts');
         const tabParts = document.getElementById('tabParts');
-        tabPromptsBtn.onclick = function () {
-            tabPromptsBtn.classList.add('active');
+        const tabAssembler = document.getElementById('tabAssembler');
+        function showTab(tab) {
             tabPartsBtn.classList.remove('active');
-            tabPrompts.style.display = '';
-            tabParts.style.display = 'none';
-        };
-        tabPartsBtn.onclick = function () {
-            tabPartsBtn.classList.add('active');
+            tabAssemblerBtn.classList.remove('active');
             tabPromptsBtn.classList.remove('active');
+            tabParts.style.display = 'none';
+            tabAssembler.style.display = 'none';
             tabPrompts.style.display = 'none';
-            tabParts.style.display = '';
-        };
+            if (tab === 'parts') {
+                tabPartsBtn.classList.add('active');
+                tabParts.style.display = '';
+            } else if (tab === 'assembler') {
+                tabAssemblerBtn.classList.add('active');
+                tabAssembler.style.display = '';
+            } else {
+                tabPromptsBtn.classList.add('active');
+                tabPrompts.style.display = '';
+            }
+        }
+        tabPartsBtn.onclick = function () { showTab('parts'); };
+        tabAssemblerBtn.onclick = function () { showTab('assembler'); };
+        tabPromptsBtn.onclick = function () { showTab('prompts'); };
         // On load, show Prompt Parts tab by default
-        tabPartsBtn.classList.add('active');
-        tabPromptsBtn.classList.remove('active');
-        tabPrompts.style.display = 'none';
-        tabParts.style.display = '';
+        showTab('parts');
         // Prompt Parts filter logic
         const typeRadios = document.querySelectorAll('input[name="promptPartType"]');
         const table = document.getElementById('promptPartsTable');
@@ -327,10 +387,7 @@
         filterPromptParts();
         // When switching tabs, persist filter
         tabPartsBtn.onclick = function () {
-            tabPartsBtn.classList.add('active');
-            tabPromptsBtn.classList.remove('active');
-            tabPrompts.style.display = 'none';
-            tabParts.style.display = '';
+            showTab('parts');
             filterPromptParts();
         };
         // Add Prompt Part Modal logic
@@ -407,6 +464,131 @@
                     }
                 });
         };
+        // --- Prompt Assembler Logic ---
+        // Gather prompt parts from the table (reuse rendered data)
+        const assemblerPartsList = document.getElementById('assemblerPartsList');
+        const assemblerSequenceList = document.getElementById('assemblerSequenceList');
+        const assemblerPromptPreview = document.getElementById('assemblerPromptPreview');
+        const assemblerClearBtn = document.getElementById('assemblerClearBtn');
+        const assemblerSaveBtn = document.getElementById('assemblerSaveBtn');
+        // Build available parts list from the Prompt Parts table
+        function getPromptPartsData() {
+            const rows = document.querySelectorAll('#promptPartsTable tbody tr');
+            return Array.from(rows).map(row => ({
+                id: row.children[0].textContent.trim(),
+                name: row.children[1].textContent.trim(),
+                type: row.children[2].textContent.trim(),
+                content: row.children[3].textContent.trim()
+            }));
+        }
+        // Assembler filter logic
+        const assemblerTypeRadios = document.querySelectorAll('input[name="assemblerPartType"]');
+        let assemblerSelectedType = 'all';
+        assemblerTypeRadios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.checked) {
+                    assemblerSelectedType = this.value;
+                    renderAssemblerParts();
+                }
+            });
+        });
+        let assemblerSequence = [];
+        function renderAssemblerParts() {
+            assemblerPartsList.innerHTML = '';
+            getPromptPartsData().forEach(part => {
+                if (assemblerSelectedType !== 'all' && part.type.toLowerCase() !== assemblerSelectedType) return;
+                const div = document.createElement('div');
+                div.className = 'bg-dark-card rounded p-2 mb-2 cursor-pointer hover:bg-indigo-900';
+                div.innerHTML = `<b>${part.type}</b>: <span class="text-indigo-100">${part.name}</span><br><span class="text-xs text-indigo-300">${part.content}</span>`;
+                div.onclick = function () {
+                    assemblerSequence.push(part);
+                    renderAssemblerSequence();
+                };
+                assemblerPartsList.appendChild(div);
+            });
+        }
+        function renderAssemblerSequence() {
+            assemblerSequenceList.innerHTML = '';
+            assemblerSequence.forEach((part, idx) => {
+                const div = document.createElement('div');
+                div.className = 'bg-indigo-950 rounded p-2 mb-2 flex items-center justify-between draggable';
+                div.draggable = true;
+                div.innerHTML = `<span><b>${part.type}</b>: <span class="text-indigo-100">${part.name}</span></span>
+                    <span class="text-xs text-indigo-300">${part.content}</span>
+                    <button type="button" class="btn btn-danger btn-xs ml-2" data-idx="${idx}">Remove</button>`;
+                div.querySelector('button').onclick = function () {
+                    assemblerSequence.splice(idx, 1);
+                    renderAssemblerSequence();
+                };
+                // Drag and drop
+                div.ondragstart = function (e) {
+                    e.dataTransfer.setData('text/plain', idx);
+                    div.classList.add('opacity-50');
+                };
+                div.ondragend = function () {
+                    div.classList.remove('opacity-50');
+                };
+                div.ondragover = function (e) {
+                    e.preventDefault();
+                    div.classList.add('ring', 'ring-indigo-400');
+                };
+                div.ondragleave = function () {
+                    div.classList.remove('ring', 'ring-indigo-400');
+                };
+                div.ondrop = function (e) {
+                    e.preventDefault();
+                    div.classList.remove('ring', 'ring-indigo-400');
+                    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                    const toIdx = idx;
+                    if (fromIdx !== toIdx) {
+                        const moved = assemblerSequence.splice(fromIdx, 1)[0];
+                        assemblerSequence.splice(toIdx, 0, moved);
+                        renderAssemblerSequence();
+                    }
+                };
+                assemblerSequenceList.appendChild(div);
+            });
+            renderAssemblerPreview();
+        }
+        function renderAssemblerPreview() {
+            assemblerPromptPreview.textContent = assemblerSequence.map(p => `[${p.type}] ${p.content}`).join('\n');
+        }
+        assemblerClearBtn.onclick = function () {
+            assemblerSequence = [];
+            renderAssemblerSequence();
+        };
+        assemblerSaveBtn.onclick = function () {
+            if (!assemblerSequence.length) {
+                alert('Add at least one prompt part to assemble a prompt.');
+                return;
+            }
+            const name = prompt('Enter a name for the new prompt template:');
+            if (!name) return;
+            const prompt_text = assemblerSequence.map(p => `[${p.type}] ${p.content}`).join('\n');
+            fetch('/api/v1/llm/prompts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, prompt_text, type: 'assembled' })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success' || data.prompt) {
+                        alert('Prompt template saved!');
+                        window.location.reload();
+                    } else {
+                        alert('Failed to save prompt template: ' + (data.error || 'Unknown error'));
+                    }
+                });
+        };
+        // Render on tab open
+        tabAssemblerBtn.onclick = function () {
+            showTab('assembler');
+            renderAssemblerParts();
+            renderAssemblerSequence();
+        };
+        // Initial render for assembler (in case user switches immediately)
+        renderAssemblerParts();
+        renderAssemblerSequence();
     });
 </script>
 {% endblock %}

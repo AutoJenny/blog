@@ -72,6 +72,8 @@
     <!-- Wizard Modal for Action Creation/Editing -->
     <div id="actionWizardModal" class="modal">
         <div class="modal-content" style="max-width:600px;">
+            <button id="closeActionWizard" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"
+                style="right:1.5rem;top:1.5rem;"><i class="fa-solid fa-xmark fa-lg"></i></button>
             <div id="wizardProgress" class="mb-4 flex items-center justify-between text-indigo-200 text-sm">
                 <span id="wizardStep1" class="wizard-step">1. Basic Info</span>
                 <span id="wizardStep2" class="wizard-step">2. Model</span>
@@ -230,17 +232,172 @@
     </div>
 </div>
 <script>
+    // --- Action Wizard Modal Logic ---
+    (function () {
+        // Modal open/close
+        const actionWizardModal = document.getElementById('actionWizardModal');
+        const addActionBtn = document.getElementById('addActionBtn');
+        addActionBtn.onclick = function () {
+            actionWizardModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            showWizardStep(1);
+        };
+        // Step navigation
+        const wizardSections = [
+            null,
+            document.getElementById('wizardSection1'),
+            document.getElementById('wizardSection2'),
+            document.getElementById('wizardSection3'),
+            document.getElementById('wizardSection4')
+        ];
+        function showWizardStep(idx) {
+            for (let i = 1; i <= 4; i++) {
+                wizardSections[i].style.display = (i === idx) ? '' : 'none';
+                document.getElementById('wizardStep' + i).classList.toggle('font-bold', i === idx);
+            }
+        }
+        window.showWizardStep = showWizardStep;
+        document.getElementById('wizNext1').onclick = function () { showWizardStep(2); };
+        document.getElementById('wizBack2').onclick = function () { showWizardStep(1); };
+        document.getElementById('wizNext2').onclick = function () { showWizardStep(3); };
+        document.getElementById('wizBack3').onclick = function () { showWizardStep(2); };
+        document.getElementById('wizNext3').onclick = function () { showWizardStep(4); };
+        document.getElementById('wizBack4').onclick = function () { showWizardStep(3); };
+        // Prompt Parts logic
+        const wizPromptParts = [];
+        window.wizPromptParts = wizPromptParts;
+        const wizPromptPartsList = document.getElementById('wizPromptPartsList');
+        const wizPromptPartForm = document.getElementById('wizPromptPartForm');
+        const wizAddPromptPartBtn = document.getElementById('wizAddPromptPartBtn');
+        const wizPromptPartType = document.getElementById('wizPromptPartType');
+        const wizPromptPartContent = document.getElementById('wizPromptPartContent');
+        const wizPromptPartFormSave = document.getElementById('wizSavePromptPartBtn');
+        const wizPromptPartFormCancel = document.getElementById('wizCancelPromptPartBtn');
+        const wizPromptPreview = document.getElementById('wizPromptPreview');
+        let editingPromptPartIdx = null;
+        function renderWizPromptParts() {
+            wizPromptPartsList.innerHTML = '';
+            window.wizPromptParts.forEach((part, idx) => {
+                const div = document.createElement('div');
+                div.className = 'bg-dark-card rounded p-2 mb-2 flex items-center justify-between';
+                div.innerHTML = `<span><b>${part.type}</b>: ${part.content}</span>
+                    <span>
+                        <button type="button" class="btn btn-secondary btn-xs" data-idx="${idx}" onclick="window.editWizPromptPart(${idx})">Edit</button>
+                        <button type="button" class="btn btn-danger btn-xs" data-idx="${idx}" onclick="window.deleteWizPromptPart(${idx})">Delete</button>
+                    </span>`;
+                wizPromptPartsList.appendChild(div);
+            });
+            renderWizPromptPreview();
+        }
+        function renderWizPromptPreview() {
+            wizPromptPreview.textContent = window.wizPromptParts.map(p => `[${p.type}] ${p.content}`).join('\n');
+        }
+        wizAddPromptPartBtn.onclick = function () {
+            wizPromptPartType.value = 'system';
+            wizPromptPartContent.value = '';
+            wizPromptPartForm.style.display = '';
+            editingPromptPartIdx = null;
+        };
+        wizPromptPartFormCancel.onclick = function () {
+            wizPromptPartForm.style.display = 'none';
+        };
+        wizPromptPartFormSave.onclick = function () {
+            const type = wizPromptPartType.value;
+            const content = wizPromptPartContent.value;
+            if (!content.trim()) {
+                alert('Content is required.');
+                return;
+            }
+            if (editingPromptPartIdx !== null) {
+                window.wizPromptParts[editingPromptPartIdx] = { type, content };
+            } else {
+                window.wizPromptParts.push({ type, content });
+            }
+            wizPromptPartForm.style.display = 'none';
+            renderWizPromptParts();
+        };
+        window.editWizPromptPart = function (idx) {
+            const part = window.wizPromptParts[idx];
+            wizPromptPartType.value = part.type;
+            wizPromptPartContent.value = part.content;
+            wizPromptPartForm.style.display = '';
+            editingPromptPartIdx = idx;
+        };
+        window.deleteWizPromptPart = function (idx) {
+            if (confirm('Delete this prompt part?')) {
+                window.wizPromptParts.splice(idx, 1);
+                renderWizPromptParts();
+            }
+        };
+        // Render on wizard open
+        showWizardStep = (function (orig) {
+            return function (idx) {
+                orig(idx);
+                if (idx === 3) renderWizPromptParts();
+            };
+        })(showWizardStep);
+        // Wizard Save Action logic
+        const actionWizardForm = document.getElementById('actionWizardForm');
+        actionWizardForm.onsubmit = async function (e) {
+            e.preventDefault();
+            // Gather all fields
+            const field_name = document.getElementById('wizFieldName').value;
+            const description = document.getElementById('wizDescription').value;
+            const provider_id = document.getElementById('wizProvider').value;
+            const llm_model = document.getElementById('wizModel').value;
+            const prompt_template_id = document.getElementById('wizPromptTemplateId').value;
+            const temperature = parseFloat(document.getElementById('wizTemperature').value) || 0.7;
+            const max_tokens = parseInt(document.getElementById('wizMaxTokens').value) || 1000;
+            // Prompt parts
+            const prompt_parts = window.wizPromptParts.map((p, i) => ({ ...p, order: i }));
+            // POST to backend
+            const btn = actionWizardForm.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            try {
+                const resp = await fetch('/api/v1/llm/actions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        field_name,
+                        description,
+                        provider_id,
+                        llm_model,
+                        prompt_template_id,
+                        temperature,
+                        max_tokens,
+                        prompt_parts
+                    })
+                });
+                const data = await resp.json();
+                if (resp.ok && data.status === 'success') {
+                    btn.textContent = 'Saved!';
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.textContent = 'Save Action';
+                        actionWizardModal.classList.remove('active');
+                        document.body.style.overflow = '';
+                        location.reload();
+                    }, 800);
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = 'Save Action';
+                    alert(data.error || 'Error saving action');
+                }
+            } catch (e) {
+                btn.disabled = false;
+                btn.textContent = 'Save Action';
+                alert('Error: ' + e);
+            }
+        };
+    })();
     // Modal open/close logic (placeholder)
-    document.getElementById('addActionBtn').onclick = function () {
-        document.getElementById('actionWizardModal').classList.remove('hidden');
-    };
     document.getElementById('closeRunAction').onclick = function () {
         document.getElementById('runActionModal').classList.add('hidden');
     };
     document.getElementById('closeActionHistory').onclick = function () {
         document.getElementById('actionHistoryModal').classList.add('hidden');
     };
-    // Add more modal logic as needed
     // Delete action logic
     document.querySelectorAll('.delete-action-btn').forEach(btn => {
         btn.onclick = function () {
@@ -257,5 +414,10 @@
                 });
         };
     });
+    const closeActionWizard = document.getElementById('closeActionWizard');
+    closeActionWizard.onclick = function () {
+        actionWizardModal.classList.remove('active');
+        document.body.style.overflow = '';
+    };
 </script>
 {% endblock %}
