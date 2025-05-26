@@ -639,3 +639,9 @@ All notable changes to this project are documented in this file.
 [2024-06-13] /api/v1/llm/test now always returns {response: ...} for UI compatibility; wizard test output now displays correctly. Next: remodel Action Details page as a static version of the wizard.
 
 [2024-06-13] Refactored Action Details page to use wizard-style panels and disabled dropdowns for provider/model/template, matching the wizard visually. All fields are read-only except the test area. UI is now consistent and user-friendly.
+
+2025-06-XX
+- Upgraded Prompt Assembler on /llm/prompts to use SortableJS for drag-and-drop.
+- Draggable items now have a deep green background and a drag handle.
+- Prevented accidental duplication and improved drag-and-drop UX.
+- Updated docs/database/sql_management.md with new assembler UI details.

@@ -64,6 +64,30 @@
         background: #373a4d;
         color: #fff;
     }
+
+    .draggable-seq-item {
+        background: #064e3b;
+        /* deep green */
+        color: #d1fae5;
+        border: 1px solid #065f46;
+        box-shadow: 0 2px 8px 0 rgba(6, 78, 59, 0.08);
+        transition: box-shadow 0.2s;
+    }
+
+    .draggable-seq-item .drag-handle {
+        font-size: 1.3em;
+        color: #34d399;
+        cursor: grab;
+    }
+
+    .sortable-ghost {
+        opacity: 0.5;
+        background: #065f46 !important;
+    }
+
+    .sortable-chosen {
+        box-shadow: 0 0 0 2px #34d399;
+    }
 </style>
 <div class="container mx-auto py-10 px-4">
     <div class="tab-bar mb-0">
@@ -176,7 +200,27 @@
             </div>
             <div class="w-1/2">
                 <h4 class="font-bold mb-2 text-indigo-200">Assembled Sequence</h4>
-                <div id="assemblerSequenceList" class="bg-dark-card rounded p-4 mb-2 min-h-24"></div>
+                <div class="mb-4 flex items-center gap-4">
+                    <label for="assemblerDataField" class="text-dark-accent font-semibold">Insert Post Data:</label>
+                    <select id="assemblerDataField"
+                        class="form-input bg-dark-bg border border-dark-border text-indigo-200 rounded">
+                        <option value="">-- Select Field --</option>
+                        <option value="id">id</option>
+                        <option value="title">title</option>
+                        <option value="slug">slug</option>
+                        <option value="summary">summary</option>
+                        <option value="created_at">created_at</option>
+                        <option value="updated_at">updated_at</option>
+                        <option value="header_image_id">header_image_id</option>
+                        <option value="status">status</option>
+                        <option value="idea_seed">idea_seed</option>
+                        <option value="substage_id">substage_id</option>
+                    </select>
+                    <div id="assemblerDataDraggable"
+                        class="hidden bg-indigo-700 text-white rounded px-3 py-1 cursor-move ml-2" draggable="true">
+                    </div>
+                </div>
+                <ul id="assemblerSequenceList" class="bg-dark-card rounded p-4 mb-2 min-h-24"></ul>
                 <div class="flex justify-end mt-2">
                     <button id="assemblerClearBtn" class="btn btn-secondary mr-2">Clear</button>
                     <button id="assemblerSaveBtn" class="btn btn-primary">Save as Template</button>
@@ -322,6 +366,8 @@
         </div>
     </div>
 </div>
+<!-- Add SortableJS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Tab logic: Prompt Parts is default
@@ -493,6 +539,84 @@
             });
         });
         let assemblerSequence = [];
+        function renderAssemblerSequence() {
+            assemblerSequenceList.innerHTML = '';
+            assemblerSequence.forEach((part, idx) => {
+                const li = document.createElement('li');
+                li.setAttribute('data-idx', idx);
+                li.className = 'flex items-center justify-between mb-2 rounded p-2 draggable-seq-item';
+                li.innerHTML = `
+                    <span class="drag-handle mr-3 cursor-grab text-green-300">
+                        <i class="fa-solid fa-grip-vertical"></i>
+                    </span>
+                    <span>
+                        ${part.type === 'data'
+                        ? `<b class="text-green-200">[data:${part.field}]</b>`
+                        : `<b class="text-green-200">${part.type}</b>: <span class="text-indigo-100">${part.name}</span>
+                               <span class="text-xs text-indigo-300">${part.content}</span>`
+                    }
+                    </span>
+                    <button type="button" class="btn btn-danger btn-xs ml-2" data-idx="${idx}">Remove</button>
+                `;
+                li.querySelector('button').onclick = function () {
+                    assemblerSequence.splice(idx, 1);
+                    renderAssemblerSequence();
+                };
+                assemblerSequenceList.appendChild(li);
+            });
+            renderAssemblerPreview();
+        }
+        // Initialize SortableJS for the sequence list
+        Sortable.create(assemblerSequenceList, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            onEnd: function (evt) {
+                // Reorder assemblerSequence array to match new DOM order
+                const newOrder = [];
+                assemblerSequenceList.querySelectorAll('li').forEach(li => {
+                    const idx = parseInt(li.getAttribute('data-idx'), 10);
+                    newOrder.push(assemblerSequence[idx]);
+                });
+                assemblerSequence = newOrder;
+                renderAssemblerSequence();
+            }
+        });
+        // --- Prompt Assembler Data Field Logic ---
+        const assemblerDataField = document.getElementById('assemblerDataField');
+        const assemblerDataDraggable = document.getElementById('assemblerDataDraggable');
+        let currentDataField = '';
+        assemblerDataField.onchange = function () {
+            const val = assemblerDataField.value;
+            if (val) {
+                assemblerDataDraggable.textContent = `[data:${val}]`;
+                assemblerDataDraggable.classList.remove('hidden');
+                assemblerDataDraggable.setAttribute('data-field', val);
+            } else {
+                assemblerDataDraggable.classList.add('hidden');
+                assemblerDataDraggable.textContent = '';
+                assemblerDataDraggable.removeAttribute('data-field');
+            }
+        };
+        assemblerDataDraggable.ondragstart = function (e) {
+            e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'data', field: assemblerDataDraggable.getAttribute('data-field') }));
+            assemblerDataDraggable.classList.add('opacity-50');
+        };
+        assemblerDataDraggable.ondragend = function () {
+            assemblerDataDraggable.classList.remove('opacity-50');
+        };
+        // Allow dropping data field at end of sequence
+        assemblerSequenceList.ondragover = function (e) { e.preventDefault(); };
+        assemblerSequenceList.ondrop = function (e) {
+            e.preventDefault();
+            const fromData = JSON.parse(e.dataTransfer.getData('text/plain'));
+            if (fromData.type === 'data') {
+                assemblerSequence.push({ type: 'data', field: fromData.field });
+                renderAssemblerSequence();
+            }
+        };
+        // Prevent duplicates when adding parts (except for data fields)
         function renderAssemblerParts() {
             assemblerPartsList.innerHTML = '';
             getPromptPartsData().forEach(part => {
@@ -501,57 +625,19 @@
                 div.className = 'bg-dark-card rounded p-2 mb-2 cursor-pointer hover:bg-indigo-900';
                 div.innerHTML = `<b>${part.type}</b>: <span class="text-indigo-100">${part.name}</span><br><span class="text-xs text-indigo-300">${part.content}</span>`;
                 div.onclick = function () {
+                    if (part.type !== 'data' && assemblerSequence.some(p => p.id === part.id && p.type === part.type)) {
+                        alert('This part is already in the sequence.');
+                        return;
+                    }
                     assemblerSequence.push(part);
                     renderAssemblerSequence();
                 };
                 assemblerPartsList.appendChild(div);
             });
         }
-        function renderAssemblerSequence() {
-            assemblerSequenceList.innerHTML = '';
-            assemblerSequence.forEach((part, idx) => {
-                const div = document.createElement('div');
-                div.className = 'bg-indigo-950 rounded p-2 mb-2 flex items-center justify-between draggable';
-                div.draggable = true;
-                div.innerHTML = `<span><b>${part.type}</b>: <span class="text-indigo-100">${part.name}</span></span>
-                    <span class="text-xs text-indigo-300">${part.content}</span>
-                    <button type="button" class="btn btn-danger btn-xs ml-2" data-idx="${idx}">Remove</button>`;
-                div.querySelector('button').onclick = function () {
-                    assemblerSequence.splice(idx, 1);
-                    renderAssemblerSequence();
-                };
-                // Drag and drop
-                div.ondragstart = function (e) {
-                    e.dataTransfer.setData('text/plain', idx);
-                    div.classList.add('opacity-50');
-                };
-                div.ondragend = function () {
-                    div.classList.remove('opacity-50');
-                };
-                div.ondragover = function (e) {
-                    e.preventDefault();
-                    div.classList.add('ring', 'ring-indigo-400');
-                };
-                div.ondragleave = function () {
-                    div.classList.remove('ring', 'ring-indigo-400');
-                };
-                div.ondrop = function (e) {
-                    e.preventDefault();
-                    div.classList.remove('ring', 'ring-indigo-400');
-                    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
-                    const toIdx = idx;
-                    if (fromIdx !== toIdx) {
-                        const moved = assemblerSequence.splice(fromIdx, 1)[0];
-                        assemblerSequence.splice(toIdx, 0, moved);
-                        renderAssemblerSequence();
-                    }
-                };
-                assemblerSequenceList.appendChild(div);
-            });
-            renderAssemblerPreview();
-        }
+        // Update preview and save logic to output [data:fieldname]
         function renderAssemblerPreview() {
-            assemblerPromptPreview.textContent = assemblerSequence.map(p => `[${p.type}] ${p.content}`).join('\n');
+            assemblerPromptPreview.textContent = assemblerSequence.map(p => p.type === 'data' ? `[data:${p.field}]` : `[${p.type}] ${p.content}`).join('\n');
         }
         assemblerClearBtn.onclick = function () {
             assemblerSequence = [];
@@ -564,7 +650,7 @@
             }
             const name = prompt('Enter a name for the new prompt template:');
             if (!name) return;
-            const prompt_text = assemblerSequence.map(p => `[${p.type}] ${p.content}`).join('\n');
+            const prompt_text = assemblerSequence.map(p => p.type === 'data' ? `[data:${p.field}]` : `[${p.type}] ${p.content}`).join('\n');
             fetch('/api/v1/llm/prompts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -572,7 +658,7 @@
             })
                 .then(r => r.json())
                 .then(data => {
-                    if (data.status === 'success' || data.prompt) {
+                    if (data.success || data.prompt) {
                         alert('Prompt template saved!');
                         window.location.reload();
                     } else {
