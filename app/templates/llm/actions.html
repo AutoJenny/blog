@@ -177,8 +177,9 @@
         inset: 0;
         background: rgba(0, 0, 0, 0.65);
         z-index: 1000;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
+        overflow-y: auto;
     }
 
     .modal.active {
@@ -194,11 +195,13 @@
         box-shadow: 0 8px 32px rgba(56, 189, 248, 0.18);
         border: 1.5px solid #35395a;
         position: relative;
+        height: 90vh;
         max-height: 90vh;
+        min-height: 0;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        flex: 1 1 auto;
     }
 
     .modal-header {
@@ -288,6 +291,11 @@
 
         .action-card {
             padding: 1rem;
+        }
+
+        .modal-content {
+            max-width: 98vw;
+            padding: 1.2rem;
         }
     }
 
@@ -390,7 +398,7 @@
 
     <!-- Wizard Modal for Action Creation/Editing -->
     <div id="actionWizardModal" class="modal">
-        <div class="modal-content" style="max-width:600px;">
+        <div class="modal-content">
             <div id="wizardProgress" class="mb-4 flex items-center justify-between text-indigo-200 text-sm">
                 <span id="wizardStep1" class="wizard-step">1. Basic Info</span>
                 <span id="wizardStep2" class="wizard-step">2. Model</span>
@@ -1120,6 +1128,16 @@
                     alert('Error: ' + e);
                 }
             };
+            // Ensure provider/model dropdowns are populated on page load for non-modal wizard
+            if (document.getElementById('wizProvider') && document.getElementById('wizModel')) {
+                loadWizardProviders().then(() => {
+                    // If only one provider, auto-select and load models
+                    if (wizProvider.options.length === 1 || (wizProvider.options.length === 2 && wizProvider.options[0].value === '')) {
+                        wizProvider.selectedIndex = wizProvider.options[0].value === '' ? 1 : 0;
+                    }
+                    loadWizardModels(wizProvider.value);
+                });
+            }
         });
     </script>
 </div>
