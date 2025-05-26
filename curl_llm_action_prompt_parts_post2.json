@@ -1,4 +1,0 @@
-{
-  "error": "insert or update on table \"llm_action_prompt_part\" violates foreign key constraint \"llm_action_prompt_part_prompt_part_id_fkey\"\nDETAIL:  Key (prompt_part_id)=(1) is not present in table \"llm_prompt_part\".\n",
-  "status": "error"
-}
