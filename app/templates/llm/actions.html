@@ -606,6 +606,44 @@
         </div>
     </div>
 
+    <!-- Non-Modal Action Builder Panel -->
+    <div class="admin-card mt-10" id="nonModalActionBuilder">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-plus"></i> Create New Action
+            (Quick Builder)</h2>
+        <form id="actionBuilderForm">
+            <div class="form-group">
+                <label class="form-label" for="actionFieldName">Field Name</label>
+                <input type="text" id="actionFieldName" name="field_name" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="actionProvider">LLM Provider</label>
+                <select id="actionProvider" name="provider_id" class="form-input" required></select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="actionModel">LLM Model</label>
+                <select id="actionModel" name="llm_model" class="form-input" required></select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="actionPromptTemplateId">Prompt Template</label>
+                <select id="actionPromptTemplateId" name="prompt_template_id" class="form-input" required></select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="actionTemperature">Temperature</label>
+                <input type="number" id="actionTemperature" name="temperature" class="form-input" min="0" max="2"
+                    step="0.1" value="0.7">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="actionMaxTokens">Max Tokens</label>
+                <input type="number" id="actionMaxTokens" name="max_tokens" class="form-input" min="1" max="4096"
+                    value="1000">
+            </div>
+            <div class="flex justify-end gap-4 mt-6">
+                <button type="submit" class="btn btn-primary">Create Action</button>
+            </div>
+        </form>
+        <div id="actionBuilderMsg" class="mt-2 text-sm"></div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script>
         async function loadProviders(selectedProviderId) {
@@ -1140,13 +1178,68 @@
             }
             // --- Non-modal Action Builder Dropdown Logic ---
             if (document.getElementById('actionProvider')) {
-                loadProviders();
+                loadProvidersNM().then(() => {
+                    const providerId = document.getElementById('actionProvider').value;
+                    loadModelsNM(providerId);
+                });
                 document.getElementById('actionProvider').addEventListener('change', function () {
-                    loadModels(this.value);
+                    loadModelsNM(this.value);
                 });
             }
             if (document.getElementById('actionPromptTemplateId')) {
-                loadPromptTemplates();
+                loadPromptTemplatesNM();
+            }
+            // Form submit logic
+            const builderForm = document.getElementById('actionBuilderForm');
+            if (builderForm) {
+                builderForm.onsubmit = async function (e) {
+                    e.preventDefault();
+                    const msg = document.getElementById('actionBuilderMsg');
+                    msg.textContent = '';
+                    const field_name = document.getElementById('actionFieldName').value;
+                    const provider_id = document.getElementById('actionProvider').value;
+                    const llm_model = document.getElementById('actionModel').value;
+                    const prompt_template_id = document.getElementById('actionPromptTemplateId').value;
+                    const temperature = parseFloat(document.getElementById('actionTemperature').value) || 0.7;
+                    const max_tokens = parseInt(document.getElementById('actionMaxTokens').value) || 1000;
+                    if (!field_name || !provider_id || !llm_model || !prompt_template_id) {
+                        msg.textContent = 'Please fill in all required fields.';
+                        msg.style.color = 'red';
+                        return;
+                    }
+                    const btn = builderForm.querySelector('button[type="submit"]');
+                    btn.disabled = true;
+                    btn.textContent = 'Creating...';
+                    try {
+                        const resp = await fetch('/api/v1/llm/actions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                field_name,
+                                provider_id,
+                                llm_model,
+                                prompt_template_id,
+                                temperature,
+                                max_tokens,
+                                description: ''
+                            })
+                        });
+                        const data = await resp.json();
+                        if (resp.ok && data.status === 'success') {
+                            msg.textContent = 'Action created!';
+                            msg.style.color = 'green';
+                            setTimeout(() => { location.reload(); }, 800);
+                        } else {
+                            msg.textContent = data.error || 'Error creating action.';
+                            msg.style.color = 'red';
+                        }
+                    } catch (e) {
+                        msg.textContent = 'Error: ' + e;
+                        msg.style.color = 'red';
+                    }
+                    btn.disabled = false;
+                    btn.textContent = 'Create Action';
+                };
             }
         });
     </script>
