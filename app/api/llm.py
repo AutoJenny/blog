@@ -6,7 +6,6 @@ import traceback
 import logging
 from app.database.routes import get_db_conn
 import json
-from app.database.models import LLMPrompt
 
 bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 
@@ -123,13 +122,22 @@ def get_prompts():
 
 @bp.route("/templates", methods=["GET"])
 def get_templates():
-    """Get all prompt templates from LLMPrompt, ordered by 'order' (NULLs last), then id."""
-    prompts = LLMPrompt.query.order_by(LLMPrompt.order.is_(None), LLMPrompt.order, LLMPrompt.id).all()
-    return jsonify([{
-        'id': p.id,
-        'name': p.name,
-        'prompt_text': p.prompt_text
-    } for p in prompts])
+    """Get all prompt templates from llm_prompt, ordered by 'order' (NULLs last), then id."""
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('''
+                SELECT id, name, prompt_text
+                FROM llm_prompt
+                ORDER BY ("order" IS NULL), "order", id
+            ''')
+            prompts = cur.fetchall()
+    return jsonify([
+        {
+            'id': p['id'],
+            'name': p['name'],
+            'prompt_text': p['prompt_text']
+        } for p in prompts
+    ])
 
 
 @bp.route("/templates/<int:template_id>", methods=["PUT"])
@@ -332,44 +340,48 @@ def update_prompt(prompt_id):
     data = request.get_json()
     if not data or not data.get('name') or not data.get('prompt_text'):
         return jsonify({'success': False, 'error': 'Name and prompt_text required'}), 400
-    
-    prompt = LLMPrompt.query.get_or_404(prompt_id)
-    prompt.name = data['name']
-    prompt.prompt_text = data['prompt_text']
-    
     try:
-        db.session.commit()
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute('''
+                    UPDATE llm_prompt SET name=%s, prompt_text=%s, updated_at=NOW() WHERE id=%s
+                ''', (data['name'], data['prompt_text'], prompt_id))
+                conn.commit()
         return jsonify({'success': True, 'prompt': {
-            'id': prompt.id,
-            'name': prompt.name,
-            'prompt_text': prompt.prompt_text
+            'id': prompt_id,
+            'name': data['name'],
+            'prompt_text': data['prompt_text']
         }})
     except Exception as e:
-        db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @bp.route('/prompts/<int:prompt_id>', methods=['DELETE'])
 def delete_prompt(prompt_id):
     """Delete a prompt"""
-    prompt = LLMPrompt.query.get_or_404(prompt_id)
     try:
-        db.session.delete(prompt)
-        db.session.commit()
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute('DELETE FROM llm_prompt WHERE id=%s', (prompt_id,))
+                conn.commit()
         return jsonify({'success': True})
     except Exception as e:
-        db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @bp.route('/prompts/<int:prompt_id>', methods=['GET'])
 def get_prompt(prompt_id):
     """Get a single prompt by ID"""
-    prompt = LLMPrompt.query.get_or_404(prompt_id)
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('SELECT id, name, prompt_text FROM llm_prompt WHERE id=%s', (prompt_id,))
+            prompt = cur.fetchone()
+    if not prompt:
+        return jsonify({'error': 'Not found'}), 404
     return jsonify({
-        'id': prompt.id,
-        'name': prompt.name,
-        'prompt_text': prompt.prompt_text
+        'id': prompt['id'],
+        'name': prompt['name'],
+        'prompt_text': prompt['prompt_text']
     })
 
 
@@ -498,14 +510,13 @@ def update_prompt_order():
     if not isinstance(ids, list):
         return jsonify({'success': False, 'error': 'Invalid order list'}), 400
     try:
-        for idx, prompt_id in enumerate(ids):
-            prompt = LLMPrompt.query.get(int(prompt_id))
-            if prompt:
-                prompt.order = idx
-        db.session.commit()
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                for idx, prompt_id in enumerate(ids):
+                    cur.execute('UPDATE llm_prompt SET "order"=%s WHERE id=%s', (idx, int(prompt_id)))
+                conn.commit()
         return jsonify({'success': True})
     except Exception as e:
-        db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
@@ -668,11 +679,22 @@ def update_action_prompt_part(action_id, part_id):
 @bp.route('/providers', methods=['GET', 'POST'])
 def providers():
     if request.method == 'GET':
-        # Only Ollama (local) provider for now
-        providers = [
-            {"id": 1, "name": "Ollama (local)", "description": "Local Ollama server", "api_url": "http://localhost:11434", "auth_token": None, "created_at": None, "updated_at": None}
-        ]
-        return jsonify(providers)
+        # Return all providers from the database
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute('SELECT id, name, description, api_url, auth_token, created_at, updated_at FROM llm_provider ORDER BY id')
+                providers = cur.fetchall()
+        return jsonify([
+            {
+                'id': p['id'],
+                'name': p['name'],
+                'description': p['description'],
+                'api_url': p['api_url'],
+                'auth_token': p['auth_token'],
+                'created_at': p['created_at'],
+                'updated_at': p['updated_at']
+            } for p in providers
+        ])
     # POST not implemented for now
     return jsonify({'error': 'Not implemented'}), 501
 
@@ -706,13 +728,19 @@ def provider_detail(id):
 @bp.route('/models', methods=['GET', 'POST'])
 def models():
     if request.method == 'GET':
-        # Only Ollama local models for now
-        models = [
-            {"id": 1, "name": "llama3", "provider_id": 1, "description": "Ollama Llama 3 (local)"},
-            {"id": 2, "name": "mistral", "provider_id": 1, "description": "Ollama Mistral (local)"},
-            {"id": 3, "name": "phi3", "provider_id": 1, "description": "Ollama Phi-3 (local)"}
-        ]
-        return jsonify(models)
+        # Return all models from the database
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute('SELECT id, name, provider_id, description FROM llm_model ORDER BY id')
+                models = cur.fetchall()
+        return jsonify([
+            {
+                'id': m['id'],
+                'name': m['name'],
+                'provider_id': m['provider_id'],
+                'description': m['description']
+            } for m in models
+        ])
     # POST not implemented for now
     return jsonify({'error': 'Not implemented'}), 501
 
