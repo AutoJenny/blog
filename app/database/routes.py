@@ -39,6 +39,7 @@ def index():
     """Database management interface."""
     logging.basicConfig(level=logging.DEBUG)
     stats = {}
+    backup_files = []
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
@@ -50,11 +51,21 @@ def index():
                         (SELECT COUNT(*) FROM llm_interaction) as llm_count
                 """)
                 stats = dict(cur.fetchone())
+        # Find all .sql backups in backups/ and project root
+        backup_dir = Path("backups")
+        root_dir = Path(".")
+        backup_files = []
+        if backup_dir.exists():
+            backup_files += list(backup_dir.glob("blog_backup_*.sql"))
+        backup_files += list(root_dir.glob("blog_backup_*.sql"))
+        # Remove duplicates, sort by mtime desc, use relative paths
+        backup_files = sorted(set(backup_files), key=lambda x: x.stat().st_mtime, reverse=True)
+        backup_files = [str(f.relative_to(root_dir)) for f in backup_files]
     except Exception as e:
-        logging.error(f"Error fetching database stats: {str(e)}")
-        flash(f"Error fetching database stats: {str(e)}", "error")
+        logging.error(f"Error fetching database stats or backup files: {str(e)}")
+        flash(f"Error fetching database stats or backup files: {str(e)}", "error")
     logging.debug(f"/db/ stats: {stats}")
-    return render_template("db/index.html", stats=stats)
+    return render_template("db/index.html", stats=stats, backup_files=backup_files)
 
 @bp.route("/restore")
 def restore():
@@ -184,7 +195,10 @@ def list_tables():
                 # Grouping logic
                 group_defs = [
                     ("Image Related", ["image", "image_format", "image_setting", "image_style", "image_prompt_example"]),
-                    ("LLM Related", ["llm_action", "llm_action_history", "llm_provider", "llm_model", "llm_interaction", "llm_prompt"]),
+                    ("LLM Related", [
+                        "llm_action", "llm_action_history", "llm_provider", "llm_model", "llm_interaction", "llm_prompt",
+                        "llm_prompt_part", "post_substage_action"
+                    ]),
                     ("Blog/Post Related", ["post", "post_section", "post_development", "category", "tag", "post_tags", "post_categories", "post_workflow_stage", "post_workflow_sub_stage"]),
                     ("User/Workflow", ["user", "workflow", "workflow_stage_entity", "workflow_sub_stage_entity"]),
                 ]
