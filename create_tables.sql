@@ -18,6 +18,7 @@ DROP TABLE IF EXISTS post CASCADE;
 DROP TABLE IF EXISTS category CASCADE;
 DROP TABLE IF EXISTS tag CASCADE;
 DROP TABLE IF EXISTS "user" CASCADE;
+DROP TABLE IF EXISTS llm_prompt_part CASCADE;
 
 -- Create enum types
 CREATE TYPE post_status AS ENUM ('draft', 'in_process', 'published', 'archived');
@@ -62,7 +63,9 @@ CREATE TABLE post (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     header_image_id INTEGER REFERENCES image(id),
-    status post_status DEFAULT 'draft' NOT NULL
+    status post_status DEFAULT 'draft' NOT NULL,
+    idea_seed TEXT,
+    substage_id INTEGER
 );
 
 CREATE TABLE post_categories (
@@ -401,25 +404,18 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
--- Modular prompt part table
+-- Modular prompt part table (patched to match backup)
 CREATE TABLE llm_prompt_part (
     id SERIAL PRIMARY KEY,
-    type prompt_part_type NOT NULL,
-    role prompt_role_type NOT NULL DEFAULT 'user',
+    type VARCHAR(32) NOT NULL,
     content TEXT NOT NULL,
-    description TEXT,
     tags TEXT[],
     "order" INTEGER DEFAULT 0 NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Join table for action <-> prompt part (ordered)
-CREATE TABLE llm_action_prompt_part (
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    name VARCHAR(128),
     action_id INTEGER REFERENCES llm_action(id) ON DELETE CASCADE,
-    prompt_part_id INTEGER REFERENCES llm_prompt_part(id) ON DELETE CASCADE,
-    "order" INTEGER DEFAULT 0 NOT NULL,
-    PRIMARY KEY (action_id, prompt_part_id)
+    description TEXT
 );
 
 -- Add input_field and output_field to llm_action
@@ -427,7 +423,7 @@ ALTER TABLE llm_action ADD COLUMN input_field VARCHAR(128);
 ALTER TABLE llm_action ADD COLUMN output_field VARCHAR(128);
 
 -- LLM Provider Registry
-CREATE TABLE IF NOT EXISTS llm_provider (
+CREATE TABLE llm_provider (
     id SERIAL PRIMARY KEY,
     name VARCHAR(128) NOT NULL,
     type VARCHAR(64) NOT NULL DEFAULT 'local',
@@ -439,7 +435,7 @@ CREATE TABLE IF NOT EXISTS llm_provider (
 );
 
 -- LLM Model Registry
-CREATE TABLE IF NOT EXISTS llm_model (
+CREATE TABLE llm_model (
     id SERIAL PRIMARY KEY,
     name VARCHAR(128) NOT NULL,
     provider_id INTEGER NOT NULL REFERENCES llm_provider(id) ON DELETE CASCADE,
@@ -450,8 +446,7 @@ CREATE TABLE IF NOT EXISTS llm_model (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE INDEX IF NOT EXISTS idx_llm_model_provider_id ON llm_model(provider_id);
+CREATE UNIQUE INDEX IF NOT EXISTS unique_provider_model ON llm_model(provider_id, name);
 
 -- Add ENUM for provider type
 DO $$ BEGIN
@@ -461,17 +456,6 @@ EXCEPTION
 END $$;
 
 ALTER TABLE llm_provider ADD COLUMN IF NOT EXISTS type provider_type_enum NOT NULL DEFAULT 'other';
-
--- Enforce unique (provider_id, name) on llm_model
-DO $$ BEGIN
-    ALTER TABLE llm_model ADD CONSTRAINT unique_provider_model UNIQUE (provider_id, name);
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-
--- Add llm_model_id to llm_action, migrate data, drop old llm_model string column
-ALTER TABLE llm_action ADD COLUMN IF NOT EXISTS llm_model_id INTEGER REFERENCES llm_model(id);
--- Data migration and drop of old column will be handled in Python migration script.
 
 -- Table to define available LLM Actions per post and substage (for multiple buttons)
 CREATE TABLE IF NOT EXISTS post_substage_action (

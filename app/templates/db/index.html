@@ -28,18 +28,6 @@
                     <select id="restoreBackupSelect"
                         class="form-input px-4 py-2 rounded border border-gray-600 bg-dark-card text-white">
                         <option value="">Select backup file...</option>
-                        {% set backup_files = [
-                        'blog_backup_20250523_082634.sql',
-                        'blog_backup_20250524_151434.sql',
-                        'blog_backup_20250522_190110.sql',
-                        'blog_backup_20250522_190041.sql',
-                        'blog_backup_20250521_141125_postrestore.sql',
-                        'blog_backup_20250518_184147.sql',
-                        'blog_backup_20250518_172746.sql',
-                        'blog_backup_20250518_172740.sql',
-                        'blog_backup_20250518_103247.sql',
-                        'blog_llm_prompt_action_current.sql',
-                        ] %}
                         {% for f in backup_files %}
                         <option value="{{ f }}">{{ f }}</option>
                         {% endfor %}
