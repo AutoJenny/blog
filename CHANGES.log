@@ -645,3 +645,4 @@ All notable changes to this project are documented in this file.
 - Draggable items now have a deep green background and a drag handle.
 - Prevented accidental duplication and improved drag-and-drop UX.
 - Updated docs/database/sql_management.md with new assembler UI details.
+- Fix: Green data field entity now uses robust SortableJS external drag source, can be dropped at any position in the sequence with visible drop space. Restored all assembler and tab UI functionality after regression.
