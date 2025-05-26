@@ -217,6 +217,13 @@
 
 {% block content %}
 <div class="max-w-5xl mx-auto py-10">
+    <!-- Start Ollama Button -->
+    <div class="flex justify-end items-center mb-4">
+        <button id="startOllamaBtn" class="btn btn-primary flex items-center gap-2">
+            <i class="fa-solid fa-rocket"></i> Start Ollama
+        </button>
+        <span id="ollamaStartStatus" class="ml-4 text-sm"></span>
+    </div>
     <div class="tab-bar mb-0">
         <button class="tab-btn active" id="tabActionsBtn" type="button" tabindex="0">Actions Table</button>
         <button class="tab-btn" id="tabDetailsBtn" type="button" tabindex="0">Action Details</button>
@@ -487,11 +494,20 @@
             const testInput = document.getElementById('builderTestInput').value;
             const outputDiv = document.getElementById('builderTestOutput');
             outputDiv.textContent = 'Running test...';
+            // Extract [data:variable] from the prompt template
+            const promptText = document.getElementById('builderPromptPreview').textContent;
+            const dataVarMatch = promptText.match(/\[data:([a-zA-Z0-9_]+)\]/);
+            let inputPayload = {};
+            if (dataVarMatch) {
+                inputPayload[dataVarMatch[1]] = testInput;
+            } else {
+                inputPayload['input'] = testInput;
+            }
             try {
                 const resp = await fetch(`/api/v1/llm/actions/${actionId}/test`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ input: testInput })
+                    body: JSON.stringify({ input: inputPayload })
                 });
                 const data = await resp.json();
                 if (resp.ok && data.result) {
@@ -579,6 +595,33 @@
                 document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
             }
         });
+        // --- Start Ollama Button Logic ---
+        const startOllamaBtn = document.getElementById('startOllamaBtn');
+        const ollamaStartStatus = document.getElementById('ollamaStartStatus');
+        if (startOllamaBtn) {
+            startOllamaBtn.addEventListener('click', async function () {
+                if (!confirm('Are you sure you want to start the Ollama server?')) return;
+                ollamaStartStatus.textContent = 'Starting Ollama...';
+                ollamaStartStatus.className = 'ml-4 text-sm text-yellow-400';
+                startOllamaBtn.disabled = true;
+                try {
+                    const resp = await fetch('/api/v1/llm/ollama/start', { method: 'POST' });
+                    const data = await resp.json();
+                    if (data.success) {
+                        ollamaStartStatus.textContent = 'Ollama started successfully!';
+                        ollamaStartStatus.className = 'ml-4 text-sm text-green-400';
+                    } else {
+                        ollamaStartStatus.textContent = 'Failed to start Ollama: ' + (data.error || 'Unknown error');
+                        ollamaStartStatus.className = 'ml-4 text-sm text-red-400';
+                    }
+                } catch (e) {
+                    ollamaStartStatus.textContent = 'Error: ' + e;
+                    ollamaStartStatus.className = 'ml-4 text-sm text-red-400';
+                } finally {
+                    startOllamaBtn.disabled = false;
+                }
+            });
+        }
     </script>
 </div>
 {% endblock %}

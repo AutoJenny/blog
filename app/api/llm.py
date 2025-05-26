@@ -6,6 +6,11 @@ import traceback
 import logging
 from app.database.routes import get_db_conn
 import json
+from jinja2 import Template
+import subprocess
+import socket
+import time
+import re
 
 bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 
@@ -239,9 +244,10 @@ def handle_actions():
         prompt_parts = data.get('prompt_parts', [])
         with get_db_conn() as conn:
             with conn.cursor() as cur:
+                prompt_template_id = int(data['prompt_template_id'])
                 cur.execute("""
                     SELECT prompt_text FROM llm_prompt WHERE id = %s
-                """, (data['prompt_template_id'],))
+                """, (prompt_template_id,))
                 prompt_row = cur.fetchone()
                 if not prompt_row:
                     return jsonify({'status': 'error', 'error': 'Prompt template not found'}), 404
@@ -262,28 +268,6 @@ def handle_actions():
                     data.get('order', 0)
                 ))
                 action_id = cur.fetchone()['id']
-                # Remove any old links for this action
-                cur.execute("DELETE FROM llm_action_prompt_part WHERE action_id = %s", (action_id,))
-                # Insert/update prompt parts and link
-                for i, part in enumerate(prompt_parts):
-                    part_id = part.get('id')
-                    if part_id:
-                        # Update existing part
-                        cur.execute("""
-                            UPDATE llm_prompt_part SET type=%s, content=%s, "order"=%s, updated_at=NOW() WHERE id=%s
-                        """, (part['type'], part['content'], i, part_id))
-                    else:
-                        # Insert new part
-                        cur.execute("""
-                            INSERT INTO llm_prompt_part (type, content, "order", created_at, updated_at)
-                            VALUES (%s, %s, %s, NOW(), NOW()) RETURNING id
-                        """, (part['type'], part['content'], i))
-                        part_id = cur.fetchone()['id']
-                    # Link to action
-                    cur.execute("""
-                        INSERT INTO llm_action_prompt_part (action_id, prompt_part_id, "order")
-                        VALUES (%s, %s, %s)
-                    """, (action_id, part_id, i))
                 conn.commit()
         return jsonify({'status': 'success', 'action': action_id})
     except Exception as e:
@@ -608,73 +592,6 @@ def handle_prompt_part(part_id):
         return jsonify({'status': 'success'})
 
 
-@bp.route('/actions/<int:action_id>/prompt_parts', methods=['GET', 'POST'])
-def action_prompt_parts(action_id):
-    if request.method == 'GET':
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT l.prompt_part_id, l.order, p.type, p.content, p.tags
-                    FROM llm_action_prompt_part l
-                    JOIN llm_prompt_part p ON l.prompt_part_id = p.id
-                    WHERE l.action_id = %s
-                    ORDER BY l.order, l.prompt_part_id
-                """, (action_id,))
-                links = cur.fetchall()
-        return jsonify(links)
-    if request.method == 'POST':
-        data = request.get_json()
-        try:
-            with get_db_conn() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        INSERT INTO llm_action_prompt_part (action_id, prompt_part_id, "order")
-                        VALUES (%s, %s, %s)
-                    """, (
-                        action_id,
-                        data['prompt_part_id'],
-                        data.get('order', 0)
-                    ))
-                    conn.commit()
-            return jsonify({'status': 'success'})
-        except Exception as e:
-            return jsonify({'status': 'error', 'error': str(e)}), 400
-
-
-@bp.route('/actions/<int:action_id>/prompt_parts/<int:part_id>', methods=['PUT', 'DELETE'])
-def update_action_prompt_part(action_id, part_id):
-    if request.method == 'PUT':
-        data = request.get_json()
-        try:
-            with get_db_conn() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        UPDATE llm_action_prompt_part SET "order"=%s WHERE action_id=%s AND prompt_part_id=%s
-                    """, (
-                        data.get('order', 0),
-                        action_id,
-                        part_id
-                    ))
-                    conn.commit()
-            return jsonify({'status': 'success'})
-        except Exception as e:
-            return jsonify({'status': 'error', 'error': str(e)}), 400
-    if request.method == 'DELETE':
-        try:
-            with get_db_conn() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        DELETE FROM llm_action_prompt_part WHERE action_id=%s AND prompt_part_id=%s
-                    """, (
-                        action_id,
-                        part_id
-                    ))
-                    conn.commit()
-            return jsonify({'status': 'success'})
-        except Exception as e:
-            return jsonify({'status': 'error', 'error': str(e)}), 400
-
-
 # --- LLM Provider CRUD ---
 @bp.route('/providers', methods=['GET', 'POST'])
 def providers():
@@ -746,55 +663,69 @@ def models():
 
 @bp.route('/actions/<int:action_id>/test', methods=['POST'])
 def test_action(action_id):
-    """Test an LLM action with modular prompt parts and return diagnostics."""
-    from app.models import LLMModel
-    from app import db
-    import logging
-    action = LLMAction.query.get_or_404(action_id)
+    """Test an LLM action using its prompt_template and return diagnostics."""
+    from app.llm.services import LLMService
+    from jinja2 import Template
+    action = None
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Fetch action
+            cur.execute("SELECT * FROM llm_action WHERE id = %s", (action_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'error': 'Action not found'}), 404
+            action = dict(row)
+            # Fetch model
+            cur.execute("SELECT * FROM llm_model WHERE name = %s", (action['llm_model'],))
+            model_row = cur.fetchone()
+            if not model_row:
+                return jsonify({'error': 'Model not found for this action'}), 400
+            model = dict(model_row)
+            # Fetch provider
+            cur.execute("SELECT * FROM llm_provider WHERE id = %s", (model['provider_id'],))
+            provider_row = cur.fetchone()
+            if not provider_row:
+                return jsonify({'error': 'Provider not found for this action'}), 400
+            provider = dict(provider_row)
+    provider_type = provider.get('type')
+    if provider_type == 'local':
+        provider_type = 'ollama'
+    if not provider_type:
+        return jsonify({'error': 'Provider type missing for this action'}), 400
+    provider_config = provider
     data = request.get_json() or {}
-    input_text = data.get('input', '')
-    fields = {'input': input_text}
-    diagnostics = {}
-
+    test_input = data.get('input', {})
+    # Ensure test_input is a mapping for Jinja2
+    if isinstance(test_input, str):
+        test_input = {'input': test_input}
+    elif not isinstance(test_input, dict):
+        test_input = {}
+    # Flatten if test_input = {'input': {...}}
+    if isinstance(test_input, dict) and set(test_input.keys()) == {'input'} and isinstance(test_input['input'], dict):
+        test_input = test_input['input']
+    # Render the prompt template with test input
     try:
-        # Use a local variable for the model name, never reference action.llm_model in diagnostics or response
-        if hasattr(action.llm_model, 'name'):
-            safe_model_name = action.llm_model.name
-        elif isinstance(action.llm_model, str):
-            safe_model_name = action.llm_model
-        else:
-            safe_model_name = str(action.llm_model_id)
-        # Assemble prompt/messages from modular prompt parts
-        from app.llm.services import assemble_prompt_from_parts, LLMService
-        prompt, messages = assemble_prompt_from_parts(action, fields)
-        diagnostics['assembled_prompt'] = prompt
-        diagnostics['messages'] = messages
-        diagnostics['input'] = input_text
-        diagnostics['model'] = safe_model_name
-        # Execute the action using the safe model name
-        service = LLMService()
-        result = service.execute_action(action, fields, model_name=safe_model_name)
-        # Ensure diagnostics and result are JSON serializable
-        def make_json_safe(obj):
-            if isinstance(obj, db.Model):
-                if hasattr(obj, 'to_dict'):
-                    return obj.to_dict()
-                return str(obj)
-            elif isinstance(obj, dict):
-                return {k: make_json_safe(v) for k, v in obj.items()}
-            elif isinstance(obj, list):
-                return [make_json_safe(i) for i in obj]
-            return obj
-        safe_result = make_json_safe(result)
-        safe_diag = make_json_safe(diagnostics)
-        logging.error(f"[DEBUG] Sanitized diagnostics: {safe_diag}")
-        logging.error(f"[DEBUG] Sanitized result: {safe_result}")
-        return jsonify({
-            'result': safe_result,
-            'diagnostics': safe_diag
-        })
+        # Replace [data:variable] with {{ variable }} for Jinja2
+        prompt_text = action['prompt_template']
+        prompt_text = re.sub(r'\[data:([a-zA-Z0-9_]+)\]', r'{{ \1 }}', prompt_text)
+        template = Template(prompt_text)
+        rendered_prompt = template.render(**test_input)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Prompt rendering error: {str(e)}'}), 400
+    # Call the LLM service
+    try:
+        service = LLMService()
+        service.config = provider_type
+        service.api_url = provider.get('api_url')
+        result = service.generate(
+            rendered_prompt,
+            model_name=action['llm_model'],
+            temperature=action.get('temperature', 0.7),
+            max_tokens=action.get('max_tokens', 1000)
+        )
+        return jsonify({'result': result, 'rendered_prompt': rendered_prompt})
+    except Exception as e:
+        return jsonify({'error': f'LLM service error: {str(e)}'}), 500
 
 # --- Post Substage Action Endpoints ---
 @bp.route('/post_substage_actions', methods=['GET', 'POST'])
@@ -939,3 +870,27 @@ def substage_action_default():
             print('DEBUG: Exception in substage_action_default:', type(e), e)
             traceback.print_exc()
             return jsonify({'status': 'error', 'error': f'{type(e).__name__}: {e}'}), 400
+
+@bp.route('/ollama/start', methods=['POST'])
+def start_ollama():
+    """Start the Ollama server if not already running."""
+    # Check if Ollama is already running on localhost:11434
+    def is_ollama_running():
+        try:
+            with socket.create_connection(("localhost", 11434), timeout=2):
+                return True
+        except Exception:
+            return False
+    if is_ollama_running():
+        return jsonify({"success": True, "message": "Ollama already running."})
+    try:
+        # Start Ollama in the background
+        subprocess.Popen(["ollama", "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # Wait briefly and check again
+        time.sleep(2)
+        if is_ollama_running():
+            return jsonify({"success": True, "message": "Ollama started."})
+        else:
+            return jsonify({"success": False, "error": "Ollama did not start."})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
