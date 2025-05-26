@@ -661,3 +661,9 @@ All notable changes to this project are documented in this file.
 - UI and logic match the modal wizard: dropdowns, prompt preview, test run, and save are all supported.
 - JavaScript updated for robust dropdown population, preview, test, and save logic in the always-visible layout.
 - Fully accessible and robust; all fields validated; clear error and success feedback.
+
+2025-06-XX: LLM Actions Builder Test & Save Button Fixes
+- Test button is now only enabled for existing actions (edit mode) and calls the correct endpoint.
+- Test is disabled for new actions, with a tooltip explaining why.
+- Save button always sends all required fields; clear error messages for missing fields or backend errors.
+- UI and logic are robust and user-friendly.

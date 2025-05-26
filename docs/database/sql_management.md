@@ -173,4 +173,11 @@ psql $DATABASE_URL -U nickfiddes -c "REASSIGN OWNED BY nickfiddes TO postgres;"
 - All four stages (Basic Info, Model Settings, Prompt Template, Test & Save) are always visible, stacked vertically.
 - The builder supports dropdowns, prompt preview, test run, and save, matching the modal wizard's logic and UI.
 - The panel is fully accessible, robust, and provides clear error and success feedback.
-- See CHANGES.log for details. 
+- See CHANGES.log for details.
+
+## 2025-06-XX: LLM Actions Builder Test & Save Button Fixes
+
+- The Test button in the Action Builder is only enabled for existing actions (edit mode) and calls the correct endpoint.
+- Test is disabled for new actions, with a tooltip explaining why.
+- Save button always sends all required fields; clear error messages for missing fields or backend errors.
+- The UI and logic are robust and user-friendly. 
