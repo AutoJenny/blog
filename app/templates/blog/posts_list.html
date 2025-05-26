@@ -114,6 +114,7 @@
             </thead>
             <tbody>
                 {% for post in posts %}
+                {% set substage = substages | selectattr('id', 'equalto', post.substage_id) | first %}
                 <tr>
                     <td>{{ post.idea_seed or '' }}</td>
                     <td>{{ post.title or '' }}</td>
@@ -121,8 +122,8 @@
                     <td>{{ post.created_ago }}</td>
                     <td>{{ post.updated_ago }}</td>
                     <td class="actions">
-                        <a href="/workflow/{{ substages[post.substage_id] }}/?post_id={{ post.id }}" class="icon-btn"
-                            title="Edit">
+                        <a href="/workflow/{{ substage.name if substage else 'idea' }}/?post_id={{ post.id }}"
+                            class="icon-btn" title="Edit">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </a>
                         <a href="{{ url_for('blog.post_public', post_id=post.id) }}" class="icon-btn" title="Preview">
