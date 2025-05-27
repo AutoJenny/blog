@@ -366,14 +366,14 @@ def posts_listing():
                 # Get posts with substage_id, filter by deleted status
                 if show_deleted:
                     cur.execute("""
-                        SELECT id, idea_seed, title, status, created_at, updated_at, slug, substage_id
+                        SELECT id, title, status, created_at, updated_at, slug, substage_id
                         FROM post
                         WHERE status = 'deleted'
                         ORDER BY created_at DESC
                     """)
                 else:
                     cur.execute("""
-                        SELECT id, idea_seed, title, status, created_at, updated_at, slug, substage_id
+                        SELECT id, title, status, created_at, updated_at, slug, substage_id
                         FROM post
                         WHERE status != 'deleted'
                         ORDER BY created_at DESC
