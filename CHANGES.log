@@ -686,3 +686,9 @@ All notable changes to this project are documented in this file.
 2025-05-27: Removed Action Details tab and all related JS/UI from /llm/actions for a simpler, table-only UX. No more tab navigation or details form; only the actions table and New Action button remain. All tab logic and builder form JS removed.
 
 2025-05-27: LLM Actions: Edit button now links to /llm/actions/<id> for editing and testing actions (restores detail/edit UX).
+
+2025-05-27: Restored llm_actions.html to last known good state (menus, layout, builder, test) before tab removal. Reverts recent breaking changes and restores full LLM Action management UX.
+
+2025-05-27: Fix: LLM-generated summary in Idea workflow is now saved to the DB after action run, so it persists on reload (matches Research workflow pattern).
+
+2025-05-27: Added summary field to post_development table (schema, migration, API). Now persists LLM-generated summary in Idea workflow. DB backup made before migration.
