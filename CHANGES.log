@@ -1,3 +1,7 @@
+2025-05-27 11:47:28
+
+- Removed all references to hand-fasting as a post/field from seed data and ensured no code or schema dependency.
+
 2025-05-27 11:06:56
 
 - Added workflow_field_mapping table, settings panel, and live docs view for field-to-workflow mapping. Seeded all post development fields with intuitive mappings. Fixed backend to use get_db_conn.
