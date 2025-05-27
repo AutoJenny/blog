@@ -1,48 +1,66 @@
 {% extends 'base.html' %}
 {% block title %}Settings - Field Mapping{% endblock %}
 {% block content %}
-<h1>Settings: Workflow Field Mapping</h1>
-<p>Map post development fields to workflow stages and substages. Changes are saved to the database and reflected in the
-    workflow UI and docs live view.</p>
-<form id="field-mapping-form" method="post" action="/api/settings/field-mapping">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Field Name</th>
-                <th>Stage</th>
-                <th>Substage</th>
-                <th>Order</th>
-                <th>Save</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for mapping in field_mappings %}
-            <tr data-mapping-id="{{ mapping.id }}">
-                <td>{{ mapping.field_name }}</td>
-                <td>
-                    <select name="stage_id" class="stage-dropdown">
-                        {% for stage in stages %}
-                        <option value="{{ stage.id }}" {% if stage.id==mapping.stage_id %}selected{% endif %}>{{
-                            stage.name|capitalize }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-                <td>
-                    <select name="substage_id" class="substage-dropdown">
-                        {% for sub in substages if sub.stage_id == mapping.stage_id %}
-                        <option value="{{ sub.id }}" {% if sub.id==mapping.substage_id %}selected{% endif %}>{{
-                            sub.name|capitalize }}</option>
-                        {% endfor %}
-                    </select>
-                </td>
-                <td><input type="number" name="order_index" value="{{ mapping.order_index }}" min="0"
-                        class="order-input" /></td>
-                <td><button type="button" class="save-btn btn btn-primary">Save</button></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</form>
+<div class="max-w-4xl mx-auto mt-8 bg-dark-bg border border-dark-border rounded-xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-gear text-indigo-400"></i> Settings: Workflow Field Mapping
+    </h1>
+    <p class="text-dark-text mb-4">
+        Map post development fields to workflow stages and substages. Changes are saved to the database and reflected in
+        the workflow UI and <a href="/docs/view/database/schema.md"
+            class="text-indigo-300 underline hover:text-indigo-100">docs live view</a>.
+    </p>
+    <form id="field-mapping-form" method="post" action="/api/settings/field-mapping">
+        <div class="overflow-x-auto rounded-lg">
+            <table class="min-w-full table-auto border-collapse bg-[#23273a] text-sm text-left">
+                <thead class="bg-[#181c2a] text-indigo-200 sticky top-0 z-10">
+                    <tr>
+                        <th class="px-4 py-3 font-semibold">Field Name</th>
+                        <th class="px-4 py-3 font-semibold">Stage</th>
+                        <th class="px-4 py-3 font-semibold">Substage</th>
+                        <th class="px-4 py-3 font-semibold">Order</th>
+                        <th class="px-4 py-3 font-semibold">Save</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mapping in field_mappings %}
+                    <tr data-mapping-id="{{ mapping.id }}"
+                        class="border-b border-dark-border hover:bg-[#23273a]/80 transition">
+                        <td class="px-4 py-2 text-white whitespace-nowrap">{{ mapping.field_name }}</td>
+                        <td class="px-4 py-2">
+                            <select name="stage_id"
+                                class="stage-dropdown bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full">
+                                {% for stage in stages %}
+                                <option value="{{ stage.id }}" {% if stage.id==mapping.stage_id %}selected{% endif %}>{{
+                                    stage.name|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="px-4 py-2">
+                            <select name="substage_id"
+                                class="substage-dropdown bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full">
+                                {% for sub in substages if sub.stage_id == mapping.stage_id %}
+                                <option value="{{ sub.id }}" {% if sub.id==mapping.substage_id %}selected{% endif %}>{{
+                                    sub.name|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="px-4 py-2">
+                            <input type="number" name="order_index" value="{{ mapping.order_index }}" min="0"
+                                class="order-input bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-20"
+                                aria-label="Order" />
+                        </td>
+                        <td class="px-4 py-2">
+                            <button type="button"
+                                class="save-btn bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-1 rounded-md shadow transition focus:ring-2 focus:ring-indigo-400 focus:outline-none">Save</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
 <script>
     // Filter substages by stage selection
     const substages = {{ substages| tojson }};
@@ -75,10 +93,10 @@
                 body: JSON.stringify({ id: mappingId, stage_id: stageId, substage_id: substageId, order_index: orderIndex })
             }).then(resp => resp.json()).then(data => {
                 if (data.status === 'success') {
-                    btn.classList.remove('btn-primary');
-                    btn.classList.add('btn-success');
+                    btn.classList.remove('bg-indigo-600');
+                    btn.classList.add('bg-green-600');
                     btn.textContent = 'Saved';
-                    setTimeout(() => { btn.classList.remove('btn-success'); btn.classList.add('btn-primary'); btn.textContent = 'Save'; }, 1500);
+                    setTimeout(() => { btn.classList.remove('bg-green-600'); btn.classList.add('bg-indigo-600'); btn.textContent = 'Save'; }, 1500);
                 } else {
                     alert('Save failed: ' + data.message);
                 }
