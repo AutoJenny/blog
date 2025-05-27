@@ -692,3 +692,5 @@ All notable changes to this project are documented in this file.
 2025-05-27: Fix: LLM-generated summary in Idea workflow is now saved to the DB after action run, so it persists on reload (matches Research workflow pattern).
 
 2025-05-27: Added summary field to post_development table (schema, migration, API). Now persists LLM-generated summary in Idea workflow. DB backup made before migration.
+
+2025-05-27: Refactor: Modular LLM workflow panels for Idea stage (Input, Actions, Output, Post Development Fields). Remove LLM Actions Table. All dropdowns and logic are reusable for other stages.
