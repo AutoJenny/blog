@@ -164,7 +164,7 @@ def workflow_research():
         with conn.cursor() as cur:
             # Get mapped fields for research substage (id=2)
             cur.execute("SELECT field_name FROM workflow_field_mapping WHERE substage_id = 2 ORDER BY order_index;")
-            mapped_fields = [row[0].lower().replace(' ', '_') for row in cur.fetchall()]
+            mapped_fields = [row['field_name'].lower().replace(' ', '_') for row in cur.fetchall()]
             if post_id:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
