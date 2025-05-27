@@ -79,6 +79,8 @@ Maps post development fields to workflow stages and substages for UI and workflo
 
 This table is managed via the Settings panel at `/settings` and is used to dynamically control the workflow field mapping.
 
+**Note:** The Settings panel now displays all fields from the `post_development` table (except `id` and `post_id`), including those not yet mapped. Unmapped fields will appear as available for mapping to any workflow stage/substage.
+
 ## Live Field Mapping Table
 
 The current mapping of fields to workflow stages/substages is shown below. This table is dynamically generated from the database and can be managed in the [Settings Panel](/settings).
