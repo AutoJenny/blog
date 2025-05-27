@@ -684,3 +684,5 @@ All notable changes to this project are documented in this file.
 - Enables robust, real-world testing of actions with data variables directly from the UI.
 
 2025-05-27: Removed Action Details tab and all related JS/UI from /llm/actions for a simpler, table-only UX. No more tab navigation or details form; only the actions table and New Action button remain. All tab logic and builder form JS removed.
+
+2025-05-27: LLM Actions: Edit button now links to /llm/actions/<id> for editing and testing actions (restores detail/edit UX).
