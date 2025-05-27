@@ -48,7 +48,46 @@
                     </a>
                 </div>
                 <div class="flex items-center space-x-4 ml-8">
-                    <!-- Only Preview link remains, right-aligned -->
+                    <!-- Workflow Dropdown -->
+                    <div class="relative group">
+                        <button
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="fa-solid fa-sitemap"></i> Workflow <i class="fa fa-caret-down text-xs"></i>
+                        </button>
+                        <div
+                            class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden group-hover:block group-focus-within:block">
+                            <a href="/workflow/idea/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-lightbulb text-yellow-400"></i> Planning</a>
+                            <a href="/workflow/content/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-pen-nib text-green-400"></i> Authoring</a>
+                            <a href="/workflow/preflight/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-paper-plane text-blue-400"></i> Publishing</a>
+                        </div>
+                    </div>
+                    <!-- Modules Dropdown -->
+                    <div class="relative group">
+                        <button
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down text-xs"></i>
+                        </button>
+                        <div
+                            class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden group-hover:block group-focus-within:block">
+                            <a href="/db/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-database text-purple-400"></i> Database</a>
+                            <a href="/llm/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-brain text-pink-400"></i> AI</a>
+                            <a href="/llm/images"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-image text-dark-accent"></i> Images</a>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex-shrink-0 flex items-center gap-4 ml-4">
                     <a href="{{ url_for('blog.posts_listing') }}"
@@ -59,6 +98,8 @@
                         <i class="fa-solid fa-plus"></i>
                         New Post
                     </button>
+                    <a href="/docs/"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Docs</a>
                 </div>
             </div>
         </nav>
