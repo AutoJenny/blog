@@ -258,9 +258,10 @@ def list_posts():
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT id, title, slug, summary, created_at, updated_at, header_image_id, status, idea_seed, substage_id
-                FROM post
-                ORDER BY created_at DESC
+                SELECT p.id, p.title, p.slug, p.summary, p.created_at, p.updated_at, p.header_image_id, p.status, pd.idea_seed, p.substage_id
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                ORDER BY p.created_at DESC
             """)
             posts = cur.fetchall()
             # Convert datetime to isoformat and return as list of dicts

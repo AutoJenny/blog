@@ -77,7 +77,8 @@
             <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> 3. Prompt
                 Parts</h2>
             <div class="mb-2 text-indigo-200 text-sm">Prompt parts are sent to the AI in order. Variables like
-                <code>{{'{{input}}'}}</code> or <code>{{'{{idea_seed}}'}}</code> will be replaced at runtime.
+                <code>{{'{{input}}'}}</code> or <code>{{'{{idea_seed}}'}}</code> (from post_development) will be
+                replaced at runtime.
             </div>
             <ol class="list-decimal ml-6">
                 {% for part in action_prompt_parts %}
