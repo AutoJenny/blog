@@ -155,13 +155,16 @@ def workflow_idea():
 @bp.route('/workflow/research/')
 def workflow_research():
     post = None
+    post_development = None
     post_id = request.args.get('post_id', type=int)
     if post_id:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
-    return render_template('workflow/planning/research/index.html', post=post, **workflow_context('research'))
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+    return render_template('workflow/planning/research/index.html', post=post, post_development=post_development, **workflow_context('research'))
 
 @bp.route('/workflow/structure/')
 def workflow_structure():
