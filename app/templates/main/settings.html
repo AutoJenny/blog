@@ -11,89 +11,10 @@
             class="text-indigo-300 underline hover:text-indigo-100">docs live view</a>.
     </p>
     <form id="field-mapping-form" method="post" action="/api/settings/field-mapping">
-        <div class="overflow-x-auto rounded-lg">
-            <table class="min-w-full table-auto border-collapse bg-[#23273a] text-sm text-left">
-                <thead class="bg-[#181c2a] text-indigo-200 sticky top-0 z-10">
-                    <tr>
-                        <th class="px-4 py-3 font-semibold">Field Name</th>
-                        <th class="px-4 py-3 font-semibold">Stage</th>
-                        <th class="px-4 py-3 font-semibold">Substage</th>
-                        <th class="px-4 py-3 font-semibold">Order</th>
-                        <th class="px-4 py-3 font-semibold">Save</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {# Group mappings by stage and substage #}
-                    {% set mappings_by_stage = {} %}
-                    {% for mapping in field_mappings %}
-                    {% set stage_id = mapping.stage_id %}
-                    {% set substage_id = mapping.substage_id %}
-                    {% if mappings_by_stage[stage_id] is not defined %}
-                    {% set _ = mappings_by_stage.update({stage_id: {}}) %}
-                    {% endif %}
-                    {% if mappings_by_stage[stage_id][substage_id] is not defined %}
-                    {% set _ = mappings_by_stage[stage_id].update({substage_id: []}) %}
-                    {% endif %}
-                    {% set _ = mappings_by_stage[stage_id][substage_id].append(mapping) %}
-                    {% endfor %}
-                    {% for stage in stages %}
-                    {% if mappings_by_stage[stage.id] is defined %}
-                    <tr>
-                        <td colspan="5"
-                            class="bg-indigo-950 text-indigo-200 font-bold px-2 py-2 text-lg border-t border-indigo-700">
-                            Stage: {{ stage.name|capitalize }}</td>
-                    </tr>
-                    {% for substage in substages if mappings_by_stage[stage.id][substage.id] is defined %}
-                    <tr>
-                        <td colspan="5"
-                            class="bg-indigo-900 text-indigo-100 font-semibold px-2 py-1 text-base border-t border-indigo-800">
-                            Substage: {{ substage.name|capitalize }}</td>
-                    </tr>
-                    {% for mapping in mappings_by_stage[stage.id][substage.id] %}
-                    <tr data-mapping-id="{{ mapping.id }}"
-                        class="border-b border-dark-border hover:bg-[#23273a]/80 transition">
-                        <td class="px-4 py-2 text-white whitespace-nowrap">{{ mapping.field_name }}</td>
-                        <td class="px-4 py-2">
-                            <select name="stage_id"
-                                class="stage-dropdown bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full">
-                                {% for stage_opt in stages %}
-                                <option value="{{ stage_opt.id }}" {% if stage_opt.id==mapping.stage_id %}selected{%
-                                    endif %}>{{
-                                    stage_opt.name|capitalize }}</option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td class="px-4 py-2">
-                            <select name="substage_id"
-                                class="substage-dropdown bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full">
-                                {% for sub_opt in substages if sub_opt.stage_id == mapping.stage_id %}
-                                <option value="{{ sub_opt.id }}" {% if sub_opt.id==mapping.substage_id %}selected{%
-                                    endif %}>{{
-                                    sub_opt.name|capitalize }}</option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td class="px-4 py-2">
-                            <input type="number" name="order_index" value="{{ mapping.order_index }}" min="0"
-                                class="order-input bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-20"
-                                aria-label="Order" />
-                        </td>
-                        <td class="px-4 py-2">
-                            <button type="button"
-                                class="save-btn bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-1 rounded-md shadow transition focus:ring-2 focus:ring-indigo-400 focus:outline-none">Save</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% endfor %}
-                    {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <!-- Unmapped Fields Section -->
+        <!-- Unmapped Fields Section (always visible) -->
         {% set unmapped_fields = field_mappings | selectattr('id', '==', None) | list %}
         {% if unmapped_fields %}
-        <div class="mt-8 bg-indigo-950 border border-indigo-800 rounded-lg p-4">
+        <div class="mb-8 bg-indigo-950 border border-indigo-800 rounded-lg p-4">
             <h2 class="text-lg font-bold text-indigo-200 mb-2 flex items-center gap-2">
                 <i class="fa-solid fa-circle-plus text-green-400"></i> Unmapped Fields
             </h2>
@@ -140,6 +61,86 @@
             </table>
         </div>
         {% endif %}
+        <!-- Mapped Fields Table (grouped by stage/substage) -->
+        <div class="overflow-x-auto rounded-lg">
+            <table class="min-w-full table-auto border-collapse bg-[#23273a] text-sm text-left">
+                <thead class="bg-[#181c2a] text-indigo-200 sticky top-0 z-10">
+                    <tr>
+                        <th class="px-4 py-3 font-semibold">Field Name</th>
+                        <th class="px-4 py-3 font-semibold">Stage</th>
+                        <th class="px-4 py-3 font-semibold">Substage</th>
+                        <th class="px-4 py-3 font-semibold">Order</th>
+                        <th class="px-4 py-3 font-semibold">Save</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set mapped_fields = field_mappings | selectattr('id', '!=', None) | list %}
+                    {% set mappings_by_stage = {} %}
+                    {% for mapping in mapped_fields %}
+                    {% set stage_id = mapping.stage_id %}
+                    {% set substage_id = mapping.substage_id %}
+                    {% if mappings_by_stage[stage_id] is not defined %}
+                    {% set _ = mappings_by_stage.update({stage_id: {}}) %}
+                    {% endif %}
+                    {% if mappings_by_stage[stage_id][substage_id] is not defined %}
+                    {% set _ = mappings_by_stage[stage_id].update({substage_id: []}) %}
+                    {% endif %}
+                    {% set _ = mappings_by_stage[stage_id][substage_id].append(mapping) %}
+                    {% endfor %}
+                    {% for stage in stages %}
+                    {% if mappings_by_stage[stage.id] is defined %}
+                    <tr>
+                        <td colspan="5"
+                            class="bg-indigo-950 text-indigo-200 font-bold px-2 py-2 text-lg border-t border-indigo-700">
+                            Stage: {{ stage.name|capitalize }}
+                        </td>
+                    </tr>
+                    {% for substage in substages if mappings_by_stage[stage.id][substage.id] is defined %}
+                    <tr>
+                        <td colspan="5"
+                            class="bg-indigo-900 text-indigo-100 font-semibold px-2 py-1 text-base border-t border-indigo-800">
+                            Substage: {{ substage.name|capitalize }}
+                        </td>
+                    </tr>
+                    {% for mapping in mappings_by_stage[stage.id][substage.id] %}
+                    <tr data-mapping-id="{{ mapping.id }}"
+                        class="border-b border-dark-border hover:bg-[#23273a]/80 transition">
+                        <td class="px-4 py-2 text-white whitespace-nowrap">{{ mapping.field_name }}</td>
+                        <td class="px-4 py-2">
+                            <select name="stage_id"
+                                class="stage-dropdown bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full">
+                                {% for stage_opt in stages %}
+                                <option value="{{ stage_opt.id }}" {% if stage_opt.id==mapping.stage_id %}selected{%
+                                    endif %}>{{ stage_opt.name|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="px-4 py-2">
+                            <select name="substage_id"
+                                class="substage-dropdown bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full">
+                                {% for sub_opt in substages if sub_opt.stage_id == mapping.stage_id %}
+                                <option value="{{ sub_opt.id }}" {% if sub_opt.id==mapping.substage_id %}selected{%
+                                    endif %}>{{ sub_opt.name|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="px-4 py-2">
+                            <input type="number" name="order_index" value="{{ mapping.order_index }}" min="0"
+                                class="order-input bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-20"
+                                aria-label="Order" />
+                        </td>
+                        <td class="px-4 py-2">
+                            <button type="button"
+                                class="save-btn bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-1 rounded-md shadow transition focus:ring-2 focus:ring-indigo-400 focus:outline-none">Save</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </form>
 </div>
 <script>
