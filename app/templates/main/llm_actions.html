@@ -224,377 +224,44 @@
         </button>
         <span id="ollamaStartStatus" class="ml-4 text-sm"></span>
     </div>
-    <div class="tab-bar mb-0">
-        <button class="tab-btn active" id="tabActionsBtn" type="button" tabindex="0">Actions Table</button>
-        <button class="tab-btn" id="tabDetailsBtn" type="button" tabindex="0">Action Details</button>
-    </div>
-    <div id="tabActions" class="tab-content">
-        <div class="admin-card">
-            <div class="flex items-center justify-between mb-6">
-                <h1 class="admin-title"><i class="fas fa-bolt mr-2"></i>LLM Actions</h1>
-                <button class="btn btn-primary" id="newActionBtn"><i class="fas fa-plus"></i> New Action</button>
-            </div>
-            <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
-                <table class="min-w-full text-left">
-                    <thead>
-                        <tr class="text-indigo-200 border-b border-dark-border">
-                            <th class="py-2 px-3">Name</th>
-                            <th class="py-2 px-3">Model</th>
-                            <th class="py-2 px-3">Prompt Template</th>
-                            <th class="py-2 px-3">Temperature</th>
-                            <th class="py-2 px-3">Max Tokens</th>
-                            <th class="py-2 px-3">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for action in actions %}
-                        <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                            <td class="py-2 px-3 font-semibold text-white">{{ action.field_name }}</td>
-                            <td class="py-2 px-3">{{ action.llm_model }}</td>
-                            <td class="py-2 px-3">{{ action.prompt_template }}</td>
-                            <td class="py-2 px-3">{{ action.temperature }}</td>
-                            <td class="py-2 px-3">{{ action.max_tokens }}</td>
-                            <td class="py-2 px-3 flex gap-2">
-                                <button class="btn btn-secondary edit-action-btn" data-id="{{ action.id }}"
-                                    data-mode="edit"><i class="fa-solid fa-pen"></i> Edit</button>
-                                <button class="btn btn-danger delete-action-btn" data-id="{{ action.id }}"><i
-                                        class="fa-solid fa-trash"></i> Delete</button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+    <div class="admin-card">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="admin-title"><i class="fas fa-bolt mr-2"></i>LLM Actions</h1>
+            <button class="btn btn-primary" id="newActionBtn"><i class="fas fa-plus"></i> New Action</button>
         </div>
-    </div>
-    <div id="tabDetails" class="tab-content" style="display:none;">
-        <div class="admin-card mt-10" id="nonModalActionBuilder">
-            <h2 class="text-lg font-bold mb-4 flex items-center gap-2" id="actionBuilderTitle"><i
-                    class="fa-solid fa-plus"></i> Create New Action (Builder)</h2>
-            <form id="actionBuilderForm" autocomplete="off">
-                <!-- Stage 1: Basic Info -->
-                <div class="mb-8">
-                    <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-info-circle"></i>
-                        1. Basic Info</h3>
-                    <div class="form-group">
-                        <label class="form-label" for="builderFieldName">Field Name</label>
-                        <input type="text" id="builderFieldName" name="field_name" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="builderDescription">Description</label>
-                        <input type="text" id="builderDescription" name="description" class="form-input">
-                    </div>
-                </div>
-                <!-- Stage 2: Model Settings -->
-                <div class="mb-8">
-                    <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-robot"></i> 2.
-                        Model Settings</h3>
-                    <div class="form-group">
-                        <label class="form-label" for="builderProvider">LLM Provider</label>
-                        <select id="builderProvider" name="provider_id" class="form-input" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="builderModel">LLM Model</label>
-                        <select id="builderModel" name="llm_model" class="form-input" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="builderTemperature">Temperature</label>
-                        <input type="number" id="builderTemperature" name="temperature" class="form-input" min="0"
-                            max="2" step="0.1" value="0.7">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="builderMaxTokens">Max Tokens</label>
-                        <input type="number" id="builderMaxTokens" name="max_tokens" class="form-input" min="1"
-                            max="4096" value="1000">
-                    </div>
-                </div>
-                <!-- Stage 3: Prompt Template -->
-                <div class="mb-8">
-                    <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i>
-                        3. Prompt Template</h3>
-                    <div class="form-group mb-4">
-                        <label class="form-label" for="builderPromptTemplate">Prompt Template</label>
-                        <select id="builderPromptTemplate" name="prompt_template_id" class="form-input"
-                            required></select>
-                    </div>
-                    <div class="bg-dark-card rounded p-4 mt-4 mb-2">
-                        <h4 class="font-bold mb-1 flex items-center gap-2"><i class="fa-solid fa-eye"></i> Prompt
-                            Preview</h4>
-                        <div id="builderPromptPreview" class="whitespace-pre-line text-indigo-100 text-sm">{ ... select
-                            a template ... }</div>
-                        <div class="text-xs text-indigo-200 mt-1">This is how your full prompt will look to the AI, with
-                            variables replaced at runtime.</div>
-                    </div>
-                </div>
-                <!-- Stage 4: Test & Save -->
-                <div class="mb-8">
-                    <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-vial"></i> 4. Test
-                        & Save</h3>
-                    <div class="form-group">
-                        <label class="form-label">Test Input</label>
-                        <textarea id="builderTestInput" class="form-textarea" rows="2"></textarea>
-                    </div>
-                    <button type="button" class="btn btn-primary mb-2" id="builderRunTestBtn">Run Test</button>
-                    <div id="builderTestOutput" class="bg-dark-card rounded p-4 mt-2 text-indigo-100 text-sm"
-                        style="white-space: pre-wrap; min-height: 2em;"></div>
-                    <div class="flex justify-end gap-4 mt-6">
-                        <button type="submit" class="btn btn-primary">Save Action</button>
-                    </div>
-                </div>
-            </form>
-            <div id="actionBuilderMsg" class="mt-2 text-sm"></div>
+        <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead>
+                    <tr class="text-indigo-200 border-b border-dark-border">
+                        <th class="py-2 px-3">Name</th>
+                        <th class="py-2 px-3">Model</th>
+                        <th class="py-2 px-3">Prompt Template</th>
+                        <th class="py-2 px-3">Temperature</th>
+                        <th class="py-2 px-3">Max Tokens</th>
+                        <th class="py-2 px-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for action in actions %}
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3 font-semibold text-white">{{ action.field_name }}</td>
+                        <td class="py-2 px-3">{{ action.llm_model }}</td>
+                        <td class="py-2 px-3">{{ action.prompt_template }}</td>
+                        <td class="py-2 px-3">{{ action.temperature }}</td>
+                        <td class="py-2 px-3">{{ action.max_tokens }}</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="btn btn-secondary edit-action-btn" data-id="{{ action.id }}"
+                                data-mode="edit"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button class="btn btn-danger delete-action-btn" data-id="{{ action.id }}"><i
+                                    class="fa-solid fa-trash"></i> Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
     <script>
-        // Tab logic
-        const tabActionsBtn = document.getElementById('tabActionsBtn');
-        const tabDetailsBtn = document.getElementById('tabDetailsBtn');
-        const tabActions = document.getElementById('tabActions');
-        const tabDetails = document.getElementById('tabDetails');
-        function showTab(tab) {
-            if (tab === 'actions') {
-                tabActionsBtn.classList.add('active');
-                tabDetailsBtn.classList.remove('active');
-                tabActions.style.display = '';
-                tabDetails.style.display = 'none';
-            } else {
-                tabActionsBtn.classList.remove('active');
-                tabDetailsBtn.classList.add('active');
-                tabActions.style.display = 'none';
-                tabDetails.style.display = '';
-            }
-        }
-        tabActionsBtn.onclick = () => showTab('actions');
-        tabDetailsBtn.onclick = () => showTab('details');
-        // --- Dropdown Population Logic ---
-        async function loadProviders(selectedProviderId) {
-            const providerSelect = document.getElementById('builderProvider');
-            providerSelect.innerHTML = '<option value="">Loading...</option>';
-            try {
-                const resp = await fetch('/api/v1/llm/providers');
-                const providers = await resp.json();
-                providerSelect.innerHTML = providers.map(p => `<option value="${p.id}" ${selectedProviderId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
-                // If a provider is selected, load models for it
-                const selected = providerSelect.value || selectedProviderId;
-                if (selected) {
-                    loadModels(selected);
-                } else {
-                    document.getElementById('builderModel').innerHTML = '<option value="">Select provider first</option>';
-                }
-            } catch (e) {
-                providerSelect.innerHTML = '<option value="">Failed to load providers</option>';
-                document.getElementById('builderModel').innerHTML = '<option value="">Select provider first</option>';
-            }
-        }
-        async function loadModels(providerId, selectedModelId) {
-            const modelSelect = document.getElementById('builderModel');
-            modelSelect.innerHTML = '<option value="">Loading...</option>';
-            try {
-                const resp = await fetch('/api/v1/llm/models');
-                const models = await resp.json();
-                const filtered = models.filter(m => String(m.provider_id) === String(providerId));
-                modelSelect.innerHTML = filtered.map(m => `<option value="${m.name}" data-model-id="${m.id}" ${selectedModelId == m.name ? 'selected' : ''}>${m.name} (${m.description || ''})</option>`).join('');
-            } catch (e) {
-                modelSelect.innerHTML = '<option value="">Failed to load models</option>';
-            }
-        }
-        async function loadPromptTemplates(selectedId) {
-            const select = document.getElementById('builderPromptTemplate');
-            select.innerHTML = '<option value="">Loading...</option>';
-            try {
-                const resp = await fetch('/api/v1/llm/prompts');
-                const prompts = await resp.json();
-                select.innerHTML = prompts.map(p => `<option value="${p.id}" ${selectedId == p.id ? 'selected' : ''}>${p.name} (${p.description || ''})</option>`).join('');
-                // Set preview if selected
-                if (selectedId) {
-                    const selected = prompts.find(p => p.id == selectedId);
-                    document.getElementById('builderPromptPreview').textContent = selected ? selected.prompt_text : '{ ... select a template ... }';
-                } else {
-                    document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
-                }
-            } catch (e) {
-                select.innerHTML = '<option value="">Failed to load templates</option>';
-                document.getElementById('builderPromptPreview').textContent = '{ ... error ... }';
-            }
-        }
-        // --- Test & Save Logic ---
-        function updateTestButtonState() {
-            const mode = document.getElementById('actionBuilderForm').dataset.mode;
-            const actionId = document.getElementById('actionBuilderForm').dataset.actionId;
-            const btn = document.getElementById('builderRunTestBtn');
-            if (mode === 'edit' && actionId) {
-                btn.disabled = false;
-                btn.title = '';
-            } else {
-                btn.disabled = true;
-                btn.title = 'Save the action first to enable testing.';
-            }
-        }
-        // Call this after any mode/form change
-        function setBuilderMode(mode, actionId) {
-            document.getElementById('actionBuilderForm').dataset.mode = mode;
-            document.getElementById('actionBuilderForm').dataset.actionId = actionId || '';
-            updateTestButtonState();
-        }
-        // Patch resetBuilderForm and edit logic to call setBuilderMode
-        function resetBuilderForm() {
-            document.getElementById('actionBuilderTitle').innerHTML = '<i class="fa-solid fa-plus"></i> Create New Action (Builder)';
-            document.getElementById('builderFieldName').value = '';
-            document.getElementById('builderDescription').value = '';
-            document.getElementById('builderProvider').value = '';
-            document.getElementById('builderModel').innerHTML = '<option value="">Select provider first</option>';
-            document.getElementById('builderTemperature').value = '0.7';
-            document.getElementById('builderMaxTokens').value = '1000';
-            document.getElementById('builderPromptTemplate').value = '';
-            document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
-            document.getElementById('builderTestInput').value = '';
-            document.getElementById('builderTestOutput').textContent = '';
-            setBuilderMode('new', '');
-            loadProviders(); // Always reload providers and models
-        }
-        document.getElementById('newActionBtn').onclick = function () {
-            resetBuilderForm();
-            showTab('details');
-        };
-        // Edit button logic
-        document.querySelectorAll('.edit-action-btn').forEach(btn => {
-            btn.onclick = function () {
-                const row = this.closest('tr');
-                const actionId = this.dataset.id;
-                fetch(`/api/v1/llm/actions/${actionId}`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.status === 'success' && data.action) {
-                            const a = data.action;
-                            document.getElementById('actionBuilderTitle').innerHTML = '<i class="fa-solid fa-pen"></i> Edit Action';
-                            document.getElementById('builderFieldName').value = a.field_name || '';
-                            document.getElementById('builderDescription').value = a.description || '';
-                            loadProviders(a.provider_id).then(() => {
-                                document.getElementById('builderProvider').value = a.provider_id || '';
-                                loadModels(a.provider_id, a.llm_model);
-                            });
-                            document.getElementById('builderModel').value = a.llm_model || '';
-                            document.getElementById('builderTemperature').value = a.temperature || '0.7';
-                            document.getElementById('builderMaxTokens').value = a.max_tokens || '1000';
-                            loadPromptTemplates(a.prompt_template_id);
-                            document.getElementById('builderPromptTemplate').value = a.prompt_template_id || '';
-                            document.getElementById('builderTestInput').value = '';
-                            document.getElementById('builderTestOutput').textContent = '';
-                            setBuilderMode('edit', a.id);
-                            showTab('details');
-                        }
-                    });
-            };
-        });
-        updateTestButtonState();
-        document.getElementById('builderRunTestBtn').onclick = async function () {
-            const mode = document.getElementById('actionBuilderForm').dataset.mode;
-            const actionId = document.getElementById('actionBuilderForm').dataset.actionId;
-            if (mode !== 'edit' || !actionId) return;
-            const testInput = document.getElementById('builderTestInput').value;
-            const outputDiv = document.getElementById('builderTestOutput');
-            outputDiv.textContent = 'Running test...';
-            // Extract [data:variable] from the prompt template
-            const promptText = document.getElementById('builderPromptPreview').textContent;
-            const dataVarMatch = promptText.match(/\[data:([a-zA-Z0-9_]+)\]/);
-            let inputPayload = {};
-            if (dataVarMatch) {
-                inputPayload[dataVarMatch[1]] = testInput;
-            } else {
-                inputPayload['input'] = testInput;
-            }
-            try {
-                const resp = await fetch(`/api/v1/llm/actions/${actionId}/test`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ input: inputPayload })
-                });
-                const data = await resp.json();
-                if (resp.ok && data.result) {
-                    outputDiv.textContent = data.result.output || JSON.stringify(data.result);
-                } else if (data.error) {
-                    outputDiv.textContent = data.error;
-                } else {
-                    outputDiv.textContent = 'Error running test.';
-                }
-            } catch (e) {
-                outputDiv.textContent = 'Error: ' + e;
-            }
-        };
-        document.getElementById('actionBuilderForm').onsubmit = async function (e) {
-            e.preventDefault();
-            const msg = document.getElementById('actionBuilderMsg');
-            msg.textContent = '';
-            const mode = this.dataset.mode || 'new';
-            const actionId = this.dataset.actionId || '';
-            const field_name = document.getElementById('builderFieldName').value;
-            const description = document.getElementById('builderDescription').value;
-            const provider_id = document.getElementById('builderProvider').value;
-            const llm_model = document.getElementById('builderModel').value;
-            const prompt_template_id = document.getElementById('builderPromptTemplate').value;
-            const temperature = parseFloat(document.getElementById('builderTemperature').value) || 0.7;
-            const max_tokens = parseInt(document.getElementById('builderMaxTokens').value) || 1000;
-            if (!field_name || !provider_id || !llm_model || !prompt_template_id) {
-                msg.textContent = 'Please fill in all required fields.';
-                msg.style.color = 'red';
-                return;
-            }
-            const btn = this.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.textContent = 'Saving...';
-            try {
-                let url = '/api/v1/llm/actions';
-                let method = 'POST';
-                if (mode === 'edit' && actionId) {
-                    url = `/api/v1/llm/actions/${actionId}`;
-                    method = 'PUT';
-                }
-                const resp = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        field_name,
-                        description,
-                        provider_id,
-                        llm_model,
-                        prompt_template_id,
-                        temperature,
-                        max_tokens
-                    })
-                });
-                const data = await resp.json();
-                if (resp.ok && data.status === 'success') {
-                    msg.textContent = 'Action saved!';
-                    msg.style.color = 'green';
-                    setTimeout(() => { window.location.reload(); }, 800);
-                } else {
-                    msg.textContent = data.error || 'Error saving action.';
-                    msg.style.color = 'red';
-                }
-            } catch (e) {
-                msg.textContent = 'Error: ' + e;
-                msg.style.color = 'red';
-            }
-            btn.disabled = false;
-            btn.textContent = 'Save Action';
-        };
-        loadProviders();
-        loadPromptTemplates();
-        document.getElementById('builderProvider').addEventListener('change', function () {
-            loadModels(this.value);
-        });
-        document.getElementById('builderPromptTemplate').addEventListener('change', function () {
-            const selected = this.options[this.selectedIndex];
-            if (selected && selected.value) {
-                fetch(`/api/v1/llm/prompts/${selected.value}`)
-                    .then(r => r.json())
-                    .then(data => {
-                        document.getElementById('builderPromptPreview').textContent = data.prompt_text || '{ ... select a template ... }';
-                    });
-            } else {
-                document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
-            }
-        });
         // --- Start Ollama Button Logic ---
         const startOllamaBtn = document.getElementById('startOllamaBtn');
         const ollamaStartStatus = document.getElementById('ollamaStartStatus');
