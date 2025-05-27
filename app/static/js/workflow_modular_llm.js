@@ -8,17 +8,6 @@
     return resp.ok ? await resp.json() : [];
   }
 
-  // Utility: group fields by stage/substage
-  function groupFieldsByStage(mappings) {
-    const grouped = {};
-    for (const m of mappings) {
-      if (!grouped[m.stage_name]) grouped[m.stage_name] = {};
-      if (!grouped[m.stage_name][m.substage_name]) grouped[m.stage_name][m.substage_name] = [];
-      grouped[m.stage_name][m.substage_name].push(m.field_name);
-    }
-    return grouped;
-  }
-
   // Utility: fetch post_development for a post
   async function fetchPostDevelopment(postId) {
     const resp = await fetch(`/api/v1/post_development/${postId}`);
@@ -57,9 +46,27 @@
     return resp.ok ? await resp.json() : { error: 'Failed to run action' };
   }
 
-  // Get postId from URL
+  // Utility: fetch post_substage_action for this post/substage
+  async function fetchPostSubstageAction(postId, substage) {
+    const resp = await fetch(`/api/v1/llm/post_substage_actions?post_id=${postId}&substage=${substage}`);
+    return resp.ok ? await resp.json() : null;
+  }
+
+  // Utility: save post_substage_action (for action, input, output selections)
+  async function savePostSubstageAction(postId, substage, actionId, inputField, outputField) {
+    const payload = { post_id: postId, substage, action_id: actionId, input_field: inputField, output_field: outputField };
+    const resp = await fetch('/api/v1/llm/post_substage_actions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return resp.ok ? await resp.json() : null;
+  }
+
+  // Get postId and substage from URL/context
   const urlParams = new URLSearchParams(window.location.search);
   const postId = urlParams.get('post_id');
+  const substage = 'idea'; // TODO: make dynamic for other stages
   if (!postId) return;
 
   // DOM elements
@@ -76,54 +83,65 @@
 
   // State
   let fieldMappings = [];
-  let groupedFields = {};
   let postDev = {};
   let llmActions = [];
   let actionDetails = {};
   let lastActionOutput = '';
+  let postSubstageAction = null;
 
-  // Fetch all data
+  // Fetch all data and initialize UI
   async function init() {
     fieldMappings = await fetchFieldMappings();
-    groupedFields = groupFieldsByStage(fieldMappings);
     postDev = await fetchPostDevelopment(postId);
     llmActions = await fetchLLMActions();
-    renderFieldDropdown(inputFieldSelect, groupedFields);
-    renderFieldDropdown(outputFieldSelect, groupedFields);
-    renderActionDropdown(actionSelect, llmActions);
+    postSubstageAction = await fetchPostSubstageAction(postId, substage);
+    renderFieldDropdown(inputFieldSelect, fieldMappings, postSubstageAction ? postSubstageAction.input_field : null);
+    renderFieldDropdown(outputFieldSelect, fieldMappings, postSubstageAction ? postSubstageAction.output_field : null);
+    renderActionDropdown(actionSelect, llmActions, postSubstageAction ? postSubstageAction.action_id : null);
     renderPostDevFields(postDevFieldsPanel, fieldMappings, postDev);
+    // Show initial field values
+    if (inputFieldSelect.value) inputFieldValue.textContent = postDev[inputFieldSelect.value] || '(No value)';
+    if (outputFieldSelect.value) outputFieldValue.textContent = postDev[outputFieldSelect.value] || '(No value)';
+    // Show initial action details
+    if (actionSelect.value) await showActionDetails(actionSelect.value);
   }
 
-  // Render dropdown for fields
-  function renderFieldDropdown(select, grouped) {
+  // Render dropdown for fields (flattened, grouped by stage, labeled as Stage / Substage / Field)
+  function renderFieldDropdown(select, mappings, selected) {
     select.innerHTML = '';
-    for (const stage in grouped) {
-      const stageOptGroup = document.createElement('optgroup');
-      stageOptGroup.label = stage;
-      for (const substage in grouped[stage]) {
-        const substageOptGroup = document.createElement('optgroup');
-        substageOptGroup.label = `  ${substage}`;
-        for (const field of grouped[stage][substage]) {
-          const opt = document.createElement('option');
-          opt.value = field;
-          opt.textContent = field.replace(/_/g, ' ');
-          substageOptGroup.appendChild(opt);
-        }
-        stageOptGroup.appendChild(substageOptGroup);
-      }
-      select.appendChild(stageOptGroup);
+    const stages = {};
+    for (const m of mappings) {
+      if (!stages[m.stage_name]) stages[m.stage_name] = [];
+      stages[m.stage_name].push(m);
     }
+    for (const stage in stages) {
+      const optGroup = document.createElement('optgroup');
+      optGroup.label = stage;
+      for (const m of stages[stage]) {
+        const opt = document.createElement('option');
+        opt.value = m.field_name;
+        opt.textContent = `${stage} / ${m.substage_name} / ${m.field_name.replace(/_/g, ' ')}`;
+        if (selected && selected === m.field_name) opt.selected = true;
+        optGroup.appendChild(opt);
+      }
+      select.appendChild(optGroup);
+    }
+    // Dark theme classes
+    select.classList.add('bg-gray-900', 'text-gray-100', 'border', 'border-gray-700');
   }
 
   // Render action dropdown
-  function renderActionDropdown(select, actions) {
+  function renderActionDropdown(select, actions, selected) {
     select.innerHTML = '<option value="">Select Action...</option>';
     for (const action of actions) {
       const opt = document.createElement('option');
       opt.value = action.id;
       opt.textContent = action.field_name;
+      if (selected && String(selected) === String(action.id)) opt.selected = true;
       select.appendChild(opt);
     }
+    // Dark theme classes
+    select.classList.add('bg-gray-900', 'text-gray-100', 'border', 'border-gray-700');
   }
 
   // Render post development fields table
@@ -143,25 +161,38 @@
     panel.innerHTML = html;
   }
 
-  // Field dropdown change handlers
-  inputFieldSelect.addEventListener('change', () => {
+  // Show action details (prompt/template, model, etc)
+  async function showActionDetails(actionId) {
+    actionDetails = await fetchLLMActionDetails(actionId);
+    let action = actionDetails.action || actionDetails; // Support both {action: {...}} and flat
+    let html = '';
+    if (action.prompt_template) {
+      html += `<div><b>Prompt Template:</b><pre class='bg-gray-800 text-gray-100 rounded p-2 mt-1 mb-2'>${action.prompt_template}</pre></div>`;
+    }
+    if (action.llm_model) {
+      html += `<div><b>LLM Model:</b> <span class='text-green-300'>${action.llm_model}</span></div>`;
+    }
+    if (!html) html = '(No details)';
+    actionPromptPanel.innerHTML = html;
+  }
+
+  // Field dropdown change handlers (persist selection)
+  inputFieldSelect.addEventListener('change', async () => {
     const field = inputFieldSelect.value;
     inputFieldValue.textContent = postDev[field] || '(No value)';
+    await savePostSubstageAction(postId, substage, actionSelect.value, field, outputFieldSelect.value);
   });
-  outputFieldSelect.addEventListener('change', () => {
+  outputFieldSelect.addEventListener('change', async () => {
     const field = outputFieldSelect.value;
     outputFieldValue.textContent = postDev[field] || '(No value)';
+    await savePostSubstageAction(postId, substage, actionSelect.value, inputFieldSelect.value, field);
   });
 
-  // Action dropdown change handler
+  // Action dropdown change handler (persist selection)
   actionSelect.addEventListener('change', async () => {
     const actionId = actionSelect.value;
-    if (!actionId) {
-      actionPromptPanel.textContent = 'Select an action to view its prompt/template.';
-      return;
-    }
-    actionDetails = await fetchLLMActionDetails(actionId);
-    actionPromptPanel.textContent = actionDetails.prompt_template || '(No prompt template)';
+    await showActionDetails(actionId);
+    await savePostSubstageAction(postId, substage, actionId, inputFieldSelect.value, outputFieldSelect.value);
   });
 
   // Run Action button handler
