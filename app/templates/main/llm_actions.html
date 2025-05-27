@@ -250,8 +250,8 @@
                         <td class="py-2 px-3">{{ action.temperature }}</td>
                         <td class="py-2 px-3">{{ action.max_tokens }}</td>
                         <td class="py-2 px-3 flex gap-2">
-                            <button class="btn btn-secondary edit-action-btn" data-id="{{ action.id }}"
-                                data-mode="edit"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <a class="btn btn-secondary" href="/llm/actions/{{ action.id }}"><i
+                                    class="fa-solid fa-pen"></i> Edit</a>
                             <button class="btn btn-danger delete-action-btn" data-id="{{ action.id }}"><i
                                     class="fa-solid fa-trash"></i> Delete</button>
                         </td>
