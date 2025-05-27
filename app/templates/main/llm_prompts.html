@@ -145,6 +145,23 @@
                 <input type="radio" name="promptPartType" value="assistant" class="accent-indigo-500 mr-2">
                 <span class="text-indigo-200">Assistant</span>
             </label>
+            <span class="text-dark-accent font-semibold ml-8 mr-2">Tags:</span>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="promptPartTag" value="role" class="accent-indigo-500 mr-2" checked>
+                <span class="text-indigo-200">Role</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="promptPartTag" value="operation" class="accent-indigo-500 mr-2" checked>
+                <span class="text-indigo-200">Operation</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="promptPartTag" value="format" class="accent-indigo-500 mr-2" checked>
+                <span class="text-indigo-200">Format</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="promptPartTag" value="specimen" class="accent-indigo-500 mr-2" checked>
+                <span class="text-indigo-200">Specimen</span>
+            </label>
         </div>
         <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
             <table class="min-w-full text-left" id="promptPartsTable">
@@ -153,6 +170,7 @@
                         <th class="py-2 px-3">ID</th>
                         <th class="py-2 px-3">Name</th>
                         <th class="py-2 px-3">Type</th>
+                        <th class="py-2 px-3">Tags</th>
                         <th class="py-2 px-3">Content</th>
                         <th class="py-2 px-3">Order</th>
                         <th class="py-2 px-3">Action ID</th>
@@ -167,6 +185,7 @@
                         <td class="py-2 px-3">{{ part.id }}</td>
                         <td class="py-2 px-3">{{ part.name }}</td>
                         <td class="py-2 px-3">{{ part.type }}</td>
+                        <td class="py-2 px-3">{{ part.tags|join(', ') if part.tags else '-' }}</td>
                         <td class="py-2 px-3 text-xs">{{ part.content }}</td>
                         <td class="py-2 px-3">{{ part.order }}</td>
                         <td class="py-2 px-3">{{ part.action_id }}</td>
@@ -370,6 +389,29 @@
                     </select>
                 </div>
                 <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Tags</label>
+                    <div class="flex flex-wrap gap-4">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="promptPartTags" value="role" class="accent-indigo-500 mr-2">
+                            <span class="text-indigo-200">Role</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="promptPartTags" value="operation"
+                                class="accent-indigo-500 mr-2">
+                            <span class="text-indigo-200">Operation</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="promptPartTags" value="format" class="accent-indigo-500 mr-2">
+                            <span class="text-indigo-200">Format</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="promptPartTags" value="specimen"
+                                class="accent-indigo-500 mr-2">
+                            <span class="text-indigo-200">Specimen</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-4">
                     <label class="block text-dark-accent mb-1">Content</label>
                     <textarea id="promptPartContent"
                         class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white" rows="4"
@@ -435,23 +477,46 @@
         showTab('parts');
         // Prompt Parts filter logic
         const typeRadios = document.querySelectorAll('input[name="promptPartType"]');
+        const tagCheckboxes = document.querySelectorAll('input[name="promptPartTag"]');
         const table = document.getElementById('promptPartsTable');
         let selectedType = localStorage.getItem('promptPartType') || 'all';
         // Set radio from storage
         typeRadios.forEach(radio => {
             radio.checked = (radio.value === selectedType);
         });
+        // --- Persist tag filter selections ---
+        const TAGS_KEY = 'promptPartTags';
+        function saveTagSelection() {
+            const selectedTags = Array.from(tagCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            localStorage.setItem(TAGS_KEY, JSON.stringify(selectedTags));
+        }
+        function restoreTagSelection() {
+            let selectedTags = [];
+            try {
+                selectedTags = JSON.parse(localStorage.getItem(TAGS_KEY));
+            } catch (e) { }
+            if (!Array.isArray(selectedTags) || selectedTags.length === 0) {
+                // Default: all checked
+                tagCheckboxes.forEach(cb => { cb.checked = true; });
+            } else {
+                tagCheckboxes.forEach(cb => { cb.checked = selectedTags.includes(cb.value); });
+            }
+        }
+        restoreTagSelection();
         function filterPromptParts() {
+            const selectedTags = Array.from(tagCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
                 const typeCell = row.querySelector('td:nth-child(3)');
-                if (!typeCell) return;
+                const tagsCell = row.querySelector('td:nth-child(4)');
+                if (!typeCell || !tagsCell) return;
                 const type = typeCell.textContent.trim().toLowerCase();
-                if (selectedType === 'all' || type === selectedType) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                const tags = tagsCell.textContent.split(',').map(t => t.trim().toLowerCase());
+                // Type filter
+                let typeMatch = (selectedType === 'all' || type === selectedType);
+                // Tag filter: if no tags selected, show all; else at least one must match
+                let tagMatch = (selectedTags.length === 0) || tags.some(t => selectedTags.includes(t));
+                row.style.display = (typeMatch && tagMatch) ? '' : 'none';
             });
         }
         typeRadios.forEach(radio => {
@@ -461,6 +526,12 @@
                     localStorage.setItem('promptPartType', selectedType);
                     filterPromptParts();
                 }
+            });
+        });
+        tagCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function () {
+                saveTagSelection();
+                filterPromptParts();
             });
         });
         filterPromptParts();
@@ -493,6 +564,9 @@
                         document.getElementById('promptPartType').value = part.type || 'system';
                         document.getElementById('promptPartContent').value = part.content || '';
                         document.getElementById('promptPartOrder').value = part.order || 0;
+                        // Set tags checkboxes
+                        const tagChecks = addPromptPartForm.querySelectorAll('input[name="promptPartTags"]');
+                        tagChecks.forEach(cb => { cb.checked = (part.tags && part.tags.includes(cb.value)); });
                         addPromptPartModal.classList.remove('hidden');
                     });
             };
@@ -524,9 +598,11 @@
             const type = document.getElementById('promptPartType').value;
             const content = document.getElementById('promptPartContent').value;
             const order = parseInt(document.getElementById('promptPartOrder').value, 10) || 0;
+            // Gather tags from checkboxes
+            const tags = Array.from(addPromptPartForm.querySelectorAll('input[name="promptPartTags"]:checked')).map(cb => cb.value);
             const method = id ? 'PUT' : 'POST';
             const url = id ? `/api/v1/llm/prompt_parts/${id}` : '/api/v1/llm/prompt_parts';
-            const body = JSON.stringify({ name, type, content, order });
+            const body = JSON.stringify({ name, type, content, order, tags });
             fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
