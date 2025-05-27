@@ -210,6 +210,12 @@
                     if (resp.ok && data.result) {
                         summaryPanel.textContent = data.result.output || JSON.stringify(data.result);
                         showToast('LLM action complete.', 'success');
+                        // Save output to summary field in DB
+                        await fetch(`/api/v1/post_development/${postId}/update_field`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ field: 'summary', value: data.result.output })
+                        });
                     } else if (data.error) {
                         summaryPanel.textContent = data.error;
                         showToast('LLM error: ' + data.error, 'error');
