@@ -11,6 +11,8 @@ import markdown
 import re
 from flask import abort
 import subprocess
+from flask import Blueprint
+from app.database.routes import get_db_conn
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
@@ -444,3 +446,83 @@ def db_restore():
         return jsonify({'error': f'Restore failed: {e}'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/settings')
+def settings_panel():
+    field_mappings = []
+    stages = []
+    substages = []
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('''
+                SELECT wfm.id, wfm.field_name, wfm.stage_id, wfm.substage_id, wfm.order_index
+                FROM workflow_field_mapping wfm
+                ORDER BY wfm.order_index ASC, wfm.field_name ASC
+            ''')
+            field_mappings = cur.fetchall()
+            cur.execute('SELECT id, name FROM workflow_stage_entity ORDER BY stage_order')
+            stages = cur.fetchall()
+            cur.execute('SELECT id, stage_id, name FROM workflow_sub_stage_entity ORDER BY sub_stage_order')
+            substages = cur.fetchall()
+    return render_template('main/settings.html', field_mappings=field_mappings, stages=stages, substages=substages)
+
+@bp.route('/api/settings/field-mapping', methods=['GET'])
+def api_get_field_mapping():
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('''
+                SELECT wfm.id, wfm.field_name, wfm.stage_id, wfm.substage_id, wfm.order_index,
+                       ws.name as stage_name, wss.name as substage_name
+                FROM workflow_field_mapping wfm
+                LEFT JOIN workflow_stage_entity ws ON wfm.stage_id = ws.id
+                LEFT JOIN workflow_sub_stage_entity wss ON wfm.substage_id = wss.id
+                ORDER BY wfm.order_index ASC, wfm.field_name ASC
+            ''')
+            mappings = cur.fetchall()
+    return jsonify([dict(row) for row in mappings])
+
+@bp.route('/api/settings/field-mapping', methods=['POST'])
+def api_update_field_mapping():
+    data = request.get_json()
+    mapping_id = data.get('id')
+    stage_id = data.get('stage_id')
+    substage_id = data.get('substage_id')
+    order_index = data.get('order_index')
+    if not mapping_id or not stage_id or not substage_id:
+        return jsonify({'status': 'error', 'message': 'Missing required fields'}), 400
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('''
+                UPDATE workflow_field_mapping
+                SET stage_id = %s, substage_id = %s, order_index = %s
+                WHERE id = %s
+            ''', (stage_id, substage_id, order_index, mapping_id))
+            conn.commit()
+    return jsonify({'status': 'success'})
+
+@bp.route('/api/workflow/stages', methods=['GET'])
+def api_get_workflow_stages():
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('SELECT id, name FROM workflow_stage_entity ORDER BY stage_order')
+            stages = cur.fetchall()
+            cur.execute('SELECT id, stage_id, name FROM workflow_sub_stage_entity ORDER BY sub_stage_order')
+            substages = cur.fetchall()
+    return jsonify({
+        'stages': [dict(row) for row in stages],
+        'substages': [dict(row) for row in substages]
+    })
+
+@bp.route('/docs/view/database/schema.md')
+def docs_live_field_mapping():
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('''
+                SELECT wfm.field_name, ws.name as stage_name, wss.name as substage_name, wfm.order_index
+                FROM workflow_field_mapping wfm
+                LEFT JOIN workflow_stage_entity ws ON wfm.stage_id = ws.id
+                LEFT JOIN workflow_sub_stage_entity wss ON wfm.substage_id = wss.id
+                ORDER BY wfm.order_index ASC, wfm.field_name ASC
+            ''')
+            mappings = cur.fetchall()
+    return render_template('docs/live_field_mapping.html', mappings=mappings)

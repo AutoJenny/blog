@@ -63,4 +63,24 @@ Tracks LLM action button settings for each post and workflow substage. Used to s
 | button_label | TEXT         | Label for the action button                      |
 | button_order | INTEGER      | Order for button display (default 0)             |
 
-Example usage: Allows the UI to save and restore which LLM action is selected for a post's substage, and how it appears in the workflow editor. 
+Example usage: Allows the UI to save and restore which LLM action is selected for a post's substage, and how it appears in the workflow editor.
+
+## Table: workflow_field_mapping
+
+Maps post development fields to workflow stages and substages for UI and workflow logic. Used by the Settings panel to configure which field appears in which stage/substage, and in what order.
+
+| Column      | Type         | Description                                      |
+|------------|--------------|--------------------------------------------------|
+| id         | SERIAL (PK)  | Unique row ID                                    |
+| field_name | TEXT         | Name of the post development field               |
+| stage_id   | INTEGER      | FK to workflow_stage_entity                      |
+| substage_id| INTEGER      | FK to workflow_sub_stage_entity                  |
+| order_index| INTEGER      | Order for display (default 0)                    |
+
+This table is managed via the Settings panel at `/settings` and is used to dynamically control the workflow field mapping.
+
+## Live Field Mapping Table
+
+The current mapping of fields to workflow stages/substages is shown below. This table is dynamically generated from the database and can be managed in the [Settings Panel](/settings).
+
+[View Live Mapping Table](/docs/view/database/schema.md) 

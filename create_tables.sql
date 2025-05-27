@@ -472,4 +472,13 @@ CREATE TABLE IF NOT EXISTS substage_action_default (
     id SERIAL PRIMARY KEY,
     substage VARCHAR(64) UNIQUE NOT NULL,
     action_id INTEGER REFERENCES llm_action(id)
+);
+
+-- Table to map post development fields to workflow stages/substages
+CREATE TABLE workflow_field_mapping (
+    id SERIAL PRIMARY KEY,
+    field_name TEXT NOT NULL,
+    stage_id INTEGER REFERENCES workflow_stage_entity(id) ON DELETE CASCADE,
+    substage_id INTEGER REFERENCES workflow_sub_stage_entity(id) ON DELETE CASCADE,
+    order_index INTEGER DEFAULT 0 NOT NULL
 ); 
