@@ -527,7 +527,13 @@ def settings_panel():
                 FROM workflow_field_mapping wfm
                 ORDER BY wfm.order_index ASC, wfm.field_name ASC
             ''')
-            mappings = {row['field_name']: dict(row) for row in cur.fetchall()}
+            mappings = {row['field_name']: {
+                'id': row['id'],
+                'field_name': row['field_name'],
+                'stage_id': int(row['stage_id']) if row['stage_id'] is not None else None,
+                'substage_id': int(row['substage_id']) if row['substage_id'] is not None else None,
+                'order_index': row['order_index']
+            } for row in cur.fetchall()}
             # Merge: all fields, mapped or not
             field_mappings = []
             for field in all_fields:
