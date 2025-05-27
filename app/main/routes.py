@@ -144,15 +144,22 @@ def workflow_context(substage_name):
 def workflow_idea():
     post = None
     llm_actions = []
+    post_development = None
+    mapped_fields = []
     post_id = request.args.get('post_id', type=int)
     with get_db_conn() as conn:
         with conn.cursor() as cur:
+            # Get mapped fields for idea substage (id=1)
+            cur.execute("SELECT field_name FROM workflow_field_mapping WHERE substage_id = 1 ORDER BY order_index;")
+            mapped_fields = [row['field_name'].lower().replace(' ', '_') for row in cur.fetchall()]
             if post_id:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
             cur.execute("SELECT * FROM llm_action ORDER BY id")
             llm_actions = cur.fetchall()
-    return render_template('workflow/planning/idea/index.html', post=post, llm_actions=llm_actions, **workflow_context('idea'))
+    return render_template('workflow/planning/idea/index.html', post=post, llm_actions=llm_actions, post_development=post_development, mapped_fields=mapped_fields, **workflow_context('idea'))
 
 @bp.route('/workflow/research/')
 def workflow_research():
@@ -175,79 +182,128 @@ def workflow_research():
 @bp.route('/workflow/structure/')
 def workflow_structure():
     post = None
+    post_development = None
+    mapped_fields = []
     post_id = request.args.get('post_id', type=int)
-    if post_id:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Get mapped fields for structure substage (id=3)
+            cur.execute("SELECT field_name FROM workflow_field_mapping WHERE substage_id = 3 ORDER BY order_index;")
+            mapped_fields = [row['field_name'].lower().replace(' ', '_') for row in cur.fetchall()]
+            if post_id:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
-    return render_template('workflow/planning/structure/index.html', post=post, **workflow_context('structure'))
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+    return render_template('workflow/planning/structure/index.html', post=post, post_development=post_development, mapped_fields=mapped_fields, **workflow_context('structure'))
 
 @bp.route('/workflow/content/')
 def workflow_content():
     post = None
+    post_development = None
+    mapped_fields = []
     post_id = request.args.get('post_id', type=int)
-    if post_id:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Get mapped fields for content substage (id=4)
+            cur.execute("SELECT field_name FROM workflow_field_mapping WHERE substage_id = 4 ORDER BY order_index;")
+            mapped_fields = [row['field_name'].lower().replace(' ', '_') for row in cur.fetchall()]
+            if post_id:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
-    return render_template('workflow/authoring/content/index.html', post=post, **workflow_context('content'))
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+    return render_template('workflow/authoring/content/index.html', post=post, post_development=post_development, mapped_fields=mapped_fields, **workflow_context('content'))
 
 @bp.route('/workflow/meta_info/')
 def workflow_meta_info():
     post = None
+    post_development = None
+    mapped_fields = []
     post_id = request.args.get('post_id', type=int)
-    if post_id:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Get mapped fields for meta_info substage (id=5)
+            cur.execute("SELECT field_name FROM workflow_field_mapping WHERE substage_id = 5 ORDER BY order_index;")
+            mapped_fields = [row['field_name'].lower().replace(' ', '_') for row in cur.fetchall()]
+            if post_id:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
-    return render_template('workflow/authoring/meta_info/index.html', post=post, **workflow_context('meta_info'))
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+    return render_template('workflow/authoring/meta_info/index.html', post=post, post_development=post_development, mapped_fields=mapped_fields, **workflow_context('meta_info'))
 
 @bp.route('/workflow/images/')
 def workflow_images():
     post = None
+    post_development = None
+    mapped_fields = []
     post_id = request.args.get('post_id', type=int)
-    if post_id:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Get mapped fields for images substage (id=6)
+            cur.execute("SELECT field_name FROM workflow_field_mapping WHERE substage_id = 6 ORDER BY order_index;")
+            mapped_fields = [row['field_name'].lower().replace(' ', '_') for row in cur.fetchall()]
+            if post_id:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
-    return render_template('workflow/authoring/images/index.html', post=post, **workflow_context('images'))
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+    return render_template('workflow/authoring/images/index.html', post=post, post_development=post_development, mapped_fields=mapped_fields, **workflow_context('images'))
 
 @bp.route('/workflow/preflight/')
 def workflow_preflight():
     post = None
+    post_development = None
+    mapped_fields = []
     post_id = request.args.get('post_id', type=int)
-    if post_id:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Get mapped fields for preflight substage (id=7)
+            cur.execute("SELECT field_name FROM workflow_field_mapping WHERE substage_id = 7 ORDER BY order_index;")
+            mapped_fields = [row['field_name'].lower().replace(' ', '_') for row in cur.fetchall()]
+            if post_id:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
-    return render_template('workflow/publishing/preflight/index.html', post=post, **workflow_context('preflight'))
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+    return render_template('workflow/publishing/preflight/index.html', post=post, post_development=post_development, mapped_fields=mapped_fields, **workflow_context('preflight'))
 
 @bp.route('/workflow/launch/')
 def workflow_launch():
     post = None
+    post_development = None
+    mapped_fields = []
     post_id = request.args.get('post_id', type=int)
-    if post_id:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Get mapped fields for launch substage (id=8)
+            cur.execute("SELECT field_name FROM workflow_field_mapping WHERE substage_id = 8 ORDER BY order_index;")
+            mapped_fields = [row['field_name'].lower().replace(' ', '_') for row in cur.fetchall()]
+            if post_id:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
-    return render_template('workflow/publishing/launch/index.html', post=post, **workflow_context('launch'))
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+    return render_template('workflow/publishing/launch/index.html', post=post, post_development=post_development, mapped_fields=mapped_fields, **workflow_context('launch'))
 
 @bp.route('/workflow/syndication/')
 def workflow_syndication():
     post = None
+    post_development = None
+    mapped_fields = []
     post_id = request.args.get('post_id', type=int)
-    if post_id:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Get mapped fields for syndication substage (id=9)
+            cur.execute("SELECT field_name FROM workflow_field_mapping WHERE substage_id = 9 ORDER BY order_index;")
+            mapped_fields = [row['field_name'].lower().replace(' ', '_') for row in cur.fetchall()]
+            if post_id:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
-    return render_template('workflow/publishing/syndication/index.html', post=post, **workflow_context('syndication'))
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+    return render_template('workflow/publishing/syndication/index.html', post=post, post_development=post_development, mapped_fields=mapped_fields, **workflow_context('syndication'))
 
 @bp.route('/docs/', defaults={'req_path': ''})
 @bp.route('/docs/<path:req_path>')
