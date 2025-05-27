@@ -158,15 +158,19 @@ def workflow_idea():
 def workflow_research():
     post = None
     post_development = None
+    mapped_fields = []
     post_id = request.args.get('post_id', type=int)
-    if post_id:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Get mapped fields for research substage (id=2)
+            cur.execute("SELECT field_name FROM workflow_field_mapping WHERE substage_id = 2 ORDER BY order_index;")
+            mapped_fields = [row[0].lower().replace(' ', '_') for row in cur.fetchall()]
+            if post_id:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
                 cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
                 post_development = cur.fetchone()
-    return render_template('workflow/planning/research/index.html', post=post, post_development=post_development, **workflow_context('research'))
+    return render_template('workflow/planning/research/index.html', post=post, post_development=post_development, mapped_fields=mapped_fields, **workflow_context('research'))
 
 @bp.route('/workflow/structure/')
 def workflow_structure():
