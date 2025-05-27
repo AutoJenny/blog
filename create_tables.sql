@@ -64,7 +64,6 @@ CREATE TABLE post (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     header_image_id INTEGER REFERENCES image(id),
     status post_status DEFAULT 'draft' NOT NULL,
-    idea_seed TEXT,
     substage_id INTEGER
 );
 
@@ -107,6 +106,7 @@ CREATE TABLE post_development (
     id SERIAL PRIMARY KEY,
     post_id INTEGER REFERENCES post(id) UNIQUE NOT NULL,
     basic_idea TEXT,
+    idea_seed TEXT,
     summary TEXT,
     provisional_title TEXT,
     idea_scope TEXT,

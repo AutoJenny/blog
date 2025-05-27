@@ -41,7 +41,12 @@ def listing():
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute("SELECT id, idea_seed, title, status, created_at, updated_at FROM post ORDER BY created_at DESC")
+                cur.execute("""
+                    SELECT p.id, pd.idea_seed, p.title, p.status, p.created_at, p.updated_at
+                    FROM post p
+                    LEFT JOIN post_development pd ON p.id = pd.post_id
+                    ORDER BY p.created_at DESC
+                """)
                 posts = cur.fetchall()
     except Exception as e:
         posts = []

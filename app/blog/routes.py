@@ -38,15 +38,23 @@ def new_post():
                         break
                     counter += 1
                     slug = f"{base_slug}-{counter}"
-                # Insert post with idea_seed
+                # Insert post (no idea_seed)
                 cur.execute(
                     """
-                    INSERT INTO post (title, slug, summary, idea_seed, created_at, updated_at)
-                    VALUES (%s, %s, '', %s, NOW(), NOW()) RETURNING id
+                    INSERT INTO post (title, slug, summary, created_at, updated_at)
+                    VALUES (%s, %s, '', NOW(), NOW()) RETURNING id
                     """,
-                    (temp_title, slug, data["basic_idea"])
+                    (temp_title, slug)
                 )
                 post_id = cur.fetchone()["id"]
+                # Insert post_development with idea_seed
+                cur.execute(
+                    """
+                    INSERT INTO post_development (post_id, idea_seed)
+                    VALUES (%s, %s)
+                    """,
+                    (post_id, data["basic_idea"])
+                )
                 conn.commit()
         return jsonify({
             "message": "Post created successfully",
