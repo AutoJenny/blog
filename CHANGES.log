@@ -701,3 +701,4 @@ All notable changes to this project are documented in this file.
 - fix(settings): ensure mapped fields retain correct stage_id/substage_id as integers for proper grouping in template
 - fix(settings): explicitly split mapped/unmapped fields in template; only render mapped fields in grouped table and unmapped in unmapped section
 - fix(settings): cast all stage_id/substage_id to int in template for robust grouping and correct display
+- revert(settings): rollback settings.html to last known good grouping and display commit (bb02bef)
