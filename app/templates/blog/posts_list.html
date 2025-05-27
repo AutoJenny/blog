@@ -104,7 +104,6 @@
         <table class="posts-table">
             <thead>
                 <tr>
-                    <th>Idea Seed</th>
                     <th>Title</th>
                     <th>Status</th>
                     <th>Created</th>
@@ -116,7 +115,6 @@
                 {% for post in posts %}
                 {% set substage = substages | selectattr('id', 'equalto', post.substage_id) | first %}
                 <tr>
-                    <td>{{ post.idea_seed or '' }}</td>
                     <td>{{ post.title or '' }}</td>
                     <td><span class="status">{{ post.status or '—' }}</span></td>
                     <td>{{ post.created_ago }}</td>
