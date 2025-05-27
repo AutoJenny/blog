@@ -694,3 +694,10 @@ All notable changes to this project are documented in this file.
 2025-05-27: Added summary field to post_development table (schema, migration, API). Now persists LLM-generated summary in Idea workflow. DB backup made before migration.
 
 2025-05-27: Refactor: Modular LLM workflow panels for Idea stage (Input, Actions, Output, Post Development Fields). Remove LLM Actions Table. All dropdowns and logic are reusable for other stages.
+- fix(settings): settings panel now shows all post_development fields, including unmapped, for mapping to workflow stages/substages
+- feat(settings): unmapped post_development fields now appear in settings panel and can be mapped via Add button
+- fix(settings): settings panel now shows all post_development fields (including unmapped) by merging with mapping table in route handler
+- fix(settings): restore grouping of mapped fields by stage/substage with headings; unmapped fields remain at top
+- fix(settings): ensure mapped fields retain correct stage_id/substage_id as integers for proper grouping in template
+- fix(settings): explicitly split mapped/unmapped fields in template; only render mapped fields in grouped table and unmapped in unmapped section
+- fix(settings): cast all stage_id/substage_id to int in template for robust grouping and correct display
