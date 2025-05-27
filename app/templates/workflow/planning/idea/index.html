@@ -53,39 +53,41 @@
                 select.innerHTML = '<option value="">Failed to load actions</option>';
             }
         }
-        if (select && postId) {
+        if (select) {
             loadActions();
-            // Save on change (localStorage)
-            select.addEventListener('change', function () {
-                localStorage.setItem(storageKey, select.value);
-            });
-            // Save on change (backend)
-            select.addEventListener('change', async function () {
-                const actionId = select.value;
-                if (!actionId || isNaN(Number(actionId))) return;
-                const payload = {
-                    post_id: postId,
-                    substage: 'idea',
-                    action_id: actionId,
-                    button_label: 'Action',
-                    button_order: 0
-                };
-                try {
-                    const res = await fetch('/api/v1/llm/post_substage_actions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    const data = await res.json();
-                    if (res.ok) {
-                        showToast('Action selection saved.', 'success');
-                    } else {
-                        showToast('Failed to save action: ' + (data.error || 'Unknown error'), 'error');
+            if (postId) {
+                // Save on change (localStorage)
+                select.addEventListener('change', function () {
+                    localStorage.setItem(storageKey, select.value);
+                });
+                // Save on change (backend)
+                select.addEventListener('change', async function () {
+                    const actionId = select.value;
+                    if (!actionId || isNaN(Number(actionId))) return;
+                    const payload = {
+                        post_id: postId,
+                        substage: 'idea',
+                        action_id: actionId,
+                        button_label: 'Action',
+                        button_order: 0
+                    };
+                    try {
+                        const res = await fetch('/api/v1/llm/post_substage_actions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            showToast('Action selection saved.', 'success');
+                        } else {
+                            showToast('Failed to save action: ' + (data.error || 'Unknown error'), 'error');
+                        }
+                    } catch (e) {
+                        showToast('Failed to save action: ' + e, 'error');
                     }
-                } catch (e) {
-                    showToast('Failed to save action: ' + e, 'error');
-                }
-            });
+                });
+            }
         }
         // Toast helper
         function showToast(msg, type) {
