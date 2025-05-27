@@ -25,10 +25,10 @@
     })();
 </script>
 <div class="container mx-auto px-6 py-8">
-    {{ indicator.process_indicator(substages, stages, current_substage_id) }}
     {% if post %}
     {{ blog_macros.post_header(post) }}
     {% endif %}
+    {{ indicator.process_indicator(substages, stages, current_substage_id) }}
     <div class="card-dark rounded-xl p-8 mt-8 shadow-lg">
         <h1 class="text-2xl font-bold text-white mb-4 flex items-center gap-2"><i class="fa fa-image text-pink-400"></i>
             Images</h1>
