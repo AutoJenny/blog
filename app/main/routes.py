@@ -515,6 +515,13 @@ def api_get_workflow_stages():
 
 @bp.route('/docs/view/database/schema.md')
 def docs_live_field_mapping():
+    # Render the markdown content first
+    docs_root = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'docs')
+    schema_md_path = os.path.join(docs_root, 'database', 'schema.md')
+    with open(schema_md_path, 'r', encoding='utf-8') as f:
+        md_content = f.read()
+    html_content = markdown.markdown(md_content, extensions=['fenced_code', 'tables'])
+    # Fetch the live mapping table
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('''
@@ -525,4 +532,4 @@ def docs_live_field_mapping():
                 ORDER BY wfm.order_index ASC, wfm.field_name ASC
             ''')
             mappings = cur.fetchall()
-    return render_template('docs/live_field_mapping.html', mappings=mappings)
+    return render_template('docs/live_field_mapping.html', file_html=html_content, mappings=mappings)
