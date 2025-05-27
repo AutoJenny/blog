@@ -601,7 +601,7 @@ def api_update_post_development_field(post_id):
     value = data.get('value')
     # Only allow updating fields that exist in post_development
     allowed_fields = [
-        'basic_idea','provisional_title','idea_scope','topics_to_cover','interesting_facts','tartans_products','section_planning','section_headings','section_order','main_title','subtitle','intro_blurb','conclusion','basic_metadata','tags','categories','image_captions','seo_optimization','self_review','peer_review','final_check','scheduling','deployment','verification','feedback_collection','content_updates','version_control','platform_selection','content_adaptation','distribution','engagement_tracking'
+        'basic_idea','provisional_title','idea_scope','topics_to_cover','interesting_facts','tartans_products','section_planning','section_headings','section_order','main_title','subtitle','intro_blurb','conclusion','basic_metadata','tags','categories','image_captions','seo_optimization','self_review','peer_review','final_check','scheduling','deployment','verification','feedback_collection','content_updates','version_control','platform_selection','content_adaptation','distribution','engagement_tracking','summary'
     ]
     if field not in allowed_fields:
         return jsonify({'status': 'error', 'message': 'Invalid field'}), 400

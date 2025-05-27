@@ -107,6 +107,7 @@ CREATE TABLE post_development (
     id SERIAL PRIMARY KEY,
     post_id INTEGER REFERENCES post(id) UNIQUE NOT NULL,
     basic_idea TEXT,
+    summary TEXT,
     provisional_title TEXT,
     idea_scope TEXT,
     topics_to_cover TEXT,
