@@ -1,9 +1,13 @@
 {% extends "base.html" %}
 {% import "workflow/workflow_indicator.html" as indicator %}
+{% import "blog/_post_header.html" as blog_macros %}
 
 {% block title %}Planning: Structure{% endblock %}
 
 {% block content %}
+{% if post %}
+{{ blog_macros.post_header(post) }}
+{% endif %}
 <div class="container mx-auto px-6 py-8">
     {{ indicator.process_indicator(substages, stages, current_substage_id) }}
     <div class="card-dark rounded-xl p-8 mt-8 shadow-lg">
