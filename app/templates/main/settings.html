@@ -11,8 +11,9 @@
             class="text-indigo-300 underline hover:text-indigo-100">docs live view</a>.
     </p>
     <form id="field-mapping-form" method="post" action="/api/settings/field-mapping">
-        <!-- Unmapped Fields Section (always visible) -->
+        {% set mapped_fields = field_mappings | selectattr('id', '!=', None) | list %}
         {% set unmapped_fields = field_mappings | selectattr('id', '==', None) | list %}
+        <!-- Unmapped Fields Section (always visible) -->
         {% if unmapped_fields %}
         <div class="mb-8 bg-indigo-950 border border-indigo-800 rounded-lg p-4">
             <h2 class="text-lg font-bold text-indigo-200 mb-2 flex items-center gap-2">
@@ -62,6 +63,7 @@
         </div>
         {% endif %}
         <!-- Mapped Fields Table (grouped by stage/substage) -->
+        {% if mapped_fields %}
         <div class="overflow-x-auto rounded-lg">
             <table class="min-w-full table-auto border-collapse bg-[#23273a] text-sm text-left">
                 <thead class="bg-[#181c2a] text-indigo-200 sticky top-0 z-10">
@@ -74,7 +76,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% set mapped_fields = field_mappings | selectattr('id', '!=', None) | list %}
                     {% set mappings_by_stage = {} %}
                     {% for mapping in mapped_fields %}
                     {% set stage_id = mapping.stage_id %}
@@ -141,6 +142,7 @@
                 </tbody>
             </table>
         </div>
+        {% endif %}
     </form>
 </div>
 <script>
