@@ -234,6 +234,29 @@
                         <span class="text-indigo-200">Assistant</span>
                     </label>
                 </div>
+                <div class="mb-4 flex items-center gap-6">
+                    <span class="text-dark-accent font-semibold mr-2">Tags:</span>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="assemblerPartTag" value="role" class="accent-indigo-500 mr-2"
+                            checked>
+                        <span class="text-indigo-200">Role</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="assemblerPartTag" value="operation" class="accent-indigo-500 mr-2"
+                            checked>
+                        <span class="text-indigo-200">Operation</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="assemblerPartTag" value="format" class="accent-indigo-500 mr-2"
+                            checked>
+                        <span class="text-indigo-200">Format</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="assemblerPartTag" value="specimen" class="accent-indigo-500 mr-2"
+                            checked>
+                        <span class="text-indigo-200">Specimen</span>
+                    </label>
+                </div>
                 <div id="assemblerPartsList" class="bg-dark-card rounded p-4 mb-4 max-h-80 overflow-y-auto">
                     <!-- Populated by JS -->
                 </div>
@@ -304,7 +327,8 @@
                         <td class="py-2 px-3">{{ prompt.prompt_text }}</td>
                         <td class="py-2 px-3">2025-05-21</td>
                         <td class="py-2 px-3 flex gap-2">
-                            <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn edit-template-assembler-btn" title="Edit"
+                                data-id="{{ prompt.id }}"><i class="fa-solid fa-pen"></i></button>
                             <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
                             <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
                             <button class="action-btn prompt-delete-btn" title="Delete" data-id="{{ prompt.id }}"><i
@@ -631,14 +655,20 @@
                 id: row.children[0].textContent.trim(),
                 name: row.children[1].textContent.trim(),
                 type: row.children[2].textContent.trim(),
-                content: row.children[3].textContent.trim()
+                tags: row.children[3].textContent.trim(),
+                content: row.children[4].textContent.trim()
             }));
         }
         // Restore renderAssemblerParts function
         function renderAssemblerParts() {
             assemblerPartsList.innerHTML = '';
+            const selectedTags = Array.from(assemblerTagCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
             getPromptPartsData().forEach(part => {
                 if (assemblerSelectedType !== 'all' && part.type.toLowerCase() !== assemblerSelectedType) return;
+                // Tag filter: if no tags selected, show all; else at least one must match
+                const tags = (part.tags || '').split(',').map(t => t.trim().toLowerCase());
+                let tagMatch = (selectedTags.length === 0) || tags.some(t => selectedTags.includes(t));
+                if (!tagMatch) return;
                 const div = document.createElement('div');
                 div.className = 'assembler-part rounded p-2 mb-2 cursor-pointer';
                 div.innerHTML = `<b>${part.type}</b>: <span class="text-indigo-100">${part.name}</span><br><span class="text-xs text-indigo-300">${part.content}</span>`;
@@ -655,13 +685,38 @@
         }
         // Assembler filter logic
         const assemblerTypeRadios = document.querySelectorAll('input[name="assemblerPartType"]');
+        const assemblerTagCheckboxes = document.querySelectorAll('input[name="assemblerPartTag"]');
         let assemblerSelectedType = 'all';
+        // --- Persist assembler tag filter selections ---
+        const ASSEMBLER_TAGS_KEY = 'assemblerPartTags';
+        function saveAssemblerTagSelection() {
+            const selectedTags = Array.from(assemblerTagCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            localStorage.setItem(ASSEMBLER_TAGS_KEY, JSON.stringify(selectedTags));
+        }
+        function restoreAssemblerTagSelection() {
+            let selectedTags = [];
+            try {
+                selectedTags = JSON.parse(localStorage.getItem(ASSEMBLER_TAGS_KEY));
+            } catch (e) { }
+            if (!Array.isArray(selectedTags) || selectedTags.length === 0) {
+                assemblerTagCheckboxes.forEach(cb => { cb.checked = true; });
+            } else {
+                assemblerTagCheckboxes.forEach(cb => { cb.checked = selectedTags.includes(cb.value); });
+            }
+        }
+        restoreAssemblerTagSelection();
         assemblerTypeRadios.forEach(radio => {
             radio.addEventListener('change', function () {
                 if (this.checked) {
                     assemblerSelectedType = this.value;
                     renderAssemblerParts();
                 }
+            });
+        });
+        assemblerTagCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function () {
+                saveAssemblerTagSelection();
+                renderAssemblerParts();
             });
         });
         let assemblerSequence = [];
@@ -829,6 +884,43 @@
             });
         }
         attachPromptDeleteListeners();
+        // Prompt Template edit button logic (Assembler tab integration)
+        document.querySelectorAll('.edit-template-assembler-btn').forEach(btn => {
+            btn.onclick = function (e) {
+                e.preventDefault();
+                const templateId = this.getAttribute('data-id');
+                if (!templateId) return;
+                // Switch to assembler tab
+                showTab('assembler');
+                // Fetch template data
+                fetch(`/api/v1/llm/prompts/${templateId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.prompt_text) return;
+                        // Parse prompt_text into assemblerSequence
+                        // Assume format: [TYPE] content or [data:field]
+                        assemblerSequence = [];
+                        data.prompt_text.split(/\r?\n/).forEach(line => {
+                            line = line.trim();
+                            if (!line) return;
+                            const dataMatch = line.match(/^\[data:([a-zA-Z0-9_]+)\]$/);
+                            if (dataMatch) {
+                                assemblerSequence.push({ type: 'data', field: dataMatch[1] });
+                                return;
+                            }
+                            const partMatch = line.match(/^\[([a-zA-Z]+)\]\s*(.*)$/);
+                            if (partMatch) {
+                                assemblerSequence.push({ type: partMatch[1].toLowerCase(), content: partMatch[2] });
+                                return;
+                            }
+                        });
+                        renderAssemblerSequence();
+                        setTimeout(() => {
+                            document.getElementById('tabAssembler').scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                    });
+            };
+        });
     });
 </script>
 {% endblock %}
