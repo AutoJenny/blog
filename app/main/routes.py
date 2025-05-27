@@ -151,35 +151,91 @@ def workflow_idea():
 
 @bp.route('/workflow/research/')
 def workflow_research():
-    return render_template('workflow/planning/research/index.html', **workflow_context('research'))
+    post = None
+    post_id = request.args.get('post_id', type=int)
+    if post_id:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+    return render_template('workflow/planning/research/index.html', post=post, **workflow_context('research'))
 
 @bp.route('/workflow/structure/')
 def workflow_structure():
-    return render_template('workflow/planning/structure/index.html', **workflow_context('structure'))
+    post = None
+    post_id = request.args.get('post_id', type=int)
+    if post_id:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+    return render_template('workflow/planning/structure/index.html', post=post, **workflow_context('structure'))
 
 @bp.route('/workflow/content/')
 def workflow_content():
-    return render_template('workflow/authoring/content/index.html', **workflow_context('content'))
+    post = None
+    post_id = request.args.get('post_id', type=int)
+    if post_id:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+    return render_template('workflow/authoring/content/index.html', post=post, **workflow_context('content'))
 
 @bp.route('/workflow/meta_info/')
 def workflow_meta_info():
-    return render_template('workflow/authoring/meta_info/index.html', **workflow_context('meta_info'))
+    post = None
+    post_id = request.args.get('post_id', type=int)
+    if post_id:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+    return render_template('workflow/authoring/meta_info/index.html', post=post, **workflow_context('meta_info'))
 
 @bp.route('/workflow/images/')
 def workflow_images():
-    return render_template('workflow/authoring/images/index.html', **workflow_context('images'))
+    post = None
+    post_id = request.args.get('post_id', type=int)
+    if post_id:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+    return render_template('workflow/authoring/images/index.html', post=post, **workflow_context('images'))
 
 @bp.route('/workflow/preflight/')
 def workflow_preflight():
-    return render_template('workflow/publishing/preflight/index.html', **workflow_context('preflight'))
+    post = None
+    post_id = request.args.get('post_id', type=int)
+    if post_id:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+    return render_template('workflow/publishing/preflight/index.html', post=post, **workflow_context('preflight'))
 
 @bp.route('/workflow/launch/')
 def workflow_launch():
-    return render_template('workflow/publishing/launch/index.html', **workflow_context('launch'))
+    post = None
+    post_id = request.args.get('post_id', type=int)
+    if post_id:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+    return render_template('workflow/publishing/launch/index.html', post=post, **workflow_context('launch'))
 
 @bp.route('/workflow/syndication/')
 def workflow_syndication():
-    return render_template('workflow/publishing/syndication/index.html', **workflow_context('syndication'))
+    post = None
+    post_id = request.args.get('post_id', type=int)
+    if post_id:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+    return render_template('workflow/publishing/syndication/index.html', post=post, **workflow_context('syndication'))
 
 @bp.route('/docs/', defaults={'req_path': ''})
 @bp.route('/docs/<path:req_path>')
