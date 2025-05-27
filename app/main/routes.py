@@ -141,13 +141,16 @@ def workflow_context(substage_name):
 @bp.route('/workflow/idea/')
 def workflow_idea():
     post = None
+    llm_actions = []
     post_id = request.args.get('post_id', type=int)
-    if post_id:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            if post_id:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
-    return render_template('workflow/planning/idea/index.html', post=post, **workflow_context('idea'))
+            cur.execute("SELECT * FROM llm_action ORDER BY id")
+            llm_actions = cur.fetchall()
+    return render_template('workflow/planning/idea/index.html', post=post, llm_actions=llm_actions, **workflow_context('idea'))
 
 @bp.route('/workflow/research/')
 def workflow_research():

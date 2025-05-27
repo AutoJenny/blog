@@ -1,3 +1,4 @@
+<!-- TELLTALE: THIS IS THE REAL app/templates/workflow/planning/idea/index.html -->
 {% extends "base.html" %}
 {% import "workflow/workflow_indicator.html" as indicator %}
 {% import "blog/_post_header.html" as blog_macros %}
@@ -29,7 +30,44 @@
                 post.summary else 'No summary yet.' }}</div>
         </div>
     </div>
+    <div class="mb-8">
+        <h2 class="text-lg font-bold text-green-300 mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-database text-green-400"></i> LLM Actions Table (llm_action)
+        </h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-dark-card border border-gray-700 rounded-lg text-sm">
+                <thead>
+                    <tr class="bg-gray-800 text-gray-200">
+                        <th class="px-3 py-2">ID</th>
+                        <th class="px-3 py-2">Field Name</th>
+                        <th class="px-3 py-2">LLM Model</th>
+                        <th class="px-3 py-2">Prompt Template</th>
+                        <th class="px-3 py-2">Temperature</th>
+                        <th class="px-3 py-2">Max Tokens</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for action in llm_actions %}
+                    <tr class="border-b border-gray-700">
+                        <td class="px-3 py-2">{{ action.id }}</td>
+                        <td class="px-3 py-2">{{ action.field_name }}</td>
+                        <td class="px-3 py-2">{{ action.llm_model }}</td>
+                        <td class="px-3 py-2">{{ action.prompt_template|truncate(40, True, '...') }}</td>
+                        <td class="px-3 py-2">{{ action.temperature }}</td>
+                        <td class="px-3 py-2">{{ action.max_tokens }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-3 py-2 text-center text-gray-400">No actions found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+{% endblock %}
+{% block scripts %}
 <script>
     (function () {
         // Use post_id for per-post persistence
@@ -165,18 +203,18 @@
         }
         // --- Ensure post_id persists across workflow navigation ---
         const url = new URL(window.location.href);
-        const postId = url.searchParams.get('post_id');
+        const postIdNav = url.searchParams.get('post_id');
         const activePostId = localStorage.getItem('active_post_id');
-        if (!postId && activePostId) {
+        if (!postIdNav && activePostId) {
             url.searchParams.set('post_id', activePostId);
             window.location.replace(url.toString());
             return;
         }
         // Update workflow nav links to include post_id
         document.querySelectorAll('a[href^="/workflow/"]').forEach(link => {
-            if (!link.href.includes('post_id=') && postId) {
+            if (!link.href.includes('post_id=') && postIdNav) {
                 const navUrl = new URL(link.href, window.location.origin);
-                navUrl.searchParams.set('post_id', postId);
+                navUrl.searchParams.set('post_id', postIdNav);
                 link.href = navUrl.pathname + navUrl.search;
             }
         });
