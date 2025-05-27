@@ -514,12 +514,33 @@ def settings_panel():
     substages = []
     with get_db_conn() as conn:
         with conn.cursor() as cur:
+            # Get all post_development fields except id, post_id
+            cur.execute("""
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'post_development' AND column_name NOT IN ('id', 'post_id')
+                ORDER BY ordinal_position
+            """)
+            all_fields = [row['column_name'] for row in cur.fetchall()]
+            # Get all mappings
             cur.execute('''
                 SELECT wfm.id, wfm.field_name, wfm.stage_id, wfm.substage_id, wfm.order_index
                 FROM workflow_field_mapping wfm
                 ORDER BY wfm.order_index ASC, wfm.field_name ASC
             ''')
-            field_mappings = cur.fetchall()
+            mappings = {row['field_name']: dict(row) for row in cur.fetchall()}
+            # Merge: all fields, mapped or not
+            field_mappings = []
+            for field in all_fields:
+                if field in mappings:
+                    field_mappings.append(mappings[field])
+                else:
+                    field_mappings.append({
+                        'id': None,
+                        'field_name': field,
+                        'stage_id': None,
+                        'substage_id': None,
+                        'order_index': None
+                    })
             cur.execute('SELECT id, name FROM workflow_stage_entity ORDER BY stage_order')
             stages = cur.fetchall()
             cur.execute('SELECT id, stage_id, name FROM workflow_sub_stage_entity ORDER BY sub_stage_order')
