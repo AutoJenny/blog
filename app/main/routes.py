@@ -472,11 +472,11 @@ def api_get_field_mapping():
         with conn.cursor() as cur:
             cur.execute('''
                 SELECT wfm.id, wfm.field_name, wfm.stage_id, wfm.substage_id, wfm.order_index,
-                       ws.name as stage_name, wss.name as substage_name
+                       ws.name as stage_name, ws.stage_order, wss.name as substage_name, wss.sub_stage_order
                 FROM workflow_field_mapping wfm
                 LEFT JOIN workflow_stage_entity ws ON wfm.stage_id = ws.id
                 LEFT JOIN workflow_sub_stage_entity wss ON wfm.substage_id = wss.id
-                ORDER BY wfm.order_index ASC, wfm.field_name ASC
+                ORDER BY ws.stage_order, wss.sub_stage_order, wfm.order_index, wfm.field_name
             ''')
             mappings = cur.fetchall()
     return jsonify([dict(row) for row in mappings])

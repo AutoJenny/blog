@@ -106,25 +106,36 @@
     if (actionSelect.value) await showActionDetails(actionSelect.value);
   }
 
-  // Render dropdown for fields (flattened, grouped by stage, labeled as Stage / Substage / Field)
+  // Render dropdown for fields (grouped by stage and substage, matching /settings)
   function renderFieldDropdown(select, mappings, selected) {
     select.innerHTML = '';
-    const stages = {};
+    let lastStage = null;
+    let lastSubstage = null;
+    let stageOptGroup = null;
     for (const m of mappings) {
-      if (!stages[m.stage_name]) stages[m.stage_name] = [];
-      stages[m.stage_name].push(m);
-    }
-    for (const stage in stages) {
-      const optGroup = document.createElement('optgroup');
-      optGroup.label = stage;
-      for (const m of stages[stage]) {
-        const opt = document.createElement('option');
-        opt.value = m.field_name;
-        opt.textContent = `${stage} / ${m.substage_name} / ${m.field_name.replace(/_/g, ' ')}`;
-        if (selected && selected === m.field_name) opt.selected = true;
-        optGroup.appendChild(opt);
+      // New stage: create a new optgroup
+      if (m.stage_name !== lastStage) {
+        stageOptGroup = document.createElement('optgroup');
+        stageOptGroup.label = m.stage_name;
+        select.appendChild(stageOptGroup);
+        lastStage = m.stage_name;
+        lastSubstage = null; // Reset substage for new stage
       }
-      select.appendChild(optGroup);
+      // New substage: add a disabled label option
+      if (m.substage_name !== lastSubstage) {
+        const substageLabel = document.createElement('option');
+        substageLabel.disabled = true;
+        substageLabel.textContent = `  ${m.substage_name}`;
+        substageLabel.style.fontStyle = 'italic';
+        stageOptGroup.appendChild(substageLabel);
+        lastSubstage = m.substage_name;
+      }
+      // Add the field option
+      const opt = document.createElement('option');
+      opt.value = m.field_name;
+      opt.textContent = `    ${m.field_name.replace(/_/g, ' ')}`;
+      if (selected && selected === m.field_name) opt.selected = true;
+      stageOptGroup.appendChild(opt);
     }
     // Dark theme classes
     select.classList.add('bg-gray-900', 'text-gray-100', 'border', 'border-gray-700');
