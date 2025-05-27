@@ -49,14 +49,13 @@
                 </div>
                 <div class="flex items-center space-x-4 ml-8">
                     <!-- Workflow Dropdown -->
-                    <div class="relative group" tabindex="0">
+                    <div class="relative group nav-group" tabindex="0">
                         <button
                             class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
                             aria-haspopup="true" aria-expanded="false">
                             <i class="fa-solid fa-sitemap"></i> Workflow <i class="fa fa-caret-down text-xs"></i>
                         </button>
-                        <div
-                            class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden group-hover:block group-focus-within:block">
+                        <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
                             <a href="/workflow/idea/"
                                 class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
                                     class="fa-solid fa-lightbulb text-yellow-400"></i> Planning</a>
@@ -69,14 +68,13 @@
                         </div>
                     </div>
                     <!-- Modules Dropdown -->
-                    <div class="relative group" tabindex="0">
+                    <div class="relative group nav-group" tabindex="0">
                         <button
                             class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
                             aria-haspopup="true" aria-expanded="false">
                             <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down text-xs"></i>
                         </button>
-                        <div
-                            class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden group-hover:block group-focus-within:block">
+                        <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
                             <a href="/db/"
                                 class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
                                     class="fa-solid fa-database text-purple-400"></i> Database</a>
@@ -160,38 +158,38 @@
             }
 
             // Dropdown accessibility: open on click, close on outside click or Escape
-            function setupDropdown(groupSelector, dropdownSelector) {
-                document.querySelectorAll(groupSelector).forEach(function (group) {
+            function setupDropdown() {
+                document.querySelectorAll('.nav-group').forEach(function (group) {
                     var btn = group.querySelector('button');
-                    var dropdown = group.querySelector(dropdownSelector);
+                    var dropdown = group.querySelector('.nav-dropdown');
                     if (!btn || !dropdown) return;
                     // Toggle on click
                     btn.addEventListener('click', function (e) {
                         e.stopPropagation();
-                        var isOpen = dropdown.classList.contains('block');
-                        document.querySelectorAll(dropdownSelector).forEach(d => d.classList.remove('block'));
-                        if (!isOpen) dropdown.classList.add('block');
-                        else dropdown.classList.remove('block');
-                    });
-                    // Close on outside click
-                    document.addEventListener('click', function (e) {
-                        if (!group.contains(e.target)) dropdown.classList.remove('block');
-                    });
-                    // Close on Escape
-                    group.addEventListener('keydown', function (e) {
-                        if (e.key === 'Escape') dropdown.classList.remove('block');
+                        var isOpen = !dropdown.classList.contains('hidden');
+                        document.querySelectorAll('.nav-dropdown').forEach(d => { d.classList.add('hidden'); d.classList.remove('block'); });
+                        if (!isOpen) { dropdown.classList.remove('hidden'); dropdown.classList.add('block'); }
                     });
                     // Open on focus
                     btn.addEventListener('focus', function () {
+                        dropdown.classList.remove('hidden');
                         dropdown.classList.add('block');
                     });
                     // Close on blur (with delay for click)
                     btn.addEventListener('blur', function () {
-                        setTimeout(() => dropdown.classList.remove('block'), 100);
+                        setTimeout(() => { dropdown.classList.add('hidden'); dropdown.classList.remove('block'); }, 100);
+                    });
+                    // Close on Escape
+                    group.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape') { dropdown.classList.add('hidden'); dropdown.classList.remove('block'); }
                     });
                 });
+                // Close all dropdowns on outside click
+                document.addEventListener('click', function (e) {
+                    document.querySelectorAll('.nav-dropdown').forEach(d => { d.classList.add('hidden'); d.classList.remove('block'); });
+                });
             }
-            setupDropdown('.group', '.nav-dropdown');
+            setupDropdown();
         });
     </script>
     {% endblock %}
