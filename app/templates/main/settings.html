@@ -23,25 +23,48 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for mapping in field_mappings %}
+                    {% set last_stage = None %}
+                    {% set last_substage = None %}
+                    {% for mapping in field_mappings|sort(attribute='stage_id')|sort(attribute='substage_id') %}
+                    {% set stage = stages|selectattr('id', 'equalto', mapping.stage_id)|first %}
+                    {% set substage = substages|selectattr('id', 'equalto', mapping.substage_id)|first %}
+                    {% if last_stage != mapping.stage_id %}
+                    <tr>
+                        <td colspan="5"
+                            class="bg-indigo-950 text-indigo-200 font-bold px-2 py-2 text-lg border-t border-indigo-700">
+                            Stage: {{ stage.name|capitalize }}</td>
+                    </tr>
+                    {% set last_stage = mapping.stage_id %}
+                    {% set last_substage = None %}
+                    {% endif %}
+                    {% if last_substage != mapping.substage_id %}
+                    <tr>
+                        <td colspan="5"
+                            class="bg-indigo-900 text-indigo-100 font-semibold px-2 py-1 text-base border-t border-indigo-800">
+                            Substage: {{ substage.name|capitalize }}</td>
+                    </tr>
+                    {% set last_substage = mapping.substage_id %}
+                    {% endif %}
                     <tr data-mapping-id="{{ mapping.id }}"
                         class="border-b border-dark-border hover:bg-[#23273a]/80 transition">
                         <td class="px-4 py-2 text-white whitespace-nowrap">{{ mapping.field_name }}</td>
                         <td class="px-4 py-2">
                             <select name="stage_id"
                                 class="stage-dropdown bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full">
-                                {% for stage in stages %}
-                                <option value="{{ stage.id }}" {% if stage.id==mapping.stage_id %}selected{% endif %}>{{
-                                    stage.name|capitalize }}</option>
+                                {% for stage_opt in stages %}
+                                <option value="{{ stage_opt.id }}" {% if stage_opt.id==mapping.stage_id %}selected{%
+                                    endif %}>{{
+                                    stage_opt.name|capitalize }}</option>
                                 {% endfor %}
                             </select>
                         </td>
                         <td class="px-4 py-2">
                             <select name="substage_id"
                                 class="substage-dropdown bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-full">
-                                {% for sub in substages if sub.stage_id == mapping.stage_id %}
-                                <option value="{{ sub.id }}" {% if sub.id==mapping.substage_id %}selected{% endif %}>{{
-                                    sub.name|capitalize }}</option>
+                                {% for sub_opt in substages if sub_opt.stage_id == mapping.stage_id %}
+                                <option value="{{ sub_opt.id }}" {% if sub_opt.id==mapping.substage_id %}selected{%
+                                    endif %}>{{
+                                    sub_opt.name|capitalize }}</option>
                                 {% endfor %}
                             </select>
                         </td>
