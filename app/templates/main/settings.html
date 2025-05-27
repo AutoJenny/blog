@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Settings - Field Mapping{% endblock %}
+{% block content %}
+<h1>Settings: Workflow Field Mapping</h1>
+<p>Map post development fields to workflow stages and substages. Changes are saved to the database and reflected in the
+    workflow UI and docs live view.</p>
+<form id="field-mapping-form" method="post" action="/api/settings/field-mapping">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Field Name</th>
+                <th>Stage</th>
+                <th>Substage</th>
+                <th>Order</th>
+                <th>Save</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mapping in field_mappings %}
+            <tr data-mapping-id="{{ mapping.id }}">
+                <td>{{ mapping.field_name }}</td>
+                <td>
+                    <select name="stage_id" class="stage-dropdown">
+                        {% for stage in stages %}
+                        <option value="{{ stage.id }}" {% if stage.id==mapping.stage_id %}selected{% endif %}>{{
+                            stage.name|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <select name="substage_id" class="substage-dropdown">
+                        {% for sub in substages if sub.stage_id == mapping.stage_id %}
+                        <option value="{{ sub.id }}" {% if sub.id==mapping.substage_id %}selected{% endif %}>{{
+                            sub.name|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><input type="number" name="order_index" value="{{ mapping.order_index }}" min="0"
+                        class="order-input" /></td>
+                <td><button type="button" class="save-btn btn btn-primary">Save</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</form>
+<script>
+    // Filter substages by stage selection
+    const substages = {{ substages| tojson }};
+    document.querySelectorAll('.stage-dropdown').forEach(function (stageSelect) {
+        stageSelect.addEventListener('change', function () {
+            const row = stageSelect.closest('tr');
+            const substageSelect = row.querySelector('.substage-dropdown');
+            const stageId = parseInt(stageSelect.value);
+            substageSelect.innerHTML = '';
+            substages.filter(s => s.stage_id === stageId).forEach(function (sub) {
+                const opt = document.createElement('option');
+                opt.value = sub.id;
+                opt.textContent = sub.name.charAt(0).toUpperCase() + sub.name.slice(1);
+                substageSelect.appendChild(opt);
+            });
+        });
+    });
+    // Save button AJAX
+    const form = document.getElementById('field-mapping-form');
+    form.querySelectorAll('.save-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const row = btn.closest('tr');
+            const mappingId = row.dataset.mappingId;
+            const stageId = row.querySelector('.stage-dropdown').value;
+            const substageId = row.querySelector('.substage-dropdown').value;
+            const orderIndex = row.querySelector('.order-input').value;
+            fetch(`/api/settings/field-mapping`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: mappingId, stage_id: stageId, substage_id: substageId, order_index: orderIndex })
+            }).then(resp => resp.json()).then(data => {
+                if (data.status === 'success') {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-success');
+                    btn.textContent = 'Saved';
+                    setTimeout(() => { btn.classList.remove('btn-success'); btn.classList.add('btn-primary'); btn.textContent = 'Save'; }, 1500);
+                } else {
+                    alert('Save failed: ' + data.message);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
