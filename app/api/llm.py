@@ -537,6 +537,11 @@ def handle_prompt_parts():
         return jsonify(parts)
     if request.method == 'POST':
         data = request.get_json()
+        # --- Tag validation ---
+        allowed_tags = {'role', 'operation', 'format', 'specimen'}
+        tags = data.get('tags', [])
+        if not isinstance(tags, list) or any(t not in allowed_tags for t in tags):
+            return jsonify({'error': f"Tags must be a list containing only: {', '.join(allowed_tags)}"}), 400
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
@@ -546,7 +551,7 @@ def handle_prompt_parts():
                     data.get('name', ''),
                     data['type'],
                     data['content'],
-                    data.get('tags', []),
+                    tags,
                     data.get('order', 0)
                 ))
                 part_id = cur.fetchone()['id']
@@ -569,6 +574,11 @@ def handle_prompt_part(part_id):
         return jsonify(part)
     if request.method == 'PUT':
         data = request.get_json()
+        # --- Tag validation ---
+        allowed_tags = {'role', 'operation', 'format', 'specimen'}
+        tags = data.get('tags', [])
+        if not isinstance(tags, list) or any(t not in allowed_tags for t in tags):
+            return jsonify({'error': f"Tags must be a list containing only: {', '.join(allowed_tags)}"}), 400
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
@@ -578,7 +588,7 @@ def handle_prompt_part(part_id):
                     data.get('name', ''),
                     data.get('type'),
                     data.get('content'),
-                    data.get('tags', []),
+                    tags,
                     data.get('order', 0),
                     part_id
                 ))

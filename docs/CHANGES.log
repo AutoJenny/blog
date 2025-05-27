@@ -43,4 +43,16 @@
 
 2025-05-26: BUGFIX: /db/backup now works by running pg_dump as the DB owner (nickfiddes), resolving permission errors and 500s in the UI. Backup Now button is functional again.
 
-2025-05-26: RESTORED: Step-by-step Action creation wizard modal, with full instructions and navigation, is now back on /llm/actions. Users are guided through each stage of Action creation with contextual help and prompt part management. 
+2025-05-26: RESTORED: Step-by-step Action creation wizard modal, with full instructions and navigation, is now back on /llm/actions. Users are guided through each stage of Action creation with contextual help and prompt part management.
+
+- feat(nav): Added Workflow and Modules dropdowns to main header nav, plus a Docs link. Fixed Images link to /llm/images. All links tested via curl.
+- fix(nav): Workflow and Modules dropdowns now open on hover, focus, or click, and close on outside click or Escape. Fully keyboard accessible and accessible for screen readers.
+- fix(nav): Dropdowns now reliably activate on click, focus, and keyboard. JS toggles hidden/block classes for accessibility and compatibility.
+- feat(llm): llm_prompt_part tags are now validated to only allow 'role', 'operation', 'format', 'specimen'. All existing rows set to ['role'].
+- feat(llm): Prompt Parts tag filter selection is now persistent in localStorage and restored on page load for improved UX.
+- feat(llm): Edit icon in Prompt Templates tab now switches to Assembler tab and loads the template for editing.
+- feat(workflow): Workflow now persists active post selection across all stages using localStorage. Workflow nav links always include post_id. Post stays activated until another is selected.
+- feat(workflow): Unified post header (title, created, updated) now appears above the heading on every workflow stage via shared macro. Editing the macro updates all stages.
+- fix(workflow): All workflow stages now receive and render the post header. Backend passes post object to every stage template. Header is now visible on every workflow section.
+- fix(workflow): Post header now always appears above workflow nav icons for consistent UX across all workflow stages.
+- fix(workflow): Standardized post header spacing with consistent margin above and below via macro. Removed extra margin from workflow templates for uniform appearance across all stages. 

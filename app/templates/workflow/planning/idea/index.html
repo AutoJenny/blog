@@ -69,7 +69,7 @@
 {% endblock %}
 {% block scripts %}
 <script>
-    (function () {
+    document.addEventListener('DOMContentLoaded', function () {
         // Use post_id for per-post persistence
         const postIdStr = '{{ post.id if post else "" }}';
         const postId = postIdStr ? parseInt(postIdStr, 10) : null;
@@ -218,6 +218,6 @@
                 link.href = navUrl.pathname + navUrl.search;
             }
         });
-    })();
+    });
 </script>
 {% endblock %}

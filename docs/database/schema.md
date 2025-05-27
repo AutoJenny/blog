@@ -27,7 +27,7 @@ The Blog CMS uses PostgreSQL (or SQLite in dev) for all persistent storage. Belo
   - `created`: Timestamp (default: now)
   - `updated`: Timestamp (auto-updated)
 
-## Management
+## Management 
 - Schema is managed via `create_tables.sql` and direct SQL
 - No migration tool is used for this table; direct SQL is preferred
 

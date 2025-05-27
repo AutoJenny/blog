@@ -97,4 +97,13 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
 - The green JSON debug text has been removed from the `/llm/actions` admin page for a cleaner UI.
 - Modal CSS and Action creation bugs have been fixed for a better user experience.
 - The `/api/v1/llm/prompts` endpoint now uses direct SQL (psycopg2), restoring prompt template selection and ensuring ORM is not used.
-- All changes follow the project engineering rules: no ORM, no destructive migration, direct SQL only, and robust backup-first, additive schema management. 
+- All changes follow the project engineering rules: no ORM, no destructive migration, direct SQL only, and robust backup-first, additive schema management.
+
+## Main Navigation
+
+The main header now features:
+- **Workflow** dropdown: Planning, Authoring, Publishing
+- **Modules** dropdown: Database, AI (LLM), Images
+- **Docs** link: Direct access to project documentation
+
+All links are accessible from the top navigation bar for quick access to major features. 

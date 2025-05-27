@@ -91,6 +91,7 @@ All notable changes to this project are documented in this file.
 - Fix: Section LLM Action dropdowns and Generate buttons are now always populated and wired up after DOM is ready, ensuring Actions are available for all section content fields in the develop page.
 - Fix: Replaced all inline Jinja2 postId usage in JavaScript in develop2.html with the robust data attribute approach, using document.getElementById('stage-accordion').dataset.postId. This prevents Jinja2 syntax errors and ensures consistent postId access.
 - Fix: Purged all Python cache files, confirmed only one develop.html exists, added a telltale comment to the template, and verified the correct template is now loaded and the /api/v1/llm/actions/3/execute endpoint works without error.
+- Fix: Remove nested event listeners in workflow/planning/idea/index.html JS. This bug caused the Select Action dropdown to fail to populate in the Ideas workflow view. Now the dropdown always loads available LLM actions as expected.
 
 ### Removed
 - Removed PromptTemplate model and table
