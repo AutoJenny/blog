@@ -81,9 +81,9 @@
 - [x] **Workflow Integration:**
   - [x] Add "Automate with LLM" buttons to workflow stages (e.g., `/workflow/idea/`).
   - [x] Pre-fill relevant data and allow direct LLM task execution from workflow.
-- [x] **UI: Action Details page (display, edit, reorder prompt parts).** *(COMPLETE: Action Details modal scaffolded, prompt part management UI in place as of 2025-05-23.)*
-- [x] **UI: Prompt part CRUD and linking in Action Details.** *(COMPLETE: Modal supports add/edit/remove/reorder prompt parts; API integration in progress.)*
-- [x] **UI: Test Action button and output display.** *(COMPLETE: Test Action button and output area scaffolded in Action Details modal.)*
+- [x] **UI: Action Details page (display, edit, reorder prompt parts).** *(REMOVED: Action Details tab/page has been removed from /llm/actions as of 2025-05-27. Action details and editing are now handled elsewhere or pending redesign.)*
+- [x] **UI: Prompt part CRUD and linking in Action Details.** *(REMOVED: Action Details tab/page has been removed from /llm/actions as of 2025-05-27. Prompt part management is now handled elsewhere or pending redesign.)*
+- [x] **UI: Test Action button and output display.** *(REMOVED: Test Action button and output area in Action Details tab/page have been removed from /llm/actions as of 2025-05-27. Testing is now handled elsewhere or pending redesign.)*
 
 ### **6. Testing & Validation**
 - [x] Write unit and integration tests for all new models, services, and endpoints (use pytest). *(Partial: some tests exist, but may not be fully comprehensive)*
