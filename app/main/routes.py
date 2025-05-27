@@ -568,19 +568,33 @@ def api_get_field_mapping():
 def api_update_field_mapping():
     data = request.get_json()
     mapping_id = data.get('id')
+    field_name = data.get('field_name')
     stage_id = data.get('stage_id')
     substage_id = data.get('substage_id')
     order_index = data.get('order_index')
-    if not mapping_id or not stage_id or not substage_id:
+    if not stage_id or not substage_id:
         return jsonify({'status': 'error', 'message': 'Missing required fields'}), 400
     with get_db_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute('''
-                UPDATE workflow_field_mapping
-                SET stage_id = %s, substage_id = %s, order_index = %s
-                WHERE id = %s
-            ''', (stage_id, substage_id, order_index, mapping_id))
-            conn.commit()
+            if not mapping_id:
+                # Insert new mapping
+                try:
+                    cur.execute('''
+                        INSERT INTO workflow_field_mapping (field_name, stage_id, substage_id, order_index)
+                        VALUES (%s, %s, %s, %s)
+                    ''', (field_name, stage_id, substage_id, order_index))
+                    conn.commit()
+                    return jsonify({'status': 'success'})
+                except Exception as e:
+                    return jsonify({'status': 'error', 'message': str(e)}), 500
+            else:
+                # Update existing mapping
+                cur.execute('''
+                    UPDATE workflow_field_mapping
+                    SET stage_id = %s, substage_id = %s, order_index = %s
+                    WHERE id = %s
+                ''', (stage_id, substage_id, order_index, mapping_id))
+                conn.commit()
     return jsonify({'status': 'success'})
 
 @bp.route('/api/workflow/stages', methods=['GET'])
