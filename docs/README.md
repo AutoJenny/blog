@@ -44,6 +44,7 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
    - **Assistant Config:** See `assistant_config.env` for the database connection string used by the assistant/tools.
    - [Migration Guide](guides/migration.md)
    - **Deprecation Notice:** SQLAlchemy ORM and Flask-SQLAlchemy have been fully removed. All database operations now use direct SQL via psycopg2.
+   - **Workflow Field Mapping**: Post development fields can now be mapped to workflow stages and substages via the [Settings Panel](/settings). The current mapping is always visible in the [Live Field Mapping Table](/docs/view/database/schema.md).
 
 **IMPORTANT:**
 - This project uses PostgreSQL only. All database changes are made via direct SQL. No ORM or migration tools (Alembic, Flask-Migrate, SQLAlchemy, SQLite) are used or supported.

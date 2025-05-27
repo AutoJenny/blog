@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}Live Field Mapping Table{% endblock %}
+{% block title %}Database Schema & Live Field Mapping{% endblock %}
 {% block content %}
-<h1>Live Field Mapping Table</h1>
+<div class="docs-markdown">{{ file_html|safe }}</div>
+<hr>
+<h2>Live Field Mapping Table</h2>
 <p>This table is dynamically generated from the current database mapping. To edit, use the <a href="/settings">Settings
         Panel</a>.</p>
 <table class="table table-bordered">
