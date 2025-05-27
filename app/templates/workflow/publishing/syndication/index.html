@@ -13,4 +13,23 @@
         <div class="text-gray-400 italic">[Syndication substage content goes here]</div>
     </div>
 </div>
+<script>
+    (function () {
+        const url = new URL(window.location.href);
+        const postId = url.searchParams.get('post_id');
+        const activePostId = localStorage.getItem('active_post_id');
+        if (!postId && activePostId) {
+            url.searchParams.set('post_id', activePostId);
+            window.location.replace(url.toString());
+            return;
+        }
+        document.querySelectorAll('a[href^="/workflow/"]').forEach(link => {
+            if (!link.href.includes('post_id=') && postId) {
+                const navUrl = new URL(link.href, window.location.origin);
+                navUrl.searchParams.set('post_id', postId);
+                link.href = navUrl.pathname + navUrl.search;
+            }
+        });
+    })();
+</script>
 {% endblock %}

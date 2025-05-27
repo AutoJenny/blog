@@ -194,5 +194,15 @@
         }
         window.location.href = url.toString();
     });
+    // Persist active post_id on edit
+    document.querySelectorAll('a.icon-btn[title="Edit"]').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            const url = new URL(btn.href, window.location.origin);
+            const postId = url.searchParams.get('post_id');
+            if (postId) {
+                localStorage.setItem('active_post_id', postId);
+            }
+        });
+    });
 </script>
 {% endblock %}
