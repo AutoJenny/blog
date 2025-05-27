@@ -21,13 +21,11 @@
 {% endif %}
 <div class="container mx-auto px-6 py-8">
     {{ indicator.process_indicator(substages, stages, current_substage_id) }}
-    {# Show summary above Research heading #}
+    {# Show summary as static grey text below nav icons, above Research heading #}
     {% if post and post.summary %}
-    <div class="rounded-xl p-4 mb-4 shadow bg-[#23273a] border border-gray-700">
-        <h2 class="text-md font-semibold text-gray-400 mb-1 flex items-center gap-2">
-            <i class="fa-solid fa-align-left text-gray-400"></i> Summary
-        </h2>
-        <div class="text-gray-300 text-base whitespace-pre-line">{{ post.summary|safe }}</div>
+    <div class="text-gray-400 mb-2">
+        <span class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Summary</span><br>
+        <span class="text-gray-400 text-base whitespace-pre-line">{{ post.summary|safe }}</span>
     </div>
     {% endif %}
     <div class="card-dark rounded-xl p-8 mt-8 shadow-lg">
