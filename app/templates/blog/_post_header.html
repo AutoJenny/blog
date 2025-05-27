@@ -1,4 +1,5 @@
 {% macro post_header(post, active_view='develop') %}
+{% if post %}
 <div class="card-dark rounded-xl border border-dark-border shadow p-6 mb-6 mt-2">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <div class="flex-1 min-w-0">
@@ -22,4 +23,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endmacro %}
