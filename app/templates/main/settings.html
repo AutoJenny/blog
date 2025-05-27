@@ -78,8 +78,8 @@
                 <tbody>
                     {% set mappings_by_stage = {} %}
                     {% for mapping in mapped_fields %}
-                    {% set stage_id = mapping.stage_id %}
-                    {% set substage_id = mapping.substage_id %}
+                    {% set stage_id = mapping.stage_id | int %}
+                    {% set substage_id = mapping.substage_id | int %}
                     {% if mappings_by_stage[stage_id] is not defined %}
                     {% set _ = mappings_by_stage.update({stage_id: {}}) %}
                     {% endif %}
@@ -89,21 +89,22 @@
                     {% set _ = mappings_by_stage[stage_id][substage_id].append(mapping) %}
                     {% endfor %}
                     {% for stage in stages %}
-                    {% if mappings_by_stage[stage.id] is defined %}
+                    {% set stage_id = stage.id | int %}
+                    {% if mappings_by_stage[stage_id] is defined %}
                     <tr>
                         <td colspan="5"
                             class="bg-indigo-950 text-indigo-200 font-bold px-2 py-2 text-lg border-t border-indigo-700">
                             Stage: {{ stage.name|capitalize }}
                         </td>
                     </tr>
-                    {% for substage in substages if mappings_by_stage[stage.id][substage.id] is defined %}
+                    {% for substage in substages if mappings_by_stage[stage_id][substage.id | int] is defined %}
                     <tr>
                         <td colspan="5"
                             class="bg-indigo-900 text-indigo-100 font-semibold px-2 py-1 text-base border-t border-indigo-800">
                             Substage: {{ substage.name|capitalize }}
                         </td>
                     </tr>
-                    {% for mapping in mappings_by_stage[stage.id][substage.id] %}
+                    {% for mapping in mappings_by_stage[stage_id][substage.id | int] %}
                     <tr data-mapping-id="{{ mapping.id }}"
                         class="border-b border-dark-border hover:bg-[#23273a]/80 transition">
                         <td class="px-4 py-2 text-white whitespace-nowrap">{{ mapping.field_name }}</td>
