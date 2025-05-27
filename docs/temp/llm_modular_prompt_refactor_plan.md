@@ -58,13 +58,13 @@ Track the plan and rationale for refactoring LLM prompt handling to support modu
 - [x] All endpoints and UI now robust, API-first, and ready for further modular prompt work
 
 ## UI Progress
-- [x] UI: Action Details page (display, edit, reorder prompt parts)
-- [x] UI: Prompt part CRUD and linking in Action Details
+- [x] UI: Action Details page (display, edit, reorder prompt parts) *(REMOVED: Action Details page/tab removed from /llm/actions as of 2025-05-27. Details and editing now handled elsewhere or pending redesign.)*
+- [x] UI: Prompt part CRUD and linking in Action Details *(REMOVED: Action Details page/tab removed from /llm/actions as of 2025-05-27. Prompt part management now handled elsewhere or pending redesign.)*
 - [x] UI: Test Action button and output display
 
 ## Status (2025-05-25)
 - All backend and API endpoints for LLM modular prompt management are now direct SQL (psycopg2) and ORM-free.
-- UI for Action Details and modular prompt part management is complete, robust, and tested.
+- UI for Action Details and modular prompt part management was removed from /llm/actions as of 2025-05-27. Details and editing now handled elsewhere or pending redesign.
 - Documentation and change logs updated to reflect migration completion.
 
 ## Restore Progress (2025-05-23)

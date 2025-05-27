@@ -11,16 +11,8 @@ Build a robust, transparent, and extensible MVP for an LLM-powered Action (e.g.,
 - [ ] Add a special LLM Action button (class: `llm-action-btn`) between the idea_seed and Summary panels on `/workflow/idea/`.
 - [ ] Button triggers the 'Generate Summary from idea_seed' Action.
 - [ ] Action appears in `/llm/actions` list with key datapoints.
-- [ ] Clicking the Action opens a detailed Action details view.
-- [ ] Action details view includes:
-    - [ ] Input field selector
-    - [ ] LLM model selector
-    - [ ] Config editor
-    - [ ] System/Style/Instructions prompt selectors
-    - [ ] Output field selector
-    - [ ] Preview of full LLM message
-    - [ ] Test field for sample data
-    - [ ] Output and diagnostics display
+- [ ] Clicking the Action opens a detailed Action details view. *(REMOVED: Action Details view removed from /llm/actions as of 2025-05-27. Details and editing now handled elsewhere or pending redesign.)*
+- [ ] Action details view includes: *(REMOVED: See above.)*
 - [ ] Diagnostics are extensive but non-intrusive (collapsible, tooltips, etc.)
 - [ ] Maintain site-wide style and dark theme.
 
@@ -62,7 +54,7 @@ Build a robust, transparent, and extensible MVP for an LLM-powered Action (e.g.,
 
 ## 6. Testing & Validation
 - [ ] Unit/integration tests for DB, API, service, and UI layers.
-- [ ] Test Action end-to-end from workflow page and Action details view.
+- [ ] Test Action end-to-end from workflow page and Action details view. *(REMOVED: Action Details view removed from /llm/actions as of 2025-05-27. Testing now handled elsewhere or pending redesign.)*
 - [ ] Validate diagnostics and error reporting.
 
 ---
