@@ -9,88 +9,46 @@
 <div class="container mx-auto px-6 py-8">
     {{ blog_macros.post_header(post) }}
     {{ indicator.process_indicator(substages, stages, current_substage_id) }}
-    <!-- LLM Action Controls -->
-    <div id="llm-action-controls" class="flex flex-col md:flex-row items-center gap-4 mb-8 justify-center">
-        <select id="llm-action-select"
-            class="form-input px-4 py-2 rounded border border-gray-600 bg-dark-card text-white focus:ring-2 focus:ring-green-400">
-            <option value="">Select Action...</option>
-        </select>
-        <button id="llm-action-run"
-            class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg shadow transition duration-150 ease-in-out flex items-center gap-2"
-            style="background:#22c55e !important; border:none;">
-            <i class="fa-solid fa-bolt"></i> Run Action
-        </button>
-    </div>
-    <div id="summary-panel" class="mb-8">
-        <div class="rounded-xl p-6 shadow-lg" style="background: #23273a; border: 1.5px solid #31364a;">
-            <h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-align-left text-indigo-400"></i> Summary
-            </h2>
-            <div class="text-gray-200 text-base whitespace-pre-line" id="summary-content">{{ post.summary|safe if
-                post.summary else 'No summary yet.' }}</div>
+    <!-- Modular LLM Workflow Panels for Idea Stage -->
+    <div class="max-w-5xl mx-auto py-10 flex flex-col gap-8">
+        <!-- Input Panel -->
+        <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+            <h2 class="text-lg font-bold mb-2">Input</h2>
+            <label for="inputFieldSelect" class="block mb-1">Select Input Field</label>
+            <select id="inputFieldSelect" class="w-full mb-2"></select>
+            <div id="inputFieldValue" class="bg-gray-900 rounded p-3 text-gray-200 min-h-[2rem]">Select a field to view
+                its content.</div>
         </div>
-    </div>
-    <div class="mb-8">
-        <h2 class="text-lg font-bold text-green-300 mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-database text-green-400"></i> LLM Actions Table (llm_action)
-        </h2>
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-dark-card border border-gray-700 rounded-lg text-sm">
-                <thead>
-                    <tr class="bg-gray-800 text-gray-200">
-                        <th class="px-3 py-2">ID</th>
-                        <th class="px-3 py-2">Field Name</th>
-                        <th class="px-3 py-2">LLM Model</th>
-                        <th class="px-3 py-2">Prompt Template</th>
-                        <th class="px-3 py-2">Temperature</th>
-                        <th class="px-3 py-2">Max Tokens</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for action in llm_actions %}
-                    <tr class="border-b border-gray-700">
-                        <td class="px-3 py-2">{{ action.id }}</td>
-                        <td class="px-3 py-2">{{ action.field_name }}</td>
-                        <td class="px-3 py-2">{{ action.llm_model }}</td>
-                        <td class="px-3 py-2">{{ action.prompt_template|truncate(40, True, '...') }}</td>
-                        <td class="px-3 py-2">{{ action.temperature }}</td>
-                        <td class="px-3 py-2">{{ action.max_tokens }}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="px-3 py-2 text-center text-gray-400">No actions found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <!-- Actions Panel -->
+        <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+            <h2 class="text-lg font-bold mb-2">Actions</h2>
+            <div class="flex gap-2 items-center mb-2">
+                <label for="actionSelect" class="mr-2">Select Action</label>
+                <select id="actionSelect" class="mb-0"></select>
+                <button id="runActionBtn" class="btn btn-primary">Run Action</button>
+            </div>
+            <div id="actionPromptPanel" class="bg-gray-900 rounded p-3 text-gray-200 min-h-[2rem]">Select an action to
+                view its prompt/template.</div>
         </div>
-    </div>
-    {# Post Development Table #}
-    <div class="mt-10">
-        <h2 class="text-lg font-bold text-green-300 mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-database text-green-400"></i> Post Development Fields
-        </h2>
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-dark-card border border-gray-700 rounded-lg text-sm">
-                <thead>
-                    <tr class="bg-gray-800 text-gray-200">
-                        {% for field in mapped_fields %}
-                        <th class="px-3 py-2">{{ field|replace('_',' ')|title }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        {% for field in mapped_fields %}
-                        <td class="px-3 py-2">{{ post_development[field] if post_development and field in
-                            post_development else '' }}</td>
-                        {% endfor %}
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Output Panel -->
+        <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+            <h2 class="text-lg font-bold mb-2">Output</h2>
+            <label for="outputFieldSelect" class="block mb-1">Select Output Field</label>
+            <select id="outputFieldSelect" class="w-full mb-2"></select>
+            <div id="outputFieldValue" class="bg-gray-900 rounded p-3 text-gray-200 min-h-[2rem]">Select a field to view
+                its content.</div>
+            <div id="actionOutputPanel" class="bg-gray-900 rounded p-3 text-green-200 min-h-[2rem] mt-2">Run an action
+                to see output here.</div>
+            <button id="saveOutputBtn" class="btn btn-success mt-2">Save Output to Field</button>
+        </div>
+        <!-- Post Development Fields Panel -->
+        <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+            <h2 class="text-lg font-bold mb-2">Post Development Fields</h2>
+            <div id="postDevFieldsPanel"></div>
         </div>
     </div>
 </div>
+<script src="/static/js/workflow_modular_llm.js"></script>
 {% endblock %}
 {% block scripts %}
 <script>
