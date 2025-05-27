@@ -530,6 +530,14 @@ def settings_panel():
 def api_get_field_mapping():
     with get_db_conn() as conn:
         with conn.cursor() as cur:
+            # 1. Get all post_development fields except id, post_id
+            cur.execute("""
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'post_development' AND column_name NOT IN ('id', 'post_id')
+                ORDER BY ordinal_position
+            """)
+            all_fields = [row['column_name'] for row in cur.fetchall()]
+            # 2. Get all mappings
             cur.execute('''
                 SELECT wfm.id, wfm.field_name, wfm.stage_id, wfm.substage_id, wfm.order_index,
                        ws.name as stage_name, wss.name as substage_name
@@ -538,8 +546,23 @@ def api_get_field_mapping():
                 LEFT JOIN workflow_sub_stage_entity wss ON wfm.substage_id = wss.id
                 ORDER BY wfm.order_index ASC, wfm.field_name ASC
             ''')
-            mappings = cur.fetchall()
-    return jsonify([dict(row) for row in mappings])
+            mappings = {row['field_name']: dict(row) for row in cur.fetchall()}  # keyed by field_name
+            # 3. Build result: all fields, mapped or not
+            result = []
+            for field in all_fields:
+                if field in mappings:
+                    result.append(mappings[field])
+                else:
+                    result.append({
+                        'id': None,
+                        'field_name': field,
+                        'stage_id': None,
+                        'substage_id': None,
+                        'order_index': None,
+                        'stage_name': None,
+                        'substage_name': None
+                    })
+    return jsonify(result)
 
 @bp.route('/api/settings/field-mapping', methods=['POST'])
 def api_update_field_mapping():
