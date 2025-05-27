@@ -49,7 +49,7 @@
                 </div>
                 <div class="flex items-center space-x-4 ml-8">
                     <!-- Workflow Dropdown -->
-                    <div class="relative group">
+                    <div class="relative group" tabindex="0">
                         <button
                             class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
                             aria-haspopup="true" aria-expanded="false">
@@ -69,7 +69,7 @@
                         </div>
                     </div>
                     <!-- Modules Dropdown -->
-                    <div class="relative group">
+                    <div class="relative group" tabindex="0">
                         <button
                             class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
                             aria-haspopup="true" aria-expanded="false">
@@ -158,6 +158,40 @@
                     }
                 });
             }
+
+            // Dropdown accessibility: open on click, close on outside click or Escape
+            function setupDropdown(groupSelector, dropdownSelector) {
+                document.querySelectorAll(groupSelector).forEach(function (group) {
+                    var btn = group.querySelector('button');
+                    var dropdown = group.querySelector(dropdownSelector);
+                    if (!btn || !dropdown) return;
+                    // Toggle on click
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var isOpen = dropdown.classList.contains('block');
+                        document.querySelectorAll(dropdownSelector).forEach(d => d.classList.remove('block'));
+                        if (!isOpen) dropdown.classList.add('block');
+                        else dropdown.classList.remove('block');
+                    });
+                    // Close on outside click
+                    document.addEventListener('click', function (e) {
+                        if (!group.contains(e.target)) dropdown.classList.remove('block');
+                    });
+                    // Close on Escape
+                    group.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape') dropdown.classList.remove('block');
+                    });
+                    // Open on focus
+                    btn.addEventListener('focus', function () {
+                        dropdown.classList.add('block');
+                    });
+                    // Close on blur (with delay for click)
+                    btn.addEventListener('blur', function () {
+                        setTimeout(() => dropdown.classList.remove('block'), 100);
+                    });
+                });
+            }
+            setupDropdown('.group', '.nav-dropdown');
         });
     </script>
     {% endblock %}
