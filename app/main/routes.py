@@ -318,7 +318,12 @@ def llm_dashboard():
 
 @bp.route('/llm/providers')
 def llm_providers():
-    return render_template('main/llm_providers.html')
+    providers = []
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('SELECT * FROM llm_provider ORDER BY id')
+            providers = cur.fetchall()
+    return render_template('main/llm_providers.html', providers=providers)
 
 @bp.route('/llm/models')
 def llm_models():

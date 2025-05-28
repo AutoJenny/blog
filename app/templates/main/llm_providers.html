@@ -64,15 +64,26 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Example rows, replace with dynamic data -->
+                {% if providers and providers|length > 0 %}
+                {% for provider in providers %}
                 <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                    <td class="py-2 px-3 font-semibold text-white">OpenAI</td>
-                    <td class="py-2 px-3">OpenAI</td>
+                    <td class="py-2 px-3 font-semibold text-white">{{ provider.name }}</td>
+                    <td class="py-2 px-3">{{ provider.type }}</td>
                     <td class="py-2 px-3">
+                        {% if provider.status == 'active' %}
                         <span class="provider-status status-active">Active</span>
+                        {% elif provider.status == 'error' %}
+                        <span class="provider-status status-error">Error</span>
+                        {% elif provider.status == 'inactive' %}
+                        <span class="provider-status status-inactive">Inactive</span>
+                        {% else %}
+                        <span class="provider-status status-default">Unknown</span>
+                        {% endif %}
+                        {% if provider.is_default %}
                         <span class="provider-status status-default ml-2">Default</span>
+                        {% endif %}
                     </td>
-                    <td class="py-2 px-3">2m ago</td>
+                    <td class="py-2 px-3">{{ provider.last_tested or '-' }}</td>
                     <td class="py-2 px-3 flex gap-2">
                         <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
                         <button class="action-btn" title="Test"><i class="fa-solid fa-vial"></i></button>
@@ -80,30 +91,12 @@
                         <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
-                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
-                    <td class="py-2 px-3 font-semibold text-white">Ollama</td>
-                    <td class="py-2 px-3">Local</td>
-                    <td class="py-2 px-3"><span class="provider-status status-error">Error</span></td>
-                    <td class="py-2 px-3">1d ago</td>
-                    <td class="py-2 px-3 flex gap-2">
-                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn" title="Test"><i class="fa-solid fa-vial"></i></button>
-                        <button class="action-btn" title="Set Default"><i class="fa-solid fa-star"></i></button>
-                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                    </td>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" class="py-4 text-center text-indigo-200">No providers found.</td>
                 </tr>
-                <tr class="hover:bg-indigo-950/30">
-                    <td class="py-2 px-3 font-semibold text-white">Anthropic</td>
-                    <td class="py-2 px-3">Cloud</td>
-                    <td class="py-2 px-3"><span class="provider-status status-inactive">Inactive</span></td>
-                    <td class="py-2 px-3">-</td>
-                    <td class="py-2 px-3 flex gap-2">
-                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn" title="Test"><i class="fa-solid fa-vial"></i></button>
-                        <button class="action-btn" title="Set Default"><i class="fa-solid fa-star"></i></button>
-                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
+                {% endif %}
             </tbody>
         </table>
     </div>
