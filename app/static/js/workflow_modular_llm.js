@@ -199,11 +199,13 @@
   inputFieldSelect.addEventListener('change', async () => {
     const field = inputFieldSelect.value;
     inputFieldValue.textContent = postDev[field] || '(No value)';
+    if (!actionSelect.value) return; // Only POST if action is selected
     await savePostSubstageAction(postId, substage, actionSelect.value, field, outputFieldSelect.value);
   });
   outputFieldSelect.addEventListener('change', async () => {
     const field = outputFieldSelect.value;
     outputFieldValue.textContent = postDev[field] || '(No value)';
+    if (!actionSelect.value) return; // Only POST if action is selected
     await savePostSubstageAction(postId, substage, actionSelect.value, inputFieldSelect.value, field);
   });
 
@@ -211,6 +213,7 @@
   actionSelect.addEventListener('change', async () => {
     const actionId = actionSelect.value;
     await showActionDetails(actionId);
+    if (!actionId) return; // Only POST if action is selected
     await savePostSubstageAction(postId, substage, actionId, inputFieldSelect.value, outputFieldSelect.value);
   });
 
