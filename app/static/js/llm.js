@@ -515,14 +515,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Utility: fetch post_development for a post
   async function fetchPostDevelopment(postId) {
-    const resp = await fetch(`/api/v1/post/${postId}/development`);
+    const resp = await fetch(`/blog/api/v1/post/${postId}/development`);
     return resp.ok ? await resp.json() : {};
   }
 
   // Utility: update a post_development field
   async function updatePostDevelopmentField(postId, field, value) {
     // Use the main update endpoint for post_development
-    const resp = await fetch(`/api/v1/post/${postId}/development`, {
+    const resp = await fetch(`/blog/api/v1/post/${postId}/development`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ [field]: value })
