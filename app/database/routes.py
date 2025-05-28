@@ -51,16 +51,14 @@ def index():
                         (SELECT COUNT(*) FROM llm_interaction) as llm_count
                 """)
                 stats = dict(cur.fetchone())
-        # Find all .sql backups in backups/ and project root
+        # Find all .sql backups in backups/
         backup_dir = Path("backups")
-        root_dir = Path(".")
         backup_files = []
         if backup_dir.exists():
             backup_files += list(backup_dir.glob("blog_backup_*.sql"))
-        backup_files += list(root_dir.glob("blog_backup_*.sql"))
         # Remove duplicates, sort by mtime desc, use relative paths
         backup_files = sorted(set(backup_files), key=lambda x: x.stat().st_mtime, reverse=True)
-        backup_files = [str(f.relative_to(root_dir)) for f in backup_files]
+        backup_files = [str(f.relative_to(Path("."))) for f in backup_files]
     except Exception as e:
         logging.error(f"Error fetching database stats or backup files: {str(e)}")
         flash(f"Error fetching database stats or backup files: {str(e)}", "error")
