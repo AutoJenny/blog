@@ -168,6 +168,7 @@ CREATE TABLE llm_action (
     prompt_template TEXT NOT NULL,
     prompt_template_id INTEGER REFERENCES llm_prompt(id) NOT NULL,
     llm_model VARCHAR(128) NOT NULL,
+    provider_id INTEGER NOT NULL REFERENCES llm_provider(id),
     temperature FLOAT DEFAULT 0.7,
     max_tokens INTEGER DEFAULT 1000,
     "order" INTEGER DEFAULT 0 NOT NULL,
