@@ -8,7 +8,7 @@ from app.blog.fields import WORKFLOW_FIELDS
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
 from humanize import naturaltime
 import pytz
 
@@ -17,7 +17,14 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dir
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 def get_db_conn():
-    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    # Always reload assistant_config.env and ignore pre-existing env
+    config = dotenv_values(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
+    db_url = config.get('DATABASE_URL')
+    if not db_url or db_url.strip() == '':
+        print("[ERROR] DATABASE_URL is not set or is empty! Please check your assistant_config.env or environment variables.")
+        raise RuntimeError("DATABASE_URL is not set or is empty! Please check your assistant_config.env or environment variables.")
+    print(f"[DEBUG] DATABASE_URL used: {db_url}")
+    return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
 
 @bp.route("/new", methods=["POST"])
 def new_post():
@@ -359,9 +366,16 @@ def posts_listing():
     posts = []
     substages = {}
     show_deleted = request.args.get('show_deleted', '0') == '1'
+    debug = request.args.get('debug', '0') == '1'
+    # Print DATABASE_URL
+    print(f"[DEBUG] Flask DATABASE_URL: {DATABASE_URL}", flush=True)
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
+                # Print current database, user, schema
+                cur.execute("SELECT current_database(), current_user, current_schema();")
+                dbinfo = cur.fetchone()
+                print(f"[DEBUG] DB info: {dbinfo}", flush=True)
                 # Get all substages
                 cur.execute("SELECT id, name FROM workflow_sub_stage_entity ORDER BY id;")
                 substages = {row['id']: row['name'] for row in cur.fetchall()}
@@ -381,6 +395,7 @@ def posts_listing():
                         ORDER BY created_at DESC
                     """)
                 posts = cur.fetchall()
+                print(f"[DEBUG] Raw posts from DB: {posts}", flush=True)
         logger.info(f"[DEBUG] posts_listing: fetched {len(posts)} posts: {posts}")
     except Exception as e:
         logger.error(f"[DEBUG] posts_listing: exception {e}")
@@ -397,6 +412,9 @@ def posts_listing():
             updated = london.localize(updated)
         post['created_ago'] = naturaltime(now - created) if created else ''
         post['updated_ago'] = naturaltime(now - updated) if updated else ''
+    if debug:
+        from flask import jsonify
+        return jsonify({"posts": posts, "substages": substages, "show_deleted": show_deleted})
     return render_template('blog/posts_list.html', posts=posts, substages=substages, show_deleted=show_deleted)
 
 
