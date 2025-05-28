@@ -390,13 +390,27 @@ def handle_action(action_id):
             with get_db_conn() as conn:
                 with conn.cursor() as cur:
                     update_fields = ['field_name', 'prompt_template', 'prompt_template_id', 'llm_model', 'temperature', 'max_tokens', 'input_field', 'output_field', 'order']
-                    set_clause = ', '.join([f'{f}=%s' for f in update_fields if f in data])
-                    values = [data[f] for f in update_fields if f in data]
-                    if not set_clause:
+                    set_fields = []
+                    values = []
+                    # If prompt_template_id is being updated, also update prompt_template
+                    if 'prompt_template_id' in data:
+                        cur.execute("SELECT prompt_text FROM llm_prompt WHERE id = %s", (data['prompt_template_id'],))
+                        row = cur.fetchone()
+                        if not row:
+                            return jsonify({'status': 'error', 'error': 'Prompt template not found'}), 400
+                        set_fields.append('prompt_template=%s')
+                        values.append(row['prompt_text'])
+                        set_fields.append('prompt_template_id=%s')
+                        values.append(data['prompt_template_id'])
+                    for f in update_fields:
+                        if f in data and f not in ('prompt_template', 'prompt_template_id'):
+                            set_fields.append(f"{f}=%s")
+                            values.append(data[f])
+                    if not set_fields:
                         return jsonify({'status': 'error', 'error': 'No fields to update'}), 400
                     values.append(action_id)
                     cur.execute(f"""
-                        UPDATE llm_action SET {set_clause}, updated_at=NOW() WHERE id=%s
+                        UPDATE llm_action SET {', '.join(set_fields)}, updated_at=NOW() WHERE id=%s
                     """, tuple(values))
                     conn.commit()
             return jsonify({'status': 'success'})
