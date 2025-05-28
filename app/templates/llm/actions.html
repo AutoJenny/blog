@@ -167,6 +167,12 @@
             padding: 1rem;
         }
     }
+
+    .highlighted-action {
+        outline: 3px solid #38bdf8;
+        box-shadow: 0 0 0 4px #38bdf8aa;
+        transition: outline 0.3s, box-shadow 0.3s;
+    }
 </style>
 {% endblock %}
 
@@ -334,6 +340,8 @@
         }
     }
     document.addEventListener('DOMContentLoaded', function () {
+        // Always scroll to top on first load
+        window.scrollTo({ top: 0, behavior: 'auto' });
         loadProviders();
         loadPromptTemplates();
         document.getElementById('builderProvider').addEventListener('change', function () {
@@ -516,9 +524,11 @@
         btn.textContent = this.hasAttribute('data-edit-id') ? 'Updating...' : 'Saving...';
         try {
             let resp, data;
+            let updatedActionId = null;
             if (this.hasAttribute('data-edit-id')) {
                 // Update existing action
                 const actionId = this.getAttribute('data-edit-id');
+                updatedActionId = actionId;
                 resp = await fetch(`/api/v1/llm/actions/${actionId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -552,6 +562,10 @@
             if (resp.ok && data.status === 'success') {
                 msg.textContent = this.hasAttribute('data-edit-id') ? 'Action updated!' : 'Action created!';
                 msg.style.color = 'green';
+                // After update, reload and anchor to the updated action
+                if (updatedActionId) {
+                    localStorage.setItem('llmActionScrollTo', updatedActionId);
+                }
                 setTimeout(() => { location.reload(); }, 800);
             } else {
                 msg.textContent = data.error || 'Error saving action.';
@@ -564,5 +578,18 @@
         btn.disabled = false;
         btn.textContent = this.hasAttribute('data-edit-id') ? 'Update Action' : 'Save Action';
     };
+    // After reload, scroll to and highlight the updated action if needed
+    document.addEventListener('DOMContentLoaded', function () {
+        const scrollToId = localStorage.getItem('llmActionScrollTo');
+        if (scrollToId) {
+            const el = document.querySelector(`.action-accordion-item[data-id="${scrollToId}"]`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('highlighted-action');
+                setTimeout(() => { el.classList.remove('highlighted-action'); }, 2000);
+            }
+            localStorage.removeItem('llmActionScrollTo');
+        }
+    });
 </script>
 {% endblock %}
