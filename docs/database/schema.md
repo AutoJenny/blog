@@ -90,4 +90,6 @@ The current mapping of fields to workflow stages/substages is shown below. This 
 ### 2024-05-28: Added provider_id to llm_action
 - Added `provider_id INTEGER NOT NULL REFERENCES llm_provider(id)` to `llm_action`.
 - Migration performed with full backup, SQL migration script, and verification.
-- Rationale: Enables explicit separation of LLM provider and model for robust multi-provider support. 
+- Rationale: Enables explicit separation of LLM provider and model for robust multi-provider support.
+
+- 2024-05-28: The /actions/<id>/test endpoint was updated to always use the latest prompt template from llm_prompt, not the action's stored copy. This guarantees test/preview consistency and prevents stale prompt bugs. 
