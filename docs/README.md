@@ -17,6 +17,7 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
    - [Technical Setup](guides/technical_setup.md)
    - [Environment Configuration](guides/environment.md)
    - **Assistant Config:** The assistant and automated tools use `assistant_config.env` at the project root for database connection info.
+   - **Robust DB Connection:** All database connection functions (e.g., get_db_conn) now use `dotenv_values` to reload `assistant_config.env` on every call for reliability. Do not rely on a single os.getenv or load_dotenv at import time.
    - [FAQ & Troubleshooting](guides/faq.md)
 
 3. **Content Creation & Management**
@@ -42,6 +43,7 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
    - [Schema Reference](database/schema.md)
    - [Direct SQL Management](database/sql_management.md)
    - **Assistant Config:** See `assistant_config.env` for the database connection string used by the assistant/tools.
+   - **Robust DB Connection:** All get_db_conn functions reload `assistant_config.env` using dotenv_values for every call, ensuring the correct database is always used. See CHANGES.log and sql_management.md for details.
    - [Migration Guide](guides/migration.md)
    - **Deprecation Notice:** SQLAlchemy ORM and Flask-SQLAlchemy have been fully removed. All database operations now use direct SQL via psycopg2.
    - **Workflow Field Mapping**: Post development fields can now be mapped to workflow stages and substages via the [Settings Panel](/settings). The current mapping is always visible in the [Live Field Mapping Table](/docs/view/database/schema.md).
