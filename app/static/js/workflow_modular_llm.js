@@ -175,8 +175,13 @@
 
   // Show action details (prompt/template, model, etc)
   async function showActionDetails(actionId) {
-    actionDetails = await fetchLLMActionDetails(actionId);
-    let action = actionDetails.action || actionDetails; // Support both {action: {...}} and flat
+    if (!actionId) {
+      actionPromptPanel.innerHTML = '(No action selected)';
+      return;
+    }
+    const details = await fetchLLMActionDetails(actionId);
+    // Robust: support both {action: {...}} and flat
+    const action = details.action || details;
     let html = '';
     if (action.prompt_template) {
       html += `<div><b>Prompt Template:</b><pre class='bg-gray-800 text-gray-100 rounded p-2 mt-1 mb-2'>${action.prompt_template}</pre></div>`;
