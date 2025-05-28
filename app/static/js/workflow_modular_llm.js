@@ -103,8 +103,8 @@
     // Show initial field values
     if (inputFieldSelect.value) inputFieldValue.textContent = postDev[inputFieldSelect.value] || '(No value)';
     if (outputFieldSelect.value) outputFieldValue.textContent = postDev[outputFieldSelect.value] || '(No value)';
-    // Always show action details for the current dropdown value
-    await showActionDetails(actionSelect.value);
+    // Always trigger change event to sync details panel
+    actionSelect.dispatchEvent(new Event('change'));
   }
 
   // Render dropdown for fields (grouped by stage and substage, matching /settings)
