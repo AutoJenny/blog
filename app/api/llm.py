@@ -904,3 +904,27 @@ def start_ollama():
             return jsonify({"success": False, "error": "Ollama did not start."})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
+
+@bp.route('/providers/<int:provider_id>/models/available', methods=['GET'])
+def available_models(provider_id):
+    # Fetch provider info
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('SELECT * FROM llm_provider WHERE id = %s', (provider_id,))
+            provider = cur.fetchone()
+    if not provider:
+        return jsonify({'error': 'Provider not found'}), 404
+    provider_type = (provider['type'] or '').lower()
+    provider_name = (provider['name'] or '').lower()
+    # Ollama: query local API
+    if 'ollama' in provider_type or 'ollama' in provider_name:
+        try:
+            r = requests.get('http://localhost:11434/api/tags', timeout=3)
+            r.raise_for_status()
+            data = r.json()
+            installed = [m.get('name') for m in data.get('models', [])]
+            return jsonify({'installed': installed})
+        except Exception as e:
+            return jsonify({'installed': [], 'error': str(e)}), 200
+    # Other providers: dummy response
+    return jsonify({'installed': []})
