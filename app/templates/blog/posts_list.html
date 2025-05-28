@@ -91,9 +91,6 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto py-10">
-    <!-- DEBUG: Show raw posts data -->
-    <pre
-        style="background:#23273a;color:#a5b4fc;padding:1em;border-radius:0.5em;max-height:300px;overflow:auto;font-size:0.9em;">{{ posts|tojson(indent=2) }}</pre>
     <h1 class="text-3xl font-bold text-white mb-8 flex items-center gap-3">
         <i class="fa-solid fa-list"></i> Posts
     </h1>
@@ -116,37 +113,23 @@
             </thead>
             <tbody>
                 {% for post in posts %}
-                {# DEBUG: Show substage_id and substage lookup #}
-                <tr>
-                    <td colspan="6" style="color:#38bdf8;font-size:0.85em;">DEBUG: post.id={{ post.id }}, substage_id={{
-                        post.substage_id }}, substage={{ substages[post.substage_id] if post.substage_id in substages
-                        else 'None' }}</td>
-                </tr>
-                {% set substage = substages[post.substage_id] if post.substage_id in substages else None %}
-                <tr class="clickable-row"
-                    data-edit-url="/workflow/{{ substage if substage else 'idea' }}/?post_id={{ post.id }}">
-                    <td>{{ post.title or '' }}</td>
-                    <td><span class="status">{{ post.status or '—' }}</span></td>
+                <tr class="clickable-row" data-edit-url="/workflow/idea/?post_id={{ post.id }}">
+                    <td>{{ post.title }}</td>
+                    <td><span class="status">{{ post.status }}</span></td>
                     <td>{{ post.created_ago }}</td>
                     <td>{{ post.updated_ago }}</td>
                     <td class="actions">
-                        <a href="/workflow/{{ substage if substage else 'idea' }}/?post_id={{ post.id }}"
-                            class="icon-btn edit-btn" title="Edit">
+                        <a href="/workflow/idea/?post_id={{ post.id }}" class="icon-btn edit-btn" title="Edit">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </a>
-                        <a href="{{ url_for('blog.post_public', post_id=post.id) }}" class="icon-btn preview-btn"
-                            title="Preview">
+                        <a href="/blog/public/{{ post.id }}/" class="icon-btn preview-btn" title="Preview"
+                            onclick="event.stopPropagation();">
                             <i class="fa-solid fa-eye"></i>
                         </a>
-                        {% if post.status == 'deleted' %}
-                        <button class="icon-btn restore-btn" title="Restore" data-post-id="{{ post.id }}">
-                            <i class="fa-solid fa-check" style="color:#22c55e;"></i>
-                        </button>
-                        {% else %}
-                        <button class="icon-btn delete-btn" title="Delete" data-post-id="{{ post.id }}">
+                        <button class="icon-btn delete-btn" title="Delete" data-post-id="{{ post.id }}"
+                            onclick="event.stopPropagation();">
                             <i class="fa-solid fa-xmark" style="color:#ef4444;"></i>
                         </button>
-                        {% endif %}
                     </td>
                 </tr>
                 {% else %}
