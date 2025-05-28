@@ -13,6 +13,8 @@ from flask import abort
 import subprocess
 from flask import Blueprint
 from app.database.routes import get_db_conn
+from flask import Response
+import requests
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
@@ -502,3 +504,36 @@ def docs_live_field_mapping():
             ''')
             mappings = cur.fetchall()
     return render_template('docs/live_field_mapping.html', mappings=mappings)
+
+@bp.route('/api/v1/llm/providers/start', methods=['POST'])
+def api_start_ollama():
+    # Start Ollama server (assumes 'ollama' is in PATH)
+    try:
+        subprocess.Popen(['ollama', 'serve'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return jsonify({'success': True, 'message': 'Ollama started'}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@bp.route('/api/v1/llm/providers/<int:provider_id>/test', methods=['POST'])
+def api_test_provider(provider_id):
+    # Fetch provider info
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('SELECT * FROM llm_provider WHERE id = %s', (provider_id,))
+            provider = cur.fetchone()
+    if not provider:
+        return jsonify({'success': False, 'error': 'Provider not found'}), 404
+    provider_type = (provider['type'] or '').lower()
+    provider_name = (provider['name'] or '').lower()
+    # Test Ollama
+    if provider_type == 'ollama' or provider_name == 'ollama':
+        try:
+            r = requests.get('http://localhost:11434/api/tags', timeout=2)
+            if r.status_code == 200:
+                return jsonify({'success': True, 'message': 'Ollama is running'}), 200
+            else:
+                return jsonify({'success': False, 'error': f'Ollama returned {r.status_code}'}), 500
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
+    # Dummy test for other providers
+    return jsonify({'success': True, 'message': f'Provider {provider["name"]} test passed (dummy)'}), 200
