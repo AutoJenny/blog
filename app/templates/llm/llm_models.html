@@ -54,12 +54,12 @@
                 <div class="mb-4 border border-dark-border rounded-lg">
                     <button class="w-full flex justify-between items-center px-4 py-3 bg-dark-bg text-indigo-200 font-bold text-lg rounded-t-lg focus:outline-none accordion-header" id="${headerId}" data-target="${panelId}">
                         <span>${provider.name}</span>
-                        <span class="flex gap-2">
-                            <button class="btn btn-xs btn-primary update-models-btn" data-provider-id="${provider.id}"><i class="fas fa-sync"></i> Update</button>
-                            <i class="fas fa-chevron-down transition-transform"></i>
-                        </span>
+                        <span><i class="fas fa-chevron-down transition-transform"></i></span>
                     </button>
                     <div class="hidden accordion-panel" id="${panelId}">
+                        <div class="flex justify-end mb-2">
+                            <button class="btn btn-xs btn-primary update-models-btn" data-provider-id="${provider.id}"><i class="fas fa-sync"></i> Update</button>
+                        </div>
                         <table class="min-w-full text-left">
                             <thead>
                                 <tr class="text-indigo-200 border-b border-dark-border">
