@@ -188,4 +188,11 @@ psql $DATABASE_URL -U nickfiddes -c "REASSIGN OWNED BY nickfiddes TO postgres;"
 - The frontend extracts [data:var] and sends test input as { var: value }.
 - The backend replaces [data:var] with {{ var }} and flattens input mapping for Jinja2 rendering.
 - This enables robust, real-world testing of actions with data variables directly from the UI.
-- See CHANGES.log for details. 
+- See CHANGES.log for details.
+
+## Environment Variable Loading for Database Connections
+
+- All database connection functions (e.g., get_db_conn in app/blog/routes.py and app/database/routes.py) now use `dotenv_values` to reload `assistant_config.env` on every call.
+- This ensures the correct `DATABASE_URL` is always used, regardless of the shell or environment state.
+- Do **not** rely on a single os.getenv or load_dotenv at import time; always reload the config file for robust, predictable behavior.
+- See CHANGES.log for details of the 2025-05-28 fix. 

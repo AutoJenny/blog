@@ -709,3 +709,8 @@ All notable changes to this project are documented in this file.
 2024-05-28: Schema migration: Added provider_id INTEGER NOT NULL REFERENCES llm_provider(id) to llm_action. Updated create_tables.sql. Migration performed with full backup, SQL migration script, and verification. No data loss.
 
 2024-05-28: UI improvement: LLM Actions page now scrolls to top on load, and after update anchors and highlights the updated action in the list for better UX.
+
+2025-05-28 fix: blog posts listing restored
+- Updated app/blog/routes.py get_db_conn to always reload DATABASE_URL from assistant_config.env using dotenv_values, matching the robust pattern in app/database/routes.py.
+- This ensures /blog/posts always connects to the correct database, fixing the empty posts list bug.
+- Verified with curl and browser: posts now display as expected.
