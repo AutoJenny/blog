@@ -189,10 +189,8 @@
                         <span class="action-name">{{ action.field_name }}</span>
                         <span class="action-model">Model: {{ action.llm_model }}</span>
                         <div class="action-actions">
-                            <a href="/llm/actions/{{ action.id }}" class="btn btn-primary ml-2" title="View Details"><i
-                                    class="fas fa-eye"></i> Details</a>
-                            <button class="btn btn-secondary edit-action-btn ml-2" data-id="{{ action.id }}"><i
-                                    class="fas fa-edit"></i> Edit</button>
+                            <a href="#nonModalActionBuilder" class="btn btn-primary ml-2 edit-action-link"
+                                data-id="{{ action.id }}" title="Edit Action"><i class="fas fa-edit"></i> Edit</a>
                             <button class="btn btn-danger delete-action-btn ml-2" data-id="{{ action.id }}"><i
                                     class="fas fa-trash"></i> Delete</button>
                         </div>
@@ -205,8 +203,8 @@
 
     <!-- Non-Modal Action Builder: Four Stages Always Visible -->
     <div class="admin-card mt-10" id="nonModalActionBuilder">
-        <h2 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-plus"></i> Create New Action
-            (Builder)</h2>
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2" id="builderHeading"><i class="fa-solid fa-plus"></i>
+            Create New Action (Builder)</h2>
         <form id="actionBuilderForm" autocomplete="off">
             <!-- Stage 1: Basic Info -->
             <div class="mb-8">
@@ -284,7 +282,7 @@
 
 {% block scripts %}
 <script>
-    // --- Dropdown Population Logic ---
+    let allModels = [];
     async function loadProviders(selectedProviderId) {
         const providerSelect = document.getElementById('builderProvider');
         providerSelect.innerHTML = '<option value="">Loading...</option>';
@@ -306,6 +304,7 @@
         try {
             const resp = await fetch('/api/v1/llm/models');
             const models = await resp.json();
+            allModels = models; // Save for provider inference
             const filtered = models.filter(m => String(m.provider_id) === String(providerId));
             modelSelect.innerHTML = filtered.map(m => `<option value="${m.name}" data-model-id="${m.id}" ${selectedModelId == m.name ? 'selected' : ''}>${m.name} (${m.description || ''})</option>`).join('');
         } catch (e) {
@@ -352,10 +351,8 @@
 
         // --- DELETE ACTION LOGIC (event delegation) ---
         document.getElementById('actionAccordionList').addEventListener('click', async function (e) {
-            console.log('AccordionList clicked', e.target);
             const btn = e.target.closest('.delete-action-btn');
             if (!btn) return;
-            console.log('Remove button clicked', btn);
             const actionId = btn.dataset.id;
             if (!actionId) return;
             if (!confirm('Are you sure you want to delete this action? This cannot be undone.')) return;
@@ -364,7 +361,6 @@
             try {
                 const resp = await fetch(`/api/v1/llm/actions/${actionId}`, { method: 'DELETE' });
                 const data = await resp.json();
-                console.log('Remove response', resp, data);
                 if (resp.ok && data.status === 'success') {
                     btn.closest('.action-accordion-item').remove();
                 } else {
@@ -376,44 +372,63 @@
             btn.disabled = false;
             btn.textContent = 'Delete';
         });
-    });
-    // --- Test & Save Logic ---
-    document.getElementById('builderRunTestBtn').onclick = async function () {
-        const testInput = document.getElementById('builderTestInput').value;
-        const provider_id = document.getElementById('builderProvider').value;
-        const llm_model = document.getElementById('builderModel').value;
-        const prompt_template_id = document.getElementById('builderPromptTemplate').value;
-        const temperature = parseFloat(document.getElementById('builderTemperature').value) || 0.7;
-        const max_tokens = parseInt(document.getElementById('builderMaxTokens').value) || 1000;
-        const outputDiv = document.getElementById('builderTestOutput');
-        outputDiv.textContent = 'Running test...';
-        if (!provider_id || !llm_model || !prompt_template_id) {
-            outputDiv.textContent = 'Please select provider, model, and prompt template.';
-            return;
+
+        // --- EDIT/NEW ACTION LOGIC ---
+        function scrollToBuilder() {
+            document.getElementById('nonModalActionBuilder').scrollIntoView({ behavior: 'smooth' });
         }
-        try {
-            const resp = await fetch('/api/v1/llm/actions/test', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    provider_id,
-                    llm_model,
-                    prompt_template_id,
-                    temperature,
-                    max_tokens,
-                    input: testInput
-                })
-            });
-            const data = await resp.json();
-            if (resp.ok && data.status === 'success') {
-                outputDiv.textContent = data.output || '(No output)';
-            } else {
-                outputDiv.textContent = data.error || 'Error running test.';
+        function setBuilderMode(isEdit) {
+            const submitBtn = document.querySelector('#actionBuilderForm button[type="submit"]');
+            submitBtn.textContent = isEdit ? 'Update Action' : 'Save Action';
+            const heading = document.getElementById('builderHeading');
+            if (heading) {
+                heading.innerHTML = isEdit ? '<i class="fa-solid fa-edit"></i> Edit Action' : '<i class="fa-solid fa-plus"></i> Create New Action (Builder)';
             }
-        } catch (e) {
-            outputDiv.textContent = 'Error: ' + e;
         }
-    };
+        function clearBuilder() {
+            document.getElementById('actionBuilderForm').reset();
+            setBuilderMode(false);
+            document.getElementById('actionBuilderForm').removeAttribute('data-edit-id');
+            document.getElementById('actionBuilderMsg').textContent = '';
+        }
+        document.getElementById('newActionBtn').addEventListener('click', function (e) {
+            e.preventDefault();
+            clearBuilder();
+            scrollToBuilder();
+        });
+        document.querySelectorAll('.edit-action-link').forEach(link => {
+            link.addEventListener('click', async function (e) {
+                e.preventDefault();
+                const actionId = this.dataset.id;
+                if (!actionId) return;
+                try {
+                    const resp = await fetch(`/api/v1/llm/actions/${actionId}`);
+                    if (!resp.ok) throw new Error('Failed to fetch action');
+                    const result = await resp.json();
+                    const action = result.action || result; // support both {action: ...} and flat
+                    document.getElementById('builderFieldName').value = action.field_name || '';
+                    document.getElementById('builderDescription').value = action.description || '';
+                    // Infer provider from model
+                    let providerId = '';
+                    if (action.llm_model && allModels.length) {
+                        const modelObj = allModels.find(m => m.name === action.llm_model);
+                        if (modelObj) providerId = modelObj.provider_id;
+                    }
+                    await loadProviders(providerId);
+                    await loadModels(providerId, action.llm_model);
+                    await loadPromptTemplates(action.prompt_template_id);
+                    document.getElementById('builderTemperature').value = action.temperature || 0.7;
+                    document.getElementById('builderMaxTokens').value = action.max_tokens || 1000;
+                    document.getElementById('actionBuilderForm').setAttribute('data-edit-id', actionId);
+                    setBuilderMode(true);
+                    scrollToBuilder();
+                } catch (err) {
+                    alert('Failed to load action details: ' + err);
+                }
+            });
+        });
+    });
+    // --- Test & Save/Update Logic ---
     document.getElementById('actionBuilderForm').onsubmit = async function (e) {
         e.preventDefault();
         const msg = document.getElementById('actionBuilderMsg');
@@ -432,28 +447,48 @@
         }
         const btn = this.querySelector('button[type="submit"]');
         btn.disabled = true;
-        btn.textContent = 'Saving...';
+        btn.textContent = this.hasAttribute('data-edit-id') ? 'Updating...' : 'Saving...';
         try {
-            const resp = await fetch('/api/v1/llm/actions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    field_name,
-                    description,
-                    provider_id,
-                    llm_model,
-                    prompt_template_id,
-                    temperature,
-                    max_tokens
-                })
-            });
-            const data = await resp.json();
+            let resp, data;
+            if (this.hasAttribute('data-edit-id')) {
+                // Update existing action
+                const actionId = this.getAttribute('data-edit-id');
+                resp = await fetch(`/api/v1/llm/actions/${actionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        field_name,
+                        description,
+                        provider_id,
+                        llm_model,
+                        prompt_template_id,
+                        temperature,
+                        max_tokens
+                    })
+                });
+            } else {
+                // Create new action
+                resp = await fetch('/api/v1/llm/actions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        field_name,
+                        description,
+                        provider_id,
+                        llm_model,
+                        prompt_template_id,
+                        temperature,
+                        max_tokens
+                    })
+                });
+            }
+            data = await resp.json();
             if (resp.ok && data.status === 'success') {
-                msg.textContent = 'Action created!';
+                msg.textContent = this.hasAttribute('data-edit-id') ? 'Action updated!' : 'Action created!';
                 msg.style.color = 'green';
                 setTimeout(() => { location.reload(); }, 800);
             } else {
-                msg.textContent = data.error || 'Error creating action.';
+                msg.textContent = data.error || 'Error saving action.';
                 msg.style.color = 'red';
             }
         } catch (e) {
@@ -461,7 +496,7 @@
             msg.style.color = 'red';
         }
         btn.disabled = false;
-        btn.textContent = 'Save Action';
+        btn.textContent = this.hasAttribute('data-edit-id') ? 'Update Action' : 'Save Action';
     };
 </script>
 {% endblock %}

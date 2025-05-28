@@ -703,3 +703,5 @@ All notable changes to this project are documented in this file.
 - fix(settings): cast all stage_id/substage_id to int in template for robust grouping and correct display
 - revert(settings): rollback settings.html to last known good grouping and display commit (bb02bef)
 - revert(settings): roll back settings.html to commit a806d2b (pre-major changes, grouping logic stable)
+
+[2024-05-28] LLM Actions UI/UX update: Removed Edit button, renamed Details as Edit, removed modal/details page, made Edit/New anchor to builder area, and made builder support both create and update modes in-page.
