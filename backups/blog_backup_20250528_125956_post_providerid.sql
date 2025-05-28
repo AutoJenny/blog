@@ -32,7 +32,7 @@ CREATE TYPE public.post_status AS ENUM (
 ALTER TYPE public.post_status OWNER TO nickfiddes;
 
 --
--- Name: poststatus; Type: TYPE; Schema: public; Owner: postgres
+-- Name: poststatus; Type: TYPE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TYPE public.poststatus AS ENUM (
@@ -43,27 +43,52 @@ CREATE TYPE public.poststatus AS ENUM (
 );
 
 
-ALTER TYPE public.poststatus OWNER TO postgres;
+ALTER TYPE public.poststatus OWNER TO nickfiddes;
 
 --
--- Name: workflow_stage; Type: TYPE; Schema: public; Owner: nickfiddes
+-- Name: prompt_part_type; Type: TYPE; Schema: public; Owner: nickfiddes
 --
 
-CREATE TYPE public.workflow_stage AS ENUM (
-    'idea',
-    'research',
-    'outlining',
-    'authoring',
-    'images',
-    'metadata',
-    'review',
-    'publishing',
-    'updates',
-    'syndication'
+CREATE TYPE public.prompt_part_type AS ENUM (
+    'system',
+    'style',
+    'instructions',
+    'user',
+    'assistant',
+    'other'
 );
 
 
-ALTER TYPE public.workflow_stage OWNER TO nickfiddes;
+ALTER TYPE public.prompt_part_type OWNER TO nickfiddes;
+
+--
+-- Name: prompt_role_type; Type: TYPE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TYPE public.prompt_role_type AS ENUM (
+    'system',
+    'user',
+    'assistant',
+    'tool',
+    'function',
+    'other'
+);
+
+
+ALTER TYPE public.prompt_role_type OWNER TO nickfiddes;
+
+--
+-- Name: provider_type_enum; Type: TYPE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TYPE public.provider_type_enum AS ENUM (
+    'openai',
+    'ollama',
+    'other'
+);
+
+
+ALTER TYPE public.provider_type_enum OWNER TO nickfiddes;
 
 --
 -- Name: workflow_status_enum; Type: TYPE; Schema: public; Owner: nickfiddes
@@ -80,7 +105,7 @@ CREATE TYPE public.workflow_status_enum AS ENUM (
 ALTER TYPE public.workflow_status_enum OWNER TO nickfiddes;
 
 --
--- Name: workflowstage; Type: TYPE; Schema: public; Owner: postgres
+-- Name: workflowstage; Type: TYPE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TYPE public.workflowstage AS ENUM (
@@ -97,7 +122,7 @@ CREATE TYPE public.workflowstage AS ENUM (
 );
 
 
-ALTER TYPE public.workflowstage OWNER TO postgres;
+ALTER TYPE public.workflowstage OWNER TO nickfiddes;
 
 --
 -- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: nickfiddes
@@ -136,7 +161,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: category; Type: TABLE; Schema: public; Owner: postgres
+-- Name: category; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.category (
@@ -147,10 +172,10 @@ CREATE TABLE public.category (
 );
 
 
-ALTER TABLE public.category OWNER TO postgres;
+ALTER TABLE public.category OWNER TO nickfiddes;
 
 --
--- Name: category_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: category_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.category_id_seq
@@ -162,17 +187,17 @@ CREATE SEQUENCE public.category_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.category_id_seq OWNER TO postgres;
+ALTER TABLE public.category_id_seq OWNER TO nickfiddes;
 
 --
--- Name: category_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: category_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.category_id_seq OWNED BY public.category.id;
 
 
 --
--- Name: image; Type: TABLE; Schema: public; Owner: postgres
+-- Name: image; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.image (
@@ -192,10 +217,10 @@ CREATE TABLE public.image (
 );
 
 
-ALTER TABLE public.image OWNER TO postgres;
+ALTER TABLE public.image OWNER TO nickfiddes;
 
 --
--- Name: image_format; Type: TABLE; Schema: public; Owner: postgres
+-- Name: image_format; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.image_format (
@@ -212,10 +237,10 @@ CREATE TABLE public.image_format (
 );
 
 
-ALTER TABLE public.image_format OWNER TO postgres;
+ALTER TABLE public.image_format OWNER TO nickfiddes;
 
 --
--- Name: image_format_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: image_format_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.image_format_id_seq
@@ -227,17 +252,17 @@ CREATE SEQUENCE public.image_format_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.image_format_id_seq OWNER TO postgres;
+ALTER TABLE public.image_format_id_seq OWNER TO nickfiddes;
 
 --
--- Name: image_format_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: image_format_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.image_format_id_seq OWNED BY public.image_format.id;
 
 
 --
--- Name: image_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: image_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.image_id_seq
@@ -249,17 +274,17 @@ CREATE SEQUENCE public.image_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.image_id_seq OWNER TO postgres;
+ALTER TABLE public.image_id_seq OWNER TO nickfiddes;
 
 --
--- Name: image_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: image_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.image_id_seq OWNED BY public.image.id;
 
 
 --
--- Name: image_prompt_example; Type: TABLE; Schema: public; Owner: postgres
+-- Name: image_prompt_example; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.image_prompt_example (
@@ -274,10 +299,10 @@ CREATE TABLE public.image_prompt_example (
 );
 
 
-ALTER TABLE public.image_prompt_example OWNER TO postgres;
+ALTER TABLE public.image_prompt_example OWNER TO nickfiddes;
 
 --
--- Name: image_prompt_example_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: image_prompt_example_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.image_prompt_example_id_seq
@@ -289,17 +314,17 @@ CREATE SEQUENCE public.image_prompt_example_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.image_prompt_example_id_seq OWNER TO postgres;
+ALTER TABLE public.image_prompt_example_id_seq OWNER TO nickfiddes;
 
 --
--- Name: image_prompt_example_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: image_prompt_example_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.image_prompt_example_id_seq OWNED BY public.image_prompt_example.id;
 
 
 --
--- Name: image_setting; Type: TABLE; Schema: public; Owner: postgres
+-- Name: image_setting; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.image_setting (
@@ -317,10 +342,10 @@ CREATE TABLE public.image_setting (
 );
 
 
-ALTER TABLE public.image_setting OWNER TO postgres;
+ALTER TABLE public.image_setting OWNER TO nickfiddes;
 
 --
--- Name: image_setting_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: image_setting_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.image_setting_id_seq
@@ -332,17 +357,17 @@ CREATE SEQUENCE public.image_setting_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.image_setting_id_seq OWNER TO postgres;
+ALTER TABLE public.image_setting_id_seq OWNER TO nickfiddes;
 
 --
--- Name: image_setting_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: image_setting_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.image_setting_id_seq OWNED BY public.image_setting.id;
 
 
 --
--- Name: image_style; Type: TABLE; Schema: public; Owner: postgres
+-- Name: image_style; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.image_style (
@@ -354,10 +379,10 @@ CREATE TABLE public.image_style (
 );
 
 
-ALTER TABLE public.image_style OWNER TO postgres;
+ALTER TABLE public.image_style OWNER TO nickfiddes;
 
 --
--- Name: image_style_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: image_style_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.image_style_id_seq
@@ -369,17 +394,17 @@ CREATE SEQUENCE public.image_style_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.image_style_id_seq OWNER TO postgres;
+ALTER TABLE public.image_style_id_seq OWNER TO nickfiddes;
 
 --
--- Name: image_style_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: image_style_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.image_style_id_seq OWNED BY public.image_style.id;
 
 
 --
--- Name: llm_action; Type: TABLE; Schema: public; Owner: postgres
+-- Name: llm_action; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.llm_action (
@@ -394,14 +419,15 @@ CREATE TABLE public.llm_action (
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     input_field character varying(128),
-    output_field character varying(128)
+    output_field character varying(128),
+    provider_id integer NOT NULL
 );
 
 
-ALTER TABLE public.llm_action OWNER TO postgres;
+ALTER TABLE public.llm_action OWNER TO nickfiddes;
 
 --
--- Name: llm_action_history; Type: TABLE; Schema: public; Owner: postgres
+-- Name: llm_action_history; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.llm_action_history (
@@ -416,10 +442,10 @@ CREATE TABLE public.llm_action_history (
 );
 
 
-ALTER TABLE public.llm_action_history OWNER TO postgres;
+ALTER TABLE public.llm_action_history OWNER TO nickfiddes;
 
 --
--- Name: llm_action_history_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: llm_action_history_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.llm_action_history_id_seq
@@ -431,17 +457,17 @@ CREATE SEQUENCE public.llm_action_history_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.llm_action_history_id_seq OWNER TO postgres;
+ALTER TABLE public.llm_action_history_id_seq OWNER TO nickfiddes;
 
 --
--- Name: llm_action_history_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: llm_action_history_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.llm_action_history_id_seq OWNED BY public.llm_action_history.id;
 
 
 --
--- Name: llm_action_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: llm_action_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.llm_action_id_seq
@@ -453,69 +479,17 @@ CREATE SEQUENCE public.llm_action_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.llm_action_id_seq OWNER TO postgres;
+ALTER TABLE public.llm_action_id_seq OWNER TO nickfiddes;
 
 --
--- Name: llm_action_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: llm_action_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.llm_action_id_seq OWNED BY public.llm_action.id;
 
 
 --
--- Name: llm_action_prompt_part; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.llm_action_prompt_part (
-    action_id integer NOT NULL,
-    prompt_part_id integer NOT NULL,
-    "order" integer DEFAULT 0 NOT NULL
-);
-
-
-ALTER TABLE public.llm_action_prompt_part OWNER TO postgres;
-
---
--- Name: llm_config; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.llm_config (
-    id integer NOT NULL,
-    provider_type character varying(50) NOT NULL,
-    model_name character varying(100) NOT NULL,
-    api_base character varying(200) NOT NULL,
-    auth_token character varying(200),
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE public.llm_config OWNER TO postgres;
-
---
--- Name: llm_config_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.llm_config_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.llm_config_id_seq OWNER TO postgres;
-
---
--- Name: llm_config_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.llm_config_id_seq OWNED BY public.llm_config.id;
-
-
---
--- Name: llm_interaction; Type: TABLE; Schema: public; Owner: postgres
+-- Name: llm_interaction; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.llm_interaction (
@@ -529,10 +503,10 @@ CREATE TABLE public.llm_interaction (
 );
 
 
-ALTER TABLE public.llm_interaction OWNER TO postgres;
+ALTER TABLE public.llm_interaction OWNER TO nickfiddes;
 
 --
--- Name: llm_interaction_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: llm_interaction_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.llm_interaction_id_seq
@@ -544,17 +518,58 @@ CREATE SEQUENCE public.llm_interaction_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.llm_interaction_id_seq OWNER TO postgres;
+ALTER TABLE public.llm_interaction_id_seq OWNER TO nickfiddes;
 
 --
--- Name: llm_interaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: llm_interaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.llm_interaction_id_seq OWNED BY public.llm_interaction.id;
 
 
 --
--- Name: llm_prompt; Type: TABLE; Schema: public; Owner: postgres
+-- Name: llm_model; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.llm_model (
+    id integer NOT NULL,
+    name character varying(128) NOT NULL,
+    provider_id integer NOT NULL,
+    description text,
+    strengths text,
+    weaknesses text,
+    api_params jsonb,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.llm_model OWNER TO nickfiddes;
+
+--
+-- Name: llm_model_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
+--
+
+CREATE SEQUENCE public.llm_model_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.llm_model_id_seq OWNER TO nickfiddes;
+
+--
+-- Name: llm_model_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
+--
+
+ALTER SEQUENCE public.llm_model_id_seq OWNED BY public.llm_model.id;
+
+
+--
+-- Name: llm_prompt; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.llm_prompt (
@@ -566,14 +581,15 @@ CREATE TABLE public.llm_prompt (
     parameters jsonb,
     "order" integer DEFAULT 0 NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    part_ids jsonb DEFAULT '[]'::jsonb
 );
 
 
-ALTER TABLE public.llm_prompt OWNER TO postgres;
+ALTER TABLE public.llm_prompt OWNER TO nickfiddes;
 
 --
--- Name: llm_prompt_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: llm_prompt_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.llm_prompt_id_seq
@@ -585,35 +601,37 @@ CREATE SEQUENCE public.llm_prompt_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.llm_prompt_id_seq OWNER TO postgres;
+ALTER TABLE public.llm_prompt_id_seq OWNER TO nickfiddes;
 
 --
--- Name: llm_prompt_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: llm_prompt_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.llm_prompt_id_seq OWNED BY public.llm_prompt.id;
 
 
 --
--- Name: llm_prompt_part; Type: TABLE; Schema: public; Owner: postgres
+-- Name: llm_prompt_part; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.llm_prompt_part (
     id integer NOT NULL,
     type character varying(32) NOT NULL,
     content text NOT NULL,
-    description text,
     tags text[],
     "order" integer DEFAULT 0 NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    name character varying(128),
+    action_id integer,
+    description text
 );
 
 
-ALTER TABLE public.llm_prompt_part OWNER TO postgres;
+ALTER TABLE public.llm_prompt_part OWNER TO nickfiddes;
 
 --
--- Name: llm_prompt_part_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: llm_prompt_part_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.llm_prompt_part_id_seq
@@ -625,17 +643,57 @@ CREATE SEQUENCE public.llm_prompt_part_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.llm_prompt_part_id_seq OWNER TO postgres;
+ALTER TABLE public.llm_prompt_part_id_seq OWNER TO nickfiddes;
 
 --
--- Name: llm_prompt_part_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: llm_prompt_part_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.llm_prompt_part_id_seq OWNED BY public.llm_prompt_part.id;
 
 
 --
--- Name: post; Type: TABLE; Schema: public; Owner: postgres
+-- Name: llm_provider; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.llm_provider (
+    id integer NOT NULL,
+    name character varying(128) NOT NULL,
+    type character varying(64) DEFAULT 'local'::character varying NOT NULL,
+    api_url text,
+    auth_token text,
+    description text,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.llm_provider OWNER TO nickfiddes;
+
+--
+-- Name: llm_provider_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
+--
+
+CREATE SEQUENCE public.llm_provider_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.llm_provider_id_seq OWNER TO nickfiddes;
+
+--
+-- Name: llm_provider_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
+--
+
+ALTER SEQUENCE public.llm_provider_id_seq OWNED BY public.llm_provider.id;
+
+
+--
+-- Name: post; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.post (
@@ -647,15 +705,14 @@ CREATE TABLE public.post (
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     header_image_id integer,
     status public.post_status DEFAULT 'draft'::public.post_status NOT NULL,
-    idea_seed text,
-    substage_id integer DEFAULT 1 NOT NULL
+    substage_id integer
 );
 
 
-ALTER TABLE public.post OWNER TO postgres;
+ALTER TABLE public.post OWNER TO nickfiddes;
 
 --
--- Name: post_categories; Type: TABLE; Schema: public; Owner: postgres
+-- Name: post_categories; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.post_categories (
@@ -664,10 +721,10 @@ CREATE TABLE public.post_categories (
 );
 
 
-ALTER TABLE public.post_categories OWNER TO postgres;
+ALTER TABLE public.post_categories OWNER TO nickfiddes;
 
 --
--- Name: post_development; Type: TABLE; Schema: public; Owner: postgres
+-- Name: post_development; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public.post_development (
@@ -703,14 +760,16 @@ CREATE TABLE public.post_development (
     platform_selection text,
     content_adaptation text,
     distribution text,
-    engagement_tracking text
+    engagement_tracking text,
+    summary text,
+    idea_seed text
 );
 
 
-ALTER TABLE public.post_development OWNER TO postgres;
+ALTER TABLE public.post_development OWNER TO nickfiddes;
 
 --
--- Name: post_development_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: post_development_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.post_development_id_seq
@@ -722,17 +781,17 @@ CREATE SEQUENCE public.post_development_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.post_development_id_seq OWNER TO postgres;
+ALTER TABLE public.post_development_id_seq OWNER TO nickfiddes;
 
 --
--- Name: post_development_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: post_development_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.post_development_id_seq OWNED BY public.post_development.id;
 
 
 --
--- Name: post_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: post_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.post_id_seq
@@ -744,14 +803,116 @@ CREATE SEQUENCE public.post_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.post_id_seq OWNER TO postgres;
+ALTER TABLE public.post_id_seq OWNER TO nickfiddes;
 
 --
--- Name: post_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: post_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.post_id_seq OWNED BY public.post.id;
 
+
+--
+-- Name: post_section; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.post_section (
+    id integer NOT NULL,
+    post_id integer NOT NULL,
+    section_order integer,
+    section_heading text,
+    ideas_to_include text,
+    facts_to_include text,
+    first_draft text,
+    uk_british text,
+    highlighting text,
+    image_concepts text,
+    image_prompts text,
+    generation text,
+    optimization text,
+    watermarking text,
+    image_meta_descriptions text,
+    image_captions text,
+    image_prompt_example_id integer,
+    generated_image_url character varying(512),
+    image_generation_metadata jsonb,
+    image_id integer
+);
+
+
+ALTER TABLE public.post_section OWNER TO nickfiddes;
+
+--
+-- Name: post_section_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
+--
+
+CREATE SEQUENCE public.post_section_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.post_section_id_seq OWNER TO nickfiddes;
+
+--
+-- Name: post_section_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
+--
+
+ALTER SEQUENCE public.post_section_id_seq OWNED BY public.post_section.id;
+
+
+--
+-- Name: post_substage_action; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.post_substage_action (
+    id integer NOT NULL,
+    post_id integer,
+    substage character varying(64) NOT NULL,
+    action_id integer,
+    button_label text,
+    button_order integer DEFAULT 0
+);
+
+
+ALTER TABLE public.post_substage_action OWNER TO nickfiddes;
+
+--
+-- Name: post_substage_action_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
+--
+
+CREATE SEQUENCE public.post_substage_action_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.post_substage_action_id_seq OWNER TO nickfiddes;
+
+--
+-- Name: post_substage_action_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
+--
+
+ALTER SEQUENCE public.post_substage_action_id_seq OWNED BY public.post_substage_action.id;
+
+
+--
+-- Name: post_tags; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.post_tags (
+    post_id integer NOT NULL,
+    tag_id integer NOT NULL
+);
+
+
+ALTER TABLE public.post_tags OWNER TO nickfiddes;
 
 --
 -- Name: post_workflow_stage; Type: TABLE; Schema: public; Owner: nickfiddes
@@ -832,7 +993,78 @@ ALTER SEQUENCE public.post_workflow_sub_stage_id_seq OWNED BY public.post_workfl
 
 
 --
--- Name: user; Type: TABLE; Schema: public; Owner: postgres
+-- Name: substage_action_default; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.substage_action_default (
+    id integer NOT NULL,
+    substage character varying(64) NOT NULL,
+    action_id integer
+);
+
+
+ALTER TABLE public.substage_action_default OWNER TO nickfiddes;
+
+--
+-- Name: substage_action_default_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
+--
+
+CREATE SEQUENCE public.substage_action_default_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.substage_action_default_id_seq OWNER TO nickfiddes;
+
+--
+-- Name: substage_action_default_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
+--
+
+ALTER SEQUENCE public.substage_action_default_id_seq OWNED BY public.substage_action_default.id;
+
+
+--
+-- Name: tag; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.tag (
+    id integer NOT NULL,
+    name character varying(50) NOT NULL,
+    slug character varying(50) NOT NULL,
+    description text
+);
+
+
+ALTER TABLE public.tag OWNER TO nickfiddes;
+
+--
+-- Name: tag_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
+--
+
+CREATE SEQUENCE public.tag_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tag_id_seq OWNER TO nickfiddes;
+
+--
+-- Name: tag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
+--
+
+ALTER SEQUENCE public.tag_id_seq OWNED BY public.tag.id;
+
+
+--
+-- Name: user; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TABLE public."user" (
@@ -846,10 +1078,10 @@ CREATE TABLE public."user" (
 );
 
 
-ALTER TABLE public."user" OWNER TO postgres;
+ALTER TABLE public."user" OWNER TO nickfiddes;
 
 --
--- Name: user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: user_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
 CREATE SEQUENCE public.user_id_seq
@@ -861,10 +1093,10 @@ CREATE SEQUENCE public.user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_id_seq OWNER TO postgres;
+ALTER TABLE public.user_id_seq OWNER TO nickfiddes;
 
 --
--- Name: user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
 --
 
 ALTER SEQUENCE public.user_id_seq OWNED BY public."user".id;
@@ -885,6 +1117,43 @@ CREATE TABLE public.workflow (
 
 
 ALTER TABLE public.workflow OWNER TO nickfiddes;
+
+--
+-- Name: workflow_field_mapping; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.workflow_field_mapping (
+    id integer NOT NULL,
+    field_name text NOT NULL,
+    stage_id integer,
+    substage_id integer,
+    order_index integer DEFAULT 0 NOT NULL
+);
+
+
+ALTER TABLE public.workflow_field_mapping OWNER TO postgres;
+
+--
+-- Name: workflow_field_mapping_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.workflow_field_mapping_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.workflow_field_mapping_id_seq OWNER TO postgres;
+
+--
+-- Name: workflow_field_mapping_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.workflow_field_mapping_id_seq OWNED BY public.workflow_field_mapping.id;
+
 
 --
 -- Name: workflow_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
@@ -945,49 +1214,6 @@ ALTER SEQUENCE public.workflow_stage_entity_id_seq OWNED BY public.workflow_stag
 
 
 --
--- Name: workflow_status; Type: TABLE; Schema: public; Owner: nickfiddes
---
-
-CREATE TABLE public.workflow_status (
-    id integer NOT NULL,
-    post_id integer NOT NULL,
-    conceptualisation character varying(32) DEFAULT 'not_started'::character varying,
-    authoring character varying(32) DEFAULT 'not_started'::character varying,
-    meta_status character varying(32) DEFAULT 'not_started'::character varying,
-    images character varying(32) DEFAULT 'not_started'::character varying,
-    validation character varying(32) DEFAULT 'not_started'::character varying,
-    publishing character varying(32) DEFAULT 'not_started'::character varying,
-    syndication character varying(32) DEFAULT 'not_started'::character varying,
-    log text,
-    last_updated timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE public.workflow_status OWNER TO nickfiddes;
-
---
--- Name: workflow_status_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
---
-
-CREATE SEQUENCE public.workflow_status_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.workflow_status_id_seq OWNER TO nickfiddes;
-
---
--- Name: workflow_status_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
---
-
-ALTER SEQUENCE public.workflow_status_id_seq OWNED BY public.workflow_status.id;
-
-
---
 -- Name: workflow_sub_stage_entity; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
@@ -1025,101 +1251,122 @@ ALTER SEQUENCE public.workflow_sub_stage_entity_id_seq OWNED BY public.workflow_
 
 
 --
--- Name: category id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: category id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.category ALTER COLUMN id SET DEFAULT nextval('public.category_id_seq'::regclass);
 
 
 --
--- Name: image id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: image id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image ALTER COLUMN id SET DEFAULT nextval('public.image_id_seq'::regclass);
 
 
 --
--- Name: image_format id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: image_format id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_format ALTER COLUMN id SET DEFAULT nextval('public.image_format_id_seq'::regclass);
 
 
 --
--- Name: image_prompt_example id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: image_prompt_example id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_prompt_example ALTER COLUMN id SET DEFAULT nextval('public.image_prompt_example_id_seq'::regclass);
 
 
 --
--- Name: image_setting id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: image_setting id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_setting ALTER COLUMN id SET DEFAULT nextval('public.image_setting_id_seq'::regclass);
 
 
 --
--- Name: image_style id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: image_style id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_style ALTER COLUMN id SET DEFAULT nextval('public.image_style_id_seq'::regclass);
 
 
 --
--- Name: llm_action id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: llm_action id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_action ALTER COLUMN id SET DEFAULT nextval('public.llm_action_id_seq'::regclass);
 
 
 --
--- Name: llm_action_history id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: llm_action_history id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_action_history ALTER COLUMN id SET DEFAULT nextval('public.llm_action_history_id_seq'::regclass);
 
 
 --
--- Name: llm_config id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.llm_config ALTER COLUMN id SET DEFAULT nextval('public.llm_config_id_seq'::regclass);
-
-
---
--- Name: llm_interaction id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: llm_interaction id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_interaction ALTER COLUMN id SET DEFAULT nextval('public.llm_interaction_id_seq'::regclass);
 
 
 --
--- Name: llm_prompt id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: llm_model id; Type: DEFAULT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.llm_model ALTER COLUMN id SET DEFAULT nextval('public.llm_model_id_seq'::regclass);
+
+
+--
+-- Name: llm_prompt id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_prompt ALTER COLUMN id SET DEFAULT nextval('public.llm_prompt_id_seq'::regclass);
 
 
 --
--- Name: llm_prompt_part id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: llm_prompt_part id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_prompt_part ALTER COLUMN id SET DEFAULT nextval('public.llm_prompt_part_id_seq'::regclass);
 
 
 --
--- Name: post id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: llm_provider id; Type: DEFAULT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.llm_provider ALTER COLUMN id SET DEFAULT nextval('public.llm_provider_id_seq'::regclass);
+
+
+--
+-- Name: post id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post ALTER COLUMN id SET DEFAULT nextval('public.post_id_seq'::regclass);
 
 
 --
--- Name: post_development id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: post_development id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post_development ALTER COLUMN id SET DEFAULT nextval('public.post_development_id_seq'::regclass);
+
+
+--
+-- Name: post_section id; Type: DEFAULT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_section ALTER COLUMN id SET DEFAULT nextval('public.post_section_id_seq'::regclass);
+
+
+--
+-- Name: post_substage_action id; Type: DEFAULT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_substage_action ALTER COLUMN id SET DEFAULT nextval('public.post_substage_action_id_seq'::regclass);
 
 
 --
@@ -1137,7 +1384,21 @@ ALTER TABLE ONLY public.post_workflow_sub_stage ALTER COLUMN id SET DEFAULT next
 
 
 --
--- Name: user id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: substage_action_default id; Type: DEFAULT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.substage_action_default ALTER COLUMN id SET DEFAULT nextval('public.substage_action_default_id_seq'::regclass);
+
+
+--
+-- Name: tag id; Type: DEFAULT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.tag ALTER COLUMN id SET DEFAULT nextval('public.tag_id_seq'::regclass);
+
+
+--
+-- Name: user id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public."user" ALTER COLUMN id SET DEFAULT nextval('public.user_id_seq'::regclass);
@@ -1151,17 +1412,17 @@ ALTER TABLE ONLY public.workflow ALTER COLUMN id SET DEFAULT nextval('public.wor
 
 
 --
+-- Name: workflow_field_mapping id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.workflow_field_mapping ALTER COLUMN id SET DEFAULT nextval('public.workflow_field_mapping_id_seq'::regclass);
+
+
+--
 -- Name: workflow_stage_entity id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.workflow_stage_entity ALTER COLUMN id SET DEFAULT nextval('public.workflow_stage_entity_id_seq'::regclass);
-
-
---
--- Name: workflow_status id; Type: DEFAULT; Schema: public; Owner: nickfiddes
---
-
-ALTER TABLE ONLY public.workflow_status ALTER COLUMN id SET DEFAULT nextval('public.workflow_status_id_seq'::regclass);
 
 
 --
@@ -1172,7 +1433,7 @@ ALTER TABLE ONLY public.workflow_sub_stage_entity ALTER COLUMN id SET DEFAULT ne
 
 
 --
--- Data for Name: category; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: category; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
 COPY public.category (id, name, slug, description) FROM stdin;
@@ -1180,7 +1441,7 @@ COPY public.category (id, name, slug, description) FROM stdin;
 
 
 --
--- Data for Name: image; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: image; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
 COPY public.image (id, filename, original_filename, path, alt_text, caption, image_prompt, notes, image_metadata, watermarked, watermarked_path, created_at, updated_at) FROM stdin;
@@ -1211,16 +1472,15 @@ COPY public.image (id, filename, original_filename, path, alt_text, caption, ima
 
 
 --
--- Data for Name: image_format; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: image_format; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
 COPY public.image_format (id, title, description, width, height, steps, guidance_scale, extra_settings, created_at, updated_at) FROM stdin;
-34	Landscape	1536 × 1024 landscape	\N	\N	\N	\N	\N	2025-05-07 09:42:01.592101	2025-05-07 09:42:01.59211
 \.
 
 
 --
--- Data for Name: image_prompt_example; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: image_prompt_example; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
 COPY public.image_prompt_example (id, description, style_id, format_id, provider, image_setting_id, created_at, updated_at) FROM stdin;
@@ -1228,7 +1488,7 @@ COPY public.image_prompt_example (id, description, style_id, format_id, provider
 
 
 --
--- Data for Name: image_setting; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: image_setting; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
 COPY public.image_setting (id, name, style_id, format_id, width, height, steps, guidance_scale, extra_settings, created_at, updated_at) FROM stdin;
@@ -1236,25 +1496,25 @@ COPY public.image_setting (id, name, style_id, format_id, width, height, steps, 
 
 
 --
--- Data for Name: image_style; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: image_style; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
 COPY public.image_style (id, title, description, created_at, updated_at) FROM stdin;
-6	Pen & Ink	Create a traditional pen and watercolor illustration in the style of an 18th-century field sketch. Use fine, inked linework for figures and landscape elements, layered with visible, expressive watercolor brushstrokes. Emphasize the brush texture — each stroke should feel hand-painted, with pigment visibly thinning out or fraying toward the edges. The color should pool, bleed, and fade naturally, leaving irregular white margins and areas where the paint appears to have dried unevenly on textured paper. Maintain a light, warm, naturalistic color palette — earthy reds, mossy greens, ochres, and greys — and leave ample white space around the borders, as if the image were painted into a travel journal. The scene should appear partially unfinished at the margins, evoking the spontaneity of an observational field study.	2025-05-07 09:16:43.971883	2025-05-07 09:18:47.721516
 \.
 
 
 --
--- Data for Name: llm_action; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: llm_action; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.llm_action (id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", created_at, updated_at, input_field, output_field) FROM stdin;
-9	Generate Summary from idea_seed	{{ idea_seed }}	11	gpt-4	0.7	1000	0	2025-05-22 13:43:58.53529	2025-05-22 13:43:58.53529	\N	\N
+COPY public.llm_action (id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", created_at, updated_at, input_field, output_field, provider_id) FROM stdin;
+13	testiest	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	27	claude-3-sonnet-20240229	0.7	1000	0	2025-05-28 11:45:41.917074	2025-05-28 12:59:12.007828	\N	\N	1
+14	safest	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	26	gpt-4-turbo	0.7	1000	0	2025-05-28 11:55:03.433213	2025-05-28 12:59:12.007828	\N	\N	1
 \.
 
 
 --
--- Data for Name: llm_action_history; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: llm_action_history; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
 COPY public.llm_action_history (id, action_id, post_id, input_text, output_text, status, error_message, created_at) FROM stdin;
@@ -1262,24 +1522,7 @@ COPY public.llm_action_history (id, action_id, post_id, input_text, output_text,
 
 
 --
--- Data for Name: llm_action_prompt_part; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.llm_action_prompt_part (action_id, prompt_part_id, "order") FROM stdin;
-\.
-
-
---
--- Data for Name: llm_config; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.llm_config (id, provider_type, model_name, api_base, auth_token, created_at, updated_at) FROM stdin;
-1	ollama	llama3.1:70b	http://localhost:11434	\N	2025-05-01 07:03:20.613924	2025-05-01 07:33:20.294464
-\.
-
-
---
--- Data for Name: llm_interaction; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: llm_interaction; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
 COPY public.llm_interaction (id, prompt_id, input_text, output_text, parameters_used, interaction_metadata, created_at) FROM stdin;
@@ -1287,50 +1530,110 @@ COPY public.llm_interaction (id, prompt_id, input_text, output_text, parameters_
 
 
 --
--- Data for Name: llm_prompt; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: llm_model; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, parameters, "order", created_at, updated_at) FROM stdin;
-11	Allocate Ideas to Sections	Allocate each idea to its most relevant section	You are a researcher specialising in sub-editing blog articles for specialist audiences. You have been commissioned to assist with a Scottish-interest article about {{basic_idea}} which will examine in depth these ideas.\n\nYou are given:\n- A list of section headings for a blog post about {{basic_idea}}, with the blog title "{{provisional_title}}", which discusses the ideas and themes listed below.\n\nYou must now distribute (to the most appropriate section) each idea from the list of ideas in JSON array format, given below.\n\nYour task:\n- Allocate each idea to the most appropriate section heading, using your best judgment.\n- Each idea must be assigned to exactly one section (no duplicates, no omissions).\n- Output a single JSON object where each key is a section heading from {{section_order}}, and the value is an array of ideas allocated to that section (can be empty if no ideas fit).\n- Do not invent or modify ideas or headings.\n- The output must be valid JSON, with all ideas used exactly once.\n\nExample output:\n{\n  "Introduction": ["idea 1"],\n  "History": ["idea 2", "idea 3"],\n  "Modern Usage": []\n}\n\nBegin.\n\nSection Headings:\n{{section_order}}\n\nIdeas:\n{{idea_scope}}\n\nOutput:	\N	\N	3	2025-05-04 14:30:59.400632	2025-05-05 13:23:13.166973
-9	Interesting facts	Generate Interesting facts	You are a researcher specialising in finding curious facts for blog articles for specialist audiences. You have been commissioned to assist with an article about {{basic_idea}} which will examine in depth these ideas {{idea_scope}}.\n\nPlease do a deep dive into this topic and provide a list of up to ten unusual and interesting facts that people might not know, to make this article worth reading. \n\nReturn only a JSON array of paragraph titles, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.”	\N	\N	1	2025-05-04 12:36:41.74155	2025-05-05 13:23:26.124861
-5	Allocate Facts to Sections	Allocate each fact to its most relevant section	You are a researcher specialising in sub-editing blog articles for specialist audiences. You have been commissioned to assist with a Scottish-interest article about {{basic_idea}} which will examine in depth these ideas: {{idea_scope}}.\n\nYou are given:\n- A list of section headings for a blog post about {{basic_idea}}, with the blog title "{{provisional_title}}", which discusses the following ideas and themes: {{idea_scope}}.\n\nYou must now distribute (to the most appropriate section) each fact from the list of interesting facts in JSON array format, given below.\n\nYour task:\n- Allocate each fact to the most appropriate section heading, using your best judgment.\n- Each fact must be assigned to exactly one section (no duplicates, no omissions).\n- Output a single JSON object where each key is a section heading from {{section_order}}, and the value is an array of facts allocated to that section (can be empty if no facts fit).\n- Do not invent or modify facts or headings.\n- The output must be valid JSON, with all facts used exactly once.\n\nExample output:\n{\n  "Introduction": ["Fact 1"],\n  "History": ["Fact 2", "Fact 3"],\n  "Modern Usage": []\n}\n\nBegin.\n\nSection Headings:\n{{section_order}}\n\nInteresting Facts:\n{{interesting_facts}}\n\nOutput:	\N	\N	2	2025-05-04 12:37:27.007623	2025-05-05 13:23:13.165621
-8	Catchy title	Expand the basic idea and scope into an engaging title	You are a professional copywriter and editor specializing in digital publishing and historical blogging.\n\nYour task is to generate one catchy and engaging blog title suitable for a wide audience from the ideas provided below. This is especially those interested in Scottish culture and heritage. The title should be compelling, relevant to the content, and appropriate for web publication.\n\nReturn only the title with no explanation, commentary, or additional text. Do NOT enclose it in quote marks.\n\n\nYour topic is the following:\n\t1.\tThe basic idea of: {{basic_idea}}\n\t2.\tTheses topics and angles:\n{{idea_scope}}	\N	\N	4	2025-05-04 11:30:44.517966	2025-05-05 13:23:03.832602
-10	Structuring section headings	Thematic section	You are an experienced editor and content strategist. Your task is to analyze the blog post title and content below intended for a blog article on Scottish culture and heritage.\nGroup and organize the content into a logical structure by identifying distinct thematic sections.\nReturn only a JSON array of paragraph titles that represent the structure of the final article.\nEach title should be concise, descriptive, and reflect a key theme from the text.\nDo not include any explanation, commentary, or full text of the paragraphs. Return only a JSON array of paragraph titles, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.\n---\n\nTitle: {{provisional_title}}\n\nScope of ideas:\n{{idea_scope}}\n\nSome interesting facts: 	\N	\N	5	2025-05-04 12:56:29.9372	2025-05-05 13:23:03.833402
-7	Basic Idea to Idea Scope	Expand Basic Idea to Idea Scope	You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article — this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.	\N	\N	0	2025-05-04 11:18:41.267767	2025-05-05 13:23:08.776355
-12	Author Section first draft		You are a professional historical writer specializing in Scottish culture and heritage.\nYour task is to write 2–3 well-written paragraphs for a blog article based on a specific section. IMPORTANT: you must write very specifically only about the sub-themes of this section heading, and AVOID duplicating or overlapping with topics in other sections. Before starting to write anything, consider exactly how this section DISTINCTLY DIFFERS from other sections and focus only on those ideas.\n\nYou are given:\n\t•\tThe overall subject of the blog post, which is: {{basic_idea}}\n\n\t•\tGeneral background context about the topic, describing the range of content the full blog will cover, which is: {{idea_scope}}\n\n\t•\tThe current section title to write under, which is: {{section_heading}}\n\n\t•\tConcepts and angles that should guide this section (but that you may also add to and expand) which are: {{ideas_to_include}}\n\n\t•\tSome interesting factual points that MUST be included in this section (do not omit any!) which are: {{facts_to_include}}\n\nWrite clear, informative, and engaging text that suits a public-facing blog while respecting historical accuracy. Use only UK-British spellings and idioms, avoiding Americanisms (eg colour not color, and 's' not 'z' in words like authorise). \nEnsure that all the ideas and facts mentioned above are incorporated meaningfully into the text.\nDo not include any commentary, headings, titles, or formatting — return only the body paragraphs in plain text.	\N	\N	6	2025-05-05 10:01:54.864346	2025-05-05 14:04:21.476545
-13	Devise image concept	Devise image concept	You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article.\n\nYou will be given:\n\t•\tThe article title, which is: {{provisional_title}}\n\n\t•\tA summary of the article’s overall scope and themes, which are: {{idea_scope}}\n\n\t•\tA list of all section titles in the article, which are: \n{{section_order}}\n\n\t•\tThe specific section title that this will illustrate, which is: {{section_heading}}\n\n\t•\tThe full text of that section, which is: \n{{first_draft}}\n\n--\nYour task is to produce a single image concept suitable for illustration. The image should be:\n\t•\tRooted in Scottish history, culture, and environment\n\t•\tDistinct from concepts that might be used for other sections\n\t•\tVisually compelling and engaging for a general audience\n\t•\tSuitable for use as a featured image or embedded illustration\n\nFormat your response as follows:\n\nSection Illustration Prompt:\n<Detailed, descriptive scene for the image generation model, 1-3 sentences. Focus on visual composition, mood, setting, time period, and any symbolic elements relevant to this section’s theme. Use clear and evocative language suitable for stable diffusion or similar tools. Avoid repetition of other sections’ themes.>	\N	\N	0	2025-05-06 14:26:46.167752	2025-05-06 14:26:46.167759
+COPY public.llm_model (id, name, provider_id, description, strengths, weaknesses, api_params, created_at, updated_at) FROM stdin;
+1	mistral	1	Mistral 7B (local)	Fast, low resource, good for general tasks	Not as strong as GPT-4 for reasoning	{"max_tokens": 8192}	2025-05-26 11:02:54.337827	2025-05-26 11:02:54.337827
+2	gpt-3.5-turbo	2	OpenAI GPT-3.5 Turbo	Fast, cheap, good for general tasks	Not as strong as GPT-4 for reasoning	{"max_tokens": 16384}	2025-05-26 11:07:20.603016	2025-05-26 11:07:20.603016
+3	gpt-4-turbo	2	OpenAI GPT-4 Turbo	Strong reasoning, broad knowledge	Slower, more expensive	{"max_tokens": 128000}	2025-05-26 11:07:20.603016	2025-05-26 11:07:20.603016
+4	gpt-4o	2	OpenAI GPT-4o	Fast, multimodal, strong reasoning	New, less tested	{"max_tokens": 128000}	2025-05-26 11:07:20.603016	2025-05-26 11:07:20.603016
+5	claude-3-opus-20240229	3	Anthropic Claude 3 Opus	Very strong reasoning, long context	Expensive, slower	{"max_tokens": 200000}	2025-05-26 11:07:20.604904	2025-05-26 11:07:20.604904
+6	claude-3-sonnet-20240229	3	Anthropic Claude 3 Sonnet	Strong, fast, cheaper than Opus	Slightly less capable	{"max_tokens": 200000}	2025-05-26 11:07:20.604904	2025-05-26 11:07:20.604904
+7	claude-3-haiku-20240307	3	Anthropic Claude 3 Haiku	Fastest, cheapest Claude	Lower reasoning ability	{"max_tokens": 200000}	2025-05-26 11:07:20.604904	2025-05-26 11:07:20.604904
+8	gemini-1.5-pro	4	Google Gemini 1.5 Pro	Multimodal, long context	New, less tested	{"max_tokens": 1048576}	2025-05-26 11:07:20.605505	2025-05-26 11:07:20.605505
+9	gemini-1.0-pro	4	Google Gemini 1.0 Pro	Good for general tasks	Not as strong as GPT-4	{"max_tokens": 32768}	2025-05-26 11:07:20.605505	2025-05-26 11:07:20.605505
+10	llama3.1:70b	1	Llama 3.1 70B (Ollama)	Large, strong reasoning	High resource usage	{"parameter_size": "70.6B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+11	deepseek-coder:latest	1	DeepSeek Coder (Ollama)	Code generation	Small context	{"parameter_size": "1B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+12	nomic-embed-text:latest	1	Nomic Embed Text (Ollama)	Embeddings	Not a chat model	{"parameter_size": "137M"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+13	qwen2.5-coder:1.5b-base	1	Qwen2.5 Coder 1.5B Base (Ollama)	Code, small model	Lower reasoning	{"parameter_size": "1.5B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+14	llama3.1:8b	1	Llama 3.1 8B (Ollama)	Fast, low resource	Lower accuracy	{"parameter_size": "8.0B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+15	qwq:32b	1	QWQ 32B (Ollama)	Large, strong reasoning	High resource usage	{"parameter_size": "32.8B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+16	llama3.2:latest	1	Llama 3.2 (Ollama)	General tasks	Small context	{"parameter_size": "3.2B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+17	qwen2.5:1.5b	1	Qwen2.5 1.5B (Ollama)	Small, fast	Lower reasoning	{"parameter_size": "1.5B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+18	aya:35b	1	Aya 35B (Ollama)	Large, strong reasoning	High resource usage	{"parameter_size": "35.0B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+19	qwen2.5:32b	1	Qwen2.5 32B (Ollama)	Large, strong reasoning	High resource usage	{"parameter_size": "32.8B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+20	llama3:latest	1	Llama 3 (Ollama)	General tasks	Small context	{"parameter_size": "8B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+21	mistral:latest	1	Mistral 7B (Ollama)	Fast, low resource	Lower accuracy	{"parameter_size": "7B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+22	llava:latest	1	Llava (Ollama)	Multimodal	Experimental	{"parameter_size": "7B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
+23	mixtral:latest	1	Mixtral (Ollama)	Large, strong reasoning	High resource usage	{"parameter_size": "47B"}	2025-05-26 11:07:20.605884	2025-05-26 11:07:20.605884
 \.
 
 
 --
--- Data for Name: llm_prompt_part; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: llm_prompt; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.llm_prompt_part (id, type, content, description, tags, "order", created_at, updated_at) FROM stdin;
+COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, parameters, "order", created_at, updated_at, part_ids) FROM stdin;
+26	idea_seed to Brief		[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n[system] Use the following input content to transform as instructed: [data:FIELDNAME]	\N	\N	0	2025-05-28 09:38:51.632917	2025-05-28 09:38:51.632917	[]
+27	TEST2		[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	\N	\N	0	2025-05-28 10:33:34.125205	2025-05-28 10:33:34.125205	[]
 \.
 
 
 --
--- Data for Name: post; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: llm_prompt_part; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.post (id, title, slug, summary, created_at, updated_at, header_image_id, status, idea_seed, substage_id) FROM stdin;
-2	hand-fasting...	hand-fasting-1	\N	2025-05-04 09:47:22.571191	2025-05-04 16:15:45.445826	\N	draft	\N	1
-4	The Evolution of the Modern Scottish Kilt	kilt-evolution	<p>The <b>Scottish kilt</b>, a garment that has become synonymous with Highland culture and Scottish identity, has undergone significant evolution since its inception. From its origins as the <b>'great kilt'</b> or <b>'belted plaid'</b> to the modern form we recognize today, its journey reflects Scotland's rich history of tradition, adaptation, and resilience. This article explores the kilt's transformation through time, examining how historical events, practical needs, and cultural shifts have shaped this iconic symbol of Scottish heritage.</p>\n	2023-10-20 00:00:00	2025-05-18 16:25:20.775043	139	draft	\N	1
-5	English tartans	english-tartans	<p><strong>English tartans</strong> have a fascinating trajectory, intertwining with the better-known <strong>Scottish tartan</strong> tradition yet developing a character of their own. Although <strong>tartan</strong> is primarily identified with Scotland, England’s engagement with tartan spans from ancient use of <strong>checkered cloth</strong> by <strong>Celtic</strong> peoples to a modern revival of regional and national patterns. This comprehensive overview examines the emergence and development of tartans in England – from historical origins and regional examples to influences of the <strong>textile industry</strong>, expressions of <strong>national identity</strong>, and contemporary <strong>design movements</strong> – all while preserving every detail of the rich historical narrative.</p>	2025-04-18 00:00:00	2025-05-18 16:25:20.785179	\N	draft	\N	1
-6	The Tradition of the Scottish Quaich	quaich-traditions	<p>The <b>quaich</b>, Scotland's cherished <b>"cup of friendship,"</b> holds a special place in Scottish tradition, symbolising hospitality, unity, and trust. Originating centuries ago, its simple yet profound design—a shallow, two-handled bowl—embodies a rich history spanning <b>clan</b> gatherings, ceremonial rituals, royal celebrations, and contemporary <b>weddings</b>. This article explores the evolution of the quaich, delving into its earliest origins, cultural significance, craftsmanship, historical anecdotes, and enduring presence in modern Scottish culture.</p>\n	2023-10-27 00:00:00	2025-05-18 16:25:20.822509	150	draft	\N	1
-9	ankle worship...	ankle-worship		2025-05-21 21:55:27.127066	2025-05-21 21:55:27.127066	\N	draft	ankle worship	1
-1	hand-fasting...	hand-fasting	\N	2025-05-03 16:05:45.941465	2025-05-21 22:58:00.655742	\N	deleted	\N	1
-11	dod hatching...	dod-hatching		2025-05-21 21:59:50.069028	2025-05-21 22:58:29.225706	\N	deleted	dod hatching	1
-7	cat torture...	cat-torture		2025-05-21 21:44:07.808692	2025-05-21 22:58:52.977616	\N	deleted	cat torture	1
-10	Test idea for workflow redirect...	test-idea-for-workflow-redirect		2025-05-21 21:58:45.229565	2025-05-21 23:03:36.776851	\N	deleted	Test idea for workflow redirect	1
-12	green eggs...	green-eggs		2025-05-21 22:30:01.563795	2025-05-21 23:03:52.645833	\N	deleted	green eggs	1
-8	treacle bending...	treacle-bending		2025-05-21 21:49:33.812708	2025-05-21 23:03:57.595772	\N	deleted	treacle bending	1
+COPY public.llm_prompt_part (id, type, content, tags, "order", created_at, updated_at, name, action_id, description) FROM stdin;
+14	assistant	Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article — this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. 	{role}	10	2025-05-26 07:55:08.615401	2025-05-26 07:55:08.615401	Create 50 ideas	\N	\N
+4	user	The style should have a traditional Scottish style	{role}	4	2025-05-25 17:32:28.03507	2025-05-26 07:55:25.936599	Scottish style	\N	\N
+26	system	Test content	{context,custom}	1	2025-05-27 17:34:51.927527	2025-05-27 17:34:51.927527	Test Part	\N	\N
+27	system	Test content	{context,custom}	1	2025-05-27 17:36:25.735135	2025-05-27 17:36:25.735135	UI Test Part	\N	\N
+28	system	Use the following input content to transform as instructed: [data:FIELDNAME]	{format}	0	2025-05-27 17:43:11.814585	2025-05-27 17:43:11.814585	Use [data:FIELDNAME]	\N	\N
+18	system	You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.	{role}	1	2025-05-26 10:20:26.867218	2025-05-26 10:20:26.867218	Scottish cultural expert	\N	\N
+8	system	You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article. 	{role}	20	2025-05-25 20:16:54.255069	2025-05-26 10:21:08.159163	Creative visualiser	\N	\N
+9	system	You are a researcher specialising in finding curious facts for blog articles for specialist audiences.	{role}	20	2025-05-26 07:41:45.978276	2025-05-26 10:21:16.303707	Factoid researcher	\N	\N
+11	system	You are a researcher specialising in sub-editing blog articles for specialist audiences. 	{role}	20	2025-05-26 07:46:28.823794	2025-05-26 10:21:26.491256	Sub-editor	\N	\N
+12	system	You are a professional copywriter and editor specializing in digital publishing and historical blogging.	{role}	20	2025-05-26 07:47:33.873145	2025-05-26 10:21:33.122181	Editor-copywriter	\N	\N
+13	system	You are an experienced Social Media marketeer and content strategist. 	{role}	20	2025-05-26 07:48:43.999092	2025-05-26 10:21:40.448863	Social media strategist	\N	\N
+19	system	Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.	{operation}	2	2025-05-26 10:27:05.283848	2025-05-27 17:56:58.179349	idea_seed expansion	\N	\N
+15	system	Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.	{format}	10	2025-05-26 07:56:30.930082	2025-05-27 07:55:10.768261	JSON format	\N	\N
+16	system	You are a naming assistant that returns exactly three creative but plausible names for each item provided.	{specimen}	1000	2025-05-26 08:34:59.747679	2025-05-27 07:55:34.216258	SPECIMEN SYSTEM	\N	\N
+17	user	Here is a JSON list of items:\\n\\n{\\"animals\\": [\\"dog\\", \\"cat\\", \\"bird\\", \\"hamster\\", \\"lizard\\"]}\\n\\nPlease return a JSON object where each animal has an array of three possible names.	{specimen}	1000	2025-05-26 08:36:08.771728	2025-05-27 08:00:34.170418	SPECIMEN USER	\N	\N
+21	system	Here is a JSON list of items:	{format}	0	2025-05-27 08:02:58.7468	2025-05-27 08:02:58.7468	Input JSON list	\N	\N
+22	system	Here is a section of text to process:	{format}	0	2025-05-27 08:04:06.164223	2025-05-27 08:04:06.164223	Input TEXT section	\N	\N
+24	system	Please return a section of text with NO commentary, annotations, or special markup.	{format}	0	2025-05-27 08:07:03.50217	2025-05-27 08:07:03.50217	Output plain TEXT	\N	\N
+23	system	Please return a JSON object where each item is in an array identified as ITEM. Return no preamble, commentary, or formatting, and no code blocks or text outside the array	{format}	0	2025-05-27 08:05:33.661989	2025-05-27 08:08:37.715938	Output JSON	\N	\N
 \.
 
 
 --
--- Data for Name: post_categories; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: llm_provider; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+--
+
+COPY public.llm_provider (id, name, type, api_url, auth_token, description, created_at, updated_at) FROM stdin;
+1	Ollama (local)	local	http://localhost:11434	\N	Local Ollama server for fast, private inference.	2025-05-26 10:58:23.513987	2025-05-26 10:58:23.513987
+2	OpenAI	openai	https://api.openai.com/v1	\N	OpenAI API for GPT-3.5, GPT-4, etc.	2025-05-26 11:06:00.780193	2025-05-26 11:06:00.780193
+3	Anthropic	other	https://api.anthropic.com/v1	\N	Anthropic Claude API.	2025-05-26 11:06:01.915015	2025-05-26 11:06:01.915015
+4	Gemini	other	https://generativelanguage.googleapis.com/v1beta	\N	Google Gemini API.	2025-05-26 11:06:02.450166	2025-05-26 11:06:02.450166
+\.
+
+
+--
+-- Data for Name: post; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+--
+
+COPY public.post (id, title, slug, summary, created_at, updated_at, header_image_id, status, substage_id) FROM stdin;
+2	hand-fasting...	hand-fasting-1	\N	2025-05-04 09:47:22.571191	2025-05-04 16:15:45.445826	\N	draft	1
+4	The Evolution of the Modern Scottish Kilt	kilt-evolution	<p>The <b>Scottish kilt</b>, a garment that has become synonymous with Highland culture and Scottish identity, has undergone significant evolution since its inception. From its origins as the <b>'great kilt'</b> or <b>'belted plaid'</b> to the modern form we recognize today, its journey reflects Scotland's rich history of tradition, adaptation, and resilience. This article explores the kilt's transformation through time, examining how historical events, practical needs, and cultural shifts have shaped this iconic symbol of Scottish heritage.</p>\n	2023-10-20 00:00:00	2025-05-18 16:25:20.775043	139	draft	1
+5	English tartans	english-tartans	<p><strong>English tartans</strong> have a fascinating trajectory, intertwining with the better-known <strong>Scottish tartan</strong> tradition yet developing a character of their own. Although <strong>tartan</strong> is primarily identified with Scotland, England’s engagement with tartan spans from ancient use of <strong>checkered cloth</strong> by <strong>Celtic</strong> peoples to a modern revival of regional and national patterns. This comprehensive overview examines the emergence and development of tartans in England – from historical origins and regional examples to influences of the <strong>textile industry</strong>, expressions of <strong>national identity</strong>, and contemporary <strong>design movements</strong> – all while preserving every detail of the rich historical narrative.</p>	2025-04-18 00:00:00	2025-05-18 16:25:20.785179	\N	draft	1
+6	The Tradition of the Scottish Quaich	quaich-traditions	<p>The <b>quaich</b>, Scotland's cherished <b>"cup of friendship,"</b> holds a special place in Scottish tradition, symbolising hospitality, unity, and trust. Originating centuries ago, its simple yet profound design—a shallow, two-handled bowl—embodies a rich history spanning <b>clan</b> gatherings, ceremonial rituals, royal celebrations, and contemporary <b>weddings</b>. This article explores the evolution of the quaich, delving into its earliest origins, cultural significance, craftsmanship, historical anecdotes, and enduring presence in modern Scottish culture.</p>\n	2023-10-27 00:00:00	2025-05-18 16:25:20.822509	150	draft	1
+1	hand-fasting...	hand-fasting	\N	2025-05-03 16:05:45.941465	2025-05-21 22:58:00.655742	\N	deleted	1
+11	dod hatching...	dod-hatching		2025-05-21 21:59:50.069028	2025-05-21 22:58:29.225706	\N	deleted	1
+7	cat torture...	cat-torture		2025-05-21 21:44:07.808692	2025-05-21 22:58:52.977616	\N	deleted	1
+10	Test idea for workflow redirect...	test-idea-for-workflow-redirect		2025-05-21 21:58:45.229565	2025-05-21 23:03:36.776851	\N	deleted	1
+12	green eggs...	green-eggs		2025-05-21 22:30:01.563795	2025-05-21 23:03:52.645833	\N	deleted	1
+8	treacle bending...	treacle-bending		2025-05-21 21:49:33.812708	2025-05-21 23:03:57.595772	\N	deleted	1
+3	tartan fabrics...	tartan-fabrics		2025-05-26 19:57:47.169588	2025-05-26 19:57:47.169588	\N	draft	\N
+9	ankle worship...	ankle-worship		2025-05-21 21:55:27.127066	2025-05-26 19:59:56.038415	\N	deleted	1
+14	mangle wrangling...	mangle-wrangling		2025-05-26 20:12:36.858356	2025-05-26 20:12:36.858356	\N	draft	\N
+13	dog eating...	dog-eating		2025-05-26 20:06:27.151898	2025-05-26 20:12:45.27793	\N	deleted	\N
+15	cream distillation...	cream-distillation		2025-05-27 15:12:33.356259	2025-05-27 15:12:33.356259	\N	draft	\N
+\.
+
+
+--
+-- Data for Name: post_categories; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
 COPY public.post_categories (post_id, category_id) FROM stdin;
@@ -1338,17 +1641,44 @@ COPY public.post_categories (post_id, category_id) FROM stdin;
 
 
 --
--- Data for Name: post_development; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: post_development; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.post_development (id, post_id, basic_idea, provisional_title, idea_scope, topics_to_cover, interesting_facts, tartans_products, section_planning, section_headings, section_order, main_title, subtitle, intro_blurb, conclusion, basic_metadata, tags, categories, image_captions, seo_optimization, self_review, peer_review, final_check, scheduling, deployment, verification, feedback_collection, content_updates, version_control, platform_selection, content_adaptation, distribution, engagement_tracking) FROM stdin;
-1	1	hand-fasting	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-2	2	hand-fasting	Tying the Knot: Unraveling Scotland's Ancient Tradition of Hand-Fasting	[\n  "Define hand-fasting in Scottish culture and its ancient origins",\n  "Explain the difference between hand-fasting and marriage",\n  "Discuss the historical context of hand-fasting in Scotland's medieval period",\n  "Describe the role of hand-fasting in Celtic tradition and mythology",\n  "Explore the cultural significance of hand-fasting in Scottish folklore",\n  "Analyze the social impact of hand-fasting on women's lives in Scotland's past",\n  "Delve into the history of hand-fasting as a trial marriage or 'betrothal'",\n  "Examine the symbolism behind the hand-fasting ceremony",\n  "Discuss notable historical figures who practiced hand-fasting, such as Robert Burns",\n  "Look at how hand-fasting was used to seal alliances and agreements between clans",\n  "Describe the role of the 'hand-fastening' ritual in Scottish wedding ceremonies",\n  "Investigate the influence of Christianity on the practice of hand-fasting",\n  "Explore how hand-fasting survived despite the introduction of Christian marriage rites",\n  "Analyze the significance of hand-fasting during Scotland's Jacobite risings",\n  "Discuss the romanticization of hand-fasting in Scottish literature and art",\n  "Describe the modern resurgence of interest in hand-fasting ceremonies",\n  "Look at how hand-fasting is incorporated into contemporary Scottish weddings",\n  "Examine the cultural exchange between Scottish and Norse cultures regarding hand-fasting",\n  "Investigate the connection between hand-fasting and Scotland's ancient laws",\n  "Discuss the symbolism behind the use of ribbons or cords in hand-fasting rituals",\n  "Describe the role of the 'priest' or 'officiant' in a traditional hand-fasting ceremony",\n  "Explore the regional variations of hand-fasting practices across Scotland",\n  "Analyze the impact of the Reformation on the decline of hand-fasting",\n  "Look at how hand-fasting has been used as a symbol of Scottish national identity",\n  "Discuss the modern feminist perspectives on hand-fasting and women's rights",\n  "Describe the historical significance of hand-fasting in Scotland's royal courts",\n  "Examine the influence of hand-fasting on modern wedding traditions worldwide",\n  "Investigate the connection between hand-fasting and Scotland's ancient festivals",\n  "Analyze the symbolism behind the use of specific dates or seasons for hand-fasting",\n  "Discuss the role of family and community in traditional hand-fasting ceremonies",\n  "Describe the cultural significance of hand-fasting in Scottish Highland culture",\n  "Explore the historical context of hand-fasting during Scotland's clan wars",\n  "Look at how hand-fasting has been used as a symbol of loyalty and commitment",\n  "Examine the modern relevance of hand-fasting in contemporary relationships",\n  "Discuss the connection between hand-fasting and Scotland's ancient mythology",\n  "Investigate the influence of Scottish emigration on the spread of hand-fasting practices worldwide",\n  "Analyze the cultural significance of hand-fasting in Scotland's Lowland culture",\n  "Describe the historical context of hand-fasting during Scotland's Enlightenment period",\n  "Explore the role of hand-fasting in modern Scottish pagan and druidic communities",\n  "Discuss the symbolism behind the use of specific materials or objects in hand-fasting rituals",\n  "Look at how hand-fasting has been used as a symbol of resistance against oppressive regimes"\n]	\N	[\n  "Hand-fasting was originally a pagan Celtic ritual that took place during the spring equinox to ensure fertility and prosperity",\n  "In ancient Scotland, hand-fasting ceremonies were often conducted by druids or other spiritual leaders who would tie the couple's hands together with a cord made from the bark of a sacred tree",\n  "The earliest written records of hand-fasting in Scotland date back to the 13th century, but it is believed to have been practiced for centuries before that",\n  "During the Jacobite era, hand-fasting became a symbol of loyalty and allegiance to the Stuart cause, with many Highland clans using the ritual to seal their commitment to the rebellion",\n  "In some parts of Scotland, hand-fasting was seen as a way to legitimize children born out of wedlock, providing them with inheritance rights and social standing",\n  "The 16th-century Acts of the Parliament of Scotland attempted to regulate hand-fasting practices by requiring couples to obtain a formal marriage license before undergoing the ritual",\n  "Hand-fasting was not just limited to romantic partnerships - it was also used to seal business agreements, alliances between clans, and even friendships",\n  "In Scottish folklore, hand-fasting is often associated with the goddess Brigid, who was revered as a patron of love, fertility, and poetry",\n  "The Victorian era's romanticization of Scottish culture helped to revive interest in hand-fasting, which became a popular motif in literature and art of the time",\n  "Today, hand-fasting is still practiced by some modern pagans and Wiccans as a way to connect with their Celtic heritage and celebrate the cycles of nature"\n]	\N	\N	[\n  "Unraveling the Ancient Celtic Roots of Hand-Fasting",\n  "The Evolution of Hand-Fasting in Scotland's Historical Landscape",\n  "Symbolism and Significance: Unpacking the Cultural Importance of Hand-Fasting",\n  "Hand-Fasting as a Social Contract: Securing Alliances and Marriage Agreements",\n  "A Glimpse into Scotland's Past: Key Events that Shaped Hand-Fasting Traditions",\n  "Mythical Ties: Exploring Hand-Fasting in Scottish Folklore and Mythology",\n  "Notable Scots Who Tied the Knot with Hand-Fasting Ceremonies",\n  "Revival and Reinterpretation: Modern Takes on Traditional Hand-Fasting Practices"\n]	["Unraveling the Ancient Celtic Roots of Hand-Fasting","The Evolution of Hand-Fasting in Scotland's Historical Landscape","Symbolism and Significance: Unpacking the Cultural Importance of Hand-Fasting","Hand-Fasting as a Social Contract: Securing Alliances and Marriage Agreements","A Glimpse into Scotland's Past: Key Events that Shaped Hand-Fasting Traditions","Notable Scots Who Tied the Knot with Hand-Fasting Ceremonies","Mythical Ties: Exploring Hand-Fasting in Scottish Folklore and Mythology","Revival and Reinterpretation: Modern Takes on Traditional Hand-Fasting Practices"]	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-3	7	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-4	8	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-5	9	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-6	11	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-7	12	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+COPY public.post_development (id, post_id, basic_idea, provisional_title, idea_scope, topics_to_cover, interesting_facts, tartans_products, section_planning, section_headings, section_order, main_title, subtitle, intro_blurb, conclusion, basic_metadata, tags, categories, image_captions, seo_optimization, self_review, peer_review, final_check, scheduling, deployment, verification, feedback_collection, content_updates, version_control, platform_selection, content_adaptation, distribution, engagement_tracking, summary, idea_seed) FROM stdin;
+1	1	hand-fasting	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+2	2	hand-fasting	Tying the Knot: Unraveling Scotland's Ancient Tradition of Hand-Fasting	[\n  "Define hand-fasting in Scottish culture and its ancient origins",\n  "Explain the difference between hand-fasting and marriage",\n  "Discuss the historical context of hand-fasting in Scotland's medieval period",\n  "Describe the role of hand-fasting in Celtic tradition and mythology",\n  "Explore the cultural significance of hand-fasting in Scottish folklore",\n  "Analyze the social impact of hand-fasting on women's lives in Scotland's past",\n  "Delve into the history of hand-fasting as a trial marriage or 'betrothal'",\n  "Examine the symbolism behind the hand-fasting ceremony",\n  "Discuss notable historical figures who practiced hand-fasting, such as Robert Burns",\n  "Look at how hand-fasting was used to seal alliances and agreements between clans",\n  "Describe the role of the 'hand-fastening' ritual in Scottish wedding ceremonies",\n  "Investigate the influence of Christianity on the practice of hand-fasting",\n  "Explore how hand-fasting survived despite the introduction of Christian marriage rites",\n  "Analyze the significance of hand-fasting during Scotland's Jacobite risings",\n  "Discuss the romanticization of hand-fasting in Scottish literature and art",\n  "Describe the modern resurgence of interest in hand-fasting ceremonies",\n  "Look at how hand-fasting is incorporated into contemporary Scottish weddings",\n  "Examine the cultural exchange between Scottish and Norse cultures regarding hand-fasting",\n  "Investigate the connection between hand-fasting and Scotland's ancient laws",\n  "Discuss the symbolism behind the use of ribbons or cords in hand-fasting rituals",\n  "Describe the role of the 'priest' or 'officiant' in a traditional hand-fasting ceremony",\n  "Explore the regional variations of hand-fasting practices across Scotland",\n  "Analyze the impact of the Reformation on the decline of hand-fasting",\n  "Look at how hand-fasting has been used as a symbol of Scottish national identity",\n  "Discuss the modern feminist perspectives on hand-fasting and women's rights",\n  "Describe the historical significance of hand-fasting in Scotland's royal courts",\n  "Examine the influence of hand-fasting on modern wedding traditions worldwide",\n  "Investigate the connection between hand-fasting and Scotland's ancient festivals",\n  "Analyze the symbolism behind the use of specific dates or seasons for hand-fasting",\n  "Discuss the role of family and community in traditional hand-fasting ceremonies",\n  "Describe the cultural significance of hand-fasting in Scottish Highland culture",\n  "Explore the historical context of hand-fasting during Scotland's clan wars",\n  "Look at how hand-fasting has been used as a symbol of loyalty and commitment",\n  "Examine the modern relevance of hand-fasting in contemporary relationships",\n  "Discuss the connection between hand-fasting and Scotland's ancient mythology",\n  "Investigate the influence of Scottish emigration on the spread of hand-fasting practices worldwide",\n  "Analyze the cultural significance of hand-fasting in Scotland's Lowland culture",\n  "Describe the historical context of hand-fasting during Scotland's Enlightenment period",\n  "Explore the role of hand-fasting in modern Scottish pagan and druidic communities",\n  "Discuss the symbolism behind the use of specific materials or objects in hand-fasting rituals",\n  "Look at how hand-fasting has been used as a symbol of resistance against oppressive regimes"\n]	\N	[\n  "Hand-fasting was originally a pagan Celtic ritual that took place during the spring equinox to ensure fertility and prosperity",\n  "In ancient Scotland, hand-fasting ceremonies were often conducted by druids or other spiritual leaders who would tie the couple's hands together with a cord made from the bark of a sacred tree",\n  "The earliest written records of hand-fasting in Scotland date back to the 13th century, but it is believed to have been practiced for centuries before that",\n  "During the Jacobite era, hand-fasting became a symbol of loyalty and allegiance to the Stuart cause, with many Highland clans using the ritual to seal their commitment to the rebellion",\n  "In some parts of Scotland, hand-fasting was seen as a way to legitimize children born out of wedlock, providing them with inheritance rights and social standing",\n  "The 16th-century Acts of the Parliament of Scotland attempted to regulate hand-fasting practices by requiring couples to obtain a formal marriage license before undergoing the ritual",\n  "Hand-fasting was not just limited to romantic partnerships - it was also used to seal business agreements, alliances between clans, and even friendships",\n  "In Scottish folklore, hand-fasting is often associated with the goddess Brigid, who was revered as a patron of love, fertility, and poetry",\n  "The Victorian era's romanticization of Scottish culture helped to revive interest in hand-fasting, which became a popular motif in literature and art of the time",\n  "Today, hand-fasting is still practiced by some modern pagans and Wiccans as a way to connect with their Celtic heritage and celebrate the cycles of nature"\n]	\N	\N	[\n  "Unraveling the Ancient Celtic Roots of Hand-Fasting",\n  "The Evolution of Hand-Fasting in Scotland's Historical Landscape",\n  "Symbolism and Significance: Unpacking the Cultural Importance of Hand-Fasting",\n  "Hand-Fasting as a Social Contract: Securing Alliances and Marriage Agreements",\n  "A Glimpse into Scotland's Past: Key Events that Shaped Hand-Fasting Traditions",\n  "Mythical Ties: Exploring Hand-Fasting in Scottish Folklore and Mythology",\n  "Notable Scots Who Tied the Knot with Hand-Fasting Ceremonies",\n  "Revival and Reinterpretation: Modern Takes on Traditional Hand-Fasting Practices"\n]	["Unraveling the Ancient Celtic Roots of Hand-Fasting","The Evolution of Hand-Fasting in Scotland's Historical Landscape","Symbolism and Significance: Unpacking the Cultural Importance of Hand-Fasting","Hand-Fasting as a Social Contract: Securing Alliances and Marriage Agreements","A Glimpse into Scotland's Past: Key Events that Shaped Hand-Fasting Traditions","Notable Scots Who Tied the Knot with Hand-Fasting Ceremonies","Mythical Ties: Exploring Hand-Fasting in Scottish Folklore and Mythology","Revival and Reinterpretation: Modern Takes on Traditional Hand-Fasting Practices"]	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+3	7	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+4	8	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+5	9	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+6	11	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+7	12	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+8	15	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	cream distillation
+\.
+
+
+--
+-- Data for Name: post_section; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+--
+
+COPY public.post_section (id, post_id, section_order, section_heading, ideas_to_include, facts_to_include, first_draft, uk_british, highlighting, image_concepts, image_prompts, generation, optimization, watermarking, image_meta_descriptions, image_captions, image_prompt_example_id, generated_image_url, image_generation_metadata, image_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: post_substage_action; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+--
+
+COPY public.post_substage_action (id, post_id, substage, action_id, button_label, button_order) FROM stdin;
+1	9	idea	3	Action	0
+9	15	idea	3	\N	0
+\.
+
+
+--
+-- Data for Name: post_tags; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+--
+
+COPY public.post_tags (post_id, tag_id) FROM stdin;
 \.
 
 
@@ -1369,7 +1699,23 @@ COPY public.post_workflow_sub_stage (id, post_workflow_stage_id, sub_stage_id, c
 
 
 --
--- Data for Name: user; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: substage_action_default; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+--
+
+COPY public.substage_action_default (id, substage, action_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: tag; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+--
+
+COPY public.tag (id, name, slug, description) FROM stdin;
+\.
+
+
+--
+-- Data for Name: user; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
 COPY public."user" (id, username, email, password_hash, is_active, created_at, updated_at) FROM stdin;
@@ -1381,11 +1727,46 @@ COPY public."user" (id, username, email, password_hash, is_active, created_at, u
 --
 
 COPY public.workflow (id, post_id, stage_id, status, created, updated) FROM stdin;
-6	1	10	draft	2025-05-21 14:14:32.088111	2025-05-21 14:14:32.088111
-7	2	10	draft	2025-05-21 14:14:32.088111	2025-05-21 14:14:32.088111
-8	4	10	draft	2025-05-21 14:14:32.088111	2025-05-21 14:14:32.088111
-9	5	10	draft	2025-05-21 14:14:32.088111	2025-05-21 14:14:32.088111
-10	6	10	draft	2025-05-21 14:14:32.088111	2025-05-21 14:14:32.088111
+\.
+
+
+--
+-- Data for Name: workflow_field_mapping; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.workflow_field_mapping (id, field_name, stage_id, substage_id, order_index) FROM stdin;
+4	Topics To Cover	10	2	1
+5	Interesting Facts	10	2	2
+7	Section Planning	10	3	1
+8	Section Headings	10	3	2
+9	Section Order	10	3	3
+10	Main Title	11	4	1
+11	Subtitle	11	4	2
+12	Intro Blurb	11	4	3
+13	Conclusion	11	4	4
+14	Basic Metadata	11	5	1
+15	Tags	11	5	2
+16	Categories	11	5	3
+17	Image Captions	11	6	1
+19	Self Review	8	7	1
+20	Peer Review	8	7	2
+21	Final Check	8	7	3
+22	Scheduling	8	8	1
+23	Deployment	8	8	2
+24	Verification	8	8	3
+25	Feedback Collection	8	9	1
+26	Content Updates	8	9	2
+27	Version Control	8	9	3
+28	Platform Selection	8	9	4
+29	Content Adaptation	8	9	5
+30	Distribution	8	9	6
+31	Engagement Tracking	8	9	7
+18	Seo Optimization	8	7	4
+6	Tartans Products	8	7	8
+1	Basic Idea	10	1	2
+2	Provisional Title	10	1	3
+3	Idea Scope	10	1	4
+33	idea_seed	10	1	1
 \.
 
 
@@ -1397,14 +1778,6 @@ COPY public.workflow_stage_entity (id, name, description, stage_order) FROM stdi
 8	publishing	Publishing	8
 10	planning	Planning phase	1
 11	authoring	Authoring phase	2
-\.
-
-
---
--- Data for Name: workflow_status; Type: TABLE DATA; Schema: public; Owner: nickfiddes
---
-
-COPY public.workflow_status (id, post_id, conceptualisation, authoring, meta_status, images, validation, publishing, syndication, log, last_updated) FROM stdin;
 \.
 
 
@@ -1426,143 +1799,178 @@ COPY public.workflow_sub_stage_entity (id, stage_id, name, description, sub_stag
 
 
 --
--- Name: category_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: category_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.category_id_seq', 1, false);
-
-
---
--- Name: image_format_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.image_format_id_seq', 34, true);
+SELECT pg_catalog.setval('public.category_id_seq', 1, true);
 
 
 --
--- Name: image_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: image_format_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.image_format_id_seq', 1, true);
+
+
+--
+-- Name: image_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
 SELECT pg_catalog.setval('public.image_id_seq', 161, true);
 
 
 --
--- Name: image_prompt_example_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: image_prompt_example_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.image_prompt_example_id_seq', 1, false);
+SELECT pg_catalog.setval('public.image_prompt_example_id_seq', 1, true);
 
 
 --
--- Name: image_setting_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: image_setting_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
 SELECT pg_catalog.setval('public.image_setting_id_seq', 1, true);
 
 
 --
--- Name: image_style_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: image_style_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.image_style_id_seq', 6, true);
-
-
---
--- Name: llm_action_history_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.llm_action_history_id_seq', 25, true);
+SELECT pg_catalog.setval('public.image_style_id_seq', 1, true);
 
 
 --
--- Name: llm_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: llm_action_history_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_action_id_seq', 9, true);
-
-
---
--- Name: llm_config_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.llm_config_id_seq', 1, true);
+SELECT pg_catalog.setval('public.llm_action_history_id_seq', 1, true);
 
 
 --
--- Name: llm_interaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: llm_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_interaction_id_seq', 1, false);
-
-
---
--- Name: llm_prompt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.llm_prompt_id_seq', 13, true);
+SELECT pg_catalog.setval('public.llm_action_id_seq', 14, true);
 
 
 --
--- Name: llm_prompt_part_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: llm_interaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_prompt_part_id_seq', 1, false);
-
-
---
--- Name: post_development_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.post_development_id_seq', 7, true);
+SELECT pg_catalog.setval('public.llm_interaction_id_seq', 1, true);
 
 
 --
--- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: llm_model_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_id_seq', 12, true);
+SELECT pg_catalog.setval('public.llm_model_id_seq', 23, true);
+
+
+--
+-- Name: llm_prompt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.llm_prompt_id_seq', 27, true);
+
+
+--
+-- Name: llm_prompt_part_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.llm_prompt_part_id_seq', 28, true);
+
+
+--
+-- Name: llm_provider_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.llm_provider_id_seq', 4, true);
+
+
+--
+-- Name: post_development_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.post_development_id_seq', 8, true);
+
+
+--
+-- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.post_id_seq', 15, true);
+
+
+--
+-- Name: post_section_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.post_section_id_seq', 1, true);
+
+
+--
+-- Name: post_substage_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.post_substage_action_id_seq', 9, true);
 
 
 --
 -- Name: post_workflow_stage_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_workflow_stage_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_workflow_stage_id_seq', 1, true);
 
 
 --
 -- Name: post_workflow_sub_stage_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_workflow_sub_stage_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_workflow_sub_stage_id_seq', 1, true);
 
 
 --
--- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: substage_action_default_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 1, false);
+SELECT pg_catalog.setval('public.substage_action_default_id_seq', 1, true);
+
+
+--
+-- Name: tag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.tag_id_seq', 1, true);
+
+
+--
+-- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.user_id_seq', 1, true);
+
+
+--
+-- Name: workflow_field_mapping_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.workflow_field_mapping_id_seq', 33, true);
 
 
 --
 -- Name: workflow_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.workflow_id_seq', 10, true);
+SELECT pg_catalog.setval('public.workflow_id_seq', 1, true);
 
 
 --
 -- Name: workflow_stage_entity_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.workflow_stage_entity_id_seq', 12, true);
-
-
---
--- Name: workflow_status_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
---
-
-SELECT pg_catalog.setval('public.workflow_status_id_seq', 1, false);
+SELECT pg_catalog.setval('public.workflow_stage_entity_id_seq', 14, true);
 
 
 --
@@ -1573,7 +1981,7 @@ SELECT pg_catalog.setval('public.workflow_sub_stage_entity_id_seq', 9, true);
 
 
 --
--- Name: category category_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: category category_name_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.category
@@ -1581,7 +1989,7 @@ ALTER TABLE ONLY public.category
 
 
 --
--- Name: category category_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: category category_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.category
@@ -1589,7 +1997,7 @@ ALTER TABLE ONLY public.category
 
 
 --
--- Name: category category_slug_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: category category_slug_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.category
@@ -1597,7 +2005,7 @@ ALTER TABLE ONLY public.category
 
 
 --
--- Name: image_format image_format_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_format image_format_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_format
@@ -1605,7 +2013,7 @@ ALTER TABLE ONLY public.image_format
 
 
 --
--- Name: image_format image_format_title_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_format image_format_title_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_format
@@ -1613,7 +2021,7 @@ ALTER TABLE ONLY public.image_format
 
 
 --
--- Name: image image_path_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image image_path_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image
@@ -1621,7 +2029,7 @@ ALTER TABLE ONLY public.image
 
 
 --
--- Name: image image_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image image_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image
@@ -1629,7 +2037,7 @@ ALTER TABLE ONLY public.image
 
 
 --
--- Name: image_prompt_example image_prompt_example_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_prompt_example image_prompt_example_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_prompt_example
@@ -1637,7 +2045,7 @@ ALTER TABLE ONLY public.image_prompt_example
 
 
 --
--- Name: image_setting image_setting_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_setting image_setting_name_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_setting
@@ -1645,7 +2053,7 @@ ALTER TABLE ONLY public.image_setting
 
 
 --
--- Name: image_setting image_setting_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_setting image_setting_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_setting
@@ -1653,7 +2061,7 @@ ALTER TABLE ONLY public.image_setting
 
 
 --
--- Name: image_style image_style_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_style image_style_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_style
@@ -1661,7 +2069,7 @@ ALTER TABLE ONLY public.image_style
 
 
 --
--- Name: image_style image_style_title_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_style image_style_title_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_style
@@ -1669,7 +2077,7 @@ ALTER TABLE ONLY public.image_style
 
 
 --
--- Name: llm_action_history llm_action_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_action_history llm_action_history_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_action_history
@@ -1677,7 +2085,7 @@ ALTER TABLE ONLY public.llm_action_history
 
 
 --
--- Name: llm_action llm_action_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_action llm_action_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_action
@@ -1685,23 +2093,7 @@ ALTER TABLE ONLY public.llm_action
 
 
 --
--- Name: llm_action_prompt_part llm_action_prompt_part_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.llm_action_prompt_part
-    ADD CONSTRAINT llm_action_prompt_part_pkey PRIMARY KEY (action_id, prompt_part_id);
-
-
---
--- Name: llm_config llm_config_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.llm_config
-    ADD CONSTRAINT llm_config_pkey PRIMARY KEY (id);
-
-
---
--- Name: llm_interaction llm_interaction_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_interaction llm_interaction_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_interaction
@@ -1709,7 +2101,15 @@ ALTER TABLE ONLY public.llm_interaction
 
 
 --
--- Name: llm_prompt_part llm_prompt_part_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_model llm_model_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.llm_model
+    ADD CONSTRAINT llm_model_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: llm_prompt_part llm_prompt_part_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_prompt_part
@@ -1717,7 +2117,7 @@ ALTER TABLE ONLY public.llm_prompt_part
 
 
 --
--- Name: llm_prompt llm_prompt_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_prompt llm_prompt_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_prompt
@@ -1725,7 +2125,15 @@ ALTER TABLE ONLY public.llm_prompt
 
 
 --
--- Name: post_categories post_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_provider llm_provider_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.llm_provider
+    ADD CONSTRAINT llm_provider_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: post_categories post_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post_categories
@@ -1733,7 +2141,7 @@ ALTER TABLE ONLY public.post_categories
 
 
 --
--- Name: post_development post_development_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: post_development post_development_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post_development
@@ -1741,7 +2149,7 @@ ALTER TABLE ONLY public.post_development
 
 
 --
--- Name: post_development post_development_post_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: post_development post_development_post_id_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post_development
@@ -1749,7 +2157,7 @@ ALTER TABLE ONLY public.post_development
 
 
 --
--- Name: post post_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: post post_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post
@@ -1757,11 +2165,35 @@ ALTER TABLE ONLY public.post
 
 
 --
--- Name: post post_slug_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: post_section post_section_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_section
+    ADD CONSTRAINT post_section_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: post post_slug_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post
     ADD CONSTRAINT post_slug_key UNIQUE (slug);
+
+
+--
+-- Name: post_substage_action post_substage_action_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_substage_action
+    ADD CONSTRAINT post_substage_action_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: post_tags post_tags_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_tags
+    ADD CONSTRAINT post_tags_pkey PRIMARY KEY (post_id, tag_id);
 
 
 --
@@ -1797,7 +2229,47 @@ ALTER TABLE ONLY public.post_workflow_sub_stage
 
 
 --
--- Name: user user_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: substage_action_default substage_action_default_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.substage_action_default
+    ADD CONSTRAINT substage_action_default_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: substage_action_default substage_action_default_substage_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.substage_action_default
+    ADD CONSTRAINT substage_action_default_substage_key UNIQUE (substage);
+
+
+--
+-- Name: tag tag_name_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.tag
+    ADD CONSTRAINT tag_name_key UNIQUE (name);
+
+
+--
+-- Name: tag tag_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.tag
+    ADD CONSTRAINT tag_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tag tag_slug_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.tag
+    ADD CONSTRAINT tag_slug_key UNIQUE (slug);
+
+
+--
+-- Name: user user_email_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public."user"
@@ -1805,7 +2277,7 @@ ALTER TABLE ONLY public."user"
 
 
 --
--- Name: user user_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user user_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public."user"
@@ -1813,11 +2285,19 @@ ALTER TABLE ONLY public."user"
 
 
 --
--- Name: user user_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user user_username_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public."user"
     ADD CONSTRAINT user_username_key UNIQUE (username);
+
+
+--
+-- Name: workflow_field_mapping workflow_field_mapping_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.workflow_field_mapping
+    ADD CONSTRAINT workflow_field_mapping_pkey PRIMARY KEY (id);
 
 
 --
@@ -1853,22 +2333,6 @@ ALTER TABLE ONLY public.workflow_stage_entity
 
 
 --
--- Name: workflow_status workflow_status_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
---
-
-ALTER TABLE ONLY public.workflow_status
-    ADD CONSTRAINT workflow_status_pkey PRIMARY KEY (id);
-
-
---
--- Name: workflow_status workflow_status_post_id_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
---
-
-ALTER TABLE ONLY public.workflow_status
-    ADD CONSTRAINT workflow_status_post_id_key UNIQUE (post_id);
-
-
---
 -- Name: workflow_sub_stage_entity workflow_sub_stage_entity_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
@@ -1877,42 +2341,42 @@ ALTER TABLE ONLY public.workflow_sub_stage_entity
 
 
 --
--- Name: idx_image_path; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_image_path; Type: INDEX; Schema: public; Owner: nickfiddes
 --
 
 CREATE INDEX idx_image_path ON public.image USING btree (path);
 
 
 --
--- Name: idx_llm_action_field; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_llm_action_field; Type: INDEX; Schema: public; Owner: nickfiddes
 --
 
 CREATE INDEX idx_llm_action_field ON public.llm_action USING btree (field_name);
 
 
 --
--- Name: idx_llm_action_history_status; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_llm_action_history_status; Type: INDEX; Schema: public; Owner: nickfiddes
 --
 
 CREATE INDEX idx_llm_action_history_status ON public.llm_action_history USING btree (status);
 
 
 --
--- Name: idx_post_created; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_post_created; Type: INDEX; Schema: public; Owner: nickfiddes
 --
 
 CREATE INDEX idx_post_created ON public.post USING btree (created_at);
 
 
 --
--- Name: idx_post_slug; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_post_slug; Type: INDEX; Schema: public; Owner: nickfiddes
 --
 
 CREATE INDEX idx_post_slug ON public.post USING btree (slug);
 
 
 --
--- Name: idx_post_status; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_post_status; Type: INDEX; Schema: public; Owner: nickfiddes
 --
 
 CREATE INDEX idx_post_status ON public.post USING btree (status);
@@ -1933,70 +2397,63 @@ CREATE INDEX idx_workflow_stage_id ON public.workflow USING btree (stage_id);
 
 
 --
--- Name: idx_workflow_status_post; Type: INDEX; Schema: public; Owner: nickfiddes
+-- Name: unique_provider_model; Type: INDEX; Schema: public; Owner: nickfiddes
 --
 
-CREATE INDEX idx_workflow_status_post ON public.workflow_status USING btree (post_id);
+CREATE UNIQUE INDEX unique_provider_model ON public.llm_model USING btree (provider_id, name);
 
 
 --
--- Name: image_format update_image_format_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: image_format update_image_format_updated_at; Type: TRIGGER; Schema: public; Owner: nickfiddes
 --
 
 CREATE TRIGGER update_image_format_updated_at BEFORE UPDATE ON public.image_format FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: image_prompt_example update_image_prompt_example_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: image_prompt_example update_image_prompt_example_updated_at; Type: TRIGGER; Schema: public; Owner: nickfiddes
 --
 
 CREATE TRIGGER update_image_prompt_example_updated_at BEFORE UPDATE ON public.image_prompt_example FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: image_setting update_image_setting_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: image_setting update_image_setting_updated_at; Type: TRIGGER; Schema: public; Owner: nickfiddes
 --
 
 CREATE TRIGGER update_image_setting_updated_at BEFORE UPDATE ON public.image_setting FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: image_style update_image_style_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: image_style update_image_style_updated_at; Type: TRIGGER; Schema: public; Owner: nickfiddes
 --
 
 CREATE TRIGGER update_image_style_updated_at BEFORE UPDATE ON public.image_style FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: image update_image_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: image update_image_updated_at; Type: TRIGGER; Schema: public; Owner: nickfiddes
 --
 
 CREATE TRIGGER update_image_updated_at BEFORE UPDATE ON public.image FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: llm_action update_llm_action_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: llm_action update_llm_action_updated_at; Type: TRIGGER; Schema: public; Owner: nickfiddes
 --
 
 CREATE TRIGGER update_llm_action_updated_at BEFORE UPDATE ON public.llm_action FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: llm_config update_llm_config_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER update_llm_config_updated_at BEFORE UPDATE ON public.llm_config FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
-
-
---
--- Name: post update_post_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: post update_post_updated_at; Type: TRIGGER; Schema: public; Owner: nickfiddes
 --
 
 CREATE TRIGGER update_post_updated_at BEFORE UPDATE ON public.post FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
--- Name: user update_user_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: user update_user_updated_at; Type: TRIGGER; Schema: public; Owner: nickfiddes
 --
 
 CREATE TRIGGER update_user_updated_at BEFORE UPDATE ON public."user" FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
@@ -2010,7 +2467,15 @@ CREATE TRIGGER update_workflow_updated_at BEFORE UPDATE ON public.workflow FOR E
 
 
 --
--- Name: image_prompt_example image_prompt_example_format_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_action fk_llm_action_provider; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.llm_action
+    ADD CONSTRAINT fk_llm_action_provider FOREIGN KEY (provider_id) REFERENCES public.llm_provider(id);
+
+
+--
+-- Name: image_prompt_example image_prompt_example_format_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_prompt_example
@@ -2018,7 +2483,7 @@ ALTER TABLE ONLY public.image_prompt_example
 
 
 --
--- Name: image_prompt_example image_prompt_example_image_setting_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_prompt_example image_prompt_example_image_setting_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_prompt_example
@@ -2026,7 +2491,7 @@ ALTER TABLE ONLY public.image_prompt_example
 
 
 --
--- Name: image_prompt_example image_prompt_example_style_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_prompt_example image_prompt_example_style_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_prompt_example
@@ -2034,7 +2499,7 @@ ALTER TABLE ONLY public.image_prompt_example
 
 
 --
--- Name: image_setting image_setting_format_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_setting image_setting_format_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_setting
@@ -2042,7 +2507,7 @@ ALTER TABLE ONLY public.image_setting
 
 
 --
--- Name: image_setting image_setting_style_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: image_setting image_setting_style_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.image_setting
@@ -2050,7 +2515,7 @@ ALTER TABLE ONLY public.image_setting
 
 
 --
--- Name: llm_action_history llm_action_history_action_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_action_history llm_action_history_action_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_action_history
@@ -2058,7 +2523,7 @@ ALTER TABLE ONLY public.llm_action_history
 
 
 --
--- Name: llm_action_history llm_action_history_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_action_history llm_action_history_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_action_history
@@ -2066,23 +2531,7 @@ ALTER TABLE ONLY public.llm_action_history
 
 
 --
--- Name: llm_action_prompt_part llm_action_prompt_part_action_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.llm_action_prompt_part
-    ADD CONSTRAINT llm_action_prompt_part_action_id_fkey FOREIGN KEY (action_id) REFERENCES public.llm_action(id) ON DELETE CASCADE;
-
-
---
--- Name: llm_action_prompt_part llm_action_prompt_part_prompt_part_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.llm_action_prompt_part
-    ADD CONSTRAINT llm_action_prompt_part_prompt_part_id_fkey FOREIGN KEY (prompt_part_id) REFERENCES public.llm_prompt_part(id) ON DELETE CASCADE;
-
-
---
--- Name: llm_action llm_action_prompt_template_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_action llm_action_prompt_template_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_action
@@ -2090,7 +2539,7 @@ ALTER TABLE ONLY public.llm_action
 
 
 --
--- Name: llm_interaction llm_interaction_prompt_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_interaction llm_interaction_prompt_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.llm_interaction
@@ -2098,7 +2547,23 @@ ALTER TABLE ONLY public.llm_interaction
 
 
 --
--- Name: post_categories post_categories_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: llm_model llm_model_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.llm_model
+    ADD CONSTRAINT llm_model_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES public.llm_provider(id) ON DELETE CASCADE;
+
+
+--
+-- Name: llm_prompt_part llm_prompt_part_action_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.llm_prompt_part
+    ADD CONSTRAINT llm_prompt_part_action_id_fkey FOREIGN KEY (action_id) REFERENCES public.llm_action(id) ON DELETE CASCADE;
+
+
+--
+-- Name: post_categories post_categories_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post_categories
@@ -2106,7 +2571,7 @@ ALTER TABLE ONLY public.post_categories
 
 
 --
--- Name: post_categories post_categories_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: post_categories post_categories_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post_categories
@@ -2114,7 +2579,7 @@ ALTER TABLE ONLY public.post_categories
 
 
 --
--- Name: post_development post_development_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: post_development post_development_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post_development
@@ -2122,7 +2587,7 @@ ALTER TABLE ONLY public.post_development
 
 
 --
--- Name: post post_header_image_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: post post_header_image_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post
@@ -2130,11 +2595,35 @@ ALTER TABLE ONLY public.post
 
 
 --
--- Name: post post_substage_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: post_section post_section_image_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
-ALTER TABLE ONLY public.post
-    ADD CONSTRAINT post_substage_id_fkey FOREIGN KEY (substage_id) REFERENCES public.workflow_sub_stage_entity(id);
+ALTER TABLE ONLY public.post_section
+    ADD CONSTRAINT post_section_image_id_fkey FOREIGN KEY (image_id) REFERENCES public.image(id);
+
+
+--
+-- Name: post_section post_section_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_section
+    ADD CONSTRAINT post_section_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.post(id);
+
+
+--
+-- Name: post_tags post_tags_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_tags
+    ADD CONSTRAINT post_tags_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.post(id) ON DELETE CASCADE;
+
+
+--
+-- Name: post_tags post_tags_tag_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_tags
+    ADD CONSTRAINT post_tags_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES public.tag(id) ON DELETE CASCADE;
 
 
 --
@@ -2162,6 +2651,30 @@ ALTER TABLE ONLY public.post_workflow_sub_stage
 
 
 --
+-- Name: substage_action_default substage_action_default_action_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.substage_action_default
+    ADD CONSTRAINT substage_action_default_action_id_fkey FOREIGN KEY (action_id) REFERENCES public.llm_action(id);
+
+
+--
+-- Name: workflow_field_mapping workflow_field_mapping_stage_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.workflow_field_mapping
+    ADD CONSTRAINT workflow_field_mapping_stage_id_fkey FOREIGN KEY (stage_id) REFERENCES public.workflow_stage_entity(id) ON DELETE CASCADE;
+
+
+--
+-- Name: workflow_field_mapping workflow_field_mapping_substage_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.workflow_field_mapping
+    ADD CONSTRAINT workflow_field_mapping_substage_id_fkey FOREIGN KEY (substage_id) REFERENCES public.workflow_sub_stage_entity(id) ON DELETE CASCADE;
+
+
+--
 -- Name: workflow workflow_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
@@ -2186,101 +2699,255 @@ ALTER TABLE ONLY public.workflow_sub_stage_entity
 
 
 --
--- Name: TABLE category; Type: ACL; Schema: public; Owner: postgres
+-- Name: TABLE category; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT ON TABLE public.category TO nickfiddes;
-
-
---
--- Name: TABLE image; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT ON TABLE public.image TO nickfiddes;
+GRANT ALL ON TABLE public.category TO postgres;
 
 
 --
--- Name: TABLE image_format; Type: ACL; Schema: public; Owner: postgres
+-- Name: SEQUENCE category_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT ON TABLE public.image_format TO nickfiddes;
-
-
---
--- Name: TABLE image_prompt_example; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT ON TABLE public.image_prompt_example TO nickfiddes;
+GRANT ALL ON SEQUENCE public.category_id_seq TO postgres;
 
 
 --
--- Name: TABLE image_setting; Type: ACL; Schema: public; Owner: postgres
+-- Name: TABLE image; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT ON TABLE public.image_setting TO nickfiddes;
-
-
---
--- Name: TABLE image_style; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT ON TABLE public.image_style TO nickfiddes;
+GRANT ALL ON TABLE public.image TO postgres;
 
 
 --
--- Name: TABLE llm_action; Type: ACL; Schema: public; Owner: postgres
+-- Name: TABLE image_format; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT ON TABLE public.llm_action TO nickfiddes;
-
-
---
--- Name: TABLE llm_action_history; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT ON TABLE public.llm_action_history TO nickfiddes;
+GRANT ALL ON TABLE public.image_format TO postgres;
 
 
 --
--- Name: TABLE llm_config; Type: ACL; Schema: public; Owner: postgres
+-- Name: SEQUENCE image_format_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT ON TABLE public.llm_config TO nickfiddes;
-
-
---
--- Name: TABLE llm_interaction; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT ON TABLE public.llm_interaction TO nickfiddes;
+GRANT ALL ON SEQUENCE public.image_format_id_seq TO postgres;
 
 
 --
--- Name: TABLE llm_prompt; Type: ACL; Schema: public; Owner: postgres
+-- Name: SEQUENCE image_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT ON TABLE public.llm_prompt TO nickfiddes;
-
-
---
--- Name: TABLE post; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT SELECT ON TABLE public.post TO nickfiddes;
+GRANT ALL ON SEQUENCE public.image_id_seq TO postgres;
 
 
 --
--- Name: TABLE post_categories; Type: ACL; Schema: public; Owner: postgres
+-- Name: TABLE image_prompt_example; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT ON TABLE public.post_categories TO nickfiddes;
+GRANT ALL ON TABLE public.image_prompt_example TO postgres;
 
 
 --
--- Name: TABLE post_development; Type: ACL; Schema: public; Owner: postgres
+-- Name: SEQUENCE image_prompt_example_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT ON TABLE public.post_development TO nickfiddes;
+GRANT ALL ON SEQUENCE public.image_prompt_example_id_seq TO postgres;
+
+
+--
+-- Name: TABLE image_setting; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.image_setting TO postgres;
+
+
+--
+-- Name: SEQUENCE image_setting_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.image_setting_id_seq TO postgres;
+
+
+--
+-- Name: TABLE image_style; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.image_style TO postgres;
+
+
+--
+-- Name: SEQUENCE image_style_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.image_style_id_seq TO postgres;
+
+
+--
+-- Name: TABLE llm_action; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.llm_action TO postgres;
+
+
+--
+-- Name: TABLE llm_action_history; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.llm_action_history TO postgres;
+
+
+--
+-- Name: SEQUENCE llm_action_history_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_action_history_id_seq TO postgres;
+
+
+--
+-- Name: SEQUENCE llm_action_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_action_id_seq TO postgres;
+
+
+--
+-- Name: TABLE llm_interaction; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.llm_interaction TO postgres;
+
+
+--
+-- Name: SEQUENCE llm_interaction_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_interaction_id_seq TO postgres;
+
+
+--
+-- Name: TABLE llm_model; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.llm_model TO postgres;
+
+
+--
+-- Name: SEQUENCE llm_model_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_model_id_seq TO postgres;
+
+
+--
+-- Name: TABLE llm_prompt; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.llm_prompt TO postgres;
+
+
+--
+-- Name: SEQUENCE llm_prompt_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_prompt_id_seq TO postgres;
+
+
+--
+-- Name: TABLE llm_prompt_part; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.llm_prompt_part TO postgres;
+
+
+--
+-- Name: SEQUENCE llm_prompt_part_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_prompt_part_id_seq TO postgres;
+
+
+--
+-- Name: TABLE llm_provider; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.llm_provider TO postgres;
+
+
+--
+-- Name: SEQUENCE llm_provider_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_provider_id_seq TO postgres;
+
+
+--
+-- Name: TABLE post; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.post TO postgres;
+
+
+--
+-- Name: TABLE post_categories; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.post_categories TO postgres;
+
+
+--
+-- Name: TABLE post_development; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.post_development TO postgres;
+
+
+--
+-- Name: SEQUENCE post_development_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.post_development_id_seq TO postgres;
+
+
+--
+-- Name: SEQUENCE post_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.post_id_seq TO postgres;
+
+
+--
+-- Name: TABLE post_section; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.post_section TO postgres;
+
+
+--
+-- Name: SEQUENCE post_section_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.post_section_id_seq TO postgres;
+
+
+--
+-- Name: TABLE post_substage_action; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.post_substage_action TO postgres;
+
+
+--
+-- Name: SEQUENCE post_substage_action_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.post_substage_action_id_seq TO postgres;
+
+
+--
+-- Name: TABLE post_tags; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.post_tags TO postgres;
 
 
 --
@@ -2295,7 +2962,7 @@ GRANT ALL ON TABLE public.post_workflow_stage TO postgres;
 -- Name: SEQUENCE post_workflow_stage_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT,USAGE ON SEQUENCE public.post_workflow_stage_id_seq TO postgres;
+GRANT ALL ON SEQUENCE public.post_workflow_stage_id_seq TO postgres;
 
 
 --
@@ -2310,15 +2977,49 @@ GRANT ALL ON TABLE public.post_workflow_sub_stage TO postgres;
 -- Name: SEQUENCE post_workflow_sub_stage_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT,USAGE ON SEQUENCE public.post_workflow_sub_stage_id_seq TO postgres;
+GRANT ALL ON SEQUENCE public.post_workflow_sub_stage_id_seq TO postgres;
 
 
 --
--- Name: TABLE "user"; Type: ACL; Schema: public; Owner: postgres
+-- Name: TABLE substage_action_default; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT ALL ON TABLE public."user" TO PUBLIC;
-GRANT SELECT ON TABLE public."user" TO nickfiddes;
+GRANT ALL ON TABLE public.substage_action_default TO postgres;
+
+
+--
+-- Name: SEQUENCE substage_action_default_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.substage_action_default_id_seq TO postgres;
+
+
+--
+-- Name: TABLE tag; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.tag TO postgres;
+
+
+--
+-- Name: SEQUENCE tag_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.tag_id_seq TO postgres;
+
+
+--
+-- Name: TABLE "user"; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public."user" TO postgres;
+
+
+--
+-- Name: SEQUENCE user_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.user_id_seq TO postgres;
 
 
 --
@@ -2332,7 +3033,7 @@ GRANT ALL ON TABLE public.workflow TO postgres;
 -- Name: SEQUENCE workflow_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT,USAGE ON SEQUENCE public.workflow_id_seq TO postgres;
+GRANT ALL ON SEQUENCE public.workflow_id_seq TO postgres;
 
 
 --
@@ -2347,22 +3048,7 @@ GRANT ALL ON TABLE public.workflow_stage_entity TO postgres;
 -- Name: SEQUENCE workflow_stage_entity_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT,USAGE ON SEQUENCE public.workflow_stage_entity_id_seq TO postgres;
-
-
---
--- Name: TABLE workflow_status; Type: ACL; Schema: public; Owner: nickfiddes
---
-
-GRANT ALL ON TABLE public.workflow_status TO PUBLIC;
-GRANT ALL ON TABLE public.workflow_status TO postgres;
-
-
---
--- Name: SEQUENCE workflow_status_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
---
-
-GRANT ALL ON SEQUENCE public.workflow_status_id_seq TO postgres;
+GRANT ALL ON SEQUENCE public.workflow_stage_entity_id_seq TO postgres;
 
 
 --
@@ -2377,7 +3063,7 @@ GRANT ALL ON TABLE public.workflow_sub_stage_entity TO postgres;
 -- Name: SEQUENCE workflow_sub_stage_entity_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT,USAGE ON SEQUENCE public.workflow_sub_stage_entity_id_seq TO postgres;
+GRANT ALL ON SEQUENCE public.workflow_sub_stage_entity_id_seq TO postgres;
 
 
 --

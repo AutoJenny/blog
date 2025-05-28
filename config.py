@@ -13,7 +13,7 @@ class Config:
     # SQLAlchemy
     SQLALCHEMY_DATABASE_URI = (
         os.environ.get("DATABASE_URL")
-        or "postgresql://postgres:postgres@localhost/blog"
+        or "postgresql://nickfiddes@localhost/blog"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

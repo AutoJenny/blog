@@ -32,7 +32,7 @@ CREATE TYPE public.post_status AS ENUM (
 ALTER TYPE public.post_status OWNER TO nickfiddes;
 
 --
--- Name: poststatus; Type: TYPE; Schema: public; Owner: postgres
+-- Name: poststatus; Type: TYPE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TYPE public.poststatus AS ENUM (
@@ -43,7 +43,7 @@ CREATE TYPE public.poststatus AS ENUM (
 );
 
 
-ALTER TYPE public.poststatus OWNER TO postgres;
+ALTER TYPE public.poststatus OWNER TO nickfiddes;
 
 --
 -- Name: prompt_part_type; Type: TYPE; Schema: public; Owner: nickfiddes
@@ -105,7 +105,7 @@ CREATE TYPE public.workflow_status_enum AS ENUM (
 ALTER TYPE public.workflow_status_enum OWNER TO nickfiddes;
 
 --
--- Name: workflowstage; Type: TYPE; Schema: public; Owner: postgres
+-- Name: workflowstage; Type: TYPE; Schema: public; Owner: nickfiddes
 --
 
 CREATE TYPE public.workflowstage AS ENUM (
@@ -122,7 +122,7 @@ CREATE TYPE public.workflowstage AS ENUM (
 );
 
 
-ALTER TYPE public.workflowstage OWNER TO postgres;
+ALTER TYPE public.workflowstage OWNER TO nickfiddes;
 
 --
 -- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: nickfiddes
@@ -580,7 +580,8 @@ CREATE TABLE public.llm_prompt (
     parameters jsonb,
     "order" integer DEFAULT 0 NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    part_ids jsonb DEFAULT '[]'::jsonb
 );
 
 
@@ -703,7 +704,6 @@ CREATE TABLE public.post (
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     header_image_id integer,
     status public.post_status DEFAULT 'draft'::public.post_status NOT NULL,
-    idea_seed text,
     substage_id integer
 );
 
@@ -759,7 +759,9 @@ CREATE TABLE public.post_development (
     platform_selection text,
     content_adaptation text,
     distribution text,
-    engagement_tracking text
+    engagement_tracking text,
+    summary text,
+    idea_seed text
 );
 
 
@@ -1116,6 +1118,43 @@ CREATE TABLE public.workflow (
 ALTER TABLE public.workflow OWNER TO nickfiddes;
 
 --
+-- Name: workflow_field_mapping; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.workflow_field_mapping (
+    id integer NOT NULL,
+    field_name text NOT NULL,
+    stage_id integer,
+    substage_id integer,
+    order_index integer DEFAULT 0 NOT NULL
+);
+
+
+ALTER TABLE public.workflow_field_mapping OWNER TO postgres;
+
+--
+-- Name: workflow_field_mapping_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.workflow_field_mapping_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.workflow_field_mapping_id_seq OWNER TO postgres;
+
+--
+-- Name: workflow_field_mapping_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.workflow_field_mapping_id_seq OWNED BY public.workflow_field_mapping.id;
+
+
+--
 -- Name: workflow_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
 --
 
@@ -1372,6 +1411,13 @@ ALTER TABLE ONLY public.workflow ALTER COLUMN id SET DEFAULT nextval('public.wor
 
 
 --
+-- Name: workflow_field_mapping id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.workflow_field_mapping ALTER COLUMN id SET DEFAULT nextval('public.workflow_field_mapping_id_seq'::regclass);
+
+
+--
 -- Name: workflow_stage_entity id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
@@ -1461,6 +1507,11 @@ COPY public.image_style (id, title, description, created_at, updated_at) FROM st
 --
 
 COPY public.llm_action (id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", created_at, updated_at, input_field, output_field) FROM stdin;
+7	tsetsat	[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n[system] Use the following input content to transform as instructed: [data:FIELDNAME]	26	mistral	0.7	1000	0	2025-05-28 10:36:41.712102	2025-05-28 10:36:41.712102	\N	\N
+9	asdafasf	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	27	mistral	0.7	1000	0	2025-05-28 10:42:26.132509	2025-05-28 10:42:26.132509	\N	\N
+10	asdfasdfdfsdfasdff	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	27	gpt-3.5-turbo	0.7	1000	0	2025-05-28 10:43:04.666833	2025-05-28 10:43:04.666833	\N	\N
+11	asdfasdfdfsdfasdff	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	27	gpt-3.5-turbo	0.7	1000	0	2025-05-28 10:44:37.860801	2025-05-28 10:44:37.860801	\N	\N
+12	dod ma	[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n[system] Use the following input content to transform as instructed: [data:FIELDNAME]	26	mistral	0.7	1000	0	2025-05-28 10:44:54.686089	2025-05-28 10:44:54.686089	\N	\N
 \.
 
 
@@ -1515,23 +1566,9 @@ COPY public.llm_model (id, name, provider_id, description, strengths, weaknesses
 -- Data for Name: llm_prompt; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, parameters, "order", created_at, updated_at) FROM stdin;
-11	Allocate Ideas to Sections	Allocate each idea to its most relevant section	You are a researcher specialising in sub-editing blog articles for specialist audiences. You have been commissioned to assist with a Scottish-interest article about {{basic_idea}} which will examine in depth these ideas.\n\nYou are given:\n- A list of section headings for a blog post about {{basic_idea}}, with the blog title "{{provisional_title}}", which discusses the ideas and themes listed below.\n\nYou must now distribute (to the most appropriate section) each idea from the list of ideas in JSON array format, given below.\n\nYour task:\n- Allocate each idea to the most appropriate section heading, using your best judgment.\n- Each idea must be assigned to exactly one section (no duplicates, no omissions).\n- Output a single JSON object where each key is a section heading from {{section_order}}, and the value is an array of ideas allocated to that section (can be empty if no ideas fit).\n- Do not invent or modify ideas or headings.\n- The output must be valid JSON, with all ideas used exactly once.\n\nExample output:\n{\n  "Introduction": ["idea 1"],\n  "History": ["idea 2", "idea 3"],\n  "Modern Usage": []\n}\n\nBegin.\n\nSection Headings:\n{{section_order}}\n\nIdeas:\n{{idea_scope}}\n\nOutput:	\N	\N	3	2025-05-04 14:30:59.400632	2025-05-05 13:23:13.166973
-9	Interesting facts	Generate Interesting facts	You are a researcher specialising in finding curious facts for blog articles for specialist audiences. You have been commissioned to assist with an article about {{basic_idea}} which will examine in depth these ideas {{idea_scope}}.\n\nPlease do a deep dive into this topic and provide a list of up to ten unusual and interesting facts that people might not know, to make this article worth reading. \n\nReturn only a JSON array of paragraph titles, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.”	\N	\N	1	2025-05-04 12:36:41.74155	2025-05-05 13:23:26.124861
-5	Allocate Facts to Sections	Allocate each fact to its most relevant section	You are a researcher specialising in sub-editing blog articles for specialist audiences. You have been commissioned to assist with a Scottish-interest article about {{basic_idea}} which will examine in depth these ideas: {{idea_scope}}.\n\nYou are given:\n- A list of section headings for a blog post about {{basic_idea}}, with the blog title "{{provisional_title}}", which discusses the following ideas and themes: {{idea_scope}}.\n\nYou must now distribute (to the most appropriate section) each fact from the list of interesting facts in JSON array format, given below.\n\nYour task:\n- Allocate each fact to the most appropriate section heading, using your best judgment.\n- Each fact must be assigned to exactly one section (no duplicates, no omissions).\n- Output a single JSON object where each key is a section heading from {{section_order}}, and the value is an array of facts allocated to that section (can be empty if no facts fit).\n- Do not invent or modify facts or headings.\n- The output must be valid JSON, with all facts used exactly once.\n\nExample output:\n{\n  "Introduction": ["Fact 1"],\n  "History": ["Fact 2", "Fact 3"],\n  "Modern Usage": []\n}\n\nBegin.\n\nSection Headings:\n{{section_order}}\n\nInteresting Facts:\n{{interesting_facts}}\n\nOutput:	\N	\N	2	2025-05-04 12:37:27.007623	2025-05-05 13:23:13.165621
-8	Catchy title	Expand the basic idea and scope into an engaging title	You are a professional copywriter and editor specializing in digital publishing and historical blogging.\n\nYour task is to generate one catchy and engaging blog title suitable for a wide audience from the ideas provided below. This is especially those interested in Scottish culture and heritage. The title should be compelling, relevant to the content, and appropriate for web publication.\n\nReturn only the title with no explanation, commentary, or additional text. Do NOT enclose it in quote marks.\n\n\nYour topic is the following:\n\t1.\tThe basic idea of: {{basic_idea}}\n\t2.\tTheses topics and angles:\n{{idea_scope}}	\N	\N	4	2025-05-04 11:30:44.517966	2025-05-05 13:23:03.832602
-10	Structuring section headings	Thematic section	You are an experienced editor and content strategist. Your task is to analyze the blog post title and content below intended for a blog article on Scottish culture and heritage.\nGroup and organize the content into a logical structure by identifying distinct thematic sections.\nReturn only a JSON array of paragraph titles that represent the structure of the final article.\nEach title should be concise, descriptive, and reflect a key theme from the text.\nDo not include any explanation, commentary, or full text of the paragraphs. Return only a JSON array of paragraph titles, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.\n---\n\nTitle: {{provisional_title}}\n\nScope of ideas:\n{{idea_scope}}\n\nSome interesting facts: 	\N	\N	5	2025-05-04 12:56:29.9372	2025-05-05 13:23:03.833402
-7	Basic Idea to Idea Scope	Expand Basic Idea to Idea Scope	You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage. Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article — this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.	\N	\N	0	2025-05-04 11:18:41.267767	2025-05-05 13:23:08.776355
-12	Author Section first draft		You are a professional historical writer specializing in Scottish culture and heritage.\nYour task is to write 2–3 well-written paragraphs for a blog article based on a specific section. IMPORTANT: you must write very specifically only about the sub-themes of this section heading, and AVOID duplicating or overlapping with topics in other sections. Before starting to write anything, consider exactly how this section DISTINCTLY DIFFERS from other sections and focus only on those ideas.\n\nYou are given:\n\t•\tThe overall subject of the blog post, which is: {{basic_idea}}\n\n\t•\tGeneral background context about the topic, describing the range of content the full blog will cover, which is: {{idea_scope}}\n\n\t•\tThe current section title to write under, which is: {{section_heading}}\n\n\t•\tConcepts and angles that should guide this section (but that you may also add to and expand) which are: {{ideas_to_include}}\n\n\t•\tSome interesting factual points that MUST be included in this section (do not omit any!) which are: {{facts_to_include}}\n\nWrite clear, informative, and engaging text that suits a public-facing blog while respecting historical accuracy. Use only UK-British spellings and idioms, avoiding Americanisms (eg colour not color, and 's' not 'z' in words like authorise). \nEnsure that all the ideas and facts mentioned above are incorporated meaningfully into the text.\nDo not include any commentary, headings, titles, or formatting — return only the body paragraphs in plain text.	\N	\N	6	2025-05-05 10:01:54.864346	2025-05-05 14:04:21.476545
-13	Devise image concept	Devise image concept	You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article.\n\nYou will be given:\n\t•\tThe article title, which is: {{provisional_title}}\n\n\t•\tA summary of the article’s overall scope and themes, which are: {{idea_scope}}\n\n\t•\tA list of all section titles in the article, which are: \n{{section_order}}\n\n\t•\tThe specific section title that this will illustrate, which is: {{section_heading}}\n\n\t•\tThe full text of that section, which is: \n{{first_draft}}\n\n--\nYour task is to produce a single image concept suitable for illustration. The image should be:\n\t•\tRooted in Scottish history, culture, and environment\n\t•\tDistinct from concepts that might be used for other sections\n\t•\tVisually compelling and engaging for a general audience\n\t•\tSuitable for use as a featured image or embedded illustration\n\nFormat your response as follows:\n\nSection Illustration Prompt:\n<Detailed, descriptive scene for the image generation model, 1-3 sentences. Focus on visual composition, mood, setting, time period, and any symbolic elements relevant to this section’s theme. Use clear and evocative language suitable for stable diffusion or similar tools. Avoid repetition of other sections’ themes.>	\N	\N	0	2025-05-06 14:26:46.167752	2025-05-06 14:26:46.167759
-15	Test Assembled		[system] Test system\\n[user] Test user	\N	\N	0	2025-05-26 09:15:42.568304	2025-05-26 09:15:42.568304
-17	Test Assembled 3		[system] Test system\n[user] Test user	\N	\N	0	2025-05-26 09:16:12.890044	2025-05-26 09:16:12.890044
-19	Test Assembled 5		[system] Test system\n[user] Test user	\N	\N	0	2025-05-26 09:17:10.846953	2025-05-26 09:17:10.846953
-20	test		[system] You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage.\n[system] You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article.	\N	\N	0	2025-05-26 09:17:39.043344	2025-05-26 09:17:39.043344
-21	test2		[assistant] write a poem\n[system] You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage.\n[system] You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article.	\N	\N	0	2025-05-26 10:08:57.912017	2025-05-26 10:08:57.912017
-22	blubber		[system] You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage.\n[data:id]\n[system] You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article.\n[assistant] write a poem	\N	\N	0	2025-05-26 10:13:25.219773	2025-05-26 10:13:25.219773
-23	Idea Seed to Brief		[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n\nShort Idea:\n[data:idea_seed]	\N	\N	0	2025-05-26 10:28:14.12568	2025-05-26 10:28:14.12568
-24	sadfsf		[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n\nShort Idea:	\N	\N	0	2025-05-26 12:56:08.561019	2025-05-26 12:56:08.561019
+COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, parameters, "order", created_at, updated_at, part_ids) FROM stdin;
+26	idea_seed to Brief		[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n[system] Use the following input content to transform as instructed: [data:FIELDNAME]	\N	\N	0	2025-05-28 09:38:51.632917	2025-05-28 09:38:51.632917	[]
+27	TEST2		[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	\N	\N	0	2025-05-28 10:33:34.125205	2025-05-28 10:33:34.125205	[]
 \.
 
 
@@ -1540,19 +1577,25 @@ COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, param
 --
 
 COPY public.llm_prompt_part (id, type, content, tags, "order", created_at, updated_at, name, action_id, description) FROM stdin;
-14	assistant	Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article — this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. 	{}	10	2025-05-26 07:55:08.615401	2025-05-26 07:55:08.615401	Create 50 ideas	\N	\N
-4	user	The style should have a traditional Scottish style	{}	4	2025-05-25 17:32:28.03507	2025-05-26 07:55:25.936599	Scottish style	\N	\N
-15	system	Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.	{}	10	2025-05-26 07:56:30.930082	2025-05-26 07:56:30.930082	JSON format	\N	\N
-17	user	Here is a JSON list of items:\\n\\n{\\"animals\\": [\\"dog\\", \\"cat\\", \\"bird\\", \\"hamster\\", \\"lizard\\"]}\\n\\nPlease return a JSON object where each animal has an array of three possible names.	{}	1000	2025-05-26 08:36:08.771728	2025-05-26 08:36:08.771728	SPECIMEN USER	\N	\N
-16	system	You are a naming assistant that returns exactly three creative but plausible names for each item provided.	{}	1000	2025-05-26 08:34:59.747679	2025-05-26 08:36:31.968444	SPECIMEN SYSTEM	\N	\N
-18	system	You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.	{}	1	2025-05-26 10:20:26.867218	2025-05-26 10:20:26.867218	Scottish cultural expert	\N	\N
-7	system	You are an expert historical researcher and cultural writer specializing in Scottish history, traditions, and heritage.	{}	20	2025-05-25 19:42:51.572525	2025-05-26 10:20:56.682711	Historical researcher	\N	\N
-8	system	You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article. 	{}	20	2025-05-25 20:16:54.255069	2025-05-26 10:21:08.159163	Creative visualiser	\N	\N
-9	system	You are a researcher specialising in finding curious facts for blog articles for specialist audiences.	{}	20	2025-05-26 07:41:45.978276	2025-05-26 10:21:16.303707	Factoid researcher	\N	\N
-11	system	You are a researcher specialising in sub-editing blog articles for specialist audiences. 	{}	20	2025-05-26 07:46:28.823794	2025-05-26 10:21:26.491256	Sub-editor	\N	\N
-12	system	You are a professional copywriter and editor specializing in digital publishing and historical blogging.	{}	20	2025-05-26 07:47:33.873145	2025-05-26 10:21:33.122181	Editor-copywriter	\N	\N
-13	system	You are an experienced Social Media marketeer and content strategist. 	{}	20	2025-05-26 07:48:43.999092	2025-05-26 10:21:40.448863	Social media strategist	\N	\N
-19	system	Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n\nShort Idea: 	{}	2	2025-05-26 10:27:05.283848	2025-05-26 10:27:24.00439	idea_seed expansion	\N	\N
+14	assistant	Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article — this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. 	{role}	10	2025-05-26 07:55:08.615401	2025-05-26 07:55:08.615401	Create 50 ideas	\N	\N
+4	user	The style should have a traditional Scottish style	{role}	4	2025-05-25 17:32:28.03507	2025-05-26 07:55:25.936599	Scottish style	\N	\N
+26	system	Test content	{context,custom}	1	2025-05-27 17:34:51.927527	2025-05-27 17:34:51.927527	Test Part	\N	\N
+27	system	Test content	{context,custom}	1	2025-05-27 17:36:25.735135	2025-05-27 17:36:25.735135	UI Test Part	\N	\N
+28	system	Use the following input content to transform as instructed: [data:FIELDNAME]	{format}	0	2025-05-27 17:43:11.814585	2025-05-27 17:43:11.814585	Use [data:FIELDNAME]	\N	\N
+18	system	You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.	{role}	1	2025-05-26 10:20:26.867218	2025-05-26 10:20:26.867218	Scottish cultural expert	\N	\N
+8	system	You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article. 	{role}	20	2025-05-25 20:16:54.255069	2025-05-26 10:21:08.159163	Creative visualiser	\N	\N
+9	system	You are a researcher specialising in finding curious facts for blog articles for specialist audiences.	{role}	20	2025-05-26 07:41:45.978276	2025-05-26 10:21:16.303707	Factoid researcher	\N	\N
+11	system	You are a researcher specialising in sub-editing blog articles for specialist audiences. 	{role}	20	2025-05-26 07:46:28.823794	2025-05-26 10:21:26.491256	Sub-editor	\N	\N
+12	system	You are a professional copywriter and editor specializing in digital publishing and historical blogging.	{role}	20	2025-05-26 07:47:33.873145	2025-05-26 10:21:33.122181	Editor-copywriter	\N	\N
+13	system	You are an experienced Social Media marketeer and content strategist. 	{role}	20	2025-05-26 07:48:43.999092	2025-05-26 10:21:40.448863	Social media strategist	\N	\N
+19	system	Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.	{operation}	2	2025-05-26 10:27:05.283848	2025-05-27 17:56:58.179349	idea_seed expansion	\N	\N
+15	system	Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.	{format}	10	2025-05-26 07:56:30.930082	2025-05-27 07:55:10.768261	JSON format	\N	\N
+16	system	You are a naming assistant that returns exactly three creative but plausible names for each item provided.	{specimen}	1000	2025-05-26 08:34:59.747679	2025-05-27 07:55:34.216258	SPECIMEN SYSTEM	\N	\N
+17	user	Here is a JSON list of items:\\n\\n{\\"animals\\": [\\"dog\\", \\"cat\\", \\"bird\\", \\"hamster\\", \\"lizard\\"]}\\n\\nPlease return a JSON object where each animal has an array of three possible names.	{specimen}	1000	2025-05-26 08:36:08.771728	2025-05-27 08:00:34.170418	SPECIMEN USER	\N	\N
+21	system	Here is a JSON list of items:	{format}	0	2025-05-27 08:02:58.7468	2025-05-27 08:02:58.7468	Input JSON list	\N	\N
+22	system	Here is a section of text to process:	{format}	0	2025-05-27 08:04:06.164223	2025-05-27 08:04:06.164223	Input TEXT section	\N	\N
+24	system	Please return a section of text with NO commentary, annotations, or special markup.	{format}	0	2025-05-27 08:07:03.50217	2025-05-27 08:07:03.50217	Output plain TEXT	\N	\N
+23	system	Please return a JSON object where each item is in an array identified as ITEM. Return no preamble, commentary, or formatting, and no code blocks or text outside the array	{format}	0	2025-05-27 08:05:33.661989	2025-05-27 08:08:37.715938	Output JSON	\N	\N
 \.
 
 
@@ -1572,18 +1615,22 @@ COPY public.llm_provider (id, name, type, api_url, auth_token, description, crea
 -- Data for Name: post; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.post (id, title, slug, summary, created_at, updated_at, header_image_id, status, idea_seed, substage_id) FROM stdin;
-2	hand-fasting...	hand-fasting-1	\N	2025-05-04 09:47:22.571191	2025-05-04 16:15:45.445826	\N	draft	\N	1
-4	The Evolution of the Modern Scottish Kilt	kilt-evolution	<p>The <b>Scottish kilt</b>, a garment that has become synonymous with Highland culture and Scottish identity, has undergone significant evolution since its inception. From its origins as the <b>'great kilt'</b> or <b>'belted plaid'</b> to the modern form we recognize today, its journey reflects Scotland's rich history of tradition, adaptation, and resilience. This article explores the kilt's transformation through time, examining how historical events, practical needs, and cultural shifts have shaped this iconic symbol of Scottish heritage.</p>\n	2023-10-20 00:00:00	2025-05-18 16:25:20.775043	139	draft	\N	1
-5	English tartans	english-tartans	<p><strong>English tartans</strong> have a fascinating trajectory, intertwining with the better-known <strong>Scottish tartan</strong> tradition yet developing a character of their own. Although <strong>tartan</strong> is primarily identified with Scotland, England’s engagement with tartan spans from ancient use of <strong>checkered cloth</strong> by <strong>Celtic</strong> peoples to a modern revival of regional and national patterns. This comprehensive overview examines the emergence and development of tartans in England – from historical origins and regional examples to influences of the <strong>textile industry</strong>, expressions of <strong>national identity</strong>, and contemporary <strong>design movements</strong> – all while preserving every detail of the rich historical narrative.</p>	2025-04-18 00:00:00	2025-05-18 16:25:20.785179	\N	draft	\N	1
-6	The Tradition of the Scottish Quaich	quaich-traditions	<p>The <b>quaich</b>, Scotland's cherished <b>"cup of friendship,"</b> holds a special place in Scottish tradition, symbolising hospitality, unity, and trust. Originating centuries ago, its simple yet profound design—a shallow, two-handled bowl—embodies a rich history spanning <b>clan</b> gatherings, ceremonial rituals, royal celebrations, and contemporary <b>weddings</b>. This article explores the evolution of the quaich, delving into its earliest origins, cultural significance, craftsmanship, historical anecdotes, and enduring presence in modern Scottish culture.</p>\n	2023-10-27 00:00:00	2025-05-18 16:25:20.822509	150	draft	\N	1
-9	ankle worship...	ankle-worship		2025-05-21 21:55:27.127066	2025-05-21 21:55:27.127066	\N	draft	ankle worship	1
-1	hand-fasting...	hand-fasting	\N	2025-05-03 16:05:45.941465	2025-05-21 22:58:00.655742	\N	deleted	\N	1
-11	dod hatching...	dod-hatching		2025-05-21 21:59:50.069028	2025-05-21 22:58:29.225706	\N	deleted	dod hatching	1
-7	cat torture...	cat-torture		2025-05-21 21:44:07.808692	2025-05-21 22:58:52.977616	\N	deleted	cat torture	1
-10	Test idea for workflow redirect...	test-idea-for-workflow-redirect		2025-05-21 21:58:45.229565	2025-05-21 23:03:36.776851	\N	deleted	Test idea for workflow redirect	1
-12	green eggs...	green-eggs		2025-05-21 22:30:01.563795	2025-05-21 23:03:52.645833	\N	deleted	green eggs	1
-8	treacle bending...	treacle-bending		2025-05-21 21:49:33.812708	2025-05-21 23:03:57.595772	\N	deleted	treacle bending	1
+COPY public.post (id, title, slug, summary, created_at, updated_at, header_image_id, status, substage_id) FROM stdin;
+2	hand-fasting...	hand-fasting-1	\N	2025-05-04 09:47:22.571191	2025-05-04 16:15:45.445826	\N	draft	1
+4	The Evolution of the Modern Scottish Kilt	kilt-evolution	<p>The <b>Scottish kilt</b>, a garment that has become synonymous with Highland culture and Scottish identity, has undergone significant evolution since its inception. From its origins as the <b>'great kilt'</b> or <b>'belted plaid'</b> to the modern form we recognize today, its journey reflects Scotland's rich history of tradition, adaptation, and resilience. This article explores the kilt's transformation through time, examining how historical events, practical needs, and cultural shifts have shaped this iconic symbol of Scottish heritage.</p>\n	2023-10-20 00:00:00	2025-05-18 16:25:20.775043	139	draft	1
+5	English tartans	english-tartans	<p><strong>English tartans</strong> have a fascinating trajectory, intertwining with the better-known <strong>Scottish tartan</strong> tradition yet developing a character of their own. Although <strong>tartan</strong> is primarily identified with Scotland, England’s engagement with tartan spans from ancient use of <strong>checkered cloth</strong> by <strong>Celtic</strong> peoples to a modern revival of regional and national patterns. This comprehensive overview examines the emergence and development of tartans in England – from historical origins and regional examples to influences of the <strong>textile industry</strong>, expressions of <strong>national identity</strong>, and contemporary <strong>design movements</strong> – all while preserving every detail of the rich historical narrative.</p>	2025-04-18 00:00:00	2025-05-18 16:25:20.785179	\N	draft	1
+6	The Tradition of the Scottish Quaich	quaich-traditions	<p>The <b>quaich</b>, Scotland's cherished <b>"cup of friendship,"</b> holds a special place in Scottish tradition, symbolising hospitality, unity, and trust. Originating centuries ago, its simple yet profound design—a shallow, two-handled bowl—embodies a rich history spanning <b>clan</b> gatherings, ceremonial rituals, royal celebrations, and contemporary <b>weddings</b>. This article explores the evolution of the quaich, delving into its earliest origins, cultural significance, craftsmanship, historical anecdotes, and enduring presence in modern Scottish culture.</p>\n	2023-10-27 00:00:00	2025-05-18 16:25:20.822509	150	draft	1
+1	hand-fasting...	hand-fasting	\N	2025-05-03 16:05:45.941465	2025-05-21 22:58:00.655742	\N	deleted	1
+11	dod hatching...	dod-hatching		2025-05-21 21:59:50.069028	2025-05-21 22:58:29.225706	\N	deleted	1
+7	cat torture...	cat-torture		2025-05-21 21:44:07.808692	2025-05-21 22:58:52.977616	\N	deleted	1
+10	Test idea for workflow redirect...	test-idea-for-workflow-redirect		2025-05-21 21:58:45.229565	2025-05-21 23:03:36.776851	\N	deleted	1
+12	green eggs...	green-eggs		2025-05-21 22:30:01.563795	2025-05-21 23:03:52.645833	\N	deleted	1
+8	treacle bending...	treacle-bending		2025-05-21 21:49:33.812708	2025-05-21 23:03:57.595772	\N	deleted	1
+3	tartan fabrics...	tartan-fabrics		2025-05-26 19:57:47.169588	2025-05-26 19:57:47.169588	\N	draft	\N
+9	ankle worship...	ankle-worship		2025-05-21 21:55:27.127066	2025-05-26 19:59:56.038415	\N	deleted	1
+14	mangle wrangling...	mangle-wrangling		2025-05-26 20:12:36.858356	2025-05-26 20:12:36.858356	\N	draft	\N
+13	dog eating...	dog-eating		2025-05-26 20:06:27.151898	2025-05-26 20:12:45.27793	\N	deleted	\N
+15	cream distillation...	cream-distillation		2025-05-27 15:12:33.356259	2025-05-27 15:12:33.356259	\N	draft	\N
 \.
 
 
@@ -1599,14 +1646,15 @@ COPY public.post_categories (post_id, category_id) FROM stdin;
 -- Data for Name: post_development; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.post_development (id, post_id, basic_idea, provisional_title, idea_scope, topics_to_cover, interesting_facts, tartans_products, section_planning, section_headings, section_order, main_title, subtitle, intro_blurb, conclusion, basic_metadata, tags, categories, image_captions, seo_optimization, self_review, peer_review, final_check, scheduling, deployment, verification, feedback_collection, content_updates, version_control, platform_selection, content_adaptation, distribution, engagement_tracking) FROM stdin;
-1	1	hand-fasting	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-2	2	hand-fasting	Tying the Knot: Unraveling Scotland's Ancient Tradition of Hand-Fasting	[\n  "Define hand-fasting in Scottish culture and its ancient origins",\n  "Explain the difference between hand-fasting and marriage",\n  "Discuss the historical context of hand-fasting in Scotland's medieval period",\n  "Describe the role of hand-fasting in Celtic tradition and mythology",\n  "Explore the cultural significance of hand-fasting in Scottish folklore",\n  "Analyze the social impact of hand-fasting on women's lives in Scotland's past",\n  "Delve into the history of hand-fasting as a trial marriage or 'betrothal'",\n  "Examine the symbolism behind the hand-fasting ceremony",\n  "Discuss notable historical figures who practiced hand-fasting, such as Robert Burns",\n  "Look at how hand-fasting was used to seal alliances and agreements between clans",\n  "Describe the role of the 'hand-fastening' ritual in Scottish wedding ceremonies",\n  "Investigate the influence of Christianity on the practice of hand-fasting",\n  "Explore how hand-fasting survived despite the introduction of Christian marriage rites",\n  "Analyze the significance of hand-fasting during Scotland's Jacobite risings",\n  "Discuss the romanticization of hand-fasting in Scottish literature and art",\n  "Describe the modern resurgence of interest in hand-fasting ceremonies",\n  "Look at how hand-fasting is incorporated into contemporary Scottish weddings",\n  "Examine the cultural exchange between Scottish and Norse cultures regarding hand-fasting",\n  "Investigate the connection between hand-fasting and Scotland's ancient laws",\n  "Discuss the symbolism behind the use of ribbons or cords in hand-fasting rituals",\n  "Describe the role of the 'priest' or 'officiant' in a traditional hand-fasting ceremony",\n  "Explore the regional variations of hand-fasting practices across Scotland",\n  "Analyze the impact of the Reformation on the decline of hand-fasting",\n  "Look at how hand-fasting has been used as a symbol of Scottish national identity",\n  "Discuss the modern feminist perspectives on hand-fasting and women's rights",\n  "Describe the historical significance of hand-fasting in Scotland's royal courts",\n  "Examine the influence of hand-fasting on modern wedding traditions worldwide",\n  "Investigate the connection between hand-fasting and Scotland's ancient festivals",\n  "Analyze the symbolism behind the use of specific dates or seasons for hand-fasting",\n  "Discuss the role of family and community in traditional hand-fasting ceremonies",\n  "Describe the cultural significance of hand-fasting in Scottish Highland culture",\n  "Explore the historical context of hand-fasting during Scotland's clan wars",\n  "Look at how hand-fasting has been used as a symbol of loyalty and commitment",\n  "Examine the modern relevance of hand-fasting in contemporary relationships",\n  "Discuss the connection between hand-fasting and Scotland's ancient mythology",\n  "Investigate the influence of Scottish emigration on the spread of hand-fasting practices worldwide",\n  "Analyze the cultural significance of hand-fasting in Scotland's Lowland culture",\n  "Describe the historical context of hand-fasting during Scotland's Enlightenment period",\n  "Explore the role of hand-fasting in modern Scottish pagan and druidic communities",\n  "Discuss the symbolism behind the use of specific materials or objects in hand-fasting rituals",\n  "Look at how hand-fasting has been used as a symbol of resistance against oppressive regimes"\n]	\N	[\n  "Hand-fasting was originally a pagan Celtic ritual that took place during the spring equinox to ensure fertility and prosperity",\n  "In ancient Scotland, hand-fasting ceremonies were often conducted by druids or other spiritual leaders who would tie the couple's hands together with a cord made from the bark of a sacred tree",\n  "The earliest written records of hand-fasting in Scotland date back to the 13th century, but it is believed to have been practiced for centuries before that",\n  "During the Jacobite era, hand-fasting became a symbol of loyalty and allegiance to the Stuart cause, with many Highland clans using the ritual to seal their commitment to the rebellion",\n  "In some parts of Scotland, hand-fasting was seen as a way to legitimize children born out of wedlock, providing them with inheritance rights and social standing",\n  "The 16th-century Acts of the Parliament of Scotland attempted to regulate hand-fasting practices by requiring couples to obtain a formal marriage license before undergoing the ritual",\n  "Hand-fasting was not just limited to romantic partnerships - it was also used to seal business agreements, alliances between clans, and even friendships",\n  "In Scottish folklore, hand-fasting is often associated with the goddess Brigid, who was revered as a patron of love, fertility, and poetry",\n  "The Victorian era's romanticization of Scottish culture helped to revive interest in hand-fasting, which became a popular motif in literature and art of the time",\n  "Today, hand-fasting is still practiced by some modern pagans and Wiccans as a way to connect with their Celtic heritage and celebrate the cycles of nature"\n]	\N	\N	[\n  "Unraveling the Ancient Celtic Roots of Hand-Fasting",\n  "The Evolution of Hand-Fasting in Scotland's Historical Landscape",\n  "Symbolism and Significance: Unpacking the Cultural Importance of Hand-Fasting",\n  "Hand-Fasting as a Social Contract: Securing Alliances and Marriage Agreements",\n  "A Glimpse into Scotland's Past: Key Events that Shaped Hand-Fasting Traditions",\n  "Mythical Ties: Exploring Hand-Fasting in Scottish Folklore and Mythology",\n  "Notable Scots Who Tied the Knot with Hand-Fasting Ceremonies",\n  "Revival and Reinterpretation: Modern Takes on Traditional Hand-Fasting Practices"\n]	["Unraveling the Ancient Celtic Roots of Hand-Fasting","The Evolution of Hand-Fasting in Scotland's Historical Landscape","Symbolism and Significance: Unpacking the Cultural Importance of Hand-Fasting","Hand-Fasting as a Social Contract: Securing Alliances and Marriage Agreements","A Glimpse into Scotland's Past: Key Events that Shaped Hand-Fasting Traditions","Notable Scots Who Tied the Knot with Hand-Fasting Ceremonies","Mythical Ties: Exploring Hand-Fasting in Scottish Folklore and Mythology","Revival and Reinterpretation: Modern Takes on Traditional Hand-Fasting Practices"]	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-3	7	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-4	8	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-5	9	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-6	11	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-7	12	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+COPY public.post_development (id, post_id, basic_idea, provisional_title, idea_scope, topics_to_cover, interesting_facts, tartans_products, section_planning, section_headings, section_order, main_title, subtitle, intro_blurb, conclusion, basic_metadata, tags, categories, image_captions, seo_optimization, self_review, peer_review, final_check, scheduling, deployment, verification, feedback_collection, content_updates, version_control, platform_selection, content_adaptation, distribution, engagement_tracking, summary, idea_seed) FROM stdin;
+1	1	hand-fasting	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+2	2	hand-fasting	Tying the Knot: Unraveling Scotland's Ancient Tradition of Hand-Fasting	[\n  "Define hand-fasting in Scottish culture and its ancient origins",\n  "Explain the difference between hand-fasting and marriage",\n  "Discuss the historical context of hand-fasting in Scotland's medieval period",\n  "Describe the role of hand-fasting in Celtic tradition and mythology",\n  "Explore the cultural significance of hand-fasting in Scottish folklore",\n  "Analyze the social impact of hand-fasting on women's lives in Scotland's past",\n  "Delve into the history of hand-fasting as a trial marriage or 'betrothal'",\n  "Examine the symbolism behind the hand-fasting ceremony",\n  "Discuss notable historical figures who practiced hand-fasting, such as Robert Burns",\n  "Look at how hand-fasting was used to seal alliances and agreements between clans",\n  "Describe the role of the 'hand-fastening' ritual in Scottish wedding ceremonies",\n  "Investigate the influence of Christianity on the practice of hand-fasting",\n  "Explore how hand-fasting survived despite the introduction of Christian marriage rites",\n  "Analyze the significance of hand-fasting during Scotland's Jacobite risings",\n  "Discuss the romanticization of hand-fasting in Scottish literature and art",\n  "Describe the modern resurgence of interest in hand-fasting ceremonies",\n  "Look at how hand-fasting is incorporated into contemporary Scottish weddings",\n  "Examine the cultural exchange between Scottish and Norse cultures regarding hand-fasting",\n  "Investigate the connection between hand-fasting and Scotland's ancient laws",\n  "Discuss the symbolism behind the use of ribbons or cords in hand-fasting rituals",\n  "Describe the role of the 'priest' or 'officiant' in a traditional hand-fasting ceremony",\n  "Explore the regional variations of hand-fasting practices across Scotland",\n  "Analyze the impact of the Reformation on the decline of hand-fasting",\n  "Look at how hand-fasting has been used as a symbol of Scottish national identity",\n  "Discuss the modern feminist perspectives on hand-fasting and women's rights",\n  "Describe the historical significance of hand-fasting in Scotland's royal courts",\n  "Examine the influence of hand-fasting on modern wedding traditions worldwide",\n  "Investigate the connection between hand-fasting and Scotland's ancient festivals",\n  "Analyze the symbolism behind the use of specific dates or seasons for hand-fasting",\n  "Discuss the role of family and community in traditional hand-fasting ceremonies",\n  "Describe the cultural significance of hand-fasting in Scottish Highland culture",\n  "Explore the historical context of hand-fasting during Scotland's clan wars",\n  "Look at how hand-fasting has been used as a symbol of loyalty and commitment",\n  "Examine the modern relevance of hand-fasting in contemporary relationships",\n  "Discuss the connection between hand-fasting and Scotland's ancient mythology",\n  "Investigate the influence of Scottish emigration on the spread of hand-fasting practices worldwide",\n  "Analyze the cultural significance of hand-fasting in Scotland's Lowland culture",\n  "Describe the historical context of hand-fasting during Scotland's Enlightenment period",\n  "Explore the role of hand-fasting in modern Scottish pagan and druidic communities",\n  "Discuss the symbolism behind the use of specific materials or objects in hand-fasting rituals",\n  "Look at how hand-fasting has been used as a symbol of resistance against oppressive regimes"\n]	\N	[\n  "Hand-fasting was originally a pagan Celtic ritual that took place during the spring equinox to ensure fertility and prosperity",\n  "In ancient Scotland, hand-fasting ceremonies were often conducted by druids or other spiritual leaders who would tie the couple's hands together with a cord made from the bark of a sacred tree",\n  "The earliest written records of hand-fasting in Scotland date back to the 13th century, but it is believed to have been practiced for centuries before that",\n  "During the Jacobite era, hand-fasting became a symbol of loyalty and allegiance to the Stuart cause, with many Highland clans using the ritual to seal their commitment to the rebellion",\n  "In some parts of Scotland, hand-fasting was seen as a way to legitimize children born out of wedlock, providing them with inheritance rights and social standing",\n  "The 16th-century Acts of the Parliament of Scotland attempted to regulate hand-fasting practices by requiring couples to obtain a formal marriage license before undergoing the ritual",\n  "Hand-fasting was not just limited to romantic partnerships - it was also used to seal business agreements, alliances between clans, and even friendships",\n  "In Scottish folklore, hand-fasting is often associated with the goddess Brigid, who was revered as a patron of love, fertility, and poetry",\n  "The Victorian era's romanticization of Scottish culture helped to revive interest in hand-fasting, which became a popular motif in literature and art of the time",\n  "Today, hand-fasting is still practiced by some modern pagans and Wiccans as a way to connect with their Celtic heritage and celebrate the cycles of nature"\n]	\N	\N	[\n  "Unraveling the Ancient Celtic Roots of Hand-Fasting",\n  "The Evolution of Hand-Fasting in Scotland's Historical Landscape",\n  "Symbolism and Significance: Unpacking the Cultural Importance of Hand-Fasting",\n  "Hand-Fasting as a Social Contract: Securing Alliances and Marriage Agreements",\n  "A Glimpse into Scotland's Past: Key Events that Shaped Hand-Fasting Traditions",\n  "Mythical Ties: Exploring Hand-Fasting in Scottish Folklore and Mythology",\n  "Notable Scots Who Tied the Knot with Hand-Fasting Ceremonies",\n  "Revival and Reinterpretation: Modern Takes on Traditional Hand-Fasting Practices"\n]	["Unraveling the Ancient Celtic Roots of Hand-Fasting","The Evolution of Hand-Fasting in Scotland's Historical Landscape","Symbolism and Significance: Unpacking the Cultural Importance of Hand-Fasting","Hand-Fasting as a Social Contract: Securing Alliances and Marriage Agreements","A Glimpse into Scotland's Past: Key Events that Shaped Hand-Fasting Traditions","Notable Scots Who Tied the Knot with Hand-Fasting Ceremonies","Mythical Ties: Exploring Hand-Fasting in Scottish Folklore and Mythology","Revival and Reinterpretation: Modern Takes on Traditional Hand-Fasting Practices"]	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+3	7	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+4	8	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+5	9	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+6	11	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+7	12	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
+8	15	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	cream distillation
 \.
 
 
@@ -1623,7 +1671,8 @@ COPY public.post_section (id, post_id, section_order, section_heading, ideas_to_
 --
 
 COPY public.post_substage_action (id, post_id, substage, action_id, button_label, button_order) FROM stdin;
-1	9	idea	9	Action	0
+1	9	idea	3	Action	0
+9	15	idea	3	\N	0
 \.
 
 
@@ -1684,6 +1733,46 @@ COPY public.workflow (id, post_id, stage_id, status, created, updated) FROM stdi
 
 
 --
+-- Data for Name: workflow_field_mapping; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.workflow_field_mapping (id, field_name, stage_id, substage_id, order_index) FROM stdin;
+4	Topics To Cover	10	2	1
+5	Interesting Facts	10	2	2
+7	Section Planning	10	3	1
+8	Section Headings	10	3	2
+9	Section Order	10	3	3
+10	Main Title	11	4	1
+11	Subtitle	11	4	2
+12	Intro Blurb	11	4	3
+13	Conclusion	11	4	4
+14	Basic Metadata	11	5	1
+15	Tags	11	5	2
+16	Categories	11	5	3
+17	Image Captions	11	6	1
+19	Self Review	8	7	1
+20	Peer Review	8	7	2
+21	Final Check	8	7	3
+22	Scheduling	8	8	1
+23	Deployment	8	8	2
+24	Verification	8	8	3
+25	Feedback Collection	8	9	1
+26	Content Updates	8	9	2
+27	Version Control	8	9	3
+28	Platform Selection	8	9	4
+29	Content Adaptation	8	9	5
+30	Distribution	8	9	6
+31	Engagement Tracking	8	9	7
+18	Seo Optimization	8	7	4
+6	Tartans Products	8	7	8
+1	Basic Idea	10	1	2
+2	Provisional Title	10	1	3
+3	Idea Scope	10	1	4
+33	idea_seed	10	1	1
+\.
+
+
+--
 -- Data for Name: workflow_stage_entity; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
@@ -1715,168 +1804,175 @@ COPY public.workflow_sub_stage_entity (id, stage_id, name, description, sub_stag
 -- Name: category_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.category_id_seq', 1, false);
+SELECT pg_catalog.setval('public.category_id_seq', 1, true);
 
 
 --
 -- Name: image_format_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.image_format_id_seq', 1, false);
+SELECT pg_catalog.setval('public.image_format_id_seq', 1, true);
 
 
 --
 -- Name: image_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.image_id_seq', 1, false);
+SELECT pg_catalog.setval('public.image_id_seq', 161, true);
 
 
 --
 -- Name: image_prompt_example_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.image_prompt_example_id_seq', 1, false);
+SELECT pg_catalog.setval('public.image_prompt_example_id_seq', 1, true);
 
 
 --
 -- Name: image_setting_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.image_setting_id_seq', 1, false);
+SELECT pg_catalog.setval('public.image_setting_id_seq', 1, true);
 
 
 --
 -- Name: image_style_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.image_style_id_seq', 1, false);
+SELECT pg_catalog.setval('public.image_style_id_seq', 1, true);
 
 
 --
 -- Name: llm_action_history_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_action_history_id_seq', 1, false);
+SELECT pg_catalog.setval('public.llm_action_history_id_seq', 1, true);
 
 
 --
 -- Name: llm_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_action_id_seq', 1, false);
+SELECT pg_catalog.setval('public.llm_action_id_seq', 12, true);
 
 
 --
 -- Name: llm_interaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_interaction_id_seq', 1, false);
+SELECT pg_catalog.setval('public.llm_interaction_id_seq', 1, true);
 
 
 --
 -- Name: llm_model_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_model_id_seq', 1, false);
+SELECT pg_catalog.setval('public.llm_model_id_seq', 23, true);
 
 
 --
 -- Name: llm_prompt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_prompt_id_seq', 24, true);
+SELECT pg_catalog.setval('public.llm_prompt_id_seq', 27, true);
 
 
 --
 -- Name: llm_prompt_part_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_prompt_part_id_seq', 1, false);
+SELECT pg_catalog.setval('public.llm_prompt_part_id_seq', 28, true);
 
 
 --
 -- Name: llm_provider_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_provider_id_seq', 1, false);
+SELECT pg_catalog.setval('public.llm_provider_id_seq', 4, true);
 
 
 --
 -- Name: post_development_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_development_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_development_id_seq', 8, true);
 
 
 --
 -- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_id_seq', 15, true);
 
 
 --
 -- Name: post_section_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_section_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_section_id_seq', 1, true);
 
 
 --
 -- Name: post_substage_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_substage_action_id_seq', 1, true);
+SELECT pg_catalog.setval('public.post_substage_action_id_seq', 9, true);
 
 
 --
 -- Name: post_workflow_stage_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_workflow_stage_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_workflow_stage_id_seq', 1, true);
 
 
 --
 -- Name: post_workflow_sub_stage_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_workflow_sub_stage_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_workflow_sub_stage_id_seq', 1, true);
 
 
 --
 -- Name: substage_action_default_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.substage_action_default_id_seq', 1, false);
+SELECT pg_catalog.setval('public.substage_action_default_id_seq', 1, true);
 
 
 --
 -- Name: tag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.tag_id_seq', 1, false);
+SELECT pg_catalog.setval('public.tag_id_seq', 1, true);
 
 
 --
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_id_seq', 1, true);
+
+
+--
+-- Name: workflow_field_mapping_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.workflow_field_mapping_id_seq', 33, true);
 
 
 --
 -- Name: workflow_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.workflow_id_seq', 1, false);
+SELECT pg_catalog.setval('public.workflow_id_seq', 1, true);
 
 
 --
 -- Name: workflow_stage_entity_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.workflow_stage_entity_id_seq', 15, true);
+SELECT pg_catalog.setval('public.workflow_stage_entity_id_seq', 14, true);
 
 
 --
@@ -2196,6 +2292,14 @@ ALTER TABLE ONLY public."user"
 
 ALTER TABLE ONLY public."user"
     ADD CONSTRAINT user_username_key UNIQUE (username);
+
+
+--
+-- Name: workflow_field_mapping workflow_field_mapping_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.workflow_field_mapping
+    ADD CONSTRAINT workflow_field_mapping_pkey PRIMARY KEY (id);
 
 
 --
@@ -2549,6 +2653,22 @@ ALTER TABLE ONLY public.substage_action_default
 
 
 --
+-- Name: workflow_field_mapping workflow_field_mapping_stage_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.workflow_field_mapping
+    ADD CONSTRAINT workflow_field_mapping_stage_id_fkey FOREIGN KEY (stage_id) REFERENCES public.workflow_stage_entity(id) ON DELETE CASCADE;
+
+
+--
+-- Name: workflow_field_mapping workflow_field_mapping_substage_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.workflow_field_mapping
+    ADD CONSTRAINT workflow_field_mapping_substage_id_fkey FOREIGN KEY (substage_id) REFERENCES public.workflow_sub_stage_entity(id) ON DELETE CASCADE;
+
+
+--
 -- Name: workflow workflow_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
@@ -2580,6 +2700,13 @@ GRANT ALL ON TABLE public.category TO postgres;
 
 
 --
+-- Name: SEQUENCE category_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.category_id_seq TO postgres;
+
+
+--
 -- Name: TABLE image; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
@@ -2594,10 +2721,31 @@ GRANT ALL ON TABLE public.image_format TO postgres;
 
 
 --
+-- Name: SEQUENCE image_format_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.image_format_id_seq TO postgres;
+
+
+--
+-- Name: SEQUENCE image_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.image_id_seq TO postgres;
+
+
+--
 -- Name: TABLE image_prompt_example; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
 GRANT ALL ON TABLE public.image_prompt_example TO postgres;
+
+
+--
+-- Name: SEQUENCE image_prompt_example_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.image_prompt_example_id_seq TO postgres;
 
 
 --
@@ -2608,10 +2756,24 @@ GRANT ALL ON TABLE public.image_setting TO postgres;
 
 
 --
+-- Name: SEQUENCE image_setting_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.image_setting_id_seq TO postgres;
+
+
+--
 -- Name: TABLE image_style; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
 GRANT ALL ON TABLE public.image_style TO postgres;
+
+
+--
+-- Name: SEQUENCE image_style_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.image_style_id_seq TO postgres;
 
 
 --
@@ -2629,10 +2791,31 @@ GRANT ALL ON TABLE public.llm_action_history TO postgres;
 
 
 --
+-- Name: SEQUENCE llm_action_history_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_action_history_id_seq TO postgres;
+
+
+--
+-- Name: SEQUENCE llm_action_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_action_id_seq TO postgres;
+
+
+--
 -- Name: TABLE llm_interaction; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
 GRANT ALL ON TABLE public.llm_interaction TO postgres;
+
+
+--
+-- Name: SEQUENCE llm_interaction_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_interaction_id_seq TO postgres;
 
 
 --
@@ -2643,10 +2826,24 @@ GRANT ALL ON TABLE public.llm_model TO postgres;
 
 
 --
+-- Name: SEQUENCE llm_model_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_model_id_seq TO postgres;
+
+
+--
 -- Name: TABLE llm_prompt; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
 GRANT ALL ON TABLE public.llm_prompt TO postgres;
+
+
+--
+-- Name: SEQUENCE llm_prompt_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_prompt_id_seq TO postgres;
 
 
 --
@@ -2657,10 +2854,24 @@ GRANT ALL ON TABLE public.llm_prompt_part TO postgres;
 
 
 --
+-- Name: SEQUENCE llm_prompt_part_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_prompt_part_id_seq TO postgres;
+
+
+--
 -- Name: TABLE llm_provider; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
 GRANT ALL ON TABLE public.llm_provider TO postgres;
+
+
+--
+-- Name: SEQUENCE llm_provider_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.llm_provider_id_seq TO postgres;
 
 
 --
@@ -2685,6 +2896,20 @@ GRANT ALL ON TABLE public.post_development TO postgres;
 
 
 --
+-- Name: SEQUENCE post_development_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.post_development_id_seq TO postgres;
+
+
+--
+-- Name: SEQUENCE post_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.post_id_seq TO postgres;
+
+
+--
 -- Name: TABLE post_section; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
@@ -2692,10 +2917,24 @@ GRANT ALL ON TABLE public.post_section TO postgres;
 
 
 --
+-- Name: SEQUENCE post_section_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.post_section_id_seq TO postgres;
+
+
+--
 -- Name: TABLE post_substage_action; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
 GRANT ALL ON TABLE public.post_substage_action TO postgres;
+
+
+--
+-- Name: SEQUENCE post_substage_action_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.post_substage_action_id_seq TO postgres;
 
 
 --
@@ -2717,7 +2956,7 @@ GRANT ALL ON TABLE public.post_workflow_stage TO postgres;
 -- Name: SEQUENCE post_workflow_stage_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT,USAGE ON SEQUENCE public.post_workflow_stage_id_seq TO postgres;
+GRANT ALL ON SEQUENCE public.post_workflow_stage_id_seq TO postgres;
 
 
 --
@@ -2732,7 +2971,7 @@ GRANT ALL ON TABLE public.post_workflow_sub_stage TO postgres;
 -- Name: SEQUENCE post_workflow_sub_stage_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT,USAGE ON SEQUENCE public.post_workflow_sub_stage_id_seq TO postgres;
+GRANT ALL ON SEQUENCE public.post_workflow_sub_stage_id_seq TO postgres;
 
 
 --
@@ -2743,10 +2982,24 @@ GRANT ALL ON TABLE public.substage_action_default TO postgres;
 
 
 --
+-- Name: SEQUENCE substage_action_default_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.substage_action_default_id_seq TO postgres;
+
+
+--
 -- Name: TABLE tag; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
 GRANT ALL ON TABLE public.tag TO postgres;
+
+
+--
+-- Name: SEQUENCE tag_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.tag_id_seq TO postgres;
 
 
 --
@@ -2757,10 +3010,24 @@ GRANT ALL ON TABLE public."user" TO postgres;
 
 
 --
+-- Name: SEQUENCE user_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.user_id_seq TO postgres;
+
+
+--
 -- Name: TABLE workflow; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
 GRANT ALL ON TABLE public.workflow TO postgres;
+
+
+--
+-- Name: SEQUENCE workflow_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON SEQUENCE public.workflow_id_seq TO postgres;
 
 
 --
@@ -2775,7 +3042,7 @@ GRANT ALL ON TABLE public.workflow_stage_entity TO postgres;
 -- Name: SEQUENCE workflow_stage_entity_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT,USAGE ON SEQUENCE public.workflow_stage_entity_id_seq TO postgres;
+GRANT ALL ON SEQUENCE public.workflow_stage_entity_id_seq TO postgres;
 
 
 --
@@ -2790,7 +3057,7 @@ GRANT ALL ON TABLE public.workflow_sub_stage_entity TO postgres;
 -- Name: SEQUENCE workflow_sub_stage_entity_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT,USAGE ON SEQUENCE public.workflow_sub_stage_entity_id_seq TO postgres;
+GRANT ALL ON SEQUENCE public.workflow_sub_stage_entity_id_seq TO postgres;
 
 
 --
