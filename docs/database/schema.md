@@ -85,4 +85,9 @@ This table is managed via the Settings panel at `/settings` and is used to dynam
 
 The current mapping of fields to workflow stages/substages is shown below. This table is dynamically generated from the database and can be managed in the [Settings Panel](/settings).
 
-[View Live Mapping Table](/docs/view/database/schema.md) 
+[View Live Mapping Table](/docs/view/database/schema.md)
+
+### 2024-05-28: Added provider_id to llm_action
+- Added `provider_id INTEGER NOT NULL REFERENCES llm_provider(id)` to `llm_action`.
+- Migration performed with full backup, SQL migration script, and verification.
+- Rationale: Enables explicit separation of LLM provider and model for robust multi-provider support. 
