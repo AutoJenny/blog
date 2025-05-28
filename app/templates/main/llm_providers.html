@@ -86,7 +86,8 @@
                     <td class="py-2 px-3">{{ provider.last_tested or '-' }}</td>
                     <td class="py-2 px-3 flex gap-2">
                         <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                        <button class="action-btn" title="Test"><i class="fa-solid fa-vial"></i></button>
+                        <button class="action-btn test-provider-btn" data-id="{{ provider.id }}" title="Test"><i
+                                class="fa-solid fa-vial"></i> Test</button>
                         <button class="action-btn" title="Set Default"><i class="fa-solid fa-star"></i></button>
                         <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
                         {% if provider.type|lower == 'ollama' or provider.name|lower == 'ollama' %}
@@ -190,6 +191,37 @@
             setTimeout(() => {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-play"></i> Start';
+            }, 2000);
+        });
+    });
+
+    // Test Provider logic
+    document.querySelectorAll('.test-provider-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Testing...';
+            const providerId = btn.dataset.id;
+            const row = btn.closest('tr');
+            const statusCell = row.querySelector('td:nth-child(3)');
+            try {
+                const resp = await fetch(`/api/v1/llm/providers/${providerId}/test`, { method: 'POST' });
+                const data = await resp.json();
+                if (resp.ok && data.success) {
+                    statusCell.innerHTML = '<span class="provider-status status-active">Active</span>';
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Tested';
+                } else {
+                    statusCell.innerHTML = '<span class="provider-status status-error">Error</span>';
+                    btn.innerHTML = '<i class="fa-solid fa-vial"></i> Test';
+                    alert(data.error || 'Test failed');
+                }
+            } catch (e) {
+                statusCell.innerHTML = '<span class="provider-status status-error">Error</span>';
+                btn.innerHTML = '<i class="fa-solid fa-vial"></i> Test';
+                alert('Error testing provider: ' + e);
+            }
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-vial"></i> Test';
             }, 2000);
         });
     });
