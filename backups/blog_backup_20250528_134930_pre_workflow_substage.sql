@@ -419,7 +419,8 @@ CREATE TABLE public.llm_action (
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     input_field character varying(128),
-    output_field character varying(128)
+    output_field character varying(128),
+    provider_id integer NOT NULL
 );
 
 
@@ -1506,12 +1507,9 @@ COPY public.image_style (id, title, description, created_at, updated_at) FROM st
 -- Data for Name: llm_action; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.llm_action (id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", created_at, updated_at, input_field, output_field) FROM stdin;
-7	tsetsat	[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n[system] Use the following input content to transform as instructed: [data:FIELDNAME]	26	mistral	0.7	1000	0	2025-05-28 10:36:41.712102	2025-05-28 10:36:41.712102	\N	\N
-9	asdafasf	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	27	mistral	0.7	1000	0	2025-05-28 10:42:26.132509	2025-05-28 10:42:26.132509	\N	\N
-10	asdfasdfdfsdfasdff	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	27	gpt-3.5-turbo	0.7	1000	0	2025-05-28 10:43:04.666833	2025-05-28 10:43:04.666833	\N	\N
-11	asdfasdfdfsdfasdff	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	27	gpt-3.5-turbo	0.7	1000	0	2025-05-28 10:44:37.860801	2025-05-28 10:44:37.860801	\N	\N
-12	dod ma	[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n[system] Use the following input content to transform as instructed: [data:FIELDNAME]	26	mistral	0.7	1000	0	2025-05-28 10:44:54.686089	2025-05-28 10:44:54.686089	\N	\N
+COPY public.llm_action (id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", created_at, updated_at, input_field, output_field, provider_id) FROM stdin;
+13	testiest	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	27	claude-3-sonnet-20240229	0.7	1000	0	2025-05-28 11:45:41.917074	2025-05-28 12:59:12.007828	\N	\N	1
+14	Expand from seed idea to Scottish brief	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	26	llama3.1:70b	0.7	1000	0	2025-05-28 11:55:03.433213	2025-05-28 13:29:10.644221	\N	\N	1
 \.
 
 
@@ -1853,7 +1851,7 @@ SELECT pg_catalog.setval('public.llm_action_history_id_seq', 1, true);
 -- Name: llm_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_action_id_seq', 12, true);
+SELECT pg_catalog.setval('public.llm_action_id_seq', 14, true);
 
 
 --
@@ -2466,6 +2464,14 @@ CREATE TRIGGER update_user_updated_at BEFORE UPDATE ON public."user" FOR EACH RO
 --
 
 CREATE TRIGGER update_workflow_updated_at BEFORE UPDATE ON public.workflow FOR EACH ROW EXECUTE FUNCTION public.update_workflow_updated_at_column();
+
+
+--
+-- Name: llm_action fk_llm_action_provider; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.llm_action
+    ADD CONSTRAINT fk_llm_action_provider FOREIGN KEY (provider_id) REFERENCES public.llm_provider(id);
 
 
 --

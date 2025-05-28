@@ -419,7 +419,8 @@ CREATE TABLE public.llm_action (
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     input_field character varying(128),
-    output_field character varying(128)
+    output_field character varying(128),
+    provider_id integer NOT NULL
 );
 
 
@@ -1506,9 +1507,9 @@ COPY public.image_style (id, title, description, created_at, updated_at) FROM st
 -- Data for Name: llm_action; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.llm_action (id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", created_at, updated_at, input_field, output_field) FROM stdin;
-13	testiest	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	27	claude-3-sonnet-20240229	0.7	1000	0	2025-05-28 11:45:41.917074	2025-05-28 11:45:41.917074	\N	\N
-14	safest	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	26	gpt-4-turbo	0.7	1000	0	2025-05-28 11:55:03.433213	2025-05-28 12:50:39.235763	\N	\N
+COPY public.llm_action (id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", created_at, updated_at, input_field, output_field, provider_id) FROM stdin;
+13	testiest	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	27	claude-3-sonnet-20240229	0.7	1000	0	2025-05-28 11:45:41.917074	2025-05-28 12:59:12.007828	\N	\N	1
+14	Expand from seed idea to Scottish brief	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	26	llama3.1:70b	0.7	1000	0	2025-05-28 11:55:03.433213	2025-05-28 13:29:10.644221	\N	\N	1
 \.
 
 
@@ -2463,6 +2464,14 @@ CREATE TRIGGER update_user_updated_at BEFORE UPDATE ON public."user" FOR EACH RO
 --
 
 CREATE TRIGGER update_workflow_updated_at BEFORE UPDATE ON public.workflow FOR EACH ROW EXECUTE FUNCTION public.update_workflow_updated_at_column();
+
+
+--
+-- Name: llm_action fk_llm_action_provider; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.llm_action
+    ADD CONSTRAINT fk_llm_action_provider FOREIGN KEY (provider_id) REFERENCES public.llm_provider(id);
 
 
 --
