@@ -154,6 +154,8 @@
     }
     // Dark theme classes
     select.classList.add('bg-gray-900', 'text-gray-100', 'border', 'border-gray-700');
+    // Explicitly set value to ensure sync
+    if (selected) select.value = String(selected);
   }
 
   // Render post development fields table
