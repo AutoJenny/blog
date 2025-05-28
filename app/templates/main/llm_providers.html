@@ -90,7 +90,7 @@
                                 class="fa-solid fa-vial"></i> Test</button>
                         <button class="action-btn" title="Set Default"><i class="fa-solid fa-star"></i></button>
                         <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                        {% if provider.type|lower == 'ollama' or provider.name|lower == 'ollama' %}
+                        {% if 'ollama' in provider.type|lower or 'ollama' in provider.name|lower %}
                         <button class="action-btn start-ollama-btn" data-id="{{ provider.id }}" title="Start Ollama"><i
                                 class="fa-solid fa-play"></i> Start</button>
                         {% endif %}
@@ -180,6 +180,9 @@
                 const data = await resp.json();
                 if (resp.ok && data.success) {
                     btn.innerHTML = '<i class="fa-solid fa-check"></i> Started';
+                    // After starting, trigger test to update status
+                    const testBtn = btn.closest('tr').querySelector('.test-provider-btn');
+                    if (testBtn) testBtn.click();
                 } else {
                     btn.innerHTML = '<i class="fa-solid fa-play"></i> Start';
                     alert(data.error || 'Failed to start Ollama');
