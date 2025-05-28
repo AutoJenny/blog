@@ -292,6 +292,10 @@
             const resp = await fetch('/api/v1/llm/providers');
             const providers = await resp.json();
             providerSelect.innerHTML = providers.map(p => `<option value="${p.id}" ${selectedProviderId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+            // Auto-load models for first provider if none selected
+            if (!selectedProviderId && providers.length > 0) {
+                loadModels(providers[0].id);
+            }
         } catch (e) {
             providerSelect.innerHTML = '<option value="">Failed to load providers</option>';
         }
