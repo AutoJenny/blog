@@ -259,19 +259,22 @@
                         variables replaced at runtime.</div>
                 </div>
             </div>
-            <!-- Stage 4: Test & Save -->
+            <!-- Stage 4: Save -->
             <div class="mb-8">
-                <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-vial"></i> 4. Test &
-                    Save</h3>
-                <div class="form-group">
-                    <label class="form-label">Test Input</label>
-                    <textarea id="builderTestInput" class="form-textarea" rows="2"></textarea>
-                </div>
-                <button type="button" class="btn btn-primary mb-2" id="builderRunTestBtn">Run Test</button>
-                <div id="builderTestOutput" class="bg-dark-card rounded p-4 mt-2 text-indigo-100 text-sm"
-                    style="white-space: pre-wrap; min-height: 2em;"></div>
+                <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-vial"></i> 4. Save</h3>
                 <div class="flex justify-end gap-4 mt-6">
                     <button type="submit" class="btn btn-primary">Save Action</button>
+                </div>
+                <div id="builderTestArea" style="display:none; margin-top:2.5rem;">
+                    <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-vial"></i> Test
+                        Action</h3>
+                    <div class="form-group">
+                        <label class="form-label">Test Input</label>
+                        <textarea id="builderTestInput" class="form-textarea" rows="2"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary mb-2" id="builderRunTestBtn">Run Test</button>
+                    <div id="builderTestOutput" class="bg-dark-card rounded p-4 mt-2 text-indigo-100 text-sm"
+                        style="white-space: pre-wrap; min-height: 2em;"></div>
                 </div>
             </div>
         </form>
@@ -384,6 +387,8 @@
             if (heading) {
                 heading.innerHTML = isEdit ? '<i class="fa-solid fa-edit"></i> Edit Action' : '<i class="fa-solid fa-plus"></i> Create New Action (Builder)';
             }
+            const testArea = document.getElementById('builderTestArea');
+            if (testArea) testArea.style.display = isEdit ? '' : 'none';
         }
         function clearBuilder() {
             document.getElementById('actionBuilderForm').reset();
@@ -426,6 +431,67 @@
                     alert('Failed to load action details: ' + err);
                 }
             });
+        });
+
+        // --- TEST ACTION LOGIC ---
+        document.getElementById('builderRunTestBtn').addEventListener('click', async function () {
+            const form = document.getElementById('actionBuilderForm');
+            const actionId = form.getAttribute('data-edit-id');
+            if (!actionId) {
+                alert('Test is only available in edit mode.');
+                return;
+            }
+            const testInput = document.getElementById('builderTestInput').value;
+            const outputDiv = document.getElementById('builderTestOutput');
+            const btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Running...';
+            outputDiv.textContent = 'Running...';
+            // Gather settings
+            const provider_id = document.getElementById('builderProvider').value;
+            const llm_model = document.getElementById('builderModel').value;
+            const prompt_template_id = document.getElementById('builderPromptTemplate').value;
+            const temperature = parseFloat(document.getElementById('builderTemperature').value) || 0.7;
+            const max_tokens = parseInt(document.getElementById('builderMaxTokens').value) || 1000;
+            // Auto-detect FIELDNAME from prompt preview
+            let promptPreview = document.getElementById('builderPromptPreview').textContent;
+            let match = promptPreview.match(/\[data:([a-zA-Z0-9_]+)\]/);
+            let testInputObj = {};
+            if (match && match[1]) {
+                testInputObj[match[1]] = testInput;
+            } else {
+                testInputObj['input'] = testInput;
+            }
+            // POST to /api/v1/llm/actions/<id>/test
+            try {
+                const resp = await fetch(`/api/v1/llm/actions/${actionId}/test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input: testInputObj,
+                        provider_id,
+                        llm_model,
+                        prompt_template_id,
+                        temperature,
+                        max_tokens
+                    })
+                });
+                const data = await resp.json();
+                if (resp.ok && (data.output || data.response || data.result)) {
+                    outputDiv.textContent = data.output || data.response || data.result;
+                    if (data.rendered_prompt) {
+                        outputDiv.textContent += '\n\n---\nPrompt Sent:\n' + data.rendered_prompt;
+                    }
+                } else if (data.error) {
+                    outputDiv.textContent = 'Error: ' + data.error;
+                } else {
+                    outputDiv.textContent = 'Unknown error or no output.';
+                }
+            } catch (e) {
+                outputDiv.textContent = 'Error: ' + e;
+            }
+            btn.disabled = false;
+            btn.textContent = 'Run Test';
         });
     });
     // --- Test & Save/Update Logic ---
