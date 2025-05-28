@@ -658,14 +658,15 @@ def models():
         # Return all models from the database
         with get_db_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute('SELECT id, name, provider_id, description FROM llm_model ORDER BY id')
+                cur.execute('SELECT id, name, provider_id, description, strengths FROM llm_model ORDER BY id')
                 models = cur.fetchall()
         return jsonify([
             {
                 'id': m['id'],
                 'name': m['name'],
                 'provider_id': m['provider_id'],
-                'description': m['description']
+                'description': m['description'],
+                'strengths': m.get('strengths') if isinstance(m, dict) else m[4]
             } for m in models
         ])
     # POST not implemented for now
