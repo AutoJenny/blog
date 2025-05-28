@@ -354,6 +354,8 @@ def post_public(post_id):
 
 @bp.route('/posts', methods=['GET'])
 def posts_listing():
+    import logging
+    logger = logging.getLogger("blog_debug")
     posts = []
     substages = {}
     show_deleted = request.args.get('show_deleted', '0') == '1'
@@ -379,7 +381,9 @@ def posts_listing():
                         ORDER BY created_at DESC
                     """)
                 posts = cur.fetchall()
+        logger.info(f"[DEBUG] posts_listing: fetched {len(posts)} posts: {posts}")
     except Exception as e:
+        logger.error(f"[DEBUG] posts_listing: exception {e}")
         posts = []
     # Format dates as 'ago' using humanize, with Europe/London timezone
     london = pytz.timezone('Europe/London')
