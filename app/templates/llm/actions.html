@@ -346,28 +346,31 @@
             }
         });
 
-        // --- DELETE ACTION LOGIC ---
-        document.querySelectorAll('.delete-action-btn').forEach(btn => {
-            btn.addEventListener('click', async function () {
-                const actionId = btn.dataset.id;
-                if (!actionId) return;
-                if (!confirm('Are you sure you want to delete this action? This cannot be undone.')) return;
-                btn.disabled = true;
-                btn.textContent = 'Deleting...';
-                try {
-                    const resp = await fetch(`/api/v1/llm/actions/${actionId}`, { method: 'DELETE' });
-                    const data = await resp.json();
-                    if (resp.ok && data.status === 'success') {
-                        btn.closest('.action-accordion-item').remove();
-                    } else {
-                        alert(data.error || 'Failed to delete action.');
-                    }
-                } catch (e) {
-                    alert('Error deleting action: ' + e);
+        // --- DELETE ACTION LOGIC (event delegation) ---
+        document.getElementById('actionAccordionList').addEventListener('click', async function (e) {
+            console.log('AccordionList clicked', e.target);
+            const btn = e.target.closest('.delete-action-btn');
+            if (!btn) return;
+            console.log('Remove button clicked', btn);
+            const actionId = btn.dataset.id;
+            if (!actionId) return;
+            if (!confirm('Are you sure you want to delete this action? This cannot be undone.')) return;
+            btn.disabled = true;
+            btn.textContent = 'Deleting...';
+            try {
+                const resp = await fetch(`/api/v1/llm/actions/${actionId}`, { method: 'DELETE' });
+                const data = await resp.json();
+                console.log('Remove response', resp, data);
+                if (resp.ok && data.status === 'success') {
+                    btn.closest('.action-accordion-item').remove();
+                } else {
+                    alert(data.error || 'Failed to delete action.');
                 }
-                btn.disabled = false;
-                btn.textContent = 'Delete';
-            });
+            } catch (e) {
+                alert('Error deleting action: ' + e);
+            }
+            btn.disabled = false;
+            btn.textContent = 'Delete';
         });
     });
     // --- Test & Save Logic ---
