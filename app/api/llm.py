@@ -677,35 +677,52 @@ def test_action(action_id):
     """Test an LLM action using its prompt_template and return diagnostics."""
     from app.llm.services import LLMService
     from jinja2 import Template
+    import logging
+    logger = logging.getLogger("llm_test")
     action = None
+    logger.info(f"[TEST] Called for action_id={action_id}")
+    data = request.get_json() or {}
+    logger.info(f"[TEST] Incoming POST data: {data}")
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             # Fetch action
             cur.execute("SELECT * FROM llm_action WHERE id = %s", (action_id,))
             row = cur.fetchone()
             if not row:
+                logger.error("[TEST] Action not found")
                 return jsonify({'error': 'Action not found'}), 404
             action = dict(row)
             # Fetch model
             cur.execute("SELECT * FROM llm_model WHERE name = %s", (action['llm_model'],))
             model_row = cur.fetchone()
             if not model_row:
+                logger.error("[TEST] Model not found for this action")
                 return jsonify({'error': 'Model not found for this action'}), 400
             model = dict(model_row)
             # Fetch provider
             cur.execute("SELECT * FROM llm_provider WHERE id = %s", (model['provider_id'],))
             provider_row = cur.fetchone()
             if not provider_row:
+                logger.error("[TEST] Provider not found for this action")
                 return jsonify({'error': 'Provider not found for this action'}), 400
             provider = dict(provider_row)
+            # Fetch latest prompt template from llm_prompt
+            cur.execute("SELECT prompt_text FROM llm_prompt WHERE id = %s", (action['prompt_template_id'],))
+            prompt_row = cur.fetchone()
+            if not prompt_row:
+                logger.error("[TEST] Prompt template not found for this action")
+                return jsonify({'error': 'Prompt template not found for this action'}), 400
+            prompt_text = prompt_row['prompt_text']
+            logger.info(f"[TEST] Using prompt_text from llm_prompt: {prompt_text}")
     provider_type = provider.get('type')
     if provider_type == 'local':
         provider_type = 'ollama'
     if not provider_type:
+        logger.error("[TEST] Provider type missing for this action")
         return jsonify({'error': 'Provider type missing for this action'}), 400
     provider_config = provider
-    data = request.get_json() or {}
     test_input = data.get('input', {})
+    logger.info(f"[TEST] Raw test_input: {test_input}")
     # Ensure test_input is a mapping for Jinja2
     if isinstance(test_input, str):
         test_input = {'input': test_input}
@@ -714,14 +731,20 @@ def test_action(action_id):
     # Flatten if test_input = {'input': {...}}
     if isinstance(test_input, dict) and set(test_input.keys()) == {'input'} and isinstance(test_input['input'], dict):
         test_input = test_input['input']
-    # Render the prompt template with test input
+    logger.info(f"[TEST] Normalized test_input: {test_input}")
+    # Detect FIELDNAME in prompt
+    match = re.search(r'\[data:([a-zA-Z0-9_]+)\]', prompt_text)
+    fieldname = match.group(1) if match else None
+    logger.info(f"[TEST] Detected FIELDNAME: {fieldname}")
+    # Replace [data:variable] with {{ variable }} for Jinja2
+    prompt_text_jinja = re.sub(r'\[data:([a-zA-Z0-9_]+)\]', r'{{ \1 }}', prompt_text)
+    logger.info(f"[TEST] Prompt template after substitution: {prompt_text_jinja}")
     try:
-        # Replace [data:variable] with {{ variable }} for Jinja2
-        prompt_text = action['prompt_template']
-        prompt_text = re.sub(r'\[data:([a-zA-Z0-9_]+)\]', r'{{ \1 }}', prompt_text)
-        template = Template(prompt_text)
+        template = Template(prompt_text_jinja)
         rendered_prompt = template.render(**test_input)
+        logger.info(f"[TEST] Rendered prompt: {rendered_prompt}")
     except Exception as e:
+        logger.error(f"[TEST] Prompt rendering error: {str(e)}")
         return jsonify({'error': f'Prompt rendering error: {str(e)}'}), 400
     # Call the LLM service
     try:
@@ -736,6 +759,7 @@ def test_action(action_id):
         )
         return jsonify({'result': result, 'rendered_prompt': rendered_prompt})
     except Exception as e:
+        logger.error(f"[TEST] LLM service error: {str(e)}")
         return jsonify({'error': f'LLM service error: {str(e)}'}), 500
 
 # --- Post Substage Action Endpoints ---
