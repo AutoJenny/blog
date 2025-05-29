@@ -84,4 +84,9 @@
 2025-05-29: FEAT: LLM actions now parsed into structured messages or canonical prompt per llm_prompt_structuring.md.
 - Added parse_tagged_prompt_to_messages utility to app/llm/services.py.
 - Integrated into LLMService.execute_action for robust, provider-agnostic prompt/message handling.
-- All LLM actions now use correct structure for chat and single-prompt LLMs. 
+- All LLM actions now use correct structure for chat and single-prompt LLMs.
+
+2025-05-29: FEAT: prompt_text is now auto-generated from prompt_json on create/update in llm_prompt.
+- Ensures all prompts and actions have canonical prompt_text for LLM execution.
+- Follows the canonical mapping in docs/llm/llm_prompt_structuring.md.
+- Fixes all issues with empty/null prompt_template in actions and robustifies LLM workflow. 
