@@ -93,6 +93,7 @@ def parse_tagged_prompt_to_messages(prompt_template: str, fields: dict) -> dict:
     Parse a tagged prompt template into structured messages (for chat LLMs) and a canonical prompt string (for single-prompt LLMs).
     Returns: { 'messages': [...], 'prompt': '...' }
     """
+    current_app.logger.debug(f"[DEBUG] Parsing tagged prompt: {prompt_template}")
     # Replace [data:FIELDNAME] with the actual input, if present
     def replace_data_tags(text):
         def repl(match):
@@ -103,6 +104,7 @@ def parse_tagged_prompt_to_messages(prompt_template: str, fields: dict) -> dict:
     # Find all [role: TAG] or [role] blocks
     tag_pattern = re.compile(r'\[(system|user|assistant)(?::\s*([A-Z_]+))?\]\s*([^\[]+)', re.IGNORECASE)
     matches = tag_pattern.findall(prompt_template)
+    current_app.logger.debug(f"[DEBUG] Tag matches: {matches}")
     # Group content by role
     role_contents = {'system': [], 'user': [], 'assistant': []}
     for role, tag, content in matches:
@@ -123,6 +125,8 @@ def parse_tagged_prompt_to_messages(prompt_template: str, fields: dict) -> dict:
     if 'input' in fields:
         prompt_lines.append('Input: ' + str(fields['input']))
     prompt = '\n'.join(prompt_lines)
+    current_app.logger.debug(f"[DEBUG] Parsed messages: {messages}")
+    current_app.logger.debug(f"[DEBUG] Parsed prompt: {prompt}")
     return {'messages': messages, 'prompt': prompt}
 
 class LLMService:
@@ -203,6 +207,7 @@ class LLMService:
         # --- NEW: Parse prompt template into messages/prompt ---
         prompt_template = action.get('prompt_template', '')
         parsed = parse_tagged_prompt_to_messages(prompt_template, fields)
+        current_app.logger.debug(f"[DEBUG] LLMService.execute_action parsed: {parsed}")
         # Choose input/output fields
         input_field = action.get('input_field') or 'input'
         output_field = action.get('output_field') or 'output'
