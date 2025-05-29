@@ -68,4 +68,8 @@
 2025-05-29: BUGFIX: LLM Actions UI now recognizes both {status: 'success'} and {success: true} API responses for action creation.
 - Fixed actionBuilderForm submit handler to check for both response formats.
 - Users can now reliably create and update LLM actions from the UI regardless of backend response format.
-- [LLM Actions Save UX] 
+- [LLM Actions Save UX]
+
+2025-05-29: RESTORED: GET /api/v1/llm/actions endpoint now returns all LLM actions as JSON.
+- Required for workflow and admin UIs to function correctly.
+- Fixes 405 errors on workflow/idea and other pages that fetch the actions list. 
