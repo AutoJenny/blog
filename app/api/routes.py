@@ -14,6 +14,9 @@ import shutil
 import random as _random
 from app.blog.routes import get_db_conn
 import sys
+from dotenv import dotenv_values
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 
 def check_ollama_performance():
@@ -914,3 +917,39 @@ def debug_list_routes():
                 "methods": sorted([m for m in rule.methods if m not in ("HEAD", "OPTIONS")]),
             })
     return jsonify(sorted(output, key=lambda x: x["rule"])), 200
+
+# --- PostDevelopment Fields API ---
+@bp.route("/post_development/fields", methods=["GET"])
+def get_post_development_fields():
+    try:
+        # Load DATABASE_URL from assistant_config.env
+        config = dotenv_values(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
+        db_url = config.get('DATABASE_URL')
+        if not db_url or db_url.strip() == '':
+            return jsonify({"error": "DATABASE_URL is not set or is empty!"}), 500
+        with psycopg2.connect(db_url, cursor_factory=RealDictCursor) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development' AND column_name NOT IN ('id', 'post_id')")
+                columns = [row["column_name"] for row in cur.fetchall()]
+        return jsonify({"fields": columns})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@bp.route("/post/<int:post_id>/development", methods=["GET"])
+def get_post_development(post_id):
+    try:
+        # Load DATABASE_URL from assistant_config.env
+        config = dotenv_values(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
+        db_url = config.get('DATABASE_URL')
+        if not db_url or db_url.strip() == '':
+            return jsonify({"error": "DATABASE_URL is not set or is empty!"}), 500
+        with psycopg2.connect(db_url, cursor_factory=RealDictCursor) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                dev = cur.fetchone()
+        if not dev:
+            return jsonify({"error": "Not found"}), 404
+        # Exclude id and post_id
+        return jsonify({k: v for k, v in dev.items() if k not in ["id", "post_id"]})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
