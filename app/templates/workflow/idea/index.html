@@ -153,14 +153,15 @@
                 // Show backend-to-LLM JSON if available
                 const debugLLMPanel = document.getElementById('debug-json-llm-panel');
                 const debugLLMContent = document.getElementById('debug-json-llm-content');
-                if (result.llm_request_json && debugLLMPanel && debugLLMContent) {
+                if (result.llm_payload && debugLLMPanel && debugLLMContent) {
+                    debugLLMPanel.classList.remove('hidden');
+                    debugLLMContent.textContent = JSON.stringify(result.llm_payload, null, 2);
+                } else if (result.llm_request_json && debugLLMPanel && debugLLMContent) {
                     debugLLMPanel.classList.remove('hidden');
                     debugLLMContent.textContent = JSON.stringify(result.llm_request_json, null, 2);
-                } else if (!result.llm_request_json) {
-                    if (debugLLMPanel && debugLLMContent) {
-                        debugLLMPanel.classList.remove('hidden');
-                        debugLLMContent.textContent = 'No backend LLM request JSON available.';
-                    }
+                } else if (debugLLMPanel && debugLLMContent) {
+                    debugLLMPanel.classList.remove('hidden');
+                    debugLLMContent.textContent = 'No backend LLM JSON.';
                 }
             });
         });
