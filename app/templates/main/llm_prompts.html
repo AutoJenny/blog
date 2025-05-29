@@ -109,6 +109,46 @@
         color: #d1fae5 !important;
         border: 1px solid #065f46;
     }
+
+    .tag-role {
+        background: #1e3a8a;
+        color: #fff;
+        border-radius: 0.5em;
+        padding: 0.2em 0.9em;
+        font-weight: 700;
+    }
+
+    .tag-operation {
+        background: #991b1b;
+        color: #fff;
+        border-radius: 0.5em;
+        padding: 0.2em 0.9em;
+        font-weight: 700;
+    }
+
+    .tag-format {
+        background: #b45309;
+        color: #fff;
+        border-radius: 0.5em;
+        padding: 0.2em 0.9em;
+        font-weight: 700;
+    }
+
+    .tag-style {
+        background: #065f46;
+        color: #fff;
+        border-radius: 0.5em;
+        padding: 0.2em 0.9em;
+        font-weight: 700;
+    }
+
+    .tag-specimen {
+        background: #374151;
+        color: #fff;
+        border-radius: 0.5em;
+        padding: 0.2em 0.9em;
+        font-weight: 700;
+    }
 </style>
 <div class="container mx-auto py-10 px-4">
     <div class="tab-bar mb-0">
@@ -189,7 +229,17 @@
                         <td class="py-2 px-3">{{ part.id }}</td>
                         <td class="py-2 px-3">{{ part.name }}</td>
                         <td class="py-2 px-3">{{ part.type }}</td>
-                        <td class="py-2 px-3">{{ part.tags|join(', ') if part.tags else '-' }}</td>
+                        <td class="py-2 px-3">
+                            {% if part.tags %}
+                            {% for tag in part.tags %}
+                            <span
+                                class="
+                                        {% if tag == 'role' %}tag-role{% elif tag == 'operation' %}tag-operation{% elif tag == 'format' %}tag-format{% elif tag == 'style' %}tag-style{% elif tag == 'specimen' %}tag-specimen{% endif %}">
+                                {{ tag|capitalize }}
+                            </span>{% if not loop.last %} {% endif %}
+                            {% endfor %}
+                            {% else %}-{% endif %}
+                        </td>
                         <td class="py-2 px-3 text-xs">{{ part.content }}</td>
                         <td class="py-2 px-3">{{ part.order }}</td>
                         <td class="py-2 px-3">{{ part.action_id }}</td>
@@ -679,12 +729,27 @@
             getPromptPartsData().forEach(part => {
                 if (assemblerSelectedType !== 'all' && part.type.toLowerCase() !== assemblerSelectedType) return;
                 // Tag filter: if no tags selected, show all; else at least one must match
-                const tags = (part.tags || '').split(',').map(t => t.trim().toLowerCase());
+                const tags = (part.tags || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
                 let tagMatch = (selectedTags.length === 0) || tags.some(t => selectedTags.includes(t));
                 if (!tagMatch) return;
                 const div = document.createElement('div');
-                div.className = 'assembler-part rounded p-2 mb-2 cursor-pointer';
-                div.innerHTML = `<b>${part.type}</b>: <span class="text-indigo-100">${part.name}</span><br><span class="text-xs text-indigo-300">${part.content}</span>`;
+                div.className = 'assembler-part rounded p-2 mb-2 cursor-pointer flex items-center gap-3';
+                // Render all tags as colored spans
+                const tagsHtml = tags.map(tag => {
+                    if (tag === 'role') return '<span class="tag-role">Role</span>';
+                    if (tag === 'operation') return '<span class="tag-operation">Operation</span>';
+                    if (tag === 'format') return '<span class="tag-format">Format</span>';
+                    if (tag === 'style') return '<span class="tag-style">Style</span>';
+                    if (tag === 'specimen') return '<span class="tag-specimen">Specimen</span>';
+                    return '';
+                }).join(' ');
+                div.innerHTML = `
+                    <div class="flex flex-wrap gap-2 mr-3">${tagsHtml}</div>
+                    <div>
+                        <b>${part.name}</b><br>
+                        <span class="text-xs text-indigo-300">${part.content}</span>
+                    </div>
+                `;
                 div.onclick = function () {
                     if (part.type !== 'data' && assemblerSequence.some(p => p.id === part.id && p.type === part.type)) {
                         alert('This part is already in the sequence.');
