@@ -226,6 +226,36 @@ def generate_social(section_id):
     return jsonify({"twitter": "Test tweet", "instagram": "Test instagram post"})
 
 
+# Utility: Convert prompt_json to canonical prompt_text
+
+def prompt_json_to_text(prompt_json):
+    """Convert canonical prompt_json to a natural language prompt_text as per llm_prompt_structuring.md."""
+    if not prompt_json:
+        return ''
+    # If string, parse as JSON
+    import json as _json
+    if isinstance(prompt_json, str):
+        try:
+            prompt_json = _json.loads(prompt_json)
+        except Exception:
+            return ''
+    role = prompt_json.get('role') or ''
+    voice = prompt_json.get('voice') or ''
+    operation = prompt_json.get('operation') or ''
+    data = prompt_json.get('data') or ''
+    # Compose as per canonical mapping
+    lines = []
+    if role:
+        lines.append(f"You are {role}.")
+    if voice:
+        lines.append(f"Write in the style of {voice}.")
+    if operation:
+        lines.append(f"Task: {operation}")
+    if data:
+        lines.append(f"Input: {data}")
+    return '\n'.join(lines)
+
+
 @bp.route('/prompts', methods=['POST'])
 def create_prompt():
     data = request.get_json()
@@ -244,16 +274,17 @@ def create_prompt():
     current_app.logger.error(f"[CREATE PROMPT] prompt_json type before insert: {type(prompt_json)} value: {prompt_json}")
     if not name or not prompt_json:
         return jsonify({'success': False, 'error': 'Name and prompt_json required'}), 400
+    prompt_text = prompt_json_to_text(prompt_json)
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 from psycopg2.extras import Json
                 current_app.logger.error(f"[CREATE PROMPT] Passing to Json(): {prompt_json}")
                 cur.execute('''
-                    INSERT INTO llm_prompt (name, prompt_json, created_at, updated_at, "order")
-                    VALUES (%s, %s, NOW(), NOW(), 0)
+                    INSERT INTO llm_prompt (name, prompt_json, prompt_text, created_at, updated_at, "order")
+                    VALUES (%s, %s, %s, NOW(), NOW(), 0)
                     RETURNING id
-                ''', (name, Json(prompt_json)))
+                ''', (name, Json(prompt_json), prompt_text))
                 new_id = cur.fetchone()['id']
                 conn.commit()
         return jsonify({'success': True, 'prompt': {'id': new_id, 'name': name}})
@@ -288,17 +319,19 @@ def update_prompt(prompt_id):
     data = request.get_json()
     if not data or not data.get('name') or not data.get('prompt_json'):
         return jsonify({'success': False, 'error': 'Name and prompt_json required'}), 400
+    prompt_text = prompt_json_to_text(data['prompt_json'])
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute('''
-                    UPDATE llm_prompt SET name=%s, prompt_json=%s, updated_at=NOW() WHERE id=%s
-                ''', (data['name'], Json(data['prompt_json']), prompt_id))
+                    UPDATE llm_prompt SET name=%s, prompt_json=%s, prompt_text=%s, updated_at=NOW() WHERE id=%s
+                ''', (data['name'], Json(data['prompt_json']), prompt_text, prompt_id))
                 conn.commit()
         return jsonify({'success': True, 'prompt': {
             'id': prompt_id,
             'name': data['name'],
-            'prompt_json': data['prompt_json']
+            'prompt_json': data['prompt_json'],
+            'prompt_text': prompt_text
         }})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
