@@ -849,13 +849,24 @@ def post_substage_actions():
         return jsonify(actions)
     if request.method == 'POST':
         data = request.get_json() or {}
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"[DEBUG] /post_substage_actions POST incoming data: {data}")
         post_id = data.get('post_id')
         substage = data.get('substage')
         action_id = data.get('action_id')
         button_label = data.get('button_label')
         button_order = data.get('button_order', 0)
-        if not post_id or not substage or not action_id:
-            return jsonify({'error': 'post_id, substage, and action_id required'}), 400
+        missing = []
+        if not post_id:
+            missing.append('post_id')
+        if not substage:
+            missing.append('substage')
+        if not action_id:
+            missing.append('action_id')
+        if missing:
+            logger.error(f"[DEBUG] /post_substage_actions POST missing fields: {missing}")
+            return jsonify({'error': 'post_id, substage, and action_id required', 'missing': missing, 'data': data}), 400
         try:
             with get_db_conn() as conn:
                 with conn.cursor() as cur:
@@ -887,7 +898,17 @@ def post_substage_actions():
                             VALUES (%s, %s, %s, %s, %s)
                             RETURNING id
                         """, (post_id, substage, action_id, button_label, button_order))
-                        new_id = cur.fetchone()[0]
+                        fetch = cur.fetchone()
+                        if fetch is None:
+                            current_app.logger.error(f"[DEBUG] post_substage_actions insert: fetch is None after insert!")
+                            return jsonify({'status': 'error', 'error': 'Insert failed, no id returned'}), 400
+                        if isinstance(fetch, dict):
+                            new_id = fetch.get('id')
+                        elif isinstance(fetch, (list, tuple)):
+                            new_id = fetch[0]
+                        else:
+                            current_app.logger.error(f"[DEBUG] post_substage_actions insert: Unexpected fetch type: {type(fetch)} value: {fetch}")
+                            return jsonify({'status': 'error', 'error': f'Unexpected fetch type: {type(fetch)}', 'fetch': str(fetch)}), 400
                     conn.commit()
             return jsonify({'id': new_id, 'status': 'success'})
         except Exception as e:
