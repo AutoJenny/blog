@@ -723,3 +723,7 @@ All notable changes to this project are documented in this file.
 - Removed hardcoded prompt patch; restored dynamic prompt construction from database.
 - Added detailed prompt construction logging and diagnostics.
 - See docs/temp/llm_prompt_debugging_action_plan.md for full engineering summary and action plan.
+
+2025-05-29 Fix: Robust handling of cur.fetchone() after insert in /post_substage_actions
+- Prevents 400 errors and KeyError/TypeError on repeated generations.
+- Patch tested and confirmed resolved.
