@@ -400,7 +400,7 @@
                 <tbody>
                     {% for prompt in prompts %}
                     <tr class="border-b border-dark-border hover:bg-indigo-950/30"
-                        data-prompt-json="{{ prompt.prompt_json|tojson|safe }}">
+                        data-prompt-json="{{ prompt.prompt_json|default([])|tojson|safe }}">
                         <td class="py-2 px-3 font-semibold text-white">{{ prompt.name }}</td>
                         <td class="py-2 px-3">{{ prompt.type if prompt.type else 'None' }}</td>
                         <td class="py-2 px-3">
