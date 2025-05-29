@@ -149,6 +149,25 @@
         padding: 0.2em 0.9em;
         font-weight: 700;
     }
+
+    /* Add system/user part backgrounds for Prompt Parts and Assembler */
+    .part-bg-system {
+        background: #172554;
+        /* blue-900 */
+        color: #dbeafe;
+    }
+
+    .part-bg-user {
+        background: #064e3b;
+        /* deep green */
+        color: #d1fae5;
+    }
+
+    .part-bg-assistant {
+        background: #3b0764;
+        /* deep purple for assistant, if needed */
+        color: #f3e8ff;
+    }
 </style>
 <div class="container mx-auto py-10 px-4">
     <div class="tab-bar mb-0">
@@ -728,12 +747,14 @@
             const selectedTags = Array.from(assemblerTagCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
             getPromptPartsData().forEach(part => {
                 if (assemblerSelectedType !== 'all' && part.type.toLowerCase() !== assemblerSelectedType) return;
-                // Tag filter: if no tags selected, show all; else at least one must match
                 const tags = (part.tags || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
                 let tagMatch = (selectedTags.length === 0) || tags.some(t => selectedTags.includes(t));
                 if (!tagMatch) return;
                 const div = document.createElement('div');
-                div.className = 'assembler-part rounded p-2 mb-2 cursor-pointer flex items-center gap-3';
+                let bgClass = 'part-bg-system';
+                if (part.type.toLowerCase() === 'user') bgClass = 'part-bg-user';
+                if (part.type.toLowerCase() === 'assistant') bgClass = 'part-bg-assistant';
+                div.className = `assembler-part rounded p-2 mb-2 cursor-pointer flex items-center gap-3 ${bgClass}`;
                 // Render all tags as colored spans
                 const tagsHtml = tags.map(tag => {
                     if (tag === 'role') return '<span class="tag-role">Role</span>';
@@ -803,24 +824,48 @@
             assemblerSequence.forEach((part, idx) => {
                 const li = document.createElement('li');
                 li.setAttribute('data-idx', idx);
+                let bgClass = '';
                 if (part.type === 'data') {
-                    li.className = 'flex items-center justify-between mb-2 rounded p-2 draggable-seq-item'; // green (already styled)
-                } else {
-                    li.className = 'flex items-center justify-between mb-2 rounded p-2 assembler-part'; // blue
+                    bgClass = 'draggable-seq-item'; // green (already styled)
+                } else if (part.type === 'system') {
+                    bgClass = 'assembler-part part-bg-system';
+                } else if (part.type === 'user') {
+                    bgClass = 'assembler-part part-bg-user';
+                } else if (part.type === 'assistant') {
+                    bgClass = 'assembler-part part-bg-assistant';
                 }
-                li.innerHTML = `
-                    <span class="drag-handle mr-3 cursor-grab text-green-300">
-                        <i class="fa-solid fa-grip-vertical"></i>
-                    </span>
-                    <span>
-                        ${part.type === 'data'
-                        ? `<b class="text-green-200">[data:${part.field}]</b>`
-                        : `<b class="text-green-200">${part.type}</b>: <span class="text-indigo-100">${part.name}</span>
-                               <span class="text-xs text-indigo-300">${part.content}</span>`
-                    }
-                    </span>
-                    <button type="button" class="btn btn-danger btn-xs ml-2" data-idx="${idx}">Remove</button>
-                `;
+                li.className = `flex items-center justify-between mb-2 rounded p-2 ${bgClass}`;
+                if (part.type === 'data') {
+                    li.innerHTML = `
+                        <span class="drag-handle mr-3 cursor-grab text-green-300">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                        </span>
+                        <span><b class="text-green-200">[data:${part.field}]</b></span>
+                        <button type="button" class="btn btn-danger btn-xs ml-2" data-idx="${idx}">Remove</button>
+                    `;
+                } else {
+                    // Render tags as colored spans
+                    const tags = (part.tags || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+                    const tagsHtml = tags.map(tag => {
+                        if (tag === 'role') return '<span class="tag-role">Role</span>';
+                        if (tag === 'operation') return '<span class="tag-operation">Operation</span>';
+                        if (tag === 'format') return '<span class="tag-format">Format</span>';
+                        if (tag === 'style') return '<span class="tag-style">Style</span>';
+                        if (tag === 'specimen') return '<span class="tag-specimen">Specimen</span>';
+                        return '';
+                    }).join(' ');
+                    li.innerHTML = `
+                        <span class="drag-handle mr-3 cursor-grab text-green-300">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                        </span>
+                        <span>
+                            <div class="flex flex-wrap gap-2 mb-1">${tagsHtml}</div>
+                            <b class="text-indigo-100">${part.name}</b><br>
+                            <span class="text-xs text-indigo-300">${part.content}</span>
+                        </span>
+                        <button type="button" class="btn btn-danger btn-xs ml-2" data-idx="${idx}">Remove</button>
+                    `;
+                }
                 li.querySelector('button').onclick = function () {
                     assemblerSequence.splice(idx, 1);
                     renderAssemblerSequence();
@@ -999,6 +1044,20 @@
                     });
             };
         });
+        // In Prompt Parts tab table, color each row background by part.type
+        function colorPromptPartsTableRows() {
+            const rows = document.querySelectorAll('#promptPartsTable tbody tr');
+            rows.forEach(row => {
+                const typeCell = row.querySelector('td:nth-child(3)');
+                if (!typeCell) return;
+                const type = typeCell.textContent.trim().toLowerCase();
+                row.classList.remove('part-bg-system', 'part-bg-user', 'part-bg-assistant');
+                if (type === 'system') row.classList.add('part-bg-system');
+                else if (type === 'user') row.classList.add('part-bg-user');
+                else if (type === 'assistant') row.classList.add('part-bg-assistant');
+            });
+        }
+        colorPromptPartsTableRows();
     });
 </script>
 {% endblock %}
