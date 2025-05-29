@@ -229,21 +229,36 @@ def generate_social(section_id):
 # Utility: Convert prompt_json to canonical prompt_text
 
 def prompt_json_to_text(prompt_json):
-    """Convert canonical prompt_json to a natural language prompt_text as per llm_prompt_structuring.md."""
+    """Convert prompt_json (modular array or canonical object) to a natural language prompt_text as per llm_prompt_structuring.md."""
     if not prompt_json:
         return ''
-    # If string, parse as JSON
     import json as _json
+    # If string, parse as JSON
     if isinstance(prompt_json, str):
         try:
             prompt_json = _json.loads(prompt_json)
         except Exception:
             return ''
+    # If it's a list (modular format), convert to canonical object
+    if isinstance(prompt_json, list):
+        canonical = {'role': '', 'voice': '', 'operation': '', 'data': ''}
+        for part in prompt_json:
+            tags = [t.lower() for t in part.get('tags', [])]
+            content = part.get('content', '')
+            # Heuristic: map tags/types to canonical fields
+            if 'role' in tags or (part.get('type') == 'system' and 'role' in (tags or [])):
+                canonical['role'] = content
+            elif 'style' in tags or 'voice' in tags:
+                canonical['voice'] = content
+            elif 'operation' in tags or (part.get('type') == 'user' and 'operation' in (tags or [])):
+                canonical['operation'] = content
+            elif 'data' in tags or part.get('type') == 'data':
+                canonical['data'] = content
+        prompt_json = canonical
     role = prompt_json.get('role') or ''
     voice = prompt_json.get('voice') or ''
     operation = prompt_json.get('operation') or ''
     data = prompt_json.get('data') or ''
-    # Compose as per canonical mapping
     lines = []
     if role:
         lines.append(f"You are {role}.")
