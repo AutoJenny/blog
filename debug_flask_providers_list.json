@@ -1,0 +1,38 @@
+[
+  {
+    "api_url": "http://localhost:11434",
+    "auth_token": null,
+    "created_at": "Mon, 26 May 2025 10:58:23 GMT",
+    "description": "Local Ollama server for fast, private inference.",
+    "id": 1,
+    "name": "Ollama (local)",
+    "updated_at": "Mon, 26 May 2025 10:58:23 GMT"
+  },
+  {
+    "api_url": "https://api.openai.com/v1",
+    "auth_token": null,
+    "created_at": "Mon, 26 May 2025 11:06:00 GMT",
+    "description": "OpenAI API for GPT-3.5, GPT-4, etc.",
+    "id": 2,
+    "name": "OpenAI",
+    "updated_at": "Mon, 26 May 2025 11:06:00 GMT"
+  },
+  {
+    "api_url": "https://api.anthropic.com/v1",
+    "auth_token": null,
+    "created_at": "Mon, 26 May 2025 11:06:01 GMT",
+    "description": "Anthropic Claude API.",
+    "id": 3,
+    "name": "Anthropic",
+    "updated_at": "Mon, 26 May 2025 11:06:01 GMT"
+  },
+  {
+    "api_url": "https://generativelanguage.googleapis.com/v1beta",
+    "auth_token": null,
+    "created_at": "Mon, 26 May 2025 11:06:02 GMT",
+    "description": "Google Gemini API.",
+    "id": 4,
+    "name": "Gemini",
+    "updated_at": "Mon, 26 May 2025 11:06:02 GMT"
+  }
+]

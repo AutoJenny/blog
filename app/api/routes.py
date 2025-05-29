@@ -6,7 +6,6 @@ import os
 import requests
 import time
 import openai
-from app.services.llm_service import ServiceAuth
 from slugify import slugify
 import subprocess
 import glob
@@ -136,7 +135,7 @@ def check_openai():
         if not auth:
             raise ValueError("Authentication token not configured")
 
-        client = openai.OpenAI(auth=ServiceAuth(auth))
+        # client = openai.OpenAI(auth=ServiceAuth(auth))
         start_time = time.time()
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",

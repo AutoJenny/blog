@@ -1,0 +1,8 @@
+ id |      name      |  type  |                     api_url                      | auth_token |                   description                    |         created_at         |         updated_at         
+----+----------------+--------+--------------------------------------------------+------------+--------------------------------------------------+----------------------------+----------------------------
+  1 | Ollama (local) | local  | http://localhost:11434                           |            | Local Ollama server for fast, private inference. | 2025-05-26 10:58:23.513987 | 2025-05-26 10:58:23.513987
+  2 | OpenAI         | openai | https://api.openai.com/v1                        |            | OpenAI API for GPT-3.5, GPT-4, etc.              | 2025-05-26 11:06:00.780193 | 2025-05-26 11:06:00.780193
+  3 | Anthropic      | other  | https://api.anthropic.com/v1                     |            | Anthropic Claude API.                            | 2025-05-26 11:06:01.915015 | 2025-05-26 11:06:01.915015
+  4 | Gemini         | other  | https://generativelanguage.googleapis.com/v1beta |            | Google Gemini API.                               | 2025-05-26 11:06:02.450166 | 2025-05-26 11:06:02.450166
+(4 rows)
+

@@ -1,0 +1,163 @@
+[
+  {
+    "description": "Mistral 7B (local)",
+    "id": 1,
+    "name": "mistral",
+    "provider_id": 1,
+    "strengths": "Fast, low resource, good for general tasks"
+  },
+  {
+    "description": "OpenAI GPT-3.5 Turbo",
+    "id": 2,
+    "name": "gpt-3.5-turbo",
+    "provider_id": 2,
+    "strengths": "Fast, cheap, good for general tasks"
+  },
+  {
+    "description": "OpenAI GPT-4 Turbo",
+    "id": 3,
+    "name": "gpt-4-turbo",
+    "provider_id": 2,
+    "strengths": "Strong reasoning, broad knowledge"
+  },
+  {
+    "description": "OpenAI GPT-4o",
+    "id": 4,
+    "name": "gpt-4o",
+    "provider_id": 2,
+    "strengths": "Fast, multimodal, strong reasoning"
+  },
+  {
+    "description": "Anthropic Claude 3 Opus",
+    "id": 5,
+    "name": "claude-3-opus-20240229",
+    "provider_id": 3,
+    "strengths": "Very strong reasoning, long context"
+  },
+  {
+    "description": "Anthropic Claude 3 Sonnet",
+    "id": 6,
+    "name": "claude-3-sonnet-20240229",
+    "provider_id": 3,
+    "strengths": "Strong, fast, cheaper than Opus"
+  },
+  {
+    "description": "Anthropic Claude 3 Haiku",
+    "id": 7,
+    "name": "claude-3-haiku-20240307",
+    "provider_id": 3,
+    "strengths": "Fastest, cheapest Claude"
+  },
+  {
+    "description": "Google Gemini 1.5 Pro",
+    "id": 8,
+    "name": "gemini-1.5-pro",
+    "provider_id": 4,
+    "strengths": "Multimodal, long context"
+  },
+  {
+    "description": "Google Gemini 1.0 Pro",
+    "id": 9,
+    "name": "gemini-1.0-pro",
+    "provider_id": 4,
+    "strengths": "Good for general tasks"
+  },
+  {
+    "description": "Llama 3.1 70B (Ollama)",
+    "id": 10,
+    "name": "llama3.1:70b",
+    "provider_id": 1,
+    "strengths": "Large, strong reasoning"
+  },
+  {
+    "description": "DeepSeek Coder (Ollama)",
+    "id": 11,
+    "name": "deepseek-coder:latest",
+    "provider_id": 1,
+    "strengths": "Code generation"
+  },
+  {
+    "description": "Nomic Embed Text (Ollama)",
+    "id": 12,
+    "name": "nomic-embed-text:latest",
+    "provider_id": 1,
+    "strengths": "Embeddings"
+  },
+  {
+    "description": "Qwen2.5 Coder 1.5B Base (Ollama)",
+    "id": 13,
+    "name": "qwen2.5-coder:1.5b-base",
+    "provider_id": 1,
+    "strengths": "Code, small model"
+  },
+  {
+    "description": "Llama 3.1 8B (Ollama)",
+    "id": 14,
+    "name": "llama3.1:8b",
+    "provider_id": 1,
+    "strengths": "Fast, low resource"
+  },
+  {
+    "description": "QWQ 32B (Ollama)",
+    "id": 15,
+    "name": "qwq:32b",
+    "provider_id": 1,
+    "strengths": "Large, strong reasoning"
+  },
+  {
+    "description": "Llama 3.2 (Ollama)",
+    "id": 16,
+    "name": "llama3.2:latest",
+    "provider_id": 1,
+    "strengths": "General tasks"
+  },
+  {
+    "description": "Qwen2.5 1.5B (Ollama)",
+    "id": 17,
+    "name": "qwen2.5:1.5b",
+    "provider_id": 1,
+    "strengths": "Small, fast"
+  },
+  {
+    "description": "Aya 35B (Ollama)",
+    "id": 18,
+    "name": "aya:35b",
+    "provider_id": 1,
+    "strengths": "Large, strong reasoning"
+  },
+  {
+    "description": "Qwen2.5 32B (Ollama)",
+    "id": 19,
+    "name": "qwen2.5:32b",
+    "provider_id": 1,
+    "strengths": "Large, strong reasoning"
+  },
+  {
+    "description": "Llama 3 (Ollama)",
+    "id": 20,
+    "name": "llama3:latest",
+    "provider_id": 1,
+    "strengths": "General tasks"
+  },
+  {
+    "description": "Mistral 7B (Ollama)",
+    "id": 21,
+    "name": "mistral:latest",
+    "provider_id": 1,
+    "strengths": "Fast, low resource"
+  },
+  {
+    "description": "Llava (Ollama)",
+    "id": 22,
+    "name": "llava:latest",
+    "provider_id": 1,
+    "strengths": "Multimodal"
+  },
+  {
+    "description": "Mixtral (Ollama)",
+    "id": 23,
+    "name": "mixtral:latest",
+    "provider_id": 1,
+    "strengths": "Large, strong reasoning"
+  }
+]

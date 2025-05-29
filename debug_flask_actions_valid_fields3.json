@@ -1,0 +1,4 @@
+{
+  "error": "null value in column \"provider_id\" of relation \"llm_action\" violates not-null constraint\nDETAIL:  Failing row contains (20, test_field, [system: ROLE] You are a Managing Editor specialising in blog an..., 39, gpt-3.5-turbo, 0.7, 1000, 0, 2025-05-29 11:20:29.561413, 2025-05-29 11:20:29.561413, null, null, null).\n",
+  "status": "error"
+}

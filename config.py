@@ -1,21 +1,14 @@
 import os
 from dotenv import load_dotenv
-from datetime import timedelta
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, ".env"))
 
+# Load .env for non-database settings (SECRET_KEY, etc.)
+load_dotenv(os.path.join(basedir, ".env"))
 
 class Config:
     # Flask
     SECRET_KEY = os.environ.get("SECRET_KEY") or "hard-to-guess-string"
-
-    # SQLAlchemy
-    SQLALCHEMY_DATABASE_URI = (
-        os.environ.get("DATABASE_URL")
-        or "postgresql://nickfiddes@localhost/blog"
-    )
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # TinyMCE
     TINYMCE_API_KEY = os.environ.get("TINYMCE_API_KEY")
@@ -58,32 +51,22 @@ class Config:
     # LLM Service settings
     COMPLETION_SERVICE_TOKEN = os.environ.get("COMPLETION_SERVICE_TOKEN")
 
-
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_ECHO = True
-
 
 class ProductionConfig(Config):
-    # Production-specific settings
     CACHE_TYPE = "redis"
-    SSL_REDIRECT = True if os.environ.get("DYNO") else False  # Enable SSL on Heroku
+    SSL_REDIRECT = True if os.environ.get("DYNO") else False
 
     @classmethod
     def init_app(cls, app):
-        # Log to stderr
         import logging
         from logging import StreamHandler
-
         file_handler = StreamHandler()
         file_handler.setLevel(logging.INFO)
         app.logger.addHandler(file_handler)
-
-        # Handle proxy server headers
         from werkzeug.middleware.proxy_fix import ProxyFix
-
         app.wsgi_app = ProxyFix(app.wsgi_app)
-
 
 config = {
     "development": DevelopmentConfig,
@@ -91,8 +74,9 @@ config = {
     "default": DevelopmentConfig,
 }
 
-
 def get_config(config_name=None):
     if config_name is None:
         config_name = os.environ.get("FLASK_ENV", "default")
     return config[config_name]
+
+print('=== LLM API MODULE LOADED (AUDIT TEST) ===')
