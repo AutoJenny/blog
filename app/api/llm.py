@@ -1050,7 +1050,7 @@ def list_actions():
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT id, field_name, description, prompt_template, prompt_template_id, llm_model, provider_id, temperature, max_tokens, input_field, output_field, "order"
+                SELECT id, field_name, prompt_template, prompt_template_id, llm_model, provider_id, temperature, max_tokens, input_field, output_field, "order"
                 FROM llm_action
                 ORDER BY "order", id
             """)
@@ -1061,15 +1061,14 @@ def list_actions():
         result.append(dict(a) if isinstance(a, dict) else {
             "id": a[0],
             "field_name": a[1],
-            "description": a[2],
-            "prompt_template": a[3],
-            "prompt_template_id": a[4],
-            "llm_model": a[5],
-            "provider_id": a[6],
-            "temperature": a[7],
-            "max_tokens": a[8],
-            "input_field": a[9],
-            "output_field": a[10],
-            "order": a[11],
+            "prompt_template": a[2],
+            "prompt_template_id": a[3],
+            "llm_model": a[4],
+            "provider_id": a[5],
+            "temperature": a[6],
+            "max_tokens": a[7],
+            "input_field": a[8],
+            "output_field": a[9],
+            "order": a[10],
         })
     return jsonify(result)
