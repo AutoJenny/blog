@@ -63,4 +63,9 @@
 - Removed legacy handle_actions function, which conflicted with the new create_action handler.
 - Removed debug return in create_action so the actual DB insert now runs.
 - Added debug prints before and after the insert for robust troubleshooting.
-- This resolves the persistent provider_id null bug and ensures correct Action creation via the API. 
+- This resolves the persistent provider_id null bug and ensures correct Action creation via the API.
+
+2025-05-29: BUGFIX: LLM Actions UI now recognizes both {status: 'success'} and {success: true} API responses for action creation.
+- Fixed actionBuilderForm submit handler to check for both response formats.
+- Users can now reliably create and update LLM actions from the UI regardless of backend response format.
+- [LLM Actions Save UX] 
