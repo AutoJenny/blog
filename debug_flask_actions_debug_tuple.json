@@ -1,4 +1,12 @@
-{
-  "error": "null value in column \"provider_id\" of relation \"llm_action\" violates not-null constraint\nDETAIL:  Failing row contains (33, debugtest, [system: ROLE] You are a Managing Editor specialising in blog an..., 39, llama3.1:70b, 0.7, 1000, 0, 2025-05-29 11:45:54.403734, 2025-05-29 11:45:54.403734, null, null, null).\n",
-  "status": "error"
-}
+=== LLM API MODULE LOADED (AUDIT TEST) ===
+=== FLASK APP __init__.py LOADED (AUDIT TEST) ===
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[AUDIT] About to import llm_api_bp from app.api.llm
+=== LLM API MODULE LOADED (AUDIT TEST) ===
+[AUDIT] Imported llm_api_bp, registering...
+[AUDIT] llm_api_bp registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+ * Serving Flask app 'app:create_app'
+ * Debug mode: on

@@ -1,11 +1,4 @@
-HTTP/1.1 400 BAD REQUEST
-Server: Werkzeug/3.0.1 Python/3.12.2
-Date: Thu, 29 May 2025 12:23:31 GMT
-Content-Type: application/json
-Content-Length: 50
-Connection: close
-
 {
-  "error": "KeyError: 0",
-  "status": "error"
+  "id": 32,
+  "status": "success"
 }
