@@ -75,4 +75,8 @@
 - Fixes 405 errors on workflow/idea and other pages that fetch the actions list.
 
 2025-05-29: BUGFIX: Fixed 500 error on GET /api/v1/llm/actions by removing non-existent 'description' column from llm_action SELECT in list_actions endpoint.
-- Now returns all actions as JSON without error. 
+- Now returns all actions as JSON without error.
+
+2025-05-29: BUGFIX: Fixed KeyError: 0 in /api/v1/llm/post_substage_actions POST handler.
+- Now robustly handles both tuple and dict row types for upsert logic.
+- Prevents 400 errors when updating post_substage_action rows. 
