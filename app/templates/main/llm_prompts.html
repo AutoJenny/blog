@@ -399,10 +399,22 @@
                 </thead>
                 <tbody>
                     {% for prompt in prompts %}
-                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30"
+                        data-prompt-json="{{ prompt.prompt_json|tojson|safe }}">
                         <td class="py-2 px-3 font-semibold text-white">{{ prompt.name }}</td>
-                        <td class="py-2 px-3">{{ prompt.type }}</td>
-                        <td class="py-2 px-3">{{ prompt.prompt_text }}</td>
+                        <td class="py-2 px-3">{{ prompt.type if prompt.type else 'None' }}</td>
+                        <td class="py-2 px-3">
+                            {% if prompt.prompt_json %}
+                            <pre class="whitespace-pre-line text-indigo-100 text-xs"
+                                style="background:none;border:none;padding:0;margin:0;">
+                                {% for part in prompt.prompt_json %}
+                                    [{% if part.type %}{{ part.type }}{% endif %}{% if part.tags and part.tags|length %}: {{ part.tags|join(', ')|upper }}{% endif %}] {{ part.content if part.content else '' }}{% if part.type == 'data' %}[data:{{ part.field }}]{% endif %}
+                                {% endfor %}
+                                </pre>
+                            {% else %}
+                            <span class="text-gray-400 italic">No content</span>
+                            {% endif %}
+                        </td>
                         <td class="py-2 px-3">2025-05-21</td>
                         <td class="py-2 px-3 flex gap-2">
                             <button class="action-btn edit-template-assembler-btn" title="Edit"
@@ -578,6 +590,7 @@
         };
         tabPromptsBtn.onclick = function () {
             showTab('prompts');
+            renderPromptJsonTable();
         };
         // On load, show Prompt Parts tab by default
         showTab('parts');
@@ -949,7 +962,17 @@
         });
         // Update preview and save logic to output [data:fieldname]
         function renderAssemblerPreview() {
-            assemblerPromptPreview.textContent = assemblerSequence.map(p => p.type === 'data' ? `[data:${p.field}]` : `[${p.type}] ${p.content}`).join('\n');
+            assemblerPromptPreview.textContent = assemblerSequence.map(p => {
+                if (p.type === 'data') {
+                    return `[data:${p.field}]`;
+                }
+                let tags = [];
+                if (p.tags) {
+                    tags = Array.isArray(p.tags) ? p.tags : (typeof p.tags === 'string' ? p.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+                }
+                const tagStr = tags.length ? `: ${tags.map(t => t.toUpperCase()).join(',')}` : '';
+                return `[${p.type}${tagStr}] ${p.content}`;
+            }).join('\n');
         }
         assemblerClearBtn.onclick = function () {
             assemblerSequence = [];
@@ -962,14 +985,30 @@
             }
             const name = prompt('Enter a name for the new prompt template:');
             if (!name) return;
-            const prompt_text = assemblerSequence.map(p => p.type === 'data' ? `[data:${p.field}]` : `[${p.type}] ${p.content}`).join('\n');
+            // Build prompt_json: structured array of parts
+            const prompt_json = assemblerSequence.map(p => {
+                if (p.type === 'data') {
+                    return { type: 'data', field: p.field };
+                }
+                // Try to preserve tags if present (from available parts), else empty array
+                let tags = [];
+                if (p.tags) {
+                    tags = Array.isArray(p.tags) ? p.tags : (typeof p.tags === 'string' ? p.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+                }
+                return { type: p.type, tags, content: p.content, name: p.name };
+            });
+            // Diagnostics
+            console.log('[DIAG] About to save prompt template:', { name, prompt_json, prompt_json_type: typeof prompt_json, prompt_json_is_array: Array.isArray(prompt_json) });
+            const payload = { name, prompt_json };
+            console.log('[DIAG] Payload to be sent:', payload, 'JSON:', JSON.stringify(payload));
             fetch('/api/v1/llm/prompts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, prompt_text, type: 'assembled' })
+                body: JSON.stringify(payload)
             })
                 .then(r => r.json())
                 .then(data => {
+                    console.log('[DIAG] Response from backend:', data);
                     if (data.success || data.prompt) {
                         alert('Prompt template saved!');
                         window.location.reload();
@@ -1058,6 +1097,55 @@
             });
         }
         colorPromptPartsTableRows();
+        // --- Prompt Templates Tab: Render prompt_json content in Usage column ---
+        function renderPromptJsonTable() {
+            // Find the table and rows
+            const table = document.querySelector('#tabPrompts table');
+            if (!table) return;
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                // Find the Usage/content cell (3rd td)
+                const usageCell = row.querySelector('td:nth-child(3)');
+                if (!usageCell) return;
+                // Try to get prompt_json from the row's data attribute or window.prompts (if available)
+                let promptJson = null;
+                // Option 1: If the row has a data-prompt-json attribute (set by backend or JS)
+                if (row.dataset.promptJson) {
+                    try {
+                        promptJson = JSON.parse(row.dataset.promptJson);
+                    } catch (e) { }
+                }
+                // Option 2: If window.prompts is available (set by JS fetch)
+                if (!promptJson && window.prompts && Array.isArray(window.prompts)) {
+                    const nameCell = row.querySelector('td:nth-child(1)');
+                    const name = nameCell ? nameCell.textContent.trim() : null;
+                    const found = window.prompts.find(p => p.name === name);
+                    if (found && found.prompt_json) promptJson = found.prompt_json;
+                }
+                // Render prompt_json as formatted string
+                if (promptJson && Array.isArray(promptJson) && promptJson.length) {
+                    usageCell.innerHTML = '<pre class="whitespace-pre-line text-indigo-100 text-xs" style="background:none;border:none;padding:0;margin:0;">' +
+                        promptJson.map(part => {
+                            let tags = part.tags && part.tags.length ? ': ' + part.tags.map(t => t.toUpperCase()).join(',') : '';
+                            let content = part.content || '';
+                            if (part.type === 'data' && part.field) content = `[data:${part.field}]`;
+                            return `[${part.type || ''}${tags}] ${content}`;
+                        }).join('\n') + '</pre>';
+                } else {
+                    usageCell.innerHTML = '<span class="text-gray-400 italic">No content</span>';
+                }
+            });
+        }
+        // Run on tab open
+        tabPromptsBtn.onclick = function () {
+            showTab('prompts');
+            renderPromptJsonTable();
+        };
+        // Also run after save (window reload will re-run)
+        // Optionally, run on DOMContentLoaded if tab is default
+        if (tabPrompts.style.display !== 'none') {
+            renderPromptJsonTable();
+        }
     });
 </script>
 {% endblock %}
