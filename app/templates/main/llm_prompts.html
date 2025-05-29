@@ -399,8 +399,9 @@
                 </thead>
                 <tbody>
                     {% for prompt in prompts %}
-                    <tr class="border-b border-dark-border hover:bg-indigo-950/30"
-                        data-prompt-json="{{ prompt.prompt_json|default([])|tojson|safe }}">
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <script type="application/json"
+                            class="prompt-json">{{ prompt.prompt_json|default([])|tojson|safe }}</script>
                         <td class="py-2 px-3 font-semibold text-white">{{ prompt.name }}</td>
                         <td class="py-2 px-3">{{ prompt.type if prompt.type else 'None' }}</td>
                         <td class="py-2 px-3">
@@ -1107,20 +1108,15 @@
                 // Find the Usage/content cell (3rd td)
                 const usageCell = row.querySelector('td:nth-child(3)');
                 if (!usageCell) return;
-                // Try to get prompt_json from the row's data attribute or window.prompts (if available)
+                // Get prompt_json from <script> tag
                 let promptJson = null;
-                // Option 1: If the row has a data-prompt-json attribute (set by backend or JS)
-                if (row.dataset.promptJson) {
+                const script = row.querySelector('script.prompt-json');
+                if (script) {
                     try {
-                        promptJson = JSON.parse(row.dataset.promptJson);
-                    } catch (e) { }
-                }
-                // Option 2: If window.prompts is available (set by JS fetch)
-                if (!promptJson && window.prompts && Array.isArray(window.prompts)) {
-                    const nameCell = row.querySelector('td:nth-child(1)');
-                    const name = nameCell ? nameCell.textContent.trim() : null;
-                    const found = window.prompts.find(p => p.name === name);
-                    if (found && found.prompt_json) promptJson = found.prompt_json;
+                        promptJson = JSON.parse(script.textContent);
+                    } catch (e) {
+                        console.error('[DIAG] Failed to parse prompt-json <script>:', e, script.textContent);
+                    }
                 }
                 // Render prompt_json as formatted string
                 if (promptJson && Array.isArray(promptJson) && promptJson.length) {
