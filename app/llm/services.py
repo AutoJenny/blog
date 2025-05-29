@@ -88,6 +88,43 @@ def assemble_prompt_from_parts(action, fields: dict):
     ollama_prompt = '\n\n'.join([m['content'] for m in messages])
     return {'openai': messages, 'ollama': ollama_prompt}
 
+def parse_tagged_prompt_to_messages(prompt_template: str, fields: dict) -> dict:
+    """
+    Parse a tagged prompt template into structured messages (for chat LLMs) and a canonical prompt string (for single-prompt LLMs).
+    Returns: { 'messages': [...], 'prompt': '...' }
+    """
+    # Replace [data:FIELDNAME] with the actual input, if present
+    def replace_data_tags(text):
+        def repl(match):
+            key = match.group(1)
+            return str(fields.get(key, f"[{key}]") if fields else f"[{key}]")
+        return re.sub(r'\[data:([a-zA-Z0-9_]+)\]', repl, text)
+
+    # Find all [role: TAG] or [role] blocks
+    tag_pattern = re.compile(r'\[(system|user|assistant)(?::\s*([A-Z_]+))?\]\s*([^\[]+)', re.IGNORECASE)
+    matches = tag_pattern.findall(prompt_template)
+    # Group content by role
+    role_contents = {'system': [], 'user': [], 'assistant': []}
+    for role, tag, content in matches:
+        role = role.lower()
+        content = replace_data_tags(content.strip())
+        role_contents.setdefault(role, []).append(content)
+    # Compose messages for chat LLMs
+    messages = []
+    for role in ('system', 'user', 'assistant'):
+        if role_contents[role]:
+            messages.append({'role': role, 'content': ' '.join(role_contents[role])})
+    # Compose canonical prompt string for single-prompt LLMs
+    prompt_lines = []
+    if role_contents['system']:
+        prompt_lines.append(' '.join(role_contents['system']))
+    if role_contents['user']:
+        prompt_lines.append('Task: ' + ' '.join(role_contents['user']))
+    if 'input' in fields:
+        prompt_lines.append('Input: ' + str(fields['input']))
+    prompt = '\n'.join(prompt_lines)
+    return {'messages': messages, 'prompt': prompt}
+
 class LLMService:
     """Service for interacting with LLM providers."""
 
@@ -156,25 +193,24 @@ class LLMService:
     def execute_action(self, action, fields: dict, post_id=None, model_name=None):
         # --- PATCH: Use direct SQL only, no ORM ---
         model = None
-        # Use model_name if provided, else resolve from action['llm_model']
         if model_name:
             model = model_name
         elif action['llm_model']:
             model = action['llm_model']
         else:
             raise ValueError(f"LLM model not set on action {action['id']}")
-        # DO NOT GUESS PROVIDER TYPE OR API URL. Use self.config and self.api_url as set by the caller.
-        # Assemble prompt/messages from modular prompt parts (stubbed for now)
-        messages = [{'role': 'user', 'content': fields.get('input', '')}]
-        ollama_prompt = fields.get('input', '')
+        # Use self.config and self.api_url as set by the caller.
+        # --- NEW: Parse prompt template into messages/prompt ---
+        prompt_template = action.get('prompt_template', '')
+        parsed = parse_tagged_prompt_to_messages(prompt_template, fields)
         # Choose input/output fields
         input_field = action.get('input_field') or 'input'
         output_field = action.get('output_field') or 'output'
         # Call LLM (OpenAI or Ollama)
         if self.config == 'openai':
-            result = self.generate(messages, model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
+            result = self.generate(parsed['messages'], model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
         elif self.config == 'ollama':
-            result = self.generate(ollama_prompt, model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
+            result = self.generate(parsed['prompt'], model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
         else:
             raise ValueError(f"Unsupported provider type: {self.config}")
         # Map output to output_field
