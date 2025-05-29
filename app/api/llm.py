@@ -504,7 +504,7 @@ def execute_action(action_id):
             try:
                 with get_db_conn() as conn:
                     with conn.cursor() as cur:
-                        # Only allow updating valid fields in post table
+                        # Try post table first
                         cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post'")
                         valid_fields = [row["column_name"] for row in cur.fetchall()]
                         if output_field in valid_fields:
@@ -512,7 +512,15 @@ def execute_action(action_id):
                             conn.commit()
                             save_status = f"Saved output to post.{output_field} for post_id={post_id}"
                         else:
-                            save_status = f"Invalid output_field: {output_field}"
+                            # Try post_development table
+                            cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development'")
+                            dev_fields = [row["column_name"] for row in cur.fetchall()]
+                            if output_field in dev_fields:
+                                cur.execute(f"UPDATE post_development SET {output_field} = %s WHERE post_id = %s", (output, post_id))
+                                conn.commit()
+                                save_status = f"Saved output to post_development.{output_field} for post_id={post_id}"
+                            else:
+                                save_status = f"Invalid output_field: {output_field}"
             except Exception as e:
                 save_status = f"Error saving output: {e}"
         if debug_mode:
