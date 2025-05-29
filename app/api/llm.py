@@ -447,10 +447,23 @@ def execute_action(action_id):
         llm.config = provider_type
         llm.api_url = provider.get('api_url')
 
-        # --- NEW: Use parse_tagged_prompt_to_messages to build canonical prompt ---
-        from app.llm.services import parse_tagged_prompt_to_messages
-        parsed_prompt = parse_tagged_prompt_to_messages(action['prompt_template'], fields)
-        canonical_prompt = parsed_prompt['prompt']
+        # --- NEW: Always fetch prompt_json from llm_prompt and use if present ---
+        prompt_json = None
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute('SELECT prompt_json FROM llm_prompt WHERE id=%s', (action['prompt_template_id'],))
+                row = cur.fetchone()
+                if row and (isinstance(row, dict) and row.get('prompt_json')):
+                    prompt_json = row['prompt_json']
+                elif row and not isinstance(row, dict) and len(row) > 0:
+                    prompt_json = row[0]
+        from app.llm.services import modular_prompt_to_canonical, parse_tagged_prompt_to_messages
+        if prompt_json:
+            parsed_prompt = modular_prompt_to_canonical(prompt_json, fields)
+            canonical_prompt = parsed_prompt['prompt']
+        else:
+            parsed_prompt = parse_tagged_prompt_to_messages(action['prompt_template'], fields)
+            canonical_prompt = parsed_prompt['prompt']
         llm_request_json = {
             'model': action['llm_model'],
             'prompt': canonical_prompt,

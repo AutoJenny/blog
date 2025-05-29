@@ -719,7 +719,4 @@ All notable changes to this project are documented in this file.
 
 2024-06-13: UI - Prompt Parts and Assembler now use blue for system, deep green for user, and deep purple for assistant backgrounds, with tag colors unchanged. Applies to both tabs. Docs updated.
 
-2025-05-29 Fix: LLM Action prompt formatting bug
-- Updated /actions/<int:action_id>/execute endpoint in app/api/llm.py to use parse_tagged_prompt_to_messages from app/llm/services.py.
-- Now builds canonical prompt string including all system/user/operation/data elements, as per docs/llm/llm_prompt_structuring.md.
-- Fixes issue where LLM was only receiving stripped prompt and input, not the full structured prompt.
+2025-05-29 Fix: LLM Action execution now always fetches prompt_json from llm_prompt and uses modular_prompt_to_canonical if present, ensuring modular prompts are used at runtime. This resolves the issue where only legacy prompt_template was used.
