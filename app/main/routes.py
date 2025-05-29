@@ -339,7 +339,7 @@ def llm_prompts():
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('''
-                SELECT id, name, prompt_text
+                SELECT id, name, prompt_json
                 FROM llm_prompt
                 ORDER BY ("order" IS NULL), "order", id
             ''')
@@ -351,7 +351,7 @@ def llm_prompts():
                     prompts.append({
                         'id': row[0],
                         'name': row[1],
-                        'prompt_text': row[2],
+                        'prompt_json': row[2],
                     })
             # Fetch prompt parts
             cur.execute('''
