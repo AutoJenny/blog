@@ -57,4 +57,10 @@
 - fix(workflow): Post header now always appears above workflow nav icons for consistent UX across all workflow stages.
 - fix(workflow): Standardized post header spacing with consistent margin above and below via macro. Removed extra margin from workflow templates for uniform appearance across all stages.
 
-2025-05-28: BUGFIX: Workflow LLM action run button now uses the correct /execute endpoint and passes the input field value as input_text and post_id. This fixes the 'No output.' bug on /workflow/idea and ensures [data:FIELDNAME] is correctly substituted in prompts. Verified with curl and browser. No backend changes required. [LLM Workflow Execution] 
+2025-05-28: BUGFIX: Workflow LLM action run button now uses the correct /execute endpoint and passes the input field value as input_text and post_id. This fixes the 'No output.' bug on /workflow/idea and ensures [data:FIELDNAME] is correctly substituted in prompts. Verified with curl and browser. No backend changes required. [LLM Workflow Execution]
+
+2025-05-28: BUGFIX: Fixed duplicate POST /api/v1/llm/actions handler in LLM API.
+- Removed legacy handle_actions function, which conflicted with the new create_action handler.
+- Removed debug return in create_action so the actual DB insert now runs.
+- Added debug prints before and after the insert for robust troubleshooting.
+- This resolves the persistent provider_id null bug and ensures correct Action creation via the API. 
