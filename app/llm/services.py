@@ -262,7 +262,12 @@ class LLMService:
         # Use self.config and self.api_url as set by the caller.
         # --- NEW: Transform modular prompt_json to canonical prompt/messages ---
         prompt_json = action.get('prompt_json')
-        parsed = modular_prompt_to_canonical(prompt_json, fields)
+        if prompt_json is not None:
+            parsed = modular_prompt_to_canonical(prompt_json, fields)
+        else:
+            # Fallback for legacy actions: use prompt_template string
+            prompt_template = action.get('prompt_template', '')
+            parsed = parse_tagged_prompt_to_messages(prompt_template, fields)
         current_app.logger.debug(f"[DEBUG] LLMService.execute_action parsed: {parsed}")
         input_field = action.get('input_field') or 'input'
         output_field = action.get('output_field') or 'output'
