@@ -89,4 +89,9 @@
 2025-05-29: FEAT: prompt_text is now auto-generated from prompt_json on create/update in llm_prompt.
 - Ensures all prompts and actions have canonical prompt_text for LLM execution.
 - Follows the canonical mapping in docs/llm/llm_prompt_structuring.md.
-- Fixes all issues with empty/null prompt_template in actions and robustifies LLM workflow. 
+- Fixes all issues with empty/null prompt_template in actions and robustifies LLM workflow.
+
+2025-05-29: BUGFIX: prompt_json_to_text now robustly handles both modular array and canonical object formats.
+- Prompt saving works for all UI formats (modular and canonical).
+- Prevents 500 errors and ensures all prompts are usable by actions and LLMs.
+- [LLM Prompt Robustness] 
