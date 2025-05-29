@@ -100,4 +100,6 @@
 - Added robust modular_prompt_to_canonical utility for runtime transformation.
 - prompt_text is no longer generated or stored on save; only prompt_json (modular array) is stored.
 - Ensures full reversibility and editability of prompt templates, and robust LLM execution for all providers.
-- [LLM Prompt Runtime Transformation] 
+- [LLM Prompt Runtime Transformation]
+
+[2024-06-13] Fix: modular_prompt_to_canonical now produces a clean, natural prompt string for single-prompt LLMs (Ollama, etc.), joining all system/role/style/voice parts into a single instruction, all operation parts into a single instruction, and appending the input as a final line. Removed 'Task:' and 'Input:' prefixes for clarity and LLM compliance. Updated docs/llm/llm_prompt_structuring.md to match. 
