@@ -326,7 +326,7 @@
         try {
             const resp = await fetch('/api/v1/llm/prompts');
             const prompts = await resp.json();
-            select.innerHTML = prompts.map(p => `<option value="${p.id}" ${selectedId == p.id ? 'selected' : ''}>${p.name} (${p.description || ''})</option>`).join('');
+            select.innerHTML = prompts.map(p => `<option value="${p.id}" ${selectedId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
             // Set preview if selected
             if (selectedId) {
                 const selected = prompts.find(p => p.id == selectedId);
