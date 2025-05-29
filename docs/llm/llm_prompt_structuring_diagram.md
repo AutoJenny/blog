@@ -25,4 +25,9 @@ graph LR
     operation[Operation] --> prompt
     data[Data] --> prompt
     prompt -->|Composed| LLM[LLM API]
-``` 
+```
+
+---
+
+## 2025-05-29 Update
+- LLM actions now use `parse_tagged_prompt_to_messages` to build canonical prompts, ensuring all prompt elements (system, user, operation, data) are included. See [llm_prompt_structuring.md](./llm_prompt_structuring.md) and the changelog for details. 

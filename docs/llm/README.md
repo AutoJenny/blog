@@ -91,4 +91,7 @@ This section tracks the planned and in-progress implementation for each LLM admi
 
 - **Prompt Parts**: Modular prompt parts can be created, edited, and linked to actions. Each part has a type (system, style, instructions, etc.), content, and order. Actions can have any number of prompt parts, which are assembled in order for LLM execution. **All prompt part management is now direct SQL, ORM-free, and robust.**
 - **API**: The API exposes CRUD for prompt parts and action-prompt part linking. Action details endpoints now return input_field, output_field, and all prompt parts for robust UI display and editing. **All endpoints are direct SQL, ORM-free, and tested.** 
-  - **Workflow LLM execution:** Use `/actions/<id>/execute` with `{ input_text, post_id }` for workflow actions. Do not use `/test` for workflow runs. 
+  - **Workflow LLM execution:** Use `/actions/<id>/execute` with `{ input_text, post_id }` for workflow actions. Do not use `/test` for workflow runs.
+
+## 2025-05-29 Update
+- LLM actions now use `parse_tagged_prompt_to_messages` to build canonical prompts, ensuring all prompt elements (system, user, operation, data) are included as per [llm_prompt_structuring.md](./llm_prompt_structuring.md). See the changelog for details. 
