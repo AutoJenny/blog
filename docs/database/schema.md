@@ -95,4 +95,18 @@ The current mapping of fields to workflow stages/substages is shown below. This 
 - Migration performed with full backup, SQL migration script, and verification.
 - Rationale: Enables explicit separation of LLM provider and model for robust multi-provider support.
 
-- 2024-05-28: The /actions/<id>/test endpoint was updated to always use the latest prompt template from llm_prompt, not the action's stored copy. This guarantees test/preview consistency and prevents stale prompt bugs. 
+- 2024-05-28: The /actions/<id>/test endpoint was updated to always use the latest prompt template from llm_prompt, not the action's stored copy. This guarantees test/preview consistency and prevents stale prompt bugs.
+
+## Table: llm_prompt
+
+Stores prompt templates for LLM actions. As of 2024-06, supports both legacy flat string templates and structured prompt part arrays.
+
+| Column        | Type         | Description                                      |
+|--------------|--------------|--------------------------------------------------|
+| id           | SERIAL (PK)  | Unique row ID                                    |
+| name         | TEXT         | Name of the prompt template                      |
+| prompt_text  | TEXT         | Legacy flat string template (for display/compat) |
+| prompt_json  | JSONB        | (2024-06) Structured prompt parts array for advanced LLM prompt engineering. Nullable for backward compatibility. |
+| ...          | ...          | ...                                              |
+
+- `prompt_json` stores an ordered array of objects, each with `type`, `tags`, and `content` (or `field` for data parts). See /docs/llm/llm_prompt_structuring.md for details. 
