@@ -189,6 +189,12 @@ def modular_prompt_to_canonical(prompt_json, fields: dict) -> dict:
     if input_val:
         prompt_lines.append(f"Data for this operation as follows: {input_val}")
     prompt = ' '.join(prompt_lines)
+    # --- DEBUG LOGGING ---
+    logger = logging.getLogger(__name__)
+    logger.error(f"[DEBUG] modular_prompt_to_canonical system_msg: {system_msg}")
+    logger.error(f"[DEBUG] modular_prompt_to_canonical operation_msg: {operation_msg}")
+    logger.error(f"[DEBUG] modular_prompt_to_canonical input_val: {input_val}")
+    logger.error(f"[DEBUG] modular_prompt_to_canonical final prompt: {prompt}")
     # Compose messages for chat LLMs
     messages = []
     if system_msg:

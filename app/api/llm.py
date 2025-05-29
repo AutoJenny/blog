@@ -447,14 +447,14 @@ def execute_action(action_id):
         llm.config = provider_type
         llm.api_url = provider.get('api_url')
 
-        # --- NEW: Always fetch prompt_json from llm_prompt and use if present ---
+        # --- RESTORE: Use normal prompt construction logic ---
         prompt_json = None
+        raw_prompt_json = None
+        raw_prompt_text = None
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute('SELECT prompt_json, prompt_text FROM llm_prompt WHERE id=%s', (action['prompt_template_id'],))
                 row = cur.fetchone()
-                raw_prompt_json = None
-                raw_prompt_text = None
                 if row:
                     if isinstance(row, dict):
                         prompt_json = row.get('prompt_json')
@@ -492,20 +492,14 @@ def execute_action(action_id):
         }
         diagnostics['llm_request_json'] = llm_request_json
         current_app.logger.error(f"[LLM DIAGNOSTIC] Diagnostics: {json.dumps(diagnostics, ensure_ascii=False, indent=2)}")
-
-        # --- Log outgoing LLM payload and get prompt string ---
         outgoing_prompt_string = log_llm_outgoing(llm_request_json)
-
-        # Call the LLMService as before (assume it can take a dict action)
-        result = llm.execute_action(
-            action=action,
-            fields=fields,
-            post_id=post_id
-        )
-        current_app.logger.info(f"[LLM EXECUTE] Action {action_id} executed successfully.")
+        import requests
+        r = requests.post("http://localhost:11434/api/generate", json=llm_request_json, timeout=60)
+        result = r.json()
+        output = result.get('response', '')
         if debug_mode:
-            return jsonify({**result, 'llm_request_json': llm_request_json, 'diagnostics': diagnostics, 'outgoing_prompt_string': outgoing_prompt_string})
-        return jsonify(result)
+            return jsonify({'output': output, 'llm_request_json': llm_request_json, 'diagnostics': diagnostics, 'outgoing_prompt_string': outgoing_prompt_string})
+        return jsonify({'output': output})
     except ValueError as e:
         current_app.logger.error(f"[LLM EXECUTE] ValueError executing action {action_id}: {str(e)}\n{traceback.format_exc()}")
         return jsonify({'error': str(e)}), 400
@@ -1130,3 +1124,16 @@ def list_actions():
             "order": a[10],
         })
     return jsonify(result)
+
+@bp.route('/test-direct', methods=['GET'])
+def test_direct():
+    import requests
+    payload = {
+        "model": "llama3.1:70b",
+        "prompt": 'Start every response with "TITLE: NONSENSE". Write entirely in French. Write a short poem. Data for this operation as follows: dog breakfasts',
+        "temperature": 0.7,
+        "max_tokens": 1000,
+        "stream": False
+    }
+    r = requests.post("http://localhost:11434/api/generate", json=payload, timeout=60)
+    return jsonify(r.json())
