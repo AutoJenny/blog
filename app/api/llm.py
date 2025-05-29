@@ -1,3 +1,4 @@
+print('=== LLM API MODULE LOADED (AUDIT TEST) ===')
 # MIGRATION: This file is being refactored to use direct SQL (psycopg2) instead of ORM models.
 from flask import Blueprint, jsonify, request, current_app
 from app.llm.services import LLMService, execute_llm_request
@@ -12,6 +13,8 @@ import socket
 import time
 import re
 from psycopg2.extras import Json
+import os
+from dotenv import dotenv_values
 
 bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 
@@ -221,64 +224,6 @@ def generate_social(section_id):
         }
         db.session.commit()
     return jsonify({"twitter": "Test tweet", "instagram": "Test instagram post"})
-
-
-@bp.route('/actions', methods=['GET', 'POST'])
-def handle_actions():
-    """Handle LLM actions list and creation."""
-    if request.method == 'GET':
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order"
-                    FROM llm_action
-                    ORDER BY "order", id
-                """)
-                actions = cur.fetchall()
-        return jsonify(actions)
-    data = request.get_json()
-    try:
-        required_fields = ['field_name', 'prompt_template_id', 'llm_model']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'status': 'error', 'error': f'Missing required field: {field}'}), 400
-        prompt_template_id = int(data['prompt_template_id'])
-        # Fetch prompt_json and generate flat string
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT prompt_json FROM llm_prompt WHERE id = %s", (prompt_template_id,))
-                prompt_row = cur.fetchone()
-                if not prompt_row or not prompt_row['prompt_json']:
-                    return jsonify({'status': 'error', 'error': 'Prompt template not found or has no prompt_json'}), 404
-                parts = prompt_row['prompt_json']
-                def part_to_str(part):
-                    tags = part.get('tags', [])
-                    tag_str = f": {', '.join(t.upper() for t in tags)}" if tags else ''
-                    content = part.get('content', '')
-                    if part.get('type') == 'data' and part.get('field'):
-                        content = f"[data:{part['field']}]"
-                    return f"[{part.get('type','')}{tag_str}] {content}"
-                prompt_template = '\n'.join(part_to_str(p) for p in parts)
-                # Insert action
-                cur.execute("""
-                    INSERT INTO llm_action (field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order")
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
-                """, (
-                    data['field_name'],
-                    prompt_template,
-                    data['prompt_template_id'],
-                    data['llm_model'],
-                    float(data.get('temperature', 0.7)),
-                    int(data.get('max_tokens', 1000)),
-                    data.get('input_field'),
-                    data.get('output_field'),
-                    data.get('order', 0)
-                ))
-                action_id = cur.fetchone()['id']
-                conn.commit()
-        return jsonify({'status': 'success', 'action': action_id})
-    except Exception as e:
-        return jsonify({'status': 'error', 'error': str(e)}), 400
 
 
 @bp.route('/prompts', methods=['POST'])
@@ -1032,32 +977,69 @@ def create_action():
     max_tokens = data.get('max_tokens', 1000)
     provider_id = data.get('provider_id')
     order = data.get('order', 0)
-    # Fetch prompt_json and generate flat string
-    prompt_template = ''
-    if prompt_template_id:
+    input_field = data.get('input_field')
+    output_field = data.get('output_field')
+    # Validate required fields
+    if not name:
+        return jsonify({'status': 'error', 'error': 'Field name is required'}), 400
+    if not provider_id:
+        return jsonify({'status': 'error', 'error': 'Provider is required'}), 400
+    if not prompt_template_id:
+        return jsonify({'status': 'error', 'error': 'Prompt template is required'}), 400
+    try:
+        provider_id = int(provider_id)
+    except Exception:
+        return jsonify({'status': 'error', 'error': 'Provider ID must be an integer'}), 400
+    try:
+        prompt_template_id = int(prompt_template_id)
+    except Exception:
+        return jsonify({'status': 'error', 'error': 'Prompt template ID must be an integer'}), 400
+    if provider_id < 1:
+        return jsonify({'status': 'error', 'error': 'Provider ID must be a positive integer'}), 400
+    if prompt_template_id < 1:
+        return jsonify({'status': 'error', 'error': 'Prompt template ID must be a positive integer'}), 400
+    # TEMP: Override prompt_template for debug
+    prompt_template = 'test'
+    insert_tuple = (name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, order, input_field, output_field, provider_id)
+    print(f"[DEBUG] FINAL Insert tuple: {insert_tuple}")
+    print(f"[DEBUG] FINAL Tuple types: {[str(type(x)) for x in insert_tuple]}")
+    # Proceed to insert
+    try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute('SELECT prompt_json FROM llm_prompt WHERE id = %s', (prompt_template_id,))
-                row = cur.fetchone()
-                if row and row['prompt_json']:
-                    parts = row['prompt_json']
-                    def part_to_str(part):
-                        tags = part.get('tags', [])
-                        tag_str = f": {', '.join(t.upper() for t in tags)}" if tags else ''
-                        content = part.get('content', '')
-                        if part.get('type') == 'data' and part.get('field'):
-                            content = f"[data:{part['field']}]"
-                        return f"[{part.get('type','')}{tag_str}] {content}"
-                    prompt_template = '\n'.join(part_to_str(p) for p in parts)
-    if not prompt_template:
-        prompt_template = '[NO PROMPT CONTENT]'
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute('''
-                INSERT INTO llm_action (field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, provider_id, "order")
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING id
-            ''', (name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, provider_id, order))
-            new_id = cur.fetchone()['id']
-            conn.commit()
-    return jsonify({'success': True, 'id': new_id})
+                print("[DEBUG] About to execute INSERT into llm_action")
+                cur.execute('''
+                    INSERT INTO llm_action (field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", input_field, output_field, provider_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                ''', insert_tuple)
+                new_id = cur.fetchone()['id']
+                print(f"[DEBUG] Inserted new llm_action with id: {new_id}")
+                conn.commit()
+        return jsonify({'success': True, 'id': new_id})
+    except Exception as e:
+        # Return the tuple and types for debugging
+        tuple_types = [str(type(x)) for x in insert_tuple]
+        print(f"[ERROR] Exception during insert: {e}")
+        return jsonify({'status': 'error', 'error': str(e), 'insert_tuple': insert_tuple, 'tuple_types': tuple_types}), 400
+
+@bp.route('/debug/db_url', methods=['GET'])
+def debug_db_url():
+    db_url = None
+    try:
+        # Try to get the DB URL the same way as get_db_conn
+        config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env')
+        config = dotenv_values(config_path)
+        db_url = config.get('DATABASE_URL')
+    except Exception as e:
+        db_url = f"[ERROR] {e}"
+    # Try to fetch a few rows from llm_action
+    rows = []
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute('SELECT * FROM llm_action ORDER BY id DESC LIMIT 3;')
+                rows = cur.fetchall()
+    except Exception as e:
+        rows = [f"[ERROR] {e}"]
+    return jsonify({'db_url': db_url, 'llm_action_rows': rows})
