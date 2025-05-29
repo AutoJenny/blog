@@ -94,4 +94,10 @@
 2025-05-29: BUGFIX: prompt_json_to_text now robustly handles both modular array and canonical object formats.
 - Prompt saving works for all UI formats (modular and canonical).
 - Prevents 500 errors and ensures all prompts are usable by actions and LLMs.
-- [LLM Prompt Robustness] 
+- [LLM Prompt Robustness]
+
+2025-05-29: REFACTOR: Modular prompt templates are now only transformed to canonical prompt/messages at action execution time.
+- Added robust modular_prompt_to_canonical utility for runtime transformation.
+- prompt_text is no longer generated or stored on save; only prompt_json (modular array) is stored.
+- Ensures full reversibility and editability of prompt templates, and robust LLM execution for all providers.
+- [LLM Prompt Runtime Transformation] 
