@@ -232,7 +232,7 @@
                         body: JSON.stringify({ post_id: postId, input_field: inputField, input_text: inputValue, debug: true })
                     });
                     const data = await resp.json();
-                    backendJson = data.llm_request_json || null;
+                    backendJson = data.llm_payload || data.llm_request_json || null;
                     output = data.output || data.response || '';
                     // Show backend JSON in debug panel
                     const debugLLMPanel = document.getElementById('debug-json-llm-panel');
