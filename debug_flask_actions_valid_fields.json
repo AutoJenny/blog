@@ -1,0 +1,4 @@
+{
+  "error": "Prompt template not found or has no prompt_json",
+  "status": "error"
+}

@@ -21,6 +21,7 @@ mail = Mail()
 celery = Celery(__name__)
 swagger = Swagger()
 
+print('=== FLASK APP __init__.py LOADED (AUDIT TEST) ===')
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -119,10 +120,11 @@ def create_app(config_class=Config):
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1')
 
+    print('[AUDIT] About to import llm_api_bp from app.api.llm')
     from app.api.llm import bp as llm_api_bp
-    print("[DEBUG] Registering llm_api Blueprint...")
+    print('[AUDIT] Imported llm_api_bp, registering...')
     app.register_blueprint(llm_api_bp)
-    print("[DEBUG] llm_api Blueprint registered.")
+    print('[AUDIT] llm_api_bp registered.')
 
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
