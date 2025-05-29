@@ -144,7 +144,8 @@ CREATE TABLE llm_prompt (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
-    prompt_text TEXT NOT NULL,
+    prompt_text TEXT,
+    prompt_json JSONB, -- (2024-06) Structured prompt parts array for advanced LLM prompt engineering
     system_prompt TEXT,
     parameters JSONB,
     "order" INTEGER DEFAULT 0 NOT NULL,

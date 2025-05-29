@@ -35,6 +35,7 @@ This project manages the PostgreSQL database schema using direct SQL scripts ins
      ```
    - Replace `<user>` with your PostgreSQL username (default: `postgres`).
    - Store the backup in a safe location.
+   - **If new JSONB columns (e.g., prompt_json in llm_prompt) are added, ensure all backup/restore and migration scripts are updated to preserve these fields.**
 2. **Apply Schema Changes**
    - Edit `create_tables.sql` as needed.
    - Run:
@@ -143,6 +144,7 @@ For advanced operations (backups, restores, migrations), see other sections in t
 - Prompt template deletion is now robust: the backend uses direct SQL, and the frontend checks for `{ success: true }` in the response, providing clear UI feedback.
 - All changes are committed and tested with curl and browser.
 - See `app/templates/main/llm_prompts.html` for implementation details.
+- **2024-06: The llm_prompt table now includes a prompt_json JSONB column for structured prompt templates. All backup, restore, and migration scripts must preserve this field.**
 
 ## Changes from 2025-05-26
 - As of 2025-05-26, the `llm_action_prompt_part` table has been dropped from the schema and is no longer present in the LLM group in the /db UI. The LLM group now includes: `llm_action`, `llm_action_history`, `llm_provider`, `llm_model`, `llm_interaction`, `llm_prompt`, `llm_prompt_part`, and `post_substage_action`.

@@ -11,6 +11,7 @@ import subprocess
 import socket
 import time
 import re
+from psycopg2.extras import Json
 
 bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 
@@ -111,7 +112,7 @@ def get_prompts():
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('''
-                SELECT id, name, prompt_text
+                SELECT id, name, prompt_json
                 FROM llm_prompt
                 ORDER BY ("order" IS NULL), "order", id
             ''')
@@ -120,7 +121,7 @@ def get_prompts():
         {
             'id': p['id'],
             'name': p['name'],
-            'prompt_text': p['prompt_text']
+            'prompt_json': p['prompt_json']
         } for p in prompts
     ])
 
@@ -277,22 +278,34 @@ def handle_actions():
 @bp.route('/prompts', methods=['POST'])
 def create_prompt():
     data = request.get_json()
+    current_app.logger.error(f"[CREATE PROMPT] Incoming data: {data}")
     name = data.get('name')
-    prompt_text = data.get('prompt_text')
-    description = data.get('description', '')
-    if not name or not prompt_text:
-        return jsonify({'success': False, 'error': 'Name and prompt_text required'}), 400
+    prompt_json = data.get('prompt_json')
+    # Robust: parse if string, else use as-is
+    import json as _json
+    current_app.logger.error(f"[CREATE PROMPT] prompt_json type before parse: {type(prompt_json)} value: {prompt_json}")
+    if isinstance(prompt_json, str):
+        try:
+            prompt_json = _json.loads(prompt_json)
+            current_app.logger.error(f"[CREATE PROMPT] prompt_json after json.loads: {type(prompt_json)} value: {prompt_json}")
+        except Exception as e:
+            return jsonify({'success': False, 'error': f'prompt_json is not valid JSON: {e}' }), 400
+    current_app.logger.error(f"[CREATE PROMPT] prompt_json type before insert: {type(prompt_json)} value: {prompt_json}")
+    if not name or not prompt_json:
+        return jsonify({'success': False, 'error': 'Name and prompt_json required'}), 400
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
+                from psycopg2.extras import Json
+                current_app.logger.error(f"[CREATE PROMPT] Passing to Json(): {prompt_json}")
                 cur.execute('''
-                    INSERT INTO llm_prompt (name, prompt_text, description, created_at, updated_at, "order")
-                    VALUES (%s, %s, %s, NOW(), NOW(), 0)
+                    INSERT INTO llm_prompt (name, prompt_json, created_at, updated_at, "order")
+                    VALUES (%s, %s, NOW(), NOW(), 0)
                     RETURNING id
-                ''', (name, prompt_text, description))
+                ''', (name, Json(prompt_json)))
                 new_id = cur.fetchone()['id']
                 conn.commit()
-        return jsonify({'success': True, 'prompt': {'id': new_id, 'name': name, 'prompt_text': prompt_text, 'description': description}})
+        return jsonify({'success': True, 'prompt': {'id': new_id, 'name': name}})
     except Exception as e:
         import traceback
         current_app.logger.error(f"[CREATE PROMPT ERROR] {e}\n{traceback.format_exc()}")
@@ -322,19 +335,19 @@ def preload_model():
 def update_prompt(prompt_id):
     """Update an existing prompt"""
     data = request.get_json()
-    if not data or not data.get('name') or not data.get('prompt_text'):
-        return jsonify({'success': False, 'error': 'Name and prompt_text required'}), 400
+    if not data or not data.get('name') or not data.get('prompt_json'):
+        return jsonify({'success': False, 'error': 'Name and prompt_json required'}), 400
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute('''
-                    UPDATE llm_prompt SET name=%s, prompt_text=%s, updated_at=NOW() WHERE id=%s
-                ''', (data['name'], data['prompt_text'], prompt_id))
+                    UPDATE llm_prompt SET name=%s, prompt_json=%s, updated_at=NOW() WHERE id=%s
+                ''', (data['name'], Json(data['prompt_json']), prompt_id))
                 conn.commit()
         return jsonify({'success': True, 'prompt': {
             'id': prompt_id,
             'name': data['name'],
-            'prompt_text': data['prompt_text']
+            'prompt_json': data['prompt_json']
         }})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -358,14 +371,14 @@ def get_prompt(prompt_id):
     """Get a single prompt by ID"""
     with get_db_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute('SELECT id, name, prompt_text FROM llm_prompt WHERE id=%s', (prompt_id,))
+            cur.execute('SELECT id, name, prompt_json FROM llm_prompt WHERE id=%s', (prompt_id,))
             prompt = cur.fetchone()
     if not prompt:
         return jsonify({'error': 'Not found'}), 404
     return jsonify({
         'id': prompt['id'],
         'name': prompt['name'],
-        'prompt_text': prompt['prompt_text']
+        'prompt_json': prompt['prompt_json']
     })
 
 

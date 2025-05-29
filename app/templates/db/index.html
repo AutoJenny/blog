@@ -189,6 +189,14 @@
                 tableHtml.push('<tr class="border-b border-dark-border">');
                 table.columns.forEach(col => {
                     let val = row && row[col.name] !== undefined && row[col.name] !== null ? row[col.name] : '';
+                    // Pretty-print JSON/JSONB columns
+                    if ((col.type && (col.type.toLowerCase().includes('json'))) && (typeof val === 'object')) {
+                        try {
+                            val = JSON.stringify(val, null, 2);
+                        } catch (e) {
+                            val = String(val);
+                        }
+                    }
                     tableHtml.push(`<td class="p-2 font-mono truncate">${val}</td>`);
                 });
                 tableHtml.push('</tr>');
