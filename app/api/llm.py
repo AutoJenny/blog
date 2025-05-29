@@ -432,6 +432,7 @@ def execute_action(action_id):
     print(f"[PRINT] /execute endpoint called for action_id={action_id}")
     """Execute an LLM action with robust debug logging."""
     data = request.get_json()
+    debug_mode = data.get('debug', False)
     current_app.logger.debug(f"[LLM EXECUTE] Action ID: {action_id}, Incoming data: {data}")
 
     if not data or 'input_text' not in data:
@@ -459,14 +460,48 @@ def execute_action(action_id):
         if section_fields and isinstance(section_fields, dict):
             fields.update(section_fields)
         current_app.logger.debug(f"[LLM EXECUTE] Final fields for action {action_id}: {fields}")
-        # Call the LLMService as before (assume it can take a dict action)
+        # Fetch model and provider for this action
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM llm_model WHERE name = %s", (action['llm_model'],))
+                model_row = cur.fetchone()
+                if not model_row:
+                    return jsonify({'error': 'Model not found for this action'}), 400
+                model = dict(model_row)
+                cur.execute("SELECT * FROM llm_provider WHERE id = %s", (model['provider_id'],))
+                provider_row = cur.fetchone()
+                if not provider_row:
+                    return jsonify({'error': 'Provider not found for this action'}), 400
+                provider = dict(provider_row)
+        # Robust: Always use provider['type'] from DB, do not guess from model name
+        provider_type = provider.get('type')
+        if provider_type == 'local':
+            provider_type = 'ollama'  # Legacy mapping
+        if not provider_type:
+            return jsonify({'error': 'Provider type missing for this action'}), 400
         llm = LLMService()
+        llm.config = provider_type
+        llm.api_url = provider.get('api_url')
+
+        # Prepare the exact JSON message to send to the LLM
+        cleaned_prompt = re.sub(r'\[.*?\]', '', action['prompt_template']).strip()
+        llm_request_json = {
+            'model': action['llm_model'],
+            'prompt': cleaned_prompt + "\n\nInput: " + fields['input'],
+            'temperature': float(action['temperature']),
+            'max_tokens': int(action['max_tokens']),
+            'stream': False
+        }
+
+        # Call the LLMService as before (assume it can take a dict action)
         result = llm.execute_action(
             action=action,
             fields=fields,
             post_id=post_id
         )
         current_app.logger.info(f"[LLM EXECUTE] Action {action_id} executed successfully.")
+        if debug_mode:
+            return jsonify({**result, 'llm_request_json': llm_request_json})
         return jsonify(result)
     except ValueError as e:
         current_app.logger.error(f"[LLM EXECUTE] ValueError executing action {action_id}: {str(e)}\n{traceback.format_exc()}")
@@ -552,7 +587,7 @@ def handle_prompt_parts():
     if request.method == 'POST':
         data = request.get_json()
         # --- Tag validation ---
-        allowed_tags = {'role', 'operation', 'format', 'specimen'}
+        allowed_tags = {'role', 'operation', 'format', 'specimen', 'style'}
         tags = data.get('tags', [])
         if not isinstance(tags, list) or any(t not in allowed_tags for t in tags):
             return jsonify({'error': f"Tags must be a list containing only: {', '.join(allowed_tags)}"}), 400
@@ -589,7 +624,7 @@ def handle_prompt_part(part_id):
     if request.method == 'PUT':
         data = request.get_json()
         # --- Tag validation ---
-        allowed_tags = {'role', 'operation', 'format', 'specimen'}
+        allowed_tags = {'role', 'operation', 'format', 'specimen', 'style'}
         tags = data.get('tags', [])
         if not isinstance(tags, list) or any(t not in allowed_tags for t in tags):
             return jsonify({'error': f"Tags must be a list containing only: {', '.join(allowed_tags)}"}), 400

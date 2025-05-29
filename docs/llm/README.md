@@ -66,6 +66,7 @@ This section tracks the planned and in-progress implementation for each LLM admi
 - **UI:** List, add, edit, delete, assign prompt/model/provider, schedule/trigger, status/history, run/test (**scaffolded**)
 - **Backend:** CRUD endpoints for actions/tasks (planned)
 - **API Integration:** Manual/batch run, workflow integration (planned)
+  - **NOTE:** Workflow execution must use the `/actions/<id>/execute` endpoint (not `/test`). The payload must include `input_text` (the user input) and `post_id` for correct prompt substitution (e.g., `[data:FIELDNAME]`).
 - **Extension:** Action chaining, advanced scheduling, audit trail
 
 ### 5. Interaction Logs
@@ -90,3 +91,4 @@ This section tracks the planned and in-progress implementation for each LLM admi
 
 - **Prompt Parts**: Modular prompt parts can be created, edited, and linked to actions. Each part has a type (system, style, instructions, etc.), content, and order. Actions can have any number of prompt parts, which are assembled in order for LLM execution. **All prompt part management is now direct SQL, ORM-free, and robust.**
 - **API**: The API exposes CRUD for prompt parts and action-prompt part linking. Action details endpoints now return input_field, output_field, and all prompt parts for robust UI display and editing. **All endpoints are direct SQL, ORM-free, and tested.** 
+  - **Workflow LLM execution:** Use `/actions/<id>/execute` with `{ input_text, post_id }` for workflow actions. Do not use `/test` for workflow runs. 

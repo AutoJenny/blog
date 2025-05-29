@@ -2,6 +2,7 @@
 
 import httpx
 import logging
+import re
 from flask import current_app
 from datetime import datetime
 from jinja2 import Template
@@ -23,12 +24,13 @@ def execute_llm_request(request_data):
         prompt_template = request_data.get('prompt', '').strip()
         input_text = request_data.get('input', '').strip()
         
+        # Strip [system] and similar tags from prompt
+        cleaned_prompt = re.sub(r'\[.*?\]', '', prompt_template).strip()
+        
         # Format the prompt in a clear, explicit way
-        prompt = f"""Instructions: {prompt_template}
+        prompt = f"""{cleaned_prompt}
 
-Input Topic: {input_text}
-
-Please provide your response based on the above input topic, following the instructions:"""
+Input: {input_text}"""
 
         logger.debug(f"Using formatted prompt: {prompt}")
         
@@ -109,11 +111,12 @@ class LLMService:
     def _generate_ollama(self, prompt, model_name, temperature=0.7, max_tokens=1000):
         """Generate text using Ollama."""
         try:
+            # Format request JSON consistently
             request_data = {
                 "model": model_name,
                 "prompt": prompt,
-                "temperature": temperature,
-                "max_tokens": max_tokens,
+                "temperature": float(temperature),  # Ensure temperature is float
+                "max_tokens": int(max_tokens),      # Ensure max_tokens is int
                 "stream": False  # Ensure we get a complete response
             }
             logger.debug(f"Sending request to Ollama: {request_data}")
@@ -153,7 +156,6 @@ class LLMService:
     def execute_action(self, action, fields: dict, post_id=None, model_name=None):
         # --- PATCH: Use direct SQL only, no ORM ---
         model = None
-        provider = None
         # Use model_name if provided, else resolve from action['llm_model']
         if model_name:
             model = model_name
@@ -161,16 +163,7 @@ class LLMService:
             model = action['llm_model']
         else:
             raise ValueError(f"LLM model not set on action {action['id']}")
-        # TODO: If provider info is needed, fetch with direct SQL here
-        provider_type = None
-        if model and 'gpt' in model:
-            provider_type = 'openai'
-        elif model and 'ollama' in model:
-            provider_type = 'ollama'
-        else:
-            provider_type = 'openai'  # Default fallback
-        self.config = provider_type
-        self.api_url = None  # Set if needed
+        # DO NOT GUESS PROVIDER TYPE OR API URL. Use self.config and self.api_url as set by the caller.
         # Assemble prompt/messages from modular prompt parts (stubbed for now)
         messages = [{'role': 'user', 'content': fields.get('input', '')}]
         ollama_prompt = fields.get('input', '')
@@ -178,12 +171,12 @@ class LLMService:
         input_field = action.get('input_field') or 'input'
         output_field = action.get('output_field') or 'output'
         # Call LLM (OpenAI or Ollama)
-        if provider_type == 'openai':
+        if self.config == 'openai':
             result = self.generate(messages, model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
-        elif provider_type == 'ollama':
+        elif self.config == 'ollama':
             result = self.generate(ollama_prompt, model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
         else:
-            raise ValueError(f"Unsupported provider type: {provider_type}")
+            raise ValueError(f"Unsupported provider type: {self.config}")
         # Map output to output_field
         if isinstance(result, dict) and 'output' in result:
             result = {output_field: result['output'], **{k: v for k, v in result.items() if k != 'output'}}

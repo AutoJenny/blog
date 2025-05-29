@@ -1,16 +1,168 @@
-<!-- IDEA SEED PANEL -->
-<div id="idea-seed-panel">
-    <!-- ... existing idea seed content ... -->
+<!-- LLM DEBUG MARKER -->
+<div id="llm-debug-marker" style="background: #ffe; color: #a00; padding: 4px; font-weight: bold;">
+    LLM DEBUG PANEL SHOULD BE VISIBLE BELOW
 </div>
 
-<!-- LLM ACTION BUTTON -->
-<div class="flex justify-center my-6">
-    <a href="/llm/actions/1" class="llm-action-btn" id="generate-summary-btn">
-        <i class="fa-solid fa-bolt mr-2"></i> Generate Summary from Idea Seed
-    </a>
+<!-- LLM WORKFLOW ROOT WITH FIELD MAPPING -->
+<div id="llm-workflow-root" data-seed="idea-seed-input" data-summary="summary-panel">
+    <!-- IDEA SEED PANEL -->
+    <div id="idea-seed-panel">
+        <input id="idea-seed-input" type="text" class="form-input" placeholder="Enter your idea seed here">
+    </div>
+
+    <!-- LLM ACTION BUTTON -->
+    <div class="flex justify-center my-6">
+        <a href="/llm/actions/1" class="llm-action-btn" id="generate-summary-btn">
+            <i class="fa-solid fa-bolt mr-2"></i> Generate Summary from Idea Seed
+        </a>
+    </div>
+
+    <!-- SUMMARY PANEL -->
+    <div id="summary-panel">
+        <!-- ... existing summary content ... -->
+    </div>
+
+    <!-- DEBUG JSON PANEL -->
+    <div id="debug-json-panel" class="mt-8 p-4 bg-gray-100 rounded-lg hidden">
+        <h3 class="text-lg font-semibold mb-2">Debug: LLM Request JSON (Frontend)</h3>
+        <pre id="debug-json-content" class="bg-white p-4 rounded overflow-x-auto"></pre>
+    </div>
+    <div id="debug-json-llm-panel" class="mt-4 p-4 bg-gray-200 rounded-lg hidden">
+        <h3 class="text-lg font-semibold mb-2">Debug: LLM Request JSON (Backend to LLM)</h3>
+        <pre id="debug-json-llm-content" class="bg-white p-4 rounded overflow-x-auto"></pre>
+    </div>
 </div>
 
-<!-- SUMMARY PANEL -->
-<div id="summary-panel">
-    <!-- ... existing summary content ... -->
-</div>
+<script>
+    // DIAGNOSTIC: Force debug panels visible and log at top of script
+    console.log('[LLM] Script loaded and running (top of script).');
+    document.getElementById('debug-json-panel')?.classList.remove('hidden');
+    document.getElementById('debug-json-llm-panel')?.classList.remove('hidden');
+
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('[LLM] Script loaded and running.');
+        // Restore last-used input/settings from localStorage
+        const inputElem = document.getElementById('idea-seed-input');
+        if (inputElem && localStorage.getItem('idea-seed-input')) {
+            inputElem.value = localStorage.getItem('idea-seed-input');
+        }
+        // Restore last-used action ID (if you have multiple actions)
+        const lastActionId = localStorage.getItem('llm-last-action-id');
+        if (lastActionId) {
+            const lastBtn = document.querySelector(`.llm-action-btn[href$='/${lastActionId}']`);
+            if (lastBtn) lastBtn.classList.add('ring', 'ring-blue-400');
+        }
+        // Restore last output
+        const lastOutput = localStorage.getItem('llm-last-output');
+        if (lastOutput) {
+            const summaryPanel = document.getElementById('summary-panel');
+            if (summaryPanel) summaryPanel.innerHTML = `<div class=\"p-4\">${lastOutput}</div>`;
+        }
+
+        const actionButtons = document.querySelectorAll('.llm-action-btn');
+        actionButtons.forEach(btn => {
+            btn.addEventListener('click', async function (e) {
+                e.preventDefault();
+                const actionId = this.getAttribute('href').split('/').pop();
+                localStorage.setItem('llm-last-action-id', actionId);
+                console.log(`[LLM] Action button clicked. Action ID: ${actionId}`);
+
+                // --- Per-page field mapping ---
+                let fieldMap = {};
+                const root = document.getElementById('llm-workflow-root');
+                if (root) {
+                    for (const attr of root.attributes) {
+                        if (attr.name.startsWith('data-')) {
+                            fieldMap[attr.name.replace('data-', '')] = attr.value;
+                        }
+                    }
+                }
+
+                // Find input value dynamically
+                let inputValue = '';
+                let inputFieldKey = 'seed';
+                if (actionId && actionId !== '1') {
+                    // If you have multiple actions, you can map inputFieldKey differently
+                }
+                let inputSelector = fieldMap[inputFieldKey]
+                    ? `#${fieldMap[inputFieldKey]}, [name='${fieldMap[inputFieldKey]}']`
+                    : 'input, textarea';
+                const inputElem = document.querySelector(inputSelector);
+                if (inputElem) inputValue = inputElem.value || inputElem.textContent || '';
+                else console.warn(`[LLM] Input element not found for selector: ${inputSelector}`);
+
+                // Persist input value
+                if (inputElem) localStorage.setItem('idea-seed-input', inputValue);
+
+                // Fetch action definition
+                const actionResponse = await fetch(`/api/v1/llm/actions/${actionId}`);
+                const actionData = await actionResponse.json();
+                if (!actionResponse.ok || !actionData.action) {
+                    alert('Failed to fetch action details');
+                    return;
+                }
+                const action = actionData.action;
+
+                // Prepare debug JSON (frontend)
+                const requestJson = {
+                    model: action.llm_model,
+                    temperature: action.temperature,
+                    max_tokens: action.max_tokens,
+                    prompt: action.prompt_template.replace(/\[.*?\]/g, '').trim(),
+                    input: inputValue
+                };
+                // Show debug JSON (frontend)
+                const debugPanel = document.getElementById('debug-json-panel');
+                const debugContent = document.getElementById('debug-json-content');
+                if (debugPanel && debugContent) {
+                    debugPanel.classList.remove('hidden');
+                    debugContent.textContent = JSON.stringify(requestJson, null, 2);
+                } else {
+                    console.warn('[LLM] Debug panel or content element not found.');
+                }
+
+                // Execute action and get backend LLM request JSON
+                let result = {};
+                try {
+                    const executeResponse = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ input_text: inputValue, debug: true })
+                    });
+                    result = await executeResponse.json();
+                } catch (err) {
+                    console.error('[LLM] Error executing action:', err);
+                }
+
+                // Place output dynamically
+                let outputFieldKey = action.output_field || 'summary';
+                let outputSelector = fieldMap[outputFieldKey]
+                    ? `#${fieldMap[outputFieldKey]}, [name='${fieldMap[outputFieldKey]}']`
+                    : '#summary-panel, div';
+                const outputElem = document.querySelector(outputSelector);
+                if (outputElem) {
+                    const outputValue = result.output || result.response || '';
+                    if ('value' in outputElem) outputElem.value = outputValue;
+                    else outputElem.innerHTML = `<div class=\"p-4\">${outputValue}</div>`;
+                    // Persist output value
+                    localStorage.setItem('llm-last-output', outputValue);
+                } else {
+                    console.warn(`[LLM] Output element not found for selector: ${outputSelector}`);
+                }
+
+                // Show backend-to-LLM JSON if available
+                const debugLLMPanel = document.getElementById('debug-json-llm-panel');
+                const debugLLMContent = document.getElementById('debug-json-llm-content');
+                if (result.llm_request_json && debugLLMPanel && debugLLMContent) {
+                    debugLLMPanel.classList.remove('hidden');
+                    debugLLMContent.textContent = JSON.stringify(result.llm_request_json, null, 2);
+                } else if (!result.llm_request_json) {
+                    if (debugLLMPanel && debugLLMContent) {
+                        debugLLMPanel.classList.remove('hidden');
+                        debugLLMContent.textContent = 'No backend LLM request JSON available.';
+                    }
+                }
+            });
+        });
+    });
+</script>

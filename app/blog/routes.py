@@ -421,3 +421,15 @@ def posts_listing():
 @bp.route('/blog/<int:post_id>/develop')
 def deprecated_develop(post_id):
     abort(404)
+
+
+@bp.route("/api/v1/post_development/fields", methods=["GET"])
+def get_post_development_fields():
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development' AND column_name NOT IN ('id', 'post_id')")
+                columns = [row["column_name"] for row in cur.fetchall()]
+        return jsonify({"fields": columns})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

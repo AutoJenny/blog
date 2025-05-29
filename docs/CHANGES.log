@@ -55,4 +55,6 @@
 - feat(workflow): Unified post header (title, created, updated) now appears above the heading on every workflow stage via shared macro. Editing the macro updates all stages.
 - fix(workflow): All workflow stages now receive and render the post header. Backend passes post object to every stage template. Header is now visible on every workflow section.
 - fix(workflow): Post header now always appears above workflow nav icons for consistent UX across all workflow stages.
-- fix(workflow): Standardized post header spacing with consistent margin above and below via macro. Removed extra margin from workflow templates for uniform appearance across all stages. 
+- fix(workflow): Standardized post header spacing with consistent margin above and below via macro. Removed extra margin from workflow templates for uniform appearance across all stages.
+
+2025-05-28: BUGFIX: Workflow LLM action run button now uses the correct /execute endpoint and passes the input field value as input_text and post_id. This fixes the 'No output.' bug on /workflow/idea and ensures [data:FIELDNAME] is correctly substituted in prompts. Verified with curl and browser. No backend changes required. [LLM Workflow Execution] 

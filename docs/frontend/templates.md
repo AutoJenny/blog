@@ -41,6 +41,11 @@ The Blog CMS uses Jinja2 templates for all HTML rendering. This document describ
 - Do **not** set `fullwidth_mode` unless you want to suppress all navigation for a page (e.g., docs browser).
 - For new sub-areas, follow this pattern for robust, site-wide navigation.
 
+**Update (2024-06):**
+- Workflow input/output dropdowns are now populated from the `post_development` table fields for the current post (via `/api/v1/post/<post_id>/development`), not from the `post` table. This ensures the workflow UI always reflects the correct set of development fields.
+
 ## New Feature Note
 - The /llm/prompts page now defaults to the Prompt Parts tab, which features a persistent radio button filter for Type (All, system, user, assistant) above the list. The filter is styled per the dark theme style guide and persists across tab switches.
+- The Prompt Assembler tab now correctly displays all available prompt parts, each with colored tag spans for their tags (role, operation, format, style, specimen). The available list is filtered by the selected type and tags, and the UI logic is robust against missing or malformed tags. (Fixed June 2024)
+- The Prompt Assembler and Prompt Parts tab now use background colors to distinguish message types: blue for system, deep green for user, and deep purple for assistant (if used). Tag colors remain as colored spans. This color-coding applies to both the available parts list and the assembled sequence in the Assembler, as well as the main Prompt Parts table. (Updated June 2024)
 - The /llm/actions page now features a single in-page Action builder area. The Edit button (formerly Details) for each action, as well as the New Action button, anchor to the builder area below. When Edit is clicked, the builder is preloaded with the action's details and switches to update mode (the Save button becomes Update). When New Action is clicked, the builder is cleared and switches to create mode. There is no modal or separate details page for actions; all editing and creation is handled in-page for a seamless workflow. 
