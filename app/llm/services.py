@@ -8,6 +8,7 @@ from datetime import datetime
 from jinja2 import Template
 import psycopg2
 import psycopg2.extras
+import requests  # Add this import for requests
 
 logger = logging.getLogger(__name__)
 # All ORM model imports removed. Use direct SQL via psycopg2 for any DB access.
@@ -234,14 +235,18 @@ class LLMService:
                 "max_tokens": int(max_tokens),      # Ensure max_tokens is int
                 "stream": False  # Ensure we get a complete response
             }
-            logger.debug(f"Sending request to Ollama: {request_data}")
+            logger.debug(f"[REQUESTS] Sending request to Ollama: {request_data}")
             if not self.api_url:
                 raise ValueError("Ollama API URL not set on LLMService")
-            response = httpx.post(
+            # Use requests instead of httpx
+            response = requests.post(
                 f"{self.api_url}/api/generate",
                 json=request_data,
-                timeout=180.0,
+                timeout=180.0
             )
+            logger.debug(f"[REQUESTS] Request headers: {response.request.headers}")
+            logger.debug(f"[REQUESTS] Request body: {response.request.body}")
+            logger.debug(f"[REQUESTS] Raw response: {response.text}")
             response.raise_for_status()
             response_data = response.json()
             logger.debug(f"Received response from Ollama: {response_data}")
@@ -253,10 +258,10 @@ class LLMService:
             else:
                 logger.error(f"Unexpected response format from Ollama: {response_data}")
                 raise ValueError("Unexpected response format from Ollama")
-        except httpx.TimeoutException:
+        except requests.Timeout:
             logger.error(f"Timeout while generating with Ollama (model: {model_name})")
             raise TimeoutError("Request to Ollama timed out")
-        except httpx.HTTPError as e:
+        except requests.RequestException as e:
             logger.error(f"HTTP error while generating with Ollama: {str(e)}")
             raise
         except Exception as e:
