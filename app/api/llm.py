@@ -1008,8 +1008,14 @@ def create_action():
         return jsonify({'status': 'error', 'error': 'Provider ID must be a positive integer'}), 400
     if prompt_template_id < 1:
         return jsonify({'status': 'error', 'error': 'Prompt template ID must be a positive integer'}), 400
-    # TEMP: Override prompt_template for debug
-    prompt_template = 'test'
+    # Fetch the actual prompt_template text from llm_prompt
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('SELECT prompt_text FROM llm_prompt WHERE id=%s', (prompt_template_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'status': 'error', 'error': 'Prompt template not found'}), 400
+            prompt_template = row['prompt_text'] if isinstance(row, dict) else row[0]
     insert_tuple = (name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, order, input_field, output_field, provider_id)
     print(f"[DEBUG] FINAL Insert tuple: {insert_tuple}")
     print(f"[DEBUG] FINAL Tuple types: {[str(type(x)) for x in insert_tuple]}")
