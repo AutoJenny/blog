@@ -79,4 +79,9 @@
 
 2025-05-29: BUGFIX: Fixed KeyError: 0 in /api/v1/llm/post_substage_actions POST handler.
 - Now robustly handles both tuple and dict row types for upsert logic.
-- Prevents 400 errors when updating post_substage_action rows. 
+- Prevents 400 errors when updating post_substage_action rows.
+
+2025-05-29: FEAT: LLM actions now parsed into structured messages or canonical prompt per llm_prompt_structuring.md.
+- Added parse_tagged_prompt_to_messages utility to app/llm/services.py.
+- Integrated into LLMService.execute_action for robust, provider-agnostic prompt/message handling.
+- All LLM actions now use correct structure for chat and single-prompt LLMs. 
