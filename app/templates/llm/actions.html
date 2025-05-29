@@ -294,11 +294,12 @@
     let allModels = [];
     async function loadProviders(selectedProviderId) {
         const providerSelect = document.getElementById('builderProvider');
-        providerSelect.innerHTML = '<option value="">Loading...</option>';
+        providerSelect.innerHTML = '<option value="">Select...</option>';
         try {
             const resp = await fetch('/api/v1/llm/providers');
             const providers = await resp.json();
-            providerSelect.innerHTML = providers.map(p => `<option value="${p.id}" ${selectedProviderId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+            providerSelect.innerHTML = '<option value="">Select...</option>' +
+                providers.map(p => `<option value="${p.id}" ${selectedProviderId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
             // Auto-load models for first provider if none selected
             if (!selectedProviderId && providers.length > 0) {
                 loadModels(providers[0].id);
@@ -322,11 +323,12 @@
     }
     async function loadPromptTemplates(selectedId) {
         const select = document.getElementById('builderPromptTemplate');
-        select.innerHTML = '<option value="">Loading...</option>';
+        select.innerHTML = '<option value="">Select...</option>';
         try {
             const resp = await fetch('/api/v1/llm/prompts');
             const prompts = await resp.json();
-            select.innerHTML = prompts.map(p => `<option value="${p.id}" ${selectedId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+            select.innerHTML = '<option value="">Select...</option>' +
+                prompts.map(p => `<option value="${p.id}" ${selectedId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
             // Set preview if selected
             if (selectedId) {
                 const selected = prompts.find(p => p.id == selectedId);
@@ -533,12 +535,12 @@
         msg.textContent = '';
         const field_name = document.getElementById('builderFieldName').value;
         const description = document.getElementById('builderDescription').value;
-        const provider_id = document.getElementById('builderProvider').value;
+        const provider_id = parseInt(document.getElementById('builderProvider').value);
         const llm_model = document.getElementById('builderModel').value;
-        const prompt_template_id = document.getElementById('builderPromptTemplate').value;
+        const prompt_template_id = parseInt(document.getElementById('builderPromptTemplate').value);
         const temperature = parseFloat(document.getElementById('builderTemperature').value) || 0.7;
         const max_tokens = parseInt(document.getElementById('builderMaxTokens').value) || 1000;
-        if (!field_name || !provider_id || !llm_model || !prompt_template_id) {
+        if (!field_name || isNaN(provider_id) || provider_id < 1 || !llm_model || isNaN(prompt_template_id) || prompt_template_id < 1) {
             msg.textContent = 'Please fill in all required fields.';
             msg.style.color = 'red';
             return;
@@ -583,7 +585,7 @@
                 });
             }
             data = await resp.json();
-            if (resp.ok && data.status === 'success') {
+            if (resp.ok && (data.status === 'success' || data.success === true)) {
                 msg.textContent = this.hasAttribute('data-edit-id') ? 'Action updated!' : 'Action created!';
                 msg.style.color = 'green';
                 // After update, reload and anchor to the updated action
