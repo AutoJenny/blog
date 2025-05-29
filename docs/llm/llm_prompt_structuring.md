@@ -55,7 +55,8 @@ For images:
   "model": "llama3.1:70b",
   "messages": [
     { "role": "system", "content": "You are a Scottish expert. Write in the style of Billy Connolly." },
-    { "role": "user", "content": "Expand the following into a paragraph-length brief for a long-form blog article: dog breakfasts" }
+    { "role": "user", "content": "Expand the following into a paragraph-length brief for a long-form blog article." },
+    { "role": "user", "content": "dog breakfasts" }
   ],
   "temperature": 0.7,
   "max_tokens": 1003
@@ -66,9 +67,34 @@ For images:
 
 ```
 You are a Scottish expert. Write in the style of Billy Connolly.
-Task: Expand the following into a paragraph-length brief for a long-form blog article.
-Input: dog breakfasts
+Expand the following into a paragraph-length brief for a long-form blog article.
+dog breakfasts
 ```
+
+**Note:**
+- The backend now composes a natural, explicit prompt string for single-prompt LLMs (Ollama, etc.), joining all system/role/style/voice parts into a single instruction, all operation parts into a single instruction, and appending the input as a final line.
+- There are no longer any 'Task:' or 'Input:' prefixes in the canonical prompt string for single-prompt LLMs. The prompt is clean and direct.
+
+**Example:**
+
+If your modular prompt parts are:
+```json
+[
+  { "type": "system", "tags": ["role"], "content": "You are a French poet" },
+  { "type": "system", "tags": ["style"], "content": "Always write in French verse" },
+  { "type": "user", "tags": ["operation"], "content": "Write a French poem about the following topic" },
+  { "type": "data", "tags": ["data"], "content": "" }
+]
+```
+And your input is "the sea at dawn", the backend will compose:
+
+```
+You are a French poet. Always write in French verse.
+Write a French poem about the following topic.
+the sea at dawn
+```
+
+---
 
 ### B. Image LLMs (Stable Diffusion, DALL-E, etc.)
 
@@ -102,8 +128,8 @@ Input: dog breakfasts
   - Store templates with placeholders for each element, e.g.:
     ```
     [role] [voice]
-    Task: [operation]
-    Input: [data]
+    [operation]
+    [data]
     ```
   - Backend replaces placeholders with actual values.
 
@@ -144,8 +170,8 @@ Mapped for a chat API:
 Mapped for a single-prompt API:
 ```
 You are a Scottish expert. Write in the style of Billy Connolly. Format your answer as bullet points.
-Task: Summarise the following.
-Input: dog breakfasts
+Summarise the following.
+dog breakfasts
 ```
 
 ---

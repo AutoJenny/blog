@@ -134,54 +134,59 @@ def modular_prompt_to_canonical(prompt_json, fields: dict) -> dict:
     Convert a modular prompt array (list of parts) and runtime fields into a canonical prompt string and message list.
     Returns: { 'messages': [...], 'prompt': '...' }
     """
-    # If string, parse as JSON
     import json as _json
     if isinstance(prompt_json, str):
         try:
             prompt_json = _json.loads(prompt_json)
         except Exception:
             return {'messages': [], 'prompt': ''}
-    # If already canonical object, treat as one-part modular
     if isinstance(prompt_json, dict):
         prompt_json = [prompt_json]
-    # Compose canonical fields
-    role = ''
-    voice = ''
-    operation = ''
-    data = ''
-    system_lines = []
-    user_lines = []
+
+    # Collect content by tag
+    system_lines = []  # role, style, voice
+    operation_lines = []  # operation
+    input_val = fields.get('input', '')
+    # Compose system/role/style/voice
     for part in prompt_json:
         tags = [t.lower() for t in part.get('tags', [])]
-        content = part.get('content', '')
+        content = part.get('content', '').strip()
+        if not content:
+            continue
         if 'role' in tags:
-            role = content
             system_lines.append(content)
         elif 'style' in tags or 'voice' in tags:
-            voice = content
             system_lines.append(content)
         elif 'operation' in tags:
-            operation = content
-            user_lines.append(content)
+            operation_lines.append(content)
         elif 'data' in tags or part.get('type') == 'data':
-            data = content
-    # Compose canonical prompt string
+            # If data part has content, treat as default input
+            if content:
+                input_val = content
+
+    # Compose system message (natural, joined by ". ")
+    system_msg = '. '.join(system_lines).strip()
+    if system_msg and not system_msg.endswith('.'):
+        system_msg += '.'
+    # Compose operation message (natural, joined by ". ")
+    operation_msg = '. '.join(operation_lines).strip()
+    if operation_msg and not operation_msg.endswith('.'):
+        operation_msg += '.'
+    # Compose prompt string for single-prompt LLMs
     prompt_lines = []
-    if system_lines:
-        prompt_lines.append(' '.join(system_lines))
-    if user_lines:
-        prompt_lines.append('Task: ' + ' '.join(user_lines))
-    # Insert runtime input if present
-    input_val = fields.get('input') or data
+    if system_msg:
+        prompt_lines.append(system_msg)
+    if operation_msg:
+        prompt_lines.append(operation_msg)
     if input_val:
-        prompt_lines.append('Input: ' + str(input_val))
+        prompt_lines.append(str(input_val))
     prompt = '\n'.join(prompt_lines)
     # Compose messages for chat LLMs
     messages = []
-    if system_lines:
-        messages.append({'role': 'system', 'content': ' '.join(system_lines)})
-    if user_lines:
-        messages.append({'role': 'user', 'content': ' '.join(user_lines)})
+    if system_msg:
+        messages.append({'role': 'system', 'content': system_msg})
+    if operation_msg:
+        messages.append({'role': 'user', 'content': operation_msg})
     if input_val:
         messages.append({'role': 'user', 'content': str(input_val)})
     return {'messages': messages, 'prompt': prompt}
