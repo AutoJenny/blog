@@ -330,7 +330,19 @@
             // Set preview if selected
             if (selectedId) {
                 const selected = prompts.find(p => p.id == selectedId);
-                document.getElementById('builderPromptPreview').textContent = selected ? selected.prompt_text : '{ ... select a template ... }';
+                if (selected && selected.prompt_json && Array.isArray(selected.prompt_json)) {
+                    const formatted = selected.prompt_json.map(part => {
+                        let tags = part.tags && part.tags.length ? ': ' + part.tags.map(t => t.toUpperCase()).join(',') : '';
+                        let content = part.content || '';
+                        if (part.type === 'data' && part.field) content = `[data:${part.field}]`;
+                        return `[${part.type || ''}${tags}] ${content}`;
+                    }).join('\n');
+                    document.getElementById('builderPromptPreview').textContent = formatted;
+                } else if (selected && selected.prompt_text) {
+                    document.getElementById('builderPromptPreview').textContent = selected.prompt_text;
+                } else {
+                    document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
+                }
             } else {
                 document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
             }
@@ -353,7 +365,19 @@
                 fetch(`/api/v1/llm/prompts/${selected.value}`)
                     .then(r => r.json())
                     .then(data => {
-                        document.getElementById('builderPromptPreview').textContent = data.prompt_text || '{ ... select a template ... }';
+                        if (data.prompt_json && Array.isArray(data.prompt_json)) {
+                            const formatted = data.prompt_json.map(part => {
+                                let tags = part.tags && part.tags.length ? ': ' + part.tags.map(t => t.toUpperCase()).join(',') : '';
+                                let content = part.content || '';
+                                if (part.type === 'data' && part.field) content = `[data:${part.field}]`;
+                                return `[${part.type || ''}${tags}] ${content}`;
+                            }).join('\n');
+                            document.getElementById('builderPromptPreview').textContent = formatted;
+                        } else if (data.prompt_text) {
+                            document.getElementById('builderPromptPreview').textContent = data.prompt_text;
+                        } else {
+                            document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
+                        }
                     });
             } else {
                 document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
