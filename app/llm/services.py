@@ -12,6 +12,13 @@ import psycopg2.extras
 logger = logging.getLogger(__name__)
 # All ORM model imports removed. Use direct SQL via psycopg2 for any DB access.
 
+llm_outgoing_logger = logging.getLogger('llm_outgoing')
+llm_outgoing_logger.setLevel(logging.INFO)
+if not llm_outgoing_logger.handlers:
+    handler = logging.FileHandler('llm_outgoing.log')
+    handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+    llm_outgoing_logger.addHandler(handler)
+
 def execute_llm_request(request_data):
     """Execute an LLM request with the given parameters."""
     try:
@@ -179,8 +186,8 @@ def modular_prompt_to_canonical(prompt_json, fields: dict) -> dict:
     if operation_msg:
         prompt_lines.append(operation_msg)
     if input_val:
-        prompt_lines.append(str(input_val))
-    prompt = '\n'.join(prompt_lines)
+        prompt_lines.append(f"Data for this operation as follows: {input_val}")
+    prompt = ' '.join(prompt_lines)
     # Compose messages for chat LLMs
     messages = []
     if system_msg:
@@ -190,6 +197,11 @@ def modular_prompt_to_canonical(prompt_json, fields: dict) -> dict:
     if input_val:
         messages.append({'role': 'user', 'content': str(input_val)})
     return {'messages': messages, 'prompt': prompt}
+
+def log_llm_outgoing(payload: dict) -> str:
+    prompt = payload.get('prompt', '')
+    llm_outgoing_logger.info(f"LLM PAYLOAD: {payload}")
+    return prompt
 
 class LLMService:
     """Service for interacting with LLM providers."""
@@ -276,9 +288,23 @@ class LLMService:
         current_app.logger.debug(f"[DEBUG] LLMService.execute_action parsed: {parsed}")
         input_field = action.get('input_field') or 'input'
         output_field = action.get('output_field') or 'output'
+        llm_payload = None
         if self.config == 'openai':
+            llm_payload = {
+                'model': model,
+                'messages': parsed['messages'],
+                'temperature': action['temperature'],
+                'max_tokens': action['max_tokens']
+            }
             result = self.generate(parsed['messages'], model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
         elif self.config == 'ollama':
+            llm_payload = {
+                'model': model,
+                'prompt': parsed['prompt'],
+                'temperature': action['temperature'],
+                'max_tokens': action['max_tokens'],
+                'stream': False
+            }
             result = self.generate(parsed['prompt'], model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
         else:
             raise ValueError(f"Unsupported provider type: {self.config}")
@@ -292,6 +318,8 @@ class LLMService:
             elif isinstance(obj, list):
                 return [make_json_safe(i) for i in obj]
             return obj
+        # Always include the full LLM payload for debugging/transparency
+        result['llm_payload'] = llm_payload
         return make_json_safe(result)
 
 # Remove all ORM model usage below, stub out as needed for migration. 

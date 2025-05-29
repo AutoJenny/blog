@@ -31,6 +31,11 @@
         <h3 class="text-lg font-semibold mb-2">Debug: LLM Request JSON (Backend to LLM)</h3>
         <pre id="debug-json-llm-content" class="bg-white p-4 rounded overflow-x-auto"></pre>
     </div>
+
+    <button id="run-action-btn" class="btn btn-primary">Run Action</button>
+    <div id="action-result"></div>
+    <div id="action-debug"></div>
+    <div id="llm-prompt-display" style="margin-top:2em;"></div>
 </div>
 
 <script>
@@ -163,7 +168,24 @@
                     debugLLMPanel.classList.remove('hidden');
                     debugLLMContent.textContent = 'No backend LLM JSON.';
                 }
+
+                if (debug && debug.outgoing_prompt_string) {
+                    displayLLMPrompt(debug.outgoing_prompt_string);
+                }
             });
         });
     });
+
+    function displayLLMPrompt(prompt) {
+        if (prompt) {
+            document.getElementById('llm-prompt-display').innerHTML = `<h4>Prompt sent to LLM</h4><pre>${prompt}</pre>`;
+        }
+    }
+
+    function handleActionDebug(debug) {
+        // ... existing code ...
+        if (debug && debug.outgoing_prompt_string) {
+            displayLLMPrompt(debug.outgoing_prompt_string);
+        }
+    }
 </script>

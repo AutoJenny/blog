@@ -1,7 +1,7 @@
 print('=== LLM API MODULE LOADED (AUDIT TEST) ===')
 # MIGRATION: This file is being refactored to use direct SQL (psycopg2) instead of ORM models.
 from flask import Blueprint, jsonify, request, current_app
-from app.llm.services import LLMService, execute_llm_request
+from app.llm.services import LLMService, execute_llm_request, log_llm_outgoing
 import requests
 import traceback
 import logging
@@ -451,19 +451,38 @@ def execute_action(action_id):
         prompt_json = None
         with get_db_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute('SELECT prompt_json FROM llm_prompt WHERE id=%s', (action['prompt_template_id'],))
+                cur.execute('SELECT prompt_json, prompt_text FROM llm_prompt WHERE id=%s', (action['prompt_template_id'],))
                 row = cur.fetchone()
-                if row and (isinstance(row, dict) and row.get('prompt_json')):
-                    prompt_json = row['prompt_json']
-                elif row and not isinstance(row, dict) and len(row) > 0:
-                    prompt_json = row[0]
+                raw_prompt_json = None
+                raw_prompt_text = None
+                if row:
+                    if isinstance(row, dict):
+                        prompt_json = row.get('prompt_json')
+                        raw_prompt_json = row.get('prompt_json')
+                        raw_prompt_text = row.get('prompt_text')
+                    elif len(row) > 1:
+                        prompt_json = row[0]
+                        raw_prompt_json = row[0]
+                        raw_prompt_text = row[1]
         from app.llm.services import modular_prompt_to_canonical, parse_tagged_prompt_to_messages
+        diagnostics = {
+            'raw_prompt_json': raw_prompt_json,
+            'raw_prompt_text': raw_prompt_text,
+            'action_prompt_template': action.get('prompt_template'),
+            'fields': fields
+        }
         if prompt_json:
             parsed_prompt = modular_prompt_to_canonical(prompt_json, fields)
             canonical_prompt = parsed_prompt['prompt']
+            diagnostics['parsed_prompt'] = canonical_prompt
+            diagnostics['parsed_messages'] = parsed_prompt['messages']
+            diagnostics['prompt_type'] = 'modular_prompt_json'
         else:
             parsed_prompt = parse_tagged_prompt_to_messages(action['prompt_template'], fields)
             canonical_prompt = parsed_prompt['prompt']
+            diagnostics['parsed_prompt'] = canonical_prompt
+            diagnostics['parsed_messages'] = parsed_prompt['messages']
+            diagnostics['prompt_type'] = 'legacy_prompt_template'
         llm_request_json = {
             'model': action['llm_model'],
             'prompt': canonical_prompt,
@@ -471,6 +490,11 @@ def execute_action(action_id):
             'max_tokens': int(action['max_tokens']),
             'stream': False
         }
+        diagnostics['llm_request_json'] = llm_request_json
+        current_app.logger.error(f"[LLM DIAGNOSTIC] Diagnostics: {json.dumps(diagnostics, ensure_ascii=False, indent=2)}")
+
+        # --- Log outgoing LLM payload and get prompt string ---
+        outgoing_prompt_string = log_llm_outgoing(llm_request_json)
 
         # Call the LLMService as before (assume it can take a dict action)
         result = llm.execute_action(
@@ -480,7 +504,7 @@ def execute_action(action_id):
         )
         current_app.logger.info(f"[LLM EXECUTE] Action {action_id} executed successfully.")
         if debug_mode:
-            return jsonify({**result, 'llm_request_json': llm_request_json})
+            return jsonify({**result, 'llm_request_json': llm_request_json, 'diagnostics': diagnostics, 'outgoing_prompt_string': outgoing_prompt_string})
         return jsonify(result)
     except ValueError as e:
         current_app.logger.error(f"[LLM EXECUTE] ValueError executing action {action_id}: {str(e)}\n{traceback.format_exc()}")
