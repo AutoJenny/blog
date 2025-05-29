@@ -719,8 +719,7 @@ All notable changes to this project are documented in this file.
 
 2024-06-13: UI - Prompt Parts and Assembler now use blue for system, deep green for user, and deep purple for assistant backgrounds, with tag colors unchanged. Applies to both tabs. Docs updated.
 
-2025-05-29 Fix: LLM Action execution now always fetches prompt_json from llm_prompt and uses modular_prompt_to_canonical if present, ensuring modular prompts are used at runtime. This resolves the issue where only legacy prompt_template was used.
-
-2025-05-29 Feature: Outgoing LLM prompt logging and UI display
-- Added logging of every outgoing LLM prompt string and payload to llm_outgoing.log.
-- The exact prompt string sent to the LLM is now shown below the Run Action button in the workflow UI for full transparency and debugging.
+2025-05-29 Fix: LLM Run Action button now uses correct modular prompt for each action
+- Removed hardcoded prompt patch; restored dynamic prompt construction from database.
+- Added detailed prompt construction logging and diagnostics.
+- See docs/temp/llm_prompt_debugging_action_plan.md for full engineering summary and action plan.
