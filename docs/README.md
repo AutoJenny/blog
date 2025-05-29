@@ -109,4 +109,7 @@ The main header now features:
 - **Modules** dropdown: Database, AI (LLM), Images
 - **Docs** link: Direct access to project documentation
 
-All links are accessible from the top navigation bar for quick access to major features. 
+All links are accessible from the top navigation bar for quick access to major features.
+
+## 2025-05-29 Update
+- LLM actions now use `parse_tagged_prompt_to_messages` to build canonical prompts, ensuring all prompt elements (system, user, operation, data) are included as per [llm/llm_prompt_structuring.md](llm/llm_prompt_structuring.md). See the changelog for details. 

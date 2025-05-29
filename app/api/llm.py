@@ -447,11 +447,13 @@ def execute_action(action_id):
         llm.config = provider_type
         llm.api_url = provider.get('api_url')
 
-        # Prepare the exact JSON message to send to the LLM
-        cleaned_prompt = re.sub(r'\[.*?\]', '', action['prompt_template']).strip()
+        # --- NEW: Use parse_tagged_prompt_to_messages to build canonical prompt ---
+        from app.llm.services import parse_tagged_prompt_to_messages
+        parsed_prompt = parse_tagged_prompt_to_messages(action['prompt_template'], fields)
+        canonical_prompt = parsed_prompt['prompt']
         llm_request_json = {
             'model': action['llm_model'],
-            'prompt': cleaned_prompt + "\n\nInput: " + fields['input'],
+            'prompt': canonical_prompt,
             'temperature': float(action['temperature']),
             'max_tokens': int(action['max_tokens']),
             'stream': False

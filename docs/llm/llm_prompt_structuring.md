@@ -179,3 +179,8 @@ dog breakfasts
 ## 5. Data Flow Diagram
 
 ```
+```
+
+## Update (2025-05-29)
+
+As of 2025-05-29, the backend now always uses `parse_tagged_prompt_to_messages` to build the canonical prompt for LLM actions. This ensures that all system, user, operation, and data elements are included in the prompt sent to the LLM, in accordance with this document. See the changelog entry for details of the bug fix that resolved prompt stripping issues.
