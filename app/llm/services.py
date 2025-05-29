@@ -129,6 +129,63 @@ def parse_tagged_prompt_to_messages(prompt_template: str, fields: dict) -> dict:
     current_app.logger.debug(f"[DEBUG] Parsed prompt: {prompt}")
     return {'messages': messages, 'prompt': prompt}
 
+def modular_prompt_to_canonical(prompt_json, fields: dict) -> dict:
+    """
+    Convert a modular prompt array (list of parts) and runtime fields into a canonical prompt string and message list.
+    Returns: { 'messages': [...], 'prompt': '...' }
+    """
+    # If string, parse as JSON
+    import json as _json
+    if isinstance(prompt_json, str):
+        try:
+            prompt_json = _json.loads(prompt_json)
+        except Exception:
+            return {'messages': [], 'prompt': ''}
+    # If already canonical object, treat as one-part modular
+    if isinstance(prompt_json, dict):
+        prompt_json = [prompt_json]
+    # Compose canonical fields
+    role = ''
+    voice = ''
+    operation = ''
+    data = ''
+    system_lines = []
+    user_lines = []
+    for part in prompt_json:
+        tags = [t.lower() for t in part.get('tags', [])]
+        content = part.get('content', '')
+        if 'role' in tags:
+            role = content
+            system_lines.append(content)
+        elif 'style' in tags or 'voice' in tags:
+            voice = content
+            system_lines.append(content)
+        elif 'operation' in tags:
+            operation = content
+            user_lines.append(content)
+        elif 'data' in tags or part.get('type') == 'data':
+            data = content
+    # Compose canonical prompt string
+    prompt_lines = []
+    if system_lines:
+        prompt_lines.append(' '.join(system_lines))
+    if user_lines:
+        prompt_lines.append('Task: ' + ' '.join(user_lines))
+    # Insert runtime input if present
+    input_val = fields.get('input') or data
+    if input_val:
+        prompt_lines.append('Input: ' + str(input_val))
+    prompt = '\n'.join(prompt_lines)
+    # Compose messages for chat LLMs
+    messages = []
+    if system_lines:
+        messages.append({'role': 'system', 'content': ' '.join(system_lines)})
+    if user_lines:
+        messages.append({'role': 'user', 'content': ' '.join(user_lines)})
+    if input_val:
+        messages.append({'role': 'user', 'content': str(input_val)})
+    return {'messages': messages, 'prompt': prompt}
+
 class LLMService:
     """Service for interacting with LLM providers."""
 
@@ -195,7 +252,6 @@ class LLMService:
         return "[DUMMY OPENAI RESPONSE]"
 
     def execute_action(self, action, fields: dict, post_id=None, model_name=None):
-        # --- PATCH: Use direct SQL only, no ORM ---
         model = None
         if model_name:
             model = model_name
@@ -204,21 +260,18 @@ class LLMService:
         else:
             raise ValueError(f"LLM model not set on action {action['id']}")
         # Use self.config and self.api_url as set by the caller.
-        # --- NEW: Parse prompt template into messages/prompt ---
-        prompt_template = action.get('prompt_template', '')
-        parsed = parse_tagged_prompt_to_messages(prompt_template, fields)
+        # --- NEW: Transform modular prompt_json to canonical prompt/messages ---
+        prompt_json = action.get('prompt_json')
+        parsed = modular_prompt_to_canonical(prompt_json, fields)
         current_app.logger.debug(f"[DEBUG] LLMService.execute_action parsed: {parsed}")
-        # Choose input/output fields
         input_field = action.get('input_field') or 'input'
         output_field = action.get('output_field') or 'output'
-        # Call LLM (OpenAI or Ollama)
         if self.config == 'openai':
             result = self.generate(parsed['messages'], model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
         elif self.config == 'ollama':
             result = self.generate(parsed['prompt'], model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
         else:
             raise ValueError(f"Unsupported provider type: {self.config}")
-        # Map output to output_field
         if isinstance(result, dict) and 'output' in result:
             result = {output_field: result['output'], **{k: v for k, v in result.items() if k != 'output'}}
         elif isinstance(result, str):
