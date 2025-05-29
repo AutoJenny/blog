@@ -832,12 +832,20 @@ def post_substage_actions():
                     """, (post_id, substage))
                     row = cur.fetchone()
                     if row:
+                        # Robust: handle both dict and tuple
+                        if isinstance(row, dict):
+                            row_id = row['id']
+                        elif isinstance(row, (list, tuple)):
+                            row_id = row[0]
+                        else:
+                            print(f"[DEBUG] Unexpected row type in post_substage_actions: {type(row)} value: {row}")
+                            return jsonify({'status': 'error', 'error': f'Unexpected row type: {type(row)}'}), 400
                         cur.execute("""
                             UPDATE post_substage_action
                             SET action_id=%s, button_label=%s, button_order=%s
                             WHERE id=%s
-                        """, (action_id, button_label, button_order, row['id'] if isinstance(row, dict) else row[0]))
-                        new_id = row['id'] if isinstance(row, dict) else row[0]
+                        """, (action_id, button_label, button_order, row_id))
+                        new_id = row_id
                     else:
                         cur.execute("""
                             INSERT INTO post_substage_action (post_id, substage, action_id, button_label, button_order)
