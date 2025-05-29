@@ -81,6 +81,9 @@ This table is managed via the Settings panel at `/settings` and is used to dynam
 
 **Note:** The Settings panel now displays all fields from the `post_development` table (except `id` and `post_id`), including those not yet mapped. Unmapped fields will appear as available for mapping to any workflow stage/substage.
 
+**Update (2024-06):**
+- The workflow UI input/output dropdowns are now populated from the `post_development` table fields for the current post (via `/api/v1/post/<post_id>/development`), not from the `post` table. This ensures all workflow actions operate on the correct set of development fields.
+
 ## Live Field Mapping Table
 
 The current mapping of fields to workflow stages/substages is shown below. This table is dynamically generated from the database and can be managed in the [Settings Panel](/settings).

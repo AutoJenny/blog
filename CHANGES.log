@@ -714,3 +714,7 @@ All notable changes to this project are documented in this file.
 - Updated app/blog/routes.py get_db_conn to always reload DATABASE_URL from assistant_config.env using dotenv_values, matching the robust pattern in app/database/routes.py.
 - This ensures /blog/posts always connects to the correct database, fixing the empty posts list bug.
 - Verified with curl and browser: posts now display as expected.
+
+- Updated workflow/planning/idea/index.html: Input/output dropdowns now fetch fields from post_development table for the current post via /api/v1/post/<post_id>/development, with fallback to mock fields if unavailable. Ensures correct fields are shown for workflow actions.
+
+2024-06-13: UI - Prompt Parts and Assembler now use blue for system, deep green for user, and deep purple for assistant backgrounds, with tag colors unchanged. Applies to both tabs. Docs updated.

@@ -39,10 +39,10 @@
 
   // Utility: run LLM action
   async function runLLMAction(actionId, input) {
-    const resp = await fetch(`/api/v1/llm/actions/${actionId}/test`, {
+    const resp = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input })
+      body: JSON.stringify({ input_text: input, post_id: postId })
     });
     return resp.ok ? await resp.json() : { error: 'Failed to run action' };
   }
@@ -230,6 +230,9 @@
     const result = await runLLMAction(actionId, inputValue);
     if (result && result.result && result.result.output) {
       lastActionOutput = result.result.output;
+      actionOutputPanel.textContent = lastActionOutput;
+    } else if (result.output) {
+      lastActionOutput = result.output;
       actionOutputPanel.textContent = lastActionOutput;
     } else if (result.response) {
       lastActionOutput = result.response;
