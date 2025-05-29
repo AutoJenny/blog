@@ -72,4 +72,7 @@
 
 2025-05-29: RESTORED: GET /api/v1/llm/actions endpoint now returns all LLM actions as JSON.
 - Required for workflow and admin UIs to function correctly.
-- Fixes 405 errors on workflow/idea and other pages that fetch the actions list. 
+- Fixes 405 errors on workflow/idea and other pages that fetch the actions list.
+
+2025-05-29: BUGFIX: Fixed 500 error on GET /api/v1/llm/actions by removing non-existent 'description' column from llm_action SELECT in list_actions endpoint.
+- Now returns all actions as JSON without error. 
