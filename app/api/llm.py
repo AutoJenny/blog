@@ -497,8 +497,26 @@ def execute_action(action_id):
         r = requests.post("http://localhost:11434/api/generate", json=llm_request_json, timeout=60)
         result = r.json()
         output = result.get('response', '')
+        # --- Save output to selected DB field if specified ---
+        save_status = None
+        if action.get('output_field') and post_id:
+            output_field = action['output_field']
+            try:
+                with get_db_conn() as conn:
+                    with conn.cursor() as cur:
+                        # Only allow updating valid fields in post table
+                        cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post'")
+                        valid_fields = [row["column_name"] for row in cur.fetchall()]
+                        if output_field in valid_fields:
+                            cur.execute(f"UPDATE post SET {output_field} = %s, updated_at = NOW() WHERE id = %s", (output, post_id))
+                            conn.commit()
+                            save_status = f"Saved output to post.{output_field} for post_id={post_id}"
+                        else:
+                            save_status = f"Invalid output_field: {output_field}"
+            except Exception as e:
+                save_status = f"Error saving output: {e}"
         if debug_mode:
-            return jsonify({'output': output, 'llm_request_json': llm_request_json, 'diagnostics': diagnostics, 'outgoing_prompt_string': outgoing_prompt_string})
+            return jsonify({'output': output, 'llm_request_json': llm_request_json, 'diagnostics': diagnostics, 'outgoing_prompt_string': outgoing_prompt_string, 'save_status': save_status})
         return jsonify({'output': output})
     except ValueError as e:
         current_app.logger.error(f"[LLM EXECUTE] ValueError executing action {action_id}: {str(e)}\n{traceback.format_exc()}")
