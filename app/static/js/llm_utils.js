@@ -12,10 +12,11 @@ export function showStartOllamaButton(container) {
         this.disabled = true;
         this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Starting...';
         try {
-            const resp = await fetch('/api/v1/llm/providers/start', { method: 'POST' });
+            const resp = await fetch('/api/v1/llm/ollama/start', { method: 'POST' });
             const data = await resp.json();
             if (resp.ok && data.success) {
                 this.innerHTML = '<i class="fa-solid fa-check"></i> Started';
+                setTimeout(() => window.location.reload(), 1000);
             } else {
                 this.innerHTML = '<i class="fa-solid fa-play"></i> Start Ollama';
                 alert(data.error || 'Failed to start Ollama');
