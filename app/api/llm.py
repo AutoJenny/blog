@@ -531,7 +531,7 @@ def execute_action(action_id):
         return jsonify({'error': str(e)}), 400
     except Exception as e:
         current_app.logger.error(f"[LLM EXECUTE] Exception executing action {action_id}: {str(e)}\n{traceback.format_exc()} | Data: {data} | Action: {action if 'action' in locals() else 'N/A'}")
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': str(e)}), 500
 
 
 @bp.route('/actions/<int:action_id>/history')
