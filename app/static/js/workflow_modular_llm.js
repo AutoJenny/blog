@@ -263,12 +263,24 @@ async function checkOllamaStatus() {
     inputFieldValue.textContent = postDev[field] || '(No value)';
     // Always POST current state
     await savePostSubstageAction(postId, substage, actionSelect.value, field, outputFieldSelect.value);
+    // Re-fetch and update UI
+    postSubstageAction = await fetchPostSubstageAction(postId, substage);
+    const psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
+    if (psa && psa.input_field) inputFieldSelect.value = psa.input_field;
+    if (psa && psa.output_field) outputFieldSelect.value = psa.output_field;
+    if (psa && psa.output_field) outputFieldValue.textContent = postDev[psa.output_field] || '(No value)';
   });
   outputFieldSelect.addEventListener('change', async () => {
     const field = outputFieldSelect.value;
     outputFieldValue.textContent = postDev[field] || '(No value)';
     // Always POST current state
     await savePostSubstageAction(postId, substage, actionSelect.value, inputFieldSelect.value, field);
+    // Re-fetch and update UI
+    postSubstageAction = await fetchPostSubstageAction(postId, substage);
+    const psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
+    if (psa && psa.input_field) inputFieldSelect.value = psa.input_field;
+    if (psa && psa.output_field) outputFieldSelect.value = psa.output_field;
+    if (psa && psa.output_field) outputFieldValue.textContent = postDev[psa.output_field] || '(No value)';
   });
 
   // Action dropdown change handler (persist selection)
@@ -288,6 +300,12 @@ async function checkOllamaStatus() {
     // Always POST current state
     if (actionId) {
       await savePostSubstageAction(postId, substage, actionId, inputFieldSelect.value, outputFieldSelect.value);
+      // Re-fetch and update UI
+      postSubstageAction = await fetchPostSubstageAction(postId, substage);
+      const psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
+      if (psa && psa.input_field) inputFieldSelect.value = psa.input_field;
+      if (psa && psa.output_field) outputFieldSelect.value = psa.output_field;
+      if (psa && psa.output_field) outputFieldValue.textContent = postDev[psa.output_field] || '(No value)';
     }
   });
 
