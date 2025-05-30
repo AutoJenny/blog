@@ -1,0 +1,9 @@
+ id | post_id | substage |    input_field    |  output_field  
+----+---------+----------+-------------------+----------------
+  1 |       9 | idea     | changed_input     | changed_output
+  9 |      15 | idea     | basic_idea        | idea_scope
+ 32 |      16 | idea     |                   | 
+ 33 |      17 | idea     | idea_seed         | basic_idea
+ 34 |      15 | research | provisional_title | basic_idea
+(5 rows)
+
