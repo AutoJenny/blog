@@ -914,6 +914,35 @@ def post_substage_actions():
         try:
             with get_db_conn() as conn:
                 with conn.cursor() as cur:
+                    # --- AUTO-MAP FIELDS IF NEEDED ---
+                    # Import canonical field list and substage/stage info
+                    import sys
+                    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+                    from app.blog.fields import WORKFLOW_FIELDS
+                    from app.main.routes import WORKFLOW_STAGES, WORKFLOW_SUBSTAGES
+                    # Helper: get all valid field names
+                    valid_fields = set()
+                    for fields in WORKFLOW_FIELDS.values():
+                        valid_fields.update(fields)
+                    # Helper: get substage_id and stage_id
+                    def get_substage_info(substage_name):
+                        for sub in WORKFLOW_SUBSTAGES:
+                            if sub['name'] == substage_name:
+                                return sub['id'], sub['stage_id']
+                        return None, None
+                    substage_id, stage_id = get_substage_info(substage)
+                    # Helper: auto-insert mapping if needed
+                    def ensure_field_mapping(field_name):
+                        if not field_name or field_name not in valid_fields or not substage_id or not stage_id:
+                            return
+                        cur.execute("SELECT 1 FROM workflow_field_mapping WHERE field_name=%s AND substage_id=%s", (field_name, substage_id))
+                        if not cur.fetchone():
+                            # Get next order_index for this substage
+                            cur.execute("SELECT COALESCE(MAX(order_index), 0) + 1 FROM workflow_field_mapping WHERE substage_id=%s", (substage_id,))
+                            order_index = cur.fetchone()[0]
+                            cur.execute("INSERT INTO workflow_field_mapping (field_name, stage_id, substage_id, order_index) VALUES (%s, %s, %s, %s)", (field_name, stage_id, substage_id, order_index))
+                    ensure_field_mapping(input_field)
+                    ensure_field_mapping(output_field)
                     # Upsert: if exists, update; else insert
                     cur.execute("""
                         SELECT id FROM post_substage_action WHERE post_id=%s AND substage=%s
