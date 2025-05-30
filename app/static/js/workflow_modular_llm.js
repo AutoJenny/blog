@@ -387,9 +387,31 @@ async function checkOllamaStatus() {
       if (result && result.result && result.result.output) {
         actionOutputPanel.textContent = result.result.output;
         lastActionOutput = result.result.output;
+        // Auto-save output to selected output field
+        const outputField = outputFieldSelect.value;
+        if (outputField && lastActionOutput) {
+          const resp = await updatePostDevelopmentField(postId, outputField, lastActionOutput);
+          if (resp.status === 'success') {
+            // Refresh postDev and output panel
+            postDev = await fetchPostDevelopment(postId);
+            outputFieldValue.textContent = postDev[outputField] || '(No value)';
+            renderPostDevFields(postDevFieldsPanel, fieldMappings, postDev, substage);
+          }
+        }
       } else if (result && result.output) {
         actionOutputPanel.textContent = result.output;
         lastActionOutput = result.output;
+        // Auto-save output to selected output field
+        const outputField = outputFieldSelect.value;
+        if (outputField && lastActionOutput) {
+          const resp = await updatePostDevelopmentField(postId, outputField, lastActionOutput);
+          if (resp.status === 'success') {
+            // Refresh postDev and output panel
+            postDev = await fetchPostDevelopment(postId);
+            outputFieldValue.textContent = postDev[outputField] || '(No value)';
+            renderPostDevFields(postDevFieldsPanel, fieldMappings, postDev, substage);
+          }
+        }
       } else if (result && result.error) {
         actionOutputPanel.textContent = `Error: ${result.error}`;
         lastActionOutput = '';
