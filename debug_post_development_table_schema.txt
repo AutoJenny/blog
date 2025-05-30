@@ -1,0 +1,44 @@
+                                   Table "public.post_development"
+       Column        |  Type   | Collation | Nullable |                   Default                    
+---------------------+---------+-----------+----------+----------------------------------------------
+ id                  | integer |           | not null | nextval('post_development_id_seq'::regclass)
+ post_id             | integer |           | not null | 
+ basic_idea          | text    |           |          | 
+ provisional_title   | text    |           |          | 
+ idea_scope          | text    |           |          | 
+ topics_to_cover     | text    |           |          | 
+ interesting_facts   | text    |           |          | 
+ tartans_products    | text    |           |          | 
+ section_planning    | text    |           |          | 
+ section_headings    | text    |           |          | 
+ section_order       | text    |           |          | 
+ main_title          | text    |           |          | 
+ subtitle            | text    |           |          | 
+ intro_blurb         | text    |           |          | 
+ conclusion          | text    |           |          | 
+ basic_metadata      | text    |           |          | 
+ tags                | text    |           |          | 
+ categories          | text    |           |          | 
+ image_captions      | text    |           |          | 
+ seo_optimization    | text    |           |          | 
+ self_review         | text    |           |          | 
+ peer_review         | text    |           |          | 
+ final_check         | text    |           |          | 
+ scheduling          | text    |           |          | 
+ deployment          | text    |           |          | 
+ verification        | text    |           |          | 
+ feedback_collection | text    |           |          | 
+ content_updates     | text    |           |          | 
+ version_control     | text    |           |          | 
+ platform_selection  | text    |           |          | 
+ content_adaptation  | text    |           |          | 
+ distribution        | text    |           |          | 
+ engagement_tracking | text    |           |          | 
+ summary             | text    |           |          | 
+ idea_seed           | text    |           |          | 
+Indexes:
+    "post_development_pkey" PRIMARY KEY, btree (id)
+    "post_development_post_id_key" UNIQUE CONSTRAINT, btree (post_id)
+Foreign-key constraints:
+    "post_development_post_id_fkey" FOREIGN KEY (post_id) REFERENCES post(id)
+

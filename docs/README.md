@@ -30,6 +30,7 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
    - [LLM Service Architecture](llm/architecture.md)
    - [Prompt Templates & Actions](llm/prompts.md)
    - [LLM API Reference](api/llm_api.md)
+   - **If a workflow LLM action fails because Ollama is not running, a Start Ollama button will appear in the error panel, allowing you to start Ollama directly from the workflow UI. This is now handled by a shared utility and works for all workflow LLM actions, regardless of which button or script is used.**
 
 5. **API Documentation**
    - [API Overview](api/README.md)

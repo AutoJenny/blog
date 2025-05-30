@@ -1,0 +1,26 @@
+{
+  "diagnostics": {
+    "action_prompt_template": "You are Start every response with \"TITLE: NONSENSE\".\nWrite in the style of Write entirely in French.\nTask: Write a short poem",
+    "fields": {
+      "input": "dog breakfasts"
+    },
+    "llm_request_json": {
+      "max_tokens": 1000,
+      "model": "llama3.1:70b",
+      "prompt": "Start every response with \"TITLE: NONSENSE\". Write entirely in French. Write a short poem. Data for this operation as follows: dog breakfasts",
+      "stream": false,
+      "temperature": 0.7
+    },
+    "raw_prompt_json": null,
+    "raw_prompt_text": null
+  },
+  "llm_request_json": {
+    "max_tokens": 1000,
+    "model": "llama3.1:70b",
+    "prompt": "Start every response with \"TITLE: NONSENSE\". Write entirely in French. Write a short poem. Data for this operation as follows: dog breakfasts",
+    "stream": false,
+    "temperature": 0.7
+  },
+  "outgoing_prompt_string": "Start every response with \"TITLE: NONSENSE\". Write entirely in French. Write a short poem. Data for this operation as follows: dog breakfasts",
+  "output": "TITLE: NONSENSE\n\nAu petit d\u00e9jeuner du chien,\nUn m\u00e9lange de tout et rien.\n Des cro\u00fbtons et des restes,\nDans un bol, un vrai capharna\u00fcm.\n\nLe lait est renvers\u00e9, le pain est sec,\nLes \u0153ufs sont bris\u00e9s, les saucisses aussi.\n Mais qu'importe, le chien est content,\nIl d\u00e9vore tout avec app\u00e9tit.\n\nC'est un repas de roi, ou plut\u00f4t de chien,\nUn dog breakfast, un vrai chaos culinaire.\nMais pour lui, c'est un festin royal,\nEt il en redemande encore et encore."
+}

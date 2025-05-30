@@ -102,4 +102,8 @@
 - Ensures full reversibility and editability of prompt templates, and robust LLM execution for all providers.
 - [LLM Prompt Runtime Transformation]
 
-[2024-06-13] Fix: modular_prompt_to_canonical now produces a clean, natural prompt string for single-prompt LLMs (Ollama, etc.), joining all system/role/style/voice parts into a single instruction, all operation parts into a single instruction, and appending the input as a final line. Removed 'Task:' and 'Input:' prefixes for clarity and LLM compliance. Updated docs/llm/llm_prompt_structuring.md to match. 
+[2024-06-13] Fix: modular_prompt_to_canonical now produces a clean, natural prompt string for single-prompt LLMs (Ollama, etc.), joining all system/role/style/voice parts into a single instruction, all operation parts into a single instruction, and appending the input as a final line. Removed 'Task:' and 'Input:' prefixes for clarity and LLM compliance. Updated docs/llm/llm_prompt_structuring.md to match.
+
+2025-05-30: FEAT: Workflow UI now displays a 'Start Ollama' button if a Run Action fails due to Ollama not running (connection refused).
+- The button appears in the error panel and reuses the same logic as the providers page, posting to /api/v1/llm/providers/start and updating the UI accordingly.
+- This improves user experience and makes it easy to recover from a stopped Ollama server directly from the workflow interface. 

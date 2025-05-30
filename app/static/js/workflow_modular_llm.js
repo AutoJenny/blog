@@ -1,6 +1,20 @@
 // Modular LLM Workflow logic for Input, Actions, Output, and Post Development Fields panels
 // This script is designed to be reusable for all workflow stages
 
+import { showStartOllamaButton } from './llm_utils.js';
+
+// Robust Ollama status check
+async function checkOllamaStatus() {
+  try {
+    const resp = await fetch('/api/v1/llm/providers/1/test');
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    return data.success === true;
+  } catch (e) {
+    return false;
+  }
+}
+
 (async function() {
   // Utility: fetch field mappings from /api/settings/field-mapping
   async function fetchFieldMappings() {
@@ -78,7 +92,7 @@
   const runActionBtn = document.getElementById('runActionBtn');
   const outputFieldSelect = document.getElementById('outputFieldSelect');
   const outputFieldValue = document.getElementById('outputFieldValue');
-  const actionOutputPanel = document.getElementById('actionOutputPanel');
+  const actionResultPanel = document.getElementById('action-result');
   const saveOutputBtn = document.getElementById('saveOutputBtn');
   const postDevFieldsPanel = document.getElementById('postDevFieldsPanel');
 
@@ -89,6 +103,7 @@
   let actionDetails = {};
   let lastActionOutput = '';
   let postSubstageAction = null;
+  let lastRequestToken = 0;
 
   // Fetch all data and initialize UI
   async function init() {
@@ -219,26 +234,105 @@
 
   // Run Action button handler
   runActionBtn.addEventListener('click', async () => {
-    const actionId = actionSelect.value;
-    const inputField = inputFieldSelect.value;
-    if (!actionId || !inputField) {
-      actionOutputPanel.textContent = 'Please select both an action and an input field.';
-      return;
-    }
-    const inputValue = postDev[inputField] || '';
-    actionOutputPanel.textContent = 'Running action...';
-    const result = await runLLMAction(actionId, inputValue);
-    if (result && result.result && result.result.output) {
-      lastActionOutput = result.result.output;
-      actionOutputPanel.textContent = lastActionOutput;
-    } else if (result.output) {
-      lastActionOutput = result.output;
-      actionOutputPanel.textContent = lastActionOutput;
-    } else if (result.response) {
-      lastActionOutput = result.response;
-      actionOutputPanel.textContent = lastActionOutput;
-    } else {
-      actionOutputPanel.textContent = result.error || 'No output.';
+    try {
+      if (!actionResultPanel) {
+        alert('Error: Output panel not found in DOM.');
+        return;
+      }
+      // Generate a unique token for this request
+      const requestToken = ++lastRequestToken;
+      // Clear output and disable button
+      actionResultPanel.textContent = 'Running action...';
+      runActionBtn.disabled = true;
+      // Check Ollama status first
+      console.log('[LLM] Checking Ollama status...');
+      const ollamaOk = await checkOllamaStatus();
+      if (requestToken !== lastRequestToken) return; // Outdated request
+      if (!ollamaOk) {
+        console.warn('[LLM] Ollama is not running (pre-check)');
+        actionResultPanel.textContent = 'Ollama is not running.';
+        showStartOllamaButton(actionResultPanel);
+        runActionBtn.disabled = false;
+        return;
+      }
+      const actionId = actionSelect.value;
+      const inputField = inputFieldSelect.value;
+      if (!actionId || !inputField) {
+        actionResultPanel.textContent = 'Please select both an action and an input field.';
+        runActionBtn.disabled = false;
+        return;
+      }
+      const inputValue = postDev[inputField] || '';
+      let resp, result;
+      try {
+        resp = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input_text: inputValue, post_id: postId })
+        });
+      } catch (err) {
+        console.error('[LLM] Network/fetch error:', err);
+        actionResultPanel.textContent = 'Error contacting backend.';
+        showStartOllamaButton(actionResultPanel);
+        runActionBtn.disabled = false;
+        return;
+      }
+      if (requestToken !== lastRequestToken) return; // Outdated request
+      // Check for 503 status (Ollama down)
+      if (resp.status === 503) {
+        let errorMsg = 'Ollama is not running.';
+        try {
+          const data = await resp.json();
+          console.warn('[LLM] Ollama 503 error JSON:', data);
+          if (data && data.error === 'OllamaConnectionError') {
+            errorMsg = data.message || errorMsg;
+          }
+        } catch (e) {
+          console.error('[LLM] Error parsing 503 JSON:', e);
+        }
+        actionResultPanel.textContent = errorMsg;
+        showStartOllamaButton(actionResultPanel);
+        runActionBtn.disabled = false;
+        return;
+      }
+      // Try to parse JSON result
+      try {
+        result = await resp.json();
+      } catch (err) {
+        console.error('[LLM] Error parsing backend response as JSON:', err);
+        actionResultPanel.textContent = 'Unexpected backend response.';
+        showStartOllamaButton(actionResultPanel);
+        runActionBtn.disabled = false;
+        return;
+      }
+      if (requestToken !== lastRequestToken) return; // Outdated request
+      if (result && result.result && result.result.output) {
+        lastActionOutput = result.result.output;
+        actionResultPanel.textContent = lastActionOutput;
+      } else if (result.output) {
+        lastActionOutput = result.output;
+        actionResultPanel.textContent = lastActionOutput;
+      } else if (result.response) {
+        lastActionOutput = result.response;
+        actionResultPanel.textContent = lastActionOutput;
+      } else {
+        // Robust error parsing
+        let errorMsg = result.error || 'No output.';
+        if (result.error === 'OllamaConnectionError') {
+          errorMsg = result.message || 'Ollama is not running.';
+          showStartOllamaButton(actionResultPanel);
+        }
+        actionResultPanel.textContent = errorMsg;
+      }
+      runActionBtn.disabled = false;
+    } catch (fatal) {
+      // Fallback: show restart prompt no matter what
+      console.error('[LLM] Fatal error in Run Action handler:', fatal);
+      if (actionResultPanel) {
+        actionResultPanel.textContent = 'Ollama is not running (fatal error).';
+        showStartOllamaButton(actionResultPanel);
+      }
+      runActionBtn.disabled = false;
     }
   });
 
@@ -246,22 +340,22 @@
   saveOutputBtn.addEventListener('click', async () => {
     const outputField = outputFieldSelect.value;
     if (!outputField) {
-      actionOutputPanel.textContent = 'Please select an output field.';
+      actionResultPanel.textContent = 'Please select an output field.';
       return;
     }
     if (!lastActionOutput) {
-      actionOutputPanel.textContent = 'No output to save.';
+      actionResultPanel.textContent = 'No output to save.';
       return;
     }
     const resp = await updatePostDevelopmentField(postId, outputField, lastActionOutput);
     if (resp.status === 'success') {
-      actionOutputPanel.textContent = 'Output saved!';
+      actionResultPanel.textContent = 'Output saved!';
       // Refresh postDev and output panel
       postDev = await fetchPostDevelopment(postId);
       outputFieldValue.textContent = postDev[outputField] || '(No value)';
       renderPostDevFields(postDevFieldsPanel, fieldMappings, postDev);
     } else {
-      actionOutputPanel.textContent = 'Failed to save output.';
+      actionResultPanel.textContent = 'Failed to save output.';
     }
   });
 
