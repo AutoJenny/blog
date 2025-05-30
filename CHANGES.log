@@ -731,3 +731,11 @@ All notable changes to this project are documented in this file.
 [2024-06-10] Patch: workflow/idea/index.html now persists input/output/LLM action fields to the backend (not just localStorage), using correct API endpoints. Logic is generalized for reuse in other stages/substages. Enables robust, permanent persistence and transferability of the workflow UI.
 
 2025-05-30 Refactor: Ollama error/start alert logic is now a shared JS utility (llm_utils.js). All workflow LLM actions (including Run Action and Generate Summary) now show the Start Ollama button if the backend is unreachable, regardless of which button or script is used. Updated docs/README.md to reflect this robust, unified behavior.
+
+2024-06-09
+
+- Milestone: Consolidated workflow idea templates into a modular, reusable structure for all workflow stages.
+- Deprecated and archived duplicate idea/index.html templates.
+- Modularized field selection logic; dropdowns now support stage categorization and persistence.
+- Fixed server and script issues, including Flask port hangs and JS module loading errors.
+- Improved maintainability and set foundation for replicating modular workflow for other stages.

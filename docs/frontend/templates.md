@@ -2,6 +2,12 @@
 
 > **NOTE:** This project uses PostgreSQL only. All database changes are made via direct SQL. No ORM or migration tools (Alembic, SQLAlchemy, SQLite) are used or supported.
 
+**Milestone 2024-06-09:**
+- Consolidated workflow idea templates into a single, modular, reusable structure for all workflow stages.
+- Deprecated and archived duplicate `idea/index.html` templates.
+- Modularized field selection logic; dropdowns now support stage categorization and persistence to the backend.
+- Improved maintainability and set foundation for replicating modular workflow for other stages.
+
 The Blog CMS uses Jinja2 templates for all HTML rendering. This document describes the organization and usage of templates.
 
 ## Main Template Locations
