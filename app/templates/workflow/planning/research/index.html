@@ -8,207 +8,49 @@
 {% if post %}
 {{ blog_macros.post_header(post) }}
 {% endif %}
-{# Show summary below header, above icons #}
-{% if post and post.summary %}
-<div class="container mx-auto px-6 pb-2">
-    <div class="rounded-xl p-4 mb-4 shadow" style="background: #23273a; border: 1.5px solid #31364a;">
-        <h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-align-left text-indigo-400"></i> Summary
-        </h2>
-        <div class="text-gray-200 text-base whitespace-pre-line">{{ post.summary|safe }}</div>
+{{ indicator.process_indicator(substages, stages, current_substage_id) }}
+
+<!-- BEGIN MODULAR WORKFLOW PANELS (reordered: Actions first, Input/Output hidden until action selected) -->
+<div id="llm-workflow-root" data-substage="research" class="max-w-5xl mx-auto py-10 flex flex-col gap-8">
+    <!-- Actions Panel (now first) -->
+    <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+        <h2 class="text-lg font-bold mb-2">Actions</h2>
+        <div class="flex gap-2 items-center mb-2">
+            <label for="actionSelect" class="mr-2">Select Action</label>
+            <select id="actionSelect" class="mb-0"></select>
+            <button id="runActionBtn" class="btn btn-primary">Run Action</button>
+        </div>
+        <div id="actionPromptPanel" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select an action to view
+            its prompt/template.</div>
+    </div>
+    <!-- Input Panel (hidden until action selected) -->
+    <div id="inputPanel" class="panel bg-gray-800 rounded-lg p-6 mb-4 hidden">
+        <h2 class="text-lg font-bold mb-2">Input</h2>
+        <label for="inputFieldSelect" class="block mb-1">Select Input Field</label>
+        <select id="inputFieldSelect" class="w-full mb-2"></select>
+        <div id="inputFieldValue" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select a field to view its
+            content.</div>
+    </div>
+    <!-- Output Panel (hidden until action selected) -->
+    <div id="outputPanel" class="panel bg-gray-800 rounded-lg p-6 mb-4 hidden">
+        <h2 class="text-lg font-bold mb-2">Output</h2>
+        <label for="outputFieldSelect" class="block mb-1">Select Output Field</label>
+        <select id="outputFieldSelect" class="w-full mb-2"></select>
+        <div id="outputFieldValue" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select a field to view its
+            content.</div>
+        <div id="actionOutputPanel" class="bg-gray-900 text-green-200 rounded p-3 min-h-[2rem] mt-2">Run an action to
+            see output here.</div>
+        <button id="saveOutputBtn" class="btn btn-success mt-2">Save Output to Field</button>
+    </div>
+    <!-- Post Development Fields Panel -->
+    <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+        <h2 class="text-lg font-bold mb-2">Post Development Fields</h2>
+        <div id="postDevFieldsPanel"></div>
     </div>
 </div>
-{% endif %}
-<div class="container mx-auto px-6 py-8">
-    {{ indicator.process_indicator(substages, stages, current_substage_id) }}
-    {# Show summary as static grey text below nav icons, above Research heading #}
-    {% if post and post.summary %}
-    <div class="text-gray-400 mb-2">
-        <span class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Summary</span><br>
-        <span class="text-gray-400 text-base whitespace-pre-line">{{ post.summary|safe }}</span>
-    </div>
-    {% endif %}
-    <div class="card-dark rounded-xl p-8 mt-8 shadow-lg">
-        <h1 class="text-2xl font-bold text-white mb-4 flex items-center gap-2"><i
-                class="fa fa-search text-blue-400"></i> Research</h1>
-        <p class="text-dark-accent mb-2">Add research notes, links, or files that support your idea.</p>
-        <div class="text-gray-400 italic mb-4">[Research substage content goes here]</div>
-        <!-- LLM Action Controls -->
-        <div id="llm-action-controls" class="flex flex-col md:flex-row items-center gap-4 mb-8 justify-center">
-            <select id="llm-action-select"
-                class="form-input px-4 py-2 rounded border border-gray-600 bg-dark-card text-white focus:ring-2 focus:ring-green-400">
-                <option value="">Select Action...</option>
-            </select>
-            <button id="llm-action-run"
-                class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg shadow transition duration-150 ease-in-out flex items-center gap-2"
-                style="background:#22c55e !important; border:none;">
-                <i class="fa-solid fa-bolt"></i> Run Action
-            </button>
-        </div>
-        <div id="output-panel" class="rounded-xl p-4 shadow bg-[#23273a] border border-gray-700 mb-2">
-            <h2 class="text-md font-semibold text-indigo-300 mb-1 flex items-center gap-2">
-                <i class="fa-solid fa-circle-info text-indigo-400"></i> Interesting Facts Output
-            </h2>
-            <div class="text-gray-200 text-base whitespace-pre-line" id="output-content">{{
-                post_development.interesting_facts if post_development and post_development.interesting_facts else 'No
-                output yet.' }}</div>
-        </div>
-    </div>
-    {# Post Development Table #}
-    <div class="mt-10">
-        <h2 class="text-lg font-bold text-green-300 mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-database text-green-400"></i> Post Development Fields
-        </h2>
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-dark-card border border-gray-700 rounded-lg text-sm">
-                <thead>
-                    <tr class="bg-gray-800 text-gray-200">
-                        {% for field in mapped_fields %}
-                        <th class="px-3 py-2">{{ field|replace('_',' ')|title }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        {% for field in mapped_fields %}
-                        <td class="px-3 py-2">{{ post_development[field] if post_development and field in
-                            post_development else '' }}</td>
-                        {% endfor %}
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Use post_id for per-post persistence
-        const postIdStr = '{{ post.id if post else "" }}';
-        const postId = postIdStr ? parseInt(postIdStr, 10) : null;
-        const select = document.getElementById('llm-action-select');
-        const storageKey = postId ? `llm_action_selected_research_${postId}` : null;
-        // Fetch and populate actions
-        async function loadActions() {
-            try {
-                const res = await fetch('/api/v1/llm/actions');
-                const actions = await res.json();
-                select.innerHTML = '<option value="">Select Action...</option>' +
-                    actions.map(a => `<option value="${a.id}">${a.field_name} (${a.llm_model})</option>`).join('');
-                // Restore selection
-                if (storageKey) {
-                    const saved = localStorage.getItem(storageKey);
-                    if (saved) select.value = saved;
-                }
-            } catch (e) {
-                select.innerHTML = '<option value="">Failed to load actions</option>';
-            }
-        }
-        if (select) {
-            loadActions();
-            if (postId) {
-                // Save on change (localStorage)
-                select.addEventListener('change', function () {
-                    localStorage.setItem(storageKey, select.value);
-                });
-            }
-        }
-        // Toast helper
-        function showToast(msg, type) {
-            let toast = document.getElementById('llm-action-toast');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'llm-action-toast';
-                toast.className = 'fixed top-4 right-4 z-50 px-4 py-2 rounded shadow-lg text-white';
-                document.body.appendChild(toast);
-            }
-            toast.textContent = msg;
-            toast.style.background = type === 'success' ? '#22c55e' : '#ef4444';
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 2000);
-        }
-        const runBtn = document.getElementById('llm-action-run');
-        const outputPanel = document.getElementById('output-content');
-        if (runBtn && select && postId) {
-            runBtn.addEventListener('click', async function () {
-                const actionId = select.value;
-                if (!actionId || isNaN(Number(actionId))) {
-                    showToast('Please select an action.', 'error');
-                    return;
-                }
-                // Get research input (from summary or prompt user)
-                let researchInput = '';
-                {% if post and post.summary %}
-                researchInput = `{{ post.summary|e }}`;
-                {% else %}
-                researchInput = prompt('Enter the research summary to use:');
-                if (!researchInput) return;
-                {% endif %}
-                runBtn.disabled = true;
-                runBtn.textContent = 'Running...';
-                outputPanel.textContent = 'Running LLM action...';
-                try {
-                    // Fetch action to get prompt template
-                    const actionResp = await fetch(`/api/v1/llm/actions/${actionId}`);
-                    const actionData = await actionResp.json();
-                    if (!actionData.action) throw new Error('Action not found');
-                    const prompt = actionData.action.prompt_template;
-                    // Extract [data:var] from prompt
-                    const match = prompt.match(/\[data:([a-zA-Z0-9_]+)\]/);
-                    let inputPayload = {};
-                    if (match) {
-                        inputPayload[match[1]] = researchInput;
-                    } else {
-                        inputPayload['input'] = researchInput;
-                    }
-                    // Run test
-                    const resp = await fetch(`/api/v1/llm/actions/${actionId}/test`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ input: inputPayload })
-                    });
-                    const data = await resp.json();
-                    if (resp.ok && data.result) {
-                        outputPanel.textContent = data.result.output || JSON.stringify(data.result);
-                        showToast('LLM action complete.', 'success');
-                        // Save output to Interesting Facts field
-                        await fetch(`/api/v1/post_development/${postId}/update_field`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ field: 'interesting_facts', value: data.result.output })
-                        });
-                    } else if (data.error) {
-                        outputPanel.textContent = data.error;
-                        showToast('LLM error: ' + data.error, 'error');
-                    } else {
-                        outputPanel.textContent = 'Error running action.';
-                        showToast('Unknown error running action.', 'error');
-                    }
-                } catch (e) {
-                    outputPanel.textContent = 'Error: ' + e;
-                    showToast('Error: ' + e, 'error');
-                } finally {
-                    runBtn.disabled = false;
-                    runBtn.textContent = 'Run Action';
-                }
-            });
-        }
-        // --- Ensure post_id persists across workflow navigation ---
-        const url = new URL(window.location.href);
-        const postIdNav = url.searchParams.get('post_id');
-        const activePostId = localStorage.getItem('active_post_id');
-        if (!postIdNav && activePostId) {
-            url.searchParams.set('post_id', activePostId);
-            window.location.replace(url.toString());
-            return;
-        }
-        // Update workflow nav links to include post_id
-        document.querySelectorAll('a[href^="/workflow/"]').forEach(link => {
-            if (!link.href.includes('post_id=') && postIdNav) {
-                const navUrl = new URL(link.href, window.location.origin);
-                navUrl.searchParams.set('post_id', postIdNav);
-                link.href = navUrl.pathname + navUrl.search;
-            }
-        });
-    });
-</script>
+<!-- END MODULAR WORKFLOW PANELS -->
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/static/js/workflow_modular_llm.js"></script>
 {% endblock %}

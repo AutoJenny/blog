@@ -1,5 +1,6 @@
 // Modular LLM Workflow logic for Input, Actions, Output, and Post Development Fields panels
 // This script is designed to be reusable for all workflow stages
+// The substage is now dynamically determined from a data-substage attribute on the main workflow container.
 
 import { showStartOllamaButton } from './llm_utils.js';
 
@@ -84,7 +85,16 @@ async function checkOllamaStatus() {
   // Get postId and substage from URL/context
   const urlParams = new URLSearchParams(window.location.search);
   const postId = urlParams.get('post_id');
-  const substage = 'idea'; // TODO: make dynamic for other stages
+  // Dynamically determine substage from data attribute or fallback to 'idea'
+  let substage = 'idea';
+  const workflowRoot = document.getElementById('llm-workflow-root');
+  if (workflowRoot && workflowRoot.dataset.substage) {
+    substage = workflowRoot.dataset.substage;
+  } else {
+    // Try to infer from URL path (e.g., /workflow/planning/research/)
+    const pathMatch = window.location.pathname.match(/\/workflow\/\w+\/(\w+)/);
+    if (pathMatch && pathMatch[1]) substage = pathMatch[1];
+  }
   if (!postId) return;
 
   // DOM elements
@@ -119,7 +129,7 @@ async function checkOllamaStatus() {
     renderFieldDropdown(inputFieldSelect, fieldMappings, psa ? psa.input_field : null);
     renderFieldDropdown(outputFieldSelect, fieldMappings, psa ? psa.output_field : null);
     renderActionDropdown(actionSelect, llmActions, psa ? psa.action_id : null);
-    renderPostDevFields(postDevFieldsPanel, fieldMappings, postDev);
+    renderPostDevFields(postDevFieldsPanel, fieldMappings, postDev, substage);
     // Show initial field values
     if (inputFieldSelect.value) inputFieldValue.textContent = postDev[inputFieldSelect.value] || '(No value)';
     if (outputFieldSelect.value) outputFieldValue.textContent = postDev[outputFieldSelect.value] || '(No value)';
@@ -162,7 +172,15 @@ async function checkOllamaStatus() {
     }
     // Add dark theme classes
     select.classList.add('bg-gray-900', 'text-gray-100', 'border', 'border-gray-700');
-    if (selected) select.value = selected;
+    // Set value if present, else default to first available
+    const validValues = Array.from(select.options).map(o => o.value);
+    if (selected && validValues.includes(selected)) {
+      select.value = selected;
+    } else {
+      // Find first non-disabled option
+      const firstValid = Array.from(select.options).find(o => !o.disabled);
+      if (firstValid) select.value = firstValid.value;
+    }
   }
 
   // Render action dropdown
@@ -182,10 +200,18 @@ async function checkOllamaStatus() {
   }
 
   // Render post development fields table
-  function renderPostDevFields(panel, mappings, postDev) {
-    // Only show fields mapped to this substage (e.g., idea)
-    const substageId = 1; // For Idea stage; make dynamic for other stages
-    const fields = mappings.filter(m => m.substage_id == substageId).map(m => m.field_name);
+  /**
+   * Render post development fields for the current substage.
+   * @param {HTMLElement} panel
+   * @param {Array} mappings
+   * @param {Object} postDev
+   * @param {string} substage - current substage name
+   */
+  function renderPostDevFields(panel, mappings, postDev, substage) {
+    // Find substage_id for the current substage name
+    const substageEntry = mappings.find(m => m.substage_name === substage);
+    const substageId = substageEntry ? substageEntry.substage_id : null;
+    const fields = substageId ? mappings.filter(m => m.substage_id == substageId).map(m => m.field_name) : [];
     let html = '<table class="min-w-full bg-dark-card border border-gray-700 rounded-lg text-sm"><thead><tr>';
     for (const field of fields) {
       html += `<th class="px-3 py-2">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</th>`;
@@ -218,6 +244,19 @@ async function checkOllamaStatus() {
     actionPromptPanel.innerHTML = html;
   }
 
+  // Utility to show/hide input/output panels based on action selection
+  function updatePanelVisibility() {
+    const inputPanel = document.getElementById('inputPanel');
+    const outputPanel = document.getElementById('outputPanel');
+    if (actionSelect.value) {
+      inputPanel.classList.remove('hidden');
+      outputPanel.classList.remove('hidden');
+    } else {
+      inputPanel.classList.add('hidden');
+      outputPanel.classList.add('hidden');
+    }
+  }
+
   // Field dropdown change handlers (persist selection)
   inputFieldSelect.addEventListener('change', async () => {
     const field = inputFieldSelect.value;
@@ -234,6 +273,7 @@ async function checkOllamaStatus() {
 
   // Action dropdown change handler (persist selection)
   actionSelect.addEventListener('change', async () => {
+    updatePanelVisibility();
     const actionId = actionSelect.value;
     await showActionDetails(actionId);
     // Auto-select output field if action has output_field
@@ -246,7 +286,9 @@ async function checkOllamaStatus() {
       }
     }
     // Always POST current state
-    await savePostSubstageAction(postId, substage, actionId, inputFieldSelect.value, outputFieldSelect.value);
+    if (actionId) {
+      await savePostSubstageAction(postId, substage, actionId, inputFieldSelect.value, outputFieldSelect.value);
+    }
   });
 
   // Run Action button handler
@@ -360,7 +402,7 @@ async function checkOllamaStatus() {
       // Refresh postDev and output panel
       postDev = await fetchPostDevelopment(postId);
       outputFieldValue.textContent = postDev[outputField] || '(No value)';
-      renderPostDevFields(postDevFieldsPanel, fieldMappings, postDev);
+      renderPostDevFields(postDevFieldsPanel, fieldMappings, postDev, substage);
     } else {
       actionOutputPanel.textContent = 'Failed to save output.';
     }
@@ -368,4 +410,5 @@ async function checkOllamaStatus() {
 
   // Initial load
   await init();
+  updatePanelVisibility();
 })(); 

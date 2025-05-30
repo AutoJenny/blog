@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning: Research</title>
+    <!-- Tailwind CSS -->
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+    </style>
+    
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    <!-- Header -->
+    <header class="header-gradient shadow-lg border-b border-dark-border py-4">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+                <div class="flex items-center space-x-8 flex-1 min-w-0">
+                    <!-- Logo and Title -->
+                    <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+                        <img src="/static/images/site/brand-logo.png" alt="BlogForge Logo"
+                            class="w-10 h-10 rounded-full shadow"
+                            style="background:#23273a; width: 40px; height: 40px;" />
+                        <span class="font-bold text-white">BlogForge</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4 ml-8">
+                    <!-- Workflow Dropdown -->
+                    <div class="relative group nav-group" tabindex="0">
+                        <button
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="fa-solid fa-sitemap"></i> Workflow <i class="fa fa-caret-down text-xs"></i>
+                        </button>
+                        <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                            <a href="/workflow/idea/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-lightbulb text-yellow-400"></i> Planning</a>
+                            <a href="/workflow/content/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-pen-nib text-green-400"></i> Authoring</a>
+                            <a href="/workflow/preflight/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-paper-plane text-blue-400"></i> Publishing</a>
+                        </div>
+                    </div>
+                    <!-- Modules Dropdown -->
+                    <div class="relative group nav-group" tabindex="0">
+                        <button
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down text-xs"></i>
+                        </button>
+                        <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                            <a href="/db/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-database text-purple-400"></i> Database</a>
+                            <a href="/llm/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-brain text-pink-400"></i> AI</a>
+                            <a href="/llm/images"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-image text-dark-accent"></i> Images</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+                    <a href="/blog/posts"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
+                    <button
+                        class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition"
+                        id="newPostBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        New Post
+                    </button>
+                    <a href="/docs/"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Docs</a>
+                    <a href="/settings"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Settings</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    
+    
+    
+    
+    
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+
+
+
+<div class="card-dark rounded-xl border border-dark-border shadow p-6 mb-6 mt-2">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div class="flex-1 min-w-0">
+            <span class="blog-card__title text-2xl font-bold truncate">cream distillation...</span>
+            <div class="flex items-center space-x-2 mt-2">
+                
+                <span class="badge-draft px-2 py-1 rounded text-xs font-semibold">Draft</span>
+                
+            </div>
+        </div>
+        <div class="flex flex-col items-start md:items-end gap-1">
+            <div class="text-sm text-gray-400">Created: 2025-05-27</div>
+            <div class="text-sm text-gray-400">Updated: <span class="updated-ago"
+                    data-updated="2025-05-27T15:12:33.356259">2025-05-27</span></div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<style>
+  .indicator-glow {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25), 0 4px 24px 0 rgba(40, 40, 60, 0.25);
+    transition: box-shadow 0.2s, background 0.2s;
+  }
+
+  .indicator-glow:hover,
+  .indicator-glow:focus {
+    box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.45), 0 4px 32px 0 rgba(99, 102, 241, 0.15);
+    background: rgba(99, 102, 241, 0.12) !important;
+    outline: none;
+  }
+
+  .indicator-active {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.35) 0%, rgba(239, 68, 68, 0.15) 100%) !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.25), 0 8px 32px 0 rgba(239, 68, 68, 0.18);
+    z-index: 20;
+  }
+
+  .stage-highlight,
+  .stage-highlight:hover {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.10) 0%, rgba(99, 102, 241, 0.05) 100%) !important;
+    box-shadow: 0 2px 16px 0 rgba(99, 102, 241, 0.10);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+
+  .stage-group:hover,
+  .stage-group:focus-within {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.18) 0%, rgba(99, 102, 241, 0.10) 100%) !important;
+    box-shadow: 0 4px 24px 0 rgba(99, 102, 241, 0.18);
+  }
+</style>
+<div class="w-full flex flex-col items-center mb-4">
+  <nav aria-label="Workflow" class="w-full">
+    <ol class="flex flex-row flex-wrap justify-center w-full gap-0">
+      
+      
+      
+      
+      
+      
+      
+      <div
+        class="flex flex-col items-center mx-4 min-w-0 stage-group stage-highlight">
+        <!-- Stage label above group -->
+        <span
+          class="mb-2 text-sm font-bold text-indigo-300 tracking-wide bg-transparent px-3 py-1 rounded select-none"
+          style="color: #8a93b7;">Planning</span>
+        <div
+          class="flex flex-row items-center px-4 py-3 bg-gradient-to-br from-[#23273a] to-[#20243a] rounded-2xl shadow-lg border border-[#353a4d] min-w-0 relative group transition-all duration-300"
+          style="box-shadow: 0 4px 24px 0 rgba(40,40,60,0.25);">
+          
+          <li class="flex flex-col items-center min-w-0">
+            <a href="/workflow/idea/" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
+                  
+                    bg-[#23273a] border-indigo-800 text-indigo-200 hover:bg-indigo-800 hover:text-white opacity-80
+                  
+                  focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              aria-current="" style="touch-action: manipulation;">
+              <i class="fa fa-lightbulb text-xl"></i>
+            </a>
+            <span
+              class="mt-1 text-xs font-semibold text-indigo-200 truncate max-w-[5rem] ">Idea</span>
+          </li>
+          
+          <span class="w-8 h-1 bg-indigo-500 mx-2 my-3 rounded shadow-sm opacity-70"></span>
+          
+          
+          <li class="flex flex-col items-center min-w-0">
+            <a href="/workflow/research/" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
+                  
+                    bg-red-600 border-red-400 text-white shadow-2xl ring-4 ring-red-400 scale-110 indicator-active
+                  
+                  focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              aria-current="step" style="touch-action: manipulation;">
+              <i class="fa fa-search text-xl"></i>
+            </a>
+            <span
+              class="mt-1 text-xs font-semibold text-indigo-200 truncate max-w-[5rem] text-white drop-shadow">Research</span>
+          </li>
+          
+          <span class="w-8 h-1 bg-indigo-500 mx-2 my-3 rounded shadow-sm opacity-70"></span>
+          
+          
+          <li class="flex flex-col items-center min-w-0">
+            <a href="/workflow/structure/" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
+                  
+                    bg-[#23273a] border-indigo-800 text-indigo-200 hover:bg-indigo-800 hover:text-white opacity-80
+                  
+                  focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              aria-current="" style="touch-action: manipulation;">
+              <i class="fa fa-bars text-xl"></i>
+            </a>
+            <span
+              class="mt-1 text-xs font-semibold text-indigo-200 truncate max-w-[5rem] ">Structure</span>
+          </li>
+          
+          
+        </div>
+      </div>
+      
+      <!-- Chevron/arrow between stages -->
+      <span class="flex items-center mx-2">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 16h16m0 0l-6-6m6 6l-6 6" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round" opacity="0.5" />
+        </svg>
+      </span>
+      
+      
+      
+      
+      
+      
+      <div
+        class="flex flex-col items-center mx-4 min-w-0 stage-group ">
+        <!-- Stage label above group -->
+        <span
+          class="mb-2 text-sm font-bold text-blue-300 tracking-wide bg-transparent px-3 py-1 rounded select-none"
+          style="color: #8a93b7;">Authoring</span>
+        <div
+          class="flex flex-row items-center px-4 py-3 bg-gradient-to-br from-[#23273a] to-[#181c2a] rounded-2xl shadow-lg border border-[#353a4d] min-w-0 relative group transition-all duration-300"
+          style="box-shadow: 0 4px 24px 0 rgba(40,40,60,0.25);">
+          
+          <li class="flex flex-col items-center min-w-0">
+            <a href="/workflow/content/" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
+                  
+                    bg-[#23273a] border-blue-800 text-blue-200 hover:bg-blue-800 hover:text-white opacity-80
+                  
+                  focus:outline-none focus:ring-2 focus:ring-blue-400"
+              aria-current="" style="touch-action: manipulation;">
+              <i class="fa fa-pen-nib text-xl"></i>
+            </a>
+            <span
+              class="mt-1 text-xs font-semibold text-blue-200 truncate max-w-[5rem] ">Content</span>
+          </li>
+          
+          <span class="w-8 h-1 bg-blue-500 mx-2 my-3 rounded shadow-sm opacity-70"></span>
+          
+          
+          <li class="flex flex-col items-center min-w-0">
+            <a href="/workflow/meta_info/" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
+                  
+                    bg-[#23273a] border-blue-800 text-blue-200 hover:bg-blue-800 hover:text-white opacity-80
+                  
+                  focus:outline-none focus:ring-2 focus:ring-blue-400"
+              aria-current="" style="touch-action: manipulation;">
+              <i class="fa fa-info-circle text-xl"></i>
+            </a>
+            <span
+              class="mt-1 text-xs font-semibold text-blue-200 truncate max-w-[5rem] ">Meta Info</span>
+          </li>
+          
+          <span class="w-8 h-1 bg-blue-500 mx-2 my-3 rounded shadow-sm opacity-70"></span>
+          
+          
+          <li class="flex flex-col items-center min-w-0">
+            <a href="/workflow/images/" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
+                  
+                    bg-[#23273a] border-blue-800 text-blue-200 hover:bg-blue-800 hover:text-white opacity-80
+                  
+                  focus:outline-none focus:ring-2 focus:ring-blue-400"
+              aria-current="" style="touch-action: manipulation;">
+              <i class="fa fa-image text-xl"></i>
+            </a>
+            <span
+              class="mt-1 text-xs font-semibold text-blue-200 truncate max-w-[5rem] ">Images</span>
+          </li>
+          
+          
+        </div>
+      </div>
+      
+      <!-- Chevron/arrow between stages -->
+      <span class="flex items-center mx-2">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 16h16m0 0l-6-6m6 6l-6 6" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round" opacity="0.5" />
+        </svg>
+      </span>
+      
+      
+      
+      
+      
+      
+      <div
+        class="flex flex-col items-center mx-4 min-w-0 stage-group ">
+        <!-- Stage label above group -->
+        <span
+          class="mb-2 text-sm font-bold text-yellow-300 tracking-wide bg-transparent px-3 py-1 rounded select-none"
+          style="color: #8a93b7;">Publishing</span>
+        <div
+          class="flex flex-row items-center px-4 py-3 bg-gradient-to-br from-[#181c2a] to-[#23273a] rounded-2xl shadow-lg border border-[#353a4d] min-w-0 relative group transition-all duration-300"
+          style="box-shadow: 0 4px 24px 0 rgba(40,40,60,0.25);">
+          
+          <li class="flex flex-col items-center min-w-0">
+            <a href="/workflow/preflight/" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
+                  
+                    bg-[#23273a] border-yellow-800 text-yellow-200 hover:bg-yellow-800 hover:text-white opacity-80
+                  
+                  focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              aria-current="" style="touch-action: manipulation;">
+              <i class="fa fa-plane-departure text-xl"></i>
+            </a>
+            <span
+              class="mt-1 text-xs font-semibold text-yellow-200 truncate max-w-[5rem] ">Preflight</span>
+          </li>
+          
+          <span class="w-8 h-1 bg-yellow-500 mx-2 my-3 rounded shadow-sm opacity-70"></span>
+          
+          
+          <li class="flex flex-col items-center min-w-0">
+            <a href="/workflow/launch/" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
+                  
+                    bg-[#23273a] border-yellow-800 text-yellow-200 hover:bg-yellow-800 hover:text-white opacity-80
+                  
+                  focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              aria-current="" style="touch-action: manipulation;">
+              <i class="fa fa-rocket text-xl"></i>
+            </a>
+            <span
+              class="mt-1 text-xs font-semibold text-yellow-200 truncate max-w-[5rem] ">Launch</span>
+          </li>
+          
+          <span class="w-8 h-1 bg-yellow-500 mx-2 my-3 rounded shadow-sm opacity-70"></span>
+          
+          
+          <li class="flex flex-col items-center min-w-0">
+            <a href="/workflow/syndication/" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
+                  
+                    bg-[#23273a] border-yellow-800 text-yellow-200 hover:bg-yellow-800 hover:text-white opacity-80
+                  
+                  focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              aria-current="" style="touch-action: manipulation;">
+              <i class="fa fa-share-nodes text-xl"></i>
+            </a>
+            <span
+              class="mt-1 text-xs font-semibold text-yellow-200 truncate max-w-[5rem] ">Syndication</span>
+          </li>
+          
+          
+        </div>
+      </div>
+      
+      
+    </ol>
+  </nav>
+</div>
+
+
+<!-- BEGIN MODULAR WORKFLOW PANELS (copied from idea stage) -->
+<div id="llm-workflow-root" data-substage="research" class="max-w-5xl mx-auto py-10 flex flex-col gap-8">
+    <!-- Input Panel -->
+    <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+        <h2 class="text-lg font-bold mb-2">Input</h2>
+        <label for="inputFieldSelect" class="block mb-1">Select Input Field</label>
+        <select id="inputFieldSelect" class="w-full mb-2"></select>
+        <div id="inputFieldValue" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select a field to view its
+            content.</div>
+    </div>
+    <!-- Actions Panel -->
+    <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+        <h2 class="text-lg font-bold mb-2">Actions</h2>
+        <div class="flex gap-2 items-center mb-2">
+            <label for="actionSelect" class="mr-2">Select Action</label>
+            <select id="actionSelect" class="mb-0"></select>
+            <button id="runActionBtn" class="btn btn-primary">Run Action</button>
+        </div>
+        <div id="actionPromptPanel" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select an action to view
+            its prompt/template.</div>
+    </div>
+    <!-- Output Panel -->
+    <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+        <h2 class="text-lg font-bold mb-2">Output</h2>
+        <label for="outputFieldSelect" class="block mb-1">Select Output Field</label>
+        <select id="outputFieldSelect" class="w-full mb-2"></select>
+        <div id="outputFieldValue" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select a field to view its
+            content.</div>
+        <div id="actionOutputPanel" class="bg-gray-900 text-green-200 rounded p-3 min-h-[2rem] mt-2">Run an action to
+            see output here.</div>
+        <button id="saveOutputBtn" class="btn btn-success mt-2">Save Output to Field</button>
+    </div>
+    <!-- Post Development Fields Panel -->
+    <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+        <h2 class="text-lg font-bold mb-2">Post Development Fields</h2>
+        <div id="postDevFieldsPanel"></div>
+    </div>
+</div>
+<!-- END MODULAR WORKFLOW PANELS -->
+
+    </main>
+    
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">
+                &copy; 2025 Blog CMS. All rights reserved. |
+                <a href="/docs" class="text-indigo-300 hover:text-indigo-100 underline ml-2">Docs</a>
+            </p>
+        </div>
+    </footer>
+
+    
+<script type="module" src="/static/js/workflow_modular_llm.js"></script>
+
+    <!-- Mermaid.js for diagrams in markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.mermaid) {
+                setTimeout(function () {
+                    mermaid.initialize({ startOnLoad: false });
+                    document.querySelectorAll('pre > code.language-mermaid').forEach(function (block, i) {
+                        var parent = block.parentElement;
+                        var code = block.innerText;
+                        var d = document.createElement('div');
+                        d.className = 'mermaid';
+                        d.innerText = code;
+                        parent.replaceWith(d);
+                    });
+                    try {
+                        mermaid.run();
+                    } catch (e) {
+                        console.error('Mermaid render error:', e);
+                        document.querySelectorAll('.mermaid').forEach(function (el) {
+                            el.innerHTML = '<div style="color:#f87171;background:#23273a;padding:1em;border-radius:.5em;">Mermaid render error:<br>' + e.message + '</div>';
+                        });
+                    }
+                }, 100);
+            }
+        });
+    </script>
+</body>
+
+</html>
