@@ -272,8 +272,13 @@ async function checkOllamaStatus() {
     if (isInitializing) return;
     const field = inputFieldSelect.value;
     inputFieldValue.textContent = postDev[field] || '(No value)';
-    // Always POST current state
-    await savePostSubstageAction(postId, substage, actionSelect.value, field, outputFieldSelect.value);
+    // Guard: Only POST if all required fields are present
+    if (!postId || !substage || !actionSelect.value || !inputFieldSelect.value || !outputFieldSelect.value) {
+      console.warn('Not saving: missing required fields', { postId, substage, actionId: actionSelect.value, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+      return;
+    }
+    console.log('Saving post_substage_action:', { postId, substage, actionId: actionSelect.value, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+    await savePostSubstageAction(postId, substage, actionSelect.value, inputFieldSelect.value, outputFieldSelect.value);
     // Re-fetch and update UI
     postSubstageAction = await fetchPostSubstageAction(postId, substage);
     const psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
@@ -285,8 +290,13 @@ async function checkOllamaStatus() {
     if (isInitializing) return;
     const field = outputFieldSelect.value;
     outputFieldValue.textContent = postDev[field] || '(No value)';
-    // Always POST current state
-    await savePostSubstageAction(postId, substage, actionSelect.value, inputFieldSelect.value, field);
+    // Guard: Only POST if all required fields are present
+    if (!postId || !substage || !actionSelect.value || !inputFieldSelect.value || !outputFieldSelect.value) {
+      console.warn('Not saving: missing required fields', { postId, substage, actionId: actionSelect.value, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+      return;
+    }
+    console.log('Saving post_substage_action:', { postId, substage, actionId: actionSelect.value, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+    await savePostSubstageAction(postId, substage, actionSelect.value, inputFieldSelect.value, outputFieldSelect.value);
     // Re-fetch and update UI
     postSubstageAction = await fetchPostSubstageAction(postId, substage);
     const psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
@@ -300,16 +310,19 @@ async function checkOllamaStatus() {
     updatePanelVisibility();
     const actionId = actionSelect.value;
     await showActionDetails(actionId);
-    // Always POST current state
-    if (actionId) {
-      await savePostSubstageAction(postId, substage, actionId, inputFieldSelect.value, outputFieldSelect.value);
-      // Re-fetch and update UI
-      postSubstageAction = await fetchPostSubstageAction(postId, substage);
-      const psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
-      if (psa && psa.input_field) inputFieldSelect.value = psa.input_field;
-      if (psa && psa.output_field) outputFieldSelect.value = psa.output_field;
-      if (psa && psa.output_field) outputFieldValue.textContent = postDev[psa.output_field] || '(No value)';
+    // Guard: Only POST if all required fields are present
+    if (!actionId || !postId || !substage || !inputFieldSelect.value || !outputFieldSelect.value) {
+      console.warn('Not saving: missing required fields', { postId, substage, actionId, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+      return;
     }
+    console.log('Saving post_substage_action:', { postId, substage, actionId, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+    await savePostSubstageAction(postId, substage, actionId, inputFieldSelect.value, outputFieldSelect.value);
+    // Re-fetch and update UI
+    postSubstageAction = await fetchPostSubstageAction(postId, substage);
+    const psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
+    if (psa && psa.input_field) inputFieldSelect.value = psa.input_field;
+    if (psa && psa.output_field) outputFieldSelect.value = psa.output_field;
+    if (psa && psa.output_field) outputFieldValue.textContent = postDev[psa.output_field] || '(No value)';
   });
 
   // Run Action button handler
