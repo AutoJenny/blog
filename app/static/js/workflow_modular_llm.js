@@ -6,7 +6,10 @@ import { showStartOllamaButton } from './llm_utils.js';
 // Robust Ollama status check
 async function checkOllamaStatus() {
   try {
-    const resp = await fetch('/api/v1/llm/providers/1/test');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1000); // 1s timeout
+    const resp = await fetch('/api/v1/llm/providers/1/test', { method: 'POST', signal: controller.signal });
+    clearTimeout(timeout);
     if (!resp.ok) return false;
     const data = await resp.json();
     return data.success === true;
@@ -92,7 +95,7 @@ async function checkOllamaStatus() {
   const runActionBtn = document.getElementById('runActionBtn');
   const outputFieldSelect = document.getElementById('outputFieldSelect');
   const outputFieldValue = document.getElementById('outputFieldValue');
-  const actionResultPanel = document.getElementById('action-result');
+  const actionOutputPanel = document.getElementById('actionOutputPanel');
   const saveOutputBtn = document.getElementById('saveOutputBtn');
   const postDevFieldsPanel = document.getElementById('postDevFieldsPanel');
 
@@ -120,6 +123,10 @@ async function checkOllamaStatus() {
     // Show initial field values
     if (inputFieldSelect.value) inputFieldValue.textContent = postDev[inputFieldSelect.value] || '(No value)';
     if (outputFieldSelect.value) outputFieldValue.textContent = postDev[outputFieldSelect.value] || '(No value)';
+    // Explicitly set output field dropdown to saved value if present
+    if (psa && psa.output_field && outputFieldSelect) {
+      outputFieldSelect.value = psa.output_field;
+    }
     // Always trigger change event to sync details panel
     actionSelect.dispatchEvent(new Event('change'));
   }
@@ -142,21 +149,20 @@ async function checkOllamaStatus() {
       // New substage: add a disabled label option
       if (m.substage_name !== lastSubstage) {
         const substageLabel = document.createElement('option');
+        substageLabel.textContent = m.substage_name;
         substageLabel.disabled = true;
-        substageLabel.textContent = `  ${m.substage_name}`;
-        substageLabel.style.fontStyle = 'italic';
         stageOptGroup.appendChild(substageLabel);
         lastSubstage = m.substage_name;
       }
       // Add the field option
       const opt = document.createElement('option');
-      opt.value = m.field_name;
-      opt.textContent = `    ${m.field_name.replace(/_/g, ' ')}`;
-      if (selected && selected === m.field_name) opt.selected = true;
+      opt.value = m.field_name; // always DB field name
+      opt.textContent = m.display_name || m.field_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       stageOptGroup.appendChild(opt);
     }
-    // Dark theme classes
+    // Add dark theme classes
     select.classList.add('bg-gray-900', 'text-gray-100', 'border', 'border-gray-700');
+    if (selected) select.value = selected;
   }
 
   // Render action dropdown
@@ -216,13 +222,13 @@ async function checkOllamaStatus() {
   inputFieldSelect.addEventListener('change', async () => {
     const field = inputFieldSelect.value;
     inputFieldValue.textContent = postDev[field] || '(No value)';
-    if (!actionSelect.value) return; // Only POST if action is selected
+    // Always POST current state
     await savePostSubstageAction(postId, substage, actionSelect.value, field, outputFieldSelect.value);
   });
   outputFieldSelect.addEventListener('change', async () => {
     const field = outputFieldSelect.value;
     outputFieldValue.textContent = postDev[field] || '(No value)';
-    if (!actionSelect.value) return; // Only POST if action is selected
+    // Always POST current state
     await savePostSubstageAction(postId, substage, actionSelect.value, inputFieldSelect.value, field);
   });
 
@@ -230,35 +236,44 @@ async function checkOllamaStatus() {
   actionSelect.addEventListener('change', async () => {
     const actionId = actionSelect.value;
     await showActionDetails(actionId);
-    if (!actionId) return; // Only POST if action is selected
+    // Auto-select output field if action has output_field
+    if (actionId) {
+      const details = await fetchLLMActionDetails(actionId);
+      const action = details.action || details;
+      if (action.output_field && outputFieldSelect) {
+        outputFieldSelect.value = action.output_field;
+        outputFieldValue.textContent = postDev[action.output_field] || '(No value)';
+      }
+    }
+    // Always POST current state
     await savePostSubstageAction(postId, substage, actionId, inputFieldSelect.value, outputFieldSelect.value);
   });
 
   // Run Action button handler
   runActionBtn.addEventListener('click', async () => {
     try {
-      if (!actionResultPanel) {
+      if (!actionOutputPanel) {
         alert('Error: Output panel not found in DOM.');
         return;
       }
       // Generate a unique token for this request
       const requestToken = ++lastRequestToken;
       // Clear output and disable button
-      actionResultPanel.textContent = 'Running action...';
+      actionOutputPanel.textContent = 'Running action...';
       runActionBtn.disabled = true;
       // Check Ollama status first
       console.log('[LLM] Checking Ollama status...');
       const ollamaOk = await checkOllamaStatus();
       if (!ollamaOk) {
-        actionResultPanel.textContent = 'Ollama is not running.';
-        showStartOllamaButton(actionResultPanel);
+        actionOutputPanel.textContent = 'Ollama is not running.';
+        showStartOllamaButton(actionOutputPanel);
         runActionBtn.disabled = false;
         return;
       }
       const actionId = actionSelect.value;
       const inputField = inputFieldSelect.value;
       if (!actionId || !inputField) {
-        actionResultPanel.textContent = 'Please select both an action and an input field.';
+        actionOutputPanel.textContent = 'Please select both an action and an input field.';
         runActionBtn.disabled = false;
         return;
       }
@@ -276,44 +291,55 @@ async function checkOllamaStatus() {
           })
         });
       } catch (err) {
-        actionResultPanel.textContent = 'Network error: Could not reach LLM backend.';
-        showStartOllamaButton(actionResultPanel);
+        actionOutputPanel.textContent = 'Network error: Could not reach LLM backend.';
+        showStartOllamaButton(actionOutputPanel);
         runActionBtn.disabled = false;
+        lastActionOutput = '';
         return;
       }
       if (resp.status === 503) {
-        actionResultPanel.textContent = 'Ollama is not running (503 Service Unavailable).';
-        showStartOllamaButton(actionResultPanel);
+        actionOutputPanel.textContent = 'Ollama is not running (503 Service Unavailable).';
+        showStartOllamaButton(actionOutputPanel);
         runActionBtn.disabled = false;
+        lastActionOutput = '';
         return;
       }
       if (!resp.ok) {
-        actionResultPanel.textContent = `Error: ${resp.status} ${resp.statusText}`;
+        actionOutputPanel.textContent = `Error: ${resp.status} ${resp.statusText}`;
         runActionBtn.disabled = false;
+        lastActionOutput = '';
         return;
       }
       let result;
       try {
         result = await resp.json();
       } catch (err) {
-        actionResultPanel.textContent = 'Error: Could not parse LLM response.';
+        actionOutputPanel.textContent = 'Error: Could not parse LLM response.';
         runActionBtn.disabled = false;
+        lastActionOutput = '';
         return;
       }
       // Only show result if this is the latest request
       if (requestToken !== lastRequestToken) return;
       if (result && result.result && result.result.output) {
-        actionResultPanel.textContent = result.result.output;
+        actionOutputPanel.textContent = result.result.output;
+        lastActionOutput = result.result.output;
+      } else if (result && result.output) {
+        actionOutputPanel.textContent = result.output;
+        lastActionOutput = result.output;
       } else if (result && result.error) {
-        actionResultPanel.textContent = `Error: ${result.error}`;
+        actionOutputPanel.textContent = `Error: ${result.error}`;
+        lastActionOutput = '';
       } else {
-        actionResultPanel.textContent = 'No output.';
+        actionOutputPanel.textContent = 'No output.';
+        lastActionOutput = '';
       }
       runActionBtn.disabled = false;
     } catch (err) {
-      actionResultPanel.textContent = 'Unexpected error running LLM action.';
-      showStartOllamaButton(actionResultPanel);
+      actionOutputPanel.textContent = 'Unexpected error running LLM action.';
+      showStartOllamaButton(actionOutputPanel);
       runActionBtn.disabled = false;
+      lastActionOutput = '';
     }
   });
 
@@ -321,26 +347,25 @@ async function checkOllamaStatus() {
   saveOutputBtn.addEventListener('click', async () => {
     const outputField = outputFieldSelect.value;
     if (!outputField) {
-      actionResultPanel.textContent = 'Please select an output field.';
+      actionOutputPanel.textContent = 'Please select an output field.';
       return;
     }
     if (!lastActionOutput) {
-      actionResultPanel.textContent = 'No output to save.';
+      actionOutputPanel.textContent = 'No output to save.';
       return;
     }
     const resp = await updatePostDevelopmentField(postId, outputField, lastActionOutput);
     if (resp.status === 'success') {
-      actionResultPanel.textContent = 'Output saved!';
+      actionOutputPanel.textContent = 'Output saved!';
       // Refresh postDev and output panel
       postDev = await fetchPostDevelopment(postId);
       outputFieldValue.textContent = postDev[outputField] || '(No value)';
       renderPostDevFields(postDevFieldsPanel, fieldMappings, postDev);
     } else {
-      actionResultPanel.textContent = 'Failed to save output.';
+      actionOutputPanel.textContent = 'Failed to save output.';
     }
   });
 
   // Initial load
   await init();
-})(); 
 })(); 
