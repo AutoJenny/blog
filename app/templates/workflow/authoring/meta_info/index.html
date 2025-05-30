@@ -4,62 +4,21 @@
 
 {% block title %}Authoring: Meta Info{% endblock %}
 
-{% block content %}
-{% if post %}
-{{ blog_macros.post_header(post) }}
-{% endif %}
-<div class="container mx-auto px-6 py-8">
-    {{ indicator.process_indicator(substages, stages, current_substage_id) }}
-    <div class="card-dark rounded-xl p-8 mt-8 shadow-lg">
-        <h1 class="text-2xl font-bold text-white mb-4 flex items-center gap-2"><i
-                class="fa fa-info-circle text-cyan-400"></i> Meta Info</h1>
-        <p class="text-dark-accent mb-2">Add meta information for your post (tags, summary, etc.).</p>
-        <div class="text-gray-400 italic">[Meta Info substage content goes here]</div>
-    </div>
-</div>
-<script>
-    (function () {
-        const url = new URL(window.location.href);
-        const postId = url.searchParams.get('post_id');
-        const activePostId = localStorage.getItem('active_post_id');
-        if (!postId && activePostId) {
-            url.searchParams.set('post_id', activePostId);
-            window.location.replace(url.toString());
-            return;
-        }
-        document.querySelectorAll('a[href^="/workflow/"]').forEach(link => {
-            if (!link.href.includes('post_id=') && postId) {
-                const navUrl = new URL(link.href, window.location.origin);
-                navUrl.searchParams.set('post_id', postId);
-                link.href = navUrl.pathname + navUrl.search;
-            }
-        });
-    })();
-</script>
+{#
+NOTE: This template is one of several workflow substages using the modular workflow panel structure.
+All such templates must remain structurally identical—any change to one must be applied to all.
+Do not introduce variants or reorder panels. Consistency is required for maintainability and modular JS.
+#}
 
-{# Post Development Table #}
-<div class="mt-10">
-    <h2 class="text-lg font-bold text-green-300 mb-2 flex items-center gap-2">
-        <i class="fa-solid fa-database text-green-400"></i> Post Development Fields
-    </h2>
-    <div class="overflow-x-auto">
-        <table class="min-w-full bg-dark-card border border-gray-700 rounded-lg text-sm">
-            <thead>
-                <tr class="bg-gray-800 text-gray-200">
-                    {% for field in mapped_fields %}
-                    <th class="px-3 py-2">{{ field|replace('_',' ')|title }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    {% for field in mapped_fields %}
-                    <td class="px-3 py-2">{{ post_development[field] if post_development and field in post_development
-                        else '' }}</td>
-                    {% endfor %}
-                </tr>
-            </tbody>
-        </table>
-    </div>
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    {{ blog_macros.post_header(post) }}
+    {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
+    {% set substage = 'meta_info' %}
+    {% include "workflow/_modular_llm_panels.html" %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/static/js/workflow_modular_llm.js"></script>
 {% endblock %}
