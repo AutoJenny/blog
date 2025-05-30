@@ -8,7 +8,7 @@
 {% if post %}
 {{ blog_macros.post_header(post) }}
 {% endif %}
-{{ indicator.process_indicator(substages, stages, current_substage_id) }}
+{{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
 
 <!-- BEGIN MODULAR WORKFLOW PANELS (reordered: Actions first, Input/Output hidden until action selected) -->
 <div id="llm-workflow-root" data-substage="research" class="max-w-5xl mx-auto py-10 flex flex-col gap-8">
