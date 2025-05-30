@@ -466,6 +466,8 @@ CREATE TABLE IF NOT EXISTS post_substage_action (
     post_id INTEGER REFERENCES post(id) ON DELETE CASCADE,
     substage VARCHAR(64) NOT NULL,
     action_id INTEGER REFERENCES llm_action(id),
+    input_field VARCHAR(128),
+    output_field VARCHAR(128),
     button_label TEXT,
     button_order INTEGER DEFAULT 0
 );

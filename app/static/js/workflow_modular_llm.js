@@ -24,7 +24,7 @@ async function checkOllamaStatus() {
 
   // Utility: fetch post_development for a post
   async function fetchPostDevelopment(postId) {
-    const resp = await fetch(`/blog/api/v1/post/${postId}/development`);
+    const resp = await fetch(`/api/v1/post/${postId}/development`);
     return resp.ok ? await resp.json() : {};
   }
 
@@ -111,9 +111,11 @@ async function checkOllamaStatus() {
     postDev = await fetchPostDevelopment(postId);
     llmActions = await fetchLLMActions();
     postSubstageAction = await fetchPostSubstageAction(postId, substage);
-    renderFieldDropdown(inputFieldSelect, fieldMappings, postSubstageAction ? postSubstageAction.input_field : null);
-    renderFieldDropdown(outputFieldSelect, fieldMappings, postSubstageAction ? postSubstageAction.output_field : null);
-    renderActionDropdown(actionSelect, llmActions, postSubstageAction ? postSubstageAction.action_id : null);
+    // Robust: handle array or null
+    const psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
+    renderFieldDropdown(inputFieldSelect, fieldMappings, psa ? psa.input_field : null);
+    renderFieldDropdown(outputFieldSelect, fieldMappings, psa ? psa.output_field : null);
+    renderActionDropdown(actionSelect, llmActions, psa ? psa.action_id : null);
     renderPostDevFields(postDevFieldsPanel, fieldMappings, postDev);
     // Show initial field values
     if (inputFieldSelect.value) inputFieldValue.textContent = postDev[inputFieldSelect.value] || '(No value)';
@@ -247,9 +249,7 @@ async function checkOllamaStatus() {
       // Check Ollama status first
       console.log('[LLM] Checking Ollama status...');
       const ollamaOk = await checkOllamaStatus();
-      if (requestToken !== lastRequestToken) return; // Outdated request
       if (!ollamaOk) {
-        console.warn('[LLM] Ollama is not running (pre-check)');
         actionResultPanel.textContent = 'Ollama is not running.';
         showStartOllamaButton(actionResultPanel);
         runActionBtn.disabled = false;
@@ -263,75 +263,56 @@ async function checkOllamaStatus() {
         return;
       }
       const inputValue = postDev[inputField] || '';
-      let resp, result;
+      let resp;
       try {
         resp = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ input_text: inputValue, post_id: postId })
+          body: JSON.stringify({
+            post_id: postId,
+            input_field: inputField,
+            input_text: inputValue,
+            debug: true
+          })
         });
       } catch (err) {
-        console.error('[LLM] Network/fetch error:', err);
-        actionResultPanel.textContent = 'Error contacting backend.';
+        actionResultPanel.textContent = 'Network error: Could not reach LLM backend.';
         showStartOllamaButton(actionResultPanel);
         runActionBtn.disabled = false;
         return;
       }
-      if (requestToken !== lastRequestToken) return; // Outdated request
-      // Check for 503 status (Ollama down)
       if (resp.status === 503) {
-        let errorMsg = 'Ollama is not running.';
-        try {
-          const data = await resp.json();
-          console.warn('[LLM] Ollama 503 error JSON:', data);
-          if (data && data.error === 'OllamaConnectionError') {
-            errorMsg = data.message || errorMsg;
-          }
-        } catch (e) {
-          console.error('[LLM] Error parsing 503 JSON:', e);
-        }
-        actionResultPanel.textContent = errorMsg;
+        actionResultPanel.textContent = 'Ollama is not running (503 Service Unavailable).';
         showStartOllamaButton(actionResultPanel);
         runActionBtn.disabled = false;
         return;
       }
-      // Try to parse JSON result
+      if (!resp.ok) {
+        actionResultPanel.textContent = `Error: ${resp.status} ${resp.statusText}`;
+        runActionBtn.disabled = false;
+        return;
+      }
+      let result;
       try {
         result = await resp.json();
       } catch (err) {
-        console.error('[LLM] Error parsing backend response as JSON:', err);
-        actionResultPanel.textContent = 'Unexpected backend response.';
-        showStartOllamaButton(actionResultPanel);
+        actionResultPanel.textContent = 'Error: Could not parse LLM response.';
         runActionBtn.disabled = false;
         return;
       }
-      if (requestToken !== lastRequestToken) return; // Outdated request
+      // Only show result if this is the latest request
+      if (requestToken !== lastRequestToken) return;
       if (result && result.result && result.result.output) {
-        lastActionOutput = result.result.output;
-        actionResultPanel.textContent = lastActionOutput;
-      } else if (result.output) {
-        lastActionOutput = result.output;
-        actionResultPanel.textContent = lastActionOutput;
-      } else if (result.response) {
-        lastActionOutput = result.response;
-        actionResultPanel.textContent = lastActionOutput;
+        actionResultPanel.textContent = result.result.output;
+      } else if (result && result.error) {
+        actionResultPanel.textContent = `Error: ${result.error}`;
       } else {
-        // Robust error parsing
-        let errorMsg = result.error || 'No output.';
-        if (result.error === 'OllamaConnectionError') {
-          errorMsg = result.message || 'Ollama is not running.';
-          showStartOllamaButton(actionResultPanel);
-        }
-        actionResultPanel.textContent = errorMsg;
+        actionResultPanel.textContent = 'No output.';
       }
       runActionBtn.disabled = false;
-    } catch (fatal) {
-      // Fallback: show restart prompt no matter what
-      console.error('[LLM] Fatal error in Run Action handler:', fatal);
-      if (actionResultPanel) {
-        actionResultPanel.textContent = 'Ollama is not running (fatal error).';
-        showStartOllamaButton(actionResultPanel);
-      }
+    } catch (err) {
+      actionResultPanel.textContent = 'Unexpected error running LLM action.';
+      showStartOllamaButton(actionResultPanel);
       runActionBtn.disabled = false;
     }
   });
@@ -361,4 +342,5 @@ async function checkOllamaStatus() {
 
   // Initial load
   await init();
+})(); 
 })(); 

@@ -857,7 +857,7 @@ def post_substage_actions():
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, post_id, substage, action_id, button_label, button_order
+                    SELECT id, post_id, substage, action_id, input_field, output_field, button_label, button_order
                     FROM post_substage_action
                     WHERE post_id = %s AND substage = %s
                     ORDER BY button_order, id
@@ -872,6 +872,8 @@ def post_substage_actions():
                             'post_id': row['post_id'],
                             'substage': row['substage'],
                             'action_id': row['action_id'],
+                            'input_field': row.get('input_field'),
+                            'output_field': row.get('output_field'),
                             'button_label': row['button_label'],
                             'button_order': row['button_order'],
                         })
@@ -881,8 +883,10 @@ def post_substage_actions():
                             'post_id': row[1],
                             'substage': row[2],
                             'action_id': row[3],
-                            'button_label': row[4],
-                            'button_order': row[5],
+                            'input_field': row[4] if len(row) > 4 else None,
+                            'output_field': row[5] if len(row) > 5 else None,
+                            'button_label': row[6] if len(row) > 6 else None,
+                            'button_order': row[7] if len(row) > 7 else None,
                         })
         return jsonify(actions)
     if request.method == 'POST':
@@ -893,6 +897,8 @@ def post_substage_actions():
         post_id = data.get('post_id')
         substage = data.get('substage')
         action_id = data.get('action_id')
+        input_field = data.get('input_field')
+        output_field = data.get('output_field')
         button_label = data.get('button_label')
         button_order = data.get('button_order', 0)
         missing = []
@@ -925,17 +931,17 @@ def post_substage_actions():
                             return jsonify({'status': 'error', 'error': f'Unexpected row type: {type(row)}', 'row': str(row)}), 400
                         cur.execute("""
                             UPDATE post_substage_action
-                            SET action_id=%s, button_label=%s, button_order=%s
+                            SET action_id=%s, input_field=%s, output_field=%s, button_label=%s, button_order=%s
                             WHERE id=%s
-                        """, (action_id, button_label, button_order, row_id))
+                        """, (action_id, input_field, output_field, button_label, button_order, row_id))
                         new_id = row_id
                     else:
                         current_app.logger.error(f"[DEBUG] post_substage_actions upsert: row is None (no existing record)")
                         cur.execute("""
-                            INSERT INTO post_substage_action (post_id, substage, action_id, button_label, button_order)
-                            VALUES (%s, %s, %s, %s, %s)
+                            INSERT INTO post_substage_action (post_id, substage, action_id, input_field, output_field, button_label, button_order)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
                             RETURNING id
-                        """, (post_id, substage, action_id, button_label, button_order))
+                        """, (post_id, substage, action_id, input_field, output_field, button_label, button_order))
                         fetch = cur.fetchone()
                         if fetch is None:
                             current_app.logger.error(f"[DEBUG] post_substage_actions insert: fetch is None after insert!")
