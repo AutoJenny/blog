@@ -967,13 +967,15 @@ def post_substage_action_detail(psa_id):
         data = request.get_json() or {}
         button_label = data.get('button_label')
         button_order = data.get('button_order')
+        input_field = data.get('input_field')
+        output_field = data.get('output_field')
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
                     UPDATE post_substage_action
-                    SET button_label = %s, button_order = %s
+                    SET button_label = %s, button_order = %s, input_field = %s, output_field = %s
                     WHERE id = %s
-                """, (button_label, button_order, psa_id))
+                """, (button_label, button_order, input_field, output_field, psa_id))
                 conn.commit()
         return jsonify({'status': 'success'})
     if request.method == 'DELETE':
