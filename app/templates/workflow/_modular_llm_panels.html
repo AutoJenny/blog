@@ -20,7 +20,7 @@ This file is included by all workflow substages. It expects:
     <!-- Input/Output Panels side by side -->
     <div class="flex flex-row gap-6">
         <!-- Input Panel (half width) -->
-        <div class="panel bg-gray-800 rounded-lg p-6 mb-4 flex-1">
+        <div id="inputPanel" class="panel bg-gray-800 rounded-lg p-6 mb-4 flex-1">
             <h2 class="text-lg font-bold mb-2">Input</h2>
             <label for="inputFieldSelect" class="block mb-1">Select Input Field</label>
             <select id="inputFieldSelect" class="w-full mb-2"></select>
@@ -28,7 +28,7 @@ This file is included by all workflow substages. It expects:
                 its content.</div>
         </div>
         <!-- Output Panel (half width) -->
-        <div class="panel bg-gray-800 rounded-lg p-6 mb-4 flex-1">
+        <div id="outputPanel" class="panel bg-gray-800 rounded-lg p-6 mb-4 flex-1">
             <h2 class="text-lg font-bold mb-2">Output</h2>
             <label for="outputFieldSelect" class="block mb-1">Select Output Field</label>
             <select id="outputFieldSelect" class="w-full mb-2"></select>
