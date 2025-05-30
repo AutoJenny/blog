@@ -117,9 +117,11 @@ async function checkOllamaStatus() {
   let lastActionOutput = '';
   let postSubstageAction = null;
   let lastRequestToken = 0;
+  let isInitializing = true;
 
   // Fetch all data and initialize UI
   async function init() {
+    isInitializing = true;
     fieldMappings = await fetchFieldMappings();
     postDev = await fetchPostDevelopment(postId);
     llmActions = await fetchLLMActions();
@@ -133,10 +135,9 @@ async function checkOllamaStatus() {
     // Show initial field values
     if (inputFieldSelect.value) inputFieldValue.textContent = postDev[inputFieldSelect.value] || '(No value)';
     if (outputFieldSelect.value) outputFieldValue.textContent = postDev[outputFieldSelect.value] || '(No value)';
-    // Explicitly set output field dropdown to saved value if present
-    if (psa && psa.output_field && outputFieldSelect) {
-      outputFieldSelect.value = psa.output_field;
-    }
+    // Debug: confirm value after rendering
+    console.log('[Dropdown] After render, outputFieldSelect.value =', outputFieldSelect.value);
+    isInitializing = false;
     // Always trigger change event to sync details panel
     actionSelect.dispatchEvent(new Event('change'));
   }
@@ -172,14 +173,23 @@ async function checkOllamaStatus() {
     }
     // Add dark theme classes
     select.classList.add('bg-gray-900', 'text-gray-100', 'border', 'border-gray-700');
-    // Set value if present, else default to first available
-    const validValues = Array.from(select.options).map(o => o.value);
-    if (selected && validValues.includes(selected)) {
+    // Debug: print all option values
+    const validOptions = Array.from(select.options).filter(o => !o.disabled).map(o => o.value);
+    console.log('[Dropdown] Options:', validOptions);
+    console.log('[Dropdown] Attempting to set value to:', selected);
+    // Set value if present and not disabled, else default to first available
+    if (selected && validOptions.includes(selected)) {
       select.value = selected;
+      console.log('[Dropdown] Set value to:', selected);
     } else {
       // Find first non-disabled option
       const firstValid = Array.from(select.options).find(o => !o.disabled);
-      if (firstValid) select.value = firstValid.value;
+      if (firstValid) {
+        select.value = firstValid.value;
+        if (selected) {
+          console.warn('[Dropdown] Value not found or is disabled:', selected, 'Defaulting to:', firstValid.value);
+        }
+      }
     }
   }
 
@@ -259,6 +269,7 @@ async function checkOllamaStatus() {
 
   // Field dropdown change handlers (persist selection)
   inputFieldSelect.addEventListener('change', async () => {
+    if (isInitializing) return;
     const field = inputFieldSelect.value;
     inputFieldValue.textContent = postDev[field] || '(No value)';
     // Always POST current state
@@ -271,6 +282,7 @@ async function checkOllamaStatus() {
     if (psa && psa.output_field) outputFieldValue.textContent = postDev[psa.output_field] || '(No value)';
   });
   outputFieldSelect.addEventListener('change', async () => {
+    if (isInitializing) return;
     const field = outputFieldSelect.value;
     outputFieldValue.textContent = postDev[field] || '(No value)';
     // Always POST current state
@@ -288,15 +300,6 @@ async function checkOllamaStatus() {
     updatePanelVisibility();
     const actionId = actionSelect.value;
     await showActionDetails(actionId);
-    // Auto-select output field if action has output_field
-    if (actionId) {
-      const details = await fetchLLMActionDetails(actionId);
-      const action = details.action || details;
-      if (action.output_field && outputFieldSelect) {
-        outputFieldSelect.value = action.output_field;
-        outputFieldValue.textContent = postDev[action.output_field] || '(No value)';
-      }
-    }
     // Always POST current state
     if (actionId) {
       await savePostSubstageAction(postId, substage, actionId, inputFieldSelect.value, outputFieldSelect.value);
