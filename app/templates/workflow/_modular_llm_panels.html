@@ -1,0 +1,47 @@
+{#
+Modular LLM Workflow Panels Include
+This file is included by all workflow substages. It expects:
+- substage: the current substage name (e.g. 'idea', 'research')
+- post: the current post object (must have .id)
+#}
+<div id="llm-workflow-root" data-substage="{{ substage }}" data-post-id="{{ post.id }}"
+    class="max-w-5xl mx-auto py-10 flex flex-col gap-8">
+    <!-- Actions Panel (full width) -->
+    <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+        <h2 class="text-lg font-bold mb-2">Actions</h2>
+        <div class="flex gap-2 items-center mb-2">
+            <label for="actionSelect" class="mr-2">Select Action</label>
+            <select id="actionSelect" class="mb-0"></select>
+            <button id="runActionBtn" class="btn btn-primary">Run Action</button>
+        </div>
+        <div id="actionPromptPanel" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select an action to view
+            its prompt/template.</div>
+    </div>
+    <!-- Input/Output Panels side by side -->
+    <div class="flex flex-row gap-6">
+        <!-- Input Panel (half width) -->
+        <div class="panel bg-gray-800 rounded-lg p-6 mb-4 flex-1">
+            <h2 class="text-lg font-bold mb-2">Input</h2>
+            <label for="inputFieldSelect" class="block mb-1">Select Input Field</label>
+            <select id="inputFieldSelect" class="w-full mb-2"></select>
+            <div id="inputFieldValue" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select a field to view
+                its content.</div>
+        </div>
+        <!-- Output Panel (half width) -->
+        <div class="panel bg-gray-800 rounded-lg p-6 mb-4 flex-1">
+            <h2 class="text-lg font-bold mb-2">Output</h2>
+            <label for="outputFieldSelect" class="block mb-1">Select Output Field</label>
+            <select id="outputFieldSelect" class="w-full mb-2"></select>
+            <div id="outputFieldValue" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select a field to view
+                its content.</div>
+            <div id="actionOutputPanel" class="bg-gray-900 text-green-200 rounded p-3 min-h-[2rem] mt-2">Run an action
+                to see output here.</div>
+            <button id="saveOutputBtn" class="btn btn-success mt-2">Save Output to Field</button>
+        </div>
+    </div>
+    <!-- Post Development Fields Panel (full width) -->
+    <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
+        <h2 class="text-lg font-bold mb-2">Post Development Fields</h2>
+        <div id="postDevFieldsPanel"></div>
+    </div>
+</div>

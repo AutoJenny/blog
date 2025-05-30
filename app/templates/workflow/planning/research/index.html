@@ -4,51 +4,18 @@
 
 {% block title %}Planning: Research{% endblock %}
 
-{% block content %}
-{% if post %}
-{{ blog_macros.post_header(post) }}
-{% endif %}
-{{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
+{#
+NOTE: This template is one of several workflow substages using the modular workflow panel structure.
+All such templates must remain structurally identical—any change to one must be applied to all.
+Do not introduce variants or reorder panels. Consistency is required for maintainability and modular JS.
+#}
 
-<!-- BEGIN MODULAR WORKFLOW PANELS (reordered: Actions first, Input/Output hidden until action selected) -->
-<div id="llm-workflow-root" data-substage="research" class="max-w-5xl mx-auto py-10 flex flex-col gap-8">
-    <!-- Actions Panel (now first) -->
-    <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
-        <h2 class="text-lg font-bold mb-2">Actions</h2>
-        <div class="flex gap-2 items-center mb-2">
-            <label for="actionSelect" class="mr-2">Select Action</label>
-            <select id="actionSelect" class="mb-0"></select>
-            <button id="runActionBtn" class="btn btn-primary">Run Action</button>
-        </div>
-        <div id="actionPromptPanel" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select an action to view
-            its prompt/template.</div>
-    </div>
-    <!-- Input Panel (hidden until action selected) -->
-    <div id="inputPanel" class="panel bg-gray-800 rounded-lg p-6 mb-4 hidden">
-        <h2 class="text-lg font-bold mb-2">Input</h2>
-        <label for="inputFieldSelect" class="block mb-1">Select Input Field</label>
-        <select id="inputFieldSelect" class="w-full mb-2"></select>
-        <div id="inputFieldValue" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select a field to view its
-            content.</div>
-    </div>
-    <!-- Output Panel (hidden until action selected) -->
-    <div id="outputPanel" class="panel bg-gray-800 rounded-lg p-6 mb-4 hidden">
-        <h2 class="text-lg font-bold mb-2">Output</h2>
-        <label for="outputFieldSelect" class="block mb-1">Select Output Field</label>
-        <select id="outputFieldSelect" class="w-full mb-2"></select>
-        <div id="outputFieldValue" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select a field to view its
-            content.</div>
-        <div id="actionOutputPanel" class="bg-gray-900 text-green-200 rounded p-3 min-h-[2rem] mt-2">Run an action to
-            see output here.</div>
-        <button id="saveOutputBtn" class="btn btn-success mt-2">Save Output to Field</button>
-    </div>
-    <!-- Post Development Fields Panel -->
-    <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
-        <h2 class="text-lg font-bold mb-2">Post Development Fields</h2>
-        <div id="postDevFieldsPanel"></div>
-    </div>
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    {{ blog_macros.post_header(post) }}
+    {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
+    {% include "workflow/_modular_llm_panels.html" with context %}
 </div>
-<!-- END MODULAR WORKFLOW PANELS -->
 {% endblock %}
 
 {% block scripts %}
