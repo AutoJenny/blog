@@ -39,39 +39,97 @@
 </div>
 
 <script>
-    // DIAGNOSTIC: Force debug panels visible and log at top of script
-    console.log('[LLM] Script loaded and running (top of script).');
-    document.getElementById('debug-json-panel')?.classList.remove('hidden');
-    document.getElementById('debug-json-llm-panel')?.classList.remove('hidden');
+    // --- CONFIG ---
+    const postId = new URLSearchParams(window.location.search).get('post_id');
+    const substage = 'idea'; // This template is for the 'idea' substage
+    const inputField = 'idea_seed'; // DB field for input
+    const outputField = 'summary'; // DB field for output
 
-    document.addEventListener('DOMContentLoaded', function () {
-        console.log('[LLM] Script loaded and running.');
-        // Restore last-used input/settings from localStorage
-        const inputElem = document.getElementById('idea-seed-input');
-        if (inputElem && localStorage.getItem('idea-seed-input')) {
-            inputElem.value = localStorage.getItem('idea-seed-input');
-        }
-        // Restore last-used action ID (if you have multiple actions)
-        const lastActionId = localStorage.getItem('llm-last-action-id');
-        if (lastActionId) {
-            const lastBtn = document.querySelector(`.llm-action-btn[href$='/${lastActionId}']`);
-            if (lastBtn) lastBtn.classList.add('ring', 'ring-blue-400');
-        }
-        // Restore last output
-        const lastOutput = localStorage.getItem('llm-last-output');
-        if (lastOutput) {
-            const summaryPanel = document.getElementById('summary-panel');
-            if (summaryPanel) summaryPanel.innerHTML = `<div class=\"p-4\">${lastOutput}</div>`;
+    // --- Helper: Show Start Ollama Button ---
+    function showStartOllamaButton(container) {
+        container.innerHTML += `
+            <div class="mt-4 p-4 bg-yellow-100 rounded">
+                <b>Ollama is not running.</b>
+                <button id="start-ollama-btn" class="ml-2 px-3 py-1 bg-green-600 text-white rounded">
+                    <i class="fa-solid fa-play"></i> Start Ollama
+                </button>
+            </div>
+        `;
+        document.getElementById('start-ollama-btn').onclick = async function () {
+            this.disabled = true;
+            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Starting...';
+            try {
+                const resp = await fetch('/api/v1/llm/providers/start', { method: 'POST' });
+                const data = await resp.json();
+                if (resp.ok && data.success) {
+                    this.innerHTML = '<i class="fa-solid fa-check"></i> Started';
+                } else {
+                    this.innerHTML = '<i class="fa-solid fa-play"></i> Start Ollama';
+                    alert(data.error || 'Failed to start Ollama');
+                }
+            } catch (e) {
+                this.innerHTML = '<i class="fa-solid fa-play"></i> Start Ollama';
+                alert('Error starting Ollama: ' + e);
+            }
+            setTimeout(() => {
+                this.disabled = false;
+                this.innerHTML = '<i class="fa-solid fa-play"></i> Start Ollama';
+            }, 2000);
+        };
+    }
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        // --- Load input/output fields from backend ---
+        if (postId) {
+            // Load post_development fields
+            const devResp = await fetch(`/api/v1/post/${postId}/development`);
+            if (devResp.ok) {
+                const dev = await devResp.json();
+                if (dev.hasOwnProperty(inputField)) {
+                    document.getElementById('idea-seed-input').value = dev[inputField] ?? '';
+                }
+                if (dev.hasOwnProperty(outputField)) {
+                    document.getElementById('summary-panel').innerHTML = `<div class='p-4'>${dev[outputField] ?? ''}</div>`;
+                }
+            }
+            // Load selected action for this substage
+            const psaResp = await fetch(`/api/v1/llm/post_substage_actions?post_id=${postId}&substage=${substage}`);
+            if (psaResp.ok) {
+                const actions = await psaResp.json();
+                if (actions.length > 0) {
+                    const actionId = actions[0].action_id;
+                    // Highlight the selected action button if present
+                    const lastBtn = document.querySelector(`.llm-action-btn[href$='/${actionId}']`);
+                    if (lastBtn) lastBtn.classList.add('ring', 'ring-blue-400');
+                }
+            }
         }
 
+        // --- Persist input field to backend on change ---
+        document.getElementById('idea-seed-input').addEventListener('change', async function () {
+            if (!postId) return;
+            const value = this.value;
+            await fetch(`/api/v1/post/${postId}/development`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [inputField]: value })
+            });
+        });
+
+        // --- Action button logic ---
         const actionButtons = document.querySelectorAll('.llm-action-btn');
         actionButtons.forEach(btn => {
             btn.addEventListener('click', async function (e) {
                 e.preventDefault();
                 const actionId = this.getAttribute('href').split('/').pop();
-                localStorage.setItem('llm-last-action-id', actionId);
-                console.log(`[LLM] Action button clicked. Action ID: ${actionId}`);
-
+                // Persist action selection for this substage
+                if (postId) {
+                    await fetch('/api/v1/llm/post_substage_actions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ post_id: postId, substage, action_id: actionId })
+                    });
+                }
                 // --- Per-page field mapping ---
                 let fieldMap = {};
                 const root = document.getElementById('llm-workflow-root');
@@ -82,110 +140,70 @@
                         }
                     }
                 }
-
                 // Find input value dynamically
-                let inputValue = '';
-                let inputFieldKey = 'seed';
-                if (actionId && actionId !== '1') {
-                    // If you have multiple actions, you can map inputFieldKey differently
+                let inputValue = document.getElementById('idea-seed-input').value;
+                // Always save input value to DB before running action
+                if (postId) {
+                    try {
+                        const inputSaveResp = await fetch(`/api/v1/post/${postId}/development`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ [inputField]: inputValue })
+                        });
+                        const inputSaveData = await inputSaveResp.json();
+                        console.log('[LLM] Input save payload:', { [inputField]: inputValue });
+                        console.log('[LLM] Input save response:', inputSaveData);
+                        if (!inputSaveResp.ok || inputSaveData.status !== 'success') {
+                            alert('Failed to save input field: ' + (inputSaveData.error || inputSaveResp.status));
+                        }
+                    } catch (err) {
+                        console.error('[LLM] Error saving input field:', err);
+                        alert('Error saving input field: ' + err);
+                    }
                 }
-                let inputSelector = fieldMap[inputFieldKey]
-                    ? `#${fieldMap[inputFieldKey]}, [name='${fieldMap[inputFieldKey]}']`
-                    : 'input, textarea';
-                const inputElem = document.querySelector(inputSelector);
-                if (inputElem) inputValue = inputElem.value || inputElem.textContent || '';
-                else console.warn(`[LLM] Input element not found for selector: ${inputSelector}`);
-
-                // Persist input value
-                if (inputElem) localStorage.setItem('idea-seed-input', inputValue);
-
                 // Fetch action definition
                 const actionResponse = await fetch(`/api/v1/llm/actions/${actionId}`);
-                const actionData = await actionResponse.json();
-                if (!actionResponse.ok || !actionData.action) {
-                    alert('Failed to fetch action details');
-                    return;
-                }
-                const action = actionData.action;
-
-                // Prepare debug JSON (frontend)
-                const requestJson = {
-                    model: action.llm_model,
-                    temperature: action.temperature,
-                    max_tokens: action.max_tokens,
-                    prompt: action.prompt_template.replace(/\[.*?\]/g, '').trim(),
-                    input: inputValue
-                };
-                // Show debug JSON (frontend)
-                const debugPanel = document.getElementById('debug-json-panel');
-                const debugContent = document.getElementById('debug-json-content');
-                if (debugPanel && debugContent) {
-                    debugPanel.classList.remove('hidden');
-                    debugContent.textContent = JSON.stringify(requestJson, null, 2);
-                } else {
-                    console.warn('[LLM] Debug panel or content element not found.');
-                }
-
-                // Execute action and get backend LLM request JSON
-                let result = {};
+                const action = await actionResponse.json();
+                // Run the action
+                const debugDiv = document.getElementById('action-debug');
+                debugDiv.innerHTML = '';
                 try {
-                    const executeResponse = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
+                    const resp = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ input_text: inputValue, debug: true })
+                        body: JSON.stringify({
+                            post_id: postId,
+                            input_field: inputField,
+                            input_text: inputValue,
+                            debug: true
+                        })
                     });
-                    result = await executeResponse.json();
+                    const data = await resp.json();
+                    if (!resp.ok) throw { response: resp, data };
+                    document.getElementById('action-result').innerHTML = `<div class='p-4'>${data.result || ''}</div>`;
+                    debugDiv.innerHTML = '';
                 } catch (err) {
-                    console.error('[LLM] Error executing action:', err);
-                }
-
-                // Place output dynamically
-                let outputFieldKey = action.output_field || 'summary';
-                let outputSelector = fieldMap[outputFieldKey]
-                    ? `#${fieldMap[outputFieldKey]}, [name='${fieldMap[outputFieldKey]}']`
-                    : '#summary-panel, div';
-                const outputElem = document.querySelector(outputSelector);
-                if (outputElem) {
-                    const outputValue = result.output || result.response || '';
-                    if ('value' in outputElem) outputElem.value = outputValue;
-                    else outputElem.innerHTML = `<div class=\"p-4\">${outputValue}</div>`;
-                    // Persist output value
-                    localStorage.setItem('llm-last-output', outputValue);
-                } else {
-                    console.warn(`[LLM] Output element not found for selector: ${outputSelector}`);
-                }
-
-                // Show backend-to-LLM JSON if available
-                const debugLLMPanel = document.getElementById('debug-json-llm-panel');
-                const debugLLMContent = document.getElementById('debug-json-llm-content');
-                if (result.llm_payload && debugLLMPanel && debugLLMContent) {
-                    debugLLMPanel.classList.remove('hidden');
-                    debugLLMContent.textContent = JSON.stringify(result.llm_payload, null, 2);
-                } else if (result.llm_request_json && debugLLMPanel && debugLLMContent) {
-                    debugLLMPanel.classList.remove('hidden');
-                    debugLLMContent.textContent = JSON.stringify(result.llm_request_json, null, 2);
-                } else if (debugLLMPanel && debugLLMContent) {
-                    debugLLMPanel.classList.remove('hidden');
-                    debugLLMContent.textContent = 'No backend LLM JSON.';
-                }
-
-                if (debug && debug.outgoing_prompt_string) {
-                    displayLLMPrompt(debug.outgoing_prompt_string);
+                    let errorText = '';
+                    if (err.data && (err.data.error || err.data.message)) {
+                        errorText = err.data.error || err.data.message;
+                    } else if (err.response) {
+                        try {
+                            const errJson = await err.response.json();
+                            errorText = errJson.error || errJson.message || err.response.statusText;
+                        } catch {
+                            errorText = err.response.statusText || 'Unknown error';
+                        }
+                    } else if (err.message) {
+                        errorText = err.message;
+                    } else {
+                        errorText = 'Unknown error';
+                    }
+                    debugDiv.innerHTML = `<div class="text-red-600">${errorText}</div>`;
+                    if (errorText.includes('Failed to establish a new connection') || errorText.includes('Connection refused')) {
+                        showStartOllamaButton(debugDiv);
+                    }
                 }
             });
         });
     });
-
-    function displayLLMPrompt(prompt) {
-        if (prompt) {
-            document.getElementById('llm-prompt-display').innerHTML = `<h4>Prompt sent to LLM</h4><pre>${prompt}</pre>`;
-        }
-    }
-
-    function handleActionDebug(debug) {
-        // ... existing code ...
-        if (debug && debug.outgoing_prompt_string) {
-            displayLLMPrompt(debug.outgoing_prompt_string);
-        }
-    }
 </script>
