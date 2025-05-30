@@ -109,4 +109,10 @@ Stores prompt templates for LLM actions. As of 2024-06, supports both legacy fla
 | prompt_json  | JSONB        | (2024-06) Structured prompt parts array for advanced LLM prompt engineering. Nullable for backward compatibility. |
 | ...          | ...          | ...                                              |
 
-- `prompt_json` stores an ordered array of objects, each with `type`, `tags`, and `content` (or `field` for data parts). See /docs/llm/llm_prompt_structuring.md for details. 
+- `prompt_json` stores an ordered array of objects, each with `type`, `tags`, and `content` (or `field` for data parts). See /docs/llm/llm_prompt_structuring.md for details.
+
+### [2024-06-10] Workflow UI Field Persistence
+
+- The workflow UI now loads and saves all input/output fields to the `post_development` table, and LLM action selections to the `post_substage_action` table, for each post and substage.
+- This enables robust, permanent persistence of workflow state and makes the interface easily transferable to other stages/substages.
+- See also: docs/frontend/templates.md for frontend details. 

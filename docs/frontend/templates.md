@@ -48,4 +48,18 @@ The Blog CMS uses Jinja2 templates for all HTML rendering. This document describ
 - The /llm/prompts page now defaults to the Prompt Parts tab, which features a persistent radio button filter for Type (All, system, user, assistant) above the list. The filter is styled per the dark theme style guide and persists across tab switches.
 - The Prompt Assembler tab now correctly displays all available prompt parts, each with colored tag spans for their tags (role, operation, format, style, specimen). The available list is filtered by the selected type and tags, and the UI logic is robust against missing or malformed tags. (Fixed June 2024)
 - The Prompt Assembler and Prompt Parts tab now use background colors to distinguish message types: blue for system, deep green for user, and deep purple for assistant (if used). Tag colors remain as colored spans. This color-coding applies to both the available parts list and the assembled sequence in the Assembler, as well as the main Prompt Parts table. (Updated June 2024)
-- The /llm/actions page now features a single in-page Action builder area. The Edit button (formerly Details) for each action, as well as the New Action button, anchor to the builder area below. When Edit is clicked, the builder is preloaded with the action's details and switches to update mode (the Save button becomes Update). When New Action is clicked, the builder is cleared and switches to create mode. There is no modal or separate details page for actions; all editing and creation is handled in-page for a seamless workflow. 
+- The /llm/actions page now features a single in-page Action builder area. The Edit button (formerly Details) for each action, as well as the New Action button, anchor to the builder area below. When Edit is clicked, the builder is preloaded with the action's details and switches to update mode (the Save button becomes Update). When New Action is clicked, the builder is cleared and switches to create mode. There is no modal or separate details page for actions; all editing and creation is handled in-page for a seamless workflow.
+
+## Workflow UI Field Persistence (2024-06-10)
+
+The workflow UI (e.g., /workflow/idea/) now persists all input, output, and LLM action fields directly to the backend database, not just to localStorage. This ensures that user input, generated output, and action selections are always saved and restored reliably, even after reloads or navigation.
+
+### Key Features
+- **Input fields** (e.g., idea seed) are loaded from and saved to the `post_development` table via `/api/v1/post/<post_id>/development`.
+- **Output fields** (e.g., summary) are loaded from and saved to the same endpoint.
+- **LLM action selection** is loaded from and saved to the `post_substage_action` table via `/api/v1/llm/post_substage_actions`.
+- All changes are persisted immediately on user interaction (change, click, etc.).
+- The logic is generalized and can be reused for any workflow stage or substage by configuring the field and substage names.
+- **localStorage is no longer used for persistence**; all state is backend-driven.
+
+This enables robust, permanent persistence and makes the workflow UI easily transferable to other stages/substages with different input/output/action mappings. 

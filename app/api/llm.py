@@ -530,8 +530,20 @@ def execute_action(action_id):
         current_app.logger.error(f"[LLM EXECUTE] ValueError executing action {action_id}: {str(e)}\n{traceback.format_exc()}")
         return jsonify({'error': str(e)}), 400
     except Exception as e:
-        current_app.logger.error(f"[LLM EXECUTE] Exception executing action {action_id}: {str(e)}\n{traceback.format_exc()} | Data: {data} | Action: {action if 'action' in locals() else 'N/A'}")
-        return jsonify({'error': str(e)}), 500
+        import requests
+        err_str = str(e)
+        # Detect Ollama connection errors
+        if (
+            isinstance(e, requests.ConnectionError) or
+            'Failed to establish a new connection' in err_str or
+            'Connection refused' in err_str or
+            'Max retries exceeded with url' in err_str or
+            'HTTPConnectionPool' in err_str
+        ):
+            current_app.logger.error(f"[LLM EXECUTE] OllamaConnectionError executing action {action_id}: {err_str}\n{traceback.format_exc()} | Data: {data} | Action: {action if 'action' in locals() else 'N/A'}")
+            return jsonify({'error': 'OllamaConnectionError', 'message': err_str}), 503
+        current_app.logger.error(f"[LLM EXECUTE] Exception executing action {action_id}: {err_str}\n{traceback.format_exc()} | Data: {data} | Action: {action if 'action' in locals() else 'N/A'}")
+        return jsonify({'error': err_str}), 500
 
 
 @bp.route('/actions/<int:action_id>/history')

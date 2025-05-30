@@ -1,0 +1,30 @@
+                                           Table "public.post"
+     Column      |            Type             | Collation | Nullable |             Default              
+-----------------+-----------------------------+-----------+----------+----------------------------------
+ id              | integer                     |           | not null | nextval('post_id_seq'::regclass)
+ title           | character varying(200)      |           | not null | 
+ slug            | character varying(200)      |           | not null | 
+ summary         | text                        |           |          | 
+ created_at      | timestamp without time zone |           |          | CURRENT_TIMESTAMP
+ updated_at      | timestamp without time zone |           |          | CURRENT_TIMESTAMP
+ header_image_id | integer                     |           |          | 
+ status          | post_status                 |           | not null | 'draft'::post_status
+ substage_id     | integer                     |           |          | 
+Indexes:
+    "post_pkey" PRIMARY KEY, btree (id)
+    "idx_post_created" btree (created_at)
+    "idx_post_slug" btree (slug)
+    "idx_post_status" btree (status)
+    "post_slug_key" UNIQUE CONSTRAINT, btree (slug)
+Foreign-key constraints:
+    "post_header_image_id_fkey" FOREIGN KEY (header_image_id) REFERENCES image(id)
+Referenced by:
+    TABLE "llm_action_history" CONSTRAINT "llm_action_history_post_id_fkey" FOREIGN KEY (post_id) REFERENCES post(id)
+    TABLE "post_categories" CONSTRAINT "post_categories_post_id_fkey" FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
+    TABLE "post_development" CONSTRAINT "post_development_post_id_fkey" FOREIGN KEY (post_id) REFERENCES post(id)
+    TABLE "post_section" CONSTRAINT "post_section_post_id_fkey" FOREIGN KEY (post_id) REFERENCES post(id)
+    TABLE "post_tags" CONSTRAINT "post_tags_post_id_fkey" FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE
+    TABLE "workflow" CONSTRAINT "workflow_post_id_fkey" FOREIGN KEY (post_id) REFERENCES post(id)
+Triggers:
+    update_post_updated_at BEFORE UPDATE ON post FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()
+
