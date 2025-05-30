@@ -119,4 +119,26 @@ Stores prompt templates for LLM actions. As of 2024-06, supports both legacy fla
 
 - The workflow UI now loads and saves all input/output fields to the `post_development` table, and LLM action selections to the `post_substage_action` table, for each post and substage.
 - This enables robust, permanent persistence of workflow state and makes the interface easily transferable to other stages/substages.
-- See also: docs/frontend/templates.md for frontend details. 
+- See also: docs/frontend/templates.md for frontend details.
+
+## Table: post_workflow_stage
+
+Tracks the status and timing of each workflow stage for a post. As of 2025-06-10, supports LLM workflow field persistence at the stage level.
+
+| Column        | Type         | Description                                      |
+|--------------|--------------|--------------------------------------------------|
+| id           | SERIAL       | Primary key                                      |
+| post_id      | INTEGER      | References post(id)                              |
+| stage_id     | INTEGER      | References workflow_stage_entity(id)             |
+| started_at   | TIMESTAMP    | When this stage started                          |
+| completed_at | TIMESTAMP    | When this stage completed                        |
+| status       | VARCHAR(32)  | Status of the stage                              |
+| input_field  | VARCHAR(128) | **NEW**: Selected input field for this stage     |
+| output_field | VARCHAR(128) | **NEW**: Selected output field for this stage    |
+
+**2025-06-10:** Added `input_field` and `output_field` columns to `post_workflow_stage` for robust LLM workflow field persistence at the stage level. See migration and restore notes below.
+
+### Migration & Restore Notes
+- Always make a full backup and save the current create_tables.sql before running this migration.
+- If restoring a backup made before this change, use the matching create_tables.sql from the backup directory.
+- If you need to bring restored data up to the new schema, run the migration SQL to add the new columns after restore. 

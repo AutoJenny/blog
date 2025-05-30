@@ -275,8 +275,6 @@ CREATE TABLE post_workflow_stage (
     started_at TIMESTAMP,
     completed_at TIMESTAMP,
     status VARCHAR(32),
-    input_field VARCHAR(128),
-    output_field VARCHAR(128),
     UNIQUE(post_id, stage_id)
 );
 
