@@ -69,6 +69,12 @@ Tracks LLM action button settings for each post and workflow substage. Used to s
 
 Example usage: Allows the UI to save and restore which LLM action is selected for a post's substage, and how it appears in the workflow editor.
 
+### post_substage_action
+
+- **PUT /api/v1/llm/post_substage_actions/<int:psa_id>**
+  - Now supports updating `input_field` and `output_field` in addition to `button_label` and `button_order`.
+  - Enables field persistence for workflow UI.
+
 ## Table: workflow_field_mapping
 
 Maps post development fields to workflow stages and substages for UI and workflow logic. Used by the Settings panel to configure which field appears in which stage/substage, and in what order.
