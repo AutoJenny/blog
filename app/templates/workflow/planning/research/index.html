@@ -14,7 +14,8 @@ Do not introduce variants or reorder panels. Consistency is required for maintai
 <div class="container mx-auto px-6 py-8">
     {{ blog_macros.post_header(post) }}
     {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
-    {% include "workflow/_modular_llm_panels.html" with substage='research', post=post %}
+    {% set substage = 'research' %}
+    {% include "workflow/_modular_llm_panels.html" %}
 </div>
 {% endblock %}
 
