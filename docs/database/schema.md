@@ -56,12 +56,16 @@ Tracks LLM action button settings for each post and workflow substage. Used to s
 
 | Column        | Type         | Description                                      |
 |--------------|--------------|--------------------------------------------------|
-| id           | SERIAL (PK)  | Unique row ID                                    |
+| id           | SERIAL       | Primary key                                      |
 | post_id      | INTEGER      | References post(id)                              |
-| substage     | VARCHAR(64)  | Name of the workflow substage (e.g. 'idea')      |
+| substage     | VARCHAR(64)  | Substage name                                    |
 | action_id    | INTEGER      | References llm_action(id)                        |
-| button_label | TEXT         | Label for the action button                      |
-| button_order | INTEGER      | Order for button display (default 0)             |
+| input_field  | VARCHAR(128) | **NEW**: Selected input field for this action    |
+| output_field | VARCHAR(128) | **NEW**: Selected output field for this action   |
+| button_label | TEXT         | Button label (optional)                          |
+| button_order | INTEGER      | Button order (default 0)                         |
+
+**2025-05-30:** Added `input_field` and `output_field` columns to `post_substage_action` for LLM workflow field persistence.
 
 Example usage: Allows the UI to save and restore which LLM action is selected for a post's substage, and how it appears in the workflow editor.
 
