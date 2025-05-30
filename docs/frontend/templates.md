@@ -68,4 +68,13 @@ The workflow UI (e.g., /workflow/idea/) now persists all input, output, and LLM 
 - The logic is generalized and can be reused for any workflow stage or substage by configuring the field and substage names.
 - **localStorage is no longer used for persistence**; all state is backend-driven.
 
-This enables robust, permanent persistence and makes the workflow UI easily transferable to other stages/substages with different input/output/action mappings. 
+This enables robust, permanent persistence and makes the workflow UI easily transferable to other stages/substages with different input/output/action mappings.
+
+## Workflow Modular LLM UI Persistence
+
+- After saving input, output, or action selections, the UI now always re-fetches the latest postSubstageAction from the backend.
+- This ensures that both input_field and output_field persist and are always in sync with the backend, even if other users or processes make changes.
+- See: app/static/js/workflow_modular_llm.js for implementation details.
+
+**Update (2025-05-30):**
+The output dropdown in the modular workflow UI now loads its value from the DB identically to the input dropdown, and is no longer overwritten by the action handler. This resolves the persistent output field bug and ensures both dropdowns always reflect the DB state. 

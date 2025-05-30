@@ -739,3 +739,13 @@ All notable changes to this project are documented in this file.
 - Modularized field selection logic; dropdowns now support stage categorization and persistence.
 - Fixed server and script issues, including Flask port hangs and JS module loading errors.
 - Improved maintainability and set foundation for replicating modular workflow for other stages.
+
+- fix: allow updating input_field and output_field in post_substage_action PUT handler (app/api/llm.py)
+  - Now supports field persistence for workflow UI
+
+- fix(workflow): always re-fetch postSubstageAction after save in workflow_modular_llm.js to ensure output_field persists in UI
+
+2025-05-30 fix: workflow modular output dropdown persistence
+- Output dropdown in workflow modular UI now loads value from DB identically to input dropdown.
+- Removed action handler logic that forcibly set output field, which caused persistent bug.
+- Now both input and output dropdowns always reflect DB state and persist correctly.
