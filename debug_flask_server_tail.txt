@@ -1,11 +1,11 @@
+=== LLM API MODULE LOADED (AUDIT TEST) ===
+=== FLASK APP __init__.py LOADED (AUDIT TEST) ===
 DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
 DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
-[DEBUG] Registering llm_api Blueprint...
-[DEBUG] llm_api Blueprint registered.
+[AUDIT] About to import llm_api_bp from app.api.llm
+=== LLM API MODULE LOADED (AUDIT TEST) ===
+[AUDIT] Imported llm_api_bp, registering...
+[AUDIT] llm_api_bp registered.
 [DEBUG] Registering db Blueprint...
 [DEBUG] db Blueprint registered.
- * Serving Flask app 'run.py'
- * Debug mode: on
-Address already in use
-Port 5000 is in use by another program. Either identify and stop that program, or start the server with a different port.
-On macOS, try disabling the 'AirPlay Receiver' service from System Preferences -> General -> AirDrop & Handoff.
+ * Debug mode: off

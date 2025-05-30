@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Home</title>
+    <!-- Tailwind CSS -->
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    <!-- Header -->
+    <header class="header-gradient shadow-lg border-b border-dark-border py-4">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+                <div class="flex items-center space-x-8 flex-1 min-w-0">
+                    <!-- Logo and Title -->
+                    <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+                        <img src="/static/images/site/brand-logo.png" alt="BlogForge Logo"
+                            class="w-10 h-10 rounded-full shadow"
+                            style="background:#23273a; width: 40px; height: 40px;" />
+                        <span class="font-bold text-white">BlogForge</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4 ml-8">
+                    <!-- Workflow Dropdown -->
+                    <div class="relative group nav-group" tabindex="0">
+                        <button
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="fa-solid fa-sitemap"></i> Workflow <i class="fa fa-caret-down text-xs"></i>
+                        </button>
+                        <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                            <a href="/workflow/idea/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-lightbulb text-yellow-400"></i> Planning</a>
+                            <a href="/workflow/content/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-pen-nib text-green-400"></i> Authoring</a>
+                            <a href="/workflow/preflight/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-paper-plane text-blue-400"></i> Publishing</a>
+                        </div>
+                    </div>
+                    <!-- Modules Dropdown -->
+                    <div class="relative group nav-group" tabindex="0">
+                        <button
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down text-xs"></i>
+                        </button>
+                        <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                            <a href="/db/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-database text-purple-400"></i> Database</a>
+                            <a href="/llm/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-brain text-pink-400"></i> AI</a>
+                            <a href="/llm/images"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-image text-dark-accent"></i> Images</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+                    <a href="/blog/posts"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
+                    <button
+                        class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition"
+                        id="newPostBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        New Post
+                    </button>
+                    <a href="/docs/"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Docs</a>
+                    <a href="/settings"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Settings</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    
+    
+    
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+<div class="min-h-screen bg-dark-bg text-dark-text">
+    <div class="max-w-7xl mx-auto px-4 py-10">
+        <!-- Workflow (now at the top) -->
+        <section class="mb-12">
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-sitemap"></i> Workflow
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="/workflow/idea/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-lightbulb text-yellow-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Planning</span>
+                        <p class="text-dark-accent text-sm text-center">Outline your post structure and key points</p>
+                    </div>
+                </a>
+                <a href="/workflow/content/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-pen-nib text-green-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Authoring</span>
+                        <p class="text-dark-accent text-sm text-center">Write and enhance your content with AI</p>
+                    </div>
+                </a>
+                <a href="/workflow/preflight/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-paper-plane text-blue-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Publishing</span>
+                        <p class="text-dark-accent text-sm text-center">Prepare and publish your post</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+        <!-- Technical Modules -->
+        <section class="mb-12">
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Technical
+                Modules</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="/db/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-database text-purple-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Database</span>
+                        <p class="text-dark-accent text-sm text-center">Manage schemas, data, and migrations</p>
+                    </div>
+                </a>
+                <a href="/llm/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-brain text-pink-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">AI</span>
+                        <p class="text-dark-accent text-sm text-center">Configure models, prompts, and assistance</p>
+                    </div>
+                </a>
+                <a href="/llm/images/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-image text-dark-accent text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Images</span>
+                        <p class="text-dark-accent text-sm text-center">Generate and manage blog images</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+        <!-- Documentation -->
+        <section class="mb-12">
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-book"></i>
+                Documentation</h2>
+            <div class="card-dark rounded-xl p-8 flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center gap-3 mb-4 md:mb-0">
+                    <span class="icon-circle"><i class="fa-solid fa-book-open text-dark-accent text-xl"></i></span>
+                    <span class="text-lg font-semibold text-white">Project Documentation</span>
+                </div>
+                <a href="/docs/"
+                    class="bg-dark-accent hover:bg-dark-bg text-white font-semibold px-5 py-2 rounded-lg border border-dark-accent transition">View
+                    Docs</a>
+            </div>
+        </section>
+        <!-- Recent Posts -->
+        <section>
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-clock"></i> Recent
+                Posts</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <div class="text-dark-accent text-center text-lg col-span-3">No posts yet</div>
+                
+            </div>
+        </section>
+    </div>
+</div>
+
+    </main>
+    
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">
+                &copy; 2025 Blog CMS. All rights reserved. |
+                <a href="/docs" class="text-indigo-300 hover:text-indigo-100 underline ml-2">Docs</a>
+            </p>
+        </div>
+    </footer>
+
+    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var newPostBtn = document.getElementById('newPostBtn');
+            if (newPostBtn) {
+                newPostBtn.addEventListener('click', async () => {
+                    const basicIdea = prompt('Enter your basic idea for the post:');
+                    if (!basicIdea) return;
+                    try {
+                        const response = await fetch("/blog/new", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ basic_idea: basicIdea })
+                        });
+                        const data = await response.json();
+                        if (response.ok && data.id) {
+                            window.location.href = `/workflow/idea/?post_id=${data.id}`;
+                        } else {
+                            alert(data.error || 'Failed to create post');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to create post');
+                    }
+                });
+            }
+
+            // Dropdown accessibility: open on click, close on outside click or Escape
+            function setupDropdown() {
+                document.querySelectorAll('.nav-group').forEach(function (group) {
+                    var btn = group.querySelector('button');
+                    var dropdown = group.querySelector('.nav-dropdown');
+                    if (!btn || !dropdown) return;
+                    // Toggle on click
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var isOpen = !dropdown.classList.contains('hidden');
+                        document.querySelectorAll('.nav-dropdown').forEach(d => { d.classList.add('hidden'); d.classList.remove('block'); });
+                        if (!isOpen) { dropdown.classList.remove('hidden'); dropdown.classList.add('block'); }
+                    });
+                    // Open on focus
+                    btn.addEventListener('focus', function () {
+                        dropdown.classList.remove('hidden');
+                        dropdown.classList.add('block');
+                    });
+                    // Close on blur (with delay for click)
+                    btn.addEventListener('blur', function () {
+                        setTimeout(() => { dropdown.classList.add('hidden'); dropdown.classList.remove('block'); }, 100);
+                    });
+                    // Close on Escape
+                    group.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape') { dropdown.classList.add('hidden'); dropdown.classList.remove('block'); }
+                    });
+                });
+                // Close all dropdowns on outside click
+                document.addEventListener('click', function (e) {
+                    document.querySelectorAll('.nav-dropdown').forEach(d => { d.classList.add('hidden'); d.classList.remove('block'); });
+                });
+            }
+            setupDropdown();
+        });
+    </script>
+    
+<script>
+    // Floating new post button logic
+    const newPostBtn = document.getElementById('floatingNewPostBtn');
+    if (newPostBtn) {
+        newPostBtn.addEventListener('click', async () => {
+            const basicIdea = prompt('Enter your basic idea for the post:');
+            if (!basicIdea) return;
+            try {
+                const response = await fetch('/blog/new', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ basic_idea: basicIdea })
+                });
+                const data = await response.json();
+                if (data && data.slug) {
+                    window.location.href = `/workflow/idea/?post_id=${data.id}`;
+                } else {
+                    alert('Failed to create post');
+                }
+            } catch (err) {
+                alert('Error creating post');
+            }
+        });
+    }
+</script>
+
+    <!-- Mermaid.js for diagrams in markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.mermaid) {
+                setTimeout(function () {
+                    mermaid.initialize({ startOnLoad: false });
+                    document.querySelectorAll('pre > code.language-mermaid').forEach(function (block, i) {
+                        var parent = block.parentElement;
+                        var code = block.innerText;
+                        var d = document.createElement('div');
+                        d.className = 'mermaid';
+                        d.innerText = code;
+                        parent.replaceWith(d);
+                    });
+                    try {
+                        mermaid.run();
+                    } catch (e) {
+                        console.error('Mermaid render error:', e);
+                        document.querySelectorAll('.mermaid').forEach(function (el) {
+                            el.innerHTML = '<div style="color:#f87171;background:#23273a;padding:1em;border-radius:.5em;">Mermaid render error:<br>' + e.message + '</div>';
+                        });
+                    }
+                }, 100);
+            }
+        });
+    </script>
+</body>
+
+</html>
