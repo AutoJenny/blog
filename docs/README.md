@@ -113,4 +113,8 @@ The main header now features:
 All links are accessible from the top navigation bar for quick access to major features.
 
 ## 2025-05-29 Update
-- LLM actions now use `parse_tagged_prompt_to_messages` to build canonical prompts, ensuring all prompt elements (system, user, operation, data) are included as per [llm/llm_prompt_structuring.md](llm/llm_prompt_structuring.md). See the changelog for details. 
+- LLM actions now use `parse_tagged_prompt_to_messages` to build canonical prompts, ensuring all prompt elements (system, user, operation, data) are included as per [llm/llm_prompt_structuring.md](llm/llm_prompt_structuring.md). See the changelog for details.
+
+## 2024-06-07
+- Fixed: Correct substage is now always sent and saved for post_substage_action (e.g., 'research' as well as 'idea').
+- If a substage row is missing, verify the frontend is sending the correct substage in the payload. You can debug by POSTing directly to `/api/v1/llm/post_substage_actions` with the desired substage. 

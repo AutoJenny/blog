@@ -114,4 +114,14 @@
 - Deprecated and archived duplicate idea/index.html templates.
 - Modularized field selection logic; dropdowns now support stage categorization and persistence.
 - Fixed server and script issues, including Flask port hangs and JS module loading errors.
-- Improved maintainability and set foundation for replicating modular workflow for other stages. 
+- Improved maintainability and set foundation for replicating modular workflow for other stages.
+
+2024-06-07 Fix: Ensure correct substage is sent and saved for post_substage_action
+- Verified that the backend upsert logic works as intended for (post_id, substage).
+- Debugged with direct API call to confirm row creation for research substage.
+- Confirmed that modular panel and JS context now always send the correct substage.
+- No database schema changes required.
+
+2024-06-07 Refactor: Added modular LLM workflow panel to planning/structure substage
+- Structure substage now uses the same modular include and JS as idea and research.
+- Ensures all planning substages are fully consistent and DRY. 
