@@ -272,12 +272,12 @@ async function checkOllamaStatus() {
     if (isInitializing) return;
     const field = inputFieldSelect.value;
     inputFieldValue.textContent = postDev[field] || '(No value)';
-    // Guard: Only POST if all required fields are present
-    if (!postId || !substage || !actionSelect.value || !inputFieldSelect.value || !outputFieldSelect.value) {
-      console.warn('Not saving: missing required fields', { postId, substage, actionId: actionSelect.value, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+    // Only POST if postId, substage, and actionId are present
+    if (!postId || !substage || !actionSelect.value) {
+      console.warn('Not saving: missing required keys', { postId, substage, actionId: actionSelect.value });
       return;
     }
-    console.log('Saving post_substage_action:', { postId, substage, actionId: actionSelect.value, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+    console.log('Saving post_substage_action (input change):', { postId, substage, actionId: actionSelect.value, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
     await savePostSubstageAction(postId, substage, actionSelect.value, inputFieldSelect.value, outputFieldSelect.value);
     // Re-fetch and update UI
     postSubstageAction = await fetchPostSubstageAction(postId, substage);
@@ -290,12 +290,12 @@ async function checkOllamaStatus() {
     if (isInitializing) return;
     const field = outputFieldSelect.value;
     outputFieldValue.textContent = postDev[field] || '(No value)';
-    // Guard: Only POST if all required fields are present
-    if (!postId || !substage || !actionSelect.value || !inputFieldSelect.value || !outputFieldSelect.value) {
-      console.warn('Not saving: missing required fields', { postId, substage, actionId: actionSelect.value, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+    // Only POST if postId, substage, and actionId are present
+    if (!postId || !substage || !actionSelect.value) {
+      console.warn('Not saving: missing required keys', { postId, substage, actionId: actionSelect.value });
       return;
     }
-    console.log('Saving post_substage_action:', { postId, substage, actionId: actionSelect.value, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+    console.log('Saving post_substage_action (output change):', { postId, substage, actionId: actionSelect.value, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
     await savePostSubstageAction(postId, substage, actionSelect.value, inputFieldSelect.value, outputFieldSelect.value);
     // Re-fetch and update UI
     postSubstageAction = await fetchPostSubstageAction(postId, substage);
@@ -310,12 +310,12 @@ async function checkOllamaStatus() {
     updatePanelVisibility();
     const actionId = actionSelect.value;
     await showActionDetails(actionId);
-    // Guard: Only POST if all required fields are present
-    if (!actionId || !postId || !substage || !inputFieldSelect.value || !outputFieldSelect.value) {
-      console.warn('Not saving: missing required fields', { postId, substage, actionId, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+    // Only POST if postId, substage, and actionId are present
+    if (!actionId || !postId || !substage) {
+      console.warn('Not saving: missing required keys', { postId, substage, actionId });
       return;
     }
-    console.log('Saving post_substage_action:', { postId, substage, actionId, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
+    console.log('Saving post_substage_action (action change):', { postId, substage, actionId, inputField: inputFieldSelect.value, outputField: outputFieldSelect.value });
     await savePostSubstageAction(postId, substage, actionId, inputFieldSelect.value, outputFieldSelect.value);
     // Re-fetch and update UI
     postSubstageAction = await fetchPostSubstageAction(postId, substage);
