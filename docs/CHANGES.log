@@ -124,4 +124,8 @@
 
 2024-06-07 Refactor: Added modular LLM workflow panel to planning/structure substage
 - Structure substage now uses the same modular include and JS as idea and research.
-- Ensures all planning substages are fully consistent and DRY. 
+- Ensures all planning substages are fully consistent and DRY.
+
+2024-06-07 Feat: Automatic workflow_field_mapping creation
+- The backend now auto-creates workflow_field_mapping rows for new (field, substage) pairs on first use in the modular LLM panel.
+- No manual DB update is needed when adding new substages or fields—system is now fully plug-and-play. 
