@@ -418,9 +418,10 @@ def execute_action(action_id):
     debug_mode = data.get('debug', False)
     current_app.logger.debug(f"[LLM EXECUTE] Action ID: {action_id}, Incoming data: {data}")
 
-    if not data or 'input_text' not in data:
-        current_app.logger.warning(f"[LLM EXECUTE] No input_text provided for action {action_id}.")
-        return jsonify({'error': 'No input text provided'}), 400
+    if not data or 'input_text' not in data or not data['input_text']:
+        input_field = data.get('input_field', '(unknown)')
+        current_app.logger.warning(f"[LLM EXECUTE] No input_text provided for action {action_id}. Input field: {input_field}")
+        return jsonify({'error': f'No input text provided for field: {input_field}. Please enter a value for this field and try again.'}), 400
 
     try:
         # Fetch the action via direct SQL
