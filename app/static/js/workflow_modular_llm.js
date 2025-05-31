@@ -286,7 +286,8 @@ async function checkOllamaStatus() {
     // Re-fetch and update UI
     postSubstageAction = await fetchPostSubstageAction(postId, substage);
     const psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
-    if (psa && psa.input_field) inputFieldSelect.value = psa.input_field;
+    // Always re-render dropdown with the just-selected value, even if not mapped to this substage
+    renderFieldDropdown(inputFieldSelect, fieldMappings, inputFieldSelect.value);
     if (psa && psa.output_field) outputFieldSelect.value = psa.output_field;
     if (psa && psa.output_field) outputFieldValue.textContent = postDev[psa.output_field] || '(No value)';
   });
