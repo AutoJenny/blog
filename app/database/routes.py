@@ -163,6 +163,11 @@ def list_tables():
     logging.basicConfig(level=logging.DEBUG)
     tables = []
     groups = []
+    # Pagination for post table
+    post_page = int(request.args.get('post_page', 1))
+    post_page_size = 20
+    post_offset = (post_page - 1) * post_page_size
+    total_post_count = 0
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
@@ -183,10 +188,18 @@ def list_tables():
                         ORDER BY ordinal_position
                     """, (table,))
                     columns = [{'name': r['column_name'], 'type': r['data_type']} for r in cur.fetchall()]
-                    # Get up to 20 rows
-                    cur.execute(f'SELECT * FROM {table} LIMIT 20;')
-                    rows = cur.fetchall()
-                    table_data[table] = {'name': table, 'columns': columns, 'rows': rows}
+                    if table == 'post':
+                        # Get total count for pagination
+                        cur.execute('SELECT COUNT(*) FROM post;')
+                        total_post_count = cur.fetchone()['count']
+                        # Get paginated, ordered rows
+                        cur.execute('SELECT * FROM post ORDER BY updated_at DESC NULLS LAST, id DESC LIMIT %s OFFSET %s;', (post_page_size, post_offset))
+                        rows = cur.fetchall()
+                        table_data[table] = {'name': table, 'columns': columns, 'rows': rows, 'total_count': total_post_count, 'page': post_page, 'page_size': post_page_size}
+                    else:
+                        cur.execute(f'SELECT * FROM {table} LIMIT 20;')
+                        rows = cur.fetchall()
+                        table_data[table] = {'name': table, 'columns': columns, 'rows': rows}
                 logging.debug(f"[DEBUG] table_data keys: {list(table_data.keys())}")
                 # Flat list for compatibility
                 tables = list(table_data.values())

@@ -87,4 +87,7 @@ This enables robust, permanent persistence and makes the workflow UI easily tran
 **Update (2025-05-30):**
 The output dropdown in the modular workflow UI now loads its value from the DB identically to the input dropdown, and is no longer overwritten by the action handler. This resolves the persistent output field bug and ensures both dropdowns always reflect the DB state.
 
-- The modular LLM workflow panel now always persists and restores selected input/output fields, even if not mapped to the current substage, by adding an 'Other: [field]' option for cross-stage persistence. 
+- The modular LLM workflow panel now always persists and restores selected input/output fields, even if not mapped to the current substage, by adding an 'Other: [field]' option for cross-stage persistence.
+
+## New Feature Note
+- The /db/ UI post table is now ordered by most recently updated and supports pagination with Previous/Next buttons. 

@@ -114,4 +114,5 @@ All database operations should be performed using:
 - When building or editing workflow UI, always bind each sub-stage field to its corresponding value in the backend's stage_data for the current post.
 - Output Field is no longer required in the LLM Action UI or API. The database schema is unchanged, but the UI and endpoints now work without this field.
 - prompt_text is now always auto-generated from prompt_json on prompt create/update, ensuring all modular prompts are compatible with LLM actions.
-- The modular LLM workflow panel now always persists and restores selected input/output fields, even if not mapped to the current substage, by adding an 'Other: [field]' option for cross-stage persistence. 
+- The modular LLM workflow panel now always persists and restores selected input/output fields, even if not mapped to the current substage, by adding an 'Other: [field]' option for cross-stage persistence.
+- The /db/ UI post table is now ordered by most recently updated and supports pagination with Previous/Next buttons. 
