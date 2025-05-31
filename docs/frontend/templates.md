@@ -62,6 +62,7 @@ The Blog CMS uses Jinja2 templates for all HTML rendering. This document describ
 - The Prompt Assembler and Prompt Parts tab now use background colors to distinguish message types: blue for system, deep green for user, and deep purple for assistant (if used). Tag colors remain as colored spans. This color-coding applies to both the available parts list and the assembled sequence in the Assembler, as well as the main Prompt Parts table. (Updated June 2024)
 - The /llm/actions page now features a single in-page Action builder area. The Edit button (formerly Details) for each action, as well as the New Action button, anchor to the builder area below. When Edit is clicked, the builder is preloaded with the action's details and switches to update mode (the Save button becomes Update). When New Action is clicked, the builder is cleared and switches to create mode. There is no modal or separate details page for actions; all editing and creation is handled in-page for a seamless workflow.
 - The Output Field (DB column) is no longer present in the LLM Action creation/edit UI. It is now optional in the backend API.
+- prompt_text is now always auto-generated from prompt_json on prompt create/update, so all modular prompts are always compatible with LLM actions.
 
 ## Workflow UI Field Persistence (2024-06-10)
 
@@ -84,4 +85,6 @@ This enables robust, permanent persistence and makes the workflow UI easily tran
 - See: app/static/js/workflow_modular_llm.js for implementation details.
 
 **Update (2025-05-30):**
-The output dropdown in the modular workflow UI now loads its value from the DB identically to the input dropdown, and is no longer overwritten by the action handler. This resolves the persistent output field bug and ensures both dropdowns always reflect the DB state. 
+The output dropdown in the modular workflow UI now loads its value from the DB identically to the input dropdown, and is no longer overwritten by the action handler. This resolves the persistent output field bug and ensures both dropdowns always reflect the DB state.
+
+- The modular LLM workflow panel now always persists and restores selected input/output fields, even if not mapped to the current substage, by adding an 'Other: [field]' option for cross-stage persistence. 

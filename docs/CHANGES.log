@@ -136,4 +136,6 @@
 - All documentation reviewed and updated to reflect the new universal modular framework and persistence logic.
 
 - Remove Output Field from LLM Action creation/edit UI (/llm/actions)
-- Make output_field optional in API: create_action and update_action endpoints now work without it 
+- Make output_field optional in API: create_action and update_action endpoints now work without it
+- prompt_text is now always auto-generated from prompt_json on prompt create/update, ensuring all prompts are compatible with LLM actions.
+- Modular LLM workflow panel now always persists and restores selected input/output fields, even if not mapped to the current substage, by adding an 'Other: [field]' option for cross-stage persistence. 
