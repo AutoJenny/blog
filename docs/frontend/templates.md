@@ -90,4 +90,5 @@ The output dropdown in the modular workflow UI now loads its value from the DB i
 - The modular LLM workflow panel now always persists and restores selected input/output fields, even if not mapped to the current substage, by adding an 'Other: [field]' option for cross-stage persistence.
 
 ## New Feature Note
-- The /db/ UI post table is now ordered by most recently updated and supports pagination with Previous/Next buttons. 
+- The /db/ UI post table is now ordered by most recently updated and supports pagination with Previous/Next buttons.
+- The workflow panel now prevents running LLM actions with empty input fields, and the backend error message now specifies which field is missing. 
