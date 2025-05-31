@@ -353,7 +353,9 @@ def handle_action(action_id):
         try:
             with get_db_conn() as conn:
                 with conn.cursor() as cur:
-                    update_fields = ['field_name', 'prompt_template', 'prompt_template_id', 'llm_model', 'temperature', 'max_tokens', 'input_field', 'output_field', 'order']
+                    update_fields = ['field_name', 'prompt_template', 'prompt_template_id', 'llm_model', 'temperature', 'max_tokens', 'input_field', 'order']
+                    if 'output_field' in data:
+                        update_fields.append('output_field')
                     set_fields = []
                     values = []
                     # If prompt_template_id is being updated, also update prompt_template
@@ -898,7 +900,7 @@ def post_substage_actions():
         substage = data.get('substage')
         action_id = data.get('action_id')
         input_field = data.get('input_field')
-        output_field = data.get('output_field')
+        output_field = data.get('output_field') if 'output_field' in data else None
         button_label = data.get('button_label')
         button_order = data.get('button_order', 0)
         missing = []
@@ -1117,7 +1119,7 @@ def create_action():
     provider_id = data.get('provider_id')
     order = data.get('order', 0)
     input_field = data.get('input_field')
-    output_field = data.get('output_field')
+    output_field = data.get('output_field') if 'output_field' in data else None
     # Validate required fields
     if not name:
         return jsonify({'status': 'error', 'error': 'Field name is required'}), 400
@@ -1125,6 +1127,7 @@ def create_action():
         return jsonify({'status': 'error', 'error': 'Provider is required'}), 400
     if not prompt_template_id:
         return jsonify({'status': 'error', 'error': 'Prompt template is required'}), 400
+    # output_field is not required
     try:
         provider_id = int(provider_id)
     except Exception:
