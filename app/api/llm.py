@@ -418,6 +418,27 @@ def execute_action(action_id):
     debug_mode = data.get('debug', False)
     current_app.logger.debug(f"[LLM EXECUTE] Action ID: {action_id}, Incoming data: {data}")
 
+    # --- PATCH: Ensure Ollama is running before proceeding ---
+    import socket, requests as _requests
+    def is_ollama_running():
+        try:
+            with socket.create_connection(("localhost", 11434), timeout=2):
+                return True
+        except Exception:
+            return False
+    if not is_ollama_running():
+        try:
+            r = _requests.post("http://localhost:5000/api/v1/llm/ollama/start", timeout=10)
+            if not r.ok or not r.json().get("success"):
+                return jsonify({'error': 'Ollama is not running and could not be started automatically.'}), 503
+            # Wait a moment for Ollama to be ready
+            import time
+            time.sleep(2)
+            if not is_ollama_running():
+                return jsonify({'error': 'Ollama did not start in time.'}), 503
+        except Exception as e:
+            return jsonify({'error': f'Failed to start Ollama: {e}'}), 503
+
     if not data or 'input_text' not in data or not data['input_text']:
         input_field = data.get('input_field', '(unknown)')
         current_app.logger.warning(f"[LLM EXECUTE] No input_text provided for action {action_id}. Input field: {input_field}")
