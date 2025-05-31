@@ -1,0 +1,12 @@
+[
+  {
+    "action_id": 48,
+    "button_label": null,
+    "button_order": 0,
+    "id": 42,
+    "input_field": "idea_seed",
+    "output_field": "idea_seed",
+    "post_id": 20,
+    "substage": "idea"
+  }
+]

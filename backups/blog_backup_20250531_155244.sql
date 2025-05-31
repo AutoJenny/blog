@@ -576,13 +576,14 @@ CREATE TABLE public.llm_prompt (
     id integer NOT NULL,
     name character varying(100) NOT NULL,
     description text,
-    prompt_text text NOT NULL,
+    prompt_text text,
     system_prompt text,
     parameters jsonb,
     "order" integer DEFAULT 0 NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    part_ids jsonb DEFAULT '[]'::jsonb
+    part_ids jsonb DEFAULT '[]'::jsonb,
+    prompt_json jsonb
 );
 
 
@@ -874,7 +875,9 @@ CREATE TABLE public.post_substage_action (
     substage character varying(64) NOT NULL,
     action_id integer,
     button_label text,
-    button_order integer DEFAULT 0
+    button_order integer DEFAULT 0,
+    input_field character varying(128),
+    output_field character varying(128)
 );
 
 
@@ -924,7 +927,9 @@ CREATE TABLE public.post_workflow_stage (
     stage_id integer,
     started_at timestamp without time zone,
     completed_at timestamp without time zone,
-    status character varying(32)
+    status character varying(32),
+    input_field character varying(128),
+    output_field character varying(128)
 );
 
 
@@ -1508,8 +1513,10 @@ COPY public.image_style (id, title, description, created_at, updated_at) FROM st
 --
 
 COPY public.llm_action (id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", created_at, updated_at, input_field, output_field, provider_id) FROM stdin;
-13	testiest	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	27	claude-3-sonnet-20240229	0.7	1000	0	2025-05-28 11:45:41.917074	2025-05-28 12:59:12.007828	\N	\N	1
-14	Expand from seed idea to Scottish brief	[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	26	llama3.1:70b	0.7	1000	0	2025-05-28 11:55:03.433213	2025-05-28 13:29:10.644221	\N	\N	1
+48	Seed to basic	You are You are a Managing Editor specialising in blog and social media creation, with an academic background in Scottish history and culture..\nWrite in the style of You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism..\nTask: Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.	41	llama3.1:70b	0.7	1000	0	2025-05-29 14:01:44.088523	2025-05-29 17:42:17.900776	\N	basic_idea	1
+49	French poem	You are Start every response with "TITLE: NONSENSE".\nWrite in the style of Write entirely in French.\nTask: Write a short poem	42	llama3.1:70b	0.7	1000	0	2025-05-29 14:07:39.119426	2025-05-29 19:05:42.715892	\N	basic_idea	1
+53	CLAN UI expander	Expert in the services and functionality of the CLAN.com web site, which specialises in authentic Scottish heritage products and information. Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.. Explain the service, functionality, and products available through https://clan.com/tartandesigner/ and its sub-pages.	47	deepseek-coder:latest	0.7	1000	0	2025-05-31 13:27:25.382108	2025-05-31 13:27:25.382108	\N	\N	1
+54	50 facts	Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50.	49	llama3.1:70b	0.7	1000	0	2025-05-31 13:36:37.796867	2025-05-31 14:57:39.789931	\N	\N	1
 \.
 
 
@@ -1564,9 +1571,13 @@ COPY public.llm_model (id, name, provider_id, description, strengths, weaknesses
 -- Data for Name: llm_prompt; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, parameters, "order", created_at, updated_at, part_ids) FROM stdin;
-26	idea_seed to Brief		[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n[system] Use the following input content to transform as instructed: [data:FIELDNAME]	\N	\N	0	2025-05-28 09:38:51.632917	2025-05-28 09:38:51.632917	[]
-27	TEST2		[system] Here is a JSON list of items:\n[system] Here is a section of text to process:	\N	\N	0	2025-05-28 10:33:34.125205	2025-05-28 10:33:34.125205	[]
+COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, parameters, "order", created_at, updated_at, part_ids, prompt_json) FROM stdin;
+41	SEED to BASIC	\N	You are You are a Managing Editor specialising in blog and social media creation, with an academic background in Scottish history and culture..\nWrite in the style of You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism..\nTask: Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.	\N	\N	0	2025-05-29 14:01:15.808753	2025-05-29 14:01:15.808753	[]	[{"name": "Scottish Blog basis", "tags": ["Role"], "type": "system", "content": "You are a Managing Editor specialising in blog and social media creation, with an academic background in Scottish history and culture."}, {"name": "Scottish cultural expert", "tags": ["Style"], "type": "system", "content": "You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism."}, {"name": "idea_seed expansion", "tags": ["Operation"], "type": "user", "content": "Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language."}, {"name": "Use [data:FIELDNAME]", "tags": ["Format"], "type": "system", "content": "Use the following input content to transform as instructed: [data:FIELDNAME]"}]
+42	Nonsense French poem	\N	You are Start every response with "TITLE: NONSENSE".\nWrite in the style of Write entirely in French.\nTask: Write a short poem	\N	\N	0	2025-05-29 14:07:08.794264	2025-05-29 14:07:08.794264	[]	[{"name": "Title Imposer", "tags": ["Role"], "type": "system", "content": "Start every response with \\"TITLE: NONSENSE\\""}, {"name": "Poem", "tags": ["Operation"], "type": "user", "content": "Write a short poem"}, {"name": "French", "tags": ["Style"], "type": "user", "content": "Write entirely in French"}]
+43	french2	\N	\N	\N	\N	0	2025-05-29 15:17:15.901967	2025-05-29 15:17:15.901967	[]	[{"name": "Title Imposer", "tags": ["Role"], "type": "system", "content": "Start every response with \\"TITLE: NONSENSE\\""}, {"name": "French", "tags": ["Style"], "type": "user", "content": "Write entirely in French"}, {"name": "Poem", "tags": ["Operation"], "type": "user", "content": "Write a short poem"}]
+47	CLAN UI	\N	Expert in the services and functionality of the CLAN.com web site, which specialises in authentic Scottish heritage products and information. Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.. Explain the service, functionality, and products available through https://clan.com/tartandesigner/ and its sub-pages.	\N	\N	0	2025-05-31 13:26:44.964247	2025-05-31 13:26:44.964247	[]	[{"name": "CLAN.com UI & experience", "tags": ["Role"], "type": "system", "content": "Expert in the services and functionality of the CLAN.com web site, which specialises in authentic Scottish heritage products and information."}, {"name": "idea_seed expansion", "tags": ["Operation"], "type": "user", "content": "Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language."}, {"name": "Explain functionality", "tags": ["Operation"], "type": "user", "content": "Explain the service, functionality, and products available through https://clan.com/tartandesigner/ and its sub-pages"}]
+48	50 facts	\N	Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail.	\N	\N	0	2025-05-31 13:36:17.602638	2025-05-31 13:36:17.602638	[]	[{"name": "Scottish cultural expert", "tags": ["Style"], "type": "system", "content": "Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism."}, {"name": "Research 50 ideas", "tags": ["Operation"], "type": "user", "content": "Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail."}]
+49	fifty facts in list	\N	Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50.	\N	\N	0	2025-05-31 14:57:19.511274	2025-05-31 14:57:19.511274	[]	[{"name": "Scottish cultural expert", "tags": ["Style"], "type": "system", "content": "Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism."}, {"name": "Research 50 ideas", "tags": ["Operation"], "type": "user", "content": "Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50."}]
 \.
 
 
@@ -1575,25 +1586,25 @@ COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, param
 --
 
 COPY public.llm_prompt_part (id, type, content, tags, "order", created_at, updated_at, name, action_id, description) FROM stdin;
-14	assistant	Your task is to expand the basic idea of {{basic_idea}} into an around 50 (fifty) ideas that outline and describe the full scope of an in-depth blog article about that topic in Scottish culture. Suggest (for example) different historical angles, cultural significance, social impact, key events or periods, folklore, notable figures, and/or modern relevance. Focus on breadth of ideas without writing the actual article — this list will as a guide for what should be covered in a full blog post. Keep each idea succinct but be imaginative, including both grand scale ideas and micro ideas. 	{role}	10	2025-05-26 07:55:08.615401	2025-05-26 07:55:08.615401	Create 50 ideas	\N	\N
-4	user	The style should have a traditional Scottish style	{role}	4	2025-05-25 17:32:28.03507	2025-05-26 07:55:25.936599	Scottish style	\N	\N
 26	system	Test content	{context,custom}	1	2025-05-27 17:34:51.927527	2025-05-27 17:34:51.927527	Test Part	\N	\N
 27	system	Test content	{context,custom}	1	2025-05-27 17:36:25.735135	2025-05-27 17:36:25.735135	UI Test Part	\N	\N
-28	system	Use the following input content to transform as instructed: [data:FIELDNAME]	{format}	0	2025-05-27 17:43:11.814585	2025-05-27 17:43:11.814585	Use [data:FIELDNAME]	\N	\N
-18	system	You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.	{role}	1	2025-05-26 10:20:26.867218	2025-05-26 10:20:26.867218	Scottish cultural expert	\N	\N
-8	system	You are a creative assistant generating a captivating illustration idea for a section of a Scottish-interest blog article. The image must be historically and culturally authentic, relevant to the specific section, and visually distinct from other sections of the article. 	{role}	20	2025-05-25 20:16:54.255069	2025-05-26 10:21:08.159163	Creative visualiser	\N	\N
-9	system	You are a researcher specialising in finding curious facts for blog articles for specialist audiences.	{role}	20	2025-05-26 07:41:45.978276	2025-05-26 10:21:16.303707	Factoid researcher	\N	\N
-11	system	You are a researcher specialising in sub-editing blog articles for specialist audiences. 	{role}	20	2025-05-26 07:46:28.823794	2025-05-26 10:21:26.491256	Sub-editor	\N	\N
-12	system	You are a professional copywriter and editor specializing in digital publishing and historical blogging.	{role}	20	2025-05-26 07:47:33.873145	2025-05-26 10:21:33.122181	Editor-copywriter	\N	\N
-13	system	You are an experienced Social Media marketeer and content strategist. 	{role}	20	2025-05-26 07:48:43.999092	2025-05-26 10:21:40.448863	Social media strategist	\N	\N
-19	system	Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.	{operation}	2	2025-05-26 10:27:05.283848	2025-05-27 17:56:58.179349	idea_seed expansion	\N	\N
-15	system	Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.	{format}	10	2025-05-26 07:56:30.930082	2025-05-27 07:55:10.768261	JSON format	\N	\N
 16	system	You are a naming assistant that returns exactly three creative but plausible names for each item provided.	{specimen}	1000	2025-05-26 08:34:59.747679	2025-05-27 07:55:34.216258	SPECIMEN SYSTEM	\N	\N
 17	user	Here is a JSON list of items:\\n\\n{\\"animals\\": [\\"dog\\", \\"cat\\", \\"bird\\", \\"hamster\\", \\"lizard\\"]}\\n\\nPlease return a JSON object where each animal has an array of three possible names.	{specimen}	1000	2025-05-26 08:36:08.771728	2025-05-27 08:00:34.170418	SPECIMEN USER	\N	\N
-21	system	Here is a JSON list of items:	{format}	0	2025-05-27 08:02:58.7468	2025-05-27 08:02:58.7468	Input JSON list	\N	\N
-22	system	Here is a section of text to process:	{format}	0	2025-05-27 08:04:06.164223	2025-05-27 08:04:06.164223	Input TEXT section	\N	\N
-24	system	Please return a section of text with NO commentary, annotations, or special markup.	{format}	0	2025-05-27 08:07:03.50217	2025-05-27 08:07:03.50217	Output plain TEXT	\N	\N
-23	system	Please return a JSON object where each item is in an array identified as ITEM. Return no preamble, commentary, or formatting, and no code blocks or text outside the array	{format}	0	2025-05-27 08:05:33.661989	2025-05-27 08:08:37.715938	Output JSON	\N	\N
+21	system	Here is a JSON list of items:	{format}	50	2025-05-27 08:02:58.7468	2025-05-29 08:44:11.361664	Input JSON list	\N	\N
+22	system	Here is a section of text to process:	{format}	50	2025-05-27 08:04:06.164223	2025-05-29 08:44:20.466925	Input TEXT section	\N	\N
+23	system	Please return a JSON object where each item is in an array identified as ITEM. Return no preamble, commentary, or formatting, and no code blocks or text outside the array	{format}	60	2025-05-27 08:05:33.661989	2025-05-29 08:44:28.259485	Output JSON	\N	\N
+24	system	Please return a section of text with NO commentary, annotations, or special markup.	{format}	60	2025-05-27 08:07:03.50217	2025-05-29 08:44:34.84462	Output plain TEXT	\N	\N
+28	system	Use the following input content to transform as instructed: [data:FIELDNAME]	{format}	30	2025-05-27 17:43:11.814585	2025-05-29 08:45:00.469648	Use [data:FIELDNAME]	\N	\N
+15	system	Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.	{format}	80	2025-05-26 07:56:30.930082	2025-05-29 08:45:14.962256	JSON format	\N	\N
+29	system	Managing Editor specialising in blog and social media creation, with an academic background in Scottish history and culture.	{role}	1	2025-05-29 08:38:49.803069	2025-05-31 10:50:03.872691	Scottish Blog basis	\N	\N
+18	system	Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.	{style}	2	2025-05-26 10:20:26.867218	2025-05-31 10:50:36.179857	Scottish cultural expert	\N	\N
+4	user	Traditional Scottish style	{style}	25	2025-05-25 17:32:28.03507	2025-05-31 10:51:23.730128	Scottish style	\N	\N
+31	user	Write a short poem	{operation}	25	2025-05-29 14:05:06.207721	2025-05-31 10:51:32.497209	Poem	\N	\N
+32	user	Write entirely in French	{style}	20	2025-05-29 14:05:25.466507	2025-05-31 10:51:51.11404	French	\N	\N
+33	system	Start every response with "TITLE: NONSENSE"	{role}	20	2025-05-29 14:06:43.34658	2025-05-31 10:52:05.316238	Title Imposer	\N	\N
+34	system	Expert in the services and functionality of the CLAN.com web site, which specialises in authentic Scottish heritage products and information.	{role}	3	2025-05-31 10:54:43.999355	2025-05-31 10:54:43.999355	CLAN.com UI & experience	\N	\N
+19	user	Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.	{operation}	10	2025-05-26 10:27:05.283848	2025-05-31 10:55:02.915616	idea_seed expansion	\N	\N
+36	user	Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50.	{operation}	20	2025-05-31 13:33:29.173341	2025-05-31 14:55:14.562695	Research 50 ideas	\N	\N
 \.
 
 
@@ -1624,11 +1635,17 @@ COPY public.post (id, title, slug, summary, created_at, updated_at, header_image
 10	Test idea for workflow redirect...	test-idea-for-workflow-redirect		2025-05-21 21:58:45.229565	2025-05-21 23:03:36.776851	\N	deleted	1
 12	green eggs...	green-eggs		2025-05-21 22:30:01.563795	2025-05-21 23:03:52.645833	\N	deleted	1
 8	treacle bending...	treacle-bending		2025-05-21 21:49:33.812708	2025-05-21 23:03:57.595772	\N	deleted	1
-3	tartan fabrics...	tartan-fabrics		2025-05-26 19:57:47.169588	2025-05-26 19:57:47.169588	\N	draft	\N
 9	ankle worship...	ankle-worship		2025-05-21 21:55:27.127066	2025-05-26 19:59:56.038415	\N	deleted	1
-14	mangle wrangling...	mangle-wrangling		2025-05-26 20:12:36.858356	2025-05-26 20:12:36.858356	\N	draft	\N
 13	dog eating...	dog-eating		2025-05-26 20:06:27.151898	2025-05-26 20:12:45.27793	\N	deleted	\N
-15	cream distillation...	cream-distillation		2025-05-27 15:12:33.356259	2025-05-27 15:12:33.356259	\N	draft	\N
+14	mangle wrangling...	mangle-wrangling		2025-05-26 20:12:36.858356	2025-05-30 17:36:15.223207	\N	deleted	\N
+19	story-telling...	story-telling		2025-05-30 19:48:28.625876	2025-05-31 10:29:47.174463	\N	deleted	\N
+18	mangle-wrangling...	mangle-wrangling-1		2025-05-30 17:36:54.776857	2025-05-31 10:29:51.808228	\N	deleted	\N
+16	dog breakfasts...	dog-breakfasts		2025-05-28 21:11:19.909206	2025-05-31 10:29:55.758615	\N	deleted	\N
+15	cream distillation...	cream-distillation		2025-05-27 15:12:33.356259	2025-05-31 10:30:04.106987	\N	deleted	\N
+17	gin distillation...	gin-distillation		2025-05-29 18:52:00.672093	2025-05-31 10:30:08.023655	\N	deleted	\N
+3	tartan fabrics...	tartan-fabrics		2025-05-26 19:57:47.169588	2025-05-31 10:30:12.461337	\N	deleted	\N
+20	tartan fabrics from CLAN.com, from stock or woven ...	tartan-fabrics-from-clan-com-from-stock-or-woven		2025-05-31 10:37:23.919744	2025-05-31 13:27:49.829991	\N	draft	\N
+21	kilts for weddings...	kilts-for-weddings		2025-05-31 15:07:56.315652	2025-05-31 15:09:00.430254	\N	draft	\N
 \.
 
 
@@ -1652,7 +1669,13 @@ COPY public.post_development (id, post_id, basic_idea, provisional_title, idea_s
 5	9	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
 6	11	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
 7	12	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N
-8	15	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	cream distillation
+10	17	TITLE: NONSENSE\n\nDans les alambics de la folie,\nOù la vapeur danse et s'envole,\nLa distillation du gin se déroule,\nUn rituel ancien, une magie qui évolue.\n\nLes baies de genièvre, parfumées et fines,\nSont ajoutées au mélange, un secret divin,\nLe feu crépite, la chaleur monte en spirale,\nEt l'alcool pur se dégage, comme un esprit qui s'envole.\n\nDans les verres froids, le gin sera versé,\nUn breuvage qui réchauffe et fait oublier,\nLes soucis du jour, les nuits sans sommeil,\nTout est oublié, dans ce liquide cristal.	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	gin distillation
+9	16	Here's a brief for a long-form blog article based on the idea of "dog breakfasts":\n\n**Title:** "The Unlikely Origins of 'Dog Breakfast': How Scotland's Gastronomic History Shaped a Curious Culinary Tradition"\n\n**Scope and Angle:** This article will delve into the fascinating history behind the Scottish tradition of serving "dog breakfasts" - a hearty, if unconventional, meal typically consisting of leftover food scraps, served to working-class people, particularly in rural areas. While this practice may seem unappetizing or even bizarre to modern readers, our exploration will reveal its roots in Scotland's rich cultural heritage and the country's historical struggles with poverty, food scarcity, and social inequality.\n\n**Tone:** Our tone will be engaging, informative, and respectful, acknowledging the complexities of Scotland's past while avoiding sensationalism or judgment. We'll strive to convey a sense of empathy and understanding for those who relied on dog breakfasts as a means of sustenance, highlighting the resourcefulness and resilience that defined these communities.\n\n**Core Ideas:**\n\n* Explore the etymology of "dog breakfast" and its possible connections to Scottish Gaelic phrases and customs\n* Discuss the historical context in which dog breakfasts emerged, including Scotland's agricultural economy, poverty rates, and limited access to nutritious food\n* Examine the social dynamics surrounding dog breakfasts, including their role in rural communities, workhouses, and other institutions\n* Highlight notable examples of dog breakfasts in Scottish literature, folklore, or oral traditions\n* Reflect on the legacy of dog breakfasts in modern Scotland, considering how this tradition has influenced contemporary attitudes towards food waste, sustainability, and social welfare\n\n**Authenticity and Accuracy:** As a specialist in Scottish history and culture, we'll prioritize academic rigor and attention to detail, ensuring that all claims are supported by credible sources and historical records. By doing so, we'll create an engaging narrative that not only entertains but also educates readers about this lesser-known aspect of Scotland's cultural heritage.	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	dog breakfasts
+13	20	I apologize but as your request is not clear enough about what kind of information you want to receive or which aspect(es) from CLAN website services should be included.  Based on the brief provided and considering it doesn’t specify how much detail we need, here's a general guideline based upon data I have above:\n\n**Title - "The Tartan Truth": Unraveling The Myths And Histories Of Scotland's Iconic Fabric" – an informative post on authentic Scottish heritage products and information. This brief outlines the scope, angle (engaging with inquisitive readers), tone(enthusiastic but not overbearing about history or mythology) , core ideas that could be developed into a full article:**\n\n1- **Scope - A comprehensive exploration of tartan fabrics and their histories. Including information on the origin, evolution in time (ancient to modern), common mythologies associated with them(s). Exploring specific design details for different fabric designs from history back to present times when they were made**\n2- **Angle - An engaging approach using academic rigour but still inviting readers. Drawing insights and facts along the way, making sense of tartan stories in detail while maintaining a conversational tone that is easy on the eyes (like walking through an intricate mosaic) – to make this article more than just reading**\n3- **Tone - A friendly yet knowledgeable approach with focus solely around authenticity and significance. Encouraging curiosity about history, culture & fabric while still challenging myths or misconceptions by presenting them in a meaningful way (with examples of clans exclusive patterns) – to make sure readers are not just watching but also experiencing the journey**\n4- **Brief - Suitable for an informative article aimed at encouraging curiosity about history, culture & fabric and its impact on tartan designs. It provides depth into each aspect while keeping it engaging with a conversational tone ensuring reader interaction is both enjoyable (viewing them in new ways) and enticing**\n	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Here is the expanded brief:\n\n**Title:** "The Tartan Truth: Unraveling the Myths and Histories of Scotland's Iconic Fabric"\n\n**Brief:** This article will delve into the fascinating world of tartan fabrics, separating fact from fiction and exploring the rich cultural heritage behind these iconic patterns. Using data from CLAN.com, a reputable source for authentic tartan fabrics, we'll examine the history of tartan in Scotland, from its ancient origins to its modern-day uses. We'll also debunk common myths surrounding tartans, such as the notion that specific patterns are exclusive to certain clans or families. With a focus on accuracy and authenticity, this article will appeal to both history buffs and those with a passing interest in Scottish culture. By exploring the stories behind different tartan designs, we'll reveal the intricate connections between Scotland's past, its people, and their textiles.\n\n**Scope:** This long-form blog post will cover:\n\n* A brief history of tartan in Scotland, including its ancient Celtic roots and evolution over time\n* An examination of common myths and misconceptions surrounding tartans\n* In-depth looks at specific tartan designs, their origins, and associated stories\n* The significance of tartan in Scottish culture, both historically and today\n\n**Angle:** Our approach will be informative yet engaging, blending academic rigor with a conversational tone that invites readers to explore the world of tartans. We'll draw on credible sources, including historical records and expert insights from textile historians.\n\n**Tone:** Friendly, knowledgeable, and enthusiastic – we aim to inspire curiosity about Scottish history and culture while dispelling myths and misconceptions. Our goal is to create a sense of wonder and appreciation for the intricate stories woven into every tartan fabric.\n\nThis brief should provide a solid foundation for crafting an engaging and informative article that explores the captivating world of tartans, revealing their significance in Scotland's rich cultural heritage.
+11	18	**Brief: "The Forgotten Art of Mangle-Wrangling: Uncovering Scotland's Laundry History"**\n\nIn this long-form blog article, we'll delve into the fascinating history of laundry in Scotland, focusing on the often-overlooked practice of "mangle-wrangling." A mangle, for those unfamiliar, was a contraption used to wring out water from washed clothes – a laborious task that required great skill and strength. By exploring the evolution of mangling and its significance in Scottish households, particularly during the 18th and 19th centuries, we'll shed light on the daily lives of ordinary people and the impact of technological advancements on their routines.\n\n**Scope:** The article will cover the history of laundry practices in Scotland from the medieval period to the mid-20th century, with a focus on the mangle-wrangling era. We'll examine the social and economic contexts that influenced the development of mangling, as well as its eventual decline with the advent of mechanized washing machines.\n\n**Angle:** Rather than presenting a dry, academic account, we'll take a more narrative approach, weaving together stories of Scottish households, anecdotes from historical figures, and insights into the daily lives of those who relied on mangle-wrangling. By doing so, we'll humanize this often-overlooked aspect of history and make it relatable to modern readers.\n\n**Tone:** The tone will be engaging, informative, and occasionally humorous, with a touch of nostalgia for a bygone era. We'll avoid jargon and technical terms, opting for clear, concise language that makes the subject accessible to a broad audience.\n\n**Core ideas:**\n\n* Explore the evolution of laundry practices in Scotland from medieval times to the mid-20th century\n* Discuss the significance of mangle-wrangling as a domestic chore and its impact on household dynamics\n* Analyze the social and economic factors that influenced the development of mangling, including urbanization, industrialization, and technological advancements\n* Share stories of individuals who relied on mangle-wrangling, highlighting their experiences and perspectives\n* Reflect on the cultural significance of laundry practices in Scottish history and how they continue to influence our understanding of domestic life today\n\nBy exploring this forgotten aspect of Scotland's past, we'll not only uncover a fascinating chapter in the country's social history but also provide readers with a fresh perspective on the everyday lives of their ancestors.	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	mangle-wrangling
+8	15	Here's a brief for a long-form blog article on the topic of "cream distillation" through the lens of Scottish history and culture:\n\n**Title:** "The Forgotten Art of Cream Distillation: Uncovering Scotland's Rich History in Whisky Production"\n\n**Scope:** This article will delve into the little-known process of cream distillation, an innovative technique used by Scottish whisky producers to create smoother, more refined spirits. By exploring the historical context and cultural significance of cream distillation, we'll reveal its impact on the evolution of Scotland's iconic whisky industry.\n\n**Angle:** Our approach will be to uncover the stories behind this lost art, highlighting the pioneering distillers who experimented with cream distillation in the 19th century. We'll examine the science behind the process and how it influenced the development of distinctive whisky styles, such as the smooth, honeyed drams of Speyside.\n\n**Tone:** Engaging, informative, and richly descriptive, this article will transport readers to Scotland's whisky country, immersing them in the sights, sounds, and aromas of traditional distilleries. With a dash of storytelling flair, we'll bring the history of cream distillation to life, making it accessible to both whisky enthusiasts and curious newcomers.\n\n**Core ideas:**\n\n* Introduce the basics of cream distillation and its role in Scottish whisky production\n* Explore the historical context: how cream distillation emerged as a response to changes in taxation and trade regulations\n* Highlight key figures and distilleries associated with the development of cream distillation, such as Glenfiddich and Balvenie\n* Analyze the impact on whisky styles and flavor profiles, using expert insights from modern distillers and whisky writers\n* Discuss the decline of cream distillation and its legacy in contemporary Scottish whisky production\n\n**Authenticity and accuracy:** As an expert in Scottish history and culture, I'll ensure that all information is thoroughly researched and verified, adhering to academic standards while making the content engaging and easy to understand.	\N	\N	\N	Here's a brief for a long-form blog article on the topic of "cream distillation" through the lens of Scottish history and culture:\n\n**Title:** "The Forgotten Art of Cream Distillation: Uncovering Scotland's Rich History in Whisky Production"\n\n**Scope:** This article will delve into the little-known process of cream distillation, an innovative technique used by Scottish whisky producers to create smoother, more refined spirits. By exploring the historical context and cultural significance of cream distillation, we'll reveal its impact on the evolution of Scotland's iconic whisky industry.\n\n**Angle:** Our approach will be to uncover the stories behind this lost art, highlighting the pioneering distillers who experimented with cream distillation in the 19th century. We'll examine the science behind the process and how it influenced the development of distinctive whisky styles, such as the smooth, honeyed drams of Speyside.\n\n**Tone:** Engaging, informative, and richly descriptive, this article will transport readers to Scotland's whisky country, immersing them in the sights, sounds, and aromas of traditional distilleries. With a dash of storytelling flair, we'll bring the history of cream distillation to life, making it accessible to both whisky enthusiasts and curious newcomers.\n\n**Core ideas:**\n\n* Introduce the basics of cream distillation and its role in Scottish whisky production\n* Explore the historical context: how cream distillation emerged as a response to changes in taxation and trade regulations\n* Highlight key figures and distilleries associated with the development of cream distillation, such as Glenfiddich and Balvenie\n* Analyze the impact on whisky styles and flavor profiles, using expert insights from modern distillers and whisky writers\n* Discuss the decline of cream distillation and its legacy in contemporary Scottish whisky production\n\n**Authenticity and accuracy:** As an expert in Scottish history and culture, I'll ensure that all information is thoroughly researched and verified, adhering to academic standards while making the content engaging and easy to understand.	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	cream distillation
+12	19	Here's a expanded brief for a long-form blog article based on the idea of "story-telling" in Scottish history and culture:\n\n**Title:** "Weaving the Tartan Tapestry: The Power of Storytelling in Scottish History and Culture"\n\n**Scope:** This article will delve into the rich tradition of storytelling in Scotland, exploring its significance in shaping the country's history, culture, and identity. From ancient Celtic myths to modern-day folk tales, we'll examine how stories have been used to convey values, preserve traditions, and make sense of the world.\n\n**Angle:** Rather than a dry, academic survey, this article will take a narrative approach, using anecdotes, examples, and vivid descriptions to bring Scotland's storytelling heritage to life. We'll draw on historical records, literary works, and oral traditions to illustrate the ways in which stories have been used to inspire, educate, and entertain across generations.\n\n**Tone:** Engaging, conversational, and informative, with a touch of warmth and humor. Our aim is to make complex historical and cultural concepts accessible to a broad audience, while still maintaining academic rigor and authenticity.\n\n**Core ideas:**\n\n* The role of storytelling in preserving Scotland's cultural heritage, including the transmission of myths, legends, and folk tales.\n* The use of stories as a means of social commentary, critique, and satire, with examples from Scottish literature and folklore.\n* The impact of historical events, such as the Jacobite risings and the Highland Clearances, on Scotland's storytelling traditions.\n* The ways in which storytelling has been used to promote national identity, community cohesion, and cultural pride.\n* The ongoing relevance of traditional storytelling in modern Scotland, including its influence on contemporary literature, art, and popular culture.\n\n**Key themes:**\n\n* The importance of oral tradition in Scottish culture\n* The relationship between storytelling and national identity\n* The role of stories in shaping historical memory and cultural heritage\n* The intersection of folklore, literature, and popular culture\n\nThis article will be a engaging, story-driven exploration of Scotland's rich cultural heritage, highlighting the power of storytelling to inspire, educate, and connect us with our past.	TITLE: NONSENSE\n\nVoici un court poème pour célébrer l'art du récit en Écosse :\n\nDans les Highlands brumeux, où les légendes naissent,\nLes conteurs écossais ont toujours leurs mots prêts.\nIls tissent des histoires de héros et de dragons,\nDe mythes celtes et de mystères qui nous font rêver.\n\nFionn mac Cumhaill, le grand guerrier, prend vie,\nEt les paysages mystiques de Stevenson s'étendent.\nLes satiristes écossais utilisent l'ironie pour critiquer,\nEt les histoires se transforment au fil du temps, reflétant notre société.\n\nL'Ecosse, terre de légendes et d'histoires vraies,\nOù la tradition orale est encore vivante aujourd'hui.\nLes conteurs, ces seanachaidh, préservent l'histoire,\nEt nous transportent dans un monde où mythe et réalité se mélangent.\n\nC'est ainsi que les Écossais ont toujours raconté leur histoire,\nUn patrimoine littéraire riche et diversifié qui nous émerveille.\nAlors laissons-nous emporter par ces récits enchanteurs,\nEt découvrons l'Écosse, terre de légendes et d'histoires vraies.	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	story-telling
+14	21	Here's a brief for a long-form blog article on kilts for weddings:\n\n**Title:** "The Kilted Wedding: Unwrapping the History and Tradition Behind Scotland's Most Iconic Attire"\n\n**Scope:** This article will delve into the fascinating history of kilts at Scottish weddings, exploring their cultural significance, traditional designs, and modern interpretations. From the origins of tartan to the symbolism of different kilt styles, we'll examine the intricacies of this beloved aspect of Scottish heritage.\n\n**Angle:** Rather than focusing solely on fashion or style tips, our article will take a more nuanced approach, situating kilts within their rich cultural context. We'll discuss how kilts have been an integral part of Scottish wedding traditions for centuries, and how they continue to play a meaningful role in modern ceremonies. By sharing stories, anecdotes, and historical examples, we'll bring the reader on a journey through time, highlighting the ways in which kilts have evolved to become an enduring symbol of Scottish identity.\n\n**Tone:** Our tone will be informative, yet engaging and conversational. We'll balance academic rigor with approachable language, making the subject matter accessible to readers without prior knowledge of Scottish history or culture. A touch of humor and personality will also be injected throughout the article, ensuring that it feels like a warm and inviting exploration of this captivating topic.\n\n**Core ideas:**\n\n* The origins of tartan and its significance in Scottish culture\n* Traditional kilt designs and their regional associations (e.g., Black Watch, Gordon)\n* Historical examples of kilts at Scottish weddings, including notable figures and events\n* Modern interpretations of kilts in wedding attire, including trends and innovations\n* The symbolism and meaning behind different kilt styles and accessories (e.g., sgian dubh, sporran)\n* Tips for incorporating kilts into a wedding ceremony or celebration, while respecting cultural traditions\n\nBy exploring the complex history and cultural significance of kilts at Scottish weddings, this article will offer readers a deeper understanding and appreciation of this beloved aspect of Scottish heritage. Whether you're a Scot looking to connect with your roots or simply someone interested in learning more about this iconic attire, our article promises to be an engaging and enlightening read.	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	kilts for weddings
 \.
 
 
@@ -1668,9 +1691,24 @@ COPY public.post_section (id, post_id, section_order, section_heading, ideas_to_
 -- Data for Name: post_substage_action; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.post_substage_action (id, post_id, substage, action_id, button_label, button_order) FROM stdin;
-1	9	idea	3	Action	0
-9	15	idea	3	\N	0
+COPY public.post_substage_action (id, post_id, substage, action_id, button_label, button_order, input_field, output_field) FROM stdin;
+32	16	idea	49	Action	0	\N	\N
+33	17	idea	49	\N	0	idea_seed	basic_idea
+36	19	research	48	\N	0	main_title	subtitle
+9	15	idea	49	\N	0	basic_idea	idea_scope
+46	21	research	54	\N	0	topics_to_cover	interesting_facts
+45	21	idea	48	\N	0	idea_seed	basic_idea
+38	19	content	48	\N	0	intro_blurb	conclusion
+39	19	meta_info	49	\N	0	categories	basic_metadata
+37	19	structure	49	\N	0	section_planning	section_headings
+40	19	preflight	49	\N	0	self_review	final_check
+41	19	launch	48	\N	0	deployment	verification
+34	15	research	48	\N	0	idea_seed	interesting_facts
+1	9	idea	3	Test3	3	input3	output3
+35	19	idea	48	\N	0	idea_seed	basic_idea
+43	20	research	54	\N	0	topics_to_cover	topics_to_cover
+42	20	idea	53	\N	0	idea_seed	basic_idea
+44	2	research	54	\N	0	topics_to_cover	interesting_facts
 \.
 
 
@@ -1686,7 +1724,7 @@ COPY public.post_tags (post_id, tag_id) FROM stdin;
 -- Data for Name: post_workflow_stage; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.post_workflow_stage (id, post_id, stage_id, started_at, completed_at, status) FROM stdin;
+COPY public.post_workflow_stage (id, post_id, stage_id, started_at, completed_at, status, input_field, output_field) FROM stdin;
 \.
 
 
@@ -1735,38 +1773,38 @@ COPY public.workflow (id, post_id, stage_id, status, created, updated) FROM stdi
 --
 
 COPY public.workflow_field_mapping (id, field_name, stage_id, substage_id, order_index) FROM stdin;
-4	Topics To Cover	10	2	1
-5	Interesting Facts	10	2	2
-7	Section Planning	10	3	1
-8	Section Headings	10	3	2
-9	Section Order	10	3	3
-10	Main Title	11	4	1
-11	Subtitle	11	4	2
-12	Intro Blurb	11	4	3
-13	Conclusion	11	4	4
-14	Basic Metadata	11	5	1
-15	Tags	11	5	2
-16	Categories	11	5	3
-17	Image Captions	11	6	1
-19	Self Review	8	7	1
-20	Peer Review	8	7	2
-21	Final Check	8	7	3
-22	Scheduling	8	8	1
-23	Deployment	8	8	2
-24	Verification	8	8	3
-25	Feedback Collection	8	9	1
-26	Content Updates	8	9	2
-27	Version Control	8	9	3
-28	Platform Selection	8	9	4
-29	Content Adaptation	8	9	5
-30	Distribution	8	9	6
-31	Engagement Tracking	8	9	7
-18	Seo Optimization	8	7	4
-6	Tartans Products	8	7	8
-1	Basic Idea	10	1	2
-2	Provisional Title	10	1	3
-3	Idea Scope	10	1	4
 33	idea_seed	10	1	1
+1	basic_idea	10	1	2
+2	provisional_title	10	1	3
+3	idea_scope	10	1	4
+4	topics_to_cover	10	2	1
+5	interesting_facts	10	2	2
+7	section_planning	10	3	1
+8	section_headings	10	3	2
+9	section_order	10	3	3
+10	main_title	11	4	1
+11	subtitle	11	4	2
+12	intro_blurb	11	4	3
+13	conclusion	11	4	4
+14	basic_metadata	11	5	1
+15	tags	11	5	2
+16	categories	11	5	3
+17	image_captions	11	6	1
+19	self_review	8	7	1
+20	peer_review	8	7	2
+21	final_check	8	7	3
+18	seo_optimization	8	7	4
+6	tartans_products	8	7	8
+22	scheduling	8	8	1
+23	deployment	8	8	2
+24	verification	8	8	3
+25	feedback_collection	8	9	1
+26	content_updates	8	9	2
+27	version_control	8	9	3
+28	platform_selection	8	9	4
+29	content_adaptation	8	9	5
+30	distribution	8	9	6
+31	engagement_tracking	8	9	7
 \.
 
 
@@ -1851,7 +1889,7 @@ SELECT pg_catalog.setval('public.llm_action_history_id_seq', 1, true);
 -- Name: llm_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_action_id_seq', 14, true);
+SELECT pg_catalog.setval('public.llm_action_id_seq', 54, true);
 
 
 --
@@ -1872,14 +1910,14 @@ SELECT pg_catalog.setval('public.llm_model_id_seq', 23, true);
 -- Name: llm_prompt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_prompt_id_seq', 27, true);
+SELECT pg_catalog.setval('public.llm_prompt_id_seq', 49, true);
 
 
 --
 -- Name: llm_prompt_part_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_prompt_part_id_seq', 28, true);
+SELECT pg_catalog.setval('public.llm_prompt_part_id_seq', 36, true);
 
 
 --
@@ -1893,14 +1931,14 @@ SELECT pg_catalog.setval('public.llm_provider_id_seq', 4, true);
 -- Name: post_development_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_development_id_seq', 8, true);
+SELECT pg_catalog.setval('public.post_development_id_seq', 14, true);
 
 
 --
 -- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_id_seq', 15, true);
+SELECT pg_catalog.setval('public.post_id_seq', 21, true);
 
 
 --
@@ -1914,7 +1952,7 @@ SELECT pg_catalog.setval('public.post_section_id_seq', 1, true);
 -- Name: post_substage_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_substage_action_id_seq', 9, true);
+SELECT pg_catalog.setval('public.post_substage_action_id_seq', 46, true);
 
 
 --
