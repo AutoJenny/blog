@@ -952,14 +952,19 @@ def post_substage_actions():
                     substage_id, stage_id = get_substage_info(substage)
                     # Helper: auto-insert mapping if needed
                     def ensure_field_mapping(field_name):
-                        if not field_name or field_name not in valid_fields or not substage_id or not stage_id:
-                            return
-                        cur.execute("SELECT 1 FROM workflow_field_mapping WHERE field_name=%s AND substage_id=%s", (field_name, substage_id))
-                        if not cur.fetchone():
-                            # Get next order_index for this substage
-                            cur.execute("SELECT COALESCE(MAX(order_index), 0) + 1 FROM workflow_field_mapping WHERE substage_id=%s", (substage_id,))
-                            order_index = cur.fetchone()[0]
-                            cur.execute("INSERT INTO workflow_field_mapping (field_name, stage_id, substage_id, order_index) VALUES (%s, %s, %s, %s)", (field_name, stage_id, substage_id, order_index))
+                        try:
+                            if not field_name or not substage_id or not stage_id:
+                                return
+                            # Allow any field_name, even if not in valid_fields, for cross-stage persistence
+                            cur.execute("SELECT 1 FROM workflow_field_mapping WHERE field_name=%s AND substage_id=%s", (field_name, substage_id))
+                            if not cur.fetchone():
+                                # Get next order_index for this substage
+                                cur.execute("SELECT COALESCE(MAX(order_index), 0) + 1 FROM workflow_field_mapping WHERE substage_id=%s", (substage_id,))
+                                fetch = cur.fetchone()
+                                order_index = fetch['coalesce'] if isinstance(fetch, dict) and 'coalesce' in fetch else fetch[0] if fetch and len(fetch) > 0 else 0
+                                cur.execute("INSERT INTO workflow_field_mapping (field_name, stage_id, substage_id, order_index) VALUES (%s, %s, %s, %s)", (field_name, stage_id, substage_id, order_index))
+                        except Exception as e:
+                            current_app.logger.error(f"[DEBUG] ensure_field_mapping error: {e} field_name={field_name} substage_id={substage_id} stage_id={stage_id}")
                     ensure_field_mapping(input_field)
                     ensure_field_mapping(output_field)
                     # Upsert: if exists, update; else insert
