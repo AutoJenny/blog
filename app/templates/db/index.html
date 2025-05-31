@@ -205,6 +205,15 @@
             tableHtml.push(`<tr><td colspan="${table.columns.length}" class="text-center text-gray-500 py-4">No rows</td></tr>`);
         }
         tableHtml.push('</tbody></table></div>');
+        // Pagination controls for post table
+        if (table.name === 'post' && typeof table.total_count === 'number') {
+            const totalPages = Math.ceil(table.total_count / table.page_size);
+            tableHtml.push('<div class="flex justify-between items-center mt-2">');
+            tableHtml.push(`<button id="post-prev-page" class="btn btn-secondary" ${table.page <= 1 ? 'disabled' : ''}>Previous</button>`);
+            tableHtml.push(`<span class="text-sm text-gray-400">Page ${table.page} of ${totalPages}</span>`);
+            tableHtml.push(`<button id="post-next-page" class="btn btn-secondary" ${table.page >= totalPages ? 'disabled' : ''}>Next</button>`);
+            tableHtml.push('</div>');
+        }
         tablePanel.innerHTML = tableHtml.join('');
         // Compose table section
         tableSection.appendChild(tableHeader);
@@ -227,6 +236,45 @@
                 if (chevron) chevron.style.transform = 'rotate(90deg)';
             }, 100);
         }
+        // Pagination event listeners for post table
+        if (table.name === 'post' && typeof table.total_count === 'number') {
+            const prevBtn = tablePanel.querySelector('#post-prev-page');
+            const nextBtn = tablePanel.querySelector('#post-next-page');
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    renderDbUiWithPostPage(table.page - 1);
+                });
+            }
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    renderDbUiWithPostPage(table.page + 1);
+                });
+            }
+        }
+    }
+
+    // Helper to reload with a specific post page
+    function renderDbUiWithPostPage(page) {
+        const accordion = document.getElementById('db-tables-accordion');
+        accordion.innerHTML = '<div class="text-gray-400 py-8 text-center">Loading database tables...</div>';
+        let data;
+        fetch(`/db/tables?post_page=${page}`)
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                if (data.groups && Array.isArray(data.groups) && data.groups.length) {
+                    renderGroups(data.groups, accordion);
+                } else if (data.tables && Array.isArray(data.tables) && data.tables.length) {
+                    renderFlatTables(data.tables, accordion);
+                } else {
+                    accordion.innerHTML = '<div class="text-red-500 py-8 text-center">No tables found or failed to load.</div>';
+                }
+            })
+            .catch(e => {
+                accordion.innerHTML = `<div class="text-red-500 py-8 text-center">Error loading tables: ${e}</div>`;
+            });
     }
 
     // Backup Now button logic
