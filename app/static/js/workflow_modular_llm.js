@@ -149,6 +149,7 @@ async function checkOllamaStatus() {
     let lastStage = null;
     let lastSubstage = null;
     let stageOptGroup = null;
+    let allFieldNames = new Set();
     for (const m of mappings) {
       // New stage: create a new optgroup
       if (m.stage_name !== lastStage) {
@@ -171,6 +172,7 @@ async function checkOllamaStatus() {
       opt.value = m.field_name;
       opt.textContent = m.display_name || m.field_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       stageOptGroup.appendChild(opt);
+      allFieldNames.add(m.field_name);
     }
     // Add dark theme classes
     select.classList.add('bg-gray-900', 'text-gray-100', 'border', 'border-gray-700');
@@ -179,8 +181,16 @@ async function checkOllamaStatus() {
     // Find the first field for the current substage
     const substageField = mappings.find(m => m.substage_name === substage);
     const substageDefault = substageField ? substageField.field_name : validOptions[0];
-    // Set value if present and valid, else default to substage field or first valid
-    if (selected && validOptions.includes(selected)) {
+    // If selected is not in validOptions and is not empty/null, add it as a special option
+    if (selected && !validOptions.includes(selected)) {
+      const specialOpt = document.createElement('option');
+      specialOpt.value = selected;
+      specialOpt.textContent = `Other: ${selected}`;
+      specialOpt.selected = true;
+      select.insertBefore(specialOpt, select.firstChild);
+    }
+    // Set value if present, else default to substage field or first valid
+    if (selected) {
       select.value = selected;
     } else {
       select.value = substageDefault;
