@@ -117,4 +117,10 @@ All links are accessible from the top navigation bar for quick access to major f
 
 ## 2024-06-07
 - Fixed: Correct substage is now always sent and saved for post_substage_action (e.g., 'research' as well as 'idea').
-- If a substage row is missing, verify the frontend is sending the correct substage in the payload. You can debug by POSTing directly to `/api/v1/llm/post_substage_actions` with the desired substage. 
+- If a substage row is missing, verify the frontend is sending the correct substage in the payload. You can debug by POSTing directly to `/api/v1/llm/post_substage_actions` with the desired substage.
+
+## 2024-06-14: Universal Modular LLM Workflow Panel
+- All workflow substages (Planning, Authoring, Publishing) now use a single modular LLM panel include and JS for input, output, and action selection.
+- Dropdowns show all post_development fields, but default to the first field mapped to the current substage for robust cross-stage workflows.
+- The modular panel is fully plug-and-play for new substages and fields; no manual DB or template changes are needed.
+- All documentation is up to date as of 2024-06-14 and reflects the new universal modular framework and persistence logic. 

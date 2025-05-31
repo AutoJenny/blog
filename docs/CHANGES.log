@@ -128,4 +128,9 @@
 
 2024-06-07 Feat: Automatic workflow_field_mapping creation
 - The backend now auto-creates workflow_field_mapping rows for new (field, substage) pairs on first use in the modular LLM panel.
-- No manual DB update is needed when adding new substages or fields—system is now fully plug-and-play. 
+- No manual DB update is needed when adding new substages or fields—system is now fully plug-and-play.
+
+2024-06-14 Feat: Universal modular LLM workflow panel and dropdown logic
+- Modular LLM panel now used in all workflow substages (Planning, Authoring, Publishing).
+- Dropdowns show all post_development fields but default to the current substage for robust cross-stage workflows.
+- All documentation reviewed and updated to reflect the new universal modular framework and persistence logic. 

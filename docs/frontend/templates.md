@@ -1,5 +1,11 @@
 # Template Structure
 
+## 2024-06-14: Universal Modular LLM Workflow Panel
+- All workflow substages (Planning, Authoring, Publishing) now use a single modular LLM panel include and JS for input, output, and action selection.
+- Dropdowns show all post_development fields, but default to the first field mapped to the current substage for robust cross-stage workflows.
+- The modular panel is fully plug-and-play for new substages and fields; no manual DB or template changes are needed.
+- All documentation is up to date as of 2024-06-14 and reflects the new universal modular framework and persistence logic.
+
 > **NOTE:** This project uses PostgreSQL only. All database changes are made via direct SQL. No ORM or migration tools (Alembic, SQLAlchemy, SQLite) are used or supported.
 
 **Milestone 2024-06-09:**
