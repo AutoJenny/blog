@@ -15,6 +15,7 @@ import re
 from psycopg2.extras import Json
 import os
 from dotenv import dotenv_values
+from app.llm.services import modular_prompt_to_canonical
 
 bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 
@@ -244,16 +245,23 @@ def create_prompt():
     current_app.logger.error(f"[CREATE PROMPT] prompt_json type before insert: {type(prompt_json)} value: {prompt_json}")
     if not name or not prompt_json:
         return jsonify({'success': False, 'error': 'Name and prompt_json required'}), 400
+    # --- Generate canonical prompt_text from prompt_json ---
+    prompt_text = ''
+    try:
+        prompt_text = modular_prompt_to_canonical(prompt_json, {}).get('prompt', '')
+    except Exception as e:
+        current_app.logger.error(f"[CREATE PROMPT] Error generating prompt_text: {e}")
+        prompt_text = ''
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 from psycopg2.extras import Json
                 current_app.logger.error(f"[CREATE PROMPT] Passing to Json(): {prompt_json}")
                 cur.execute('''
-                    INSERT INTO llm_prompt (name, prompt_json, created_at, updated_at, "order")
-                    VALUES (%s, %s, NOW(), NOW(), 0)
+                    INSERT INTO llm_prompt (name, prompt_json, prompt_text, created_at, updated_at, "order")
+                    VALUES (%s, %s, %s, NOW(), NOW(), 0)
                     RETURNING id
-                ''', (name, Json(prompt_json)))
+                ''', (name, Json(prompt_json), prompt_text))
                 new_id = cur.fetchone()['id']
                 conn.commit()
         return jsonify({'success': True, 'prompt': {'id': new_id, 'name': name}})
@@ -288,17 +296,26 @@ def update_prompt(prompt_id):
     data = request.get_json()
     if not data or not data.get('name') or not data.get('prompt_json'):
         return jsonify({'success': False, 'error': 'Name and prompt_json required'}), 400
+    prompt_json = data['prompt_json']
+    # --- Generate canonical prompt_text from prompt_json ---
+    prompt_text = ''
+    try:
+        prompt_text = modular_prompt_to_canonical(prompt_json, {}).get('prompt', '')
+    except Exception as e:
+        current_app.logger.error(f"[UPDATE PROMPT] Error generating prompt_text: {e}")
+        prompt_text = ''
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
+                from psycopg2.extras import Json
                 cur.execute('''
-                    UPDATE llm_prompt SET name=%s, prompt_json=%s, updated_at=NOW() WHERE id=%s
-                ''', (data['name'], Json(data['prompt_json']), prompt_id))
+                    UPDATE llm_prompt SET name=%s, prompt_json=%s, prompt_text=%s, updated_at=NOW() WHERE id=%s
+                ''', (data['name'], Json(prompt_json), prompt_text, prompt_id))
                 conn.commit()
         return jsonify({'success': True, 'prompt': {
             'id': prompt_id,
             'name': data['name'],
-            'prompt_json': data['prompt_json']
+            'prompt_json': prompt_json
         }})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -1111,6 +1128,7 @@ def available_models(provider_id):
 @bp.route('/actions', methods=['POST'])
 def create_action():
     data = request.get_json()
+    current_app.logger.error(f"[CREATE_ACTION] Incoming data: {data}")
     name = data.get('field_name')
     prompt_template_id = data.get('prompt_template_id')
     llm_model = data.get('llm_model')
@@ -1122,23 +1140,30 @@ def create_action():
     output_field = data.get('output_field') if 'output_field' in data else None
     # Validate required fields
     if not name:
+        current_app.logger.error("[CREATE_ACTION] Field name is missing")
         return jsonify({'status': 'error', 'error': 'Field name is required'}), 400
     if not provider_id:
+        current_app.logger.error("[CREATE_ACTION] Provider is missing")
         return jsonify({'status': 'error', 'error': 'Provider is required'}), 400
     if not prompt_template_id:
+        current_app.logger.error("[CREATE_ACTION] Prompt template ID is missing")
         return jsonify({'status': 'error', 'error': 'Prompt template is required'}), 400
     # output_field is not required
     try:
         provider_id = int(provider_id)
     except Exception:
+        current_app.logger.error(f"[CREATE_ACTION] Provider ID not an integer: {provider_id}")
         return jsonify({'status': 'error', 'error': 'Provider ID must be an integer'}), 400
     try:
         prompt_template_id = int(prompt_template_id)
     except Exception:
+        current_app.logger.error(f"[CREATE_ACTION] Prompt template ID not an integer: {prompt_template_id}")
         return jsonify({'status': 'error', 'error': 'Prompt template ID must be an integer'}), 400
     if provider_id < 1:
+        current_app.logger.error(f"[CREATE_ACTION] Provider ID not positive: {provider_id}")
         return jsonify({'status': 'error', 'error': 'Provider ID must be a positive integer'}), 400
     if prompt_template_id < 1:
+        current_app.logger.error(f"[CREATE_ACTION] Prompt template ID not positive: {prompt_template_id}")
         return jsonify({'status': 'error', 'error': 'Prompt template ID must be a positive integer'}), 400
     # Fetch the actual prompt_template text from llm_prompt
     prompt_template = None
@@ -1146,32 +1171,35 @@ def create_action():
         with conn.cursor() as cur:
             cur.execute('SELECT prompt_text FROM llm_prompt WHERE id=%s', (prompt_template_id,))
             row = cur.fetchone()
+            current_app.logger.error(f"[CREATE_ACTION] Fetched prompt_template row for id={prompt_template_id}: {row}")
             if not row:
+                current_app.logger.error(f"[CREATE_ACTION] Prompt template not found for id={prompt_template_id}")
                 return jsonify({'status': 'error', 'error': 'Prompt template not found'}), 400
             prompt_template = row['prompt_text'] if isinstance(row, dict) else row[0]
     if not prompt_template:
+        current_app.logger.error(f"[CREATE_ACTION] Prompt template is empty or null for id={prompt_template_id}")
         return jsonify({'status': 'error', 'error': 'Prompt template is empty or null'}), 400
     insert_tuple = (name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, order, input_field, output_field, provider_id)
-    print(f"[DEBUG] FINAL Insert tuple: {insert_tuple}")
-    print(f"[DEBUG] FINAL Tuple types: {[str(type(x)) for x in insert_tuple]}")
+    current_app.logger.error(f"[CREATE_ACTION] FINAL Insert tuple: {insert_tuple}")
+    current_app.logger.error(f"[CREATE_ACTION] FINAL Tuple types: {[str(type(x)) for x in insert_tuple]}")
     # Proceed to insert
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
-                print("[DEBUG] About to execute INSERT into llm_action")
+                current_app.logger.error("[CREATE_ACTION] About to execute INSERT into llm_action")
                 cur.execute('''
                     INSERT INTO llm_action (field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", input_field, output_field, provider_id)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                 ''', insert_tuple)
                 new_id = cur.fetchone()['id']
-                print(f"[DEBUG] Inserted new llm_action with id: {new_id}")
+                current_app.logger.error(f"[CREATE_ACTION] Inserted new llm_action with id: {new_id}")
                 conn.commit()
         return jsonify({'success': True, 'id': new_id})
     except Exception as e:
         # Return the tuple and types for debugging
         tuple_types = [str(type(x)) for x in insert_tuple]
-        print(f"[ERROR] Exception during insert: {e}")
+        current_app.logger.error(f"[CREATE_ACTION] Exception during insert: {e}")
         return jsonify({'status': 'error', 'error': str(e), 'insert_tuple': insert_tuple, 'tuple_types': tuple_types}), 400
 
 @bp.route('/debug/db_url', methods=['GET'])
