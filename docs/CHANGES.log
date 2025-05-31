@@ -133,4 +133,7 @@
 2024-06-14 Feat: Universal modular LLM workflow panel and dropdown logic
 - Modular LLM panel now used in all workflow substages (Planning, Authoring, Publishing).
 - Dropdowns show all post_development fields but default to the current substage for robust cross-stage workflows.
-- All documentation reviewed and updated to reflect the new universal modular framework and persistence logic. 
+- All documentation reviewed and updated to reflect the new universal modular framework and persistence logic.
+
+- Remove Output Field from LLM Action creation/edit UI (/llm/actions)
+- Make output_field optional in API: create_action and update_action endpoints now work without it 

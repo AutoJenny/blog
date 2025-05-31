@@ -224,12 +224,6 @@
                     <label class="form-label" for="builderDescription">Description</label>
                     <input type="text" id="builderDescription" name="description" class="form-input">
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="builderOutputField">Output Field (DB column)</label>
-                    <input type="text" id="builderOutputField" name="output_field" class="form-input" required>
-                    <div class="text-xs text-indigo-200 mt-1">e.g. <code>basic_idea</code>, <code>summary</code>, etc.
-                    </div>
-                </div>
             </div>
             <!-- Stage 2: Model Settings -->
             <div class="mb-8">
@@ -453,7 +447,6 @@
                     const action = result.action || result; // support both {action: ...} and flat
                     document.getElementById('builderFieldName').value = action.field_name || '';
                     document.getElementById('builderDescription').value = action.description || '';
-                    document.getElementById('builderOutputField').value = action.output_field || '';
                     // Infer provider from model
                     let providerId = '';
                     if (action.llm_model && allModels.length) {
@@ -494,7 +487,6 @@
             const prompt_template_id = document.getElementById('builderPromptTemplate').value;
             const temperature = parseFloat(document.getElementById('builderTemperature').value) || 0.7;
             const max_tokens = parseInt(document.getElementById('builderMaxTokens').value) || 1000;
-            const output_field = document.getElementById('builderOutputField').value;
             // Auto-detect FIELDNAME from prompt preview
             let promptPreview = document.getElementById('builderPromptPreview').textContent;
             let match = promptPreview.match(/\[data:([a-zA-Z0-9_]+)\]/);
@@ -511,7 +503,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         input: testInputObj,
-                        output_field,
                         provider_id,
                         llm_model,
                         prompt_template_id,
@@ -544,7 +535,6 @@
         msg.textContent = '';
         const field_name = document.getElementById('builderFieldName').value;
         const description = document.getElementById('builderDescription').value;
-        const output_field = document.getElementById('builderOutputField').value;
         const provider_id = parseInt(document.getElementById('builderProvider').value);
         const llm_model = document.getElementById('builderModel').value;
         const prompt_template_id = parseInt(document.getElementById('builderPromptTemplate').value);
@@ -571,7 +561,6 @@
                     body: JSON.stringify({
                         field_name,
                         description,
-                        output_field,
                         provider_id,
                         llm_model,
                         prompt_template_id,
@@ -587,7 +576,6 @@
                     body: JSON.stringify({
                         field_name,
                         description,
-                        output_field,
                         provider_id,
                         llm_model,
                         prompt_template_id,
