@@ -142,9 +142,10 @@ async function checkOllamaStatus() {
     actionSelect.dispatchEvent(new Event('change'));
   }
 
-  // Render dropdown for fields (grouped by stage and substage, matching /settings)
+  // Render dropdown for fields (all fields, but default to current substage)
   function renderFieldDropdown(select, mappings, selected) {
     select.innerHTML = '';
+    // Group by stage and substage for optgroups
     let lastStage = null;
     let lastSubstage = null;
     let stageOptGroup = null;
@@ -155,7 +156,7 @@ async function checkOllamaStatus() {
         stageOptGroup.label = m.stage_name;
         select.appendChild(stageOptGroup);
         lastStage = m.stage_name;
-        lastSubstage = null; // Reset substage for new stage
+        lastSubstage = null;
       }
       // New substage: add a disabled label option
       if (m.substage_name !== lastSubstage) {
@@ -167,29 +168,22 @@ async function checkOllamaStatus() {
       }
       // Add the field option
       const opt = document.createElement('option');
-      opt.value = m.field_name; // always DB field name
+      opt.value = m.field_name;
       opt.textContent = m.display_name || m.field_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       stageOptGroup.appendChild(opt);
     }
     // Add dark theme classes
     select.classList.add('bg-gray-900', 'text-gray-100', 'border', 'border-gray-700');
-    // Debug: print all option values
+    // Find all valid (non-disabled) options
     const validOptions = Array.from(select.options).filter(o => !o.disabled).map(o => o.value);
-    console.log('[Dropdown] Options:', validOptions);
-    console.log('[Dropdown] Attempting to set value to:', selected);
-    // Set value if present and not disabled, else default to first available
+    // Find the first field for the current substage
+    const substageField = mappings.find(m => m.substage_name === substage);
+    const substageDefault = substageField ? substageField.field_name : validOptions[0];
+    // Set value if present and valid, else default to substage field or first valid
     if (selected && validOptions.includes(selected)) {
       select.value = selected;
-      console.log('[Dropdown] Set value to:', selected);
     } else {
-      // Find first non-disabled option
-      const firstValid = Array.from(select.options).find(o => !o.disabled);
-      if (firstValid) {
-        select.value = firstValid.value;
-        if (selected) {
-          console.warn('[Dropdown] Value not found or is disabled:', selected, 'Defaulting to:', firstValid.value);
-        }
-      }
+      select.value = substageDefault;
     }
   }
 
