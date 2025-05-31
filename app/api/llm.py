@@ -1264,3 +1264,40 @@ def test_direct():
     }
     r = requests.post("http://localhost:11434/api/generate", json=payload, timeout=60)
     return jsonify(r.json())
+
+@bp.route('/post_substage_actions/list', methods=['GET'])
+def list_post_substage_actions():
+    """List all post_substage_action entries, paginated and ordered by post.updated_at DESC."""
+    page = int(request.args.get('page', 1))
+    page_size = int(request.args.get('page_size', 20))
+    offset = (page - 1) * page_size
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Join with post to get updated_at for ordering
+            cur.execute('SELECT COUNT(*) FROM post_substage_action')
+            total_count = cur.fetchone()[0]
+            cur.execute('''
+                SELECT psa.id, psa.post_id, psa.substage, psa.action_id, psa.input_field, psa.output_field, psa.button_label, psa.button_order, p.updated_at
+                FROM post_substage_action psa
+                JOIN post p ON psa.post_id = p.id
+                ORDER BY p.updated_at DESC NULLS LAST, p.id DESC
+                LIMIT %s OFFSET %s
+            ''', (page_size, offset))
+            rows = cur.fetchall()
+            actions = []
+            for row in rows:
+                if isinstance(row, dict):
+                    actions.append(row)
+                else:
+                    actions.append({
+                        'id': row[0],
+                        'post_id': row[1],
+                        'substage': row[2],
+                        'action_id': row[3],
+                        'input_field': row[4],
+                        'output_field': row[5],
+                        'button_label': row[6],
+                        'button_order': row[7],
+                        'updated_at': row[8],
+                    })
+    return jsonify({'actions': actions, 'total_count': total_count, 'page': page, 'page_size': page_size})
