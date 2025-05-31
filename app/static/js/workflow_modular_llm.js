@@ -359,6 +359,11 @@ async function checkOllamaStatus() {
         return;
       }
       const inputValue = postDev[inputField] || '';
+      if (!inputValue) {
+        actionOutputPanel.textContent = `No value found for input field: ${inputField}. Please enter a value before running the action.`;
+        runActionBtn.disabled = false;
+        return;
+      }
       let resp;
       try {
         resp = await fetch(`/api/v1/llm/actions/${actionId}/execute`, {
