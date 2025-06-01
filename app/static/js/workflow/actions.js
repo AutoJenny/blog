@@ -43,25 +43,6 @@ export async function executeLLMAction({
     const requestToken = ++state.lastRequestToken;
     actionOutputPanel.textContent = 'Running action...';
     state.runActionBtn && (state.runActionBtn.disabled = true);
-    console.log('[executeLLMAction] Checking Ollama status...');
-    const ollamaOk = await state.checkOllamaStatus?.();
-    console.log('[executeLLMAction] Ollama status:', ollamaOk);
-    if (!ollamaOk) {
-      actionOutputPanel.textContent = 'Ollama is not running.';
-      showStartOllamaButton(actionOutputPanel);
-      state.runActionBtn && (state.runActionBtn.disabled = false);
-      return;
-    }
-    if (!actionId || !inputValue) {
-      actionOutputPanel.textContent = 'Please select both an action and an input field.';
-      state.runActionBtn && (state.runActionBtn.disabled = false);
-      return;
-    }
-    if (!inputValue) {
-      actionOutputPanel.textContent = `No value found for input field. Please enter a value before running the action.`;
-      state.runActionBtn && (state.runActionBtn.disabled = false);
-      return;
-    }
     let resp;
     try {
       console.log('[executeLLMAction] Calling runLLMAction...');
@@ -69,15 +50,45 @@ export async function executeLLMAction({
       console.log('[executeLLMAction] runLLMAction response:', resp);
     } catch (err) {
       console.error('[executeLLMAction] runLLMAction error:', err);
-      actionOutputPanel.textContent = 'Network error: Could not reach LLM backend.';
-      showStartOllamaButton(actionOutputPanel);
+      showStartOllamaButton(actionOutputPanel, async () => {
+        actionOutputPanel.textContent = 'Retrying action...';
+        await executeLLMAction({
+          actionId,
+          inputValue,
+          postId,
+          runLLMAction,
+          updatePostDevelopmentField,
+          fetchPostDevelopment,
+          renderPostDevFields,
+          state,
+          actionOutputPanel,
+          outputFieldSelect,
+          outputFieldValue,
+          postDevFieldsPanel
+        });
+      });
       state.runActionBtn && (state.runActionBtn.disabled = false);
       state.lastActionOutput = '';
       return;
     }
     if (resp?.status === 503) {
-      actionOutputPanel.textContent = 'Ollama is not running (503 Service Unavailable).';
-      showStartOllamaButton(actionOutputPanel);
+      showStartOllamaButton(actionOutputPanel, async () => {
+        actionOutputPanel.textContent = 'Retrying action...';
+        await executeLLMAction({
+          actionId,
+          inputValue,
+          postId,
+          runLLMAction,
+          updatePostDevelopmentField,
+          fetchPostDevelopment,
+          renderPostDevFields,
+          state,
+          actionOutputPanel,
+          outputFieldSelect,
+          outputFieldValue,
+          postDevFieldsPanel
+        });
+      });
       state.runActionBtn && (state.runActionBtn.disabled = false);
       state.lastActionOutput = '';
       return;

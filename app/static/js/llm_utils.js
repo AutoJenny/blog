@@ -1,5 +1,5 @@
 // Utility to show the Ollama start alert/button
-export function showStartOllamaButton(container) {
+export function showStartOllamaButton(container, onStarted) {
     container.innerHTML += `
         <div class="mt-4 p-4 bg-yellow-100 rounded">
             <b>Ollama is not running.</b>
@@ -16,8 +16,12 @@ export function showStartOllamaButton(container) {
             const data = await resp.json();
             if (resp.ok && data.success) {
                 this.innerHTML = '<i class="fa-solid fa-check"></i> Started';
-                localStorage.setItem('pendingOllamaAction', 'true');
-                setTimeout(() => window.location.reload(), 1000);
+                if (typeof onStarted === 'function') {
+                    setTimeout(onStarted, 1500);
+                } else {
+                    localStorage.setItem('pendingOllamaAction', 'true');
+                    setTimeout(() => window.location.reload(), 1000);
+                }
             } else {
                 this.innerHTML = '<i class="fa-solid fa-play"></i> Start Ollama';
                 alert(data.error || 'Failed to start Ollama');
