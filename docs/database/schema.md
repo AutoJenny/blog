@@ -148,3 +148,57 @@ Tracks the status and timing of each workflow stage for a post. As of 2025-06-10
 - Always make a full backup and save the current create_tables.sql before running this migration.
 - If restoring a backup made before this change, use the matching create_tables.sql from the backup directory.
 - If you need to bring restored data up to the new schema, run the migration SQL to add the new columns after restore. 
+
+### 2025-06-01: Added `timeout` to llm_action
+- Added `timeout INTEGER DEFAULT 60` to `llm_action` for per-action LLM request timeout. Update all schema, backup, and restore scripts accordingly.
+
+## Table: llm_action
+
+Stores LLM prompt/action templates. As of 2025-06, supports both legacy flat string templates and structured prompt part arrays.
+
+| Column        | Type         | Description                                      |
+|--------------|--------------|--------------------------------------------------|
+| id           | SERIAL (PK)  | Unique row ID                                    |
+| field_name   | VARCHAR(128) | Name of the action (UI/display)                  |
+| prompt_template | TEXT      | Canonical prompt template (flat string)           |
+| prompt_template_id | INTEGER | FK to llm_prompt(id)                             |
+| llm_model    | VARCHAR(128) | Model name (e.g., 'llama3:latest')               |
+| provider_id  | INTEGER      | FK to llm_provider(id)                           |
+| temperature  | FLOAT        | Sampling temperature (default 0.7)                |
+| max_tokens   | INTEGER      | Max tokens to generate (default 1000)             |
+| order        | INTEGER      | Display order (default 0)                        |
+| input_field  | VARCHAR(128) | Input field for this action (optional)           |
+| output_field | VARCHAR(128) | Output field for this action (optional)          |
+| timeout      | INTEGER      | **NEW**: Max seconds to wait for LLM response (default 60) |
+| created_at   | TIMESTAMP    | Created timestamp                                |
+| updated_at   | TIMESTAMP    | Updated timestamp                                |
+
+- `prompt_json` stores an ordered array of objects, each with `type`, `tags`, and `content` (or `field` for data parts). See /docs/llm/llm_prompt_structuring.md for details.
+
+### [2024-06-10] Workflow UI Field Persistence
+
+- The workflow UI now loads and saves all input/output fields to the `post_development` table, and LLM action selections to the `post_substage_action` table, for each post and substage.
+- This enables robust, permanent persistence of workflow state and makes the interface easily transferable to other stages/substages.
+- See also: docs/frontend/templates.md for frontend details.
+
+## Table: post_workflow_stage
+
+Tracks the status and timing of each workflow stage for a post. As of 2025-06-10, supports LLM workflow field persistence at the stage level.
+
+| Column        | Type         | Description                                      |
+|--------------|--------------|--------------------------------------------------|
+| id           | SERIAL       | Primary key                                      |
+| post_id      | INTEGER      | References post(id)                              |
+| stage_id     | INTEGER      | References workflow_stage_entity(id)             |
+| started_at   | TIMESTAMP    | When this stage started                          |
+| completed_at | TIMESTAMP    | When this stage completed                        |
+| status       | VARCHAR(32)  | Status of the stage                              |
+| input_field  | VARCHAR(128) | **NEW**: Selected input field for this stage     |
+| output_field | VARCHAR(128) | **NEW**: Selected output field for this stage    |
+
+**2025-06-10:** Added `input_field` and `output_field` columns to `post_workflow_stage` for robust LLM workflow field persistence at the stage level. See migration and restore notes below.
+
+### Migration & Restore Notes
+- Always make a full backup and save the current create_tables.sql before running this migration.
+- If restoring a backup made before this change, use the matching create_tables.sql from the backup directory.
+- If you need to bring restored data up to the new schema, run the migration SQL to add the new columns after restore. 
