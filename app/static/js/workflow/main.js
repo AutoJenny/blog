@@ -80,6 +80,6 @@ import { state } from './state.js';
   // Minimal automatic retry: if pendingOllamaAction is set, trigger Run Action and clear the flag
   if (localStorage.getItem('pendingOllamaAction') === 'true') {
     localStorage.removeItem('pendingOllamaAction');
-    setTimeout(() => runActionBtn.click(), 500);
+    setTimeout(() => runActionBtn.click(), 3000);
   }
 })(); 

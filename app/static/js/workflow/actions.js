@@ -94,6 +94,7 @@ export async function executeLLMAction({
     });
     state.runActionBtn.disabled = false;
   } catch (err) {
+    console.error('LLM action error:', err);
     actionOutputPanel.textContent = 'Unexpected error running LLM action.';
     showStartOllamaButton(actionOutputPanel);
     state.runActionBtn.disabled = false;
