@@ -87,4 +87,18 @@ export async function fetchLastPostSubstageAction(substage, excludePostId) {
   if (!data.actions) return null;
   // Find the most recent action for this substage, not for the current post
   return data.actions.find(a => a.substage === substage && a.post_id != excludePostId) || null;
+}
+
+/**
+ * Check if Ollama is running (returns true/false)
+ */
+export async function checkOllamaStatus() {
+  try {
+    const resp = await fetch('/api/v1/llm/ollama/status');
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    return !!(data && data.status === 'running');
+  } catch (e) {
+    return false;
+  }
 } 

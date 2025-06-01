@@ -6,6 +6,13 @@ import { state } from './state.js';
 
 console.log('[workflow/main.js] Loaded');
 
+// Global click diagnostic
+window.addEventListener('click', (e) => {
+  if (e.target && e.target.id === 'runActionBtn') {
+    console.log('[GLOBAL] Run Action button clicked:', e.target);
+  }
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
   // Get DOM elements
   const workflowRoot = document.getElementById('llm-workflow-root');
@@ -77,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     showActionDetails: render.showActionDetails,
     updatePanelVisibility: render.updatePanelVisibility,
     runLLMAction: api.runLLMAction,
-    state
+    state: { ...state, checkOllamaStatus: api.checkOllamaStatus }
   });
 
   // Minimal automatic retry: if pendingOllamaAction is set, trigger Run Action and clear the flag
@@ -85,4 +92,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     localStorage.removeItem('pendingOllamaAction');
     setTimeout(() => runActionBtn.click(), 3000);
   }
+
+  console.log('[main.js] runActionBtn at DOMContentLoaded:', runActionBtn);
 }); 
