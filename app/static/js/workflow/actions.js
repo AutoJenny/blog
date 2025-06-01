@@ -2,6 +2,8 @@
 
 import { showStartOllamaButton } from '../llm_utils.js';
 
+console.log('[workflow/actions.js] Loaded');
+
 /**
  * Execute an LLM action and handle the result.
  * @param {Object} params - All required arguments and dependencies.
@@ -50,6 +52,7 @@ export async function executeLLMAction({
       console.log('[executeLLMAction] runLLMAction response:', resp);
     } catch (err) {
       console.error('[executeLLMAction] runLLMAction error:', err);
+      console.warn('[executeLLMAction] Triggering Start Ollama button due to network error');
       showStartOllamaButton(actionOutputPanel, async () => {
         actionOutputPanel.textContent = 'Retrying action...';
         await executeLLMAction({
@@ -72,6 +75,7 @@ export async function executeLLMAction({
       return;
     }
     if (resp?.status === 503) {
+      console.warn('[executeLLMAction] Triggering Start Ollama button due to 503 response', resp);
       showStartOllamaButton(actionOutputPanel, async () => {
         actionOutputPanel.textContent = 'Retrying action...';
         await executeLLMAction({
@@ -94,6 +98,7 @@ export async function executeLLMAction({
       return;
     }
     if (resp && resp.ok === false) {
+      console.warn('[executeLLMAction] LLM action returned error response', resp);
       actionOutputPanel.textContent = `Error: ${resp.status} ${resp.statusText}`;
       state.runActionBtn && (state.runActionBtn.disabled = false);
       state.lastActionOutput = '';

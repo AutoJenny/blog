@@ -3,6 +3,8 @@
 import { showStartOllamaButton } from '../llm_utils.js';
 import { executeLLMAction } from './actions.js';
 
+console.log('[workflow/events.js] Registering event handlers');
+
 /**
  * Register all event handlers for the workflow modular LLM UI.
  * @param {Object} params - All required DOM elements and dependencies.
