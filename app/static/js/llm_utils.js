@@ -16,6 +16,7 @@ export function showStartOllamaButton(container) {
             const data = await resp.json();
             if (resp.ok && data.success) {
                 this.innerHTML = '<i class="fa-solid fa-check"></i> Started';
+                localStorage.setItem('pendingOllamaAction', 'true');
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 this.innerHTML = '<i class="fa-solid fa-play"></i> Start Ollama';
