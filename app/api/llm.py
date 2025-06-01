@@ -1343,3 +1343,18 @@ def list_post_substage_actions():
                         'updated_at': row[8],
                     })
     return jsonify({'actions': actions, 'total_count': total_count, 'page': page, 'page_size': page_size})
+
+@bp.route('/ollama/status', methods=['GET'])
+def ollama_status():
+    """Return Ollama running status."""
+    import socket
+    def is_ollama_running():
+        try:
+            with socket.create_connection(("localhost", 11434), timeout=2):
+                return True
+        except Exception:
+            return False
+    if is_ollama_running():
+        return jsonify({"status": "running"})
+    else:
+        return jsonify({"status": "not running"})

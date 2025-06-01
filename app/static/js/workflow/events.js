@@ -27,6 +27,7 @@ console.log('[workflow/events.js] Registering event handlers');
  * @param {Function} params.showActionDetails
  * @param {Function} params.updatePanelVisibility
  * @param {Object} params.state - All state variables
+ * @param {Function} params.runLLMAction - Added for the new event delegation handler
  */
 export function registerWorkflowEventHandlers({
   inputFieldSelect,
@@ -47,6 +48,7 @@ export function registerWorkflowEventHandlers({
   renderPostDevFields,
   showActionDetails,
   updatePanelVisibility,
+  runLLMAction,
   state
 }) {
   // Diagnostic: check if runActionBtn exists at registration
@@ -109,9 +111,25 @@ export function registerWorkflowEventHandlers({
     if (psa && psa.output_field) outputFieldValue.textContent = state.postDev[psa.output_field] || '(No value)';
   });
 
-  // Run Action button handler
-  runActionBtn.addEventListener('click', async () => {
+  // Run Action button handler logic as a function
+  async function handleRunActionClick({
+    inputFieldSelect,
+    actionSelect,
+    actionOutputPanel,
+    runActionBtn,
+    state,
+    executeLLMAction,
+    runLLMAction,
+    updatePostDevelopmentField,
+    fetchPostDevelopment,
+    renderPostDevFields,
+    outputFieldSelect,
+    outputFieldValue,
+    postDevFieldsPanel,
+    showStartOllamaButton
+  }) {
     try {
+      console.log('[handleRunActionClick] ENTRY');
       if (!actionOutputPanel) {
         alert('Error: Output panel not found in DOM.');
         return;
@@ -119,6 +137,7 @@ export function registerWorkflowEventHandlers({
       const requestToken = ++state.lastRequestToken;
       actionOutputPanel.textContent = 'Running action...';
       runActionBtn.disabled = true;
+      console.log('[handleRunActionClick] Checking Ollama status...');
       const ollamaOk = await state.checkOllamaStatus();
       if (!ollamaOk) {
         actionOutputPanel.textContent = 'Ollama is not running.';
@@ -128,17 +147,20 @@ export function registerWorkflowEventHandlers({
       }
       const actionId = actionSelect.value;
       const inputField = inputFieldSelect.value;
+      console.log('[handleRunActionClick] actionId:', actionId, 'inputField:', inputField);
       if (!actionId || !inputField) {
         actionOutputPanel.textContent = 'Please select both an action and an input field.';
         runActionBtn.disabled = false;
         return;
       }
       const inputValue = state.postDev[inputField] || '';
+      console.log('[handleRunActionClick] inputValue:', inputValue);
       if (!inputValue) {
         actionOutputPanel.textContent = `No value found for input field: ${inputField}. Please enter a value before running the action.`;
         runActionBtn.disabled = false;
         return;
       }
+      console.log('[handleRunActionClick] Calling executeLLMAction...');
       await executeLLMAction({
         actionId,
         inputValue,
@@ -153,11 +175,38 @@ export function registerWorkflowEventHandlers({
         outputFieldValue,
         postDevFieldsPanel
       });
+      console.log('[handleRunActionClick] EXIT');
     } catch (err) {
+      console.error('[handleRunActionClick] ERROR:', err);
       actionOutputPanel.textContent = 'Unexpected error running LLM action.';
       showStartOllamaButton(actionOutputPanel);
       runActionBtn.disabled = false;
       state.lastActionOutput = '';
+    }
+  }
+
+  // Remove direct addEventListener from runActionBtn
+  // Instead, use event delegation
+
+  document.addEventListener('click', async (e) => {
+    if (e.target && e.target.id === 'runActionBtn') {
+      console.log('[DELEGATED] Run Action button handler fired');
+      await handleRunActionClick({
+        inputFieldSelect,
+        actionSelect,
+        actionOutputPanel,
+        runActionBtn: e.target,
+        state,
+        executeLLMAction,
+        runLLMAction,
+        updatePostDevelopmentField,
+        fetchPostDevelopment,
+        renderPostDevFields,
+        outputFieldSelect,
+        outputFieldValue,
+        postDevFieldsPanel,
+        showStartOllamaButton
+      });
     }
   });
 
