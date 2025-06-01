@@ -4,6 +4,8 @@ import { registerWorkflowEventHandlers } from './events.js';
 import * as render from './render.js';
 import { state } from './state.js';
 
+console.log('[workflow/main.js] Loaded');
+
 (async function() {
   // Get DOM elements
   const workflowRoot = document.getElementById('llm-workflow-root');
