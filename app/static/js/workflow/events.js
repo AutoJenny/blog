@@ -49,6 +49,12 @@ export function registerWorkflowEventHandlers({
   updatePanelVisibility,
   state
 }) {
+  // Diagnostic: check if runActionBtn exists at registration
+  console.log('[workflow/events.js] runActionBtn:', runActionBtn);
+  if (!runActionBtn) {
+    console.error('[workflow/events.js] runActionBtn is null or undefined at registration!');
+  }
+
   // Field dropdown change handler
   inputFieldSelect.addEventListener('change', async () => {
     if (state.isInitializing) return;

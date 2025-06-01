@@ -6,7 +6,7 @@ import { state } from './state.js';
 
 console.log('[workflow/main.js] Loaded');
 
-(async function() {
+document.addEventListener('DOMContentLoaded', async () => {
   // Get DOM elements
   const workflowRoot = document.getElementById('llm-workflow-root');
   const inputFieldSelect = document.getElementById('inputFieldSelect');
@@ -85,4 +85,4 @@ console.log('[workflow/main.js] Loaded');
     localStorage.removeItem('pendingOllamaAction');
     setTimeout(() => runActionBtn.click(), 3000);
   }
-})(); 
+}); 
