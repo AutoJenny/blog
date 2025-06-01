@@ -1,5 +1,7 @@
 // Event handler registration for workflow LLM modular UI
 
+import { executeLLMAction } from './actions.js';
+
 /**
  * Register all event handlers for the workflow modular LLM UI.
  * @param {Object} params - All required DOM elements and dependencies.
@@ -130,7 +132,7 @@ export function registerWorkflowEventHandlers({
       }
       let resp;
       try {
-        resp = await state.runLLMAction(actionId, inputValue, state.postId);
+        resp = await executeLLMAction(actionId, inputValue, state.postId);
       } catch (err) {
         actionOutputPanel.textContent = 'Network error: Could not reach LLM backend.';
         state.showStartOllamaButton(actionOutputPanel);
