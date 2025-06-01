@@ -82,6 +82,16 @@ async function checkOllamaStatus() {
     return resp.ok ? await resp.json() : null;
   }
 
+  // Utility: fetch the most recent post_substage_action for a given substage (excluding current post)
+  async function fetchLastPostSubstageAction(substage, excludePostId) {
+    const resp = await fetch(`/api/v1/llm/post_substage_actions/list?page=1&page_size=50`);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    if (!data.actions) return null;
+    // Find the most recent action for this substage, not for the current post
+    return data.actions.find(a => a.substage === substage && a.post_id != excludePostId) || null;
+  }
+
   // Get postId and substage from URL/context
   const urlParams = new URLSearchParams(window.location.search);
   const postId = urlParams.get('post_id');
@@ -126,8 +136,18 @@ async function checkOllamaStatus() {
     postDev = await fetchPostDevelopment(postId);
     llmActions = await fetchLLMActions();
     postSubstageAction = await fetchPostSubstageAction(postId, substage);
-    // Robust: handle array or null
-    const psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
+    let psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
+    // If no psa, try to copy from previous post
+    if (!psa) {
+      const lastPsa = await fetchLastPostSubstageAction(substage, postId);
+      if (lastPsa) {
+        // POST to create a new psa for this post using lastPsa's settings
+        await savePostSubstageAction(postId, substage, lastPsa.action_id, lastPsa.input_field, lastPsa.output_field);
+        // Re-fetch
+        postSubstageAction = await fetchPostSubstageAction(postId, substage);
+        psa = Array.isArray(postSubstageAction) && postSubstageAction.length > 0 ? postSubstageAction[0] : null;
+      }
+    }
     renderFieldDropdown(inputFieldSelect, fieldMappings, psa ? psa.input_field : null);
     renderFieldDropdown(outputFieldSelect, fieldMappings, psa ? psa.output_field : null);
     renderActionDropdown(actionSelect, llmActions, psa ? psa.action_id : null);
