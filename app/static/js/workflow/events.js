@@ -1,5 +1,6 @@
 // Event handler registration for workflow LLM modular UI
 
+import { showStartOllamaButton } from '../llm_utils.js';
 import { executeLLMAction } from './actions.js';
 
 /**
@@ -113,7 +114,7 @@ export function registerWorkflowEventHandlers({
       const ollamaOk = await state.checkOllamaStatus();
       if (!ollamaOk) {
         actionOutputPanel.textContent = 'Ollama is not running.';
-        state.showStartOllamaButton(actionOutputPanel);
+        showStartOllamaButton(actionOutputPanel);
         runActionBtn.disabled = false;
         return;
       }
@@ -135,14 +136,14 @@ export function registerWorkflowEventHandlers({
         resp = await executeLLMAction(actionId, inputValue, state.postId);
       } catch (err) {
         actionOutputPanel.textContent = 'Network error: Could not reach LLM backend.';
-        state.showStartOllamaButton(actionOutputPanel);
+        showStartOllamaButton(actionOutputPanel);
         runActionBtn.disabled = false;
         state.lastActionOutput = '';
         return;
       }
       if (resp.status === 503) {
         actionOutputPanel.textContent = 'Ollama is not running (503 Service Unavailable).';
-        state.showStartOllamaButton(actionOutputPanel);
+        showStartOllamaButton(actionOutputPanel);
         runActionBtn.disabled = false;
         state.lastActionOutput = '';
         return;
@@ -188,7 +189,7 @@ export function registerWorkflowEventHandlers({
       runActionBtn.disabled = false;
     } catch (err) {
       actionOutputPanel.textContent = 'Unexpected error running LLM action.';
-      state.showStartOllamaButton(actionOutputPanel);
+      showStartOllamaButton(actionOutputPanel);
       runActionBtn.disabled = false;
       state.lastActionOutput = '';
     }
