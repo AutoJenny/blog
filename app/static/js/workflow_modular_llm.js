@@ -169,6 +169,11 @@ async function checkOllamaStatus() {
     actionSelect.dispatchEvent(new Event('change'));
   }
 
+  // Initial load
+  await init();
+  updatePanelVisibility();
+
+  // Remove all original event handler logic and call registerWorkflowEventHandlers with the required arguments after DOM and state initialization.
   // Field dropdown change handlers (persist selection)
   inputFieldSelect.addEventListener('change', async () => {
     if (isInitializing) return;
