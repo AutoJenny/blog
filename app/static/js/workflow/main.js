@@ -76,4 +76,10 @@ import { state } from './state.js';
     updatePanelVisibility: render.updatePanelVisibility,
     state
   });
+
+  // Minimal automatic retry: if pendingOllamaAction is set, trigger Run Action and clear the flag
+  if (localStorage.getItem('pendingOllamaAction') === 'true') {
+    localStorage.removeItem('pendingOllamaAction');
+    setTimeout(() => runActionBtn.click(), 500);
+  }
 })(); 
