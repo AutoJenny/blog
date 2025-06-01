@@ -173,6 +173,9 @@ CREATE TABLE llm_action (
     temperature FLOAT DEFAULT 0.7,
     max_tokens INTEGER DEFAULT 1000,
     "order" INTEGER DEFAULT 0 NOT NULL,
+    input_field VARCHAR(128),
+    output_field VARCHAR(128),
+    timeout INTEGER DEFAULT 60, -- 2025-06-01: Added for per-action LLM request timeout
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
