@@ -357,7 +357,7 @@ def handle_action(action_id):
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order"
+                    SELECT id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order", timeout
                     FROM llm_action WHERE id = %s
                 """, (action_id,))
                 action_row = cur.fetchone()
@@ -370,7 +370,7 @@ def handle_action(action_id):
         try:
             with get_db_conn() as conn:
                 with conn.cursor() as cur:
-                    update_fields = ['field_name', 'prompt_template', 'prompt_template_id', 'llm_model', 'temperature', 'max_tokens', 'input_field', 'order']
+                    update_fields = ['field_name', 'prompt_template', 'prompt_template_id', 'llm_model', 'temperature', 'max_tokens', 'input_field', 'order', 'timeout']
                     if 'output_field' in data:
                         update_fields.append('output_field')
                     set_fields = []
@@ -449,7 +449,7 @@ def execute_action(action_id):
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order"
+                    SELECT id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, input_field, output_field, "order", timeout
                     FROM llm_action WHERE id = %s
                 """, (action_id,))
                 action_row = cur.fetchone()
@@ -535,7 +535,7 @@ def execute_action(action_id):
         current_app.logger.error(f"[LLM DIAGNOSTIC] Diagnostics: {json.dumps(diagnostics, ensure_ascii=False, indent=2)}")
         outgoing_prompt_string = log_llm_outgoing(llm_request_json)
         import requests
-        r = requests.post("http://localhost:11434/api/generate", json=llm_request_json, timeout=60)
+        r = requests.post("http://localhost:11434/api/generate", json=llm_request_json, timeout=action.get('timeout', 60) or 60)
         result = r.json()
         output = result.get('response', '')
         # --- Save output to selected DB field if specified ---
@@ -880,7 +880,8 @@ def test_action(action_id):
             rendered_prompt,
             model_name=action['llm_model'],
             temperature=action.get('temperature', 0.7),
-            max_tokens=action.get('max_tokens', 1000)
+            max_tokens=action.get('max_tokens', 1000),
+            timeout=action.get('timeout', 60) or 60
         )
         return jsonify({'result': result, 'rendered_prompt': rendered_prompt})
     except Exception as e:
@@ -1165,6 +1166,7 @@ def create_action():
     order = data.get('order', 0)
     input_field = data.get('input_field')
     output_field = data.get('output_field') if 'output_field' in data else None
+    timeout = data.get('timeout', 60)
     # Validate required fields
     if not name:
         current_app.logger.error("[CREATE_ACTION] Field name is missing")
@@ -1206,7 +1208,19 @@ def create_action():
     if not prompt_template:
         current_app.logger.error(f"[CREATE_ACTION] Prompt template is empty or null for id={prompt_template_id}")
         return jsonify({'status': 'error', 'error': 'Prompt template is empty or null'}), 400
-    insert_tuple = (name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, order, input_field, output_field, provider_id)
+    insert_tuple = (
+        name,
+        prompt_template,
+        prompt_template_id,
+        llm_model,
+        temperature,
+        max_tokens,
+        order,
+        input_field,
+        output_field,
+        provider_id,
+        timeout
+    )
     current_app.logger.error(f"[CREATE_ACTION] FINAL Insert tuple: {insert_tuple}")
     current_app.logger.error(f"[CREATE_ACTION] FINAL Tuple types: {[str(type(x)) for x in insert_tuple]}")
     # Proceed to insert
@@ -1215,8 +1229,8 @@ def create_action():
             with conn.cursor() as cur:
                 current_app.logger.error("[CREATE_ACTION] About to execute INSERT into llm_action")
                 cur.execute('''
-                    INSERT INTO llm_action (field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", input_field, output_field, provider_id)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO llm_action (field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", input_field, output_field, provider_id, timeout)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                 ''', insert_tuple)
                 new_id = cur.fetchone()['id']
@@ -1256,7 +1270,7 @@ def list_actions():
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT id, field_name, prompt_template, prompt_template_id, llm_model, provider_id, temperature, max_tokens, input_field, output_field, "order"
+                SELECT id, field_name, prompt_template, prompt_template_id, llm_model, provider_id, temperature, max_tokens, input_field, output_field, "order", timeout
                 FROM llm_action
                 ORDER BY "order", id
             """)
@@ -1276,6 +1290,7 @@ def list_actions():
             "input_field": a[8],
             "output_field": a[9],
             "order": a[10],
+            "timeout": a[11],
         })
     return jsonify(result)
 
