@@ -218,19 +218,19 @@ class LLMService:
         self.config = None  # provider type (e.g., 'ollama', 'openai')
         self.api_url = None  # provider API URL
 
-    def generate(self, prompt, model_name=None, temperature=0.7, max_tokens=1000):
+    def generate(self, prompt, model_name=None, temperature=0.7, max_tokens=1000, timeout=60):
         """Generate text using configured LLM, supporting both OpenAI (messages) and Ollama (string)."""
         if not model_name:
             model_name = self.config
-        logger.info(f"Generating with model: {model_name}, temperature: {temperature}, max_tokens: {max_tokens}")
+        logger.info(f"Generating with model: {model_name}, temperature: {temperature}, max_tokens: {max_tokens}, timeout: {timeout}")
         if self.config == "ollama":
-            return self._generate_ollama(prompt, model_name, temperature, max_tokens)
+            return self._generate_ollama(prompt, model_name, temperature, max_tokens, timeout)
         elif self.config == "openai":
             return self._generate_openai(prompt, model_name, temperature, max_tokens)
         else:
             raise ValueError(f"Unsupported provider type: {self.config}")
 
-    def _generate_ollama(self, prompt, model_name, temperature=0.7, max_tokens=1000):
+    def _generate_ollama(self, prompt, model_name, temperature=0.7, max_tokens=1000, timeout=60):
         """Generate text using Ollama."""
         try:
             # Format request JSON consistently
@@ -248,7 +248,7 @@ class LLMService:
             response = requests.post(
                 f"{self.api_url}/api/generate",
                 json=request_data,
-                timeout=180.0
+                timeout=timeout or 60
             )
             logger.debug(f"[REQUESTS] Request headers: {response.request.headers}")
             logger.debug(f"[REQUESTS] Request body: {response.request.body}")
