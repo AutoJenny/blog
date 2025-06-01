@@ -1,5 +1,6 @@
 // LLM action execution and result handling for workflow LLM modular UI
 
+import { showStartOllamaButton } from '../llm_utils.js';
 
 /**
  * Execute an LLM action and handle the result.
@@ -42,7 +43,7 @@ export async function executeLLMAction({
     const ollamaOk = await state.checkOllamaStatus();
     if (!ollamaOk) {
       actionOutputPanel.textContent = 'Ollama is not running.';
-      state.showStartOllamaButton(actionOutputPanel);
+      showStartOllamaButton(actionOutputPanel);
       state.runActionBtn.disabled = false;
       return;
     }
@@ -61,14 +62,14 @@ export async function executeLLMAction({
       resp = await runLLMAction(actionId, inputValue, postId);
     } catch (err) {
       actionOutputPanel.textContent = 'Network error: Could not reach LLM backend.';
-      state.showStartOllamaButton(actionOutputPanel);
+      showStartOllamaButton(actionOutputPanel);
       state.runActionBtn.disabled = false;
       state.lastActionOutput = '';
       return;
     }
     if (resp.status === 503) {
       actionOutputPanel.textContent = 'Ollama is not running (503 Service Unavailable).';
-      state.showStartOllamaButton(actionOutputPanel);
+      showStartOllamaButton(actionOutputPanel);
       state.runActionBtn.disabled = false;
       state.lastActionOutput = '';
       return;
@@ -94,7 +95,7 @@ export async function executeLLMAction({
     state.runActionBtn.disabled = false;
   } catch (err) {
     actionOutputPanel.textContent = 'Unexpected error running LLM action.';
-    state.showStartOllamaButton(actionOutputPanel);
+    showStartOllamaButton(actionOutputPanel);
     state.runActionBtn.disabled = false;
     state.lastActionOutput = '';
   }
