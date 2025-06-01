@@ -32,6 +32,9 @@ export async function executeLLMAction({
   outputFieldValue,
   postDevFieldsPanel
 }) {
+  console.log('[executeLLMAction] ENTRY', {
+    actionId, inputValue, postId, runLLMAction, state, actionOutputPanel, outputFieldSelect, outputFieldValue, postDevFieldsPanel
+  });
   try {
     if (!actionOutputPanel) {
       alert('Error: Output panel not found in DOM.');
@@ -39,48 +42,54 @@ export async function executeLLMAction({
     }
     const requestToken = ++state.lastRequestToken;
     actionOutputPanel.textContent = 'Running action...';
-    state.runActionBtn.disabled = true;
-    const ollamaOk = await state.checkOllamaStatus();
+    state.runActionBtn && (state.runActionBtn.disabled = true);
+    console.log('[executeLLMAction] Checking Ollama status...');
+    const ollamaOk = await state.checkOllamaStatus?.();
+    console.log('[executeLLMAction] Ollama status:', ollamaOk);
     if (!ollamaOk) {
       actionOutputPanel.textContent = 'Ollama is not running.';
       showStartOllamaButton(actionOutputPanel);
-      state.runActionBtn.disabled = false;
+      state.runActionBtn && (state.runActionBtn.disabled = false);
       return;
     }
     if (!actionId || !inputValue) {
       actionOutputPanel.textContent = 'Please select both an action and an input field.';
-      state.runActionBtn.disabled = false;
+      state.runActionBtn && (state.runActionBtn.disabled = false);
       return;
     }
     if (!inputValue) {
       actionOutputPanel.textContent = `No value found for input field. Please enter a value before running the action.`;
-      state.runActionBtn.disabled = false;
+      state.runActionBtn && (state.runActionBtn.disabled = false);
       return;
     }
     let resp;
     try {
-      resp = await runLLMAction(actionId, inputValue, postId);
+      console.log('[executeLLMAction] Calling runLLMAction...');
+      resp = await runLLMAction?.(actionId, inputValue, postId);
+      console.log('[executeLLMAction] runLLMAction response:', resp);
     } catch (err) {
+      console.error('[executeLLMAction] runLLMAction error:', err);
       actionOutputPanel.textContent = 'Network error: Could not reach LLM backend.';
       showStartOllamaButton(actionOutputPanel);
-      state.runActionBtn.disabled = false;
+      state.runActionBtn && (state.runActionBtn.disabled = false);
       state.lastActionOutput = '';
       return;
     }
-    if (resp.status === 503) {
+    if (resp?.status === 503) {
       actionOutputPanel.textContent = 'Ollama is not running (503 Service Unavailable).';
       showStartOllamaButton(actionOutputPanel);
-      state.runActionBtn.disabled = false;
+      state.runActionBtn && (state.runActionBtn.disabled = false);
       state.lastActionOutput = '';
       return;
     }
-    if (!resp.ok) {
+    if (resp && resp.ok === false) {
       actionOutputPanel.textContent = `Error: ${resp.status} ${resp.statusText}`;
-      state.runActionBtn.disabled = false;
+      state.runActionBtn && (state.runActionBtn.disabled = false);
       state.lastActionOutput = '';
       return;
     }
     let result = resp;
+    console.log('[executeLLMAction] handleLLMResult input:', result);
     handleLLMResult({
       result,
       state,
@@ -92,12 +101,13 @@ export async function executeLLMAction({
       fetchPostDevelopment,
       renderPostDevFields
     });
-    state.runActionBtn.disabled = false;
+    state.runActionBtn && (state.runActionBtn.disabled = false);
+    console.log('[executeLLMAction] EXIT');
   } catch (err) {
     console.error('LLM action error:', err);
     actionOutputPanel.textContent = 'Unexpected error running LLM action.';
     showStartOllamaButton(actionOutputPanel);
-    state.runActionBtn.disabled = false;
+    state.runActionBtn && (state.runActionBtn.disabled = false);
     state.lastActionOutput = '';
   }
 }
