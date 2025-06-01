@@ -2,7 +2,7 @@
 import * as api from './api.js';
 import { registerWorkflowEventHandlers } from './events.js';
 import * as render from './render.js';
-import * as state from './state.js';
+import { state } from './state.js';
 
 (async function() {
   // Get DOM elements
