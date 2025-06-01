@@ -131,62 +131,20 @@ export function registerWorkflowEventHandlers({
         runActionBtn.disabled = false;
         return;
       }
-      let resp;
-      try {
-        resp = await executeLLMAction(actionId, inputValue, state.postId);
-      } catch (err) {
-        actionOutputPanel.textContent = 'Network error: Could not reach LLM backend.';
-        showStartOllamaButton(actionOutputPanel);
-        runActionBtn.disabled = false;
-        state.lastActionOutput = '';
-        return;
-      }
-      if (resp.status === 503) {
-        actionOutputPanel.textContent = 'Ollama is not running (503 Service Unavailable).';
-        showStartOllamaButton(actionOutputPanel);
-        runActionBtn.disabled = false;
-        state.lastActionOutput = '';
-        return;
-      }
-      if (!resp.ok) {
-        actionOutputPanel.textContent = `Error: ${resp.status} ${resp.statusText}`;
-        runActionBtn.disabled = false;
-        state.lastActionOutput = '';
-        return;
-      }
-      let result = resp;
-      if (result && result.result && result.result.output) {
-        actionOutputPanel.textContent = result.result.output;
-        state.lastActionOutput = result.result.output;
-        const outputField = outputFieldSelect.value;
-        if (outputField && state.lastActionOutput) {
-          const resp = await updatePostDevelopmentField(state.postId, outputField, state.lastActionOutput);
-          if (resp.status === 'success') {
-            state.postDev = await fetchPostDevelopment(state.postId);
-            outputFieldValue.textContent = state.postDev[outputField] || '(No value)';
-            renderPostDevFields(postDevFieldsPanel, state.fieldMappings, state.postDev, state.substage);
-          }
-        }
-      } else if (result && result.output) {
-        actionOutputPanel.textContent = result.output;
-        state.lastActionOutput = result.output;
-        const outputField = outputFieldSelect.value;
-        if (outputField && state.lastActionOutput) {
-          const resp = await updatePostDevelopmentField(state.postId, outputField, state.lastActionOutput);
-          if (resp.status === 'success') {
-            state.postDev = await fetchPostDevelopment(state.postId);
-            outputFieldValue.textContent = state.postDev[outputField] || '(No value)';
-            renderPostDevFields(postDevFieldsPanel, state.fieldMappings, state.postDev, state.substage);
-          }
-        }
-      } else if (result && result.error) {
-        actionOutputPanel.textContent = `Error: ${result.error}`;
-        state.lastActionOutput = '';
-      } else {
-        actionOutputPanel.textContent = 'No output.';
-        state.lastActionOutput = '';
-      }
-      runActionBtn.disabled = false;
+      await executeLLMAction({
+        actionId,
+        inputValue,
+        postId: state.postId,
+        runLLMAction,
+        updatePostDevelopmentField,
+        fetchPostDevelopment,
+        renderPostDevFields,
+        state,
+        actionOutputPanel,
+        outputFieldSelect,
+        outputFieldValue,
+        postDevFieldsPanel
+      });
     } catch (err) {
       actionOutputPanel.textContent = 'Unexpected error running LLM action.';
       showStartOllamaButton(actionOutputPanel);

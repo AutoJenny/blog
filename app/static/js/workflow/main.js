@@ -74,6 +74,7 @@ import { state } from './state.js';
     renderPostDevFields: render.renderPostDevFields,
     showActionDetails: render.showActionDetails,
     updatePanelVisibility: render.updatePanelVisibility,
+    runLLMAction: api.runLLMAction,
     state
   });
 
