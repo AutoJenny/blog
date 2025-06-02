@@ -1,5 +1,0 @@
- id | post_id | substage |    input_field    | output_field 
-----+---------+----------+-------------------+--------------
- 34 |      15 | research | provisional_title | test_output
-(1 row)
-

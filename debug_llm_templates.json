@@ -1,7 +1,0 @@
-[
-  {
-    "field_name": "test poem - with action",
-    "id": 3,
-    "prompt_template": "Write a short poem about {{Basic Idea}}"
-  }
-]

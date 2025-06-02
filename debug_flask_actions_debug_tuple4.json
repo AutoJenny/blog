@@ -1,4 +1,0 @@
-{
-  "error": "null value in column \"provider_id\" of relation \"llm_action\" violates not-null constraint\nDETAIL:  Failing row contains (37, debugtuple4, [system: ROLE] You are a Managing Editor specialising in blog an..., 39, llama3.1:70b, 0.7, 1000, 0, 2025-05-29 12:10:43.897432, 2025-05-29 12:10:43.897432, null, null, null).\n",
-  "status": "error"
-}

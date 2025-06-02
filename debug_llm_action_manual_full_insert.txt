@@ -1,6 +1,0 @@
- id | field_name | prompt_template | prompt_template_id |  llm_model   | temperature | max_tokens | order |         created_at         |         updated_at         | input_field | output_field | provider_id 
-----+------------+-----------------+--------------------+--------------+-------------+------------+-------+----------------------------+----------------------------+-------------+--------------+-------------
- 28 | manual     | test            |                 39 | llama3.1:70b |         0.7 |       1000 |     0 | 2025-05-29 11:33:43.509336 | 2025-05-29 11:33:43.509336 |             |              |           1
-(1 row)
-
-INSERT 0 1
