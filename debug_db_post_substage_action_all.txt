@@ -1,9 +1,0 @@
- id | post_id | substage | action_id | button_label | button_order | input_field |   output_field    
-----+---------+----------+-----------+--------------+--------------+-------------+-------------------
- 32 |      16 | idea     |        49 | Action       |            0 |             | 
- 33 |      17 | idea     |        49 |              |            0 | idea_seed   | basic_idea
-  9 |      15 | idea     |        49 |              |            0 | basic_idea  | idea_scope
- 34 |      15 | research |        48 |              |            0 | idea_scope  | interesting_facts
-  1 |       9 | idea     |         3 | Test         |            1 | test_input  | test_output
-(5 rows)
-

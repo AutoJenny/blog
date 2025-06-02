@@ -1,2 +1,0 @@
-DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
-DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py

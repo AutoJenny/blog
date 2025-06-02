@@ -537,3 +537,15 @@ def api_test_provider(provider_id):
             return jsonify({'success': False, 'error': str(e)}), 500
     # Dummy test for other providers
     return jsonify({'success': True, 'message': f'Provider {provider["name"]} test passed (dummy)'}), 200
+
+@bp.route('/preview/')
+def preview_stub():
+    return render_template('preview/preview.html')
+
+@bp.route('/structure/')
+def structure_stub():
+    return render_template('preview/structure.html')
+
+@bp.route('/workflow/stub/')
+def workflow_panel_stub():
+    return render_template('preview/modular_workflow_stub.html')
