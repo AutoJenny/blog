@@ -1,4 +1,4 @@
-# Article Structure and Preview UI: Technical Implementation Checklist
+# Article Template and Preview UI: Technical Implementation Checklist (Updated)
 
 > **Instructions:**
 > - Tick off each checkbox as you complete the corresponding task.
@@ -9,36 +9,43 @@
 ## 1. Project Setup & Planning
 - [ ] Review and confirm UI plan, wireframes, and mockups with stakeholders
 - [ ] Create new git branch for UI implementation
-- [ ] Set up `/preview/` and `/structure/` routes in Flask (stub only, no backend logic yet)
+- [ ] Set up `/workflow/template/` and `/workflow/preview/` routes in Flask (stub only, no backend logic yet)
 
 ---
 
 ## 2. Frontend: Navigable Mockups (HTML/CSS/JS Stubs)
 
-### 2.1 Structure/Template View (Article Overview)
-- [ ] Create `structure.html` template in `app/templates/preview/`
+### 2.1 Template View (Article Overview)
+- [ ] Create `template.html` template in `app/templates/workflow/`
 - [ ] Implement static layout for:
-    - [ ] Post title, status, and Preview button
+    - [ ] Post title, status, and Template/Preview toggle button in header
+    - [ ] Stage/progress icons panel
     - [ ] Intro block (snippet, Edit, status)
     - [ ] Section blocks (heading, theme, snippet, Edit, status)
     - [ ] Conclusion block (snippet, Edit, status)
     - [ ] Metadata block (fields, Edit, status)
     - [ ] Add Section and Reorder Sections controls (UI only)
 - [ ] Color-code status indicators (e.g., green=complete, yellow=draft, red=needs work)
-- [ ] Make each [Edit] button/link navigable (links to stub modular workflow panel)
+- [ ] Make each [Edit] button/link open the modular workflow panel as a modal or subsidiary panel
 - [ ] Implement breadcrumbs and navigation header
 
 ### 2.2 Preview Mode
-- [ ] Create `preview.html` template in `app/templates/preview/`
+- [ ] Create `preview.html` template in `app/templates/workflow/`
 - [ ] Implement static layout for:
-    - [ ] Post title and Back to Structure button
+    - [ ] Post title, status, and Template/Preview toggle button in header
+    - [ ] Stage/progress icons panel
     - [ ] Full content for intro, each section, conclusion, metadata
-    - [ ] Subtle [Edit] links for each block (links to stub modular workflow panel)
-- [ ] Ensure Preview is read-only (no editing in this mode)
+    - [ ] Subtle [Edit] links for each block (open modular workflow panel as modal)
+- [ ] Ensure Preview is read-only (no editing in this mode except via Edit links)
 
-### 2.3 Navigation & User Flow
-- [ ] Ensure navigation between Structure, Preview, and Modular Workflow Panel stubs
-- [ ] Add placeholder/stub for Modular Workflow Panel (for navigation only)
+### 2.3 Modular Edit Panel (Modal/Subsidiary)
+- [ ] Create a modal or subsidiary panel for modular workflow editing
+- [ ] Ensure it can be opened from both Template and Preview views
+- [ ] On save/cancel, return to the previous view
+
+### 2.4 Navigation & User Flow
+- [ ] Ensure navigation between Template, Preview, and Modular Edit Panel
+- [ ] Update Posts List so clicking a post goes to Template View
 - [ ] Test all navigation paths for usability
 
 ---
@@ -53,7 +60,7 @@
 
 ## 4. Backend/API Implementation (To Begin After Frontend Sign-off)
 - [ ] Design and implement API endpoints for fetching post structure, sections, and content
-- [ ] Integrate backend data with Structure and Preview views
+- [ ] Integrate backend data with Template and Preview views
 - [ ] Implement status tracking and editing logic
 - [ ] Connect [Edit] actions to real modular workflow panels
 - [ ] Implement Add Section and Reorder Sections functionality
