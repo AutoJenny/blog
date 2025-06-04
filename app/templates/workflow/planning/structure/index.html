@@ -18,36 +18,43 @@ Do not introduce variants or reorder panels. Consistency is required for maintai
     <div class="mt-8 space-y-8">
         <!-- Inputs Panel -->
         <div class="panel bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-            <h2 class="text-lg font-bold mb-2">Inputs</h2>
+            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Inputs</h2>
             <div class="mb-2">
-                <label class="block font-semibold">Title</label>
-                <input type="text" class="input w-full" value="[Post Title]" />
+                <label class="block font-semibold text-gray-700 dark:text-gray-200">Title</label>
+                <input type="text"
+                    class="input w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-700"
+                    value="[Post Title]" placeholder="[Post Title]" />
             </div>
             <div class="mb-2">
-                <label class="block font-semibold">Basic Idea</label>
-                <textarea class="input w-full" rows="2">[Basic idea text]</textarea>
+                <label class="block font-semibold text-gray-700 dark:text-gray-200">Basic Idea</label>
+                <textarea
+                    class="input w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-700"
+                    rows="2" placeholder="[Basic idea text]">[Basic idea text]</textarea>
             </div>
             <div class="mb-2">
-                <label class="block font-semibold">Interesting Facts</label>
-                <textarea class="input w-full" rows="3">[Fact 1\nFact 2\nFact 3]</textarea>
+                <label class="block font-semibold text-gray-700 dark:text-gray-200">Interesting Facts</label>
+                <textarea
+                    class="input w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-400 border border-gray-300 dark:border-gray-700"
+                    rows="3" placeholder="[Fact 1\nFact 2\nFact 3]">[Fact 1\nFact 2\nFact 3]</textarea>
             </div>
         </div>
         <!-- LLM Action Panel -->
         <div class="panel bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-            <h2 class="text-lg font-bold mb-2">Section Planning</h2>
-            <div class="mb-2">Select inputs to use:</div>
+            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Section Planning</h2>
+            <div class="mb-2 text-gray-700 dark:text-gray-200">Select inputs to use:</div>
             <div class="flex gap-4 mb-4">
-                <label><input type="checkbox" checked /> Title</label>
-                <label><input type="checkbox" checked /> Basic Idea</label>
-                <label><input type="checkbox" checked /> Interesting Facts</label>
+                <label class="text-gray-700 dark:text-gray-200"><input type="checkbox" checked /> Title</label>
+                <label class="text-gray-700 dark:text-gray-200"><input type="checkbox" checked /> Basic Idea</label>
+                <label class="text-gray-700 dark:text-gray-200"><input type="checkbox" checked /> Interesting
+                    Facts</label>
             </div>
             <button class="btn btn-primary">Plan Sections (LLM)</button>
         </div>
         <!-- Output Panel -->
         <div class="panel bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-            <h2 class="text-lg font-bold mb-2">Proposed Sections</h2>
-            <div class="text-gray-500">[LLM output will appear here: section list/table with titles, assigned ideas,
-                assigned facts]</div>
+            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Proposed Sections</h2>
+            <div class="text-gray-500 dark:text-gray-400">[LLM output will appear here: section list/table with titles,
+                assigned ideas, assigned facts]</div>
         </div>
         <!-- Save/Accept Panel -->
         <div class="panel bg-gray-100 dark:bg-gray-800 rounded-lg p-6 flex justify-end">
