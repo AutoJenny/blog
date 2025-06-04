@@ -27,7 +27,7 @@ function renderSections(list, sections) {
 }
 
 async function planSectionsLLM(inputs) {
-  const resp = await fetch('/api/v1/structure/plan', {
+  const resp = await fetch('/blog/api/v1/structure/plan', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(inputs)
@@ -47,7 +47,7 @@ function getPostId() {
 }
 
 async function fetchPostDevelopment(postId) {
-  const resp = await fetch(`/api/v1/post/${postId}/development`);
+  const resp = await fetch(`/blog/api/v1/post/${postId}/development`);
   if (!resp.ok) return null;
   return await resp.json();
 }
