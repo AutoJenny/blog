@@ -57,7 +57,8 @@
 ---
 
 ## 4. Backend/API Implementation (To Begin After Frontend Sign-off)
-- [ ] Design and implement API endpoints for fetching post structure, sections, and content
+- [x] Design and implement API endpoints for fetching post structure, sections, and content
+  - Unified structure endpoint implemented: `/api/v1/post/<post_id>/structure` returns all required data for Template/Preview views.
 - [ ] Integrate backend data with Template and Preview views
 - [ ] Implement status tracking and editing logic
 - [ ] Connect [Edit] actions to real modular workflow panels
