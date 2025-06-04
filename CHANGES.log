@@ -754,3 +754,5 @@ All notable changes to this project are documented in this file.
 [YYYY-MM-DD] Implemented custom Structure stage UI skeleton in planning/structure/index.html as per section-based article workflow refactor plan. Includes Inputs, LLM Action, Output, and Accept panels (UI only).
 
 [YYYY-MM-DD] Created static Template View (template.html) for article overview in workflow. Includes header, progress panel, intro, section, conclusion, metadata blocks, and controls. Static UI only, no backend logic yet.
+
+[YYYY-MM-DD] Created static Preview Mode (preview.html) for article overview in workflow. Mirrors Template View as read-only, with subtle Edit links. Static UI only, no backend logic yet.
