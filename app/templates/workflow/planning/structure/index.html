@@ -53,8 +53,9 @@ Do not introduce variants or reorder panels. Consistency is required for maintai
         <!-- Output Panel -->
         <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6">
             <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Proposed Sections</h2>
-            <div class="text-gray-500 dark:text-gray-400">[LLM output will appear here: section list/table with titles,
-                assigned ideas, assigned facts]</div>
+            <ul id="sections-list" class="space-y-2">
+                <!-- Section rows will be rendered here by JS -->
+            </ul>
         </div>
         <!-- Save/Accept Panel -->
         <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6 flex justify-end">
@@ -65,5 +66,6 @@ Do not introduce variants or reorder panels. Consistency is required for maintai
 {% endblock %}
 
 {% block scripts %}
-<script type="module" src="/static/js/workflow/main.js"></script>
+<script src="/static/js/workflow/sortable.min.js"></script>
+<script type="module" src="/static/js/workflow/structure_stage.js"></script>
 {% endblock %}
