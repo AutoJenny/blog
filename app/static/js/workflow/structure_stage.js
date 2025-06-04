@@ -1,7 +1,7 @@
 // app/static/js/workflow/structure_stage.js
 
 // Example static data (replace with real data fetch later)
-const sections = [
+let sections = [
   { id: 1, title: 'Introduction', ideas: ['Idea 1'], facts: ['Fact A'] },
   { id: 2, title: 'Background', ideas: ['Idea 2'], facts: ['Fact B'] },
   { id: 3, title: 'Main Argument', ideas: ['Idea 3'], facts: ['Fact C'] },
@@ -26,6 +26,16 @@ function renderSections(list, sections) {
   });
 }
 
+async function planSectionsLLM(inputs) {
+  const resp = await fetch('/api/v1/structure/plan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(inputs)
+  });
+  if (!resp.ok) throw new Error('Failed to plan sections');
+  return await resp.json();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const list = document.getElementById('sections-list');
   if (!list) return;
@@ -41,4 +51,33 @@ document.addEventListener('DOMContentLoaded', () => {
       renderSections(list, sections); // Re-render to update indices
     }
   });
+
+  // Wire up Plan Sections (LLM) button
+  const planBtn = document.querySelector('.btn-primary');
+  if (planBtn) {
+    planBtn.addEventListener('click', async () => {
+      planBtn.disabled = true;
+      planBtn.textContent = 'Planning...';
+      try {
+        // Get input values
+        const title = document.querySelector('input[type="text"]')?.value || '';
+        const idea = document.querySelectorAll('textarea')[0]?.value || '';
+        const facts = document.querySelectorAll('textarea')[1]?.value.split('\n').map(f => f.trim()).filter(f => f) || [];
+        const inputs = { title, idea, facts };
+        const result = await planSectionsLLM(inputs);
+        // Expect result.sections as array
+        if (Array.isArray(result.sections)) {
+          sections = result.sections;
+          renderSections(list, sections);
+        } else {
+          alert('LLM did not return a valid section plan.');
+        }
+      } catch (e) {
+        alert('Error planning sections: ' + e.message);
+      } finally {
+        planBtn.disabled = false;
+        planBtn.textContent = 'Plan Sections (LLM)';
+      }
+    });
+  }
 }); 
