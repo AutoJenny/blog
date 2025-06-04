@@ -750,3 +750,5 @@ All notable changes to this project are documented in this file.
 - Removed action handler logic that forcibly set output field, which caused persistent bug.
 - Now both input and output dropdowns always reflect DB state and persist correctly.
 2025-06-01: Added timeout INTEGER DEFAULT 60 to llm_action for per-action LLM request timeout. Updated schema, docs, and backup/restore scripts.
+
+[YYYY-MM-DD] Implemented custom Structure stage UI skeleton in planning/structure/index.html as per section-based article workflow refactor plan. Includes Inputs, LLM Action, Output, and Accept panels (UI only).

@@ -10,6 +10,7 @@
 - [ ] Review and confirm UI plan, wireframes, and mockups with stakeholders
 - [ ] Create new git branch for UI implementation
 - [ ] Set up `/workflow/template/` and `/workflow/preview/` routes in Flask (stub only, no backend logic yet)
+- [x] Custom Structure stage UI skeleton implemented in planning/structure/index.html (Inputs, LLM Action, Output, Accept panels; static UI only)
 
 ---
 
