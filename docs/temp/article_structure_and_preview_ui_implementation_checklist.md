@@ -33,12 +33,8 @@
 - [ ] Implement breadcrumbs and navigation header
 
 ### 2.2 Preview Mode
-- [ ] Create `preview.html` template in `app/templates/workflow/`
-- [ ] Implement static layout for:
-    - [ ] Post title, status, and Template/Preview toggle button in header
-    - [ ] Stage/progress icons panel
-    - [ ] Full content for intro, each section, conclusion, metadata
-    - [ ] Subtle [Edit] links for each block (open modular workflow panel as modal)
+- [x] Create `preview.html` template in `app/templates/workflow/`
+- [x] Implement static layout for Preview Mode (UI only, no backend logic)
 - [ ] Ensure Preview is read-only (no editing in this mode except via Edit links)
 
 ### 2.3 Modular Edit Panel (Modal/Subsidiary)
