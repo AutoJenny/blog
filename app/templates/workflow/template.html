@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% import "workflow/workflow_indicator.html" as indicator %}
+{% import "blog/_post_header.html" as blog_macros %}
+
+{% block title %}Article Template View{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    <!-- Breadcrumbs / Navigation -->
+    <nav class="mb-4 text-sm text-gray-500">
+        <a href="/" class="hover:underline">Home</a> /
+        <a href="/workflow/" class="hover:underline">Workflow</a> /
+        <span class="text-gray-700">Template</span>
+    </nav>
+    <!-- Header: Post Title, Status, Template/Preview Toggle -->
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-4">
+            <h1 class="text-2xl font-bold">[Post Title]</h1>
+            <span class="px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Draft</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button class="btn btn-outline">Template</button>
+            <button class="btn btn-secondary">Preview</button>
+        </div>
+    </div>
+    <!-- Stage/Progress Icons Panel -->
+    <div class="mb-8">
+        {{ indicator.process_indicator(["idea", "research", "structure", "content", "meta_info", "images", "preflight",
+        "launch", "syndication"], ["planning", "authoring", "publishing"], "structure", post=None) }}
+    </div>
+    <!-- Main Article Blocks -->
+    <div class="space-y-6">
+        <!-- Intro Block -->
+        <div class="panel bg-gray-50 dark:bg-gray-800 rounded-lg p-6 flex justify-between items-center">
+            <div>
+                <strong>Intro:</strong> <span class="text-gray-600">[Intro snippet goes here]</span>
+            </div>
+            <div>
+                <button class="btn btn-secondary">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
+            </div>
+        </div>
+        <!-- Section Blocks (repeat for each section) -->
+        <div class="panel bg-gray-50 dark:bg-gray-800 rounded-lg p-6 flex justify-between items-center">
+            <div>
+                <strong>Section 1:</strong> <span class="font-semibold">[Heading]</span> <span
+                    class="italic text-gray-500">[Theme]</span>
+                <div class="text-gray-600 mt-1">[Section 1 snippet...]</div>
+            </div>
+            <div>
+                <button class="btn btn-secondary">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
+            </div>
+        </div>
+        <div class="panel bg-gray-50 dark:bg-gray-800 rounded-lg p-6 flex justify-between items-center">
+            <div>
+                <strong>Section 2:</strong> <span class="font-semibold">[Heading]</span> <span
+                    class="italic text-gray-500">[Theme]</span>
+                <div class="text-gray-600 mt-1">[Section 2 snippet...]</div>
+            </div>
+            <div>
+                <button class="btn btn-secondary">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
+            </div>
+        </div>
+        <!-- Conclusion Block -->
+        <div class="panel bg-gray-50 dark:bg-gray-800 rounded-lg p-6 flex justify-between items-center">
+            <div>
+                <strong>Conclusion:</strong> <span class="text-gray-600">[Conclusion snippet]</span>
+            </div>
+            <div>
+                <button class="btn btn-secondary">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-red-100 text-red-800 text-xs">Needs Work</span>
+            </div>
+        </div>
+        <!-- Metadata Block -->
+        <div class="panel bg-gray-50 dark:bg-gray-800 rounded-lg p-6 flex justify-between items-center">
+            <div>
+                <strong>Metadata:</strong> <span class="text-gray-600">[fields...]</span>
+            </div>
+            <div>
+                <button class="btn btn-secondary">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
+            </div>
+        </div>
+        <!-- Add Section / Reorder Controls -->
+        <div class="flex gap-2 mt-4">
+            <button class="btn btn-success">Add Section</button>
+            <button class="btn btn-outline">Reorder Sections</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- No dynamic JS yet; add here when wiring up modal/edit logic -->
+{% endblock %}

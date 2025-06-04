@@ -11,6 +11,8 @@
 - [ ] Create new git branch for UI implementation
 - [ ] Set up `/workflow/template/` and `/workflow/preview/` routes in Flask (stub only, no backend logic yet)
 - [x] Custom Structure stage UI skeleton implemented in planning/structure/index.html (Inputs, LLM Action, Output, Accept panels; static UI only)
+- [x] Create `template.html` template in `app/templates/workflow/`
+- [x] Implement static layout for Template View (UI only, no backend logic)
 
 ---
 
