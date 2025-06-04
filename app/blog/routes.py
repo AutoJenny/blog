@@ -445,3 +445,40 @@ def get_post_development_fields():
         return jsonify({"fields": columns})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/api/v1/post/<int:post_id>/structure", methods=["GET"])
+def get_post_structure(post_id):
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Fetch post
+                cur.execute("SELECT id, title, published, deleted, created_at, updated_at FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+                if not post:
+                    return jsonify({"error": "Post not found"}), 404
+                # Fetch post_development
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                dev = cur.fetchone() or {}
+                # Fetch sections
+                cur.execute("SELECT * FROM post_section WHERE post_id = %s ORDER BY section_order", (post_id,))
+                sections = cur.fetchall() or []
+        # Compose structure
+        structure = {
+            "post": {k: v for k, v in post.items()},
+            "intro": {k: v for k, v in dev.items() if k in ["intro", "intro_status"]},
+            "sections": [
+                {k: v for k, v in s.items() if k != "post_id"} for s in sections
+            ],
+            "conclusion": {k: v for k, v in dev.items() if k in ["conclusion", "conclusion_status"]},
+            "metadata": {k: v for k, v in dev.items() if k not in ["id", "post_id", "intro", "intro_status", "conclusion", "conclusion_status"]},
+            "status": {
+                "intro": dev.get("intro_status", "draft"),
+                "sections": [s.get("status", "draft") for s in sections],
+                "conclusion": dev.get("conclusion_status", "draft"),
+                "metadata": dev.get("metadata_status", "draft")
+            }
+        }
+        return jsonify(structure)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

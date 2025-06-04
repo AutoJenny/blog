@@ -756,3 +756,6 @@ All notable changes to this project are documented in this file.
 [YYYY-MM-DD] Created static Template View (template.html) in app/templates/workflow/ with all required UI blocks (title, status, progress, intro, sections, conclusion, metadata, add/reorder controls, color-coded status, edit links, breadcrumbs).
 - Updated article_structure_and_preview_ui_implementation_checklist.md to check off Template View static layout items.
 - Static frontend is ready for stakeholder review before backend/API work begins.
+
+[YYYY-MM-DD] Add: Unified /api/v1/post/<post_id>/structure endpoint in app/blog/routes.py for Template/Preview views. Returns post, intro, sections, conclusion, metadata, and status in a single JSON object for robust frontend integration.
+- Updated article_structure_and_preview_ui_implementation_checklist.md to check off API endpoint implementation.
