@@ -19,18 +19,18 @@
 ## 2. Frontend: Navigable Mockups (HTML/CSS/JS Stubs)
 
 ### 2.1 Template View (Article Overview)
-- [ ] Create `template.html` template in `app/templates/workflow/`
-- [ ] Implement static layout for:
-    - [ ] Post title, status, and Template/Preview toggle button in header
-    - [ ] Stage/progress icons panel
-    - [ ] Intro block (snippet, Edit, status)
-    - [ ] Section blocks (heading, theme, snippet, Edit, status)
-    - [ ] Conclusion block (snippet, Edit, status)
-    - [ ] Metadata block (fields, Edit, status)
-    - [ ] Add Section and Reorder Sections controls (UI only)
-- [ ] Color-code status indicators (e.g., green=complete, yellow=draft, red=needs work)
-- [ ] Make each [Edit] button/link open the modular workflow panel as a modal or subsidiary panel
-- [ ] Implement breadcrumbs and navigation header
+- [x] Create `template.html` template in `app/templates/workflow/`
+- [x] Implement static layout for:
+    - [x] Post title, status, and Template/Preview toggle button in header
+    - [x] Stage/progress icons panel
+    - [x] Intro block (snippet, Edit, status)
+    - [x] Section blocks (heading, theme, snippet, Edit, status)
+    - [x] Conclusion block (snippet, Edit, status)
+    - [x] Metadata block (fields, Edit, status)
+    - [x] Add Section and Reorder Sections controls (UI only)
+- [x] Color-code status indicators (e.g., green=complete, yellow=draft, red=needs work)
+- [x] Make each [Edit] button/link open the modular workflow panel as a modal or subsidiary panel (currently links to edit page)
+- [x] Implement breadcrumbs and navigation header
 
 ### 2.2 Preview Mode
 - [x] Create `preview.html` template in `app/templates/workflow/`
@@ -83,4 +83,6 @@
 
 **Reminder:**
 - Tick off each box as you complete the task.
-- Do not begin backend/API work until frontend mockups and navigation are signed off by all stakeholders. 
+- Do not begin backend/API work until frontend mockups and navigation are signed off by all stakeholders.
+
+> **Note:** Static Template View frontend is complete and ready for stakeholder review. 

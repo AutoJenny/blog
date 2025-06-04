@@ -753,8 +753,6 @@ All notable changes to this project are documented in this file.
 
 [YYYY-MM-DD] Implemented custom Structure stage UI skeleton in planning/structure/index.html as per section-based article workflow refactor plan. Includes Inputs, LLM Action, Output, and Accept panels (UI only).
 
-[YYYY-MM-DD] Created static Template View (template.html) for article overview in workflow. Includes header, progress panel, intro, section, conclusion, metadata blocks, and controls. Static UI only, no backend logic yet.
-
-[YYYY-MM-DD] Created static Preview Mode (preview.html) for article overview in workflow. Mirrors Template View as read-only, with subtle Edit links. Static UI only, no backend logic yet.
-
-[YYYY-MM-DD] Created modular edit panel stub (modular_edit_panel.html) for workflow UI refactor. Standalone page with Save/Cancel, placeholder for modular workflow panel.
+[YYYY-MM-DD] Created static Template View (template.html) in app/templates/workflow/ with all required UI blocks (title, status, progress, intro, sections, conclusion, metadata, add/reorder controls, color-coded status, edit links, breadcrumbs).
+- Updated article_structure_and_preview_ui_implementation_checklist.md to check off Template View static layout items.
+- Static frontend is ready for stakeholder review before backend/API work begins.
