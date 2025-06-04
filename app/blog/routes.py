@@ -482,3 +482,19 @@ def get_post_structure(post_id):
         return jsonify(structure)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@bp.route('/api/v1/structure/plan', methods=['POST'])
+def plan_structure_llm():
+    data = request.get_json() or {}
+    title = data.get('title', '')
+    idea = data.get('idea', '')
+    facts = data.get('facts', [])
+    # Mock LLM output: split idea/facts into sections
+    sections = [
+        {"id": 1, "title": "Introduction", "ideas": [idea], "facts": facts[:1]},
+        {"id": 2, "title": "Background", "ideas": [], "facts": facts[1:2]},
+        {"id": 3, "title": "Main Argument", "ideas": [], "facts": facts[2:3]},
+        {"id": 4, "title": "Conclusion", "ideas": [], "facts": facts[3:]},
+    ]
+    return jsonify({"sections": sections})
