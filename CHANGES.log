@@ -752,3 +752,5 @@ All notable changes to this project are documented in this file.
 2025-06-01: Added timeout INTEGER DEFAULT 60 to llm_action for per-action LLM request timeout. Updated schema, docs, and backup/restore scripts.
 
 [YYYY-MM-DD] Implemented custom Structure stage UI skeleton in planning/structure/index.html as per section-based article workflow refactor plan. Includes Inputs, LLM Action, Output, and Accept panels (UI only).
+
+[YYYY-MM-DD] Created static Template View (template.html) for article overview in workflow. Includes header, progress panel, intro, section, conclusion, metadata blocks, and controls. Static UI only, no backend logic yet.
