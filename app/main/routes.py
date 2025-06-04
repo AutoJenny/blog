@@ -549,3 +549,33 @@ def structure_stub():
 @bp.route('/workflow/stub/')
 def workflow_panel_stub():
     return render_template('preview/modular_workflow_stub.html')
+
+@bp.route('/workflow/template/')
+def workflow_template():
+    # TODO: Replace with real post lookup
+    post = {'title': 'Sample Post', 'status': 'draft'}
+    return render_template('workflow/template.html', post=post)
+
+@bp.route('/workflow/preview/')
+def workflow_preview():
+    # TODO: Replace with real post lookup
+    post = {'title': 'Sample Post', 'status': 'draft'}
+    return render_template('workflow/preview.html', post=post)
+
+@bp.route('/workflow/edit/')
+def workflow_edit():
+    # TODO: Replace with real post/section lookup
+    section = request.args.get('section', 'Section 1')
+    return render_template('workflow/modular_edit_panel.html', section=section)
+
+@bp.route('/workflow/structure/edit')
+def workflow_structure_edit():
+    post_id = request.args.get('post_id', type=int)
+    section = request.args.get('section', default=None, type=str)
+    post = None
+    if post_id:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+    return render_template('workflow/planning/structure/edit.html', post=post, section=section)

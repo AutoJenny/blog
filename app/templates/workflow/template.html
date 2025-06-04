@@ -19,8 +19,8 @@
             <span class="px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Draft</span>
         </div>
         <div class="flex items-center gap-2">
-            <button class="btn btn-outline">Template</button>
-            <button class="btn btn-secondary">Preview</button>
+            <button class="btn btn-outline" onclick="window.location.href='/workflow/template/'">Template</button>
+            <button class="btn btn-secondary" onclick="window.location.href='/workflow/preview/'">Preview</button>
         </div>
     </div>
     <!-- Stage/Progress Icons Panel -->
@@ -36,7 +36,8 @@
                 <strong>Intro:</strong> <span class="text-gray-600">[Intro snippet goes here]</span>
             </div>
             <div>
-                <button class="btn btn-secondary">Edit</button>
+                <button class="btn btn-secondary"
+                    onclick="window.location.href='/workflow/edit/?section=Intro'">Edit</button>
                 <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
             </div>
         </div>
@@ -48,7 +49,8 @@
                 <div class="text-gray-600 mt-1">[Section 1 snippet...]</div>
             </div>
             <div>
-                <button class="btn btn-secondary">Edit</button>
+                <button class="btn btn-secondary"
+                    onclick="window.location.href='/workflow/edit/?section=Section 1'">Edit</button>
                 <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
             </div>
         </div>
@@ -59,7 +61,8 @@
                 <div class="text-gray-600 mt-1">[Section 2 snippet...]</div>
             </div>
             <div>
-                <button class="btn btn-secondary">Edit</button>
+                <button class="btn btn-secondary"
+                    onclick="window.location.href='/workflow/edit/?section=Section 2'">Edit</button>
                 <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
             </div>
         </div>
@@ -69,7 +72,8 @@
                 <strong>Conclusion:</strong> <span class="text-gray-600">[Conclusion snippet]</span>
             </div>
             <div>
-                <button class="btn btn-secondary">Edit</button>
+                <button class="btn btn-secondary"
+                    onclick="window.location.href='/workflow/edit/?section=Conclusion'">Edit</button>
                 <span class="ml-2 px-2 py-1 rounded bg-red-100 text-red-800 text-xs">Needs Work</span>
             </div>
         </div>
@@ -79,7 +83,8 @@
                 <strong>Metadata:</strong> <span class="text-gray-600">[fields...]</span>
             </div>
             <div>
-                <button class="btn btn-secondary">Edit</button>
+                <button class="btn btn-secondary"
+                    onclick="window.location.href='/workflow/edit/?section=Metadata'">Edit</button>
                 <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
             </div>
         </div>
