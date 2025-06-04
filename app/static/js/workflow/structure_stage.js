@@ -36,7 +36,23 @@ async function planSectionsLLM(inputs) {
   return await resp.json();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// Utility: get post_id from URL or data attribute
+function getPostId() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('post_id')) return urlParams.get('post_id');
+  // Try data attribute on root
+  const root = document.getElementById('sections-list');
+  if (root && root.dataset.postId) return root.dataset.postId;
+  return null;
+}
+
+async function fetchPostDevelopment(postId) {
+  const resp = await fetch(`/api/v1/post/${postId}/development`);
+  if (!resp.ok) return null;
+  return await resp.json();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
   const list = document.getElementById('sections-list');
   if (!list) return;
   renderSections(list, sections);
@@ -51,6 +67,24 @@ document.addEventListener('DOMContentLoaded', () => {
       renderSections(list, sections); // Re-render to update indices
     }
   });
+
+  // Pre-populate input fields from post_development
+  const postId = getPostId();
+  if (postId) {
+    try {
+      const dev = await fetchPostDevelopment(postId);
+      if (dev) {
+        const titleInput = document.querySelector('input[type="text"]');
+        const ideaTextarea = document.querySelectorAll('textarea')[0];
+        const factsTextarea = document.querySelectorAll('textarea')[1];
+        if (titleInput && dev.provisional_title) titleInput.value = dev.provisional_title;
+        if (ideaTextarea && dev.basic_idea) ideaTextarea.value = dev.basic_idea;
+        if (factsTextarea && dev.interesting_facts) factsTextarea.value = dev.interesting_facts;
+      }
+    } catch (e) {
+      // Ignore errors, leave fields blank
+    }
+  }
 
   // Wire up Plan Sections (LLM) button
   const planBtn = document.querySelector('.btn-primary');
