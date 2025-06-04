@@ -19,8 +19,8 @@
             <span class="px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Draft</span>
         </div>
         <div class="flex items-center gap-2">
-            <button class="btn btn-secondary">Template</button>
-            <button class="btn btn-outline">Preview</button>
+            <button class="btn btn-secondary" onclick="window.location.href='/workflow/template/'">Template</button>
+            <button class="btn btn-outline" onclick="window.location.href='/workflow/preview/'">Preview</button>
         </div>
     </div>
     <!-- Stage/Progress Icons Panel -->
@@ -36,7 +36,7 @@
                 <h2 class="text-lg font-bold mb-1">Intro</h2>
                 <div class="text-gray-700 dark:text-gray-300">[Full intro content goes here]</div>
             </div>
-            <a href="#" class="text-xs text-blue-500 hover:underline">Edit</a>
+            <a href="/workflow/edit/?section=Intro" class="text-xs text-blue-500 hover:underline">Edit</a>
         </div>
         <!-- Section Blocks (repeat for each section) -->
         <div class="flex justify-between items-center border-b pb-4 mb-4">
@@ -45,7 +45,7 @@
                 <div class="italic text-gray-500 mb-1">[Theme]</div>
                 <div class="text-gray-700 dark:text-gray-300">[Section 1 full content...]</div>
             </div>
-            <a href="#" class="text-xs text-blue-500 hover:underline">Edit</a>
+            <a href="/workflow/edit/?section=Section 1" class="text-xs text-blue-500 hover:underline">Edit</a>
         </div>
         <div class="flex justify-between items-center border-b pb-4 mb-4">
             <div>
@@ -53,7 +53,7 @@
                 <div class="italic text-gray-500 mb-1">[Theme]</div>
                 <div class="text-gray-700 dark:text-gray-300">[Section 2 full content...]</div>
             </div>
-            <a href="#" class="text-xs text-blue-500 hover:underline">Edit</a>
+            <a href="/workflow/edit/?section=Section 2" class="text-xs text-blue-500 hover:underline">Edit</a>
         </div>
         <!-- Conclusion Block -->
         <div class="flex justify-between items-center border-b pb-4 mb-4">
@@ -61,7 +61,7 @@
                 <h2 class="text-lg font-bold mb-1">Conclusion</h2>
                 <div class="text-gray-700 dark:text-gray-300">[Conclusion full content]</div>
             </div>
-            <a href="#" class="text-xs text-blue-500 hover:underline">Edit</a>
+            <a href="/workflow/edit/?section=Conclusion" class="text-xs text-blue-500 hover:underline">Edit</a>
         </div>
         <!-- Metadata Block -->
         <div class="flex justify-between items-center">
@@ -69,7 +69,7 @@
                 <h2 class="text-lg font-bold mb-1">Metadata</h2>
                 <div class="text-gray-700 dark:text-gray-300">[fields...]</div>
             </div>
-            <a href="#" class="text-xs text-blue-500 hover:underline">Edit</a>
+            <a href="/workflow/edit/?section=Metadata" class="text-xs text-blue-500 hover:underline">Edit</a>
         </div>
     </div>
 </div>

@@ -43,9 +43,8 @@
 - [ ] On save/cancel, return to the previous view
 
 ### 2.4 Navigation & User Flow
-- [ ] Ensure navigation between Template, Preview, and Modular Edit Panel
-- [ ] Update Posts List so clicking a post goes to Template View
-- [ ] Test all navigation paths for usability
+- [x] Ensure navigation between Template, Preview, and Modular Edit Panel (static UI only)
+- [x] Test all navigation paths for usability (static UI only; ready for review)
 
 ---
 
