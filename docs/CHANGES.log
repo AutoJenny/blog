@@ -143,3 +143,5 @@
 - /db/ UI now lists posts ordered by most recently updated first and supports pagination with Previous/Next buttons.
 
 - Workflow panel now prevents running LLM actions with empty input fields (frontend), and backend error message now specifies which field is missing for clarity. 
+
+[YYYY-MM-DD] Structure stage UI skeleton implemented: planning/structure/index.html now uses a custom template with Inputs, LLM Action, Output, and Accept panels (static UI only). Updated docs/temp/article_structure_and_preview_ui_implementation_checklist.md and docs/temp/structure_stage_refactor_plan.md. 
