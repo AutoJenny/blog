@@ -105,5 +105,7 @@ The output dropdown in the modular workflow UI now loads its value from the DB i
   - Conclusion block (snippet, Edit, status)
   - Metadata block (fields, Edit, status)
   - Add Section and Reorder Sections controls (UI only)
-- **Status:** Static UI only (no backend logic yet). Part of the section-based workflow refactor (see /docs/temp/article_structure_and_preview_ui_implementation_checklist.md).
-- **Next:** Preview mode, navigation wiring, and backend integration. 
+  - Color-coded status indicators (green=complete, yellow=draft, red=needs work)
+  - Breadcrumbs and navigation header
+- **Status:** Static UI complete (all required blocks present, no backend logic yet). Checklist updated in /docs/temp/article_structure_and_preview_ui_implementation_checklist.md.
+- **Next:** Frontend is ready for stakeholder review before backend/API work begins. See checklist for next steps. 
