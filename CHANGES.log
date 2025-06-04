@@ -756,3 +756,5 @@ All notable changes to this project are documented in this file.
 [YYYY-MM-DD] Created static Template View (template.html) for article overview in workflow. Includes header, progress panel, intro, section, conclusion, metadata blocks, and controls. Static UI only, no backend logic yet.
 
 [YYYY-MM-DD] Created static Preview Mode (preview.html) for article overview in workflow. Mirrors Template View as read-only, with subtle Edit links. Static UI only, no backend logic yet.
+
+[YYYY-MM-DD] Created modular edit panel stub (modular_edit_panel.html) for workflow UI refactor. Standalone page with Save/Cancel, placeholder for modular workflow panel.

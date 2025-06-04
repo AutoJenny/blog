@@ -38,8 +38,8 @@
 - [ ] Ensure Preview is read-only (no editing in this mode except via Edit links)
 
 ### 2.3 Modular Edit Panel (Modal/Subsidiary)
-- [ ] Create a modal or subsidiary panel for modular workflow editing
-- [ ] Ensure it can be opened from both Template and Preview views
+- [x] Create a modal or subsidiary panel for modular workflow editing (stub: modular_edit_panel.html)
+- [x] Ensure it can be opened from both Template and Preview views (UI stub only)
 - [ ] On save/cancel, return to the previous view
 
 ### 2.4 Navigation & User Flow
