@@ -12,10 +12,48 @@ Do not introduce variants or reorder panels. Consistency is required for maintai
 
 {% block content %}
 <div class="container mx-auto px-6 py-8">
-    {{ blog_macros.post_header(post) }}
+    {{ blog_macros.post_header(post, active_view='template') }}
     {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
-    {% set substage = 'structure' %}
-    {% include "workflow/_modular_llm_panels.html" %}
+    <!-- Structure Stage Custom UI -->
+    <div class="mt-8 space-y-8">
+        <!-- Inputs Panel -->
+        <div class="panel bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-bold mb-2">Inputs</h2>
+            <div class="mb-2">
+                <label class="block font-semibold">Title</label>
+                <input type="text" class="input w-full" value="[Post Title]" />
+            </div>
+            <div class="mb-2">
+                <label class="block font-semibold">Basic Idea</label>
+                <textarea class="input w-full" rows="2">[Basic idea text]</textarea>
+            </div>
+            <div class="mb-2">
+                <label class="block font-semibold">Interesting Facts</label>
+                <textarea class="input w-full" rows="3">[Fact 1\nFact 2\nFact 3]</textarea>
+            </div>
+        </div>
+        <!-- LLM Action Panel -->
+        <div class="panel bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-bold mb-2">Section Planning</h2>
+            <div class="mb-2">Select inputs to use:</div>
+            <div class="flex gap-4 mb-4">
+                <label><input type="checkbox" checked /> Title</label>
+                <label><input type="checkbox" checked /> Basic Idea</label>
+                <label><input type="checkbox" checked /> Interesting Facts</label>
+            </div>
+            <button class="btn btn-primary">Plan Sections (LLM)</button>
+        </div>
+        <!-- Output Panel -->
+        <div class="panel bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+            <h2 class="text-lg font-bold mb-2">Proposed Sections</h2>
+            <div class="text-gray-500">[LLM output will appear here: section list/table with titles, assigned ideas,
+                assigned facts]</div>
+        </div>
+        <!-- Save/Accept Panel -->
+        <div class="panel bg-gray-100 dark:bg-gray-800 rounded-lg p-6 flex justify-end">
+            <button class="btn btn-success">Accept Structure</button>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
