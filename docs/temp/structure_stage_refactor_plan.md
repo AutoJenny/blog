@@ -16,7 +16,7 @@
     - [x] Option to select which inputs to use (checkboxes or multi-select) (UI only)
 - [x] Output Panel:
     - [x] Display LLM's proposed section structure as a list/table (placeholder UI only)
-    - [ ] Each row = one section (title, assigned ideas, assigned facts)
+    - [x] Each row = one section (title, assigned ideas, assigned facts)
     - [ ] Enable drag-and-drop reordering of sections
     - [ ] Allow manual assignment of facts/ideas to sections (e.g., via dropdowns or drag-and-drop)
     - [ ] Allow editing of section titles and notes
@@ -55,7 +55,8 @@
 ---
 
 ## 5. Documentation & Review
-- [ ] Document all UI/UX flows and backend endpoints
+- [ ] Document all UI/UX flows and 
+backend endpoints
 - [ ] Update wireframes and diagrams as needed
 - [ ] Review plan with stakeholders before starting implementation
 
