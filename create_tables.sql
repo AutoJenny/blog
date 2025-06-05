@@ -84,6 +84,7 @@ CREATE TABLE post_section (
     post_id INTEGER REFERENCES post(id) NOT NULL,
     section_order INTEGER,
     section_heading TEXT,
+    section_description TEXT,
     ideas_to_include TEXT,
     facts_to_include TEXT,
     first_draft TEXT,
