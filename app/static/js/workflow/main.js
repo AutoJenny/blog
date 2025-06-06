@@ -53,39 +53,41 @@ document.addEventListener('DOMContentLoaded', async () => {
       psa = Array.isArray(state.postSubstageAction) && state.postSubstageAction.length > 0 ? state.postSubstageAction[0] : null;
     }
   }
-  render.renderFieldDropdown(inputFieldSelect, state.fieldMappings, psa ? psa.input_field : null, state.substage);
-  render.renderFieldDropdown(outputFieldSelect, state.fieldMappings, psa ? psa.output_field : null, state.substage);
-  render.renderActionDropdown(actionSelect, state.llmActions, psa ? psa.action_id : null);
-  render.renderPostDevFields(postDevFieldsPanel, state.fieldMappings, state.postDev, state.substage);
-  if (inputFieldSelect.value) inputFieldValue.textContent = state.postDev[inputFieldSelect.value] || '(No value)';
-  if (outputFieldSelect.value) outputFieldValue.textContent = state.postDev[outputFieldSelect.value] || '(No value)';
+  // Only render dropdowns and register event handlers if the elements exist
+  if (inputFieldSelect && outputFieldSelect && actionSelect && postDevFieldsPanel && runActionBtn) {
+    render.renderFieldDropdown(inputFieldSelect, state.fieldMappings, psa ? psa.input_field : null, state.substage);
+    render.renderFieldDropdown(outputFieldSelect, state.fieldMappings, psa ? psa.output_field : null, state.substage);
+    render.renderActionDropdown(actionSelect, state.llmActions, psa ? psa.action_id : null);
+    render.renderPostDevFields(postDevFieldsPanel, state.fieldMappings, state.postDev, state.substage);
+    if (inputFieldSelect.value) inputFieldValue.textContent = state.postDev[inputFieldSelect.value] || '(No value)';
+    if (outputFieldSelect.value) outputFieldValue.textContent = state.postDev[outputFieldSelect.value] || '(No value)';
+    actionSelect.dispatchEvent(new Event('change'));
+    render.updatePanelVisibility(actionSelect, document.getElementById('inputPanel'), document.getElementById('outputPanel'));
+    // Register all event handlers
+    registerWorkflowEventHandlers({
+      inputFieldSelect,
+      inputFieldValue,
+      actionSelect,
+      actionPromptPanel,
+      runActionBtn,
+      outputFieldSelect,
+      outputFieldValue,
+      actionOutputPanel,
+      saveOutputBtn,
+      postDevFieldsPanel,
+      savePostSubstageAction: api.savePostSubstageAction,
+      fetchPostSubstageAction: api.fetchPostSubstageAction,
+      fetchPostDevelopment: api.fetchPostDevelopment,
+      updatePostDevelopmentField: api.updatePostDevelopmentField,
+      renderFieldDropdown: render.renderFieldDropdown,
+      renderPostDevFields: render.renderPostDevFields,
+      showActionDetails: render.showActionDetails,
+      updatePanelVisibility: render.updatePanelVisibility,
+      runLLMAction: api.runLLMAction,
+      state: { ...state, checkOllamaStatus: api.checkOllamaStatus }
+    });
+  }
   state.isInitializing = false;
-  actionSelect.dispatchEvent(new Event('change'));
-  render.updatePanelVisibility(actionSelect, document.getElementById('inputPanel'), document.getElementById('outputPanel'));
-
-  // Register all event handlers
-  registerWorkflowEventHandlers({
-    inputFieldSelect,
-    inputFieldValue,
-    actionSelect,
-    actionPromptPanel,
-    runActionBtn,
-    outputFieldSelect,
-    outputFieldValue,
-    actionOutputPanel,
-    saveOutputBtn,
-    postDevFieldsPanel,
-    savePostSubstageAction: api.savePostSubstageAction,
-    fetchPostSubstageAction: api.fetchPostSubstageAction,
-    fetchPostDevelopment: api.fetchPostDevelopment,
-    updatePostDevelopmentField: api.updatePostDevelopmentField,
-    renderFieldDropdown: render.renderFieldDropdown,
-    renderPostDevFields: render.renderPostDevFields,
-    showActionDetails: render.showActionDetails,
-    updatePanelVisibility: render.updatePanelVisibility,
-    runLLMAction: api.runLLMAction,
-    state: { ...state, checkOllamaStatus: api.checkOllamaStatus }
-  });
 
   // Minimal automatic retry: if pendingOllamaAction is set, trigger Run Action and clear the flag
   if (localStorage.getItem('pendingOllamaAction') === 'true') {

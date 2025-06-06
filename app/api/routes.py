@@ -16,6 +16,8 @@ import sys
 from dotenv import dotenv_values
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import json
+from app.llm.services import LLMService
 
 
 def check_ollama_performance():
@@ -950,5 +952,85 @@ def get_post_development(post_id):
             return jsonify({"error": "Not found"}), 404
         # Exclude id and post_id
         return jsonify({k: v for k, v in dev.items() if k not in ["id", "post_id"]})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@bp.route("/structure/plan", methods=["POST"])
+def plan_structure():
+    """Plan the structure of a post using LLM."""
+    data = request.get_json()
+    if not data or "title" not in data or "idea" not in data:
+        return jsonify({"error": "title and idea are required"}), 400
+    
+    try:
+        llm = LLMService()
+        sections = llm.plan_structure(data["title"], data["idea"], data.get("facts", []))
+        return jsonify({"sections": sections})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@bp.route("/structure/save/<int:post_id>", methods=["POST"])
+def save_structure(post_id):
+    """Save the structure of a post."""
+    data = request.get_json()
+    if not data or "sections" not in data:
+        return jsonify({"error": "sections are required"}), 400
+    
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Delete existing sections
+                cur.execute("DELETE FROM post_section WHERE post_id = %s", (post_id,))
+                # Insert new sections
+                for i, section in enumerate(data["sections"]):
+                    cur.execute(
+                        """
+                        INSERT INTO post_section (
+                            post_id, section_order, section_heading, 
+                            section_description, facts_to_include, ideas_to_include
+                        )
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            post_id, i, section["heading"], 
+                            section.get("description", ""),
+                            json.dumps(section.get("facts", [])),
+                            json.dumps(section.get("ideas", []))
+                        )
+                    )
+                conn.commit()
+        return jsonify({"message": "Structure saved successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@bp.route("/posts/<int:post_id>/structure", methods=["GET"])
+def get_structure(post_id):
+    """Get the structure of a post."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Get post
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+                if not post:
+                    return jsonify({"error": "Post not found"}), 404
+                
+                # Get sections
+                cur.execute(
+                    """
+                    SELECT id, section_order, section_heading, section_description,
+                           facts_to_include, ideas_to_include
+                    FROM post_section 
+                    WHERE post_id = %s 
+                    ORDER BY section_order
+                    """, 
+                    (post_id,)
+                )
+                sections = cur.fetchall()
+                
+                return jsonify({
+                    "post": post,
+                    "sections": sections
+                })
     except Exception as e:
         return jsonify({"error": str(e)}), 500

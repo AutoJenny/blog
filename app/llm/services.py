@@ -151,58 +151,41 @@ def modular_prompt_to_canonical(prompt_json, fields: dict) -> dict:
     if isinstance(prompt_json, dict):
         prompt_json = [prompt_json]
 
-    # Collect content by tag
-    system_lines = []  # role, style, voice
-    operation_lines = []  # operation
+    # Collect all content parts
+    prompt_parts = []
     input_val = fields.get('input', '')
-    # Compose system/role/style/voice
+    
+    # Process all parts in order
     for part in prompt_json:
-        tags = [t.lower() for t in part.get('tags', [])]
         content = part.get('content', '').strip()
         if not content:
             continue
-        if 'role' in tags:
-            system_lines.append(content)
-        elif 'style' in tags or 'voice' in tags:
-            system_lines.append(content)
-        elif 'operation' in tags:
-            operation_lines.append(content)
-        elif 'data' in tags or part.get('type') == 'data':
-            # If data part has content, treat as default input
-            if content:
-                input_val = content
+        prompt_parts.append(content)
+        
+        # If this is a data part with content, use it as default input
+        if part.get('type') == 'data' and content:
+            input_val = content
 
-    # Compose system message (natural, joined by ". ")
-    system_msg = '. '.join(system_lines).strip()
-    if system_msg and not system_msg.endswith('.'):
-        system_msg += '.'
-    # Compose operation message (natural, joined by ". ")
-    operation_msg = '. '.join(operation_lines).strip()
-    if operation_msg and not operation_msg.endswith('.'):
-        operation_msg += '.'
-    # Compose prompt string for single-prompt LLMs
-    prompt_lines = []
-    if system_msg:
-        prompt_lines.append(system_msg)
-    if operation_msg:
-        prompt_lines.append(operation_msg)
+    # Compose the final prompt string
+    prompt = '\n\n'.join(prompt_parts)
     if input_val:
-        prompt_lines.append(f"Data for this operation as follows: {input_val}")
-    prompt = ' '.join(prompt_lines)
-    # --- DEBUG LOGGING ---
-    logger = logging.getLogger(__name__)
-    logger.error(f"[DEBUG] modular_prompt_to_canonical system_msg: {system_msg}")
-    logger.error(f"[DEBUG] modular_prompt_to_canonical operation_msg: {operation_msg}")
-    logger.error(f"[DEBUG] modular_prompt_to_canonical input_val: {input_val}")
-    logger.error(f"[DEBUG] modular_prompt_to_canonical final prompt: {prompt}")
+        prompt += f"\n\nData for this operation as follows: {input_val}"
+
     # Compose messages for chat LLMs
     messages = []
-    if system_msg:
-        messages.append({'role': 'system', 'content': system_msg})
-    if operation_msg:
-        messages.append({'role': 'user', 'content': operation_msg})
-    if input_val:
-        messages.append({'role': 'user', 'content': str(input_val)})
+    if prompt_parts:
+        messages.append({'role': 'system', 'content': prompt_parts[0]})
+        if len(prompt_parts) > 1:
+            messages.append({'role': 'user', 'content': '\n\n'.join(prompt_parts[1:])})
+        if input_val:
+            messages.append({'role': 'user', 'content': str(input_val)})
+
+    # --- DEBUG LOGGING ---
+    logger = logging.getLogger(__name__)
+    logger.error(f"[DEBUG] modular_prompt_to_canonical prompt_parts: {prompt_parts}")
+    logger.error(f"[DEBUG] modular_prompt_to_canonical input_val: {input_val}")
+    logger.error(f"[DEBUG] modular_prompt_to_canonical final prompt: {prompt}")
+
     return {'messages': messages, 'prompt': prompt}
 
 def log_llm_outgoing(payload: dict) -> str:
@@ -215,20 +198,79 @@ class LLMService:
 
     def __init__(self):
         """Initialize the LLM service."""
-        self.config = None  # provider type (e.g., 'ollama', 'openai')
-        self.api_url = None  # provider API URL
+        self.ollama_url = current_app.config.get("OLLAMA_API_URL", "http://localhost:11434")
+        self.openai_api_key = current_app.config.get("OPENAI_API_KEY")
+        self.default_model = current_app.config.get("DEFAULT_LLM_MODEL", "mistral")
+
+    def plan_structure(self, title, idea, facts):
+        """Plan the structure of a blog post using LLM."""
+        prompt = f"""You are a professional blog post planner. Given the following blog post details, create a structured outline with 7 sections.
+
+Title: {title}
+Basic Idea: {idea}
+Key Facts to Include: {', '.join(facts)}
+
+Create 7 sections that will form a coherent, engaging blog post. Each section should:
+1. Have a clear, descriptive title
+2. Include a brief description of what will be covered
+3. List specific ideas to include
+4. List specific facts to include
+
+Format your response as a JSON array of section objects, each with:
+- title: string
+- description: string
+- ideas: array of strings
+- facts: array of strings
+
+Example format:
+[
+  {{
+    "title": "Introduction",
+    "description": "Brief overview of the topic and why it matters",
+    "ideas": ["Hook the reader", "Present the main thesis"],
+    "facts": ["Key statistic", "Relevant quote"]
+  }},
+  ...
+]"""
+
+        try:
+            # Generate the structure using the LLM
+            response = self.generate(
+                prompt,
+                model_name=self.default_model,
+                temperature=0.7,
+                max_tokens=2000
+            )
+
+            # Parse the response as JSON
+            import json
+            sections = json.loads(response)
+
+            # Validate the response format
+            if not isinstance(sections, list):
+                raise ValueError("LLM response is not a list of sections")
+
+            for section in sections:
+                if not all(k in section for k in ['title', 'description', 'ideas', 'facts']):
+                    raise ValueError("Section missing required fields")
+
+            return sections
+
+        except Exception as e:
+            current_app.logger.error(f"Error planning structure: {str(e)}")
+            raise
 
     def generate(self, prompt, model_name=None, temperature=0.7, max_tokens=1000, timeout=60):
         """Generate text using configured LLM, supporting both OpenAI (messages) and Ollama (string)."""
         if not model_name:
-            model_name = self.config
+            model_name = self.default_model
         logger.info(f"Generating with model: {model_name}, temperature: {temperature}, max_tokens: {max_tokens}, timeout: {timeout}")
-        if self.config == "ollama":
+        if self.ollama_url:
             return self._generate_ollama(prompt, model_name, temperature, max_tokens, timeout)
-        elif self.config == "openai":
+        elif self.openai_api_key:
             return self._generate_openai(prompt, model_name, temperature, max_tokens)
         else:
-            raise ValueError(f"Unsupported provider type: {self.config}")
+            raise ValueError(f"Unsupported provider type: {self.ollama_url}")
 
     def _generate_ollama(self, prompt, model_name, temperature=0.7, max_tokens=1000, timeout=60):
         """Generate text using Ollama."""
@@ -242,11 +284,11 @@ class LLMService:
                 "stream": False  # Ensure we get a complete response
             }
             logger.debug(f"[REQUESTS] Sending request to Ollama: {request_data}")
-            if not self.api_url:
+            if not self.ollama_url:
                 raise ValueError("Ollama API URL not set on LLMService")
             # Use requests instead of httpx
             response = requests.post(
-                f"{self.api_url}/api/generate",
+                f"{self.ollama_url}/api/generate",
                 json=request_data,
                 timeout=timeout or 60
             )
@@ -287,7 +329,7 @@ class LLMService:
             model = action['llm_model']
         else:
             raise ValueError(f"LLM model not set on action {action['id']}")
-        # Use self.config and self.api_url as set by the caller.
+        # Use self.ollama_url and self.openai_api_key as set by the caller.
         # --- NEW: Transform modular prompt_json to canonical prompt/messages ---
         prompt_json = action.get('prompt_json')
         if prompt_json is not None:
@@ -300,7 +342,7 @@ class LLMService:
         input_field = action.get('input_field') or 'input'
         output_field = action.get('output_field') or 'output'
         llm_payload = None
-        if self.config == 'openai':
+        if self.openai_api_key:
             llm_payload = {
                 'model': model,
                 'messages': parsed['messages'],
@@ -308,7 +350,7 @@ class LLMService:
                 'max_tokens': action['max_tokens']
             }
             result = self.generate(parsed['messages'], model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
-        elif self.config == 'ollama':
+        elif self.ollama_url:
             llm_payload = {
                 'model': model,
                 'prompt': parsed['prompt'],
@@ -318,7 +360,7 @@ class LLMService:
             }
             result = self.generate(parsed['prompt'], model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
         else:
-            raise ValueError(f"Unsupported provider type: {self.config}")
+            raise ValueError(f"Unsupported provider type: {self.ollama_url}")
         if isinstance(result, dict) and 'output' in result:
             result = {output_field: result['output'], **{k: v for k, v in result.items() if k != 'output'}}
         elif isinstance(result, str):

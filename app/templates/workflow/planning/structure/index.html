@@ -57,9 +57,30 @@ Do not introduce variants or reorder panels. Consistency is required for maintai
                 <!-- Section rows will be rendered here by JS -->
             </ul>
         </div>
+        <!-- Unassigned Items Panel -->
+        <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6">
+            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Unassigned Items</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Ideas</h3>
+                    <div id="unassigned-ideas"
+                        class="flex flex-wrap gap-2 min-h-[50px] p-2 bg-gray-900 dark:bg-[#181c23] rounded">
+                        <!-- Unassigned ideas will be rendered here -->
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Facts</h3>
+                    <div id="unassigned-facts"
+                        class="flex flex-wrap gap-2 min-h-[50px] p-2 bg-gray-900 dark:bg-[#181c23] rounded">
+                        <!-- Unassigned facts will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Save/Accept Panel -->
         <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6 flex justify-end">
-            <button class="btn btn-success">Accept Structure</button>
+            <button class="btn btn-success bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save
+                Changes</button>
         </div>
     </div>
 </div>

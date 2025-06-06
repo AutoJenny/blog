@@ -144,4 +144,11 @@
 
 - Workflow panel now prevents running LLM actions with empty input fields (frontend), and backend error message now specifies which field is missing for clarity. 
 
-[YYYY-MM-DD] Structure stage UI skeleton implemented: planning/structure/index.html now uses a custom template with Inputs, LLM Action, Output, and Accept panels (static UI only). Updated docs/temp/article_structure_and_preview_ui_implementation_checklist.md and docs/temp/structure_stage_refactor_plan.md. 
+[YYYY-MM-DD] Structure stage UI skeleton implemented: planning/structure/index.html now uses a custom template with Inputs, LLM Action, Output, and Accept panels (static UI only). Updated docs/temp/article_structure_and_preview_ui_implementation_checklist.md and docs/temp/structure_stage_refactor_plan.md.
+
+[2024-06-14] API Endpoint Orthodoxy Review and Documentation
+- Created comprehensive API endpoint orthodoxy review in docs/api/endpoint_orthodoxy.md
+- Documented current state, issues, and implementation plan for API standardization
+- Identified blueprint mismatches, inconsistent resource naming, and missing canonical endpoints
+- Created phased implementation plan with immediate fixes, standardization, and testing phases
+- Updated API documentation to reflect canonical endpoint schema and standards 

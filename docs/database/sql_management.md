@@ -199,4 +199,13 @@ psql $DATABASE_URL -U nickfiddes -c "REASSIGN OWNED BY nickfiddes TO postgres;"
 - Do **not** rely on a single os.getenv or load_dotenv at import time; always reload the config file for robust, predictable behavior.
 - See CHANGES.log for details of the 2025-05-28 fix.
 
-## 2025-05-30: Added `input_field` and `output_field` columns to `post_substage_action` for LLM workflow field persistence. All backup, restore, and migration scripts must be updated to match this schema. Test restores after migration. 
+## 2025-05-30: Added `input_field` and `output_field` columns to `post_substage_action` for LLM workflow field persistence. All backup, restore, and migration scripts must be updated to match this schema. Test restores after migration.
+
+## Post-Restore Validation Checklist (2024-06)
+
+- After restoring a backup, always:
+  - Visit `/db/` or use curl to confirm all expected tables are present.
+  - Check that critical tables (e.g., post, post_section, post_development, llm_action, etc.) contain data if expected.
+  - If a table is empty, determine if this is expected (e.g., new feature, not yet used) or a sign of a backup/restore issue.
+  - Validate with curl or browser before proceeding with further destructive or schema-changing operations.
+  - For new tables/features, check if they are present in the backup and document if they are not yet in use. 
