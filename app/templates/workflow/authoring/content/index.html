@@ -16,63 +16,69 @@ Do not introduce variants or reorder panels. Consistency is required for maintai
     {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
     <!-- Main Template View Content -->
     <div class="space-y-4 mt-8">
+        <!-- Intro Section -->
         <div class="border rounded p-4 flex justify-between items-center">
             <div>
-                <strong>Intro:</strong> <span class="text-gray-600">[content snippet]</span>
+                <strong>Intro:</strong> <span class="text-gray-600" id="intro-content">{{ post.intro or '[content
+                    snippet]' }}</span>
             </div>
             <div>
-                <button class="btn btn-secondary" data-section="intro"
-                    onclick="window.location.href='/workflow/structure/edit?post_id={{ post.id }}&section=intro'">Edit</button>
-                <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
+                <button class="btn btn-secondary" data-section="intro" onclick="editSection('intro')">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs"
+                    id="intro-status">Draft</span>
             </div>
         </div>
-        <div class="border rounded p-4 flex justify-between items-center">
-            <div>
-                <strong>Section 1:</strong> <span class="font-semibold">[Heading]</span> <span
-                    class="italic text-gray-500">[Theme]</span>
-                <div class="text-gray-600 mt-1">[Content snippet...]</div>
-            </div>
-            <div>
-                <button class="btn btn-secondary" data-section="section1"
-                    onclick="window.location.href='/workflow/structure/edit?post_id={{ post.id }}&section=section1'">Edit</button>
-                <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
-            </div>
+
+        <!-- Main Sections -->
+        <div id="sections-container">
+            <!-- Sections will be loaded here dynamically -->
         </div>
+
+        <!-- Conclusion Section -->
         <div class="border rounded p-4 flex justify-between items-center">
             <div>
-                <strong>Section 2:</strong> <span class="font-semibold">[Heading]</span> <span
-                    class="italic text-gray-500">[Theme]</span>
-                <div class="text-gray-600 mt-1">[Content snippet...]</div>
-            </div>
-            <div>
-                <button class="btn btn-secondary" data-section="section2"
-                    onclick="window.location.href='/workflow/structure/edit?post_id={{ post.id }}&section=section2'">Edit</button>
-                <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
-            </div>
-        </div>
-        <div class="border rounded p-4 flex justify-between items-center">
-            <div>
-                <strong>Conclusion:</strong> <span class="text-gray-600">[content snippet]</span>
+                <strong>Conclusion:</strong> <span class="text-gray-600" id="conclusion-content">{{ post.conclusion or
+                    '[content snippet]' }}</span>
             </div>
             <div>
                 <button class="btn btn-secondary" data-section="conclusion"
-                    onclick="window.location.href='/workflow/structure/edit?post_id={{ post.id }}&section=conclusion'">Edit</button>
-                <span class="ml-2 px-2 py-1 rounded bg-red-100 text-red-800 text-xs">Needs Work</span>
+                    onclick="editSection('conclusion')">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs"
+                    id="conclusion-status">Draft</span>
             </div>
         </div>
-        <div class="border rounded p-4 flex justify-between items-center">
-            <div>
-                <strong>Metadata:</strong> <span class="text-gray-600">[fields...]</span>
-            </div>
-            <div>
-                <button class="btn btn-secondary" data-section="metadata"
-                    onclick="window.location.href='/workflow/structure/edit?post_id={{ post.id }}&section=metadata'">Edit</button>
-                <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
-            </div>
-        </div>
+
+        <!-- Action Buttons -->
         <div class="flex gap-2 mt-4">
-            <button class="btn btn-success">Add Section</button>
-            <button class="btn btn-outline">Reorder Sections</button>
+            <button class="btn btn-success" onclick="addSection()">Add Section</button>
+            <button class="btn btn-outline" onclick="reorderSections()">Reorder Sections</button>
+        </div>
+    </div>
+</div>
+
+<!-- Section Editor Modal -->
+<div id="section-editor-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg p-6 max-w-4xl mx-auto mt-20">
+        <h2 class="text-2xl font-bold mb-4" id="modal-title">Edit Section</h2>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Heading</label>
+                <input type="text" id="section-heading" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Description</label>
+                <textarea id="section-description" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                    rows="3"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Content</label>
+                <textarea id="section-content" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                    rows="10"></textarea>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button class="btn btn-outline" onclick="closeSectionEditor()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSection()">Save</button>
+            </div>
         </div>
     </div>
 </div>
@@ -80,4 +86,105 @@ Do not introduce variants or reorder panels. Consistency is required for maintai
 
 {% block scripts %}
 <script type="module" src="/static/js/workflow/main.js"></script>
+<script>
+    let currentSectionId = null;
+    let sections = [];
+
+    // Load sections on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadSections();
+    });
+
+    async function loadSections() {
+        try {
+            const response = await fetch(`/blog/api/v1/post/{{ post.id }}/sections`);
+            if (!response.ok) throw new Error('Failed to load sections');
+            sections = await response.json();
+            renderSections();
+        } catch (error) {
+            console.error('Error loading sections:', error);
+        }
+    }
+
+    function renderSections() {
+        const container = document.getElementById('sections-container');
+        container.innerHTML = sections.map((section, index) => `
+        <div class="border rounded p-4 flex justify-between items-center">
+            <div>
+                <strong>Section ${index + 1}:</strong> 
+                <span class="font-semibold">${section.section_heading || '[Heading]'}</span>
+                <span class="italic text-gray-500">${section.section_description || '[Description]'}</span>
+                <div class="text-gray-600 mt-1">${section.first_draft || '[Content snippet...]'}</div>
+            </div>
+            <div>
+                <button class="btn btn-secondary" onclick="editSection(${section.id})">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
+            </div>
+        </div>
+    `).join('');
+    }
+
+    function editSection(sectionId) {
+        currentSectionId = sectionId;
+        const section = sections.find(s => s.id === sectionId);
+        if (section) {
+            document.getElementById('section-heading').value = section.section_heading || '';
+            document.getElementById('section-description').value = section.section_description || '';
+            document.getElementById('section-content').value = section.first_draft || '';
+            document.getElementById('modal-title').textContent = 'Edit Section';
+        } else {
+            document.getElementById('section-heading').value = '';
+            document.getElementById('section-description').value = '';
+            document.getElementById('section-content').value = '';
+            document.getElementById('modal-title').textContent = 'New Section';
+        }
+        document.getElementById('section-editor-modal').classList.remove('hidden');
+    }
+
+    function closeSectionEditor() {
+        document.getElementById('section-editor-modal').classList.add('hidden');
+        currentSectionId = null;
+    }
+
+    async function saveSection() {
+        const heading = document.getElementById('section-heading').value;
+        const description = document.getElementById('section-description').value;
+        const content = document.getElementById('section-content').value;
+
+        try {
+            const url = currentSectionId
+                ? `/blog/api/v1/section/${currentSectionId}`
+                : `/blog/api/v1/post/{{ post.id }}/sections`;
+
+            const response = await fetch(url, {
+                method: currentSectionId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    section_heading: heading,
+                    section_description: description,
+                    first_draft: content,
+                    section_order: currentSectionId ? undefined : sections.length
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to save section');
+
+            await loadSections();
+            closeSectionEditor();
+        } catch (error) {
+            console.error('Error saving section:', error);
+        }
+    }
+
+    function addSection() {
+        currentSectionId = null;
+        editSection();
+    }
+
+    async function reorderSections() {
+        // Implement section reordering functionality
+        // This could open a modal with drag-and-drop interface
+        console.log('Reorder sections functionality to be implemented');
+    }
+</script>
 {% endblock %}
