@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}LLM Models{% endblock %}
+
+{% block area_nav %}
+{% include 'llm/_llm_nav.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-10">
+    <div class="admin-card">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="admin-title">
+                <i class="fas fa-cubes mr-2"></i>
+                LLM Models
+            </h1>
+            <a href="/llm/" class="btn btn-secondary">Back to LLM Dashboard</a>
+        </div>
+        <div class="mb-4">
+            <button id="reloadModelsBtn" class="btn btn-primary"><i class="fas fa-sync"></i> Reload Models</button>
+        </div>
+        <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+            <div id="modelsAccordion"></div>
+        </div>
+    </div>
+</div>
+<script>
+    async function fetchProviderModels(provider) {
+        // Real API integration: call /api/v1/llm/providers/<id>/models/available
+        try {
+            const resp = await fetch(`/api/v1/llm/providers/${provider.id}/models/available`);
+            const data = await resp.json();
+            return data;
+        } catch (e) {
+            return { installed: [], error: e.toString() };
+        }
+    }
+
+    function renderAccordion(providers, models) {
+        const container = document.getElementById('modelsAccordion');
+        container.innerHTML = '';
+        // Group models by provider_id
+        const grouped = {};
+        for (const m of models) {
+            if (!grouped[m.provider_id]) grouped[m.provider_id] = [];
+            grouped[m.provider_id].push(m);
+        }
+        for (const provider of providers) {
+            const modelsForProvider = grouped[provider.id] || [];
+            const accordionId = `provider-accordion-${provider.id}`;
+            const headerId = `header-${provider.id}`;
+            const panelId = `panel-${provider.id}`;
+            container.innerHTML += `
+                <div class="mb-4 border border-dark-border rounded-lg">
+                    <button class="w-full flex justify-between items-center px-4 py-3 bg-dark-bg text-indigo-200 font-bold text-lg rounded-t-lg focus:outline-none accordion-header" id="${headerId}" data-target="${panelId}">
+                        <span>${provider.name}</span>
+                        <span><i class="fas fa-chevron-down transition-transform"></i></span>
+                    </button>
+                    <div class="hidden accordion-panel" id="${panelId}">
+                        <div class="flex justify-end mb-2">
+                            <button class="btn btn-xs btn-primary update-models-btn" data-provider-id="${provider.id}"><i class="fas fa-sync"></i> Update</button>
+                        </div>
+                        <table class="min-w-full text-left">
+                            <thead>
+                                <tr class="text-indigo-200 border-b border-dark-border">
+                                    <th class="py-2 px-3">Model</th>
+                                    <th class="py-2 px-3">Strengths</th>
+                                    <th class="py-2 px-3">Description</th>
+                                    <th class="py-2 px-3">Readiness</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${modelsForProvider.map(m => `
+                                    <tr>
+                                        <td class="py-2 px-3 font-semibold text-white">${m.name}</td>
+                                        <td class="py-2 px-3 text-gray-400">${m.strengths || ''}</td>
+                                        <td class="py-2 px-3 text-gray-400">${m.description || ''}</td>
+                                        <td class="py-2 px-3 model-readiness" data-model="${m.name}">Unknown</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+        // Accordion logic
+        document.querySelectorAll('.accordion-header').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const panel = document.getElementById(btn.dataset.target);
+                const icon = btn.querySelector('i.fas');
+                if (panel.classList.contains('hidden')) {
+                    panel.classList.remove('hidden');
+                    icon.classList.add('rotate-180');
+                } else {
+                    panel.classList.add('hidden');
+                    icon.classList.remove('rotate-180');
+                }
+            });
+        });
+        // Update button logic
+        document.querySelectorAll('.update-models-btn').forEach(btn => {
+            btn.addEventListener('click', async function (e) {
+                e.stopPropagation();
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+                const providerId = btn.dataset.providerId;
+                const provider = providers.find(p => p.id == providerId);
+                const panel = btn.closest('.mb-4').querySelector('.accordion-panel');
+                // Simulate fetch
+                const result = await fetchProviderModels(provider);
+                // Update readiness for each model
+                panel.querySelectorAll('.model-readiness').forEach(td => {
+                    const modelName = td.dataset.model;
+                    if (result.installed.includes(modelName)) {
+                        td.innerHTML = '<span class="text-green-400">Installed</span>';
+                    } else {
+                        td.innerHTML = '<span class="text-yellow-400">Not Installed</span>';
+                    }
+                });
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync"></i> Update';
+            });
+        });
+    }
+
+    async function loadModels() {
+        const container = document.getElementById('modelsAccordion');
+        container.innerHTML = '<div class="text-center text-gray-400">Loading...</div>';
+        try {
+            const [providersResp, modelsResp] = await Promise.all([
+                fetch('/api/v1/llm/providers'),
+                fetch('/api/v1/llm/models')
+            ]);
+            const providers = await providersResp.json();
+            const models = await modelsResp.json();
+            renderAccordion(providers, models);
+        } catch (e) {
+            container.innerHTML = '<div class="text-center text-red-400">Error loading models.</div>';
+        }
+    }
+    document.getElementById('reloadModelsBtn').onclick = loadModels;
+    document.addEventListener('DOMContentLoaded', loadModels);
+</script>
+{% endblock %}

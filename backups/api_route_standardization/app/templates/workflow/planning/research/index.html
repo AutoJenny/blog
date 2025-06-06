@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% import "workflow/workflow_indicator.html" as indicator %}
+{% import "blog/_post_header.html" as blog_macros %}
+
+{% block title %}Planning: Research{% endblock %}
+
+{#
+NOTE: This template is one of several workflow substages using the modular workflow panel structure.
+All such templates must remain structurally identical—any change to one must be applied to all.
+Do not introduce variants or reorder panels. Consistency is required for maintainability and modular JS.
+#}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    {{ blog_macros.post_header(post) }}
+    {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
+    {% set substage = 'research' %}
+    {% include "workflow/_modular_llm_panels.html" %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/static/js/workflow/main.js"></script>
+{% endblock %}

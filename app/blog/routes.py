@@ -1,5 +1,5 @@
 print('DEBUG: Loaded app/blog/routes.py from', __file__)
-from flask import render_template, jsonify, request, redirect, url_for, abort
+from flask import render_template, jsonify, request, redirect, url_for, abort, Blueprint, current_app
 from app.blog import bp
 from slugify import slugify
 import logging
@@ -11,6 +11,8 @@ from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv, dotenv_values
 from humanize import naturaltime
 import pytz
+import json
+from app.llm.services import LLMService
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
@@ -171,11 +173,20 @@ def add_section(post_id):
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    INSERT INTO post_section (post_id, section_order, section_heading)
-                    VALUES (%s, %s, %s)
+                    INSERT INTO post_section (
+                        post_id, section_order, section_heading, 
+                        section_description, first_draft
+                    )
+                    VALUES (%s, %s, %s, %s, %s)
                     RETURNING id
                     """,
-                    (post_id, data.get("section_order", 0), data.get("section_heading", ""))
+                    (
+                        post_id, 
+                        data.get("section_order", 0), 
+                        data.get("section_heading", ""),
+                        data.get("section_description", ""),
+                        data.get("first_draft", "")
+                    )
                 )
                 section_id = cur.fetchone()["id"]
                 conn.commit()
@@ -184,7 +195,7 @@ def add_section(post_id):
     return jsonify({"id": section_id})
 
 
-@bp.route("/api/v1/section/<int:section_id>", methods=["POST"])
+@bp.route("/api/v1/section/<int:section_id>", methods=["PUT"])
 def update_section(section_id):
     data = request.get_json()
     try:
@@ -447,54 +458,9 @@ def get_post_development_fields():
         return jsonify({"error": str(e)}), 500
 
 
-@bp.route("/api/v1/post/<int:post_id>/structure", methods=["GET"])
-def get_post_structure(post_id):
-    try:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                # Fetch post
-                cur.execute("SELECT id, title, published, deleted, created_at, updated_at FROM post WHERE id = %s", (post_id,))
-                post = cur.fetchone()
-                if not post:
-                    return jsonify({"error": "Post not found"}), 404
-                # Fetch post_development
-                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
-                dev = cur.fetchone() or {}
-                # Fetch sections
-                cur.execute("SELECT * FROM post_section WHERE post_id = %s ORDER BY section_order", (post_id,))
-                sections = cur.fetchall() or []
-        # Compose structure
-        structure = {
-            "post": {k: v for k, v in post.items()},
-            "intro": {k: v for k, v in dev.items() if k in ["intro", "intro_status"]},
-            "sections": [
-                {k: v for k, v in s.items() if k != "post_id"} for s in sections
-            ],
-            "conclusion": {k: v for k, v in dev.items() if k in ["conclusion", "conclusion_status"]},
-            "metadata": {k: v for k, v in dev.items() if k not in ["id", "post_id", "intro", "intro_status", "conclusion", "conclusion_status"]},
-            "status": {
-                "intro": dev.get("intro_status", "draft"),
-                "sections": [s.get("status", "draft") for s in sections],
-                "conclusion": dev.get("conclusion_status", "draft"),
-                "metadata": dev.get("metadata_status", "draft")
-            }
-        }
-        return jsonify(structure)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@bp.route('/api/v1/structure/plan', methods=['POST'])
-def plan_structure_llm():
-    data = request.get_json() or {}
-    title = data.get('title', '')
-    idea = data.get('idea', '')
-    facts = data.get('facts', [])
-    # Mock LLM output: split idea/facts into sections
-    sections = [
-        {"id": 1, "title": "Introduction", "ideas": [idea], "facts": facts[:1]},
-        {"id": 2, "title": "Background", "ideas": [], "facts": facts[1:2]},
-        {"id": 3, "title": "Main Argument", "ideas": [], "facts": facts[2:3]},
-        {"id": 4, "title": "Conclusion", "ideas": [], "facts": facts[3:]},
-    ]
-    return jsonify({"sections": sections})
+@bp.errorhandler(404)
+def api_not_found(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Not found'}), 404
+    # Fallback to default HTML error page for non-API
+    return render_template('errors/404.html'), 404

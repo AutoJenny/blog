@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white bg-opacity-90 rounded-lg shadow-lg p-8 mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-indigo-900 mb-2">Welcome to Blog CMS</h1>
+                <p class="text-gray-700 text-lg">A modern content management system for creating and managing blog posts
+                    with AI assistance.</p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <input type="text" placeholder="Search posts, actions, images..."
+                    class="rounded-md border border-indigo-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+            </div>
+        </div>
+        <div class="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-12 my-8">
+            <!-- Create -->
+            <div class="bg-blue-50 rounded-lg p-4 flex flex-col items-center shadow">
+                <svg class="w-5 h-5 text-blue-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                <a href="{{ url_for('blog.index') }}"
+                    class="text-lg font-semibold text-blue-900 hover:text-blue-700 mt-1">New Post</a>
+                <span class="text-xs text-blue-700">Create a new blog post or draft</span>
+            </div>
+            <!-- Develop -->
+            <div class="bg-green-50 rounded-lg p-4 flex flex-col items-center shadow">
+                <svg class="w-5 h-5 text-green-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.232 5.232l3.536 3.536M9 11l6 6M3 21h18" />
+                </svg>
+                <a href="{{ url_for('llm.index') }}"
+                    class="text-lg font-semibold text-green-900 hover:text-green-700 mt-1">LLM Assistance</a>
+                <span class="text-xs text-green-700">AI-powered content development</span>
+            </div>
+            <!-- Preview -->
+            <div class="bg-yellow-50 rounded-lg p-4 flex flex-col items-center shadow">
+                <svg class="w-5 h-5 text-yellow-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15 10l4.553-2.276A2 2 0 0021 6.382V5a2 2 0 00-2-2H5a2 2 0 00-2 2v1.382a2 2 0 001.447 1.342L9 10m6 0v10a2 2 0 01-2 2H7a2 2 0 01-2-2V10m6 0l-6 3" />
+                </svg>
+                <a href="{{ url_for('preview.listing') }}"
+                    class="text-lg font-semibold text-yellow-900 hover:text-yellow-700 mt-1">Preview</a>
+                <span class="text-xs text-yellow-700">Preview and review your posts</span>
+            </div>
+            <!-- Publish -->
+            <div class="bg-purple-50 rounded-lg p-4 flex flex-col items-center shadow">
+                <svg class="w-5 h-5 text-purple-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <a href="#" class="text-lg font-semibold text-purple-900 hover:text-purple-700 mt-1">Publish</a>
+                <span class="text-xs text-purple-700">Publish and syndicate posts</span>
+            </div>
+            <!-- Admin -->
+            <div class="bg-red-50 rounded-lg p-4 flex flex-col items-center shadow">
+                <svg class="w-5 h-5 text-red-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3 7v4a1 1 0 001 1h3m10-5h3a1 1 0 011 1v4a1 1 0 01-1 1h-3m-10 0v6a2 2 0 002 2h8a2 2 0 002-2v-6m-10 0h10" />
+                </svg>
+                <a href="{{ url_for('db.index') }}"
+                    class="text-lg font-semibold text-red-900 hover:text-red-700 mt-1">Database</a>
+                <span class="text-xs text-red-700">Manage your content database</span>
+            </div>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Recent Activity -->
+        <div class="bg-indigo-50 rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-indigo-900 mb-4">Recent Activity</h2>
+            <ul class="text-indigo-800 text-sm space-y-2">
+                <li>No recent activity to display.</li>
+            </ul>
+        </div>
+        <!-- Help Section -->
+        <div class="bg-gray-50 rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Help & Resources</h2>
+            <ul class="text-blue-800 text-sm space-y-2">
+                <li><a href="/docs/" class="hover:underline">Documentation</a></li>
+                <li><a href="/CHANGES.log" class="hover:underline">Changelog</a></li>
+                <li><a href="https://github.com/nickfiddes/blog" class="hover:underline" target="_blank">Project
+                        GitHub</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

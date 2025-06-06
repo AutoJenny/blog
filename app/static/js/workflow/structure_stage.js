@@ -1,23 +1,19 @@
 // app/static/js/workflow/structure_stage.js
 
-// Example static data (replace with real data fetch later)
-let sections = [
-  { id: 1, title: 'Introduction', ideas: ['Idea 1'], facts: ['Fact A'] },
-  { id: 2, title: 'Background', ideas: ['Idea 2'], facts: ['Fact B'] },
-  { id: 3, title: 'Main Argument', ideas: ['Idea 3'], facts: ['Fact C'] },
-  { id: 4, title: 'Conclusion', ideas: ['Idea 4'], facts: ['Fact D'] },
-];
+// Remove static specimen data
+delete window.sections;
+let sections = [];
 
 function renderSections(list, sections) {
   list.innerHTML = '';
   sections.forEach((section, idx) => {
     const li = document.createElement('li');
     li.className = 'bg-gray-700 rounded p-4 flex items-center justify-between cursor-move';
-    li.setAttribute('data-id', idx + 1); // Use index as ID since backend doesn't provide one
+    li.setAttribute('data-id', section.id || idx + 1);
     li.innerHTML = `
       <div>
-        <span class="font-bold text-gray-100">${idx + 1}. ${section.name}</span>
-        <span class="ml-4 text-xs text-gray-300">Themes: ${(section.themes || []).join(', ')}</span>
+        <span class="font-bold text-gray-100">${idx + 1}. ${section.title || section.name}</span>
+        <span class="ml-4 text-xs text-gray-300">Themes: ${(section.ideas || section.themes || []).join(', ')}</span>
         <span class="ml-4 text-xs text-gray-300">Facts: ${(section.facts || []).join(', ')}</span>
       </div>
       <span class="text-gray-400">&#x2630;</span>
@@ -27,7 +23,7 @@ function renderSections(list, sections) {
 }
 
 async function planSectionsLLM(inputs) {
-  const resp = await fetch('/api/v1/structure/plan', {
+  const resp = await fetch('/blog/api/v1/structure/plan', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(inputs)
@@ -95,25 +91,80 @@ function renderEditableList(container, items, label) {
   });
 }
 
+async function saveStructure(sections) {
+  const postId = getPostId();
+  if (!postId) {
+    throw new Error('No post ID found');
+  }
+
+  const resp = await fetch(`/api/v1/structure/save/${postId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sections })
+  });
+
+  if (!resp.ok) {
+    const error = await resp.json();
+    throw new Error(error.error || 'Failed to save structure');
+  }
+
+  return await resp.json();
+}
+
+async function planStructure(title, idea, facts) {
+  const resp = await fetch('/api/v1/structure/plan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, idea, facts })
+  });
+
+  if (!resp.ok) {
+    const error = await resp.json();
+    throw new Error(error.error || 'Failed to plan structure');
+  }
+
+  return await resp.json();
+}
+
+async function getStructure(postId) {
+  const resp = await fetch(`/api/v1/posts/${postId}/structure`);
+  
+  if (!resp.ok) {
+    const error = await resp.json();
+    throw new Error(error.error || 'Failed to get structure');
+  }
+
+  return await resp.json();
+}
+
+async function loadExistingSections(postId) {
+  try {
+    const resp = await fetch(`/blog/api/v1/post/${postId}/sections`);
+    if (!resp.ok) throw new Error('Failed to load sections');
+    const data = await resp.json();
+    // Map DB fields to UI fields
+    sections = data.map(section => ({
+      id: section.id,
+      title: section.section_heading,
+      description: section.section_description,
+      ideas: JSON.parse(section.ideas_to_include || '[]'),
+      facts: JSON.parse(section.facts_to_include || '[]')
+    }));
+    const list = document.getElementById('sections-list');
+    if (list) renderSections(list, sections);
+  } catch (e) {
+    console.error('Error loading sections:', e);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const list = document.getElementById('sections-list');
   if (!list) return;
-  renderSections(list, sections);
-  // Initialize SortableJS
-  new window.Sortable(list, {
-    animation: 150,
-    handle: '.cursor-move',
-    onEnd: function (evt) {
-      // Update sections array to reflect new order
-      const newOrder = Array.from(list.children).map(li => parseInt(li.getAttribute('data-id')));
-      sections.sort((a, b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
-      renderSections(list, sections); // Re-render to update indices
-    }
-  });
-
-  // Pre-populate input fields from post_development
   const postId = getPostId();
   if (postId) {
+    // Load and render sections
+    await loadExistingSections(postId);
+    // Load and set input fields
     try {
       const dev = await fetchPostDevelopment(postId);
       if (dev) {
@@ -125,9 +176,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (factsTextarea && dev.interesting_facts) factsTextarea.value = dev.interesting_facts;
       }
     } catch (e) {
-      // Ignore errors, leave fields blank
+      console.error('Error loading post development:', e);
     }
   }
+
+  // Initialize SortableJS
+  new window.Sortable(list, {
+    animation: 150,
+    handle: '.cursor-move',
+    onEnd: function (evt) {
+      // Update sections array to reflect new order
+      const newOrder = Array.from(list.children).map(li => parseInt(li.getAttribute('data-id')));
+      sections.sort((a, b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
+      renderSections(list, sections); // Re-render to update indices
+    }
+  });
 
   // Wire up Plan Sections (LLM) button
   const planBtn = document.querySelector('.btn-primary');
@@ -146,6 +209,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (Array.isArray(result.sections)) {
           sections = result.sections;
           renderSections(list, sections);
+          
+          // Auto-save the sections
+          try {
+            const formattedSections = sections.map(section => ({
+              title: section.name,
+              description: section.description || '',
+              ideas: section.themes || [],
+              facts: section.facts || []
+            }));
+            await saveStructure(formattedSections);
+            console.log('Sections auto-saved successfully');
+          } catch (e) {
+            console.error('Error auto-saving sections:', e);
+            alert('Error auto-saving sections: ' + e.message);
+          }
         } else {
           alert('LLM did not return a valid section plan.');
         }
@@ -170,4 +248,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   const factsListContainer = document.createElement('div');
   factsTextarea.parentNode.appendChild(factsListContainer);
   renderEditableList(factsListContainer, factsList, 'Fact');
+
+  // Wire up Accept Structure button for manual saves
+  const acceptBtn = document.querySelector('.btn-success');
+  if (acceptBtn) {
+    acceptBtn.addEventListener('click', async () => {
+      acceptBtn.disabled = true;
+      acceptBtn.textContent = 'Saving...';
+      try {
+        // Transform sections to match backend format
+        const formattedSections = sections.map(section => ({
+          title: section.name,
+          description: section.description || '',
+          ideas: section.themes || [],
+          facts: section.facts || []
+        }));
+
+        await saveStructure(formattedSections);
+        alert('Changes saved successfully!');
+      } catch (e) {
+        alert('Error saving changes: ' + e.message);
+      } finally {
+        acceptBtn.disabled = false;
+        acceptBtn.textContent = 'Save Changes';
+      }
+    });
+  }
 }); 
