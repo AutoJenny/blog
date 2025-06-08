@@ -9,6 +9,30 @@ The Research Planning stage is responsible for gathering and organizing informat
 http://localhost:5000/workflow/research/?post_id=<id>
 ```
 
+## How It Works
+
+### Data Flow Overview
+1. **Input Collection**
+   - The stage takes three key inputs:
+     - `topics_to_cover`: Main topics and areas to research
+     - `interesting_facts`: Verified facts and information
+     - `tartans_products`: Relevant products to reference
+
+2. **Research Organization**
+   - When you save the research, the system:
+     - Validates that all required fields are filled
+     - Ensures topics are well-defined
+     - Verifies facts are properly formatted
+     - Checks product references are valid
+
+3. **Output Generation**
+   - The final research is saved as:
+     - `post_development.topics_to_cover`: Research topics
+     - `post_development.interesting_facts`: Verified facts
+     - `post_development.tartans_products`: Product references
+     - `post_development.current_stage`: Set to 'research'
+     - `post_development.current_substage`: Set to 'plan'
+
 ## Page Components
 
 ### Inputs Panel
@@ -36,19 +60,47 @@ http://localhost:5000/workflow/research/?post_id=<id>
   - Field: `post_development.topics_to_cover`
   - Used in: `app/static/js/workflow/research_stage.js:saveResearch()`
   - Event handler: `app/static/js/workflow/research_stage.js:handleTopicsChange()`
-  - Source: `workflow_field_mapping` table (id: 4, stage_id: 10, substage_id: 2, order_index: 1)
+  - Source: `workflow_field_mapping` table (id: 4, stage_id: 2, substage_id: 1, order_index: 1)
 
 - **Interesting Facts Textarea**
   - Field: `post_development.interesting_facts`
   - Used in: `app/static/js/workflow/research_stage.js:saveResearch()`
   - Event handler: `app/static/js/workflow/research_stage.js:handleFactsChange()`
-  - Source: `workflow_field_mapping` table (id: 5, stage_id: 10, substage_id: 2, order_index: 2)
+  - Source: `workflow_field_mapping` table (id: 5, stage_id: 2, substage_id: 1, order_index: 2)
 
 - **Tartans Products Textarea**
   - Field: `post_development.tartans_products`
   - Used in: `app/static/js/workflow/research_stage.js:saveResearch()`
   - Event handler: `app/static/js/workflow/research_stage.js:handleProductsChange()`
-  - Source: `workflow_field_mapping` table (id: 6, stage_id: 10, substage_id: 2, order_index: 3)
+  - Source: `workflow_field_mapping` table (id: 6, stage_id: 2, substage_id: 1, order_index: 3)
+
+## User Flows
+
+### 1. Initial Load
+1. Page loads with existing post data
+2. Input fields are pre-populated from:
+   - `post_development.topics_to_cover`
+   - `post_development.interesting_facts`
+   - `post_development.tartans_products`
+3. Validation state is checked
+4. Save button is enabled/disabled based on validation
+
+### 2. Research Development
+1. Enter/edit topics to cover
+2. Add/edit interesting facts
+3. List relevant products
+4. System validates:
+   - Topics are not empty
+   - Facts are properly formatted
+   - Products are valid references
+
+### 3. Saving Research
+1. Click "Save Research"
+2. System:
+   - Validates all required fields
+   - Updates `post_development` table
+   - Sets current stage/substage
+   - Shows success/error message
 
 ## API Endpoints
 
@@ -81,6 +133,8 @@ id: integer (PRIMARY KEY)  -- From URL parameter post_id
 topics_to_cover: text     -- From textarea (first)
 interesting_facts: text    -- From textarea (second)
 tartans_products: text     -- From textarea (third)
+current_stage: text       -- Set to 'research' when entering this stage
+current_substage: text    -- Set to 'plan' when entering this stage
 ```
 
 ## JavaScript Functions
