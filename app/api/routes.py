@@ -11,13 +11,13 @@ import subprocess
 import glob
 import shutil
 import random as _random
-from app.blog.routes import get_db_conn
 import sys
 from dotenv import dotenv_values
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import json
 from app.llm.services import LLMService
+from app.database.routes import get_db_conn
 
 
 def check_ollama_performance():
@@ -957,17 +957,71 @@ def get_post_development(post_id):
 
 @bp.route("/structure/plan", methods=["POST"])
 def plan_structure():
-    """Plan the structure of a post using LLM."""
+    """Plan the structure of a post using a two-stage process:
+    1. Create section structure
+    2. Allocate ideas and facts to sections
+    """
     data = request.get_json()
     if not data or "title" not in data or "idea" not in data:
         return jsonify({"error": "title and idea are required"}), 400
-    
+
+    # --- Stage 1: Create Section Structure ---
     try:
-        llm = LLMService()
-        sections = llm.plan_structure(data["title"], data["idea"], data.get("facts", []))
-        return jsonify({"sections": sections})
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Get the Section Structure Creator action
+                cur.execute("""
+                    SELECT * FROM llm_action WHERE field_name = 'Section Structure Creator' LIMIT 1
+                """)
+                structure_action = cur.fetchone()
+                if not structure_action:
+                    return jsonify({"error": "Section Structure Creator Action not found"}), 500
+                structure_action = dict(structure_action)
+
+                # Get the Content Allocator action
+                cur.execute("""
+                    SELECT * FROM llm_action WHERE field_name = 'Content Allocator' LIMIT 1
+                """)
+                allocator_action = cur.fetchone()
+                if not allocator_action:
+                    return jsonify({"error": "Content Allocator Action not found"}), 500
+                allocator_action = dict(allocator_action)
+
+        # Prepare fields for structure creation
+        structure_fields = {
+            'input_text': data['idea'],  # Required by LLMService
+            'title': data['title'],
+            'idea': data['idea'],
+            'facts': data.get('facts', [])
+        }
+
+        # Create initial section structure
+        llm_service = LLMService()
+        structure_result = llm_service.execute_action(structure_action, structure_fields)
+        
+        # Extract the sections array from the result
+        sections = structure_result.get('sections', [])
+        if not sections:
+            return jsonify({"error": "Failed to create section structure"}), 500
+
+        # --- Stage 2: Allocate Content to Sections ---
+        allocation_fields = {
+            'input_text': json.dumps(sections),  # Required by LLMService - pass sections as input
+            'sections': sections,
+            'ideas': data.get('ideas', []),
+            'facts': data.get('facts', []),
+            'title': data['title'],
+            'idea': data['idea']
+        }
+
+        # Allocate content to sections
+        allocation_result = llm_service.execute_action(allocator_action, allocation_fields)
+        
+        # Return the final structure with allocated content
+        return jsonify({"sections": allocation_result.get('sections', sections)})
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Error planning structure: {str(e)}"}), 500
 
 @bp.route("/structure/save/<int:post_id>", methods=["POST"])
 def save_structure(post_id):
@@ -975,31 +1029,40 @@ def save_structure(post_id):
     data = request.get_json()
     if not data or "sections" not in data:
         return jsonify({"error": "sections are required"}), 400
-    
+
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 # Delete existing sections
                 cur.execute("DELETE FROM post_section WHERE post_id = %s", (post_id,))
+                
                 # Insert new sections
                 for i, section in enumerate(data["sections"]):
                     cur.execute(
                         """
                         INSERT INTO post_section (
                             post_id, section_order, section_heading, 
-                            section_description, facts_to_include, ideas_to_include
+                            section_description, first_draft
                         )
-                        VALUES (%s, %s, %s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s, %s)
                         """,
                         (
-                            post_id, i, section["heading"], 
+                            post_id,
+                            i,
+                            section.get("heading", ""),
                             section.get("description", ""),
-                            json.dumps(section.get("facts", [])),
-                            json.dumps(section.get("ideas", []))
+                            section.get("first_draft", "")
                         )
                     )
+                
+                # Update post's updated_at
+                cur.execute("UPDATE post SET updated_at = NOW() WHERE id = %s", (post_id,))
                 conn.commit()
-        return jsonify({"message": "Structure saved successfully"})
+
+        return jsonify({
+            "message": "Structure saved successfully",
+            "sections": data["sections"]
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -1014,23 +1077,94 @@ def get_structure(post_id):
                 post = cur.fetchone()
                 if not post:
                     return jsonify({"error": "Post not found"}), 404
-                
+
                 # Get sections
                 cur.execute(
-                    """
-                    SELECT id, section_order, section_heading, section_description,
-                           facts_to_include, ideas_to_include
-                    FROM post_section 
-                    WHERE post_id = %s 
-                    ORDER BY section_order
-                    """, 
+                    "SELECT * FROM post_section WHERE post_id = %s ORDER BY section_order",
                     (post_id,)
                 )
                 sections = cur.fetchall()
-                
+
                 return jsonify({
-                    "post": post,
-                    "sections": sections
+                    "post": {
+                        "id": post["id"],
+                        "title": post["title"],
+                        "slug": post["slug"],
+                        "updated_at": post["updated_at"].isoformat()
+                    },
+                    "sections": [
+                        {
+                            "id": section["id"],
+                            "heading": section["section_heading"],
+                            "description": section["section_description"],
+                            "first_draft": section["first_draft"],
+                            "order": section["section_order"]
+                        }
+                        for section in sections
+                    ]
                 })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@bp.route("/structure/generate", methods=["POST"])
+def generate_structure():
+    """Generate a section structure for a post using Ollama directly."""
+    data = request.get_json()
+    if not data or "title" not in data or "idea" not in data:
+        return jsonify({"error": "title and idea are required"}), 400
+
+    try:
+        # Prepare the prompt
+        prompt = f"""You are an expert editorial planner for long-form articles. Your task is to design a clear, engaging, and logically structured set of sections for a new article.
+
+Title: {data['title']}
+Basic Idea: {data['idea']}
+Interesting Facts:
+{data.get('facts', '')}
+
+Please create a JSON array of sections, where each section has:
+1. A clear, engaging heading
+2. A brief description of what that section will cover
+
+Output format:
+{{
+    "sections": [
+        {{
+            "heading": "Section Title",
+            "description": "Brief description of what this section will cover"
+        }},
+        ...
+    ]
+}}
+
+Ensure the sections flow logically and cover all aspects of the topic."""
+
+        # Call Ollama
+        response = requests.post('http://localhost:11434/api/generate', 
+                               json={
+                                   "model": "mistral",
+                                   "prompt": prompt,
+                                   "stream": False
+                               })
+        
+        if response.status_code != 200:
+            return jsonify({"error": "Failed to generate structure"}), 500
+
+        # Parse the response
+        result = response.json()
+        try:
+            # Extract the JSON from the response
+            sections_json = result['response']
+            # Find the JSON object in the response
+            json_start = sections_json.find('{')
+            json_end = sections_json.rfind('}') + 1
+            if json_start == -1 or json_end == 0:
+                return jsonify({"error": "Invalid response format"}), 500
+            
+            sections = json.loads(sections_json[json_start:json_end])
+            return jsonify(sections)
+        except json.JSONDecodeError:
+            return jsonify({"error": "Failed to parse LLM response"}), 500
+
+    except Exception as e:
+        return jsonify({"error": f"Error generating structure: {str(e)}"}), 500
