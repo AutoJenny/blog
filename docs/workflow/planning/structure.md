@@ -1,13 +1,157 @@
-# Structure Planning Stage
+# Structure Stage
 
-## Purpose
+## Overview
+The Structure stage is responsible for organizing the post's content into a logical sequence of sections. It takes the basic idea and interesting facts from the Research stage and creates a coherent structure for the article.
 
-The Structure Planning stage is responsible for organizing the content into a logical, engaging structure based on the research and facts gathered in previous stages. This stage creates a clear outline that will guide the content creation process.
+## Data Flow
+1. Inputs from Research stage:
+   - Title (from post table)
+   - Basic idea (from post_development table)
+   - Interesting facts (from post_development table)
+
+2. Output to post_section table:
+   - section_heading: The title of the section
+   - section_description: A brief description of what the section will cover
+   - section_order: The sequence number of the section
+
+## UI Components
+
+### Inputs Panel
+- Title field (read-only from post table)
+- Basic idea textarea (from post_development)
+- Interesting facts textarea (from post_development)
+
+### LLM Action Panel
+- "Generate Structure" button that triggers section generation
+
+### Output Panel
+- List of generated sections, each showing:
+  - Section heading
+  - Section description
+- Sections are draggable for reordering
+
+### Save Panel
+- "Save Structure" button to persist the sections to the database
+
+## API Endpoints
+
+### POST /api/v1/structure/generate
+Generates a section structure using Ollama.
+
+**Request Body:**
+```json
+{
+  "title": "Post Title",
+  "idea": "Basic idea text",
+  "facts": "Fact 1\nFact 2\nFact 3"
+}
+```
+
+**Response:**
+```json
+{
+  "sections": [
+    {
+      "heading": "Section Title",
+      "description": "Section description"
+    }
+  ]
+}
+```
+
+### POST /api/v1/structure/save/<post_id>
+Saves the generated structure to the database.
+
+**Request Body:**
+```json
+{
+  "sections": [
+    {
+      "heading": "Section Title",
+      "description": "Section description"
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Structure saved successfully",
+  "sections": [...]
+}
+```
+
+## JavaScript Functions
+
+### planSectionsLLM(inputs)
+- Takes title, idea, and facts as input
+- Calls Ollama to generate section structure
+- Returns array of sections with headings and descriptions
+
+### renderSections(list, sections)
+- Renders sections in the UI
+- Each section shows heading and description
+- Supports drag-and-drop reordering
+
+### saveStructure(sections)
+- Saves the current section structure to the database
+- Updates post_section table with new sections
+
+## Error Handling
+- 400: Bad Request - Invalid input data
+- 404: Not Found - Post not found
+- 500: Internal Server Error
+
+## Database Schema
+
+### post_section
+- id: SERIAL PRIMARY KEY
+- post_id: INTEGER REFERENCES post(id)
+- section_order: INTEGER
+- section_heading: TEXT
+- section_description: TEXT
+- first_draft: TEXT
+- created_at: TIMESTAMP
+- updated_at: TIMESTAMP
 
 ## Page URL
 ```
 http://localhost:5000/workflow/structure/?post_id=<id>
 ```
+
+## How It Works
+
+### Data Flow Overview
+1. **Input Collection**
+   - The stage takes three key inputs from previous stages:
+     - `provisional_title`: The working title of the post
+     - `basic_idea`: The core concept from the Idea stage
+     - `interesting_facts`: Verified facts from the Research stage
+
+2. **Structure Generation**
+   - When you click "Generate Structure", the LLM analyzes these inputs to:
+     - Identify logical groupings of facts and ideas
+     - Create section titles that reflect these groupings
+     - Write brief descriptions for each section
+     - Assign relevant facts and ideas to each section
+
+3. **Structure Refinement**
+   - You can then:
+     - Reorder sections via drag-and-drop
+     - Edit section titles and descriptions
+     - Move facts and ideas between sections
+     - Add or remove sections as needed
+
+4. **Final Output**
+   - The final structure is saved as:
+     - Section records in the `post_section` table
+     - Each section includes:
+       - Title (`section_heading`)
+       - Description (`section_description`)
+       - Assigned facts (`facts_to_include`)
+       - Assigned ideas (`ideas_to_include`)
+       - Order in the post (`section_order`)
 
 ## Page Components
 
@@ -72,6 +216,48 @@ http://localhost:5000/workflow/structure/?post_id=<id>
   - Used in: `app/static/js/workflow/structure_stage.js:renderSections()`
   - Source: `workflow_field_mapping` table (id: 7, stage_id: 10, substage_id: 3, order_index: 1)
 
+## User Flows
+
+### 1. Initial Load
+1. Page loads with existing post data
+2. Input fields are pre-populated from:
+   - `post_development.provisional_title`
+   - `post_development.basic_idea`
+   - `post_development.interesting_facts`
+3. Existing sections are displayed if any
+4. Unassigned items are shown in their panel
+
+### 2. Planning Sections
+1. Review/edit input fields
+2. Click "Generate Structure"
+3. LLM analyzes inputs and generates:
+   - Section titles
+   - Section descriptions
+   - Fact assignments
+   - Idea assignments
+4. Sections are displayed in a draggable list
+
+### 3. Editing Sections
+1. Edit section titles inline
+2. Edit section descriptions
+3. Drag sections to reorder
+4. Drag items between sections
+5. Remove items from sections
+
+### 4. Managing Unassigned Items
+1. Unassigned items appear in their panel
+2. Drag items to sections
+3. Drag items between sections
+4. Remove items
+
+### 5. Saving Structure
+1. Click "Accept Structure"
+2. System:
+   - Creates/updates `post_section` records
+   - Updates `post_development.section_planning`
+   - Validates all required fields
+   - Shows success/error message
+
 ## API Endpoints
 
 ### Main Structure Planning Endpoint
@@ -91,10 +277,8 @@ Response:
 {
     "sections": [
         {
-            "name": string,
-            "description": string,
-            "themes": string[],
-            "facts": string[]
+            "name": string,  # Stored in post_development.section_planning
+            "description": string  # Stored in post_development.section_planning
         }
     ]
 }
@@ -104,24 +288,41 @@ Response:
 
 ### post_development Table
 ```sql
--- Used in: app/static/js/workflow/structure_stage.js:planStructure()
+-- Used in: app/static/js/workflow/structure_stage.js:saveResearch()
 id: integer (PRIMARY KEY)  -- From URL parameter post_id
 provisional_title: text    -- From input[type="text"]
 basic_idea: text          -- From textarea (first)
 interesting_facts: text    -- From textarea (second)
 section_planning: text     -- Generated by section_structure_creator
+current_stage: text       -- Set to 'structure' when entering this stage
+current_substage: text    -- Set to 'plan' when entering this stage
+```
+
+### post_section Table
+```sql
+id: integer (PRIMARY KEY)
+post_id: integer (FOREIGN KEY)
+section_heading: text      -- Section title
+section_description: text  -- Section description
+ideas_to_include: jsonb    -- Array of assigned ideas
+facts_to_include: jsonb    -- Array of assigned facts
+section_order: integer     -- Order in the post
 ```
 
 ## JavaScript Functions
 
-### Structure Panel
+### Research Panel
 ```javascript
 // app/static/js/workflow/structure_stage.js
 async function planStructure(title, idea, facts) {
   const resp = await fetch('/api/v1/structure/plan', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, idea, facts })
+    body: JSON.stringify({ 
+      title: title, 
+      idea: idea, 
+      facts: facts 
+    })
   });
   return await resp.json();
 }
