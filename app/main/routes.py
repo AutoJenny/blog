@@ -1,4 +1,4 @@
-from flask import render_template, current_app, jsonify, redirect, url_for, request, session, send_from_directory
+from flask import render_template, current_app, jsonify, redirect, url_for, request, session, send_from_directory, flash
 from app.main import bp
 import psutil
 import time
@@ -15,6 +15,7 @@ from flask import Blueprint
 from app.database.routes import get_db_conn
 from flask import Response
 import requests
+from app import db
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
@@ -24,6 +25,42 @@ def get_db_conn():
     config = dotenv_values(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
     db_url = config.get('DATABASE_URL')
     return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
+
+@bp.route('/workflow/idea/')
+def workflow_idea_redirect():
+    post_id = request.args.get('post_id')
+    if not post_id:
+        flash('No post ID provided', 'error')
+        return redirect(url_for('main.index'))
+    return redirect(url_for('main.workflow_idea_basic', post_id=post_id))
+
+@bp.route('/workflow/idea/basic/')
+def workflow_idea_basic():
+    post_id = request.args.get('post_id')
+    if not post_id:
+        flash('No post ID provided', 'error')
+        return redirect(url_for('main.index'))
+    
+    # Get post data directly from database
+    post = None
+    post_development = None
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+    except Exception as e:
+        current_app.logger.error(f"Error fetching post data: {e}")
+        flash('Error loading post data', 'error')
+        return redirect(url_for('main.index'))
+        
+    return render_template('workflow/planning/idea/basic.html', 
+                         post=post,
+                         post_development=post_development,
+                         post_id=post_id,
+                         **workflow_context('idea'))
 
 @bp.route("/")
 def index():
@@ -63,12 +100,13 @@ def detailed_health_check():
 
     # Check database connection
     try:
-        engine = create_engine(current_app.config["SQLALCHEMY_DATABASE_URI"])
-        engine.connect()
-        health_status["components"]["database"] = {
-            "status": "healthy",
-            "type": engine.name,
-        }
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+                health_status["components"]["database"] = {
+                    "status": "healthy",
+                    "type": "postgresql"
+                }
     except Exception as e:
         current_app.logger.error(f"Database health check failed: {e}")
         health_status["components"]["database"] = {
@@ -142,22 +180,36 @@ def workflow_context(substage_name):
         'current_substage_id': substage_id_by_name.get(substage_name)
     }
 
-@bp.route('/workflow/idea/')
-def workflow_idea():
+@bp.route('/workflow/idea/themes/')
+def workflow_idea_themes():
+    post_id = request.args.get('post_id')
+    if not post_id:
+        flash('No post ID provided', 'error')
+        return redirect(url_for('main.index'))
+    
+    # Get post data directly from database
     post = None
-    llm_actions = []
-    post_id = request.args.get('post_id', type=int)
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            if post_id:
+    post_development = None
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
-            cur.execute("SELECT * FROM llm_action ORDER BY id")
-            llm_actions = cur.fetchall()
-    return render_template('workflow/planning/idea/index.html', post=post, llm_actions=llm_actions, **workflow_context('idea'))
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+    except Exception as e:
+        current_app.logger.error(f"Error fetching post data: {e}")
+        flash('Error loading post data', 'error')
+        return redirect(url_for('main.index'))
+        
+    return render_template('workflow/planning/idea/themes.html',
+                         post=post,
+                         post_development=post_development,
+                         post_id=post_id,
+                         **workflow_context('idea'))
 
-@bp.route('/workflow/research/')
-def workflow_research():
+@bp.route('/workflow/research/topics/')
+def workflow_research_topics():
     post = None
     post_development = None
     post_id = request.args.get('post_id', type=int)
@@ -170,8 +222,22 @@ def workflow_research():
                 post_development = cur.fetchone()
     return render_template('workflow/planning/research/index.html', post=post, post_development=post_development, **workflow_context('research'))
 
-@bp.route('/workflow/structure/')
-def workflow_structure():
+@bp.route('/workflow/research/facts/')
+def workflow_research_facts():
+    post = None
+    post_development = None
+    post_id = request.args.get('post_id', type=int)
+    if post_id:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+    return render_template('workflow/planning/research/facts.html', post=post, post_development=post_development, **workflow_context('research'))
+
+@bp.route('/workflow/structure/plan/')
+def workflow_structure_plan():
     post = None
     post_id = request.args.get('post_id', type=int)
     if post_id:
@@ -179,7 +245,18 @@ def workflow_structure():
             with conn.cursor() as cur:
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
-    return render_template('workflow/planning/structure/index.html', post=post, **workflow_context('structure'))
+    return render_template('workflow/planning/structure/plan.html', post=post, **workflow_context('structure'))
+
+@bp.route('/workflow/structure/assign/')
+def workflow_structure_assign():
+    post = None
+    post_id = request.args.get('post_id', type=int)
+    if post_id:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+                post = cur.fetchone()
+    return render_template('workflow/planning/structure/assign.html', post=post, **workflow_context('structure'))
 
 @bp.route('/workflow/content/')
 def workflow_content():
@@ -579,3 +656,123 @@ def workflow_structure_edit():
                 cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
                 post = cur.fetchone()
     return render_template('workflow/planning/structure/edit.html', post=post, section=section)
+
+@bp.route('/api/workflow/generate-idea', methods=['POST'])
+def generate_idea():
+    data = request.get_json()
+    post_id = data.get('post_id')
+    
+    if not post_id:
+        return jsonify({'error': 'No post ID provided'}), 400
+    
+    post = None
+    post_development = None
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+            post = cur.fetchone()
+            cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+            post_development = cur.fetchone()
+    
+    try:
+        # Get LLM configuration from database
+        llm_config = get_llm_config()
+        
+        # Generate idea using LLM
+        basic_idea = generate_basic_idea(post['title'], llm_config)
+        
+        return jsonify({
+            'basic_idea': basic_idea
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/workflow/generate-themes', methods=['POST'])
+def generate_themes():
+    data = request.get_json()
+    post_id = data.get('post_id')
+    
+    if not post_id:
+        return jsonify({'error': 'No post ID provided'}), 400
+    
+    post = None
+    post_development = None
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM post WHERE id = %s", (post_id,))
+            post = cur.fetchone()
+            cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+            post_development = cur.fetchone()
+    
+    try:
+        # Get LLM configuration from database
+        llm_config = get_llm_config()
+        
+        # Generate themes using LLM
+        main_themes, sub_themes = generate_themes_for_post(post, post_development, llm_config)
+        
+        return jsonify({
+            'main_themes': main_themes,
+            'sub_themes': sub_themes
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/workflow/save-idea', methods=['POST'])
+def save_idea():
+    data = request.get_json()
+    post_id = data.get('post_id')
+    basic_idea = data.get('basic_idea')
+    
+    if not post_id or not basic_idea:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+                if not post_development:
+                    cur.execute("INSERT INTO post_development (post_id) VALUES (%s)", (post_id,))
+                    post_development = cur.fetchone()
+                
+                cur.execute("UPDATE post_development SET basic_idea = %s WHERE post_id = %s", (basic_idea, post_id))
+                conn.commit()
+        
+        return jsonify({'message': 'Idea saved successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/api/workflow/save-themes', methods=['POST'])
+def save_themes():
+    data = request.get_json()
+    post_id = data.get('post_id')
+    main_themes = data.get('main_themes')
+    sub_themes = data.get('sub_themes')
+    
+    if not post_id or not main_themes or not sub_themes:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM post_development WHERE post_id = %s", (post_id,))
+                post_development = cur.fetchone()
+                if not post_development:
+                    cur.execute("INSERT INTO post_development (post_id) VALUES (%s)", (post_id,))
+                    post_development = cur.fetchone()
+                
+                cur.execute("UPDATE post_development SET main_themes = %s, sub_themes = %s WHERE post_id = %s", (main_themes, sub_themes, post_id))
+                conn.commit()
+        
+        return jsonify({'message': 'Themes saved successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/workflow/research/')
+def workflow_research_redirect():
+    post_id = request.args.get('post_id')
+    if not post_id:
+        flash('No post ID provided', 'error')
+        return redirect(url_for('main.index'))
+    return redirect(url_for('main.workflow_research_topics', post_id=post_id))
