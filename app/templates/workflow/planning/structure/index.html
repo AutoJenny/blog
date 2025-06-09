@@ -11,82 +11,94 @@ Do not introduce variants or reorder panels. Consistency is required for maintai
 #}
 
 {% block content %}
-<div class="container mx-auto px-6 py-8">
+<div class="container mx-auto px-4 py-8">
     {{ blog_macros.post_header(post, active_view='template') }}
     {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
+
     <!-- Structure Stage Custom UI -->
     <div class="mt-8 space-y-8">
-        <!-- Inputs Panel -->
-        <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6">
-            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Inputs</h2>
-            <div class="mb-2">
-                <label class="block font-semibold text-gray-700 dark:text-gray-200">Title</label>
-                <input type="text"
-                    class="input w-full bg-gray-900 dark:bg-[#181c23] text-gray-200 placeholder-gray-400 border border-gray-700"
-                    value="[Post Title]" placeholder="[Post Title]" />
-            </div>
-            <div class="mb-2">
-                <label class="block font-semibold text-gray-700 dark:text-gray-200">Basic Idea</label>
-                <textarea
-                    class="input w-full bg-gray-900 dark:bg-[#181c23] text-gray-200 placeholder-gray-400 border border-gray-700"
-                    rows="2" placeholder="[Basic idea text]">[Basic idea text]</textarea>
-            </div>
-            <div class="mb-2">
-                <label class="block font-semibold text-gray-700 dark:text-gray-200">Interesting Facts</label>
-                <textarea
-                    class="input w-full bg-gray-900 dark:bg-[#181c23] text-gray-200 placeholder-gray-400 border border-gray-700"
-                    rows="3" placeholder="[Fact 1\nFact 2\nFact 3]">[Fact 1\nFact 2\nFact 3]</textarea>
-            </div>
+        <!-- Tabs -->
+        <div class="flex space-x-4 border-b border-gray-700">
+            <button class="tab-button active-tab px-4 py-2 text-gray-300 border-b-2 border-blue-500"
+                data-tab="plan-tab">
+                Plan Sections
+            </button>
+            <button class="tab-button px-4 py-2 text-gray-300" data-tab="assign-tab">
+                Assign Content
+            </button>
         </div>
-        <!-- LLM Action Panel -->
-        <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6">
-            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Section Planning</h2>
-            <div class="mb-2 text-gray-700 dark:text-gray-200">Select inputs to use:</div>
-            <div class="flex gap-4 mb-4">
-                <label class="text-gray-700 dark:text-gray-200"><input type="checkbox" checked /> Title</label>
-                <label class="text-gray-700 dark:text-gray-200"><input type="checkbox" checked /> Basic Idea</label>
-                <label class="text-gray-700 dark:text-gray-200"><input type="checkbox" checked /> Interesting
-                    Facts</label>
-            </div>
-            <button class="btn btn-primary">Plan Sections (LLM)</button>
-        </div>
-        <!-- Output Panel -->
-        <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6">
-            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Proposed Sections</h2>
-            <ul id="sections-list" class="space-y-2">
-                <!-- Section rows will be rendered here by JS -->
-            </ul>
-        </div>
-        <!-- Unassigned Items Panel -->
-        <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6">
-            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Unassigned Items</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Ideas</h3>
-                    <div id="unassigned-ideas"
-                        class="flex flex-wrap gap-2 min-h-[50px] p-2 bg-gray-900 dark:bg-[#181c23] rounded">
-                        <!-- Unassigned ideas will be rendered here -->
+
+        <!-- Plan Tab -->
+        <div id="plan-tab" class="tab-content">
+            <!-- Inputs Panel -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Inputs</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Title</label>
+                        <input type="text" id="post-title" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+                            value="{{ post.title if post else '' }}" readonly>
                     </div>
-                </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Facts</h3>
-                    <div id="unassigned-facts"
-                        class="flex flex-wrap gap-2 min-h-[50px] p-2 bg-gray-900 dark:bg-[#181c23] rounded">
-                        <!-- Unassigned facts will be rendered here -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Basic Idea</label>
+                        <textarea id="basic-idea" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+                            rows="3">{{ post_development.basic_idea if post_development else '' }}</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Interesting Facts</label>
+                        <textarea id="interesting-facts" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+                            rows="3">{{ post_development.interesting_facts if post_development else '' }}</textarea>
                     </div>
                 </div>
             </div>
+
+            <!-- LLM Action Panel -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Generate Structure</h2>
+                <div class="flex items-center space-x-4">
+                    <button id="plan-sections" class="btn btn-primary">Generate Structure</button>
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Section Structure</h2>
+                <ul id="sections-list" class="space-y-4" data-post-id="{{ post.id if post else '' }}"></ul>
+            </div>
+
+            <!-- Save Panel -->
+            <div class="bg-gray-800 rounded-lg p-6 mt-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Save Structure</h2>
+                <button id="save-structure" class="btn btn-success">Save Structure</button>
+            </div>
         </div>
-        <!-- Save/Accept Panel -->
-        <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6 flex justify-end">
-            <button class="btn btn-success bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save
-                Changes</button>
+
+        <div id="assign-tab" class="tab-content hidden">
+            <!-- Post Overview Panel -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Post Overview</h2>
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-200">{{ post.title if post else '' }}</h3>
+                </div>
+                <div class="mb-4">
+                    <h4 class="text-md font-medium text-gray-300 mb-2">Basic Idea</h4>
+                    <p class="text-gray-200">{{ post_development.basic_idea if post_development else '' }}</p>
+                </div>
+            </div>
+
+            <!-- Sections Panel -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Sections</h2>
+                <div id="sections-container" class="space-y-4">
+                    <!-- Sections will be loaded here -->
+                </div>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/workflow/sortable.min.js"></script>
-<script type="module" src="/static/js/workflow/structure_stage.js"></script>
+<script src="/static/js/workflow/tab_manager.js"></script>
+<script src="/static/js/workflow/structure_stage.js"></script>
 {% endblock %}

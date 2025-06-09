@@ -32,16 +32,15 @@
     box-shadow: 0 4px 24px 0 rgba(99, 102, 241, 0.18);
   }
 </style>
+
 <div class="w-full flex flex-col items-center mb-4">
   <nav aria-label="Workflow" class="w-full">
     <ol class="flex flex-row flex-wrap justify-center w-full gap-0">
-      {% set stage_bg = ['from-[#23273a] to-[#20243a]', 'from-[#23273a] to-[#181c2a]', 'from-[#181c2a] to-[#23273a]'] %}
-      {% set stage_accent = ['indigo', 'blue', 'yellow'] %}
       {% for stage in stages %}
-      {% set bg = stage_bg[loop.index0 % stage_bg|length] %}
-      {% set accent = stage_accent[loop.index0 % stage_accent|length] %}
       {% set stage_subs = substages|selectattr('stage_id', 'equalto', stage.id)|list %}
-      {% set is_active_stage = stage_subs|selectattr('id', 'equalto', current_substage)|list|length > 0 %}
+      {% set accent = 'indigo' if stage.id == 1 else 'blue' if stage.id == 2 else 'purple' %}
+      {% set bg = 'from-[#23273a] to-[#1a1d2a]' if stage.id == 1 else 'from-[#23273a] to-[#1a1d2a]' if stage.id == 2
+      else 'from-[#23273a] to-[#1a1d2a]' %}
       <div
         class="flex flex-col items-center mx-4 min-w-0 stage-group {% if is_active_stage %}stage-highlight{% endif %}">
         <!-- Stage label above group -->
@@ -54,12 +53,12 @@
           {% for sub in stage_subs %}
           <li class="flex flex-col items-center min-w-0">
             <a href="{{ sub.url }}{% if post and post.id %}?post_id={{ post.id }}{% endif %}" class="indicator-glow flex items-center justify-center w-14 h-14 rounded-full border-4 transition-all duration-200
-                  {% if sub.id == current_substage %}
-                    bg-red-600 border-red-400 text-white shadow-2xl ring-4 ring-red-400 scale-110 indicator-active
-                  {% else %}
-                    bg-[#23273a] border-{{ accent }}-800 text-{{ accent }}-200 hover:bg-{{ accent }}-800 hover:text-white opacity-80
-                  {% endif %}
-                  focus:outline-none focus:ring-2 focus:ring-{{ accent }}-400"
+                    {% if sub.id == current_substage %}
+                      bg-red-600 border-red-400 text-white shadow-2xl ring-4 ring-red-400 scale-110 indicator-active
+                    {% else %}
+                      bg-[#23273a] border-{{ accent }}-800 text-{{ accent }}-200 hover:bg-{{ accent }}-800 hover:text-white opacity-80
+                    {% endif %}
+                    focus:outline-none focus:ring-2 focus:ring-{{ accent }}-400"
               aria-current="{% if sub.id == current_substage %}step{% endif %}" style="touch-action: manipulation;">
               <i class="fa {{ sub.icon }} text-xl"></i>
             </a>
