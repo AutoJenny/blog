@@ -1,0 +1,8 @@
+{"model": "mistral", "prompt": "You are a professional content strategist. Your task is to create a logical structure for a blog post.
+
+Task: Create a section structure for a blog post with the following details:
+Title: Test Post
+Main Idea: Test idea
+Facts to Include: Fact 1, Fact 2
+
+Return ONLY valid JSON. Do not include any explanation, commentary, formatting, code blocks, or HTML. Output must begin with { and end with }. The output must be a JSON object with a single key \"sections\" containing an array of section objects. Each section object must have exactly these fields: \"name\" (string), \"description\" (string). Example output: { \"sections\": [ ... ] }", "temperature": 0.7, "max_tokens": 1000, "stream": false}

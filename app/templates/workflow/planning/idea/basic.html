@@ -1,66 +1,23 @@
 {% extends "base.html" %}
-{% import "workflow/workflow_indicator.html" as indicator %}
-{% import "blog/_post_header.html" as blog_macros %}
-
-{% block title %}Planning: Basic Idea{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-6 py-8">
-    {{ blog_macros.post_header(post) }}
-    {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
+<div class="workflow-container">
+    <div class="workflow-header">
+        <h1>Basic Idea</h1>
+        <p class="subtitle">Define the core concept and scope of your article</p>
+    </div>
 
-    <!-- Idea Stage Custom UI -->
-    <div class="mt-8 space-y-8">
-        <!-- Tabs -->
-        <div class="flex space-x-4 border-b border-gray-700">
-            <a href="/workflow/idea/basic/?post_id={{ post.id if post else '' }}"
-                class="tab-button active-tab px-4 py-2 text-gray-300 border-b-2 border-blue-500">
-                Basic Idea
-            </a>
-            <a href="/workflow/idea/themes/?post_id={{ post.id if post else '' }}"
-                class="tab-button px-4 py-2 text-gray-300">
-                Themes
-            </a>
-        </div>
-
-        <!-- Basic Idea Content -->
-        <div class="tab-content">
-            <!-- Inputs Panel -->
-            <div class="bg-gray-800 rounded-lg p-6 mb-6">
-                <h2 class="text-xl font-bold text-gray-100 mb-4">Basic Idea</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Title</label>
-                        <input type="text" id="post-title" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
-                            value="{{ post.title if post else '' }}" readonly>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Basic Idea</label>
-                        <textarea id="basic-idea" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
-                            rows="3">{{ post_development.basic_idea if post_development else '' }}</textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- LLM Action Panel -->
-            <div class="bg-gray-800 rounded-lg p-6 mb-6">
-                <h2 class="text-xl font-bold text-gray-100 mb-4">Generate Idea</h2>
-                <div class="flex items-center space-x-4">
-                    <button id="generate-idea" class="btn btn-primary">Generate Idea</button>
-                </div>
-            </div>
-
-            <!-- Save Panel -->
-            <div class="bg-gray-800 rounded-lg p-6 mt-6">
-                <h2 class="text-xl font-bold text-gray-100 mb-4">Save Idea</h2>
-                <button id="save-idea" class="btn btn-success">Save Idea</button>
-            </div>
+    <div class="workflow-content">
+        <!-- New clean implementation will go here -->
+        <div class="placeholder-content">
+            <p>New implementation coming soon...</p>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/workflow/tab_manager.js"></script>
-<script src="/static/js/workflow/idea_stage.js"></script>
+<script>
+    // New clean implementation will go here
+</script>
 {% endblock %}
