@@ -14,6 +14,13 @@ The Structure stage is responsible for organizing the post's content into a logi
    - section_description: A brief description of what the section will cover
    - section_order: The sequence number of the section
 
+3. Output to post_section_elements table:
+   - post_id: Reference to the post
+   - section_id: Reference to the section
+   - element_type: Type of element ('fact', 'idea', 'theme')
+   - element_text: The actual content
+   - element_order: Order within the section
+
 ## UI Components
 
 ### Inputs Panel
@@ -28,10 +35,12 @@ The Structure stage is responsible for organizing the post's content into a logi
 - List of generated sections, each showing:
   - Section heading
   - Section description
+  - Assigned elements (facts, ideas, themes)
 - Sections are draggable for reordering
+- Elements can be dragged between sections
 
 ### Save Panel
-- "Save Structure" button to persist the sections to the database
+- "Save Structure" button to persist the sections and their elements to the database
 
 ## API Endpoints
 
@@ -43,7 +52,7 @@ Generates a section structure using Ollama.
 {
   "title": "Post Title",
   "idea": "Basic idea text",
-  "facts": "Fact 1\nFact 2\nFact 3"
+  "facts": ["Fact 1", "Fact 2", "Fact 3"]
 }
 ```
 
@@ -53,7 +62,17 @@ Generates a section structure using Ollama.
   "sections": [
     {
       "heading": "Section Title",
-      "description": "Section description"
+      "description": "Section description",
+      "elements": [
+        {
+          "type": "fact",
+          "text": "Fact 1"
+        },
+        {
+          "type": "idea",
+          "text": "Idea 1"
+        }
+      ]
     }
   ]
 }
@@ -68,7 +87,13 @@ Saves the generated structure to the database.
   "sections": [
     {
       "heading": "Section Title",
-      "description": "Section description"
+      "description": "Section description",
+      "elements": [
+        {
+          "type": "fact",
+          "text": "Fact 1"
+        }
+      ]
     }
   ]
 }
@@ -87,16 +112,17 @@ Saves the generated structure to the database.
 ### planSectionsLLM(inputs)
 - Takes title, idea, and facts as input
 - Calls Ollama to generate section structure
-- Returns array of sections with headings and descriptions
+- Returns array of sections with headings, descriptions, and elements
 
 ### renderSections(list, sections)
 - Renders sections in the UI
-- Each section shows heading and description
-- Supports drag-and-drop reordering
+- Each section shows heading, description, and assigned elements
+- Supports drag-and-drop reordering of sections and elements
 
 ### saveStructure(sections)
 - Saves the current section structure to the database
 - Updates post_section table with new sections
+- Updates post_section_elements table with assigned elements
 
 ## Error Handling
 - 400: Bad Request - Invalid input data
@@ -114,6 +140,17 @@ Saves the generated structure to the database.
 - first_draft: TEXT
 - created_at: TIMESTAMP
 - updated_at: TIMESTAMP
+
+### post_section_elements
+- id: SERIAL PRIMARY KEY
+- post_id: INTEGER REFERENCES post(id)
+- section_id: INTEGER REFERENCES post_section(id)
+- element_type: VARCHAR(50) CHECK (element_type IN ('fact', 'idea', 'theme'))
+- element_text: TEXT
+- element_order: INTEGER
+- created_at: TIMESTAMP
+- updated_at: TIMESTAMP
+- CONSTRAINT unique_element_per_section UNIQUE (post_id, section_id, element_text)
 
 ## Page URL
 ```
@@ -140,18 +177,21 @@ http://localhost:5000/workflow/structure/?post_id=<id>
    - You can then:
      - Reorder sections via drag-and-drop
      - Edit section titles and descriptions
-     - Move facts and ideas between sections
+     - Move elements (facts, ideas, themes) between sections
      - Add or remove sections as needed
 
 4. **Final Output**
    - The final structure is saved as:
      - Section records in the `post_section` table
+     - Element records in the `post_section_elements` table
      - Each section includes:
        - Title (`section_heading`)
        - Description (`section_description`)
-       - Assigned facts (`facts_to_include`)
-       - Assigned ideas (`ideas_to_include`)
        - Order in the post (`section_order`)
+     - Each element includes:
+       - Type (`element_type`)
+       - Content (`element_text`)
+       - Order within section (`element_order`)
 
 ## Page Components
 
@@ -225,7 +265,8 @@ http://localhost:5000/workflow/structure/?post_id=<id>
    - `post_development.basic_idea`
    - `post_development.interesting_facts`
 3. Existing sections are displayed if any
-4. Unassigned items are shown in their panel
+4. Existing elements are displayed within their sections
+5. Unassigned elements are shown in their panel
 
 ### 2. Planning Sections
 1. Review/edit input fields
@@ -233,22 +274,21 @@ http://localhost:5000/workflow/structure/?post_id=<id>
 3. LLM analyzes inputs and generates:
    - Section titles
    - Section descriptions
-   - Fact assignments
-   - Idea assignments
+   - Element assignments (facts, ideas, themes)
 4. Sections are displayed in a draggable list
+5. Elements are displayed within their sections
 
 ### 3. Editing Sections
 1. Edit section titles inline
 2. Edit section descriptions
 3. Drag sections to reorder
-4. Drag items between sections
-5. Remove items from sections
+4. Drag elements between sections
+5. Remove elements from sections
 
-### 4. Managing Unassigned Items
-1. Unassigned items appear in their panel
-2. Drag items to sections
-3. Drag items between sections
-4. Remove items
+### 4. Managing Unassigned Elements
+1. Unassigned elements appear in their panel
+2. Drag elements to sections
+3. Drag elements between sections
 
 ### 5. Saving Structure
 1. Click "Accept Structure"
