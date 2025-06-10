@@ -1,0 +1,26 @@
+{% extends "workflow/base.html" %}
+
+{% block title %}{{ stage.name }} - Workflow{% endblock %}
+
+{% block workflow_content %}
+<div class="workflow-header">
+    <h1 class="workflow-title">{{ stage.name }}</h1>
+    <p class="workflow-description">{{ stage.description }}</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for substage in substages if substage.stage_id == stage.id %}
+    <a href="{{ url_for('workflow.substage_view', stage_id=stage.id, substage_id=substage.id) }}" class="block">
+        <div class="bg-dark-bg border border-dark-border rounded-xl p-6 hover:border-dark-accent transition">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="bg-dark-accent/10 p-3 rounded-lg">
+                    <i class="fa-solid fa-folder text-dark-accent text-xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-white">{{ substage.name }}</h2>
+            </div>
+            <p class="text-gray-400">{{ substage.description }}</p>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}
