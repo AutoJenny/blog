@@ -15,7 +15,7 @@
     {% endif %}
     {% endblock %}
 
-    <!-- Inputs Accordion -->
+    <!-- Inputs Accordion (abbreviate summary, full content when open) -->
     <div class="border border-dark-border rounded-lg overflow-hidden">
         <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
             onclick="document.getElementById('inputs-content').classList.toggle('hidden'); document.getElementById('inputs-icon').classList.toggle('rotate-180');">
@@ -26,9 +26,9 @@
                 {% for input_id, input_config in step_config.inputs.items() %}
                 {% set val = input_values[input_id] if input_values and input_id in input_values else '—' %}
                 {% if not loop.first %}{% set ns.summary = ns.summary + ', ' %}{% endif %}
-                {% set first_line = val.split('\n')[0] if val else '' %}
-                {% set ns.summary = ns.summary + '<span class=\"text-blue-500\">[' + input_id + ']</span>: ' +
-                first_line %}
+                {% set summary = val[:80] ~ ('...' if val|length > 80 else '') %}
+                {% set ns.summary = ns.summary + '<span class=\"text-blue-500\">[' + input_id + ']</span>: ' + summary
+                %}
                 {% endfor %}
                 {{ ns.summary|safe }}
                 {% else %}
@@ -44,19 +44,24 @@
             {% if step_config.inputs %}
             {% for input_id, input_config in step_config.inputs.items() %}
             <div class="mb-4">
-                <label for="{{ input_id }}" class="block text-sm font-medium text-blue-500 mb-2">
-                    [{{ input_id }}] {{ input_config.label }}
-                </label>
+                <div class="flex justify-between items-center mb-2">
+                    <label for="{{ input_id }}" class="block text-sm font-medium text-blue-500">
+                        [{{ input_id }}] {{ input_config.label }}
+                    </label>
+                    <select class="input-field-select bg-gray-900 text-gray-200 rounded-lg p-2 border border-gray-700"
+                        data-input-id="{{ input_id }}" onchange="updateInputField(this)">
+                        <option value="">Select a field...</option>
+                    </select>
+                </div>
                 <div class="text-xs text-gray-400 mb-1">
                     Type: {{ input_config.type }}{% if input_config.db_field %}, DB Field: {{ input_config.db_field }}{%
                     endif %}{% if input_config.db_table %}, Table: {{ input_config.db_table }}{% endif %}{% if
                     input_config.required %}, Required{% endif %}
                 </div>
                 {% if input_config.type == 'textarea' %}
-                <textarea id="{{ input_id }}" name="{{ input_id }}"
-                    class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    data-db-field="{{ input_config.db_field }}"
-                    data-db-table="{{ input_config.db_table }}">{{ input_values[input_id] if input_values and input_id in input_values else '' }}</textarea>
+                <div class="bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-300 whitespace-pre-wrap">
+                    {{ input_values[input_id] if input_values and input_id in input_values else '' }}
+                </div>
                 {% endif %}
             </div>
             {% endfor %}
@@ -195,30 +200,44 @@
     <!-- Outputs Accordion (summary is truncated, not first line) -->
     <div class="border border-dark-border rounded-lg overflow-hidden">
         <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="document.getElementById('outputs-content-unique').classList.toggle('hidden'); document.getElementById('outputs-icon-unique').classList.toggle('rotate-180');">
+            onclick="document.getElementById('outputs-content').classList.toggle('hidden'); document.getElementById('outputs-icon').classList.toggle('rotate-180');">
             <span class="font-medium text-dark-text">Outputs</span>
-            <span class="text-gray-400" id="outputs-summary-unique">
-                {% set val = output_values['basic_idea'] if output_values and 'basic_idea' in output_values else '—' %}
-                {% set summary = val[:80] ~ ('...' if val|length > 80 else '') %}
-                <span class="text-blue-500">[basic_idea]</span>: {{ summary }}
+            <span class="text-gray-400" id="outputs-summary">
+                {% if output_field %}
+                <span class="text-blue-500">[{{ output_field }}]</span>: {{ (output_value[:80] ~ ('...' if output_value
+                and output_value|length > 80 else '')) if output_value else '' }}
+                {% else %}
+                No output field selected
+                {% endif %}
             </span>
-            <svg class="w-5 h-5 transform transition-transform" id="outputs-icon-unique" fill="none"
-                stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 transform transition-transform" id="outputs-icon" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
         </button>
-        <div id="outputs-content-unique" class="hidden p-4 bg-dark-bg text-dark-text">
+        <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
+            {% if output_field %}
             <div class="mb-4">
-                <label for="basic_idea" class="block text-sm font-medium text-blue-500 mb-2">
-                    [basic_idea] Basic Idea
-                </label>
-                <div class="text-xs text-gray-400 mb-1">
-                    Type: text, DB Field: basic_idea, Table: post_development
+                <div class="flex justify-between items-center mb-2">
+                    <label for="output_field_select" class="block text-sm font-medium text-blue-500">
+                        Select Output Field
+                    </label>
+                    <select id="output_field_select"
+                        class="output-field-select bg-gray-900 text-gray-200 rounded-lg p-2 border border-gray-700"
+                        onchange="updateOutputField(this)">
+                        <option value="">Select a field...</option>
+                        {% for field in fields %}
+                        <option value="{{ field }}" {% if field==output_field %}selected{% endif %}>{{ field }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-300 whitespace-pre-wrap">
-                    {{ output_values['basic_idea'] if output_values and 'basic_idea' in output_values else '' }}
+                    {{ output_value if output_value is not none else '' }}
                 </div>
             </div>
+            {% else %}
+            <p class="text-gray-400">No output field selected for this step.</p>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -228,7 +247,180 @@
     window.currentStep = {{ current_step | tojson }};
     window.currentSubstage = {{ current_substage | tojson }};
     window.currentStage = {{ current_stage | tojson }};
+    window.stepId = {{ step_id | tojson }};
     window.originalPrompt = {{ (step_config.prompt.template if step_config.prompt and step_config.prompt.template else step_config.settings.llm.task_prompt if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt else "")| tojson }};
+    window.outputValues = {{ output_values | tojson }};
+    window.outputMappingField = {{ step_config.settings.llm.output_mapping.field | tojson }};
+
+    // Fetch available fields from post_development table
+    async function fetchAvailableFields() {
+        try {
+            const response = await fetch('/api/v1/post_development/fields');
+            const data = await response.json();
+            return data.fields || [];
+        } catch (error) {
+            console.error('Error fetching fields:', error);
+            return [];
+        }
+    }
+
+    // Populate field selectors
+    async function populateFieldSelectors() {
+        const fields = await fetchAvailableFields();
+        const inputSelects = document.querySelectorAll('.input-field-select');
+        const outputSelects = document.querySelectorAll('.output-field-select');
+
+        // Fetch current mapping from backend
+        let mapping = {};
+        try {
+            const resp = await fetch(`/api/v1/llm/post_workflow_step_actions?post_id=${window.postId}&step_id=${window.stepId}`);
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.actions && data.actions.length > 0) {
+                    data.actions.forEach(action => {
+                        if (action.input_field) mapping[action.input_field] = 'input';
+                        if (action.output_field) mapping[action.output_field] = 'output';
+                    });
+                }
+            }
+        } catch (err) {
+            console.error('Error fetching mapping:', err);
+        }
+
+        // Debug: print available fields and mapping
+        console.log('Available fields:', fields);
+        console.log('Mapping:', mapping);
+
+        // Populate input field selects
+        inputSelects.forEach(select => {
+            const inputId = select.getAttribute('data-input-id');
+            select.innerHTML = '<option value="">Select a field...</option>';
+            fields.forEach(field => {
+                const option = document.createElement('option');
+                option.value = field;
+                option.textContent = field;
+                if (mapping[field] === 'input') option.selected = true;
+                select.appendChild(option);
+            });
+            // If mapped value is not in fields, add it
+            Object.keys(mapping).forEach(mappedField => {
+                if (mapping[mappedField] === 'input' && !fields.includes(mappedField)) {
+                    const option = document.createElement('option');
+                    option.value = mappedField;
+                    option.textContent = mappedField + ' (missing)';
+                    option.selected = true;
+                    select.appendChild(option);
+                }
+            });
+        });
+
+        // Populate output field selects
+        outputSelects.forEach(select => {
+            const outputId = select.getAttribute('data-output-id');
+            select.innerHTML = '<option value="">Select a field...</option>';
+            fields.forEach(field => {
+                const option = document.createElement('option');
+                option.value = field;
+                option.textContent = field;
+                if (mapping[field] === 'output') option.selected = true;
+                select.appendChild(option);
+            });
+            // If mapped value is not in fields, add it
+            Object.keys(mapping).forEach(mappedField => {
+                if (mapping[mappedField] === 'output' && !fields.includes(mappedField)) {
+                    const option = document.createElement('option');
+                    option.value = mappedField;
+                    option.textContent = mappedField + ' (missing)';
+                    option.selected = true;
+                    select.appendChild(option);
+                }
+            });
+            // If nothing is selected, use outputMappingField from config
+            if (!select.value && window.outputMappingField && fields.includes(window.outputMappingField)) {
+                select.value = window.outputMappingField;
+            }
+            // If still nothing is selected, default to the field name (outputId)
+            if (!select.value) {
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === outputId) {
+                        select.options[i].selected = true;
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    // Update input field mapping
+    async function updateInputField(select) {
+        const inputId = select.getAttribute('data-input-id');
+        const newField = select.value;
+
+        try {
+            const response = await fetch(`/api/v1/llm/post_workflow_step_actions/${window.postId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    input_field: newField
+                })
+            });
+
+            if (response.ok) {
+                // Update the UI to reflect the change
+                const summary = document.getElementById('inputs-summary');
+                const currentText = summary.innerHTML;
+                const newText = currentText.replace(
+                    new RegExp(`\\[${inputId}\\]`),
+                    `[${newField}]`
+                );
+                summary.innerHTML = newText;
+            }
+        } catch (error) {
+            console.error('Error updating input field:', error);
+        }
+    }
+
+    // Update output field mapping
+    async function updateOutputField(select) {
+        const outputId = select.getAttribute('data-output-id');
+        const newField = select.value;
+
+        // Persist the mapping to the JSON config
+        try {
+            const response = await fetch('/workflow/api/update_output_mapping/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    stage_name: window.currentStage,
+                    substage_name: window.currentSubstage,
+                    step_name: window.currentStep,
+                    field: newField
+                })
+            });
+            if (response.ok) {
+                // Update the UI to reflect the change
+                const summary = document.getElementById('outputs-summary');
+                const currentText = summary.innerHTML;
+                const newText = currentText.replace(
+                    new RegExp(`\[${outputId}\]`),
+                    `[${newField}]`
+                );
+                summary.innerHTML = newText;
+            } else {
+                const data = await response.json();
+                alert('Error saving output mapping: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error updating output field mapping:', error);
+        }
+    }
+
+    // Initialize field selectors when the page loads
+    document.addEventListener('DOMContentLoaded', populateFieldSelectors);
 
     // Save prompt changes
     document.getElementById('save-prompt').addEventListener('click', function () {

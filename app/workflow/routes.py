@@ -45,19 +45,25 @@ def load_step_config(stage_name: str, substage_name: str, step_name: str):
             
             # Check for a custom prompt file
             prompt_file = get_prompt_file_path(step_name, substage_name, stage_name)
-            if os.path.exists(prompt_file):
-                try:
-                    with open(prompt_file, 'r') as f:
-                        prompt_config = json.load(f)
-                        if 'prompt' in prompt_config:
-                            # Update the prompt in the config
-                            if 'settings' in result and 'llm' in result['settings']:
-                                result['settings']['llm']['task_prompt'] = prompt_config['prompt']
-                            else:
-                                result['prompt'] = {'template': prompt_config['prompt']}
-                            print(f"DEBUG: Updated config with custom prompt: {result}")
-                except Exception as e:
-                    print(f"DEBUG: Error reading prompt file: {e}")
+            print(f"DEBUG: Looking for custom prompt file at {prompt_file}")
+            if not os.path.exists(prompt_file):
+                raise FileNotFoundError(f"Custom prompt file not found at {prompt_file}")
+            try:
+                with open(prompt_file, 'r') as f:
+                    prompt_config = json.load(f)
+                    print(f"DEBUG: Found custom prompt config: {prompt_config}")
+                    if 'system_prompt' in prompt_config and 'task_prompt' in prompt_config:
+                        # Update the prompts in the config
+                        if 'settings' in result and 'llm' in result['settings']:
+                            result['settings']['llm']['system_prompt'] = prompt_config['system_prompt']
+                            result['settings']['llm']['task_prompt'] = prompt_config['task_prompt']
+                            print(f"DEBUG: Updated config with custom prompts: {result}")
+                        else:
+                            result['prompt'] = {'template': prompt_config['task_prompt']}
+                            print(f"DEBUG: Updated config with custom prompt template: {result}")
+            except Exception as e:
+                print(f"DEBUG: Error reading prompt file: {e}")
+                raise
             
             return result
     except (FileNotFoundError, json.JSONDecodeError) as e:
@@ -136,10 +142,24 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
 
     # Load step configuration
     step_config = load_step_config(stage_name, substage_name, step_name)
-    
+    # Debug: print output_mapping field from config
+    output_field = None
+    output_value = None
+    if 'settings' in step_config and 'llm' in step_config['settings'] and 'output_mapping' in step_config['settings']['llm']:
+        output_field = step_config['settings']['llm']['output_mapping'].get('field')
+        print(f"DEBUG: output_mapping.field for {stage_name}/{substage_name}/{step_name}: {output_field}")
+        if output_field:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(f"SELECT {output_field} FROM post_development WHERE post_id = %s", (post_id,))
+                    result = cur.fetchone()
+                    if result and output_field in result:
+                        output_value = result[output_field]
+
     # Load input and output values from database
     input_values = {}
     output_values = {}
+    pws_ids = {}
     if step_config:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
@@ -158,11 +178,30 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
                         result = cur.fetchone()
                         if result is not None and output_config['db_field'] in result and result[output_config['db_field']] is not None:
                             output_values[output_id] = result[output_config['db_field']]
+                
+                # Query post_workflow_step_action for pws_id
+                cur.execute("""
+                    SELECT id, input_field, output_field
+                    FROM post_workflow_step_action
+                    WHERE post_id = %s AND step_id = %s
+                """, (post_id, step['id']))
+                rows = cur.fetchall()
+                for row in rows:
+                    if isinstance(row, dict):
+                        pws_id, input_field, output_field = row['id'], row['input_field'], row['output_field']
+                    else:
+                        pws_id, input_field, output_field = row[0], row[1], row[2]
+                    if input_field:
+                        pws_ids[input_field] = pws_id
+                    if output_field:
+                        pws_ids[output_field] = pws_id
 
     # Debug print statements
     print(f"DEBUG: step_config for {stage_name}/{substage_name}/{step_name}: {step_config}")
     print(f"DEBUG: input_values for post_id={post_id}: {input_values}")
     print(f"DEBUG: output_values for post_id={post_id}: {output_values}")
+    print(f"DEBUG: pws_ids for post_id={post_id}: {pws_ids}")
+    print(f"DEBUG: step_id: {step['id']}")
 
     # Parse output as JSON array if possible (for outputs like provisional_title)
     output_titles = None
@@ -174,6 +213,13 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
                     output_titles = json.loads(val)
                 except Exception:
                     output_titles = None
+
+    # Get available output fields from post_development
+    fields = []
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development'")
+            fields = [row["column_name"] for row in cur.fetchall()]
 
     return render_template(
         f'workflow/steps/{step_name}.html',
@@ -189,7 +235,12 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
         step_config=step_config,
         input_values=input_values,
         output_values=output_values,
-        output_titles=output_titles
+        output_titles=output_titles,
+        pws_ids=pws_ids,
+        step_id=step['id'],
+        output_field=output_field,
+        output_value=output_value,
+        fields=fields
     )
 
 # Redirect old URLs to new format with post_id
@@ -239,7 +290,7 @@ def test_step(post_id, stage_name: str, substage_name: str):
     return f"Test route: post_id={post_id}, stage_name={stage_name}, substage_name={substage_name}"
 
 # Ensure prompts directory exists
-PROMPTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'prompts')
+PROMPTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'prompts'))
 os.makedirs(PROMPTS_DIR, exist_ok=True)
 
 def get_prompt_file_path(step_name, substage_name, stage_name):
@@ -345,4 +396,44 @@ def update_title_order():
         print(f"DEBUG: Error updating title order: {str(e)}")
         import traceback
         print(f"DEBUG: Error traceback: {traceback.format_exc()}")
+        return jsonify({'success': False, 'error': str(e)}), 500 
+
+@workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/save_prompt', methods=['POST'])
+def save_prompt(post_id, stage_name, substage_name, step_name):
+    data = request.get_json()
+    system_prompt = data.get('system_prompt')
+    task_prompt = data.get('task_prompt')
+    if not (system_prompt and task_prompt):
+        return jsonify({'success': False, 'error': 'Missing prompt data'}), 400
+
+    # Save to the JSON file (reuse your get_prompt_file_path logic)
+    prompt_file = get_prompt_file_path(step_name, substage_name, stage_name)
+    prompt_data = {
+        'system_prompt': system_prompt,
+        'task_prompt': task_prompt
+    }
+    with open(prompt_file, 'w') as f:
+        json.dump(prompt_data, f, indent=2)
+
+    return jsonify({'success': True}) 
+
+@workflow.route('/api/update_output_mapping/', methods=['POST'])
+def update_output_mapping():
+    data = request.get_json()
+    stage_name = data.get('stage_name')
+    substage_name = data.get('substage_name')
+    step_name = data.get('step_name')
+    new_field = data.get('field')
+    if not (stage_name and substage_name and step_name and new_field):
+        return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+
+    config_path = os.path.join(os.path.dirname(__file__), 'config', f'{stage_name}_steps.json')
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        config[stage_name][substage_name][step_name]['settings']['llm']['output_mapping']['field'] = new_field
+        with open(config_path, 'w') as f:
+            json.dump(config, f, indent=2)
+        return jsonify({'success': True})
+    except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500 
