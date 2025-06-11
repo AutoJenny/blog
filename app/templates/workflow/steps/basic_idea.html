@@ -1,0 +1,109 @@
+{% extends "workflow/base.html" %}
+
+{% block workflow_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2>Basic Idea</h2>
+            <form id="basicIdeaForm" class="mt-4">
+                <div class="mb-4">
+                    <label for="ideaText" class="form-label">What's your basic idea for this post?</label>
+                    <textarea class="form-control" id="ideaText" rows="4"
+                        placeholder="Enter your initial thoughts about the post..."></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Key Points to Consider</label>
+                    <div class="card">
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    What's the main message or takeaway?
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    Who is the target audience?
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    What problem does this solve?
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    What makes this unique or interesting?
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" id="saveDraft">
+                        <i class="bi bi-save"></i> Save Draft
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="saveAndContinue">
+                        Save and Continue to Provisional Title
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('basicIdeaForm');
+        const ideaText = document.getElementById('ideaText');
+        const saveDraftBtn = document.getElementById('saveDraft');
+        const saveAndContinueBtn = document.getElementById('saveAndContinue');
+
+        // Load existing content if available
+        fetch(`/api/workflow/posts/${currentPostId}/planning/idea/basic_idea`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.content) {
+                    ideaText.value = data.content;
+                }
+            });
+
+        // Save draft
+        saveDraftBtn.addEventListener('click', function () {
+            saveContent(false);
+        });
+
+        // Save and continue
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            saveContent(true);
+        });
+
+        function saveContent(continueToNext) {
+            const content = ideaText.value;
+
+            fetch(`/api/workflow/posts/${currentPostId}/planning/idea/basic_idea`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (continueToNext) {
+                            window.location.href = `/workflow/planning/idea/provisional_title?post_id=${currentPostId}`;
+                        } else {
+                            // Show success message
+                            const toast = new bootstrap.Toast(document.createElement('div'));
+                            toast.show();
+                        }
+                    }
+                });
+        }
+    });
+</script>
+{% endblock %}

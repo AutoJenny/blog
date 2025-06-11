@@ -9,6 +9,9 @@ from logging.handlers import RotatingFileHandler, SMTPHandler
 import os
 from dotenv import load_dotenv
 from datetime import timedelta, datetime
+from flask_cors import CORS
+from flask_migrate import Migrate
+from app.database import get_db_conn
 
 # DEPRECATED: SQLAlchemy ORM is being removed. Use direct SQL (psycopg2) for all DB access.
 
@@ -20,16 +23,19 @@ cache = Cache()
 mail = Mail()
 celery = Celery(__name__)
 swagger = Swagger()
+migrate = Migrate()
 
 print('=== FLASK APP __init__.py LOADED (AUDIT TEST) ===')
 
 def create_app(config_class=Config):
     app = Flask(__name__)
+    CORS(app)
     app.config.from_object(config_class)
 
     cache.init_app(app)
     mail.init_app(app)
     swagger.init_app(app)
+    migrate.init_app(app, get_db_conn)
 
     # Make config available to all templates
     @app.context_processor
@@ -127,6 +133,9 @@ def create_app(config_class=Config):
     print('[AUDIT] About to register api_bp...')
     app.register_blueprint(api_bp, url_prefix='/api/v1')
     print('[AUDIT] api_bp registered.')
+
+    from app.workflow import workflow
+    app.register_blueprint(workflow, url_prefix='/workflow')
 
     # Add debug route listing
     @app.route('/debug/routes')

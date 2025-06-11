@@ -48,25 +48,6 @@
                     </a>
                 </div>
                 <div class="flex items-center space-x-4 ml-8">
-                    <!-- Workflow Dropdown -->
-                    <div class="relative group nav-group" tabindex="0">
-                        <button
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
-                            aria-haspopup="true" aria-expanded="false">
-                            <i class="fa-solid fa-sitemap"></i> Workflow <i class="fa fa-caret-down text-xs"></i>
-                        </button>
-                        <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
-                            <a href="/workflow/idea/"
-                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
-                                    class="fa-solid fa-lightbulb text-yellow-400"></i> Planning</a>
-                            <a href="/workflow/content/"
-                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
-                                    class="fa-solid fa-pen-nib text-green-400"></i> Authoring</a>
-                            <a href="/workflow/preflight/"
-                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
-                                    class="fa-solid fa-paper-plane text-blue-400"></i> Publishing</a>
-                        </div>
-                    </div>
                     <!-- Modules Dropdown -->
                     <div class="relative group nav-group" tabindex="0">
                         <button
@@ -109,11 +90,9 @@
     {% if fullwidth_mode %}
     {% block fullwidth %}{% endblock %}
     {% else %}
-    {# Auto area nav for LLM and workflow, but not on /llm/ landing #}
+    {# Auto area nav for LLM, but not on /llm/ landing #}
     {% if request.path.startswith('/llm') and request.path != '/llm/' %}
     {% include 'llm/_llm_nav.html' %}
-    {% elif request.path.startswith('/workflow') %}
-    {% include 'workflow/_workflow_nav.html' ignore missing %}
     {% endif %}
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {% block content %}{% endblock %}
@@ -148,7 +127,7 @@
                         });
                         const data = await response.json();
                         if (response.ok && data.id) {
-                            window.location.href = `/workflow/idea/?post_id=${data.id}`;
+                            window.location.href = `/blog/post/${data.id}`;
                         } else {
                             alert(data.error || 'Failed to create post');
                         }

@@ -1,42 +1,46 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block styles %}
-{{ super() }}
-<style>
-    .workflow-content {
-        margin-left: 16rem;
-        /* 64px = w-64 */
-        padding: 2rem;
-    }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Workflow{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
 
-    .workflow-header {
-        background: linear-gradient(90deg, #23273a 0%, #181c2a 100%);
-        border: 1px solid #31364a;
-        box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
-        padding: 1.5rem;
-        border-radius: 0.75rem;
-        margin-bottom: 2rem;
-    }
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="{{ url_for('workflow.index') }}" class="text-xl font-bold text-gray-800">
+                            Workflow
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    .workflow-title {
-        color: #a5b4fc;
-        font-weight: 700;
-        font-size: 1.5rem;
-        margin-bottom: 0.5rem;
-    }
+    <!-- Main Content -->
+    <main class="py-4">
+        {% block content %}{% endblock %}
+    </main>
 
-    .workflow-description {
-        color: #e0e0e0;
-        font-size: 1rem;
-    }
-</style>
-{% endblock %}
+    <!-- Footer -->
+    <footer class="bg-white shadow-lg mt-8">
+        <div class="max-w-7xl mx-auto py-4 px-4">
+            <div class="text-center text-gray-600">
+                <p>&copy; 2024 Workflow System</p>
+            </div>
+        </div>
+    </footer>
 
-{% block content %}
-{% from "workflow/navigation.html" import render_navigation %}
-{{ render_navigation(stages, substages, steps, current_stage_id, current_substage_id, current_step_id) }}
+    {% block scripts %}{% endblock %}
+</body>
 
-<div class="workflow-content">
-    {% block workflow_content %}{% endblock %}
-</div>
-{% endblock %}
+</html>

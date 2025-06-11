@@ -1,0 +1,110 @@
+{% extends "workflow/base.html" %}
+
+{% block workflow_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2>Provisional Title</h2>
+            <form id="provisionalTitleForm" class="mt-4">
+                <div class="mb-4">
+                    <label for="titleText" class="form-label">Enter a provisional title for your post</label>
+                    <input type="text" class="form-control" id="titleText" placeholder="Enter a working title...">
+                    <div class="form-text">This can be refined later in the process</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Title Guidelines</label>
+                    <div class="card">
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-lightbulb text-warning"></i>
+                                    Keep it clear and descriptive
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-lightbulb text-warning"></i>
+                                    Include key terms for SEO
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-lightbulb text-warning"></i>
+                                    Make it engaging but not clickbait
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-lightbulb text-warning"></i>
+                                    Aim for 50-60 characters
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" id="saveDraft">
+                        <i class="bi bi-save"></i> Save Draft
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="saveAndContinue">
+                        Save and Continue
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('provisionalTitleForm');
+        const titleText = document.getElementById('titleText');
+        const saveDraftBtn = document.getElementById('saveDraft');
+        const saveAndContinueBtn = document.getElementById('saveAndContinue');
+
+        // Load existing content if available
+        fetch(`/api/workflow/posts/${currentPostId}/planning/idea/provisional_title`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.content) {
+                    titleText.value = data.content;
+                }
+            });
+
+        // Save draft
+        saveDraftBtn.addEventListener('click', function () {
+            saveContent(false);
+        });
+
+        // Save and continue
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            saveContent(true);
+        });
+
+        function saveContent(continueToNext) {
+            const content = titleText.value;
+
+            fetch(`/api/workflow/posts/${currentPostId}/planning/idea/provisional_title`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (continueToNext) {
+                            // Navigate to the next step in the workflow
+                            window.location.href = `/workflow/planning/idea/next_step?post_id=${currentPostId}`;
+                        } else {
+                            // Show success message
+                            const toast = new bootstrap.Toast(document.createElement('div'));
+                            toast.show();
+                        }
+                    }
+                });
+        }
+    });
+</script>
+{% endblock %}

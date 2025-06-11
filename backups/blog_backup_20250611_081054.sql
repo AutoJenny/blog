@@ -838,11 +838,53 @@ CREATE TABLE public.post_section (
     image_prompt_example_id integer,
     generated_image_url character varying(512),
     image_generation_metadata jsonb,
-    image_id integer
+    image_id integer,
+    section_description text
 );
 
 
 ALTER TABLE public.post_section OWNER TO nickfiddes;
+
+--
+-- Name: post_section_elements; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.post_section_elements (
+    id integer NOT NULL,
+    post_id integer NOT NULL,
+    section_id integer NOT NULL,
+    element_type character varying(50) NOT NULL,
+    element_text text NOT NULL,
+    element_order integer,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT post_section_elements_element_type_check CHECK (((element_type)::text = ANY ((ARRAY['fact'::character varying, 'idea'::character varying, 'theme'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.post_section_elements OWNER TO nickfiddes;
+
+--
+-- Name: post_section_elements_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
+--
+
+CREATE SEQUENCE public.post_section_elements_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.post_section_elements_id_seq OWNER TO nickfiddes;
+
+--
+-- Name: post_section_elements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
+--
+
+ALTER SEQUENCE public.post_section_elements_id_seq OWNED BY public.post_section_elements.id;
+
 
 --
 -- Name: post_section_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
@@ -864,46 +906,6 @@ ALTER TABLE public.post_section_id_seq OWNER TO nickfiddes;
 --
 
 ALTER SEQUENCE public.post_section_id_seq OWNED BY public.post_section.id;
-
-
---
--- Name: post_substage_action; Type: TABLE; Schema: public; Owner: nickfiddes
---
-
-CREATE TABLE public.post_substage_action (
-    id integer NOT NULL,
-    post_id integer,
-    substage character varying(64) NOT NULL,
-    action_id integer,
-    button_label text,
-    button_order integer DEFAULT 0,
-    input_field character varying(128),
-    output_field character varying(128)
-);
-
-
-ALTER TABLE public.post_substage_action OWNER TO nickfiddes;
-
---
--- Name: post_substage_action_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
---
-
-CREATE SEQUENCE public.post_substage_action_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.post_substage_action_id_seq OWNER TO nickfiddes;
-
---
--- Name: post_substage_action_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
---
-
-ALTER SEQUENCE public.post_substage_action_id_seq OWNED BY public.post_substage_action.id;
 
 
 --
@@ -930,7 +932,7 @@ CREATE TABLE public.post_workflow_stage (
     completed_at timestamp without time zone,
     status character varying(32),
     input_field character varying(128),
-    output_field character varying(128)
+    output_field character varying(1024)
 );
 
 
@@ -956,6 +958,46 @@ ALTER TABLE public.post_workflow_stage_id_seq OWNER TO nickfiddes;
 --
 
 ALTER SEQUENCE public.post_workflow_stage_id_seq OWNED BY public.post_workflow_stage.id;
+
+
+--
+-- Name: post_workflow_step_action; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.post_workflow_step_action (
+    id integer NOT NULL,
+    post_id integer,
+    step_id integer,
+    action_id integer,
+    input_field character varying(128),
+    output_field character varying(128),
+    button_label text,
+    button_order integer DEFAULT 0
+);
+
+
+ALTER TABLE public.post_workflow_step_action OWNER TO nickfiddes;
+
+--
+-- Name: post_workflow_step_action_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
+--
+
+CREATE SEQUENCE public.post_workflow_step_action_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.post_workflow_step_action_id_seq OWNER TO nickfiddes;
+
+--
+-- Name: post_workflow_step_action_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
+--
+
+ALTER SEQUENCE public.post_workflow_step_action_id_seq OWNED BY public.post_workflow_step_action.id;
 
 
 --
@@ -1220,6 +1262,87 @@ ALTER SEQUENCE public.workflow_stage_entity_id_seq OWNED BY public.workflow_stag
 
 
 --
+-- Name: workflow_step_entity; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.workflow_step_entity (
+    id integer NOT NULL,
+    sub_stage_id integer,
+    name character varying(100) NOT NULL,
+    description text,
+    step_order integer NOT NULL
+);
+
+
+ALTER TABLE public.workflow_step_entity OWNER TO nickfiddes;
+
+--
+-- Name: workflow_step_entity_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
+--
+
+CREATE SEQUENCE public.workflow_step_entity_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.workflow_step_entity_id_seq OWNER TO nickfiddes;
+
+--
+-- Name: workflow_step_entity_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
+--
+
+ALTER SEQUENCE public.workflow_step_entity_id_seq OWNED BY public.workflow_step_entity.id;
+
+
+--
+-- Name: workflow_steps; Type: TABLE; Schema: public; Owner: nickfiddes
+--
+
+CREATE TABLE public.workflow_steps (
+    id integer NOT NULL,
+    post_workflow_sub_stage_id integer,
+    step_order integer NOT NULL,
+    name character varying(100) NOT NULL,
+    description text,
+    llm_action_id integer,
+    input_field character varying(128),
+    output_field character varying(128),
+    status character varying(32),
+    started_at timestamp without time zone,
+    completed_at timestamp without time zone,
+    notes text
+);
+
+
+ALTER TABLE public.workflow_steps OWNER TO nickfiddes;
+
+--
+-- Name: workflow_steps_id_seq; Type: SEQUENCE; Schema: public; Owner: nickfiddes
+--
+
+CREATE SEQUENCE public.workflow_steps_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.workflow_steps_id_seq OWNER TO nickfiddes;
+
+--
+-- Name: workflow_steps_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nickfiddes
+--
+
+ALTER SEQUENCE public.workflow_steps_id_seq OWNED BY public.workflow_steps.id;
+
+
+--
 -- Name: workflow_sub_stage_entity; Type: TABLE; Schema: public; Owner: nickfiddes
 --
 
@@ -1369,10 +1492,10 @@ ALTER TABLE ONLY public.post_section ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
--- Name: post_substage_action id; Type: DEFAULT; Schema: public; Owner: nickfiddes
+-- Name: post_section_elements id; Type: DEFAULT; Schema: public; Owner: nickfiddes
 --
 
-ALTER TABLE ONLY public.post_substage_action ALTER COLUMN id SET DEFAULT nextval('public.post_substage_action_id_seq'::regclass);
+ALTER TABLE ONLY public.post_section_elements ALTER COLUMN id SET DEFAULT nextval('public.post_section_elements_id_seq'::regclass);
 
 
 --
@@ -1380,6 +1503,13 @@ ALTER TABLE ONLY public.post_substage_action ALTER COLUMN id SET DEFAULT nextval
 --
 
 ALTER TABLE ONLY public.post_workflow_stage ALTER COLUMN id SET DEFAULT nextval('public.post_workflow_stage_id_seq'::regclass);
+
+
+--
+-- Name: post_workflow_step_action id; Type: DEFAULT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_workflow_step_action ALTER COLUMN id SET DEFAULT nextval('public.post_workflow_step_action_id_seq'::regclass);
 
 
 --
@@ -1429,6 +1559,20 @@ ALTER TABLE ONLY public.workflow_field_mapping ALTER COLUMN id SET DEFAULT nextv
 --
 
 ALTER TABLE ONLY public.workflow_stage_entity ALTER COLUMN id SET DEFAULT nextval('public.workflow_stage_entity_id_seq'::regclass);
+
+
+--
+-- Name: workflow_step_entity id; Type: DEFAULT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.workflow_step_entity ALTER COLUMN id SET DEFAULT nextval('public.workflow_step_entity_id_seq'::regclass);
+
+
+--
+-- Name: workflow_steps id; Type: DEFAULT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.workflow_steps ALTER COLUMN id SET DEFAULT nextval('public.workflow_steps_id_seq'::regclass);
 
 
 --
@@ -1514,10 +1658,16 @@ COPY public.image_style (id, title, description, created_at, updated_at) FROM st
 --
 
 COPY public.llm_action (id, field_name, prompt_template, prompt_template_id, llm_model, temperature, max_tokens, "order", created_at, updated_at, input_field, output_field, provider_id, timeout) FROM stdin;
-48	Seed to basic	You are You are a Managing Editor specialising in blog and social media creation, with an academic background in Scottish history and culture..\nWrite in the style of You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism..\nTask: Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.	41	llama3.1:70b	0.7	1000	0	2025-05-29 14:01:44.088523	2025-05-29 17:42:17.900776	\N	basic_idea	1	60
 49	French poem	You are Start every response with "TITLE: NONSENSE".\nWrite in the style of Write entirely in French.\nTask: Write a short poem	42	llama3.1:70b	0.7	1000	0	2025-05-29 14:07:39.119426	2025-05-29 19:05:42.715892	\N	basic_idea	1	60
 53	CLAN UI expander	Expert in the services and functionality of the CLAN.com web site, which specialises in authentic Scottish heritage products and information. Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.. Explain the service, functionality, and products available through https://clan.com/tartandesigner/ and its sub-pages.	47	deepseek-coder:latest	0.7	1000	0	2025-05-31 13:27:25.382108	2025-05-31 13:27:25.382108	\N	\N	1	60
 54	50 facts	Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50.	49	llama3.1:70b	0.7	1000	0	2025-05-31 13:36:37.796867	2025-06-01 08:50:26.700821	\N	\N	1	421
+60	section_structure_creator	Create a structured outline for a blog post with the following details:\n\nTitle: {{title}}\nBasic Idea: {{idea}}\nInteresting Facts:\n{{#each facts}}\n- {{this}}\n{{/each}}\n\nIMPORTANT: Your response must be a valid JSON array. Do not include any other text or explanation.\n\nExample format:\n[\n  {\n    "heading": "Introduction",\n    "theme": "Setting the context and importance",\n    "facts": ["Fact 1"],\n    "ideas": ["Key point 1"]\n  },\n  {\n    "heading": "Main Section",\n    "theme": "Core topic exploration",\n    "facts": ["Fact 2"],\n    "ideas": ["Key point 2"]\n  }\n]\n\nPlease provide your response in exactly this format, with no additional text.	55	mistral	0.7	2000	1	2025-06-08 09:36:05.843956	2025-06-08 20:01:53.716995	structure_input	structure_output	1	120
+58	Section Structure Creator	[system] You are a professional content strategist. Your task is to create a logical structure for a blog post.\\n\\n[user] Create a section structure for a blog post with the following details:\\nTitle: {{title}}\\nMain Idea: {{idea}}\\nFacts to Include: {{facts|join(", ")}}\\n\\nReturn ONLY valid JSON. Do not include any explanation, commentary, formatting, code blocks, or HTML. Output must begin with { and end with }. The output must be a JSON object with a single key "sections" containing an array of section objects. Each section object must have exactly these fields: "name" (string), "description" (string). Example output: { "sections": [ { "name": "Introduction", "description": "Overview of the topic and why it matters" }, { "name": "Historical Context", "description": "Background and evolution of the topic" } ] }	53	mistral	0.7	1000	0	2025-06-07 15:11:04.255234	2025-06-07 15:20:54.542883	\N	\N	1	60
+56	Section Creator JSON	[system: ROLE] You are a professional content strategist. Given the following article outline and target audience, create a detailed section plan that breaks down the content into logical, engaging sections. Each section should have a clear purpose and flow naturally into the next. Consider the readers' needs and how to best present the information to them. [user: FORMAT] Return ONLY valid JSON. Do not include any explanation, commentary, formatting, code blocks, or HTML. Output must begin with { and end with }.  Example output: { "sections": [ { "name": "Introduction", "description": "Overview of the topic", "themes": ["history", "significance"], "facts": ["Fact 1", "Fact 2"] }, { "name": "Historical Evolution", "description": "How the topic evolved over time", "themes": ["evolution", "design"], "facts": ["Fact 3"] } ] }	52	llama3.1:70b	0.7	1000	0	2025-06-06 11:08:44.866521	2025-06-07 15:02:55.952842	\N	\N	1	60
+59	Content Allocator	Allocate ideas and facts to sections	54	mistral	0.7	1000	0	2025-06-07 15:11:04.255234	2025-06-07 15:11:04.255234	\N	\N	1	60
+61	content_allocator	Allocate the following ideas and facts to the provided sections.\\n\\nSections: {{sections}}\\nIdeas: {{ideas}}\\nFacts: {{facts}}\\n\\nReturn a JSON array of sections, each with:\\n- heading: Section title\\n- description: Section description\\n- ideas: Array of allocated ideas\\n- facts: Array of allocated facts	56	mistral	0.7	2000	2	2025-06-08 09:37:15.106556	2025-06-08 09:37:15.106556	allocation_input	allocation_output	1	120
+48	Seed to basic	[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\\n\\nShort Idea:\\n[data:idea_seed]	41	llama3.1:70b	0.7	1000	0	2025-05-29 14:01:44.088523	2025-06-09 16:09:26.033214	\N	basic_idea	1	60
+14	Expand from seed idea to Scottish brief	[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\\n\\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\\n\\nShort Idea:\\n[data:idea_seed]\\n\\nYour response should:\\n1. Focus specifically on Scottish cultural and historical aspects\\n2. Maintain academic accuracy while being accessible\\n3. Suggest clear angles and themes for development\\n4. Use UK-British spellings and idioms\\n5. Return only the expanded brief, with no additional commentary or formatting	26	llama3.1:70b	0.7	1000	0	2025-06-09 16:17:09.437403	2025-06-09 16:20:44.870693	\N	\N	1	60
 \.
 
 
@@ -1573,12 +1723,21 @@ COPY public.llm_model (id, name, provider_id, description, strengths, weaknesses
 --
 
 COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, parameters, "order", created_at, updated_at, part_ids, prompt_json) FROM stdin;
-41	SEED to BASIC	\N	You are You are a Managing Editor specialising in blog and social media creation, with an academic background in Scottish history and culture..\nWrite in the style of You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism..\nTask: Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.	\N	\N	0	2025-05-29 14:01:15.808753	2025-05-29 14:01:15.808753	[]	[{"name": "Scottish Blog basis", "tags": ["Role"], "type": "system", "content": "You are a Managing Editor specialising in blog and social media creation, with an academic background in Scottish history and culture."}, {"name": "Scottish cultural expert", "tags": ["Style"], "type": "system", "content": "You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism."}, {"name": "idea_seed expansion", "tags": ["Operation"], "type": "user", "content": "Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language."}, {"name": "Use [data:FIELDNAME]", "tags": ["Format"], "type": "system", "content": "Use the following input content to transform as instructed: [data:FIELDNAME]"}]
 42	Nonsense French poem	\N	You are Start every response with "TITLE: NONSENSE".\nWrite in the style of Write entirely in French.\nTask: Write a short poem	\N	\N	0	2025-05-29 14:07:08.794264	2025-05-29 14:07:08.794264	[]	[{"name": "Title Imposer", "tags": ["Role"], "type": "system", "content": "Start every response with \\"TITLE: NONSENSE\\""}, {"name": "Poem", "tags": ["Operation"], "type": "user", "content": "Write a short poem"}, {"name": "French", "tags": ["Style"], "type": "user", "content": "Write entirely in French"}]
 43	french2	\N	\N	\N	\N	0	2025-05-29 15:17:15.901967	2025-05-29 15:17:15.901967	[]	[{"name": "Title Imposer", "tags": ["Role"], "type": "system", "content": "Start every response with \\"TITLE: NONSENSE\\""}, {"name": "French", "tags": ["Style"], "type": "user", "content": "Write entirely in French"}, {"name": "Poem", "tags": ["Operation"], "type": "user", "content": "Write a short poem"}]
 47	CLAN UI	\N	Expert in the services and functionality of the CLAN.com web site, which specialises in authentic Scottish heritage products and information. Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.. Explain the service, functionality, and products available through https://clan.com/tartandesigner/ and its sub-pages.	\N	\N	0	2025-05-31 13:26:44.964247	2025-05-31 13:26:44.964247	[]	[{"name": "CLAN.com UI & experience", "tags": ["Role"], "type": "system", "content": "Expert in the services and functionality of the CLAN.com web site, which specialises in authentic Scottish heritage products and information."}, {"name": "idea_seed expansion", "tags": ["Operation"], "type": "user", "content": "Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language."}, {"name": "Explain functionality", "tags": ["Operation"], "type": "user", "content": "Explain the service, functionality, and products available through https://clan.com/tartandesigner/ and its sub-pages"}]
 48	50 facts	\N	Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail.	\N	\N	0	2025-05-31 13:36:17.602638	2025-05-31 13:36:17.602638	[]	[{"name": "Scottish cultural expert", "tags": ["Style"], "type": "system", "content": "Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism."}, {"name": "Research 50 ideas", "tags": ["Operation"], "type": "user", "content": "Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail."}]
 49	fifty facts in list	\N	Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50.	\N	\N	0	2025-05-31 14:57:19.511274	2025-05-31 14:57:19.511274	[]	[{"name": "Scottish cultural expert", "tags": ["Style"], "type": "system", "content": "Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism."}, {"name": "Research 50 ideas", "tags": ["Operation"], "type": "user", "content": "Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50."}]
+50	Section Creator	\N	You are an expert editorial planner for long-form articles. Your job is to design a clear, engaging, and logically structured set of sections for a new article, based on the provided title, idea, and facts.. Write for a general audience. Ensure the structure is accessible, engaging, and covers all provided themes and facts without overlap. You will be given:\n- A provisional title for broad orientation.\n- A basic idea describing the scope and themes to be explored.\n- A set of interesting facts, each of which must be included in exactly one section.\n\nYour tasks:\n1. Devise and name a coherent, engaging section structure for the article. Each section should have a title and a short description.\n2. Allocate every theme, idea, and fact to exactly one section. No item should be left unassigned or assigned to more than one section.\n3. Output a JSON object with a "sections" array. Each section must include:\n   - "name": Section title\n   - "description": Short summary of the section\n   - "themes": List of assigned themes/ideas (if any)\n   - "facts": List of assigned facts (if any)\n4. If any theme, idea, or fact cannot be assigned, include it in an "unassigned" section at the end of the array.\n\nBe robust: handle any subject matter, and ensure the output is valid JSON.	\N	\N	0	2025-06-05 08:14:33.826018	2025-06-05 08:14:33.826018	[]	[{"name": "Section Creator", "tags": ["Role"], "type": "system", "content": "You are an expert editorial planner for long-form articles. Your job is to design a clear, engaging, and logically structured set of sections for a new article, based on the provided title, idea, and facts."}, {"name": "Section Creator voice", "tags": ["Style"], "type": "system", "content": "Write for a general audience. Ensure the structure is accessible, engaging, and covers all provided themes and facts without overlap."}, {"name": "Section Creator instructions", "tags": ["Operation"], "type": "user", "content": "You will be given:\\n- A provisional title for broad orientation.\\n- A basic idea describing the scope and themes to be explored.\\n- A set of interesting facts, each of which must be included in exactly one section.\\n\\nYour tasks:\\n1. Devise and name a coherent, engaging section structure for the article. Each section should have a title and a short description.\\n2. Allocate every theme, idea, and fact to exactly one section. No item should be left unassigned or assigned to more than one section.\\n3. Output a JSON object with a \\"sections\\" array. Each section must include:\\n   - \\"name\\": Section title\\n   - \\"description\\": Short summary of the section\\n   - \\"themes\\": List of assigned themes/ideas (if any)\\n   - \\"facts\\": List of assigned facts (if any)\\n4. If any theme, idea, or fact cannot be assigned, include it in an \\"unassigned\\" section at the end of the array.\\n\\nBe robust: handle any subject matter, and ensure the output is valid JSON."}, {"name": "Section Creator format", "tags": ["Format"], "type": "user", "content": "Title: {{provisional_title}}\\nBasic Idea: {{basic_idea}}\\nInteresting Facts:\\n{{#each interesting_facts}}\\n- {{this}}\\n{{/each}}"}]
+53	Section Structure Creator	\N	Return ONLY valid JSON. Do not include any explanation, commentary, formatting, code blocks, or HTML. Output must begin with { and end with }. The output must be a JSON object with a single key "sections" containing an array of section objects. Each section object must have exactly these fields: "name" (string), "description" (string). Example output: { "sections": [ { "name": "Introduction", "description": "Overview of the topic and why it matters" }, { "name": "Historical Context", "description": "Background and evolution of the topic" } ] }	You are a professional content strategist. Your task is to create a logical structure for a blog post based on its title and main idea.	\N	0	2025-06-07 15:10:56.189911	2025-06-07 15:10:56.189911	[]	[{"type": "system", "content": "You are an expert content planner and structure creator. Your task is to analyze content and create a logical, hierarchical section structure that organizes the information effectively."}, {"type": "user", "content": "Create a section structure for the following content. The structure should be hierarchical, with main sections and subsections as needed. Each section should have a clear, descriptive title that reflects its content. The structure should be logical and flow naturally from one topic to the next."}, {"type": "data", "field": "input_text"}]
+51	section_creator	Creates a detailed section plan for blog articles	You are a professional content strategist. Given the following article outline and target audience, create a detailed section plan that breaks down the content into logical, engaging sections. Each section should have a clear purpose and flow naturally into the next. Consider the readers' needs and how to best present the information to them. You MUST return your response as a JSON object with a 'sections' array. Each section in the array MUST have these exact fields: 'name' (string), 'description' (string), 'themes' (array of strings), and 'facts' (array of strings). Do not include any other text or explanation in your response, only the JSON object. Example format: {"sections": [{"name": "Section Title", "description": "Section description", "themes": ["theme1"], "facts": ["fact1"]}]} Article Outline: {article_outline} Target Audience: {target_audience}	You are an expert content strategist with years of experience in creating engaging, well-structured blog content. Your task is to break down article outlines into logical, reader-friendly sections.	{"article_outline": "string", "target_audience": "string"}	1	2025-06-05 14:14:24.243168	2025-06-05 14:14:24.243168	[]	\N
+52	Section Creator as JSON	\N	You are a professional content strategist. Given the following article outline and target audience, create a detailed section plan that breaks down the content into logical, engaging sections. Each section should have a clear purpose and flow naturally into the next. Consider the readers' needs and how to best present the information to them.\\n\\nReturn ONLY valid JSON. Do not include any explanation, commentary, formatting, code blocks, or HTML. Output must begin with { and end with }.\\n\\nExample output:\\n{\\n  "sections": [\\n    {\\n      "name": "Introduction",\\n      "description": "Overview of the topic",\\n      "themes": ["history", "significance"],\\n      "facts": ["Fact 1", "Fact 2"]\\n    },\\n    {\\n      "name": "Historical Evolution",\\n      "description": "How the topic evolved over time",\\n      "themes": ["evolution", "design"],\\n      "facts": ["Fact 3"]\\n    }\\n  ]\\n}\\n\\nArticle Outline: {{title}}\\nTarget Audience: {{idea}}\\nInteresting Facts:\\n{{#each interesting_facts}}\\n- {{this}}\\n{{/each}}	\N	\N	0	2025-06-06 11:07:38.692983	2025-06-06 11:07:38.692983	[]	[{"name": "Section Creator", "tags": ["Role"], "type": "system", "content": "You are a professional content strategist. Given the following article outline and target audience, create a detailed section plan that breaks down the content into logical, engaging sections. Each section should have a clear purpose and flow naturally into the next. Consider the readers' needs and how to best present the information to them."}, {"name": "Section Creator - Output JSON", "tags": ["Format"], "type": "user", "content": "Return ONLY valid JSON. Do not include any explanation, commentary, formatting, code blocks, or HTML. Output must begin with { and end with }.\\n\\nExample output:\\n{\\n  \\"sections\\": [\\n    {\\n      \\"name\\": \\"Introduction\\",\\n      \\"description\\": \\"Overview of the topic\\",\\n      \\"themes\\": [\\"history\\", \\"significance\\"],\\n      \\"facts\\": [\\"Fact 1\\", \\"Fact 2\\"]\\n    },\\n    {\\n      \\"name\\": \\"Historical Evolution\\",\\n      \\"description\\": \\"How the topic evolved over time\\",\\n      \\"themes\\": [\\"evolution\\", \\"design\\"],\\n      \\"facts\\": [\\"Fact 3\\"]\\n    }\\n  ]\\n}"}]
+54	Content Allocator	\N	[user] Allocate the following ideas and facts to the most appropriate sections:\\n\\nSections:\\n{{sections|tojson}}\\n\\nIdeas to Allocate:\\n{{ideas|join("\\n")}}\\n\\nFacts to Allocate:\\n{{facts|join("\\n")}}\\n\\nReturn ONLY valid JSON. Do not include any explanation, commentary, formatting, code blocks, or HTML. Output must begin with { and end with }. The output must be a JSON object with a single key "sections" containing an array of section objects. Each section object must have exactly these fields: "name" (string), "description" (string), "ideas" (array of strings), "facts" (array of strings). Each idea and fact must be allocated to exactly one section. Example output: { "sections": [ { "name": "Introduction", "description": "Overview of the topic and why it matters", "ideas": ["Main idea 1"], "facts": ["Fact 1", "Fact 2"] }, { "name": "Historical Context", "description": "Background and evolution of the topic", "ideas": ["Main idea 2"], "facts": ["Fact 3"] } ] }	You are a professional content strategist. Your task is to allocate ideas and facts to the most appropriate sections of a blog post.	\N	0	2025-06-07 15:11:01.233643	2025-06-07 15:11:01.233643	[]	\N
+55	section_structure_creator	Creates a structured outline for blog posts based on title, basic idea, and interesting facts	Create a structured outline for a blog post with the following details:\n\nTitle: {{title}}\nBasic Idea: {{idea}}\nInteresting Facts:\n{{#each facts}}\n- {{this}}\n{{/each}}\n\nPlease provide a JSON array of sections, where each section has:\n- heading: A clear, engaging section title\n- theme: The main theme or focus of this section\n- facts: Array of relevant facts to include\n- ideas: Array of key points or ideas to cover\n\nThe sections should flow logically and build upon each other to tell a complete story.	You are an expert content strategist and blog post structure specialist. Your task is to create well-organized, engaging section structures for blog posts that effectively communicate the main idea while incorporating interesting facts in a natural way.	{"idea": "string", "facts": "array", "title": "string"}	1	2025-06-08 09:36:05.838612	2025-06-08 09:36:05.838612	[]	\N
+56	content_allocator	Allocates ideas and facts to sections for a blog post	Allocate the following ideas and facts to the provided sections.\\n\\nSections: {{sections}}\\nIdeas: {{ideas}}\\nFacts: {{facts}}\\n\\nReturn a JSON array of sections, each with:\\n- heading: Section title\\n- description: Section description\\n- ideas: Array of allocated ideas\\n- facts: Array of allocated facts	You are an expert content strategist. Your job is to allocate ideas and facts to the most appropriate sections in a blog post outline.	{"facts": "array", "ideas": "array", "sections": "array"}	2	2025-06-08 09:37:15.10257	2025-06-08 09:37:15.10257	[]	\N
+57	Scottish Idea Expansion	Expands an idea seed into a Scottish-themed brief	[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\\n\\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\\n\\nShort Idea:\\n[data:idea_seed]\\n\\nYour response should:\\n1. Focus specifically on Scottish cultural and historical aspects\\n2. Maintain academic accuracy while being accessible\\n3. Suggest clear angles and themes for development\\n4. Use UK-British spellings and idioms\\n5. Return only the expanded brief, with no additional commentary or formatting	\N	\N	0	2025-06-09 16:16:45.779501	2025-06-09 16:16:45.779501	[]	\N
+26	Scottish Idea Expansion	Expands an idea seed into a Scottish-themed brief	[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\\n\\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\\n\\nShort Idea:\\n[data:idea_seed]\\n\\nYour response should:\\n1. Focus specifically on Scottish cultural and historical aspects\\n2. Maintain academic accuracy while being accessible\\n3. Suggest clear angles and themes for development\\n4. Use UK-British spellings and idioms\\n5. Return only the expanded brief, with no additional commentary or formatting	\N	\N	0	2025-06-09 16:20:24.839856	2025-06-09 16:20:24.839856	[]	\N
+41	SEED to BASIC	\N	[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\\n\\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\\n\\nShort Idea:\\n{{idea_seed}}\\n\\nYour response should:\\n1. Focus specifically on Scottish cultural and historical aspects\\n2. Maintain academic accuracy while being accessible\\n3. Suggest clear angles and themes for development\\n4. Use UK-British spellings and idioms\\n5. Return only the expanded brief, with no additional commentary or formatting	\N	\N	0	2025-05-29 14:01:15.808753	2025-05-29 14:01:15.808753	[]	[{"name": "Scottish Expert", "tags": ["Role"], "type": "system", "content": "You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism."}, {"name": "Idea Expansion", "tags": ["Operation"], "type": "user", "content": "Your task is to expand the following idea seed into a comprehensive basic idea for a blog post about Scottish history and culture.\\n\\nIdea Seed: {idea_seed}\\n\\nPlease provide:\\n1. A detailed basic idea that expands on the seed, focusing on Scottish history and culture\\n2. Focus on making it engaging and informative\\n3. Keep the core concept but add depth and structure\\n4. Ensure all content is accurate and authentic to Scottish history and culture\\n\\nWrite your response as a clear, well-structured paragraph. Do not include any formatting, JSON, or special characters."}]
 \.
 
 
@@ -1593,7 +1752,6 @@ COPY public.llm_prompt_part (id, type, content, tags, "order", created_at, updat
 17	user	Here is a JSON list of items:\\n\\n{\\"animals\\": [\\"dog\\", \\"cat\\", \\"bird\\", \\"hamster\\", \\"lizard\\"]}\\n\\nPlease return a JSON object where each animal has an array of three possible names.	{specimen}	1000	2025-05-26 08:36:08.771728	2025-05-27 08:00:34.170418	SPECIMEN USER	\N	\N
 21	system	Here is a JSON list of items:	{format}	50	2025-05-27 08:02:58.7468	2025-05-29 08:44:11.361664	Input JSON list	\N	\N
 22	system	Here is a section of text to process:	{format}	50	2025-05-27 08:04:06.164223	2025-05-29 08:44:20.466925	Input TEXT section	\N	\N
-23	system	Please return a JSON object where each item is in an array identified as ITEM. Return no preamble, commentary, or formatting, and no code blocks or text outside the array	{format}	60	2025-05-27 08:05:33.661989	2025-05-29 08:44:28.259485	Output JSON	\N	\N
 24	system	Please return a section of text with NO commentary, annotations, or special markup.	{format}	60	2025-05-27 08:07:03.50217	2025-05-29 08:44:34.84462	Output plain TEXT	\N	\N
 28	system	Use the following input content to transform as instructed: [data:FIELDNAME]	{format}	30	2025-05-27 17:43:11.814585	2025-05-29 08:45:00.469648	Use [data:FIELDNAME]	\N	\N
 15	system	Return only a valid JSON array of ideas, with no preamble, commentary, or formatting. Output must begin with [ and end with ] — no code blocks or text outside the array.	{format}	80	2025-05-26 07:56:30.930082	2025-05-29 08:45:14.962256	JSON format	\N	\N
@@ -1606,6 +1764,8 @@ COPY public.llm_prompt_part (id, type, content, tags, "order", created_at, updat
 34	system	Expert in the services and functionality of the CLAN.com web site, which specialises in authentic Scottish heritage products and information.	{role}	3	2025-05-31 10:54:43.999355	2025-05-31 10:54:43.999355	CLAN.com UI & experience	\N	\N
 19	user	Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.	{operation}	10	2025-05-26 10:27:05.283848	2025-05-31 10:55:02.915616	idea_seed expansion	\N	\N
 36	user	Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50.	{operation}	20	2025-05-31 13:33:29.173341	2025-05-31 14:55:14.562695	Research 50 ideas	\N	\N
+23	user	Return ONLY valid JSON. Do not include any explanation, commentary, formatting, code blocks, or HTML. Output must begin with { and end with }.\n\nExample output:\n{\n  "sections": [\n    {\n      "name": "Introduction",\n      "description": "Overview of the topic",\n      "themes": ["history", "significance"],\n      "facts": ["Fact 1", "Fact 2"]\n    },\n    {\n      "name": "Historical Evolution",\n      "description": "How the topic evolved over time",\n      "themes": ["evolution", "design"],\n      "facts": ["Fact 3"]\n    }\n  ]\n}	{format}	35	2025-05-27 08:05:33.661989	2025-06-06 11:05:56.138451	Section Creator - Output JSON 	\N	\N
+37	system	You are a professional content strategist. Given the following article outline and target audience, create a detailed section plan that breaks down the content into logical, engaging sections. Each section should have a clear purpose and flow naturally into the next. Consider the readers' needs and how to best present the information to them.	{role}	30	2025-06-05 08:09:50.261501	2025-06-06 11:04:46.319143	Section Creator	\N	\N
 \.
 
 
@@ -1614,10 +1774,10 @@ COPY public.llm_prompt_part (id, type, content, tags, "order", created_at, updat
 --
 
 COPY public.llm_provider (id, name, type, api_url, auth_token, description, created_at, updated_at) FROM stdin;
-1	Ollama (local)	local	http://localhost:11434	\N	Local Ollama server for fast, private inference.	2025-05-26 10:58:23.513987	2025-05-26 10:58:23.513987
 2	OpenAI	openai	https://api.openai.com/v1	\N	OpenAI API for GPT-3.5, GPT-4, etc.	2025-05-26 11:06:00.780193	2025-05-26 11:06:00.780193
 3	Anthropic	other	https://api.anthropic.com/v1	\N	Anthropic Claude API.	2025-05-26 11:06:01.915015	2025-05-26 11:06:01.915015
 4	Gemini	other	https://generativelanguage.googleapis.com/v1beta	\N	Google Gemini API.	2025-05-26 11:06:02.450166	2025-05-26 11:06:02.450166
+1	Ollama (local)	ollama	http://localhost:11434	\N	Local Ollama server for fast, private inference.	2025-05-26 10:58:23.513987	2025-05-26 10:58:23.513987
 \.
 
 
@@ -1645,8 +1805,11 @@ COPY public.post (id, title, slug, summary, created_at, updated_at, header_image
 15	cream distillation...	cream-distillation		2025-05-27 15:12:33.356259	2025-05-31 10:30:04.106987	\N	deleted	\N
 17	gin distillation...	gin-distillation		2025-05-29 18:52:00.672093	2025-05-31 10:30:08.023655	\N	deleted	\N
 3	tartan fabrics...	tartan-fabrics		2025-05-26 19:57:47.169588	2025-05-31 10:30:12.461337	\N	deleted	\N
-20	tartan fabrics from CLAN.com, from stock or woven ...	tartan-fabrics-from-clan-com-from-stock-or-woven		2025-05-31 10:37:23.919744	2025-05-31 13:27:49.829991	\N	draft	\N
 21	kilts for weddings...	kilts-for-weddings		2025-05-31 15:07:56.315652	2025-06-01 08:53:21.567802	\N	draft	\N
+20	tartan fabrics from CLAN.com, from stock or woven ...	tartan-fabrics-from-clan-com-from-stock-or-woven		2025-05-31 10:37:23.919744	2025-06-01 10:10:35.043437	\N	deleted	\N
+24	test2...	test2		2025-06-01 10:25:59.24337	2025-06-01 11:29:58.053887	\N	deleted	\N
+23	test...	test		2025-06-01 10:19:43.207523	2025-06-01 11:30:01.254093	\N	deleted	\N
+22	story-telling...	story-telling-1		2025-06-01 10:10:53.766198	2025-06-08 22:55:22.330677	\N	draft	\N
 \.
 
 
@@ -1677,6 +1840,9 @@ COPY public.post_development (id, post_id, basic_idea, provisional_title, idea_s
 8	15	Here's a brief for a long-form blog article on the topic of "cream distillation" through the lens of Scottish history and culture:\n\n**Title:** "The Forgotten Art of Cream Distillation: Uncovering Scotland's Rich History in Whisky Production"\n\n**Scope:** This article will delve into the little-known process of cream distillation, an innovative technique used by Scottish whisky producers to create smoother, more refined spirits. By exploring the historical context and cultural significance of cream distillation, we'll reveal its impact on the evolution of Scotland's iconic whisky industry.\n\n**Angle:** Our approach will be to uncover the stories behind this lost art, highlighting the pioneering distillers who experimented with cream distillation in the 19th century. We'll examine the science behind the process and how it influenced the development of distinctive whisky styles, such as the smooth, honeyed drams of Speyside.\n\n**Tone:** Engaging, informative, and richly descriptive, this article will transport readers to Scotland's whisky country, immersing them in the sights, sounds, and aromas of traditional distilleries. With a dash of storytelling flair, we'll bring the history of cream distillation to life, making it accessible to both whisky enthusiasts and curious newcomers.\n\n**Core ideas:**\n\n* Introduce the basics of cream distillation and its role in Scottish whisky production\n* Explore the historical context: how cream distillation emerged as a response to changes in taxation and trade regulations\n* Highlight key figures and distilleries associated with the development of cream distillation, such as Glenfiddich and Balvenie\n* Analyze the impact on whisky styles and flavor profiles, using expert insights from modern distillers and whisky writers\n* Discuss the decline of cream distillation and its legacy in contemporary Scottish whisky production\n\n**Authenticity and accuracy:** As an expert in Scottish history and culture, I'll ensure that all information is thoroughly researched and verified, adhering to academic standards while making the content engaging and easy to understand.	\N	\N	\N	Here's a brief for a long-form blog article on the topic of "cream distillation" through the lens of Scottish history and culture:\n\n**Title:** "The Forgotten Art of Cream Distillation: Uncovering Scotland's Rich History in Whisky Production"\n\n**Scope:** This article will delve into the little-known process of cream distillation, an innovative technique used by Scottish whisky producers to create smoother, more refined spirits. By exploring the historical context and cultural significance of cream distillation, we'll reveal its impact on the evolution of Scotland's iconic whisky industry.\n\n**Angle:** Our approach will be to uncover the stories behind this lost art, highlighting the pioneering distillers who experimented with cream distillation in the 19th century. We'll examine the science behind the process and how it influenced the development of distinctive whisky styles, such as the smooth, honeyed drams of Speyside.\n\n**Tone:** Engaging, informative, and richly descriptive, this article will transport readers to Scotland's whisky country, immersing them in the sights, sounds, and aromas of traditional distilleries. With a dash of storytelling flair, we'll bring the history of cream distillation to life, making it accessible to both whisky enthusiasts and curious newcomers.\n\n**Core ideas:**\n\n* Introduce the basics of cream distillation and its role in Scottish whisky production\n* Explore the historical context: how cream distillation emerged as a response to changes in taxation and trade regulations\n* Highlight key figures and distilleries associated with the development of cream distillation, such as Glenfiddich and Balvenie\n* Analyze the impact on whisky styles and flavor profiles, using expert insights from modern distillers and whisky writers\n* Discuss the decline of cream distillation and its legacy in contemporary Scottish whisky production\n\n**Authenticity and accuracy:** As an expert in Scottish history and culture, I'll ensure that all information is thoroughly researched and verified, adhering to academic standards while making the content engaging and easy to understand.	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	cream distillation
 12	19	Here's a expanded brief for a long-form blog article based on the idea of "story-telling" in Scottish history and culture:\n\n**Title:** "Weaving the Tartan Tapestry: The Power of Storytelling in Scottish History and Culture"\n\n**Scope:** This article will delve into the rich tradition of storytelling in Scotland, exploring its significance in shaping the country's history, culture, and identity. From ancient Celtic myths to modern-day folk tales, we'll examine how stories have been used to convey values, preserve traditions, and make sense of the world.\n\n**Angle:** Rather than a dry, academic survey, this article will take a narrative approach, using anecdotes, examples, and vivid descriptions to bring Scotland's storytelling heritage to life. We'll draw on historical records, literary works, and oral traditions to illustrate the ways in which stories have been used to inspire, educate, and entertain across generations.\n\n**Tone:** Engaging, conversational, and informative, with a touch of warmth and humor. Our aim is to make complex historical and cultural concepts accessible to a broad audience, while still maintaining academic rigor and authenticity.\n\n**Core ideas:**\n\n* The role of storytelling in preserving Scotland's cultural heritage, including the transmission of myths, legends, and folk tales.\n* The use of stories as a means of social commentary, critique, and satire, with examples from Scottish literature and folklore.\n* The impact of historical events, such as the Jacobite risings and the Highland Clearances, on Scotland's storytelling traditions.\n* The ways in which storytelling has been used to promote national identity, community cohesion, and cultural pride.\n* The ongoing relevance of traditional storytelling in modern Scotland, including its influence on contemporary literature, art, and popular culture.\n\n**Key themes:**\n\n* The importance of oral tradition in Scottish culture\n* The relationship between storytelling and national identity\n* The role of stories in shaping historical memory and cultural heritage\n* The intersection of folklore, literature, and popular culture\n\nThis article will be a engaging, story-driven exploration of Scotland's rich cultural heritage, highlighting the power of storytelling to inspire, educate, and connect us with our past.	TITLE: NONSENSE\n\nVoici un court poème pour célébrer l'art du récit en Écosse :\n\nDans les Highlands brumeux, où les légendes naissent,\nLes conteurs écossais ont toujours leurs mots prêts.\nIls tissent des histoires de héros et de dragons,\nDe mythes celtes et de mystères qui nous font rêver.\n\nFionn mac Cumhaill, le grand guerrier, prend vie,\nEt les paysages mystiques de Stevenson s'étendent.\nLes satiristes écossais utilisent l'ironie pour critiquer,\nEt les histoires se transforment au fil du temps, reflétant notre société.\n\nL'Ecosse, terre de légendes et d'histoires vraies,\nOù la tradition orale est encore vivante aujourd'hui.\nLes conteurs, ces seanachaidh, préservent l'histoire,\nEt nous transportent dans un monde où mythe et réalité se mélangent.\n\nC'est ainsi que les Écossais ont toujours raconté leur histoire,\nUn patrimoine littéraire riche et diversifié qui nous émerveille.\nAlors laissons-nous emporter par ces récits enchanteurs,\nEt découvrons l'Écosse, terre de légendes et d'histoires vraies.	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	story-telling
 14	21	Here's a brief for a long-form blog article on kilts for weddings:\n\n**Title:** "The Kilted Wedding: Unwrapping the History and Tradition Behind Scotland's Most Iconic Attire"\n\n**Scope:** This article will delve into the fascinating history of kilts at Scottish weddings, exploring their cultural significance, traditional designs, and modern interpretations. From the origins of tartan to the symbolism of different kilt styles, we'll examine the intricacies of this beloved aspect of Scottish heritage.\n\n**Angle:** Rather than focusing solely on fashion or style tips, our article will take a more nuanced approach, situating kilts within their rich cultural context. We'll discuss how kilts have been an integral part of Scottish wedding traditions for centuries, and how they continue to play a meaningful role in modern ceremonies. By sharing stories, anecdotes, and historical examples, we'll bring the reader on a journey through time, highlighting the ways in which kilts have evolved to become an enduring symbol of Scottish identity.\n\n**Tone:** Our tone will be informative, yet engaging and conversational. We'll balance academic rigor with approachable language, making the subject matter accessible to readers without prior knowledge of Scottish history or culture. A touch of humor and personality will also be injected throughout the article, ensuring that it feels like a warm and inviting exploration of this captivating topic.\n\n**Core ideas:**\n\n* The origins of tartan and its significance in Scottish culture\n* Traditional kilt designs and their regional associations (e.g., Black Watch, Gordon)\n* Historical examples of kilts at Scottish weddings, including notable figures and events\n* Modern interpretations of kilts in wedding attire, including trends and innovations\n* The symbolism and meaning behind different kilt styles and accessories (e.g., sgian dubh, sporran)\n* Tips for incorporating kilts into a wedding ceremony or celebration, while respecting cultural traditions\n\nBy exploring the complex history and cultural significance of kilts at Scottish weddings, this article will offer readers a deeper understanding and appreciation of this beloved aspect of Scottish heritage. Whether you're a Scot looking to connect with your roots or simply someone interested in learning more about this iconic attire, our article promises to be an engaging and enlightening read.	\N	\N	\N	Here are 50 interesting facts about kilts at Scottish weddings:\n\n1. **Tartan origins**: The word "tartan" comes from the French word "tartane," meaning a type of woolen cloth.\n2. **Ancient roots**: The earliest known evidence of tartan patterns dates back to the 3rd century AD, in ancient Celtic art.\n3. **Clans and kinship**: In Scotland, tartan was used to identify specific clans or families, with each having its own unique pattern.\n4. **Wedding tradition**: Kilts have been a part of Scottish wedding attire for centuries, symbolizing family heritage and cultural identity.\n5. **Black Watch**: The Black Watch tartan is one of the most recognizable patterns, originally worn by the 42nd Royal Highland Regiment.\n6. **Regional associations**: Different regions in Scotland have their own unique tartans, such as the Gordon tartan from Aberdeenshire.\n7. **Sporran significance**: A sporran (a pouch worn at the waist) is a traditional part of kilt attire, used to carry personal items and symbolizing prosperity.\n8. **Kilt-making skills**: Traditional kilt-making requires great skill and attention to detail, with each kilt taking around 30-40 hours to complete.\n9. **Woolen heritage**: Kilts are typically made from wool, a nod to Scotland's rich sheep-farming history.\n10. **Tartan registers**: In the 18th century, tartans were formally registered and standardized to prevent imitation and ensure authenticity.\n11. **Kilted heroes**: Famous Scots like Robert Burns and Sir Walter Scott often wore kilts as a symbol of national pride.\n12. **Wedding attire**: Traditionally, the groom's kilt is matched with a sash or plaid (a long piece of fabric) in the same tartan.\n13. **Scottish regiments**: Many Scottish military regiments have their own unique kilts and tartans, such as the Royal Scots Dragoon Guards.\n14. **Cultural revival**: The 19th-century Highland Revival saw a resurgence in interest in traditional Scottish culture, including kilts and tartans.\n15. **Fashion influence**: Kilts have influenced fashion worldwide, with designers incorporating tartan patterns into their collections.\n16. **Wedding party attire**: In traditional Scottish weddings, the entire wedding party (including bridesmaids) may wear matching tartans or kilts.\n17. **Kilt accessories**: Sgian dubh (a small knife), dirks (long knives), and sporrans are common kilt accessories with cultural significance.\n18. **Ancient Celtic art**: Early Celtic art features intricate patterns similar to modern tartan designs.\n19. **Tartan textiles**: Kilts are often made from woven woolen fabric, which can be heavy and warm.\n20. **Kilted athletes**: Scottish athletes have worn kilts as part of their national team uniforms in various sports, including football and rugby.\n21. **Bagpipes and kilts**: The iconic combination of bagpipes and kilts is a staple of Scottish culture and wedding celebrations.\n22. **Wedding ceremony significance**: In traditional Scottish weddings, the kilt is often worn during the ceremony to symbolize family heritage.\n23. **Hand-fasting**: In ancient Celtic tradition, couples were "hand-fast" (married) while wearing matching tartans or kilts.\n24. **Tartan etiquette**: Specific rules govern the wearing of tartans and kilts, including which side to wear a sash or plaid.\n25. **Royal connections**: The British royal family has long been associated with Scottish culture, often wearing kilts on formal occasions.\n26. **Wedding attire evolution**: Modern kilt designs for weddings may incorporate new colors or patterns while maintaining traditional elements.\n27. **Kilt-making techniques**: Traditional kilt-making involves intricate pleating and folding to create the distinctive tartan pattern.\n28. **Historical kilts**: Kilts have been worn in Scotland since at least the 16th century, with early examples featuring more subdued colors.\n29. **Tartan symbolism**: Specific tartans are associated with different values or attributes, such as bravery (Black Watch) or loyalty (Gordon).\n30. **Wedding party kilts**: In some traditional weddings, the entire wedding party wears matching kilts in the same tartan.\n31. **Scottish heritage**: Kilts and tartans serve as a connection to Scotland's rich cultural heritage and history.\n32. **Modern twists**: Contemporary kilt designs may incorporate bold colors or modern patterns while maintaining traditional elements.\n33. **Cultural exchange**: Tartans have been adopted by cultures worldwide, including African and Asian communities.\n34. **Wedding fashion influence**: Kilts have influenced wedding attire globally, with many designers incorporating tartan patterns into their collections.\n35. **Famous kilted figures**: Sir Sean Connery and Billy Connolly are just two famous Scots who often wear kilts on formal occasions.\n36. **Kilted folklore**: In Scottish mythology, kilts were said to have magical properties, offering protection and strength to the wearer.\n37. **Wedding attire for all**: Modern kilt designs cater to a range of styles and preferences, including women's kilts and bespoke designs.\n38. **Tartan in art**: Tartans have been featured in various art forms, from textiles to music and literature.\n39. **Cultural significance**: Kilts serve as an important cultural symbol, representing Scottish heritage and national identity.\n40. **Kilt accessories**: Sashes, sporrans, and sgian dubh are all essential kilt accessories with historical and cultural significance.\n41. **Wedding attire evolution**: Modern kilt designs often blend traditional elements with modern styles and materials.\n42. **Royal tartans**: The British royal family has its own unique tartans, which are reserved for specific occasions.\n43. **Tartan registers**: In the 19th century, tartans were formally registered to standardize patterns and prevent imitation.\n44. **Kilt-making apprenticeships**: Traditional kilt-making skills are passed down through generations via formal apprenticeships.\n45. **Wedding party attire**: In some traditional Scottish weddings, the bride's dress may incorporate matching tartan elements or a sash.\n46. **Famous kilts in literature**: Kilts have been featured prominently in literary works like Sir Walter Scott's novels.\n47. **Tartan textiles**: Modern textile technology has made it possible to create intricate and accurate tartan patterns on various fabrics.\n48. **Kilted music festivals**: Scottish music festivals often feature kilted performers, showcasing traditional culture.\n49. **Cultural traditions**: Kilts are an integral part of Scottish cultural heritage, reflecting the country's rich history and identity.\n50. **Global recognition**: The image of a Scotsman in a kilt is instantly recognizable worldwide, symbolizing Scottish culture and national pride.\n\nThese 50 facts cover a range of topics, from the origins of tartan to modern interpretations of kilts at weddings, while highlighting the cultural significance and symbolism behind this iconic attire.	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	kilts for weddings
+16	23	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	test
+17	24	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	test2
+15	22	Here's a brief for a long-form blog article on "The Art of Scottish Storytelling":\n\n**Title:** Weaving the Tartan Thread: Unpicking the Rich Tradition of Scottish Storytelling\n\n**Scope and Angle:** This article will delve into the vibrant world of Scottish storytelling, exploring its historical roots, cultural significance, and continued relevance in modern times. From the ancient Celtic myths to the tartan-clad tales of Robert Burns, we'll examine how Scotland's unique narrative traditions have captivated audiences for centuries.\n\n**Tone:** Engaging, conversational, and informed by academic rigor, this article will aim to inspire readers to explore the rich tapestry of Scottish storytelling. Think fireside chat meets scholarly insight – approachable, yet authoritative.\n\n**Core Ideas:**\n\n1. **The Early Days**: We'll begin by tracing the origins of Scottish storytelling back to its Celtic and Gaelic roots, highlighting key figures like the seanachaidh (traditional storytellers) who passed down tales through generations.\n2. **Tartan Tales**: Next, we'll explore how Scotland's national identity has been shaped by its stories – from Burns' poetry to Sir Walter Scott's novels, and beyond. We'll analyze how these narratives reflect (and sometimes challenge) Scottish culture, history, and values.\n3. **Modern Twists**: The article will then examine how contemporary Scottish storytellers are reinterpreting traditional tales for new audiences, incorporating fresh themes, styles, and technologies to keep the tradition alive.\n4. **Why Storytelling Matters**: Throughout, we'll emphasize the importance of storytelling in Scottish culture – not just as entertainment, but also as a way to preserve history, explore identity, and foster community.\n\n**Target Audience:** History buffs, literature enthusiasts, cultural aficionados, and anyone curious about Scotland's rich narrative heritage. By the end of this article, readers should feel inspired to delve deeper into the world of Scottish storytelling – whether through reading classic tales, attending traditional ceilidhs, or simply spinning their own yarns around the campfire.\n\n**Key Takeaways:**\n\n* A deeper understanding of Scotland's unique storytelling traditions\n* Insights into how these narratives reflect and shape national identity\n* Inspiration to explore and engage with Scottish culture in new ways\n\nLet me know if this meets your expectations!	\N	\N	\N	What a fantastic brief! I'm excited to dive into the world of Scottish storytelling. After conducting web searches and exploring various aspects of the topic, I've compiled a list of 50 interesting facts that could be included in the article. Here they are:\n\n1. **Celtic roots**: Scottish storytelling has its roots in ancient Celtic culture, where stories were passed down through generations by seanachaidh (traditional storytellers).\n2. **Gaelic influence**: Gaelic language and culture have had a significant impact on Scottish storytelling, with many tales still told in Gaelic today.\n3. **Fionn mac Cumhaill**: Fionn mac Cumhaill, also known as Finn McCool, is a legendary hero from Celtic mythology who features in many Scottish stories.\n4. **The Cù Sìth**: The Cù Sìth is a mythical dog said to roam the Highlands, often featured in Scottish folklore and storytelling.\n5. **Robert Burns' legacy**: Scotland's national poet, Robert Burns, was a master storyteller whose works continue to inspire new generations of writers and readers.\n6. **Sir Walter Scott's impact**: Sir Walter Scott's novels, such as "Waverley" and "Rob Roy", helped shape Scotland's literary identity and popularize tartan-clad tales.\n7. **Tartan symbolism**: Tartan patterns have been used to symbolize Scottish identity and culture for centuries, often featuring in stories and folklore.\n8. **Celtic knotwork**: Intricate Celtic knotwork designs are often used to illustrate Scottish stories and myths, reflecting the country's rich cultural heritage.\n9. **Storytelling in education**: In Scotland, storytelling has long been recognized as an essential part of education, with many schools incorporating traditional tales into their curricula.\n10. **Ceilidh culture**: Ceilidhs (traditional social gatherings) are still an integral part of Scottish culture, often featuring music, dance, and storytelling.\n11. **Scottish folklore**: Scotland has a rich tradition of folklore, with stories featuring mythical creatures like the Loch Ness Monster and the Kelpie.\n12. **The Selkie legend**: The Selkie is a mythical seal-like creature said to have the power to transform into a human, featured in many Scottish folktales.\n13. **Hogmanay storytelling**: In Scotland, Hogmanay (New Year's Eve) is traditionally a time for storytelling and sharing tales around the fire.\n14. **The importance of oral tradition**: Oral storytelling has played a vital role in preserving Scottish culture and history, with many stories passed down through generations by word of mouth.\n15. **Scottish Gaelic revival**: Efforts are being made to revive the Scottish Gaelic language, including initiatives to promote Gaelic storytelling and literature.\n16. **Modern retellings**: Contemporary writers like Ian Rankin and Val McDermid are reinterpreting traditional Scottish stories for new audiences.\n17. **Glasgow's storytelling scene**: Glasgow has a thriving storytelling community, with regular events and festivals celebrating the city's rich cultural heritage.\n18. **The role of women in storytelling**: Women have played a significant role in preserving and passing down Scottish stories throughout history, often as seanachaidh or family storytellers.\n19. **Storytelling in music**: Traditional Scottish music often features storytelling elements, with songs like "Auld Lang Syne" (written by Robert Burns) telling tales of love, loss, and friendship.\n20. **The impact of the Reformation**: The Protestant Reformation had a significant impact on Scottish storytelling, leading to a decline in traditional folktales and myths.\n21. **The Enlightenment's influence**: The Scottish Enlightenment saw a resurgence in interest in traditional stories and folklore, with writers like Sir Walter Scott drawing inspiration from these sources.\n22. **Romanticism and the Highlands**: The Romantic movement of the 19th century saw a renewed focus on Scotland's rugged landscape and rich cultural heritage, influencing storytelling and literature.\n23. **The Clearances' impact on storytelling**: The Highland Clearances had a devastating impact on Scottish culture, leading to the loss of many traditional stories and folktales.\n24. **Storytelling in art**: Scottish art often features storytelling elements, with works like Charles Rennie Mackintosh's "Glasgow Style" incorporating Celtic motifs and symbolism.\n25. **The role of nature in storytelling**: Scotland's stunning natural landscape has inspired countless stories and myths, from the mythical Cù Sìth to the majestic lochs and glens.\n26. **Scottish mythology and fantasy**: Scottish folklore has influenced modern fantasy writers like J.K. Rowling and George R.R. Martin, with mythological creatures like the Kelpie featuring in popular works of fiction.\n27. **Storytelling in film**: Scotland's rich cultural heritage has been showcased on screen in films like "Braveheart" and "Trainspotting", often drawing inspiration from traditional stories and folklore.\n28. **Gaelic language in modern media**: Gaelic language is being used increasingly in modern Scottish media, including TV shows like "Bannan" and "Dè a-nis?" (What Now?).\n29. **Storytelling festivals**: Scotland hosts numerous storytelling festivals throughout the year, celebrating traditional tales and modern reinterpretations.\n30. **The art of kilt-making**: Traditional Scottish kilts are still made using ancient techniques, with many stories and legends surrounding the origins of these iconic garments.\n31. **Tartan's global influence**: Tartan patterns have been adopted by cultures around the world, often used in fashion and design to evoke a sense of Scottish heritage.\n32. **Scottish literature's global impact**: Scottish writers like Robert Louis Stevenson and Arthur Conan Doyle have had a significant impact on world literature, with their works still widely read today.\n33. **The role of storytelling in tourism**: Scotland's rich cultural heritage is a major draw for tourists, with many visitors seeking out traditional stories and experiences.\n34. **Storytelling in Scottish education policy**: The Scottish government has recognized the importance of storytelling in education, incorporating it into school curricula to promote cultural awareness and creativity.\n35. **Digital storytelling**: Modern technology is being used to preserve and share traditional Scottish stories, with digital archives and online platforms making these tales accessible to global audiences.\n36. **Folkloric creatures in modern literature**: Creatures from Scottish folklore like the Kelpie and Selkie continue to feature in modern literature, inspiring new generations of writers and readers.\n37. **The influence of Norse mythology**: Scotland's Viking heritage has had a lasting impact on its storytelling traditions, with many stories featuring mythological figures from Norse mythology.\n38. **Celtic festivals**: Celtic festivals like Samhain (Halloween) and Imbolc continue to be celebrated in Scotland, often featuring traditional storytelling and folktales.\n39. **The role of the bard**: In ancient Celtic culture, bards were revered for their ability to compose and perform stories, music, and poetry – a tradition still honored today.\n40. **Storytelling in Scottish psychology**: Research has shown that storytelling plays an essential role in shaping Scottish identity and cultural heritage, with many Scots drawing on traditional tales to understand themselves and their place in the world.\n41. **The Clearances' legacy in storytelling**: The Highland Clearances continue to be remembered and commemorated through stories and songs, serving as a powerful reminder of Scotland's complex history.\n42. **Tartan-clad heroes**: Tartan-clad heroes like Rob Roy and William Wallace have become iconic figures in Scottish folklore, symbolizing the country's rich cultural heritage.\n43. **The Kelpie's symbolism**: The Kelpie is often seen as a symbol of Scotland's mysterious and untamed natural landscape, featuring in many stories and myths.\n44. **Storytelling in Scottish politics**: Storytelling has played a significant role in Scottish politics, with politicians like Nicola Sturgeon drawing on traditional tales to connect with voters and shape national identity.\n45. **The impact of urbanization**: Urbanization has had a profound impact on Scottish storytelling, with many traditional stories adapted for modern city-dwelling audiences.\n46. **Glasgow's literary heritage**: Glasgow has a rich literary heritage, with writers like James Kelman and A.L. Kennedy drawing inspiration from the city's vibrant cultural scene.\n47. **Storytelling in modern art**: Contemporary Scottish artists are incorporating storytelling elements into their work, often using traditional tales as inspiration for innovative installations and performances.\n48. **The role of myth in shaping identity**: Mythology has played a significant role in shaping Scotland's national identity, with many stories featuring mythical creatures like the Loch Ness Monster.\n49. **Folkloric echoes in modern music**: Traditional Scottish folktales continue to influence modern music, with artists like Paolo Nutini and Amy Macdonald drawing on these sources for inspiration.\n50. **The future of Scottish storytelling**: As Scotland looks to the future, its rich storytelling traditions will continue to evolve, incorporating new technologies, styles, and themes while remaining rooted in the country's unique cultural heritage.\n\nI hope this list provides a comprehensive starting point for your article!	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	story-telling
 \.
 
 
@@ -1684,32 +1850,319 @@ COPY public.post_development (id, post_id, basic_idea, provisional_title, idea_s
 -- Data for Name: post_section; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.post_section (id, post_id, section_order, section_heading, ideas_to_include, facts_to_include, first_draft, uk_british, highlighting, image_concepts, image_prompts, generation, optimization, watermarking, image_meta_descriptions, image_captions, image_prompt_example_id, generated_image_url, image_generation_metadata, image_id) FROM stdin;
+COPY public.post_section (id, post_id, section_order, section_heading, ideas_to_include, facts_to_include, first_draft, uk_british, highlighting, image_concepts, image_prompts, generation, optimization, watermarking, image_meta_descriptions, image_captions, image_prompt_example_id, generated_image_url, image_generation_metadata, image_id, section_description) FROM stdin;
+2	15	0	Introduction	["history", "significance"]	["The quaich is a traditional Scottish drinking vessel."]	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Overview of the quaich
+3	15	0	Historical Evolution	["evolution", "design"]	["The design of the quaich has evolved over centuries."]	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	How the quaich evolved over time
+4	15	0	Cultural Significance	["ceremonies", "traditions"]	["It is often used in ceremonies and celebrations.", "Quaichs are often given as gifts to mark special occasions."]	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	The role of quaichs in ceremonies
+24	22	0	Roots of Scottish Storytelling	\N	\N		\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Tracing the origins of Scottish storytelling back to its Celtic and Gaelic roots, highlighting key figures like seanachaidh and the influence of Gaelic language and culture.
+25	22	1	Tales That Shaped a Nation	\N	\N		\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Exploring how Scotland's national identity has been shaped by its stories – from Robert Burns' poetry to Sir Walter Scott's novels, and beyond.
+26	22	2	Modern Interpretations	\N	\N		\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Examining how contemporary Scottish storytellers are reinterpreting traditional tales for new audiences, incorporating fresh themes, styles, and technologies.
+27	22	3	The Power of Storytelling	\N	\N		\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Emphasizing the importance of storytelling in Scottish culture – not just as entertainment, but also as a way to preserve history, explore identity, and foster community.
+28	22	4	From Mythology to Modern Literature	\N	\N		\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Exploring the rich tapestry of Scottish mythology and folklore, from ancient Celtic tales to modern adaptations in literature, film, and music.
 \.
 
 
 --
--- Data for Name: post_substage_action; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+-- Data for Name: post_section_elements; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
-COPY public.post_substage_action (id, post_id, substage, action_id, button_label, button_order, input_field, output_field) FROM stdin;
-32	16	idea	49	Action	0	\N	\N
-33	17	idea	49	\N	0	idea_seed	basic_idea
-36	19	research	48	\N	0	main_title	subtitle
-9	15	idea	49	\N	0	basic_idea	idea_scope
-45	21	idea	48	\N	0	idea_seed	basic_idea
-38	19	content	48	\N	0	intro_blurb	conclusion
-39	19	meta_info	49	\N	0	categories	basic_metadata
-37	19	structure	49	\N	0	section_planning	section_headings
-40	19	preflight	49	\N	0	self_review	final_check
-41	19	launch	48	\N	0	deployment	verification
-34	15	research	48	\N	0	idea_seed	interesting_facts
-1	9	idea	3	Test3	3	input3	output3
-35	19	idea	48	\N	0	idea_seed	basic_idea
-43	20	research	54	\N	0	topics_to_cover	topics_to_cover
-42	20	idea	53	\N	0	idea_seed	basic_idea
-46	21	research	54	\N	0	basic_idea	interesting_facts
-44	2	research	54	\N	0	topics_to_cover	interesting_facts
+COPY public.post_section_elements (id, post_id, section_id, element_type, element_text, element_order, created_at, updated_at) FROM stdin;
+1	15	2	fact	* Analyze the impact on whisky styles and flavor profiles, using expert insights from modern distillers and whisky writers	8	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+2	15	2	fact	* Discuss the decline of cream distillation and its legacy in contemporary Scottish whisky production	9	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+3	15	2	fact	* Explore the historical context: how cream distillation emerged as a response to changes in taxation and trade regulations	10	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+4	15	2	fact	* Highlight key figures and distilleries associated with the development of cream distillation, such as Glenfiddich and Balvenie	11	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+5	15	2	fact	* Introduce the basics of cream distillation and its role in Scottish whisky production	12	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+6	15	2	fact	**Angle:** Our approach will be to uncover the stories behind this lost art, highlighting the pioneering distillers who experimented with cream distillation in the 19th century. We'll examine the science behind the process and how it influenced the development of distinctive whisky styles, such as the smooth, honeyed drams of Speyside.	13	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+7	15	2	fact	**Authenticity and accuracy:** As an expert in Scottish history and culture, I'll ensure that all information is thoroughly researched and verified, adhering to academic standards while making the content engaging and easy to understand.	14	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+8	15	2	fact	**Core ideas:**	15	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+9	15	2	fact	**Scope:** This article will delve into the little-known process of cream distillation, an innovative technique used by Scottish whisky producers to create smoother, more refined spirits. By exploring the historical context and cultural significance of cream distillation, we'll reveal its impact on the evolution of Scotland's iconic whisky industry.	16	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+10	15	2	fact	**Title:** "The Forgotten Art of Cream Distillation: Uncovering Scotland's Rich History in Whisky Production"	17	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+11	15	2	fact	**Tone:** Engaging, informative, and richly descriptive, this article will transport readers to Scotland's whisky country, immersing them in the sights, sounds, and aromas of traditional distilleries. With a dash of storytelling flair, we'll bring the history of cream distillation to life, making it accessible to both whisky enthusiasts and curious newcomers.	18	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+12	15	2	fact	Here's a brief for a long-form blog article on the topic of "cream distillation" through the lens of Scottish history and culture:	19	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+13	15	3	fact	* Analyze the impact on whisky styles and flavor profiles, using expert insights from modern distillers and whisky writers	8	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+14	15	3	fact	* Discuss the decline of cream distillation and its legacy in contemporary Scottish whisky production	9	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+15	15	3	fact	* Explore the historical context: how cream distillation emerged as a response to changes in taxation and trade regulations	10	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+16	15	3	fact	* Highlight key figures and distilleries associated with the development of cream distillation, such as Glenfiddich and Balvenie	11	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+17	15	3	fact	* Introduce the basics of cream distillation and its role in Scottish whisky production	12	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+18	15	3	fact	**Angle:** Our approach will be to uncover the stories behind this lost art, highlighting the pioneering distillers who experimented with cream distillation in the 19th century. We'll examine the science behind the process and how it influenced the development of distinctive whisky styles, such as the smooth, honeyed drams of Speyside.	13	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+19	15	3	fact	**Authenticity and accuracy:** As an expert in Scottish history and culture, I'll ensure that all information is thoroughly researched and verified, adhering to academic standards while making the content engaging and easy to understand.	14	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+20	15	3	fact	**Core ideas:**	15	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+21	15	3	fact	**Scope:** This article will delve into the little-known process of cream distillation, an innovative technique used by Scottish whisky producers to create smoother, more refined spirits. By exploring the historical context and cultural significance of cream distillation, we'll reveal its impact on the evolution of Scotland's iconic whisky industry.	16	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+22	15	3	fact	**Title:** "The Forgotten Art of Cream Distillation: Uncovering Scotland's Rich History in Whisky Production"	17	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+23	15	3	fact	**Tone:** Engaging, informative, and richly descriptive, this article will transport readers to Scotland's whisky country, immersing them in the sights, sounds, and aromas of traditional distilleries. With a dash of storytelling flair, we'll bring the history of cream distillation to life, making it accessible to both whisky enthusiasts and curious newcomers.	18	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+24	15	3	fact	Here's a brief for a long-form blog article on the topic of "cream distillation" through the lens of Scottish history and culture:	19	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+25	15	4	fact	* Analyze the impact on whisky styles and flavor profiles, using expert insights from modern distillers and whisky writers	8	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+26	15	4	fact	* Discuss the decline of cream distillation and its legacy in contemporary Scottish whisky production	9	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+27	15	4	fact	* Explore the historical context: how cream distillation emerged as a response to changes in taxation and trade regulations	10	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+28	15	4	fact	* Highlight key figures and distilleries associated with the development of cream distillation, such as Glenfiddich and Balvenie	11	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+29	15	4	fact	* Introduce the basics of cream distillation and its role in Scottish whisky production	12	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+30	15	4	fact	**Angle:** Our approach will be to uncover the stories behind this lost art, highlighting the pioneering distillers who experimented with cream distillation in the 19th century. We'll examine the science behind the process and how it influenced the development of distinctive whisky styles, such as the smooth, honeyed drams of Speyside.	13	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+31	15	4	fact	**Authenticity and accuracy:** As an expert in Scottish history and culture, I'll ensure that all information is thoroughly researched and verified, adhering to academic standards while making the content engaging and easy to understand.	14	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+32	15	4	fact	**Core ideas:**	15	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+33	15	4	fact	**Scope:** This article will delve into the little-known process of cream distillation, an innovative technique used by Scottish whisky producers to create smoother, more refined spirits. By exploring the historical context and cultural significance of cream distillation, we'll reveal its impact on the evolution of Scotland's iconic whisky industry.	16	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+34	15	4	fact	**Title:** "The Forgotten Art of Cream Distillation: Uncovering Scotland's Rich History in Whisky Production"	17	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+35	15	4	fact	**Tone:** Engaging, informative, and richly descriptive, this article will transport readers to Scotland's whisky country, immersing them in the sights, sounds, and aromas of traditional distilleries. With a dash of storytelling flair, we'll bring the history of cream distillation to life, making it accessible to both whisky enthusiasts and curious newcomers.	18	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+36	15	4	fact	Here's a brief for a long-form blog article on the topic of "cream distillation" through the lens of Scottish history and culture:	19	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+37	22	24	fact	1. **Celtic roots**: Scottish storytelling has its roots in ancient Celtic culture, where stories were passed down through generations by seanachaidh (traditional storytellers).	3	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+38	22	24	fact	10. **Ceilidh culture**: Ceilidhs (traditional social gatherings) are still an integral part of Scottish culture, often featuring music, dance, and storytelling.	4	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+39	22	24	fact	11. **Scottish folklore**: Scotland has a rich tradition of folklore, with stories featuring mythical creatures like the Loch Ness Monster and the Kelpie.	5	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+40	22	24	fact	12. **The Selkie legend**: The Selkie is a mythical seal-like creature said to have the power to transform into a human, featured in many Scottish folktales.	6	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+41	22	24	fact	13. **Hogmanay storytelling**: In Scotland, Hogmanay (New Year's Eve) is traditionally a time for storytelling and sharing tales around the fire.	7	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+42	22	24	fact	14. **The importance of oral tradition**: Oral storytelling has played a vital role in preserving Scottish culture and history, with many stories passed down through generations by word of mouth.	8	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+43	22	24	fact	15. **Scottish Gaelic revival**: Efforts are being made to revive the Scottish Gaelic language, including initiatives to promote Gaelic storytelling and literature.	9	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+44	22	24	fact	16. **Modern retellings**: Contemporary writers like Ian Rankin and Val McDermid are reinterpreting traditional Scottish stories for new audiences.	10	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+45	22	24	fact	17. **Glasgow's storytelling scene**: Glasgow has a thriving storytelling community, with regular events and festivals celebrating the city's rich cultural heritage.	11	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+46	22	24	fact	18. **The role of women in storytelling**: Women have played a significant role in preserving and passing down Scottish stories throughout history, often as seanachaidh or family storytellers.	12	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+47	22	24	fact	19. **Storytelling in music**: Traditional Scottish music often features storytelling elements, with songs like "Auld Lang Syne" (written by Robert Burns) telling tales of love, loss, and friendship.	13	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+48	22	24	fact	2. **Gaelic influence**: Gaelic language and culture have had a significant impact on Scottish storytelling, with many tales still told in Gaelic today.	14	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+49	22	24	fact	20. **The impact of the Reformation**: The Protestant Reformation had a significant impact on Scottish storytelling, leading to a decline in traditional folktales and myths.	15	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+50	22	24	fact	21. **The Enlightenment's influence**: The Scottish Enlightenment saw a resurgence in interest in traditional stories and folklore, with writers like Sir Walter Scott drawing inspiration from these sources.	16	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+51	22	24	fact	22. **Romanticism and the Highlands**: The Romantic movement of the 19th century saw a renewed focus on Scotland's rugged landscape and rich cultural heritage, influencing storytelling and literature.	17	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+52	22	24	fact	23. **The Clearances' impact on storytelling**: The Highland Clearances had a devastating impact on Scottish culture, leading to the loss of many traditional stories and folktales.	18	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+53	22	24	fact	24. **Storytelling in art**: Scottish art often features storytelling elements, with works like Charles Rennie Mackintosh's "Glasgow Style" incorporating Celtic motifs and symbolism.	19	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+54	22	24	fact	25. **The role of nature in storytelling**: Scotland's stunning natural landscape has inspired countless stories and myths, from the mythical Cù Sìth to the majestic lochs and glens.	20	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+55	22	24	fact	26. **Scottish mythology and fantasy**: Scottish folklore has influenced modern fantasy writers like J.K. Rowling and George R.R. Martin, with mythological creatures like the Kelpie featuring in popular works of fiction.	21	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+56	22	24	fact	27. **Storytelling in film**: Scotland's rich cultural heritage has been showcased on screen in films like "Braveheart" and "Trainspotting", often drawing inspiration from traditional stories and folklore.	22	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+57	22	24	fact	28. **Gaelic language in modern media**: Gaelic language is being used increasingly in modern Scottish media, including TV shows like "Bannan" and "Dè a-nis?" (What Now?).	23	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+58	22	24	fact	29. **Storytelling festivals**: Scotland hosts numerous storytelling festivals throughout the year, celebrating traditional tales and modern reinterpretations.	24	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+59	22	24	fact	3. **Fionn mac Cumhaill**: Fionn mac Cumhaill, also known as Finn McCool, is a legendary hero from Celtic mythology who features in many Scottish stories.	25	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+60	22	24	fact	30. **The art of kilt-making**: Traditional Scottish kilts are still made using ancient techniques, with many stories and legends surrounding the origins of these iconic garments.	26	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+61	22	24	fact	31. **Tartan's global influence**: Tartan patterns have been adopted by cultures around the world, often used in fashion and design to evoke a sense of Scottish heritage.	27	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+62	22	24	fact	32. **Scottish literature's global impact**: Scottish writers like Robert Louis Stevenson and Arthur Conan Doyle have had a significant impact on world literature, with their works still widely read today.	28	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+63	22	24	fact	33. **The role of storytelling in tourism**: Scotland's rich cultural heritage is a major draw for tourists, with many visitors seeking out traditional stories and experiences.	29	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+64	22	24	fact	34. **Storytelling in Scottish education policy**: The Scottish government has recognized the importance of storytelling in education, incorporating it into school curricula to promote cultural awareness and creativity.	30	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+96	22	25	fact	16. **Modern retellings**: Contemporary writers like Ian Rankin and Val McDermid are reinterpreting traditional Scottish stories for new audiences.	10	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+65	22	24	fact	35. **Digital storytelling**: Modern technology is being used to preserve and share traditional Scottish stories, with digital archives and online platforms making these tales accessible to global audiences.	31	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+66	22	24	fact	36. **Folkloric creatures in modern literature**: Creatures from Scottish folklore like the Kelpie and Selkie continue to feature in modern literature, inspiring new generations of writers and readers.	32	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+67	22	24	fact	37. **The influence of Norse mythology**: Scotland's Viking heritage has had a lasting impact on its storytelling traditions, with many stories featuring mythological figures from Norse mythology.	33	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+68	22	24	fact	38. **Celtic festivals**: Celtic festivals like Samhain (Halloween) and Imbolc continue to be celebrated in Scotland, often featuring traditional storytelling and folktales.	34	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+69	22	24	fact	39. **The role of the bard**: In ancient Celtic culture, bards were revered for their ability to compose and perform stories, music, and poetry – a tradition still honored today.	35	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+70	22	24	fact	4. **The Cù Sìth**: The Cù Sìth is a mythical dog said to roam the Highlands, often featured in Scottish folklore and storytelling.	36	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+71	22	24	fact	40. **Storytelling in Scottish psychology**: Research has shown that storytelling plays an essential role in shaping Scottish identity and cultural heritage, with many Scots drawing on traditional tales to understand themselves and their place in the world.	37	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+72	22	24	fact	41. **The Clearances' legacy in storytelling**: The Highland Clearances continue to be remembered and commemorated through stories and songs, serving as a powerful reminder of Scotland's complex history.	38	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+73	22	24	fact	42. **Tartan-clad heroes**: Tartan-clad heroes like Rob Roy and William Wallace have become iconic figures in Scottish folklore, symbolizing the country's rich cultural heritage.	39	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+74	22	24	fact	43. **The Kelpie's symbolism**: The Kelpie is often seen as a symbol of Scotland's mysterious and untamed natural landscape, featuring in many stories and myths.	40	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+75	22	24	fact	44. **Storytelling in Scottish politics**: Storytelling has played a significant role in Scottish politics, with politicians like Nicola Sturgeon drawing on traditional tales to connect with voters and shape national identity.	41	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+76	22	24	fact	45. **The impact of urbanization**: Urbanization has had a profound impact on Scottish storytelling, with many traditional stories adapted for modern city-dwelling audiences.	42	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+77	22	24	fact	46. **Glasgow's literary heritage**: Glasgow has a rich literary heritage, with writers like James Kelman and A.L. Kennedy drawing inspiration from the city's vibrant cultural scene.	43	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+78	22	24	fact	47. **Storytelling in modern art**: Contemporary Scottish artists are incorporating storytelling elements into their work, often using traditional tales as inspiration for innovative installations and performances.	44	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+79	22	24	fact	48. **The role of myth in shaping identity**: Mythology has played a significant role in shaping Scotland's national identity, with many stories featuring mythical creatures like the Loch Ness Monster.	45	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+80	22	24	fact	49. **Folkloric echoes in modern music**: Traditional Scottish folktales continue to influence modern music, with artists like Paolo Nutini and Amy Macdonald drawing on these sources for inspiration.	46	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+81	22	24	fact	5. **Robert Burns' legacy**: Scotland's national poet, Robert Burns, was a master storyteller whose works continue to inspire new generations of writers and readers.	47	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+82	22	24	fact	50. **The future of Scottish storytelling**: As Scotland looks to the future, its rich storytelling traditions will continue to evolve, incorporating new technologies, styles, and themes while remaining rooted in the country's unique cultural heritage.	48	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+83	22	24	fact	6. **Sir Walter Scott's impact**: Sir Walter Scott's novels, such as "Waverley" and "Rob Roy", helped shape Scotland's literary identity and popularize tartan-clad tales.	49	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+84	22	24	fact	7. **Tartan symbolism**: Tartan patterns have been used to symbolize Scottish identity and culture for centuries, often featuring in stories and folklore.	50	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+85	22	24	fact	8. **Celtic knotwork**: Intricate Celtic knotwork designs are often used to illustrate Scottish stories and myths, reflecting the country's rich cultural heritage.	51	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+86	22	24	fact	9. **Storytelling in education**: In Scotland, storytelling has long been recognized as an essential part of education, with many schools incorporating traditional tales into their curricula.	52	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+87	22	24	fact	I hope this list provides a comprehensive starting point for your article!	53	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+88	22	24	fact	What a fantastic brief! I'm excited to dive into the world of Scottish storytelling. After conducting web searches and exploring various aspects of the topic, I've compiled a list of 50 interesting facts that could be included in the article. Here they are:	54	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+89	22	25	fact	1. **Celtic roots**: Scottish storytelling has its roots in ancient Celtic culture, where stories were passed down through generations by seanachaidh (traditional storytellers).	3	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+90	22	25	fact	10. **Ceilidh culture**: Ceilidhs (traditional social gatherings) are still an integral part of Scottish culture, often featuring music, dance, and storytelling.	4	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+91	22	25	fact	11. **Scottish folklore**: Scotland has a rich tradition of folklore, with stories featuring mythical creatures like the Loch Ness Monster and the Kelpie.	5	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+92	22	25	fact	12. **The Selkie legend**: The Selkie is a mythical seal-like creature said to have the power to transform into a human, featured in many Scottish folktales.	6	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+93	22	25	fact	13. **Hogmanay storytelling**: In Scotland, Hogmanay (New Year's Eve) is traditionally a time for storytelling and sharing tales around the fire.	7	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+94	22	25	fact	14. **The importance of oral tradition**: Oral storytelling has played a vital role in preserving Scottish culture and history, with many stories passed down through generations by word of mouth.	8	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+95	22	25	fact	15. **Scottish Gaelic revival**: Efforts are being made to revive the Scottish Gaelic language, including initiatives to promote Gaelic storytelling and literature.	9	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+191	22	26	fact	I hope this list provides a comprehensive starting point for your article!	53	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+97	22	25	fact	17. **Glasgow's storytelling scene**: Glasgow has a thriving storytelling community, with regular events and festivals celebrating the city's rich cultural heritage.	11	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+98	22	25	fact	18. **The role of women in storytelling**: Women have played a significant role in preserving and passing down Scottish stories throughout history, often as seanachaidh or family storytellers.	12	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+99	22	25	fact	19. **Storytelling in music**: Traditional Scottish music often features storytelling elements, with songs like "Auld Lang Syne" (written by Robert Burns) telling tales of love, loss, and friendship.	13	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+100	22	25	fact	2. **Gaelic influence**: Gaelic language and culture have had a significant impact on Scottish storytelling, with many tales still told in Gaelic today.	14	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+101	22	25	fact	20. **The impact of the Reformation**: The Protestant Reformation had a significant impact on Scottish storytelling, leading to a decline in traditional folktales and myths.	15	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+102	22	25	fact	21. **The Enlightenment's influence**: The Scottish Enlightenment saw a resurgence in interest in traditional stories and folklore, with writers like Sir Walter Scott drawing inspiration from these sources.	16	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+103	22	25	fact	22. **Romanticism and the Highlands**: The Romantic movement of the 19th century saw a renewed focus on Scotland's rugged landscape and rich cultural heritage, influencing storytelling and literature.	17	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+104	22	25	fact	23. **The Clearances' impact on storytelling**: The Highland Clearances had a devastating impact on Scottish culture, leading to the loss of many traditional stories and folktales.	18	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+105	22	25	fact	24. **Storytelling in art**: Scottish art often features storytelling elements, with works like Charles Rennie Mackintosh's "Glasgow Style" incorporating Celtic motifs and symbolism.	19	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+106	22	25	fact	25. **The role of nature in storytelling**: Scotland's stunning natural landscape has inspired countless stories and myths, from the mythical Cù Sìth to the majestic lochs and glens.	20	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+107	22	25	fact	26. **Scottish mythology and fantasy**: Scottish folklore has influenced modern fantasy writers like J.K. Rowling and George R.R. Martin, with mythological creatures like the Kelpie featuring in popular works of fiction.	21	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+108	22	25	fact	27. **Storytelling in film**: Scotland's rich cultural heritage has been showcased on screen in films like "Braveheart" and "Trainspotting", often drawing inspiration from traditional stories and folklore.	22	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+109	22	25	fact	28. **Gaelic language in modern media**: Gaelic language is being used increasingly in modern Scottish media, including TV shows like "Bannan" and "Dè a-nis?" (What Now?).	23	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+110	22	25	fact	29. **Storytelling festivals**: Scotland hosts numerous storytelling festivals throughout the year, celebrating traditional tales and modern reinterpretations.	24	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+111	22	25	fact	3. **Fionn mac Cumhaill**: Fionn mac Cumhaill, also known as Finn McCool, is a legendary hero from Celtic mythology who features in many Scottish stories.	25	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+112	22	25	fact	30. **The art of kilt-making**: Traditional Scottish kilts are still made using ancient techniques, with many stories and legends surrounding the origins of these iconic garments.	26	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+113	22	25	fact	31. **Tartan's global influence**: Tartan patterns have been adopted by cultures around the world, often used in fashion and design to evoke a sense of Scottish heritage.	27	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+114	22	25	fact	32. **Scottish literature's global impact**: Scottish writers like Robert Louis Stevenson and Arthur Conan Doyle have had a significant impact on world literature, with their works still widely read today.	28	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+115	22	25	fact	33. **The role of storytelling in tourism**: Scotland's rich cultural heritage is a major draw for tourists, with many visitors seeking out traditional stories and experiences.	29	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+116	22	25	fact	34. **Storytelling in Scottish education policy**: The Scottish government has recognized the importance of storytelling in education, incorporating it into school curricula to promote cultural awareness and creativity.	30	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+117	22	25	fact	35. **Digital storytelling**: Modern technology is being used to preserve and share traditional Scottish stories, with digital archives and online platforms making these tales accessible to global audiences.	31	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+118	22	25	fact	36. **Folkloric creatures in modern literature**: Creatures from Scottish folklore like the Kelpie and Selkie continue to feature in modern literature, inspiring new generations of writers and readers.	32	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+119	22	25	fact	37. **The influence of Norse mythology**: Scotland's Viking heritage has had a lasting impact on its storytelling traditions, with many stories featuring mythological figures from Norse mythology.	33	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+120	22	25	fact	38. **Celtic festivals**: Celtic festivals like Samhain (Halloween) and Imbolc continue to be celebrated in Scotland, often featuring traditional storytelling and folktales.	34	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+121	22	25	fact	39. **The role of the bard**: In ancient Celtic culture, bards were revered for their ability to compose and perform stories, music, and poetry – a tradition still honored today.	35	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+122	22	25	fact	4. **The Cù Sìth**: The Cù Sìth is a mythical dog said to roam the Highlands, often featured in Scottish folklore and storytelling.	36	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+123	22	25	fact	40. **Storytelling in Scottish psychology**: Research has shown that storytelling plays an essential role in shaping Scottish identity and cultural heritage, with many Scots drawing on traditional tales to understand themselves and their place in the world.	37	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+124	22	25	fact	41. **The Clearances' legacy in storytelling**: The Highland Clearances continue to be remembered and commemorated through stories and songs, serving as a powerful reminder of Scotland's complex history.	38	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+125	22	25	fact	42. **Tartan-clad heroes**: Tartan-clad heroes like Rob Roy and William Wallace have become iconic figures in Scottish folklore, symbolizing the country's rich cultural heritage.	39	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+126	22	25	fact	43. **The Kelpie's symbolism**: The Kelpie is often seen as a symbol of Scotland's mysterious and untamed natural landscape, featuring in many stories and myths.	40	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+127	22	25	fact	44. **Storytelling in Scottish politics**: Storytelling has played a significant role in Scottish politics, with politicians like Nicola Sturgeon drawing on traditional tales to connect with voters and shape national identity.	41	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+128	22	25	fact	45. **The impact of urbanization**: Urbanization has had a profound impact on Scottish storytelling, with many traditional stories adapted for modern city-dwelling audiences.	42	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+129	22	25	fact	46. **Glasgow's literary heritage**: Glasgow has a rich literary heritage, with writers like James Kelman and A.L. Kennedy drawing inspiration from the city's vibrant cultural scene.	43	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+130	22	25	fact	47. **Storytelling in modern art**: Contemporary Scottish artists are incorporating storytelling elements into their work, often using traditional tales as inspiration for innovative installations and performances.	44	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+131	22	25	fact	48. **The role of myth in shaping identity**: Mythology has played a significant role in shaping Scotland's national identity, with many stories featuring mythical creatures like the Loch Ness Monster.	45	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+132	22	25	fact	49. **Folkloric echoes in modern music**: Traditional Scottish folktales continue to influence modern music, with artists like Paolo Nutini and Amy Macdonald drawing on these sources for inspiration.	46	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+133	22	25	fact	5. **Robert Burns' legacy**: Scotland's national poet, Robert Burns, was a master storyteller whose works continue to inspire new generations of writers and readers.	47	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+134	22	25	fact	50. **The future of Scottish storytelling**: As Scotland looks to the future, its rich storytelling traditions will continue to evolve, incorporating new technologies, styles, and themes while remaining rooted in the country's unique cultural heritage.	48	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+135	22	25	fact	6. **Sir Walter Scott's impact**: Sir Walter Scott's novels, such as "Waverley" and "Rob Roy", helped shape Scotland's literary identity and popularize tartan-clad tales.	49	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+136	22	25	fact	7. **Tartan symbolism**: Tartan patterns have been used to symbolize Scottish identity and culture for centuries, often featuring in stories and folklore.	50	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+137	22	25	fact	8. **Celtic knotwork**: Intricate Celtic knotwork designs are often used to illustrate Scottish stories and myths, reflecting the country's rich cultural heritage.	51	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+138	22	25	fact	9. **Storytelling in education**: In Scotland, storytelling has long been recognized as an essential part of education, with many schools incorporating traditional tales into their curricula.	52	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+139	22	25	fact	I hope this list provides a comprehensive starting point for your article!	53	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+140	22	25	fact	What a fantastic brief! I'm excited to dive into the world of Scottish storytelling. After conducting web searches and exploring various aspects of the topic, I've compiled a list of 50 interesting facts that could be included in the article. Here they are:	54	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+141	22	26	fact	1. **Celtic roots**: Scottish storytelling has its roots in ancient Celtic culture, where stories were passed down through generations by seanachaidh (traditional storytellers).	3	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+142	22	26	fact	10. **Ceilidh culture**: Ceilidhs (traditional social gatherings) are still an integral part of Scottish culture, often featuring music, dance, and storytelling.	4	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+143	22	26	fact	11. **Scottish folklore**: Scotland has a rich tradition of folklore, with stories featuring mythical creatures like the Loch Ness Monster and the Kelpie.	5	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+144	22	26	fact	12. **The Selkie legend**: The Selkie is a mythical seal-like creature said to have the power to transform into a human, featured in many Scottish folktales.	6	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+145	22	26	fact	13. **Hogmanay storytelling**: In Scotland, Hogmanay (New Year's Eve) is traditionally a time for storytelling and sharing tales around the fire.	7	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+146	22	26	fact	14. **The importance of oral tradition**: Oral storytelling has played a vital role in preserving Scottish culture and history, with many stories passed down through generations by word of mouth.	8	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+147	22	26	fact	15. **Scottish Gaelic revival**: Efforts are being made to revive the Scottish Gaelic language, including initiatives to promote Gaelic storytelling and literature.	9	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+148	22	26	fact	16. **Modern retellings**: Contemporary writers like Ian Rankin and Val McDermid are reinterpreting traditional Scottish stories for new audiences.	10	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+149	22	26	fact	17. **Glasgow's storytelling scene**: Glasgow has a thriving storytelling community, with regular events and festivals celebrating the city's rich cultural heritage.	11	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+150	22	26	fact	18. **The role of women in storytelling**: Women have played a significant role in preserving and passing down Scottish stories throughout history, often as seanachaidh or family storytellers.	12	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+151	22	26	fact	19. **Storytelling in music**: Traditional Scottish music often features storytelling elements, with songs like "Auld Lang Syne" (written by Robert Burns) telling tales of love, loss, and friendship.	13	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+152	22	26	fact	2. **Gaelic influence**: Gaelic language and culture have had a significant impact on Scottish storytelling, with many tales still told in Gaelic today.	14	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+153	22	26	fact	20. **The impact of the Reformation**: The Protestant Reformation had a significant impact on Scottish storytelling, leading to a decline in traditional folktales and myths.	15	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+154	22	26	fact	21. **The Enlightenment's influence**: The Scottish Enlightenment saw a resurgence in interest in traditional stories and folklore, with writers like Sir Walter Scott drawing inspiration from these sources.	16	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+155	22	26	fact	22. **Romanticism and the Highlands**: The Romantic movement of the 19th century saw a renewed focus on Scotland's rugged landscape and rich cultural heritage, influencing storytelling and literature.	17	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+156	22	26	fact	23. **The Clearances' impact on storytelling**: The Highland Clearances had a devastating impact on Scottish culture, leading to the loss of many traditional stories and folktales.	18	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+157	22	26	fact	24. **Storytelling in art**: Scottish art often features storytelling elements, with works like Charles Rennie Mackintosh's "Glasgow Style" incorporating Celtic motifs and symbolism.	19	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+158	22	26	fact	25. **The role of nature in storytelling**: Scotland's stunning natural landscape has inspired countless stories and myths, from the mythical Cù Sìth to the majestic lochs and glens.	20	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+159	22	26	fact	26. **Scottish mythology and fantasy**: Scottish folklore has influenced modern fantasy writers like J.K. Rowling and George R.R. Martin, with mythological creatures like the Kelpie featuring in popular works of fiction.	21	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+160	22	26	fact	27. **Storytelling in film**: Scotland's rich cultural heritage has been showcased on screen in films like "Braveheart" and "Trainspotting", often drawing inspiration from traditional stories and folklore.	22	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+161	22	26	fact	28. **Gaelic language in modern media**: Gaelic language is being used increasingly in modern Scottish media, including TV shows like "Bannan" and "Dè a-nis?" (What Now?).	23	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+162	22	26	fact	29. **Storytelling festivals**: Scotland hosts numerous storytelling festivals throughout the year, celebrating traditional tales and modern reinterpretations.	24	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+163	22	26	fact	3. **Fionn mac Cumhaill**: Fionn mac Cumhaill, also known as Finn McCool, is a legendary hero from Celtic mythology who features in many Scottish stories.	25	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+164	22	26	fact	30. **The art of kilt-making**: Traditional Scottish kilts are still made using ancient techniques, with many stories and legends surrounding the origins of these iconic garments.	26	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+165	22	26	fact	31. **Tartan's global influence**: Tartan patterns have been adopted by cultures around the world, often used in fashion and design to evoke a sense of Scottish heritage.	27	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+166	22	26	fact	32. **Scottish literature's global impact**: Scottish writers like Robert Louis Stevenson and Arthur Conan Doyle have had a significant impact on world literature, with their works still widely read today.	28	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+167	22	26	fact	33. **The role of storytelling in tourism**: Scotland's rich cultural heritage is a major draw for tourists, with many visitors seeking out traditional stories and experiences.	29	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+168	22	26	fact	34. **Storytelling in Scottish education policy**: The Scottish government has recognized the importance of storytelling in education, incorporating it into school curricula to promote cultural awareness and creativity.	30	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+169	22	26	fact	35. **Digital storytelling**: Modern technology is being used to preserve and share traditional Scottish stories, with digital archives and online platforms making these tales accessible to global audiences.	31	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+170	22	26	fact	36. **Folkloric creatures in modern literature**: Creatures from Scottish folklore like the Kelpie and Selkie continue to feature in modern literature, inspiring new generations of writers and readers.	32	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+171	22	26	fact	37. **The influence of Norse mythology**: Scotland's Viking heritage has had a lasting impact on its storytelling traditions, with many stories featuring mythological figures from Norse mythology.	33	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+172	22	26	fact	38. **Celtic festivals**: Celtic festivals like Samhain (Halloween) and Imbolc continue to be celebrated in Scotland, often featuring traditional storytelling and folktales.	34	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+173	22	26	fact	39. **The role of the bard**: In ancient Celtic culture, bards were revered for their ability to compose and perform stories, music, and poetry – a tradition still honored today.	35	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+174	22	26	fact	4. **The Cù Sìth**: The Cù Sìth is a mythical dog said to roam the Highlands, often featured in Scottish folklore and storytelling.	36	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+175	22	26	fact	40. **Storytelling in Scottish psychology**: Research has shown that storytelling plays an essential role in shaping Scottish identity and cultural heritage, with many Scots drawing on traditional tales to understand themselves and their place in the world.	37	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+176	22	26	fact	41. **The Clearances' legacy in storytelling**: The Highland Clearances continue to be remembered and commemorated through stories and songs, serving as a powerful reminder of Scotland's complex history.	38	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+177	22	26	fact	42. **Tartan-clad heroes**: Tartan-clad heroes like Rob Roy and William Wallace have become iconic figures in Scottish folklore, symbolizing the country's rich cultural heritage.	39	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+178	22	26	fact	43. **The Kelpie's symbolism**: The Kelpie is often seen as a symbol of Scotland's mysterious and untamed natural landscape, featuring in many stories and myths.	40	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+179	22	26	fact	44. **Storytelling in Scottish politics**: Storytelling has played a significant role in Scottish politics, with politicians like Nicola Sturgeon drawing on traditional tales to connect with voters and shape national identity.	41	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+180	22	26	fact	45. **The impact of urbanization**: Urbanization has had a profound impact on Scottish storytelling, with many traditional stories adapted for modern city-dwelling audiences.	42	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+181	22	26	fact	46. **Glasgow's literary heritage**: Glasgow has a rich literary heritage, with writers like James Kelman and A.L. Kennedy drawing inspiration from the city's vibrant cultural scene.	43	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+182	22	26	fact	47. **Storytelling in modern art**: Contemporary Scottish artists are incorporating storytelling elements into their work, often using traditional tales as inspiration for innovative installations and performances.	44	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+183	22	26	fact	48. **The role of myth in shaping identity**: Mythology has played a significant role in shaping Scotland's national identity, with many stories featuring mythical creatures like the Loch Ness Monster.	45	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+184	22	26	fact	49. **Folkloric echoes in modern music**: Traditional Scottish folktales continue to influence modern music, with artists like Paolo Nutini and Amy Macdonald drawing on these sources for inspiration.	46	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+185	22	26	fact	5. **Robert Burns' legacy**: Scotland's national poet, Robert Burns, was a master storyteller whose works continue to inspire new generations of writers and readers.	47	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+186	22	26	fact	50. **The future of Scottish storytelling**: As Scotland looks to the future, its rich storytelling traditions will continue to evolve, incorporating new technologies, styles, and themes while remaining rooted in the country's unique cultural heritage.	48	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+187	22	26	fact	6. **Sir Walter Scott's impact**: Sir Walter Scott's novels, such as "Waverley" and "Rob Roy", helped shape Scotland's literary identity and popularize tartan-clad tales.	49	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+188	22	26	fact	7. **Tartan symbolism**: Tartan patterns have been used to symbolize Scottish identity and culture for centuries, often featuring in stories and folklore.	50	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+189	22	26	fact	8. **Celtic knotwork**: Intricate Celtic knotwork designs are often used to illustrate Scottish stories and myths, reflecting the country's rich cultural heritage.	51	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+190	22	26	fact	9. **Storytelling in education**: In Scotland, storytelling has long been recognized as an essential part of education, with many schools incorporating traditional tales into their curricula.	52	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+192	22	26	fact	What a fantastic brief! I'm excited to dive into the world of Scottish storytelling. After conducting web searches and exploring various aspects of the topic, I've compiled a list of 50 interesting facts that could be included in the article. Here they are:	54	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+193	22	27	fact	1. **Celtic roots**: Scottish storytelling has its roots in ancient Celtic culture, where stories were passed down through generations by seanachaidh (traditional storytellers).	3	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+194	22	27	fact	10. **Ceilidh culture**: Ceilidhs (traditional social gatherings) are still an integral part of Scottish culture, often featuring music, dance, and storytelling.	4	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+195	22	27	fact	11. **Scottish folklore**: Scotland has a rich tradition of folklore, with stories featuring mythical creatures like the Loch Ness Monster and the Kelpie.	5	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+196	22	27	fact	12. **The Selkie legend**: The Selkie is a mythical seal-like creature said to have the power to transform into a human, featured in many Scottish folktales.	6	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+197	22	27	fact	13. **Hogmanay storytelling**: In Scotland, Hogmanay (New Year's Eve) is traditionally a time for storytelling and sharing tales around the fire.	7	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+198	22	27	fact	14. **The importance of oral tradition**: Oral storytelling has played a vital role in preserving Scottish culture and history, with many stories passed down through generations by word of mouth.	8	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+199	22	27	fact	15. **Scottish Gaelic revival**: Efforts are being made to revive the Scottish Gaelic language, including initiatives to promote Gaelic storytelling and literature.	9	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+200	22	27	fact	16. **Modern retellings**: Contemporary writers like Ian Rankin and Val McDermid are reinterpreting traditional Scottish stories for new audiences.	10	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+201	22	27	fact	17. **Glasgow's storytelling scene**: Glasgow has a thriving storytelling community, with regular events and festivals celebrating the city's rich cultural heritage.	11	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+202	22	27	fact	18. **The role of women in storytelling**: Women have played a significant role in preserving and passing down Scottish stories throughout history, often as seanachaidh or family storytellers.	12	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+203	22	27	fact	19. **Storytelling in music**: Traditional Scottish music often features storytelling elements, with songs like "Auld Lang Syne" (written by Robert Burns) telling tales of love, loss, and friendship.	13	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+204	22	27	fact	2. **Gaelic influence**: Gaelic language and culture have had a significant impact on Scottish storytelling, with many tales still told in Gaelic today.	14	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+205	22	27	fact	20. **The impact of the Reformation**: The Protestant Reformation had a significant impact on Scottish storytelling, leading to a decline in traditional folktales and myths.	15	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+206	22	27	fact	21. **The Enlightenment's influence**: The Scottish Enlightenment saw a resurgence in interest in traditional stories and folklore, with writers like Sir Walter Scott drawing inspiration from these sources.	16	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+207	22	27	fact	22. **Romanticism and the Highlands**: The Romantic movement of the 19th century saw a renewed focus on Scotland's rugged landscape and rich cultural heritage, influencing storytelling and literature.	17	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+208	22	27	fact	23. **The Clearances' impact on storytelling**: The Highland Clearances had a devastating impact on Scottish culture, leading to the loss of many traditional stories and folktales.	18	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+209	22	27	fact	24. **Storytelling in art**: Scottish art often features storytelling elements, with works like Charles Rennie Mackintosh's "Glasgow Style" incorporating Celtic motifs and symbolism.	19	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+210	22	27	fact	25. **The role of nature in storytelling**: Scotland's stunning natural landscape has inspired countless stories and myths, from the mythical Cù Sìth to the majestic lochs and glens.	20	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+211	22	27	fact	26. **Scottish mythology and fantasy**: Scottish folklore has influenced modern fantasy writers like J.K. Rowling and George R.R. Martin, with mythological creatures like the Kelpie featuring in popular works of fiction.	21	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+212	22	27	fact	27. **Storytelling in film**: Scotland's rich cultural heritage has been showcased on screen in films like "Braveheart" and "Trainspotting", often drawing inspiration from traditional stories and folklore.	22	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+213	22	27	fact	28. **Gaelic language in modern media**: Gaelic language is being used increasingly in modern Scottish media, including TV shows like "Bannan" and "Dè a-nis?" (What Now?).	23	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+214	22	27	fact	29. **Storytelling festivals**: Scotland hosts numerous storytelling festivals throughout the year, celebrating traditional tales and modern reinterpretations.	24	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+215	22	27	fact	3. **Fionn mac Cumhaill**: Fionn mac Cumhaill, also known as Finn McCool, is a legendary hero from Celtic mythology who features in many Scottish stories.	25	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+216	22	27	fact	30. **The art of kilt-making**: Traditional Scottish kilts are still made using ancient techniques, with many stories and legends surrounding the origins of these iconic garments.	26	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+217	22	27	fact	31. **Tartan's global influence**: Tartan patterns have been adopted by cultures around the world, often used in fashion and design to evoke a sense of Scottish heritage.	27	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+218	22	27	fact	32. **Scottish literature's global impact**: Scottish writers like Robert Louis Stevenson and Arthur Conan Doyle have had a significant impact on world literature, with their works still widely read today.	28	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+219	22	27	fact	33. **The role of storytelling in tourism**: Scotland's rich cultural heritage is a major draw for tourists, with many visitors seeking out traditional stories and experiences.	29	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+220	22	27	fact	34. **Storytelling in Scottish education policy**: The Scottish government has recognized the importance of storytelling in education, incorporating it into school curricula to promote cultural awareness and creativity.	30	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+221	22	27	fact	35. **Digital storytelling**: Modern technology is being used to preserve and share traditional Scottish stories, with digital archives and online platforms making these tales accessible to global audiences.	31	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+222	22	27	fact	36. **Folkloric creatures in modern literature**: Creatures from Scottish folklore like the Kelpie and Selkie continue to feature in modern literature, inspiring new generations of writers and readers.	32	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+223	22	27	fact	37. **The influence of Norse mythology**: Scotland's Viking heritage has had a lasting impact on its storytelling traditions, with many stories featuring mythological figures from Norse mythology.	33	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+224	22	27	fact	38. **Celtic festivals**: Celtic festivals like Samhain (Halloween) and Imbolc continue to be celebrated in Scotland, often featuring traditional storytelling and folktales.	34	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+225	22	27	fact	39. **The role of the bard**: In ancient Celtic culture, bards were revered for their ability to compose and perform stories, music, and poetry – a tradition still honored today.	35	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+226	22	27	fact	4. **The Cù Sìth**: The Cù Sìth is a mythical dog said to roam the Highlands, often featured in Scottish folklore and storytelling.	36	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+227	22	27	fact	40. **Storytelling in Scottish psychology**: Research has shown that storytelling plays an essential role in shaping Scottish identity and cultural heritage, with many Scots drawing on traditional tales to understand themselves and their place in the world.	37	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+228	22	27	fact	41. **The Clearances' legacy in storytelling**: The Highland Clearances continue to be remembered and commemorated through stories and songs, serving as a powerful reminder of Scotland's complex history.	38	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+229	22	27	fact	42. **Tartan-clad heroes**: Tartan-clad heroes like Rob Roy and William Wallace have become iconic figures in Scottish folklore, symbolizing the country's rich cultural heritage.	39	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+230	22	27	fact	43. **The Kelpie's symbolism**: The Kelpie is often seen as a symbol of Scotland's mysterious and untamed natural landscape, featuring in many stories and myths.	40	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+231	22	27	fact	44. **Storytelling in Scottish politics**: Storytelling has played a significant role in Scottish politics, with politicians like Nicola Sturgeon drawing on traditional tales to connect with voters and shape national identity.	41	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+232	22	27	fact	45. **The impact of urbanization**: Urbanization has had a profound impact on Scottish storytelling, with many traditional stories adapted for modern city-dwelling audiences.	42	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+233	22	27	fact	46. **Glasgow's literary heritage**: Glasgow has a rich literary heritage, with writers like James Kelman and A.L. Kennedy drawing inspiration from the city's vibrant cultural scene.	43	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+234	22	27	fact	47. **Storytelling in modern art**: Contemporary Scottish artists are incorporating storytelling elements into their work, often using traditional tales as inspiration for innovative installations and performances.	44	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+235	22	27	fact	48. **The role of myth in shaping identity**: Mythology has played a significant role in shaping Scotland's national identity, with many stories featuring mythical creatures like the Loch Ness Monster.	45	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+236	22	27	fact	49. **Folkloric echoes in modern music**: Traditional Scottish folktales continue to influence modern music, with artists like Paolo Nutini and Amy Macdonald drawing on these sources for inspiration.	46	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+237	22	27	fact	5. **Robert Burns' legacy**: Scotland's national poet, Robert Burns, was a master storyteller whose works continue to inspire new generations of writers and readers.	47	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+238	22	27	fact	50. **The future of Scottish storytelling**: As Scotland looks to the future, its rich storytelling traditions will continue to evolve, incorporating new technologies, styles, and themes while remaining rooted in the country's unique cultural heritage.	48	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+239	22	27	fact	6. **Sir Walter Scott's impact**: Sir Walter Scott's novels, such as "Waverley" and "Rob Roy", helped shape Scotland's literary identity and popularize tartan-clad tales.	49	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+240	22	27	fact	7. **Tartan symbolism**: Tartan patterns have been used to symbolize Scottish identity and culture for centuries, often featuring in stories and folklore.	50	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+241	22	27	fact	8. **Celtic knotwork**: Intricate Celtic knotwork designs are often used to illustrate Scottish stories and myths, reflecting the country's rich cultural heritage.	51	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+242	22	27	fact	9. **Storytelling in education**: In Scotland, storytelling has long been recognized as an essential part of education, with many schools incorporating traditional tales into their curricula.	52	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+243	22	27	fact	I hope this list provides a comprehensive starting point for your article!	53	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+244	22	27	fact	What a fantastic brief! I'm excited to dive into the world of Scottish storytelling. After conducting web searches and exploring various aspects of the topic, I've compiled a list of 50 interesting facts that could be included in the article. Here they are:	54	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+245	22	28	fact	1. **Celtic roots**: Scottish storytelling has its roots in ancient Celtic culture, where stories were passed down through generations by seanachaidh (traditional storytellers).	3	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+246	22	28	fact	10. **Ceilidh culture**: Ceilidhs (traditional social gatherings) are still an integral part of Scottish culture, often featuring music, dance, and storytelling.	4	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+247	22	28	fact	11. **Scottish folklore**: Scotland has a rich tradition of folklore, with stories featuring mythical creatures like the Loch Ness Monster and the Kelpie.	5	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+248	22	28	fact	12. **The Selkie legend**: The Selkie is a mythical seal-like creature said to have the power to transform into a human, featured in many Scottish folktales.	6	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+249	22	28	fact	13. **Hogmanay storytelling**: In Scotland, Hogmanay (New Year's Eve) is traditionally a time for storytelling and sharing tales around the fire.	7	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+250	22	28	fact	14. **The importance of oral tradition**: Oral storytelling has played a vital role in preserving Scottish culture and history, with many stories passed down through generations by word of mouth.	8	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+251	22	28	fact	15. **Scottish Gaelic revival**: Efforts are being made to revive the Scottish Gaelic language, including initiatives to promote Gaelic storytelling and literature.	9	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+252	22	28	fact	16. **Modern retellings**: Contemporary writers like Ian Rankin and Val McDermid are reinterpreting traditional Scottish stories for new audiences.	10	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+253	22	28	fact	17. **Glasgow's storytelling scene**: Glasgow has a thriving storytelling community, with regular events and festivals celebrating the city's rich cultural heritage.	11	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+254	22	28	fact	18. **The role of women in storytelling**: Women have played a significant role in preserving and passing down Scottish stories throughout history, often as seanachaidh or family storytellers.	12	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+255	22	28	fact	19. **Storytelling in music**: Traditional Scottish music often features storytelling elements, with songs like "Auld Lang Syne" (written by Robert Burns) telling tales of love, loss, and friendship.	13	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+256	22	28	fact	2. **Gaelic influence**: Gaelic language and culture have had a significant impact on Scottish storytelling, with many tales still told in Gaelic today.	14	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+257	22	28	fact	20. **The impact of the Reformation**: The Protestant Reformation had a significant impact on Scottish storytelling, leading to a decline in traditional folktales and myths.	15	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+258	22	28	fact	21. **The Enlightenment's influence**: The Scottish Enlightenment saw a resurgence in interest in traditional stories and folklore, with writers like Sir Walter Scott drawing inspiration from these sources.	16	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+259	22	28	fact	22. **Romanticism and the Highlands**: The Romantic movement of the 19th century saw a renewed focus on Scotland's rugged landscape and rich cultural heritage, influencing storytelling and literature.	17	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+260	22	28	fact	23. **The Clearances' impact on storytelling**: The Highland Clearances had a devastating impact on Scottish culture, leading to the loss of many traditional stories and folktales.	18	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+261	22	28	fact	24. **Storytelling in art**: Scottish art often features storytelling elements, with works like Charles Rennie Mackintosh's "Glasgow Style" incorporating Celtic motifs and symbolism.	19	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+262	22	28	fact	25. **The role of nature in storytelling**: Scotland's stunning natural landscape has inspired countless stories and myths, from the mythical Cù Sìth to the majestic lochs and glens.	20	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+263	22	28	fact	26. **Scottish mythology and fantasy**: Scottish folklore has influenced modern fantasy writers like J.K. Rowling and George R.R. Martin, with mythological creatures like the Kelpie featuring in popular works of fiction.	21	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+264	22	28	fact	27. **Storytelling in film**: Scotland's rich cultural heritage has been showcased on screen in films like "Braveheart" and "Trainspotting", often drawing inspiration from traditional stories and folklore.	22	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+265	22	28	fact	28. **Gaelic language in modern media**: Gaelic language is being used increasingly in modern Scottish media, including TV shows like "Bannan" and "Dè a-nis?" (What Now?).	23	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+266	22	28	fact	29. **Storytelling festivals**: Scotland hosts numerous storytelling festivals throughout the year, celebrating traditional tales and modern reinterpretations.	24	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+267	22	28	fact	3. **Fionn mac Cumhaill**: Fionn mac Cumhaill, also known as Finn McCool, is a legendary hero from Celtic mythology who features in many Scottish stories.	25	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+268	22	28	fact	30. **The art of kilt-making**: Traditional Scottish kilts are still made using ancient techniques, with many stories and legends surrounding the origins of these iconic garments.	26	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+269	22	28	fact	31. **Tartan's global influence**: Tartan patterns have been adopted by cultures around the world, often used in fashion and design to evoke a sense of Scottish heritage.	27	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+270	22	28	fact	32. **Scottish literature's global impact**: Scottish writers like Robert Louis Stevenson and Arthur Conan Doyle have had a significant impact on world literature, with their works still widely read today.	28	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+271	22	28	fact	33. **The role of storytelling in tourism**: Scotland's rich cultural heritage is a major draw for tourists, with many visitors seeking out traditional stories and experiences.	29	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+272	22	28	fact	34. **Storytelling in Scottish education policy**: The Scottish government has recognized the importance of storytelling in education, incorporating it into school curricula to promote cultural awareness and creativity.	30	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+273	22	28	fact	35. **Digital storytelling**: Modern technology is being used to preserve and share traditional Scottish stories, with digital archives and online platforms making these tales accessible to global audiences.	31	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+274	22	28	fact	36. **Folkloric creatures in modern literature**: Creatures from Scottish folklore like the Kelpie and Selkie continue to feature in modern literature, inspiring new generations of writers and readers.	32	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+275	22	28	fact	37. **The influence of Norse mythology**: Scotland's Viking heritage has had a lasting impact on its storytelling traditions, with many stories featuring mythological figures from Norse mythology.	33	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+276	22	28	fact	38. **Celtic festivals**: Celtic festivals like Samhain (Halloween) and Imbolc continue to be celebrated in Scotland, often featuring traditional storytelling and folktales.	34	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+277	22	28	fact	39. **The role of the bard**: In ancient Celtic culture, bards were revered for their ability to compose and perform stories, music, and poetry – a tradition still honored today.	35	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+278	22	28	fact	4. **The Cù Sìth**: The Cù Sìth is a mythical dog said to roam the Highlands, often featured in Scottish folklore and storytelling.	36	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+279	22	28	fact	40. **Storytelling in Scottish psychology**: Research has shown that storytelling plays an essential role in shaping Scottish identity and cultural heritage, with many Scots drawing on traditional tales to understand themselves and their place in the world.	37	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+280	22	28	fact	41. **The Clearances' legacy in storytelling**: The Highland Clearances continue to be remembered and commemorated through stories and songs, serving as a powerful reminder of Scotland's complex history.	38	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+281	22	28	fact	42. **Tartan-clad heroes**: Tartan-clad heroes like Rob Roy and William Wallace have become iconic figures in Scottish folklore, symbolizing the country's rich cultural heritage.	39	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+282	22	28	fact	43. **The Kelpie's symbolism**: The Kelpie is often seen as a symbol of Scotland's mysterious and untamed natural landscape, featuring in many stories and myths.	40	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+283	22	28	fact	44. **Storytelling in Scottish politics**: Storytelling has played a significant role in Scottish politics, with politicians like Nicola Sturgeon drawing on traditional tales to connect with voters and shape national identity.	41	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+284	22	28	fact	45. **The impact of urbanization**: Urbanization has had a profound impact on Scottish storytelling, with many traditional stories adapted for modern city-dwelling audiences.	42	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+285	22	28	fact	46. **Glasgow's literary heritage**: Glasgow has a rich literary heritage, with writers like James Kelman and A.L. Kennedy drawing inspiration from the city's vibrant cultural scene.	43	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+286	22	28	fact	47. **Storytelling in modern art**: Contemporary Scottish artists are incorporating storytelling elements into their work, often using traditional tales as inspiration for innovative installations and performances.	44	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+287	22	28	fact	48. **The role of myth in shaping identity**: Mythology has played a significant role in shaping Scotland's national identity, with many stories featuring mythical creatures like the Loch Ness Monster.	45	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+288	22	28	fact	49. **Folkloric echoes in modern music**: Traditional Scottish folktales continue to influence modern music, with artists like Paolo Nutini and Amy Macdonald drawing on these sources for inspiration.	46	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+289	22	28	fact	5. **Robert Burns' legacy**: Scotland's national poet, Robert Burns, was a master storyteller whose works continue to inspire new generations of writers and readers.	47	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+290	22	28	fact	50. **The future of Scottish storytelling**: As Scotland looks to the future, its rich storytelling traditions will continue to evolve, incorporating new technologies, styles, and themes while remaining rooted in the country's unique cultural heritage.	48	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+291	22	28	fact	6. **Sir Walter Scott's impact**: Sir Walter Scott's novels, such as "Waverley" and "Rob Roy", helped shape Scotland's literary identity and popularize tartan-clad tales.	49	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+292	22	28	fact	7. **Tartan symbolism**: Tartan patterns have been used to symbolize Scottish identity and culture for centuries, often featuring in stories and folklore.	50	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+293	22	28	fact	8. **Celtic knotwork**: Intricate Celtic knotwork designs are often used to illustrate Scottish stories and myths, reflecting the country's rich cultural heritage.	51	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+294	22	28	fact	9. **Storytelling in education**: In Scotland, storytelling has long been recognized as an essential part of education, with many schools incorporating traditional tales into their curricula.	52	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+295	22	28	fact	I hope this list provides a comprehensive starting point for your article!	53	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
+296	22	28	fact	What a fantastic brief! I'm excited to dive into the world of Scottish storytelling. After conducting web searches and exploring various aspects of the topic, I've compiled a list of 50 interesting facts that could be included in the article. Here they are:	54	2025-06-09 08:04:49.235362	2025-06-09 08:04:49.235362
 \.
 
 
@@ -1726,6 +2179,39 @@ COPY public.post_tags (post_id, tag_id) FROM stdin;
 --
 
 COPY public.post_workflow_stage (id, post_id, stage_id, started_at, completed_at, status, input_field, output_field) FROM stdin;
+2	22	10	\N	\N	\N	\N	Title: "Weaving the Tartan Tapestry: The Enduring Power of Storytelling in Scottish Culture"\r\n\r\nIn this article, we'll delve into the rich tradition of storytelling in Scotland, exploring its historical roots, cultural significance, and continued relevance in modern times. From the ancient Celtic bards to the Highland ceilidhs, and from the pages of Sir Walter Scott's novels to the stages of contemporary theatre, Scotland has a long history of spinning engaging yarns that capture the hearts and imaginations of audiences worldwide. By examining the ways in which storytelling has been used to preserve cultural heritage, pass down historical events, and shape national identity, we'll reveal the intricate patterns and motifs that underpin this most Scottish of traditions. We'll also consider how storytelling continues to play a vital role in contemporary Scotland, whether through the works of modern authors like Ian Rankin and Val McDermid, or in the burgeoning spoken word scene that's revitalising urban centres 
+\.
+
+
+--
+-- Data for Name: post_workflow_step_action; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+--
+
+COPY public.post_workflow_step_action (id, post_id, step_id, action_id, input_field, output_field, button_label, button_order) FROM stdin;
+1	16	1	49	\N	\N	Action	0
+2	17	1	49	idea_seed	basic_idea	\N	0
+3	15	1	49	basic_idea	idea_scope	\N	0
+4	9	1	\N	input3	output3	Test3	3
+5	19	1	48	idea_seed	basic_idea	\N	0
+6	20	1	53	idea_seed	basic_idea	\N	0
+7	21	1	48	idea_seed	basic_idea	\N	0
+8	22	1	48	idea_seed	basic_idea	\N	0
+9	23	1	48	idea_seed	basic_idea	\N	0
+10	24	1	48	idea_seed	basic_idea	\N	0
+11	19	2	48	main_title	subtitle	\N	0
+12	15	2	48	idea_seed	interesting_facts	\N	0
+13	20	2	54	topics_to_cover	topics_to_cover	\N	0
+14	21	2	54	basic_idea	interesting_facts	\N	0
+15	2	2	54	topics_to_cover	interesting_facts	\N	0
+16	22	2	54	basic_idea	interesting_facts	\N	0
+17	23	2	54	basic_idea	interesting_facts	\N	0
+18	24	2	54	basic_idea	interesting_facts	\N	0
+19	19	3	49	section_planning	section_headings	\N	0
+20	22	3	\N	basic_idea	summary	\N	0
+21	19	4	48	intro_blurb	conclusion	\N	0
+22	19	5	49	categories	basic_metadata	\N	0
+23	19	7	49	self_review	final_check	\N	0
+24	19	8	48	deployment	verification	\N	0
 \.
 
 
@@ -1742,6 +2228,7 @@ COPY public.post_workflow_sub_stage (id, post_workflow_stage_id, sub_stage_id, c
 --
 
 COPY public.substage_action_default (id, substage, action_id) FROM stdin;
+4	plan	58
 \.
 
 
@@ -1821,6 +2308,31 @@ COPY public.workflow_stage_entity (id, name, description, stage_order) FROM stdi
 
 
 --
+-- Data for Name: workflow_step_entity; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+--
+
+COPY public.workflow_step_entity (id, sub_stage_id, name, description, step_order) FROM stdin;
+1	1	Main	Main step for this substage	1
+2	2	Main	Main step for this substage	1
+3	3	Main	Main step for this substage	1
+4	4	Main	Main step for this substage	1
+5	5	Main	Main step for this substage	1
+6	6	Main	Main step for this substage	1
+7	7	Main	Main step for this substage	1
+8	8	Main	Main step for this substage	1
+9	9	Main	Main step for this substage	1
+\.
+
+
+--
+-- Data for Name: workflow_steps; Type: TABLE DATA; Schema: public; Owner: nickfiddes
+--
+
+COPY public.workflow_steps (id, post_workflow_sub_stage_id, step_order, name, description, llm_action_id, input_field, output_field, status, started_at, completed_at, notes) FROM stdin;
+\.
+
+
+--
 -- Data for Name: workflow_sub_stage_entity; Type: TABLE DATA; Schema: public; Owner: nickfiddes
 --
 
@@ -1890,7 +2402,7 @@ SELECT pg_catalog.setval('public.llm_action_history_id_seq', 1, true);
 -- Name: llm_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_action_id_seq', 54, true);
+SELECT pg_catalog.setval('public.llm_action_id_seq', 61, true);
 
 
 --
@@ -1911,14 +2423,14 @@ SELECT pg_catalog.setval('public.llm_model_id_seq', 23, true);
 -- Name: llm_prompt_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_prompt_id_seq', 49, true);
+SELECT pg_catalog.setval('public.llm_prompt_id_seq', 57, true);
 
 
 --
 -- Name: llm_prompt_part_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.llm_prompt_part_id_seq', 36, true);
+SELECT pg_catalog.setval('public.llm_prompt_part_id_seq', 40, true);
 
 
 --
@@ -1932,35 +2444,42 @@ SELECT pg_catalog.setval('public.llm_provider_id_seq', 4, true);
 -- Name: post_development_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_development_id_seq', 14, true);
+SELECT pg_catalog.setval('public.post_development_id_seq', 17, true);
 
 
 --
 -- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_id_seq', 21, true);
+SELECT pg_catalog.setval('public.post_id_seq', 24, true);
+
+
+--
+-- Name: post_section_elements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.post_section_elements_id_seq', 296, true);
 
 
 --
 -- Name: post_section_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_section_id_seq', 1, true);
-
-
---
--- Name: post_substage_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
---
-
-SELECT pg_catalog.setval('public.post_substage_action_id_seq', 46, true);
+SELECT pg_catalog.setval('public.post_section_id_seq', 28, true);
 
 
 --
 -- Name: post_workflow_stage_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.post_workflow_stage_id_seq', 1, true);
+SELECT pg_catalog.setval('public.post_workflow_stage_id_seq', 3, true);
+
+
+--
+-- Name: post_workflow_step_action_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.post_workflow_step_action_id_seq', 24, true);
 
 
 --
@@ -1974,7 +2493,7 @@ SELECT pg_catalog.setval('public.post_workflow_sub_stage_id_seq', 1, true);
 -- Name: substage_action_default_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.substage_action_default_id_seq', 1, true);
+SELECT pg_catalog.setval('public.substage_action_default_id_seq', 4, true);
 
 
 --
@@ -2009,14 +2528,28 @@ SELECT pg_catalog.setval('public.workflow_id_seq', 1, true);
 -- Name: workflow_stage_entity_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.workflow_stage_entity_id_seq', 14, true);
+SELECT pg_catalog.setval('public.workflow_stage_entity_id_seq', 53, true);
+
+
+--
+-- Name: workflow_step_entity_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.workflow_step_entity_id_seq', 9, true);
+
+
+--
+-- Name: workflow_steps_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
+--
+
+SELECT pg_catalog.setval('public.workflow_steps_id_seq', 1, false);
 
 
 --
 -- Name: workflow_sub_stage_entity_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nickfiddes
 --
 
-SELECT pg_catalog.setval('public.workflow_sub_stage_entity_id_seq', 9, true);
+SELECT pg_catalog.setval('public.workflow_sub_stage_entity_id_seq', 18, true);
 
 
 --
@@ -2204,6 +2737,14 @@ ALTER TABLE ONLY public.post
 
 
 --
+-- Name: post_section_elements post_section_elements_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_section_elements
+    ADD CONSTRAINT post_section_elements_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: post_section post_section_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
@@ -2217,14 +2758,6 @@ ALTER TABLE ONLY public.post_section
 
 ALTER TABLE ONLY public.post
     ADD CONSTRAINT post_slug_key UNIQUE (slug);
-
-
---
--- Name: post_substage_action post_substage_action_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
---
-
-ALTER TABLE ONLY public.post_substage_action
-    ADD CONSTRAINT post_substage_action_pkey PRIMARY KEY (id);
 
 
 --
@@ -2249,6 +2782,14 @@ ALTER TABLE ONLY public.post_workflow_stage
 
 ALTER TABLE ONLY public.post_workflow_stage
     ADD CONSTRAINT post_workflow_stage_post_id_stage_id_key UNIQUE (post_id, stage_id);
+
+
+--
+-- Name: post_workflow_step_action post_workflow_step_action_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_workflow_step_action
+    ADD CONSTRAINT post_workflow_step_action_pkey PRIMARY KEY (id);
 
 
 --
@@ -2305,6 +2846,14 @@ ALTER TABLE ONLY public.tag
 
 ALTER TABLE ONLY public.tag
     ADD CONSTRAINT tag_slug_key UNIQUE (slug);
+
+
+--
+-- Name: post_section_elements unique_element_per_section; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_section_elements
+    ADD CONSTRAINT unique_element_per_section UNIQUE (post_id, section_id, element_text);
 
 
 --
@@ -2372,11 +2921,51 @@ ALTER TABLE ONLY public.workflow_stage_entity
 
 
 --
+-- Name: workflow_step_entity workflow_step_entity_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.workflow_step_entity
+    ADD CONSTRAINT workflow_step_entity_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: workflow_step_entity workflow_step_entity_sub_stage_id_name_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.workflow_step_entity
+    ADD CONSTRAINT workflow_step_entity_sub_stage_id_name_key UNIQUE (sub_stage_id, name);
+
+
+--
+-- Name: workflow_steps workflow_steps_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.workflow_steps
+    ADD CONSTRAINT workflow_steps_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: workflow_steps workflow_steps_post_workflow_sub_stage_id_step_order_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.workflow_steps
+    ADD CONSTRAINT workflow_steps_post_workflow_sub_stage_id_step_order_key UNIQUE (post_workflow_sub_stage_id, step_order);
+
+
+--
 -- Name: workflow_sub_stage_entity workflow_sub_stage_entity_pkey; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.workflow_sub_stage_entity
     ADD CONSTRAINT workflow_sub_stage_entity_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: workflow_sub_stage_entity workflow_sub_stage_entity_stage_id_name_key; Type: CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.workflow_sub_stage_entity
+    ADD CONSTRAINT workflow_sub_stage_entity_stage_id_name_key UNIQUE (stage_id, name);
 
 
 --
@@ -2408,6 +2997,27 @@ CREATE INDEX idx_post_created ON public.post USING btree (created_at);
 
 
 --
+-- Name: idx_post_section_elements_post_id; Type: INDEX; Schema: public; Owner: nickfiddes
+--
+
+CREATE INDEX idx_post_section_elements_post_id ON public.post_section_elements USING btree (post_id);
+
+
+--
+-- Name: idx_post_section_elements_section_id; Type: INDEX; Schema: public; Owner: nickfiddes
+--
+
+CREATE INDEX idx_post_section_elements_section_id ON public.post_section_elements USING btree (section_id);
+
+
+--
+-- Name: idx_post_section_elements_type; Type: INDEX; Schema: public; Owner: nickfiddes
+--
+
+CREATE INDEX idx_post_section_elements_type ON public.post_section_elements USING btree (element_type);
+
+
+--
 -- Name: idx_post_slug; Type: INDEX; Schema: public; Owner: nickfiddes
 --
 
@@ -2422,6 +3032,27 @@ CREATE INDEX idx_post_status ON public.post USING btree (status);
 
 
 --
+-- Name: idx_post_workflow_step_action_action_id; Type: INDEX; Schema: public; Owner: nickfiddes
+--
+
+CREATE INDEX idx_post_workflow_step_action_action_id ON public.post_workflow_step_action USING btree (action_id);
+
+
+--
+-- Name: idx_post_workflow_step_action_post_id; Type: INDEX; Schema: public; Owner: nickfiddes
+--
+
+CREATE INDEX idx_post_workflow_step_action_post_id ON public.post_workflow_step_action USING btree (post_id);
+
+
+--
+-- Name: idx_post_workflow_step_action_step_id; Type: INDEX; Schema: public; Owner: nickfiddes
+--
+
+CREATE INDEX idx_post_workflow_step_action_step_id ON public.post_workflow_step_action USING btree (step_id);
+
+
+--
 -- Name: idx_workflow_post; Type: INDEX; Schema: public; Owner: nickfiddes
 --
 
@@ -2433,6 +3064,27 @@ CREATE INDEX idx_workflow_post ON public.workflow USING btree (post_id);
 --
 
 CREATE INDEX idx_workflow_stage_id ON public.workflow USING btree (stage_id);
+
+
+--
+-- Name: idx_workflow_steps_action; Type: INDEX; Schema: public; Owner: nickfiddes
+--
+
+CREATE INDEX idx_workflow_steps_action ON public.workflow_steps USING btree (llm_action_id);
+
+
+--
+-- Name: idx_workflow_steps_status; Type: INDEX; Schema: public; Owner: nickfiddes
+--
+
+CREATE INDEX idx_workflow_steps_status ON public.workflow_steps USING btree (status);
+
+
+--
+-- Name: idx_workflow_steps_sub_stage; Type: INDEX; Schema: public; Owner: nickfiddes
+--
+
+CREATE INDEX idx_workflow_steps_sub_stage ON public.workflow_steps USING btree (post_workflow_sub_stage_id);
 
 
 --
@@ -2485,6 +3137,13 @@ CREATE TRIGGER update_llm_action_updated_at BEFORE UPDATE ON public.llm_action F
 
 
 --
+-- Name: post_section_elements update_post_section_elements_updated_at; Type: TRIGGER; Schema: public; Owner: nickfiddes
+--
+
+CREATE TRIGGER update_post_section_elements_updated_at BEFORE UPDATE ON public.post_section_elements FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
 -- Name: post update_post_updated_at; Type: TRIGGER; Schema: public; Owner: nickfiddes
 --
 
@@ -2496,6 +3155,13 @@ CREATE TRIGGER update_post_updated_at BEFORE UPDATE ON public.post FOR EACH ROW 
 --
 
 CREATE TRIGGER update_user_updated_at BEFORE UPDATE ON public."user" FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- Name: workflow_steps update_workflow_steps_updated_at; Type: TRIGGER; Schema: public; Owner: nickfiddes
+--
+
+CREATE TRIGGER update_workflow_steps_updated_at BEFORE UPDATE ON public.workflow_steps FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
@@ -2634,6 +3300,22 @@ ALTER TABLE ONLY public.post
 
 
 --
+-- Name: post_section_elements post_section_elements_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_section_elements
+    ADD CONSTRAINT post_section_elements_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.post(id);
+
+
+--
+-- Name: post_section_elements post_section_elements_section_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_section_elements
+    ADD CONSTRAINT post_section_elements_section_id_fkey FOREIGN KEY (section_id) REFERENCES public.post_section(id);
+
+
+--
 -- Name: post_section post_section_image_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
@@ -2674,19 +3356,35 @@ ALTER TABLE ONLY public.post_workflow_stage
 
 
 --
+-- Name: post_workflow_step_action post_workflow_step_action_action_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_workflow_step_action
+    ADD CONSTRAINT post_workflow_step_action_action_id_fkey FOREIGN KEY (action_id) REFERENCES public.llm_action(id);
+
+
+--
+-- Name: post_workflow_step_action post_workflow_step_action_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_workflow_step_action
+    ADD CONSTRAINT post_workflow_step_action_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.post(id);
+
+
+--
+-- Name: post_workflow_step_action post_workflow_step_action_step_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.post_workflow_step_action
+    ADD CONSTRAINT post_workflow_step_action_step_id_fkey FOREIGN KEY (step_id) REFERENCES public.workflow_step_entity(id);
+
+
+--
 -- Name: post_workflow_sub_stage post_workflow_sub_stage_post_workflow_stage_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
 ALTER TABLE ONLY public.post_workflow_sub_stage
     ADD CONSTRAINT post_workflow_sub_stage_post_workflow_stage_id_fkey FOREIGN KEY (post_workflow_stage_id) REFERENCES public.post_workflow_stage(id) ON DELETE CASCADE;
-
-
---
--- Name: post_workflow_sub_stage post_workflow_sub_stage_sub_stage_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
---
-
-ALTER TABLE ONLY public.post_workflow_sub_stage
-    ADD CONSTRAINT post_workflow_sub_stage_sub_stage_id_fkey FOREIGN KEY (sub_stage_id) REFERENCES public.workflow_sub_stage_entity(id) ON DELETE CASCADE;
 
 
 --
@@ -2706,14 +3404,6 @@ ALTER TABLE ONLY public.workflow_field_mapping
 
 
 --
--- Name: workflow_field_mapping workflow_field_mapping_substage_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.workflow_field_mapping
-    ADD CONSTRAINT workflow_field_mapping_substage_id_fkey FOREIGN KEY (substage_id) REFERENCES public.workflow_sub_stage_entity(id) ON DELETE CASCADE;
-
-
---
 -- Name: workflow workflow_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
 --
 
@@ -2727,6 +3417,30 @@ ALTER TABLE ONLY public.workflow
 
 ALTER TABLE ONLY public.workflow
     ADD CONSTRAINT workflow_stage_id_fkey FOREIGN KEY (stage_id) REFERENCES public.workflow_stage_entity(id);
+
+
+--
+-- Name: workflow_step_entity workflow_step_entity_sub_stage_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.workflow_step_entity
+    ADD CONSTRAINT workflow_step_entity_sub_stage_id_fkey FOREIGN KEY (sub_stage_id) REFERENCES public.workflow_sub_stage_entity(id) ON DELETE CASCADE;
+
+
+--
+-- Name: workflow_steps workflow_steps_llm_action_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.workflow_steps
+    ADD CONSTRAINT workflow_steps_llm_action_id_fkey FOREIGN KEY (llm_action_id) REFERENCES public.llm_action(id);
+
+
+--
+-- Name: workflow_steps workflow_steps_post_workflow_sub_stage_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nickfiddes
+--
+
+ALTER TABLE ONLY public.workflow_steps
+    ADD CONSTRAINT workflow_steps_post_workflow_sub_stage_id_fkey FOREIGN KEY (post_workflow_sub_stage_id) REFERENCES public.post_workflow_sub_stage(id) ON DELETE CASCADE;
 
 
 --
@@ -2962,24 +3676,17 @@ GRANT ALL ON TABLE public.post_section TO postgres;
 
 
 --
+-- Name: TABLE post_section_elements; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.post_section_elements TO postgres;
+
+
+--
 -- Name: SEQUENCE post_section_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
 GRANT ALL ON SEQUENCE public.post_section_id_seq TO postgres;
-
-
---
--- Name: TABLE post_substage_action; Type: ACL; Schema: public; Owner: nickfiddes
---
-
-GRANT ALL ON TABLE public.post_substage_action TO postgres;
-
-
---
--- Name: SEQUENCE post_substage_action_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
---
-
-GRANT ALL ON SEQUENCE public.post_substage_action_id_seq TO postgres;
 
 
 --
@@ -3002,6 +3709,13 @@ GRANT ALL ON TABLE public.post_workflow_stage TO postgres;
 --
 
 GRANT ALL ON SEQUENCE public.post_workflow_stage_id_seq TO postgres;
+
+
+--
+-- Name: TABLE post_workflow_step_action; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.post_workflow_step_action TO postgres;
 
 
 --
@@ -3091,18 +3805,24 @@ GRANT ALL ON SEQUENCE public.workflow_stage_entity_id_seq TO postgres;
 
 
 --
+-- Name: TABLE workflow_step_entity; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.workflow_step_entity TO postgres;
+
+
+--
+-- Name: TABLE workflow_steps; Type: ACL; Schema: public; Owner: nickfiddes
+--
+
+GRANT ALL ON TABLE public.workflow_steps TO postgres;
+
+
+--
 -- Name: TABLE workflow_sub_stage_entity; Type: ACL; Schema: public; Owner: nickfiddes
 --
 
-GRANT SELECT ON TABLE public.workflow_sub_stage_entity TO PUBLIC;
 GRANT ALL ON TABLE public.workflow_sub_stage_entity TO postgres;
-
-
---
--- Name: SEQUENCE workflow_sub_stage_entity_id_seq; Type: ACL; Schema: public; Owner: nickfiddes
---
-
-GRANT ALL ON SEQUENCE public.workflow_sub_stage_entity_id_seq TO postgres;
 
 
 --
