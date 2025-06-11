@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import re
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -50,6 +51,24 @@ class Config:
 
     # LLM Service settings
     COMPLETION_SERVICE_TOKEN = os.environ.get("COMPLETION_SERVICE_TOKEN")
+
+    # Database
+    DB_NAME = os.environ.get("DB_NAME")
+    DB_USER = os.environ.get("DB_USER")
+    DB_PASSWORD = os.environ.get("DB_PASSWORD")
+    DB_HOST = os.environ.get("DB_HOST")
+    DB_PORT = os.environ.get("DB_PORT")
+
+    # Parse DATABASE_URL if present
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+    if DATABASE_URL:
+        match = re.match(r"postgres(?:ql)?://([^:]+)(?::([^@]+))?@([^:/]+)(?::(\d+))?/([^\s]+)", DATABASE_URL)
+        if match:
+            DB_USER = DB_USER or match.group(1)
+            DB_PASSWORD = DB_PASSWORD or match.group(2)
+            DB_HOST = DB_HOST or match.group(3)
+            DB_PORT = DB_PORT or match.group(4)
+            DB_NAME = DB_NAME or match.group(5)
 
 class DevelopmentConfig(Config):
     DEBUG = True

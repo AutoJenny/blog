@@ -23,6 +23,12 @@ def get_post_and_idea_seed(post_id):
             cur.execute("SELECT p.id, pd.idea_seed FROM post p LEFT JOIN post_development pd ON p.id = pd.post_id WHERE p.id = %s", (post_id,))
             return cur.fetchone()
 
+def get_all_posts():
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT p.id, COALESCE(pd.idea_seed, p.title, 'Untitled') AS title FROM post p LEFT JOIN post_development pd ON p.id = pd.post_id WHERE p.status != 'deleted' ORDER BY p.updated_at DESC, p.id DESC")
+            return cur.fetchall()
+
 @workflow.route('/')
 def index():
     latest = get_latest_post()
@@ -37,7 +43,8 @@ def stages(post_id):
     post = get_post_and_idea_seed(post_id)
     if not post:
         abort(404, f"Post {post_id} not found.")
-    return render_template('workflow/index.html', stages=stages, post=post, post_id=post_id, current_stage=None, current_substage=None, current_step=None)
+    all_posts = get_all_posts()
+    return render_template('workflow/index.html', stages=stages, post=post, post_id=post_id, all_posts=all_posts, current_stage=None, current_substage=None, current_step=None)
 
 @workflow.route('/<int:post_id>/<stage_name>/')
 def stage(post_id, stage_name: str):
@@ -49,7 +56,8 @@ def stage(post_id, stage_name: str):
     post = get_post_and_idea_seed(post_id)
     if not post:
         abort(404, f"Post {post_id} not found.")
-    return render_template('workflow/stage.html', stage=stage, substages=substages, post=post, post_id=post_id, current_stage=stage_name, current_substage=None, current_step=None)
+    all_posts = get_all_posts()
+    return render_template('workflow/stage.html', stage=stage, substages=substages, post=post, post_id=post_id, all_posts=all_posts, current_stage=stage_name, current_substage=None, current_step=None)
 
 @workflow.route('/<int:post_id>/<stage_name>/<substage_name>/')
 def substage(post_id, stage_name: str, substage_name: str):
@@ -67,6 +75,7 @@ def substage(post_id, stage_name: str, substage_name: str):
     post = get_post_and_idea_seed(post_id)
     if not post:
         abort(404, f"Post {post_id} not found.")
+    all_posts = get_all_posts()
     # Redirect to first step
     return redirect(url_for('workflow.step', post_id=post_id, stage_name=stage_name, substage_name=substage_name, step_name=steps[0]['name']))
 
@@ -87,7 +96,8 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
     post = get_post_and_idea_seed(post_id)
     if not post:
         abort(404, f"Post {post_id} not found.")
-    return render_template(f'workflow/steps/{step_name}.html', stage=stage, substage=substage, step=step, post=post, post_id=post_id, current_stage=stage_name, current_substage=substage_name, current_step=step_name)
+    all_posts = get_all_posts()
+    return render_template(f'workflow/steps/{step_name}.html', stage=stage, substage=substage, step=step, post=post, post_id=post_id, all_posts=all_posts, current_stage=stage_name, current_substage=substage_name, current_step=step_name)
 
 # Redirect old URLs to new format with post_id
 def _redirect_to_new(post_id, *args):

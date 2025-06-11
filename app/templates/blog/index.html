@@ -66,11 +66,11 @@
                         <span class="text-lg font-semibold text-white">Planning</span>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <a href="{{ url_for('workflow.substage', stage_name='planning', substage_name='idea') }}"
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='planning', substage_name='idea', step_name='basic_idea') }}"
                             class="text-white hover:text-dark-accent transition">Idea</a>
-                        <a href="{{ url_for('workflow.substage', stage_name='planning', substage_name='research') }}"
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='planning', substage_name='research', step_name='research_plan') }}"
                             class="text-white hover:text-dark-accent transition">Research</a>
-                        <a href="{{ url_for('workflow.substage', stage_name='planning', substage_name='structure') }}"
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='planning', substage_name='structure', step_name='outline') }}"
                             class="text-white hover:text-dark-accent transition">Structure</a>
                     </div>
                 </div>
@@ -82,11 +82,11 @@
                         <span class="text-lg font-semibold text-white">Writing</span>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <a href="{{ url_for('workflow.substage', stage_name='writing', substage_name='content') }}"
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='writing', substage_name='content', step_name='draft') }}"
                             class="text-white hover:text-dark-accent transition">Content</a>
-                        <a href="{{ url_for('workflow.substage', stage_name='writing', substage_name='meta_info') }}"
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='writing', substage_name='meta_info', step_name='metadata') }}"
                             class="text-white hover:text-dark-accent transition">Meta Info</a>
-                        <a href="{{ url_for('workflow.substage', stage_name='writing', substage_name='images') }}"
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='writing', substage_name='images', step_name='image_plan') }}"
                             class="text-white hover:text-dark-accent transition">Images</a>
                     </div>
                 </div>
@@ -98,11 +98,11 @@
                         <span class="text-lg font-semibold text-white">Publishing</span>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <a href="{{ url_for('workflow.substage', stage_name='publishing', substage_name='preflight') }}"
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='publishing', substage_name='preflight', step_name='review') }}"
                             class="text-white hover:text-dark-accent transition">Preflight</a>
-                        <a href="{{ url_for('workflow.substage', stage_name='publishing', substage_name='launch') }}"
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='publishing', substage_name='launch', step_name='publish') }}"
                             class="text-white hover:text-dark-accent transition">Launch</a>
-                        <a href="{{ url_for('workflow.substage', stage_name='publishing', substage_name='syndication') }}"
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='publishing', substage_name='syndication', step_name='syndicate') }}"
                             class="text-white hover:text-dark-accent transition">Syndication</a>
                     </div>
                 </div>

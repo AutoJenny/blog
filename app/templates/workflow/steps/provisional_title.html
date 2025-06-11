@@ -3,7 +3,9 @@
 {% block workflow_content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold mb-6 text-dark-text">Provisional Title</h1>
+        <h1 class="text-3xl font-bold mb-6 text-dark-text">
+            Provisional Title{% if post and post.idea_seed %}: {{ post.idea_seed }}{% endif %}
+        </h1>
 
         <div class="bg-dark-bg shadow rounded-lg p-6 border border-dark-border">
             <div class="prose max-w-none text-dark-text">
