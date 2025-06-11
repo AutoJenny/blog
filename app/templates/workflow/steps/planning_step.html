@@ -194,7 +194,10 @@
                     onclick="toggleAccordion('outputs')">
                     <span class="font-medium text-dark-text">Outputs</span>
                     <span class="text-gray-400" id="outputs-summary">
-                        {% if output_values and output_values.basic_idea %}
+                        {% if output_titles and output_titles|length > 0 %}
+                        <span class="text-blue-500">[provisional_title]:</span> <span
+                            class="font-bold text-green-400">(Primary)</span> {{ output_titles[0] }}
+                        {% elif output_values and output_values.basic_idea %}
                         <span class="text-blue-500">[basic_idea]:</span> {{
                         output_values.basic_idea.split('\n')[0]|truncate(50) }}
                         {% elif step_config.outputs %}
@@ -218,11 +221,44 @@
                         </label>
                         {% if output_config.type == 'textarea' %}
                         {% if output_titles %}
-                        <ul class="list-disc pl-6">
+                        <ul id="output-list" class="list-disc pl-6">
                             {% for title in output_titles %}
-                            <li>{{ title }}</li>
+                            <li class="draggable flex items-center mb-2 {% if loop.first %}font-bold text-green-400{% endif %}"
+                                data-index="{{ loop.index0 }}">
+                                <span class="handle cursor-move mr-2">☰</span>
+                                {% if loop.first %}<span class="mr-2 primary-label">(Primary)</span>{% endif %}
+                                <span class="title-text">{{ title }}</span>
+                            </li>
                             {% endfor %}
                         </ul>
+                        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                var el = document.getElementById('output-list');
+                                if (el) {
+                                    var sortable = Sortable.create(el, {
+                                        handle: '.handle',
+                                        animation: 150,
+                                        onEnd: function () {
+                                            var items = Array.from(el.children).map(li => li.querySelector('.title-text').textContent);
+                                            fetch('/workflow/api/update_title_order/', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    post_id: {{ post_id| tojson }},
+                                        titles: items
+                                    })
+                                })
+                                .then(r => r.json())
+                                .then(data => {
+                                    if (data.status === 'success') location.reload();
+                                    else alert('Error saving order: ' + (data.error || 'Unknown error'));
+                                });
+                                        }
+                                    });
+                                }
+                            });
+                        </script>
                         {% else %}
                         {% set output_val = output_values[output_id] if output_values and output_id in output_values
                         else '' %}
