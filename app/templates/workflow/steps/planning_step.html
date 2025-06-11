@@ -28,9 +28,10 @@
                         {% for input_id, input_config in step_config.inputs.items() %}
                         {% set val = input_values[input_id] if input_values and input_id in input_values else '—' %}
                         {% if not loop.first %}{% set ns.summary = ns.summary + ', ' %}{% endif %}
-                        {% set ns.summary = ns.summary + '[' + input_id + ']: ' + val %}
+                        {% set ns.summary = ns.summary + '<span class=\"text-blue-500\">[' + input_id + ']</span>: ' +
+                        val %}
                         {% endfor %}
-                        {{ ns.summary }}
+                        {{ ns.summary|safe }}
                         {% else %}
                         No inputs configured
                         {% endif %}
@@ -44,11 +45,8 @@
                     {% if step_config.inputs %}
                     {% for input_id, input_config in step_config.inputs.items() %}
                     <div class="mb-4">
-                        <label for="{{ input_id }}" class="block text-sm font-medium text-gray-400 mb-2">
-                            {{ input_config.label }}
-                            {% if input_config.required %}
-                            <span class="text-red-500">*</span>
-                            {% endif %}
+                        <label for="{{ input_id }}" class="block text-sm font-medium text-blue-500 mb-2">
+                            [{{ input_id }}]
                         </label>
                         {% if input_config.type == 'textarea' %}
                         <textarea id="{{ input_id }}" name="{{ input_id }}"
@@ -71,8 +69,14 @@
                     onclick="toggleAccordion('prompt')">
                     <span class="font-medium text-dark-text">Prompt</span>
                     <span class="text-gray-400" id="prompt-summary">
-                        {% if step_config.prompt %}
-                        {{ step_config.prompt.template|truncate(50) }}
+                        {% if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt
+                        %}
+                        {{ step_config.settings.llm.task_prompt.split('\n')[0]|truncate(50) }}
+                        {% if step_config.settings.llm.input_mapping %}
+                        (inputs: {{ step_config.settings.llm.input_mapping.keys()|join(', ') }})
+                        {% endif %}
+                        {% elif step_config.prompt and step_config.prompt.template %}
+                        {{ step_config.prompt.template.split('\n')[0]|truncate(50) }}
                         {% else %}
                         No prompt configured
                         {% endif %}
@@ -83,29 +87,101 @@
                     </svg>
                 </button>
                 <div id="prompt-content" class="hidden p-4 bg-dark-bg text-dark-text">
-                    {% if step_config.prompt %}
+                    {% if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt %}
+                    <div class="mb-4">
+                        <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
+                        <pre
+                            class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.settings.llm.task_prompt }}</pre>
+                    </div>
+                    {% elif step_config.prompt and step_config.prompt.template %}
                     <div class="mb-4">
                         <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
                         <pre
                             class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.prompt.template }}</pre>
                     </div>
-                    {% if step_config.prompt.settings %}
-                    <div class="mt-4">
-                        <h3 class="text-lg font-medium mb-2 text-dark-text">Settings</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            {% for setting, value in step_config.prompt.settings.items() %}
-                            <div>
-                                <label class="block text-sm font-medium text-gray-400">{{ setting }}</label>
-                                <input type="text" value="{{ value }}"
-                                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
-                                    readonly>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
                     {% else %}
                     <p class="text-gray-400">No prompt configured for this step.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Settings Accordion -->
+            <div class="border border-dark-border rounded-lg overflow-hidden">
+                <button
+                    class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+                    onclick="toggleAccordion('settings')">
+                    <span class="font-medium text-dark-text">Settings</span>
+                    <span class="text-gray-400" id="settings-summary">
+                        {% if step_config.settings and step_config.settings.llm %}
+                        <span class="text-blue-500">Model:</span> {{ step_config.settings.llm.model }}, <span
+                            class="text-blue-500">Temp:</span> {{ step_config.settings.llm.parameters.temperature }},
+                        <span class="text-blue-500">Max tokens:</span> {{ step_config.settings.llm.parameters.max_tokens
+                        }}
+                        {% elif step_config.settings %}
+                        {{ step_config.settings|length }} setting{{ 's' if step_config.settings|length != 1 else 's' }}
+                        configured
+                        {% else %}
+                        No settings configured
+                        {% endif %}
+                    </span>
+                    <svg class="w-5 h-5 transform transition-transform" id="settings-icon" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="settings-content" class="hidden p-4 bg-dark-bg text-dark-text">
+                    {% if step_config.settings and step_config.settings.llm %}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500">Model</label>
+                            <input type="text" value="{{ step_config.settings.llm.model }}"
+                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500">Temperature</label>
+                            <input type="text" value="{{ step_config.settings.llm.parameters.temperature }}"
+                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500">Max tokens</label>
+                            <input type="text" value="{{ step_config.settings.llm.parameters.max_tokens }}"
+                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500">Top P</label>
+                            <input type="text" value="{{ step_config.settings.llm.parameters.top_p }}"
+                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500">Frequency Penalty</label>
+                            <input type="text" value="{{ step_config.settings.llm.parameters.frequency_penalty }}"
+                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500">Presence Penalty</label>
+                            <input type="text" value="{{ step_config.settings.llm.parameters.presence_penalty }}"
+                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                readonly>
+                        </div>
+                    </div>
+                    {% elif step_config.settings %}
+                    <div class="grid grid-cols-2 gap-4">
+                        {% for setting, value in step_config.settings.items() %}
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500">{{ setting }}</label>
+                            <input type="text" value="{{ value }}"
+                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                readonly>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400">No settings configured for this step.</p>
                     {% endif %}
                 </div>
             </div>
@@ -117,7 +193,10 @@
                     onclick="toggleAccordion('outputs')">
                     <span class="font-medium text-dark-text">Outputs</span>
                     <span class="text-gray-400" id="outputs-summary">
-                        {% if step_config.outputs %}
+                        {% if output_values and output_values.basic_idea %}
+                        <span class="text-blue-500">[basic_idea]:</span> {{
+                        output_values.basic_idea.split('\n')[0]|truncate(50) }}
+                        {% elif step_config.outputs %}
                         {% set output_count = step_config.outputs|length %}
                         {{ output_count }} output{{ 's' if output_count != 1 else '' }} configured
                         {% else %}
@@ -129,18 +208,18 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
-                <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
+                <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text" style="max-height:none;">
                     {% if step_config.outputs %}
                     {% for output_id, output_config in step_config.outputs.items() %}
                     <div class="mb-4">
-                        <label for="{{ output_id }}" class="block text-sm font-medium text-gray-400 mb-2">
-                            {{ output_config.label }}
+                        <label for="{{ output_id }}" class="block text-sm font-medium text-blue-500 mb-2">
+                            [{{ output_id }}]
                         </label>
                         {% if output_config.type == 'textarea' %}
-                        <textarea id="{{ output_id }}" name="{{ output_id }}"
-                            class="w-full h-32 bg-dark-bg border border-dark-border text-dark-text rounded p-4" readonly
+                        <pre id="{{ output_id }}" name="{{ output_id }}"
+                            class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4 whitespace-pre-wrap break-words"
                             data-db-field="{{ output_config.db_field }}"
-                            data-db-table="{{ output_config.db_table }}">{{ output_values[output_id] if output_values and output_id in output_values else '' }}</textarea>
+                            data-db-table="{{ output_config.db_table }}">{{ output_values[output_id] if output_values and output_id in output_values else '' }}</pre>
                         {% endif %}
                     </div>
                     {% endfor %}
