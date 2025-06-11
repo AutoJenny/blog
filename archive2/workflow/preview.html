@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% import "workflow/workflow_indicator.html" as indicator %}
+{% import "blog/_post_header.html" as blog_macros %}
+
+{% block title %}Article Preview{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    <!-- Breadcrumbs / Navigation -->
+    <nav class="mb-4 text-sm text-gray-500">
+        <a href="/" class="hover:underline">Home</a> /
+        <a href="/workflow/" class="hover:underline">Workflow</a> /
+        <span class="text-gray-700">Preview</span>
+    </nav>
+    <!-- Header: Post Title, Status, Template/Preview Toggle -->
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-4">
+            <h1 class="text-2xl font-bold">[Post Title]</h1>
+            <span class="px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Draft</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button class="btn btn-secondary" onclick="window.location.href='/workflow/template/'">Template</button>
+            <button class="btn btn-outline" onclick="window.location.href='/workflow/preview/'">Preview</button>
+        </div>
+    </div>
+    <!-- Stage/Progress Icons Panel -->
+    <div class="mb-8">
+        {{ indicator.process_indicator(["idea", "research", "structure", "content", "meta_info", "images", "preflight",
+        "launch", "syndication"], ["planning", "authoring", "publishing"], "structure", post=None) }}
+    </div>
+    <!-- Main Article Content (Read-Only) -->
+    <div class="space-y-8 bg-white dark:bg-gray-900 rounded-lg p-8 shadow-sm">
+        <!-- Intro Block -->
+        <div class="flex justify-between items-center border-b pb-4 mb-4">
+            <div>
+                <h2 class="text-lg font-bold mb-1 text-gray-800 dark:text-gray-200">Intro</h2>
+                <div class="text-gray-800 dark:text-gray-200">[Full intro content goes here]</div>
+            </div>
+            <a href="/workflow/edit/?section=Intro" class="text-xs text-blue-500 hover:underline">Edit</a>
+        </div>
+        <!-- Section Blocks (repeat for each section) -->
+        <div class="flex justify-between items-center border-b pb-4 mb-4">
+            <div>
+                <h2 class="text-lg font-bold mb-1 text-gray-800 dark:text-gray-200">Section 1: [Heading]</h2>
+                <div class="italic text-gray-500 dark:text-gray-400 mb-1">[Theme]</div>
+                <div class="text-gray-800 dark:text-gray-200">[Section 1 full content...]</div>
+            </div>
+            <a href="/workflow/edit/?section=Section 1" class="text-xs text-blue-500 hover:underline">Edit</a>
+        </div>
+        <div class="flex justify-between items-center border-b pb-4 mb-4">
+            <div>
+                <h2 class="text-lg font-bold mb-1 text-gray-800 dark:text-gray-200">Section 2: [Heading]</h2>
+                <div class="italic text-gray-500 dark:text-gray-400 mb-1">[Theme]</div>
+                <div class="text-gray-800 dark:text-gray-200">[Section 2 full content...]</div>
+            </div>
+            <a href="/workflow/edit/?section=Section 2" class="text-xs text-blue-500 hover:underline">Edit</a>
+        </div>
+        <!-- Conclusion Block -->
+        <div class="flex justify-between items-center border-b pb-4 mb-4">
+            <div>
+                <h2 class="text-lg font-bold mb-1 text-gray-800 dark:text-gray-200">Conclusion</h2>
+                <div class="text-gray-800 dark:text-gray-200">[Conclusion full content]</div>
+            </div>
+            <a href="/workflow/edit/?section=Conclusion" class="text-xs text-blue-500 hover:underline">Edit</a>
+        </div>
+        <!-- Metadata Block -->
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-lg font-bold mb-1 text-gray-800 dark:text-gray-200">Metadata</h2>
+                <div class="text-gray-800 dark:text-gray-200">[fields...]</div>
+            </div>
+            <a href="/workflow/edit/?section=Metadata" class="text-xs text-blue-500 hover:underline">Edit</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- No dynamic JS yet; add here when wiring up modal/edit logic -->
+{% endblock %}

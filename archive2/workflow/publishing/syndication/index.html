@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% import "workflow/workflow_indicator.html" as indicator %}
+{% import "blog/_post_header.html" as blog_macros %}
+
+{% block title %}Publishing: Syndication{% endblock %}
+
+{#
+NOTE: This template is one of several workflow substages using the modular workflow panel structure.
+All such templates must remain structurally identical—any change to one must be applied to all.
+Do not introduce variants or reorder panels. Consistency is required for maintainability and modular JS.
+#}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    {{ blog_macros.post_header(post, active_view='template') }}
+    {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
+    <!-- Main Template View Content -->
+    <div class="space-y-4 mt-8">
+        <div class="border rounded p-4 flex justify-between items-center">
+            <div>
+                <strong>Intro:</strong> <span class="text-gray-600">[content snippet]</span>
+            </div>
+            <div>
+                <button class="btn btn-secondary" data-section="intro"
+                    onclick="window.location.href='/workflow/structure/edit?post_id={{ post.id }}&section=intro'">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
+            </div>
+        </div>
+        <div class="border rounded p-4 flex justify-between items-center">
+            <div>
+                <strong>Section 1:</strong> <span class="font-semibold">[Heading]</span> <span
+                    class="italic text-gray-500">[Theme]</span>
+                <div class="text-gray-600 mt-1">[Content snippet...]</div>
+            </div>
+            <div>
+                <button class="btn btn-secondary" data-section="section1"
+                    onclick="window.location.href='/workflow/structure/edit?post_id={{ post.id }}&section=section1'">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
+            </div>
+        </div>
+        <div class="border rounded p-4 flex justify-between items-center">
+            <div>
+                <strong>Section 2:</strong> <span class="font-semibold">[Heading]</span> <span
+                    class="italic text-gray-500">[Theme]</span>
+                <div class="text-gray-600 mt-1">[Content snippet...]</div>
+            </div>
+            <div>
+                <button class="btn btn-secondary" data-section="section2"
+                    onclick="window.location.href='/workflow/structure/edit?post_id={{ post.id }}&section=section2'">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
+            </div>
+        </div>
+        <div class="border rounded p-4 flex justify-between items-center">
+            <div>
+                <strong>Conclusion:</strong> <span class="text-gray-600">[content snippet]</span>
+            </div>
+            <div>
+                <button class="btn btn-secondary" data-section="conclusion"
+                    onclick="window.location.href='/workflow/structure/edit?post_id={{ post.id }}&section=conclusion'">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-red-100 text-red-800 text-xs">Needs Work</span>
+            </div>
+        </div>
+        <div class="border rounded p-4 flex justify-between items-center">
+            <div>
+                <strong>Metadata:</strong> <span class="text-gray-600">[fields...]</span>
+            </div>
+            <div>
+                <button class="btn btn-secondary" data-section="metadata"
+                    onclick="window.location.href='/workflow/structure/edit?post_id={{ post.id }}&section=metadata'">Edit</button>
+                <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
+            </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+            <button class="btn btn-success">Add Section</button>
+            <button class="btn btn-outline">Reorder Sections</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="/static/js/workflow/main.js"></script>
+{% endblock %}

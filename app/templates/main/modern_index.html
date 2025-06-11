@@ -1,104 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Modern Blog Intranet{% endblock %}
-{% block styles %}
-<style>
-    .modern-gradient {
-        background: linear-gradient(90deg, #1e3a8a 0%, #6366f1 50%, #a21caf 100%);
-    }
-</style>
-{% endblock %}
+
 {% block content %}
-<div class="max-w-7xl mx-auto">
-    <div class="bg-white bg-opacity-95 rounded-2xl shadow-2xl p-10 mb-12 mt-8">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10">
-            <div>
-                <h1 class="text-4xl font-extrabold text-indigo-900 mb-2">Welcome to Your Modern Blog Intranet</h1>
-                <p class="text-gray-700 text-lg">All your blog development, preview, and publishing tools in one place.
-                </p>
-            </div>
-            <div class="mt-6 md:mt-0">
-                <input type="text" placeholder="Search..."
-                    class="rounded-lg border-2 border-indigo-300 px-6 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow" />
-            </div>
-        </div>
-        <div class="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-10 gap-y-16 my-12">
-            <!-- Create -->
-            <div
-                class="bg-blue-100 rounded-xl p-6 flex flex-col items-center shadow-lg hover:scale-105 transition-transform">
-                <svg class="w-8 h-8 text-blue-600 mb-3" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                <a href="{{ url_for('blog.index') }}"
-                    class="text-xl font-semibold text-blue-900 hover:text-blue-700 mt-1">New Post</a>
-                <span class="text-sm text-blue-700 mt-1">Create a new blog post or draft</span>
-            </div>
-            <!-- Develop -->
-            <div
-                class="bg-green-100 rounded-xl p-6 flex flex-col items-center shadow-lg hover:scale-105 transition-transform">
-                <svg class="w-8 h-8 text-green-600 mb-3" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M15.232 5.232l3.536 3.536M9 11l6 6M3 21h18" />
-                </svg>
-                <a href="{{ url_for('llm.index') }}"
-                    class="text-xl font-semibold text-green-900 hover:text-green-700 mt-1">LLM Assistance</a>
-                <span class="text-sm text-green-700 mt-1">AI-powered content development</span>
-            </div>
-            <!-- Preview -->
-            <div
-                class="bg-yellow-100 rounded-xl p-6 flex flex-col items-center shadow-lg hover:scale-105 transition-transform">
-                <svg class="w-8 h-8 text-yellow-600 mb-3" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M15 10l4.553-2.276A2 2 0 0021 6.382V5a2 2 0 00-2-2H5a2 2 0 00-2 2v1.382a2 2 0 001.447 1.342L9 10m6 0v10a2 2 0 01-2 2H7a2 2 0 01-2-2V10m6 0l-6 3" />
-                </svg>
-                <a href="{{ url_for('preview.listing') }}"
-                    class="text-xl font-semibold text-yellow-900 hover:text-yellow-700 mt-1">Preview</a>
-                <span class="text-sm text-yellow-700 mt-1">Preview and review your posts</span>
-            </div>
-            <!-- Publish -->
-            <div
-                class="bg-purple-100 rounded-xl p-6 flex flex-col items-center shadow-lg hover:scale-105 transition-transform">
-                <svg class="w-8 h-8 text-purple-600 mb-3" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                <a href="#" class="text-xl font-semibold text-purple-900 hover:text-purple-700 mt-1">Publish</a>
-                <span class="text-sm text-purple-700 mt-1">Publish and syndicate posts</span>
-            </div>
-            <!-- Admin -->
-            <div
-                class="bg-red-100 rounded-xl p-6 flex flex-col items-center shadow-lg hover:scale-105 transition-transform">
-                <svg class="w-8 h-8 text-red-600 mb-3" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M3 7v4a1 1 0 001 1h3m10-5h3a1 1 0 011 1v4a1 1 0 01-1 1h-3m-10 0v6a2 2 0 002 2h8a2 2 0 002-2v-6m-10 0h10" />
-                </svg>
-                <a href="{{ url_for('db.index') }}"
-                    class="text-xl font-semibold text-red-900 hover:text-red-700 mt-1">Database</a>
-                <span class="text-sm text-red-700 mt-1">Manage your content database</span>
-            </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12">
-            <!-- Recent Activity -->
-            <div class="bg-indigo-50 rounded-xl shadow p-8">
-                <h2 class="text-2xl font-bold text-indigo-900 mb-4">Recent Activity</h2>
-                <ul class="text-indigo-800 text-base space-y-2">
-                    <li>No recent activity to display.</li>
-                </ul>
-            </div>
-            <!-- Help Section -->
-            <div class="bg-gray-50 rounded-xl shadow p-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">Help & Resources</h2>
-                <ul class="text-blue-800 text-base space-y-2">
-                    <li><a href="/docs/" class="hover:underline">Documentation</a></li>
-                    <li><a href="/CHANGES.log" class="hover:underline">Changelog</a></li>
-                    <li><a href="https://github.com/nickfiddes/blog" class="hover:underline" target="_blank">Project
-                            GitHub</a></li>
-                </ul>
-            </div>
-        </div>
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold mb-4">Blog CMS</h1>
+        <p class="text-gray-600">
+            The workflow system is currently being rebuilt. Please check back later.
+        </p>
     </div>
 </div>
 {% endblock %}

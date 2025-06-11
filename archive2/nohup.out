@@ -1,0 +1,888 @@
+nohup: python: No such file or directory
+nohup: python: No such file or directory
+Checkpoint files will always be loaded safely.
+Total VRAM 65536 MB, total RAM 65536 MB
+pytorch version: 2.7.0
+Mac Version (15, 4, 1)
+Set vram state to: SHARED
+Device: mps
+Using sub quadratic optimization for attention, if you have memory or speed issues try using: --use-split-cross-attention
+Python version: 3.12.2 (v3.12.2:6abddd9f6a, Feb  6 2024, 17:02:06) [Clang 13.0.0 (clang-1300.0.29.30)]
+ComfyUI version: 0.3.32
+ComfyUI frontend version: 1.18.9
+[Prompt Server] web root: /Users/nickfiddes/ComfyUI/venv/lib/python3.12/site-packages/comfyui_frontend_package/static
+
+Import times for custom nodes:
+   0.0 seconds: /Users/nickfiddes/ComfyUI/custom_nodes/websocket_image_save.py
+
+Starting server
+
+To see the GUI go to: http://127.0.0.1:8188
+got prompt
+model weight dtype torch.float16, manual cast: None
+model_type EPS
+Using split attention in VAE
+Using split attention in VAE
+VAE load device: mps, offload device: cpu, dtype: torch.bfloat16
+Requested to load SD1ClipModel
+loaded completely 9.5367431640625e+25 235.84423828125 True
+CLIP/text encoder model load device: cpu, offload device: cpu, current: cpu, dtype: torch.float16
+loaded diffusion model directly to GPU
+Requested to load BaseModel
+loaded completely 9.5367431640625e+25 1639.406135559082 True
+  0%|          | 0/20 [00:00<?, ?it/s]  5%|▌         | 1/20 [00:00<00:13,  1.45it/s] 10%|█         | 2/20 [00:00<00:07,  2.56it/s] 15%|█▌        | 3/20 [00:01<00:05,  3.23it/s] 20%|██        | 4/20 [00:01<00:04,  3.69it/s] 25%|██▌       | 5/20 [00:01<00:03,  4.00it/s] 30%|███       | 6/20 [00:01<00:03,  4.23it/s] 35%|███▌      | 7/20 [00:01<00:02,  4.35it/s] 40%|████      | 8/20 [00:02<00:02,  4.45it/s] 45%|████▌     | 9/20 [00:02<00:02,  4.54it/s] 50%|█████     | 10/20 [00:02<00:02,  4.58it/s] 55%|█████▌    | 11/20 [00:02<00:01,  4.63it/s] 60%|██████    | 12/20 [00:02<00:01,  4.65it/s] 65%|██████▌   | 13/20 [00:03<00:01,  4.67it/s] 70%|███████   | 14/20 [00:03<00:01,  4.68it/s] 75%|███████▌  | 15/20 [00:03<00:01,  4.69it/s] 80%|████████  | 16/20 [00:03<00:00,  4.70it/s] 85%|████████▌ | 17/20 [00:04<00:00,  4.70it/s] 90%|█████████ | 18/20 [00:04<00:00,  4.70it/s] 95%|█████████▌| 19/20 [00:04<00:00,  4.71it/s]100%|██████████| 20/20 [00:04<00:00,  4.71it/s]100%|██████████| 20/20 [00:04<00:00,  4.26it/s]
+Requested to load AutoencoderKL
+loaded completely 9.5367431640625e+25 159.55708122253418 True
+Prompt executed in 6.38 seconds
+got prompt
+model weight dtype torch.float16, manual cast: None
+model_type FLOW
+Using split attention in VAE
+Using split attention in VAE
+VAE load device: mps, offload device: cpu, dtype: torch.bfloat16
+no CLIP/text encoder weights in checkpoint, the text encoder model will not be loaded.
+loaded diffusion model directly to GPU
+Requested to load SD3
+loaded completely 9.5367431640625e+25 15366.797485351562 True
+!!! Exception during processing !!! ERROR: clip input is invalid: None
+
+If the clip is from a checkpoint loader node your checkpoint does not contain a valid clip or text encoder model.
+Traceback (most recent call last):
+  File "/Users/nickfiddes/ComfyUI/execution.py", line 347, in execute
+    output_data, output_ui, has_subgraph = get_output_data(obj, input_data_all, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nickfiddes/ComfyUI/execution.py", line 222, in get_output_data
+    return_values = _map_node_over_list(obj, input_data_all, obj.FUNCTION, allow_interrupt=True, execution_block_cb=execution_block_cb, pre_execute_cb=pre_execute_cb)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nickfiddes/ComfyUI/execution.py", line 194, in _map_node_over_list
+    process_inputs(input_dict, i)
+  File "/Users/nickfiddes/ComfyUI/execution.py", line 183, in process_inputs
+    results.append(getattr(obj, func)(**inputs))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nickfiddes/ComfyUI/nodes.py", line 67, in encode
+    raise RuntimeError("ERROR: clip input is invalid: None\n\nIf the clip is from a checkpoint loader node your checkpoint does not contain a valid clip or text encoder model.")
+RuntimeError: ERROR: clip input is invalid: None
+
+If the clip is from a checkpoint loader node your checkpoint does not contain a valid clip or text encoder model.
+
+Prompt executed in 12.32 seconds
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+Checkpoint files will always be loaded safely.
+Total VRAM 65536 MB, total RAM 65536 MB
+pytorch version: 2.7.0
+Mac Version (15, 4, 1)
+Set vram state to: SHARED
+Device: mps
+Using sub quadratic optimization for attention, if you have memory or speed issues try using: --use-split-cross-attention
+Python version: 3.12.2 (v3.12.2:6abddd9f6a, Feb  6 2024, 17:02:06) [Clang 13.0.0 (clang-1300.0.29.30)]
+ComfyUI version: 0.3.32
+ComfyUI frontend version: 1.18.9
+[Prompt Server] web root: /Users/nickfiddes/ComfyUI/venv/lib/python3.12/site-packages/comfyui_frontend_package/static
+
+Import times for custom nodes:
+   0.0 seconds: /Users/nickfiddes/ComfyUI/custom_nodes/websocket_image_save.py
+
+Starting server
+
+To see the GUI go to: http://127.0.0.1:8188
+Checkpoint files will always be loaded safely.
+Total VRAM 65536 MB, total RAM 65536 MB
+pytorch version: 2.7.0
+Mac Version (15, 4, 1)
+Set vram state to: SHARED
+Device: mps
+Using sub quadratic optimization for attention, if you have memory or speed issues try using: --use-split-cross-attention
+Python version: 3.12.2 (v3.12.2:6abddd9f6a, Feb  6 2024, 17:02:06) [Clang 13.0.0 (clang-1300.0.29.30)]
+ComfyUI version: 0.3.32
+ComfyUI frontend version: 1.18.9
+[Prompt Server] web root: /Users/nickfiddes/ComfyUI/venv/lib/python3.12/site-packages/comfyui_frontend_package/static
+
+Import times for custom nodes:
+   0.0 seconds: /Users/nickfiddes/ComfyUI/custom_nodes/websocket_image_save.py
+
+Starting server
+
+To see the GUI go to: http://127.0.0.1:8188
+got prompt
+Failed to validate prompt for output 9:
+* CLIPTextEncode 7:
+  - Required input is missing: clip
+Output will be ignored
+invalid prompt: {'type': 'prompt_outputs_failed_validation', 'message': 'Prompt outputs failed validation', 'details': '', 'extra_info': {}}
+Checkpoint files will always be loaded safely.
+Total VRAM 65536 MB, total RAM 65536 MB
+pytorch version: 2.7.0
+Mac Version (15, 4, 1)
+Set vram state to: SHARED
+Device: mps
+Using sub quadratic optimization for attention, if you have memory or speed issues try using: --use-split-cross-attention
+Python version: 3.12.2 (v3.12.2:6abddd9f6a, Feb  6 2024, 17:02:06) [Clang 13.0.0 (clang-1300.0.29.30)]
+ComfyUI version: 0.3.32
+ComfyUI frontend version: 1.18.9
+[Prompt Server] web root: /Users/nickfiddes/ComfyUI/venv/lib/python3.12/site-packages/comfyui_frontend_package/static
+
+Import times for custom nodes:
+   0.0 seconds: /Users/nickfiddes/ComfyUI/custom_nodes/websocket_image_save.py
+
+Starting server
+
+To see the GUI go to: http://0.0.0.0:8188
+got prompt
+Failed to validate prompt for output 50:
+* TripleCLIPLoader 11:
+  - Value not in list: clip_name2: 'clip_l_sdxl_base.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+  - Value not in list: clip_name1: 'clip_g_sdxl_base.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+  - Value not in list: clip_name3: 't5xxl.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+Output will be ignored
+invalid prompt: {'type': 'prompt_outputs_failed_validation', 'message': 'Prompt outputs failed validation', 'details': '', 'extra_info': {}}
+got prompt
+Failed to validate prompt for output 50:
+* TripleCLIPLoader 11:
+  - Value not in list: clip_name2: 'clip_l_sdxl_base.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+  - Value not in list: clip_name1: 'clip_g_sdxl_base.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+  - Value not in list: clip_name3: 't5xxl.safetensors' not in ['clip_g.safetensors', 'clip_l.safetensors', 't5xxl_fp16.safetensors', 't5xxl_fp8_e4m3fn.safetensors']
+Output will be ignored
+invalid prompt: {'type': 'prompt_outputs_failed_validation', 'message': 'Prompt outputs failed validation', 'details': '', 'extra_info': {}}
+got prompt
+model weight dtype torch.float16, manual cast: None
+model_type FLOW
+Using split attention in VAE
+Using split attention in VAE
+VAE load device: mps, offload device: cpu, dtype: torch.bfloat16
+no CLIP/text encoder weights in checkpoint, the text encoder model will not be loaded.
+loaded diffusion model directly to GPU
+Requested to load SD3
+loaded completely 9.5367431640625e+25 15366.797485351562 True
+Requested to load SD3ClipModel_
+loaded completely 9.5367431640625e+25 10644.189453125 True
+CLIP/text encoder model load device: cpu, offload device: cpu, current: cpu, dtype: torch.float16
+clip missing: ['text_projection.weight']
+Requested to load SD3
+  0%|          | 0/4 [00:00<?, ?it/s]huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+ 25%|██▌       | 1/4 [00:07<00:22,  7.61s/it] 50%|█████     | 2/4 [00:10<00:10,  5.11s/it] 75%|███████▌  | 3/4 [00:13<00:04,  4.07s/it]100%|██████████| 4/4 [00:16<00:00,  3.58s/it]100%|██████████| 4/4 [00:16<00:00,  4.16s/it]
+Requested to load AutoencodingEngine
+loaded completely 9.5367431640625e+25 159.87335777282715 True
+Prompt executed in 59.15 seconds
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.83s/it] 50%|█████     | 2/4 [00:05<00:05,  3.00s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.94s/it]100%|██████████| 4/4 [00:11<00:00,  2.90s/it]100%|██████████| 4/4 [00:11<00:00,  2.92s/it]
+Prompt executed in 14.68 seconds
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.79s/it] 50%|█████     | 2/4 [00:05<00:05,  2.98s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.92s/it]100%|██████████| 4/4 [00:11<00:00,  2.88s/it]100%|██████████| 4/4 [00:11<00:00,  2.89s/it]
+/Users/nickfiddes/ComfyUI/nodes.py:1594: RuntimeWarning: invalid value encountered in cast
+  img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+Prompt executed in 14.38 seconds
+got prompt
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.77s/it] 50%|█████     | 2/4 [00:05<00:05,  2.96s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.89s/it]100%|██████████| 4/4 [00:11<00:00,  2.86s/it]100%|██████████| 4/4 [00:11<00:00,  2.87s/it]
+Prompt executed in 12.48 seconds
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.73s/it] 50%|█████     | 2/4 [00:05<00:05,  2.95s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.88s/it]100%|██████████| 4/4 [00:11<00:00,  2.86s/it]100%|██████████| 4/4 [00:11<00:00,  2.86s/it]
+Prompt executed in 12.44 seconds
+got prompt
+Token indices sequence length is longer than the specified maximum sequence length for this model (106 > 77). Running this sequence through the model will result in indexing errors
+Token indices sequence length is longer than the specified maximum sequence length for this model (106 > 77). Running this sequence through the model will result in indexing errors
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.99s/it] 50%|█████     | 2/4 [00:06<00:06,  3.12s/it] 75%|███████▌  | 3/4 [00:09<00:03,  3.03s/it]100%|██████████| 4/4 [00:12<00:00,  2.99s/it]100%|██████████| 4/4 [00:12<00:00,  3.01s/it]
+Prompt executed in 15.29 seconds
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.85s/it] 50%|█████     | 2/4 [00:06<00:06,  3.06s/it] 75%|███████▌  | 3/4 [00:08<00:03,  3.00s/it]100%|██████████| 4/4 [00:11<00:00,  2.97s/it]100%|██████████| 4/4 [00:11<00:00,  2.98s/it]
+Prompt executed in 12.98 seconds
+got prompt
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.95s/it] 50%|█████     | 2/4 [00:06<00:06,  3.12s/it] 75%|███████▌  | 3/4 [00:09<00:03,  3.03s/it]100%|██████████| 4/4 [00:12<00:00,  2.99s/it]100%|██████████| 4/4 [00:12<00:00,  3.01s/it]
+Prompt executed in 13.01 seconds
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.84s/it] 50%|█████     | 2/4 [00:06<00:06,  3.06s/it] 75%|███████▌  | 3/4 [00:09<00:03,  3.01s/it]100%|██████████| 4/4 [00:11<00:00,  2.99s/it]100%|██████████| 4/4 [00:11<00:00,  2.99s/it]
+Prompt executed in 12.95 seconds
+got prompt
+got prompt
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.78s/it] 50%|█████     | 2/4 [00:05<00:05,  2.97s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.92s/it]100%|██████████| 4/4 [00:11<00:00,  2.88s/it]100%|██████████| 4/4 [00:11<00:00,  2.89s/it]
+Prompt executed in 14.42 seconds
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:02<00:08,  2.72s/it] 50%|█████     | 2/4 [00:05<00:05,  2.94s/it] 75%|███████▌  | 3/4 [00:08<00:02,  2.90s/it]100%|██████████| 4/4 [00:11<00:00,  2.87s/it]100%|██████████| 4/4 [00:11<00:00,  2.88s/it]
+Prompt executed in 12.80 seconds
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.4.32:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 102-272-974
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/bin/flask", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 1107, in main
+    cli.main()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1688, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/decorators.py", line 92, in new_func
+    return ctx.invoke(f, obj, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 967, in run_command
+    run_simple(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/serving.py", line 1099, in run_simple
+    run_with_reloader(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 446, in run_with_reloader
+    ensure_echo_on()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 426, in ensure_echo_on
+    termios.tcsetattr(sys.stdin, termios.TCSANOW, attributes)
+termios.error: (4, 'Interrupted system call')
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.4.32:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [22/May/2025 10:50:52] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:50:53] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:50:53] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:50:54] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:50:54] "GET /static/css/admin.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:50:54] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:50:54] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:50:56] "GET /llm/providers HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:50:56] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:50:56] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:51:03] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:51:03] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:51:03] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:54:17] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:17] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:17] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:17] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:18] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:54:18] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:18] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:18] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:19] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:54:19] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:19] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:54:42] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:54:57] "GET /llm/templates HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:04] "GET /llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:10] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:14] "GET /llm/test HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:19] "GET /llm/images HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:25] "GET /llm/images/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:30] "GET /llm/images/configs HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:35] "GET /llm/images/previews HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:39] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:47] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:55:54] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:56:00] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:56:11] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:56:14] "GET /llm/templates HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:56:18] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:58:41] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:58:41] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:41] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:43] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:58:43] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:43] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:43] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:43] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:45] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:58:45] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:45] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:45] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:46] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:58:46] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:58:46] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 10:59:20] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:59:20] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 10:59:20] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.4.32:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [22/May/2025 11:02:47] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:02:51] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:02:55] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:05] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:15] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:20] "GET /llm/templates HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:24] "GET /llm/templates HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:26] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:03:31] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:12:45] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:12:45] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:45] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:47] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:12:47] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:47] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:49] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:12:49] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:49] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:49] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:50] "GET /llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 11:12:50] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 11:12:50] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.4.32:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [22/May/2025 11:14:44] "GET /llm/ HTTP/1.1" 200 -
+Stopping any existing servers...
+Activating virtual environment...
+Starting server on http://127.0.0.1:5000
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 124-703-649
+127.0.0.1 - - [22/May/2025 15:50:27] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:50:37] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:51:51] "GET /llm/actions HTTP/1.1" 200 -
+ * Detected change in '/Users/nickfiddes/Code/projects/blog/app/main/routes.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 124-703-649
+Stopping any existing servers...
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+Activating virtual environment...
+Starting server on http://127.0.0.1:5000
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 124-703-649
+127.0.0.1 - - [22/May/2025 15:52:52] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:53:02] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:53:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:53:02] "GET /static/css/admin.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:53:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:53:02] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:53:02] "[35m[1mGET /api/v1/llm/models/ollama HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/May/2025 15:53:02] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:11] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:11] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:11] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:11] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:11] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:11] "[35m[1mGET /api/v1/llm/models/ollama HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/May/2025 15:55:11] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:13] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:13] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:13] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:13] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:55:13] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:13] "[35m[1mGET /api/v1/llm/models/ollama HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/May/2025 15:55:13] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /static/css/admin.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:55:17] "[35m[1mGET /api/v1/llm/models/ollama HTTP/1.1[0m" 500 -
+127.0.0.1 - - [22/May/2025 15:55:17] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:56:43] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:56:46] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:13] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:13] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:57:13] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:57:13] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:57:13] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:13] "GET /api/v1/llm/models/ollama HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:13] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:16] "GET /llm/actions/9 HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:57:16] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:57:16] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:19] "GET /llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:19] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:19] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:22] "[36mGET /llm/actions?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "[36mGET /llm/actions?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:22] "GET /api/v1/llm/config HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:22] "GET /api/v1/llm/models/ollama HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:22] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:23] "GET /llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 15:58:23] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:23] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 15:58:26] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 15:58:26] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 15:58:26] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 16:00:33] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:00:33] "[36mGET /llm/actions?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:00:33] "[36mGET /llm/actions?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:00:33] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:00:33] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:00:33] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:00:40] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:00:40] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:00:40] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:00:40] "GET /static/css/admin.css HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:00:40] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:04:11] "GET /api/v1/llm/actions/9 HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:05:42] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 16:05:42] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 16:05:42] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [22/May/2025 16:06:11] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:06:14] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:06:19] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:06:49] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:06:51] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:06:53] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:07:02] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:07:02] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:07:02] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:07:02] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [22/May/2025 16:07:11] "GET /api/v1/llm/actions/9 HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:07:56] "POST /api/v1/llm/actions/order HTTP/1.1" 200 -
+127.0.0.1 - - [22/May/2025 16:13:30] "GET /api/v1/llm/actions/9 HTTP/1.1" 200 -
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 102-272-974
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/bin/flask", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 1107, in main
+    cli.main()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1688, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/decorators.py", line 92, in new_func
+    return ctx.invoke(f, obj, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 967, in run_command
+    run_simple(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/serving.py", line 1099, in run_simple
+    run_with_reloader(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 446, in run_with_reloader
+    ensure_echo_on()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 426, in ensure_echo_on
+    termios.tcsetattr(sys.stdin, termios.TCSANOW, attributes)
+termios.error: (4, 'Interrupted system call')
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.4.32:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 102-272-974
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 102-272-974
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/bin/flask", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 1107, in main
+    cli.main()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1688, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/decorators.py", line 92, in new_func
+    return ctx.invoke(f, obj, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 967, in run_command
+    run_simple(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/serving.py", line 1099, in run_simple
+    run_with_reloader(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 446, in run_with_reloader
+    ensure_echo_on()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 426, in ensure_echo_on
+    termios.tcsetattr(sys.stdin, termios.TCSANOW, attributes)
+termios.error: (4, 'Interrupted system call')
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 102-272-974
+127.0.0.1 - - [26/May/2025 20:26:30] "[33mGET /workflow/planning/idea/1 HTTP/1.1[0m" 404 -
+127.0.0.1 - - [26/May/2025 20:26:33] "[33mGET /workflow/planning/idea/2 HTTP/1.1[0m" 404 -
+DEBUG:root:/db/ stats: {'post_count': 14, 'image_count': 23, 'workflow_count': 0, 'llm_count': 0}
+127.0.0.1 - - [26/May/2025 20:26:36] "GET /db/ HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:26:36] "GET /db/ HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:26:39] "[33mGET /workflow/planning/ HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:26:39] "[33mGET /workflow/planning/ HTTP/1.1[0m" 404 -
+127.0.0.1 - - [26/May/2025 20:26:41] "[33mGET /workflow/planning/ HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:26:41] "[33mGET /workflow/planning/ HTTP/1.1[0m" 404 -
+127.0.0.1 - - [26/May/2025 20:26:43] "GET /workflow/idea/ HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:26:43] "GET /workflow/idea/ HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:26:47] "GET /workflow/idea/?post_id=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:26:47] "GET /workflow/idea/?post_id=1 HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:26:50] "GET /workflow/idea/?post_id=1 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:26:50] "GET /workflow/idea/?post_id=1 HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:28:28] "GET /api/v1/llm/actions/3 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:28:28] "GET /api/v1/llm/actions/3 HTTP/1.1" 200 -
+INFO:app.llm.services:Generating with model: llama3.1:70b, temperature: 0.7, max_tokens: 1000
+DEBUG:app.llm.services:Sending request to Ollama: {'model': 'llama3.1:70b', 'prompt': '[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n\nShort Idea:\nmangle wrangling', 'temperature': 0.7, 'max_tokens': 1000, 'stream': False}
+DEBUG:httpx:load_ssl_context verify=True cert=None trust_env=True http2=False
+DEBUG:httpx:load_verify_locations cafile='/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/certifi/cacert.pem'
+DEBUG:httpcore.connection:connect_tcp.started host='localhost' port=11434 local_address=None timeout=180.0 socket_options=None
+DEBUG:httpcore.connection:connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x118488bf0>
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'POST']>
+127.0.0.1 - - [26/May/2025 20:29:14] "GET /workflow/idea/?post_id=14 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:29:14] "GET /workflow/idea/?post_id=14 HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:29:14] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:29:14] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:29:14] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:29:14] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:29:15] "GET /api/v1/llm/actions HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:29:15] "GET /api/v1/llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:29:18] "GET /api/v1/llm/actions/3 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:29:18] "GET /api/v1/llm/actions/3 HTTP/1.1" 200 -
+INFO:app.llm.services:Generating with model: llama3.1:70b, temperature: 0.7, max_tokens: 1000
+DEBUG:app.llm.services:Sending request to Ollama: {'model': 'llama3.1:70b', 'prompt': '[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n\nShort Idea:\nmangle wrangling', 'temperature': 0.7, 'max_tokens': 1000, 'stream': False}
+DEBUG:httpx:load_ssl_context verify=True cert=None trust_env=True http2=False
+DEBUG:httpx:load_verify_locations cafile='/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/certifi/cacert.pem'
+DEBUG:httpcore.connection:connect_tcp.started host='localhost' port=11434 local_address=None timeout=180.0 socket_options=None
+DEBUG:httpcore.connection:connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x1184e56a0>
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Mon, 26 May 2025 19:29:36 GMT'), (b'Transfer-Encoding', b'chunked')])
+INFO:httpx:HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.connection:close.started
+DEBUG:httpcore.connection:close.complete
+DEBUG:app.llm.services:Received response from Ollama: {'model': 'llama3.1:70b', 'created_at': '2025-05-26T19:29:36.829027Z', 'response': '**Brief: "The Forgotten Art of Mangle Wrangling: Uncovering Scotland\'s Laundress History"**\n\nThis article delves into the fascinating world of Scotland\'s laundry traditions, specifically highlighting the often-overlooked profession of mangle wrangling. A "mangle" was a common household appliance used to smooth out wrinkles and creases from washed clothing, particularly in the 18th and 19th centuries. Our exploration will take us through the daily lives of Scottish laundresses, who toiled behind the scenes to keep their communities clean and respectable. By examining historical records, folklore, and cultural narratives, we\'ll uncover the stories of these unsung heroes, shedding light on their working conditions, social status, and the skills required for mangle wrangling.\n\n**Scope:** The article will span from the mid-18th century to the early 20th century, focusing on Scotland\'s urban and rural areas. We\'ll explore the evolution of laundry practices, technological advancements, and the impact of industrialization on domestic work.\n\n**Angle:** By adopting a sympathetic and inclusive approach, we\'ll humanize the experiences of Scottish laundresses, emphasizing their contributions to household economies and community well-being. Our narrative will also touch upon issues of social class, women\'s rights, and labor politics, adding depth to this often-overlooked chapter in Scottish history.\n\n**Tone:** Engaging and accessible, our writing style will balance academic rigor with storytelling flair. We\'ll use anecdotes, historical vignettes, and vivid descriptions to transport readers into the world of Scotland\'s laundresses, making this hidden aspect of history relatable and captivating.\n\n**Core Ideas:**\n\n* The evolution of laundry practices in Scotland from the 18th century onwards\n* The daily lives and working conditions of Scottish laundresses\n* The impact of industrialization on domestic work and women\'s roles\n* The cultural significance of mangle wrangling as a symbol of household order and respectability\n* The social and economic contributions of laundresses to their communities\n\nBy sharing these stories, we\'ll not only revive the memory of Scotland\'s laundress history but also celebrate the resilience and resourcefulness of women who worked tirelessly behind the scenes to keep their families and communities thriving.', 'done': True, 'done_reason': 'stop', 'context': [128006, 882, 128007, 271, 58, 9125, 60, 1472, 527, 459, 6335, 304, 27188, 3925, 323, 7829, 11, 12514, 311, 13708, 323, 54348, 304, 4395, 499, 656, 13, 1472, 49553, 311, 14584, 2819, 11, 719, 3021, 311, 5526, 1082, 6848, 311, 1304, 1124, 6847, 49839, 311, 1884, 449, 912, 6677, 315, 701, 3361, 2191, 627, 58, 9125, 60, 51241, 279, 2768, 2875, 4623, 1139, 264, 14646, 30425, 10015, 369, 264, 1317, 8627, 5117, 4652, 13, 578, 10015, 1288, 21782, 279, 7036, 11, 9392, 11, 16630, 11, 323, 6332, 6848, 430, 1436, 387, 8040, 1139, 264, 2539, 4652, 13, 5560, 2867, 11, 23387, 4221, 382, 12755, 52101, 512, 76, 4134, 3189, 91204, 128009, 128006, 78191, 128007, 271, 334, 87084, 25, 330, 791, 95547, 5277, 315, 386, 4134, 32730, 91204, 25, 1252, 93013, 19627, 596, 5034, 1263, 676, 11346, 1, 57277, 2028, 4652, 1624, 2396, 1139, 279, 27387, 1917, 315, 19627, 596, 35189, 32006, 11, 11951, 39686, 279, 3629, 29352, 7349, 291, 4913, 315, 296, 4134, 3189, 91204, 13, 362, 330, 76, 4134, 1, 574, 264, 4279, 14048, 56454, 1511, 311, 11113, 704, 74207, 323, 1922, 2315, 505, 38593, 17895, 11, 8104, 304, 279, 220, 972, 339, 323, 220, 777, 339, 24552, 13, 5751, 27501, 690, 1935, 603, 1555, 279, 7446, 6439, 315, 27188, 1208, 1263, 44357, 11, 889, 311, 2230, 4920, 279, 16451, 311, 2567, 872, 10977, 4335, 323, 62486, 13, 3296, 38936, 13970, 7576, 11, 98969, 11, 323, 13042, 58378, 11, 584, 3358, 45063, 279, 7493, 315, 1521, 7120, 2234, 23757, 11, 80417, 3177, 389, 872, 3318, 4787, 11, 3674, 2704, 11, 323, 279, 7512, 2631, 369, 296, 4134, 3189, 91204, 382, 334, 11037, 68063, 578, 4652, 690, 9575, 505, 279, 5209, 12, 972, 339, 9478, 311, 279, 4216, 220, 508, 339, 9478, 11, 21760, 389, 19627, 596, 16036, 323, 19624, 5789, 13, 1226, 3358, 13488, 279, 15740, 315, 35189, 12659, 11, 30116, 83787, 11, 323, 279, 5536, 315, 13076, 2065, 389, 13018, 990, 382, 334, 16318, 68063, 3296, 48810, 264, 53464, 323, 29408, 5603, 11, 584, 3358, 3823, 553, 279, 11704, 315, 27188, 1208, 1263, 44357, 11, 82003, 872, 19564, 311, 14048, 37671, 323, 4029, 1664, 33851, 13, 5751, 19775, 690, 1101, 5916, 5304, 4819, 315, 3674, 538, 11, 3278, 596, 3268, 11, 323, 9511, 11759, 11, 7999, 8149, 311, 420, 3629, 29352, 7349, 291, 12735, 304, 27188, 3925, 382, 334, 51, 606, 68063, 3365, 4210, 323, 15987, 11, 1057, 4477, 1742, 690, 8335, 14584, 78477, 449, 48929, 69665, 13, 1226, 3358, 1005, 94066, 11, 13970, 93892, 47003, 11, 323, 43120, 28887, 311, 7710, 13016, 1139, 279, 1917, 315, 19627, 596, 1208, 1263, 44357, 11, 3339, 420, 8340, 13189, 315, 3925, 1375, 15436, 323, 86282, 382, 334, 5501, 23748, 25, 57277, 9, 578, 15740, 315, 35189, 12659, 304, 19627, 505, 279, 220, 972, 339, 9478, 60525, 198, 9, 578, 7446, 6439, 323, 3318, 4787, 315, 27188, 1208, 1263, 44357, 198, 9, 578, 5536, 315, 13076, 2065, 389, 13018, 990, 323, 3278, 596, 13073, 198, 9, 578, 13042, 26431, 315, 296, 4134, 3189, 91204, 439, 264, 7891, 315, 14048, 2015, 323, 5201, 2968, 198, 9, 578, 3674, 323, 7100, 19564, 315, 1208, 1263, 44357, 311, 872, 10977, 271, 1383, 11821, 1521, 7493, 11, 584, 3358, 539, 1193, 59816, 279, 5044, 315, 19627, 596, 1208, 1263, 676, 3925, 719, 1101, 18890, 279, 56062, 323, 5211, 31514, 315, 3278, 889, 6575, 99229, 4920, 279, 16451, 311, 2567, 872, 8689, 323, 10977, 53414, 13], 'total_duration': 68338871875, 'load_duration': 18052064625, 'prompt_eval_count': 116, 'prompt_eval_duration': 2352867958, 'eval_count': 456, 'eval_duration': 47933132125}
+127.0.0.1 - - [26/May/2025 20:29:36] "POST /api/v1/llm/actions/3/test HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:29:36] "POST /api/v1/llm/actions/3/test HTTP/1.1" 200 -
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Mon, 26 May 2025 19:30:06 GMT'), (b'Transfer-Encoding', b'chunked')])
+INFO:httpx:HTTP Request: POST http://localhost:11434/api/generate "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.connection:close.started
+DEBUG:httpcore.connection:close.complete
+DEBUG:app.llm.services:Received response from Ollama: {'model': 'llama3.1:70b', 'created_at': '2025-05-26T19:30:06.272264Z', 'response': 'Here\'s a brief for a long-form blog article on "Mangle Wrangling":\n\n**Title:** "The Unsung Heroes of Scottish Laundry: A History of Mangle Wrangling"\n\n**Scope and Angle:** This article delves into the oft-overlooked world of laundry in 19th- and early 20th-century Scotland, focusing specifically on the crucial role of mangle wranglers. These skilled individuals were responsible for operating the massive, steam-powered mangling machines that smoothed out wrinkles from freshly washed clothes. We\'ll explore the history of these machines, the lives of the people who worked with them, and the impact they had on Scottish society.\n\n**Tone:** The tone will be informative, engaging, and occasionally humorous, aiming to bring this quirky aspect of Scottish history to life for readers. Think "social history" rather than dry academic treatise – we\'ll use anecdotes, vivid descriptions, and historical images to transport readers back in time.\n\n**Core Ideas:**\n\n1. **The evolution of laundry technology:** We\'ll examine how the introduction of steam-powered mangling machines revolutionized laundry processes in Scotland, making it possible for larger quantities of clothes to be washed and smoothed efficiently.\n2. **A day in the life of a mangle wrangler:** Through oral histories, diaries, and other primary sources, we\'ll reconstruct what life was like for these skilled workers, including their daily routines, challenges, and triumphs.\n3. **The social impact of mangle wrangling:** By exploring the relationships between mangle wranglers, laundry owners, and customers, we\'ll reveal how this occupation influenced Scottish society, particularly in terms of women\'s work, urbanization, and social class.\n\n**Key Takeaways:**\n\n* Readers will gain a deeper understanding of Scotland\'s industrial past and its impact on daily life.\n* They\'ll appreciate the often-overlooked contributions of mangle wranglers to Scottish history.\n* The article will challenge common assumptions about laundry as a mundane task, highlighting its complexities and the skilled labor involved.\n\n**Target Audience:** History enthusiasts, anyone interested in social history, and those curious about Scotland\'s industrial heritage.', 'done': True, 'done_reason': 'stop', 'context': [128006, 882, 128007, 271, 58, 9125, 60, 1472, 527, 459, 6335, 304, 27188, 3925, 323, 7829, 11, 12514, 311, 13708, 323, 54348, 304, 4395, 499, 656, 13, 1472, 49553, 311, 14584, 2819, 11, 719, 3021, 311, 5526, 1082, 6848, 311, 1304, 1124, 6847, 49839, 311, 1884, 449, 912, 6677, 315, 701, 3361, 2191, 627, 58, 9125, 60, 51241, 279, 2768, 2875, 4623, 1139, 264, 14646, 30425, 10015, 369, 264, 1317, 8627, 5117, 4652, 13, 578, 10015, 1288, 21782, 279, 7036, 11, 9392, 11, 16630, 11, 323, 6332, 6848, 430, 1436, 387, 8040, 1139, 264, 2539, 4652, 13, 5560, 2867, 11, 23387, 4221, 382, 12755, 52101, 512, 76, 4134, 3189, 91204, 128009, 128006, 78191, 128007, 271, 8586, 596, 264, 10015, 369, 264, 1317, 8627, 5117, 4652, 389, 330, 44, 4134, 32730, 91204, 52518, 334, 3936, 68063, 330, 791, 62143, 2234, 38099, 315, 27188, 82732, 25, 362, 11346, 315, 386, 4134, 32730, 91204, 1875, 334, 11037, 323, 37337, 68063, 1115, 4652, 1624, 2396, 1139, 279, 43146, 29352, 7349, 291, 1917, 315, 35189, 304, 220, 777, 339, 12, 323, 4216, 220, 508, 339, 34457, 19627, 11, 21760, 11951, 389, 279, 16996, 3560, 315, 296, 4134, 3189, 526, 9438, 13, 4314, 26611, 7931, 1051, 8647, 369, 10565, 279, 11191, 11, 20930, 41503, 51296, 2785, 12933, 430, 93939, 704, 74207, 505, 50999, 38593, 15447, 13, 1226, 3358, 13488, 279, 3925, 315, 1521, 12933, 11, 279, 6439, 315, 279, 1274, 889, 6575, 449, 1124, 11, 323, 279, 5536, 814, 1047, 389, 27188, 8396, 382, 334, 51, 606, 68063, 578, 16630, 690, 387, 39319, 11, 23387, 11, 323, 23781, 70946, 11, 38178, 311, 4546, 420, 68232, 13189, 315, 27188, 3925, 311, 2324, 369, 13016, 13, 21834, 330, 23191, 3925, 1, 4856, 1109, 9235, 14584, 4322, 1082, 1389, 584, 3358, 1005, 94066, 11, 43120, 28887, 11, 323, 13970, 5448, 311, 7710, 13016, 1203, 304, 892, 382, 334, 5501, 23748, 25, 57277, 16, 13, 3146, 791, 15740, 315, 35189, 5557, 68063, 1226, 3358, 21635, 1268, 279, 17219, 315, 20930, 41503, 51296, 2785, 12933, 14110, 1534, 35189, 11618, 304, 19627, 11, 3339, 433, 3284, 369, 8294, 33776, 315, 15447, 311, 387, 38593, 323, 93939, 30820, 627, 17, 13, 3146, 32, 1938, 304, 279, 2324, 315, 264, 296, 4134, 3189, 66648, 68063, 17331, 21308, 53210, 11, 1891, 5548, 11, 323, 1023, 6156, 8336, 11, 584, 3358, 44928, 1148, 2324, 574, 1093, 369, 1521, 26611, 7487, 11, 2737, 872, 7446, 30597, 11, 11774, 11, 323, 38586, 82, 627, 18, 13, 3146, 791, 3674, 5536, 315, 296, 4134, 3189, 91204, 68063, 3296, 24919, 279, 12135, 1990, 296, 4134, 3189, 526, 9438, 11, 35189, 7980, 11, 323, 6444, 11, 584, 3358, 16805, 1268, 420, 30747, 28160, 27188, 8396, 11, 8104, 304, 3878, 315, 3278, 596, 990, 11, 16036, 2065, 11, 323, 3674, 538, 382, 334, 1622, 12040, 40690, 25, 57277, 9, 65514, 690, 8895, 264, 19662, 8830, 315, 19627, 596, 13076, 3347, 323, 1202, 5536, 389, 7446, 2324, 627, 9, 2435, 3358, 15763, 279, 3629, 29352, 7349, 291, 19564, 315, 296, 4134, 3189, 526, 9438, 311, 27188, 3925, 627, 9, 578, 4652, 690, 8815, 4279, 32946, 922, 35189, 439, 264, 69782, 3465, 11, 39686, 1202, 84140, 323, 279, 26611, 9511, 6532, 382, 334, 6531, 66000, 68063, 11346, 43448, 11, 5606, 8173, 304, 3674, 3925, 11, 323, 1884, 22999, 922, 19627, 596, 13076, 28948, 13], 'total_duration': 48213102250, 'load_duration': 14796750, 'prompt_eval_count': 116, 'prompt_eval_duration': 1583598083, 'eval_count': 436, 'eval_duration': 46614228292}
+127.0.0.1 - - [26/May/2025 20:30:06] "POST /api/v1/llm/actions/3/test HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:30:06] "POST /api/v1/llm/actions/3/test HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:30:54] "GET /workflow/structure/ HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:30:54] "GET /workflow/structure/ HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:30:54] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:30:54] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:30:54] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:30:54] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:31:40] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:31:40] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [26/May/2025 20:31:40] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:31:40] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [26/May/2025 20:31:40] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:31:40] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [26/May/2025 20:33:08] "GET /workflow/research/ HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:08] "GET /workflow/research/ HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:33:08] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:08] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:08] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:08] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:31] "GET /workflow/content/ HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:31] "GET /workflow/content/ HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:33:31] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:31] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:31] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:31] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:34] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:34] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:33:34] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:34] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:34] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:34] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:34] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:34] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:34] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:34] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:34] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:34] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [26/May/2025 20:33:34] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:34] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [26/May/2025 20:33:34] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:34] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [26/May/2025 20:33:45] "GET /llm/ HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:45] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:33:45] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:45] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:45] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:45] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:45] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:45] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:47] "GET /llm/actions HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:47] "GET /llm/actions HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:33:47] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:47] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:47] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:47] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:47] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:47] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:47] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:33:47] "GET /api/v1/llm/providers HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:47] "GET /api/v1/llm/providers HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:33:47] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:47] "GET /api/v1/llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:33:48] "GET /api/v1/llm/models HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:33:48] "GET /api/v1/llm/models HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:34:07] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:34:07] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [26/May/2025 20:34:07] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:34:07] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [26/May/2025 20:34:07] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/May/2025 20:34:07] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 102-272-974
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/bin/flask", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 1107, in main
+    cli.main()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1688, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/decorators.py", line 92, in new_func
+    return ctx.invoke(f, obj, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 967, in run_command
+    run_simple(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/serving.py", line 1099, in run_simple
+    run_with_reloader(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 446, in run_with_reloader
+    ensure_echo_on()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 426, in ensure_echo_on
+    termios.tcsetattr(sys.stdin, termios.TCSANOW, attributes)
+termios.error: (4, 'Interrupted system call')
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 102-272-974
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+ * Debug mode: on
+Address already in use
+Port 5000 is in use by another program. Either identify and stop that program, or start the server with a different port.
+On macOS, try disabling the 'AirPlay Receiver' service from System Preferences -> General -> AirDrop & Handoff.
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 102-272-974
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/bin/flask", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 1107, in main
+    cli.main()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1688, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/decorators.py", line 92, in new_func
+    return ctx.invoke(f, obj, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/cli.py", line 967, in run_command
+    run_simple(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/serving.py", line 1099, in run_simple
+    run_with_reloader(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 446, in run_with_reloader
+    ensure_echo_on()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/werkzeug/_reloader.py", line 426, in ensure_echo_on
+    termios.tcsetattr(sys.stdin, termios.TCSANOW, attributes)
+termios.error: (4, 'Interrupted system call')
+DEBUG: Loaded app/blog/routes.py from /Users/nickfiddes/Code/projects/blog/app/blog/routes.py
+DEBUG: Loaded app/llm/routes.py from /Users/nickfiddes/Code/projects/blog/app/llm/routes.py
+[DEBUG] Registering llm_api Blueprint...
+[DEBUG] llm_api Blueprint registered.
+[DEBUG] Registering db Blueprint...
+[DEBUG] db Blueprint registered.
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [26/May/2025 20:45:09] "HEAD / HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:46:43] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:46:43] "GET /static/images/site/brand-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:46:43] "GET /static/css/dist/main.css HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:46:56] "GET /llm/ HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:46:56] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:46:56] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:46:56] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:47:01] "GET /llm/prompts HTTP/1.1" 200 -
+127.0.0.1 - - [26/May/2025 20:47:01] "[36mGET /static/css/dist/main.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [26/May/2025 20:47:01] "[36mGET /static/images/site/brand-logo.png HTTP/1.1[0m" 304 -

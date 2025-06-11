@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .workflow-content {
+        margin-left: 16rem;
+        /* 64px = w-64 */
+        padding: 2rem;
+    }
+
+    .workflow-header {
+        background: linear-gradient(90deg, #23273a 0%, #181c2a 100%);
+        border: 1px solid #31364a;
+        box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        margin-bottom: 2rem;
+    }
+
+    .workflow-title {
+        color: #a5b4fc;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .workflow-description {
+        color: #e0e0e0;
+        font-size: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% from "workflow/navigation.html" import render_navigation %}
+{{ render_navigation(stages, substages, steps, current_stage_id, current_substage_id, current_step_id) }}
+
+<div class="workflow-content">
+    {% block workflow_content %}{% endblock %}
+</div>
+{% endblock %}

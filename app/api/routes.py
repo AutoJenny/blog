@@ -318,12 +318,6 @@ def create_post():
     )
 
 
-@bp.route("/workflow/<slug>/transition", methods=["POST"])
-def workflow_transition(slug):
-    # Dummy implementation for test pass
-    return jsonify({"status": "transitioned", "slug": slug}), 200
-
-
 # --- ImageStyle CRUD API endpoints ---
 @bp.route("/images/styles", methods=["GET"])
 def list_image_styles():

@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang=en>
+  <head>
+    <title>jinja2.exceptions.TemplateNotFound: workflow/workflow_indicator.html
+ // Werkzeug Debugger</title>
+    <link rel="stylesheet" href="?__debugger__=yes&amp;cmd=resource&amp;f=style.css">
+    <link rel="shortcut icon"
+        href="?__debugger__=yes&amp;cmd=resource&amp;f=console.png">
+    <script src="?__debugger__=yes&amp;cmd=resource&amp;f=debugger.js"></script>
+    <script>
+      var CONSOLE_MODE = false,
+          EVALEX = true,
+          EVALEX_TRUSTED = false,
+          SECRET = "btpg0yjNJFn43qGmjgiJ";
+    </script>
+  </head>
+  <body style="background-color: #fff">
+    <div class="debugger">
+<h1>TemplateNotFound</h1>
+<div class="detail">
+  <p class="errormsg">jinja2.exceptions.TemplateNotFound: workflow/workflow_indicator.html
+</p>
+</div>
+<h2 class="traceback">Traceback <em>(most recent call last)</em></h2>
+<div class="traceback">
+  <h3></h3>
+  <ul><li><div class="frame" id="frame-4450348784">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py"</cite>,
+      line <em class="line">1488</em>,
+      in <code class="function">__call__</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">    </span>) -&gt; cabc.Iterable[bytes]:</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;The WSGI server calls the Flask application object as the</pre>
+<pre class="line before"><span class="ws">        </span>WSGI application. This calls :meth:`wsgi_app`, which can be</pre>
+<pre class="line before"><span class="ws">        </span>wrapped to apply middleware.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line current"><span class="ws">        </span>return self.wsgi_app(environ, start_response)
+<span class="ws">        </span>       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450351520">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py"</cite>,
+      line <em class="line">1466</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line before"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line before"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line before"><span class="ws">                </span>error = e</pre>
+<pre class="line current"><span class="ws">                </span>response = self.handle_exception(e)
+<span class="ws">                </span>           ^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre>
+<pre class="line after"><span class="ws">                </span>raise</pre>
+<pre class="line after"><span class="ws">            </span>return response(environ, start_response)</pre>
+<pre class="line after"><span class="ws">        </span>finally:</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450351664">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py"</cite>,
+      line <em class="line">1463</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>ctx = self.request_context(environ)</pre>
+<pre class="line before"><span class="ws">        </span>error: BaseException | None = None</pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line current"><span class="ws">                </span>response = self.full_dispatch_request()
+<span class="ws">                </span>           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">                </span>error = e</pre>
+<pre class="line after"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450347488">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py"</cite>,
+      line <em class="line">872</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line before"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line before"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line current"><span class="ws">            </span>rv = self.handle_user_exception(e)
+<span class="ws">            </span>     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre>
+<pre class="line after"><span class="ws">        </span>self,</pre>
+<pre class="line after"><span class="ws">        </span>rv: ft.ResponseReturnValue | HTTPException,</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450349648">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py"</cite>,
+      line <em class="line">870</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line current"><span class="ws">                </span>rv = self.dispatch_request()
+<span class="ws">                </span>     ^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450347200">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py"</cite>,
+      line <em class="line">855</em>,
+      in <code class="function">dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>and req.method == &#34;OPTIONS&#34;</pre>
+<pre class="line before"><span class="ws">        </span>):</pre>
+<pre class="line before"><span class="ws">            </span>return self.make_default_options_response()</pre>
+<pre class="line before"><span class="ws">        </span># otherwise dispatch to the handler for that endpoint</pre>
+<pre class="line before"><span class="ws">        </span>view_args: dict[str, t.Any] = req.view_args  # type: ignore[assignment]</pre>
+<pre class="line current"><span class="ws">        </span>return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+<span class="ws">        </span>       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def full_dispatch_request(self) -&gt; Response:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Dispatches the request and on top of that performs request</pre>
+<pre class="line after"><span class="ws">        </span>pre and postprocessing as well as HTTP exception catching and</pre>
+<pre class="line after"><span class="ws">        </span>error handling.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450347632">
+  <h4>File <cite class="filename">"/Users/nickfiddes/Code/projects/blog/app/main/routes.py"</cite>,
+      line <em class="line">270</em>,
+      in <code class="function">workflow_content</code></h4>
+  <div class="source "><pre class="line before"><span class="ws">    </span>if post_id:</pre>
+<pre class="line before"><span class="ws">        </span>with get_db_conn() as conn:</pre>
+<pre class="line before"><span class="ws">            </span>with conn.cursor() as cur:</pre>
+<pre class="line before"><span class="ws">                </span>cur.execute(&#34;SELECT * FROM post WHERE id = %s&#34;, (post_id,))</pre>
+<pre class="line before"><span class="ws">                </span>post = cur.fetchone()</pre>
+<pre class="line current"><span class="ws">    </span>return render_template(&#39;workflow/authoring/content/index.html&#39;, post=post, **workflow_context(&#39;content&#39;))
+<span class="ws">    </span>       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span>@bp.route(&#39;/workflow/meta_info/&#39;)</pre>
+<pre class="line after"><span class="ws"></span>def workflow_meta_info():</pre>
+<pre class="line after"><span class="ws">    </span>post = None</pre>
+<pre class="line after"><span class="ws">    </span>post_id = request.args.get(&#39;post_id&#39;, type=int)</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450350656">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py"</cite>,
+      line <em class="line">150</em>,
+      in <code class="function">render_template</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>a list is given, the first name to exist will be rendered.</pre>
+<pre class="line before"><span class="ws">    </span>:param context: The variables to make available in the template.</pre>
+<pre class="line before"><span class="ws">    </span>&#34;&#34;&#34;</pre>
+<pre class="line before"><span class="ws">    </span>app = current_app._get_current_object()  # type: ignore[attr-defined]</pre>
+<pre class="line before"><span class="ws">    </span>template = app.jinja_env.get_or_select_template(template_name_or_list)</pre>
+<pre class="line current"><span class="ws">    </span>return _render(app, template, context)
+<span class="ws">    </span>       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span>def render_template_string(source: str, **context: t.Any) -&gt; str:</pre>
+<pre class="line after"><span class="ws">    </span>&#34;&#34;&#34;Render a template from the given source string with the given</pre>
+<pre class="line after"><span class="ws">    </span>context.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450350224">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py"</cite>,
+      line <em class="line">131</em>,
+      in <code class="function">_render</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws"></span>def _render(app: Flask, template: Template, context: dict[str, t.Any]) -&gt; str:</pre>
+<pre class="line before"><span class="ws">    </span>app.update_template_context(context)</pre>
+<pre class="line before"><span class="ws">    </span>before_render_template.send(</pre>
+<pre class="line before"><span class="ws">        </span>app, _async_wrapper=app.ensure_sync, template=template, context=context</pre>
+<pre class="line before"><span class="ws">    </span>)</pre>
+<pre class="line current"><span class="ws">    </span>rv = template.render(context)
+<span class="ws">    </span>     ^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws">    </span>template_rendered.send(</pre>
+<pre class="line after"><span class="ws">        </span>app, _async_wrapper=app.ensure_sync, template=template, context=context</pre>
+<pre class="line after"><span class="ws">    </span>)</pre>
+<pre class="line after"><span class="ws">    </span>return rv</pre>
+<pre class="line after"><span class="ws"></span> </pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450348352">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/jinja2/environment.py"</cite>,
+      line <em class="line">1295</em>,
+      in <code class="function">render</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>ctx = self.new_context(dict(*args, **kwargs))</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>return self.environment.concat(self.root_render_func(ctx))  # type: ignore</pre>
+<pre class="line before"><span class="ws">        </span>except Exception:</pre>
+<pre class="line current"><span class="ws">            </span>self.environment.handle_exception()
+<span class="ws">            </span>^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>async def render_async(self, *args: t.Any, **kwargs: t.Any) -&gt; str:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;This works similar to :meth:`render` but returns a coroutine</pre>
+<pre class="line after"><span class="ws">        </span>that when awaited returns the entire rendered template string.  This</pre>
+<pre class="line after"><span class="ws">        </span>requires the async feature to be enabled.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450350944">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/jinja2/environment.py"</cite>,
+      line <em class="line">942</em>,
+      in <code class="function">handle_exception</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;Exception handling helper.  This is used internally to either raise</pre>
+<pre class="line before"><span class="ws">        </span>rewritten exceptions or return a rendered traceback for the template.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line before"><span class="ws">        </span>from .debug import rewrite_traceback_stack</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line current"><span class="ws">        </span>raise rewrite_traceback_stack(source=source)
+<span class="ws">        </span>^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def join_path(self, template: str, parent: str) -&gt; str:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Join a template with the parent.  By default all the lookups are</pre>
+<pre class="line after"><span class="ws">        </span>relative to the loader root so this method returns the `template`</pre>
+<pre class="line after"><span class="ws">        </span>parameter unchanged, but if the paths should be relative to the</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450346624">
+  <h4>File <cite class="filename">"/Users/nickfiddes/Code/projects/blog/app/templates/workflow/authoring/content/index.html"</cite>,
+      line <em class="line">2</em>,
+      in <code class="function">top-level template code</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span>{% extends &#34;base.html&#34; %}</pre>
+<pre class="line current"><span class="ws"></span>{% import &#34;workflow/workflow_indicator.html&#34; as indicator %}</pre>
+<pre class="line after"><span class="ws"></span>{% import &#34;blog/_post_header.html&#34; as blog_macros %}</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span>{% block title %}Authoring: Content{% endblock %}</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span>{#</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450351232">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py"</cite>,
+      line <em class="line">65</em>,
+      in <code class="function">get_source</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">    </span>def get_source(</pre>
+<pre class="line before"><span class="ws">        </span>self, environment: BaseEnvironment, template: str</pre>
+<pre class="line before"><span class="ws">    </span>) -&gt; tuple[str, str | None, t.Callable[[], bool] | None]:</pre>
+<pre class="line before"><span class="ws">        </span>if self.app.config[&#34;EXPLAIN_TEMPLATE_LOADING&#34;]:</pre>
+<pre class="line before"><span class="ws">            </span>return self._get_source_explained(environment, template)</pre>
+<pre class="line current"><span class="ws">        </span>return self._get_source_fast(environment, template)
+<span class="ws">        </span>       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def _get_source_explained(</pre>
+<pre class="line after"><span class="ws">        </span>self, environment: BaseEnvironment, template: str</pre>
+<pre class="line after"><span class="ws">    </span>) -&gt; tuple[str, str | None, t.Callable[[], bool] | None]:</pre>
+<pre class="line after"><span class="ws">        </span>attempts = []</pre></div>
+</div>
+
+<li><div class="frame" id="frame-4450346768">
+  <h4>File <cite class="filename">"/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py"</cite>,
+      line <em class="line">99</em>,
+      in <code class="function">_get_source_fast</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>for _srcobj, loader in self._iter_loaders(template):</pre>
+<pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>return loader.get_source(environment, template)</pre>
+<pre class="line before"><span class="ws">            </span>except TemplateNotFound:</pre>
+<pre class="line before"><span class="ws">                </span>continue</pre>
+<pre class="line current"><span class="ws">        </span>raise TemplateNotFound(template)
+<span class="ws">        </span>^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def _iter_loaders(self, template: str) -&gt; t.Iterator[tuple[Scaffold, BaseLoader]]:</pre>
+<pre class="line after"><span class="ws">        </span>loader = self.app.jinja_loader</pre>
+<pre class="line after"><span class="ws">        </span>if loader is not None:</pre>
+<pre class="line after"><span class="ws">            </span>yield self.app, loader</pre></div>
+</div>
+</ul>
+  <blockquote>jinja2.exceptions.TemplateNotFound: workflow/workflow_indicator.html
+</blockquote>
+</div>
+
+<div class="plain">
+    <p>
+      This is the Copy/Paste friendly version of the traceback.
+    </p>
+    <textarea cols="50" rows="10" name="code" readonly>Traceback (most recent call last):
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py&#34;, line 1488, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py&#34;, line 1466, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py&#34;, line 1463, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py&#34;, line 872, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py&#34;, line 870, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py&#34;, line 855, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;/Users/nickfiddes/Code/projects/blog/app/main/routes.py&#34;, line 270, in workflow_content
+    return render_template(&#39;workflow/authoring/content/index.html&#39;, post=post, **workflow_context(&#39;content&#39;))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py&#34;, line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py&#34;, line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/jinja2/environment.py&#34;, line 1295, in render
+    self.environment.handle_exception()
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/jinja2/environment.py&#34;, line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File &#34;/Users/nickfiddes/Code/projects/blog/app/templates/workflow/authoring/content/index.html&#34;, line 2, in top-level template code
+    {% import &#34;workflow/workflow_indicator.html&#34; as indicator %}
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py&#34;, line 65, in get_source
+    return self._get_source_fast(environment, template)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py&#34;, line 99, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: workflow/workflow_indicator.html
+</textarea>
+</div>
+<div class="explanation">
+  The debugger caught an exception in your WSGI application.  You can now
+  look at the traceback which led to the error.  <span class="nojavascript">
+  If you enable JavaScript you can also use additional features such as code
+  execution (if the evalex feature is enabled), automatic pasting of the
+  exceptions and much more.</span>
+</div>
+      <div class="footer">
+        Brought to you by <strong class="arthur">DON'T PANIC</strong>, your
+        friendly Werkzeug powered traceback interpreter.
+      </div>
+    </div>
+
+    <div class="pin-prompt">
+      <div class="inner">
+        <h3>Console Locked</h3>
+        <p>
+          The console is locked and needs to be unlocked by entering the PIN.
+          You can find the PIN printed out on the standard output of your
+          shell that runs the server.
+        <form>
+          <p>PIN:
+            <input type=text name=pin size=14>
+            <input type=submit name=btn value="Confirm Pin">
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
+
+<!--
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 1488, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 1466, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 1463, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 872, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 870, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 855, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nickfiddes/Code/projects/blog/app/main/routes.py", line 270, in workflow_content
+    return render_template('workflow/authoring/content/index.html', post=post, **workflow_context('content'))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/nickfiddes/Code/projects/blog/app/templates/workflow/authoring/content/index.html", line 2, in top-level template code
+    {% import "workflow/workflow_indicator.html" as indicator %}
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py", line 65, in get_source
+    return self._get_source_fast(environment, template)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/templating.py", line 99, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: workflow/workflow_indicator.html
+
+
+-->
