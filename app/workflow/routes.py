@@ -6,7 +6,7 @@ from .navigation import navigator
 def index():
     navigator.load_navigation()
     stages = navigator.stages
-    return render_template('workflow/index.html', stages=stages)
+    return render_template('workflow/index.html', stages=stages, current_stage=None, current_substage=None, current_step=None)
 
 @workflow.route('/<stage_name>/')
 def stage(stage_name: str):
@@ -15,7 +15,7 @@ def stage(stage_name: str):
     if not stage:
         abort(404, f"Stage '{stage_name}' not found.")
     substages = navigator.get_substages_for_stage(stage['id'])
-    return render_template('workflow/stage.html', stage=stage, substages=substages)
+    return render_template('workflow/stage.html', stage=stage, substages=substages, current_stage=stage_name, current_substage=None, current_step=None)
 
 @workflow.route('/<stage_name>/<substage_name>/')
 def substage(stage_name: str, substage_name: str):
@@ -47,4 +47,4 @@ def step(stage_name: str, substage_name: str, step_name: str):
     step = next((s for s in steps if s['name'] == step_name), None)
     if not step:
         abort(404, f"Step '{step_name}' not found in substage '{substage_name}'.")
-    return render_template(f'workflow/steps/{step_name}.html', stage=stage, substage=substage, step=step) 
+    return render_template(f'workflow/steps/{step_name}.html', stage=stage, substage=substage, step=step, current_stage=stage_name, current_substage=substage_name, current_step=step_name) 
