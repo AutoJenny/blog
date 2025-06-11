@@ -1,81 +1,68 @@
-{% extends "workflow/base.html" %}
+{% extends "workflow/steps/planning_step.html" %}
+
+{% block step_heading %}
+<div class="flex justify-between items-center">
+    <h1 class="text-3xl font-bold mb-6 text-dark-text">
+        Provisional Title{% if post and post.idea_seed %}: {{ post.idea_seed }}{% endif %}
+    </h1>
+    <button
+        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        onclick="runLLM()">
+        Run LLM
+    </button>
+</div>
+{% endblock %}
+
+{% block step_description %}{% endblock %}
 
 {% block workflow_content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold mb-6 text-dark-text">
-            Provisional Title{% if post and post.idea_seed %}: {{ post.idea_seed }}{% endif %}
-        </h1>
-
-        <div class="bg-dark-bg shadow rounded-lg p-6 border border-dark-border">
-            <div class="prose max-w-none text-dark-text">
-                <p class="text-gray-400 mb-4">Enter a provisional title for your post here. This can be refined later in
-                    the process.</p>
-
-                <!-- Provisional Title content area -->
-                <div class="mt-8">
-                    <input type="text" class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
-                        placeholder="Type your provisional title here...">
-                </div>
-            </div>
-        </div>
+        {% set parent_content = super() %}
+        {{ parent_content
+        | replace('<h1 class="text-3xl font-bold mb-6 text-dark-text">' ~ step_config.title ~ (post.title and ': ' ~
+            post.title or '') ~ '</h1>', '')
+        | replace('<p class="text-gray-400 mb-6">Generate a provisional title for your post based on the expanded idea.
+        </p>', '')
+        }}
     </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
-{{ super() }}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('provisionalTitleForm');
-        const titleText = document.getElementById('titleText');
-        const saveDraftBtn = document.getElementById('saveDraft');
-        const saveAndContinueBtn = document.getElementById('saveAndContinue');
-
-        // Load existing content if available
-        fetch(`/api/workflow/posts/${currentPostId}/planning/idea/provisional_title`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.content) {
-                    titleText.value = data.content;
-                }
-            });
-
-        // Save draft
-        saveDraftBtn.addEventListener('click', function () {
-            saveContent(false);
+    function runLLM() {
+        const postId = {{ post_id| tojson
+    }};
+    const stageName = {{ current_stage| tojson }};
+    const substageName = {{ current_substage| tojson }};
+    const stepName = {{ current_step| tojson }};
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+    fetch('/workflow/api/run_llm/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            post_id: postId,
+            stage_name: stageName,
+            substage_name: substageName,
+            step_name: stepName
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert('LLM error: ' + (data.error || 'Unknown error'));
+                btn.disabled = false;
+                btn.textContent = 'Run LLM';
+            }
+        })
+        .catch(err => {
+            alert('Request failed: ' + err);
+            btn.disabled = false;
+            btn.textContent = 'Run LLM';
         });
-
-        // Save and continue
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            saveContent(true);
-        });
-
-        function saveContent(continueToNext) {
-            const content = titleText.value;
-
-            fetch(`/api/workflow/posts/${currentPostId}/planning/idea/provisional_title`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ content })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (continueToNext) {
-                            // Navigate to the next step in the workflow
-                            window.location.href = `/workflow/planning/idea/next_step?post_id=${currentPostId}`;
-                        } else {
-                            // Show success message
-                            const toast = new bootstrap.Toast(document.createElement('div'));
-                            toast.show();
-                        }
-                    }
-                });
-        }
-    });
+    }
 </script>
-{% endblock %}
