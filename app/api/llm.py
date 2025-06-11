@@ -888,56 +888,44 @@ def test_action(action_id):
         logger.error(f"[TEST] LLM service error: {str(e)}")
         return jsonify({'error': f'LLM service error: {str(e)}'}), 500
 
-# --- Post Substage Action Endpoints ---
-@bp.route('/post_substage_actions', methods=['GET', 'POST'])
-def post_substage_actions():
+# --- Post Workflow Step Action Endpoints ---
+@bp.route('/post_workflow_step_actions', methods=['GET', 'POST'])
+def post_workflow_step_actions():
     if request.method == 'GET':
         post_id = request.args.get('post_id', type=int)
-        substage = request.args.get('substage', type=str)
-        if not post_id or not substage:
-            return jsonify({'error': 'post_id and substage required'}), 400
+        step_id = request.args.get('step_id', type=int)
+        if not post_id or not step_id:
+            return jsonify({'error': 'post_id and step_id required'}), 400
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT id, post_id, substage, action_id, input_field, output_field, button_label, button_order
-                    FROM post_substage_action
-                    WHERE post_id = %s AND substage = %s
+                    SELECT id, post_id, step_id, action_id, input_field, output_field, button_label, button_order
+                    FROM post_workflow_step_action
+                    WHERE post_id = %s AND step_id = %s
                     ORDER BY button_order, id
-                """, (post_id, substage))
+                """, (post_id, step_id))
                 rows = cur.fetchall()
                 actions = []
                 for row in rows:
-                    # Try both dict and tuple access for robustness
                     if isinstance(row, dict):
-                        actions.append({
-                            'id': row['id'],
-                            'post_id': row['post_id'],
-                            'substage': row['substage'],
-                            'action_id': row['action_id'],
-                            'input_field': row.get('input_field'),
-                            'output_field': row.get('output_field'),
-                            'button_label': row['button_label'],
-                            'button_order': row['button_order'],
-                        })
+                        actions.append(row)
                     else:
                         actions.append({
                             'id': row[0],
                             'post_id': row[1],
-                            'substage': row[2],
+                            'step_id': row[2],
                             'action_id': row[3],
-                            'input_field': row[4] if len(row) > 4 else None,
-                            'output_field': row[5] if len(row) > 5 else None,
-                            'button_label': row[6] if len(row) > 6 else None,
-                            'button_order': row[7] if len(row) > 7 else None,
+                            'input_field': row[4],
+                            'output_field': row[5],
+                            'button_label': row[6],
+                            'button_order': row[7],
                         })
-        return jsonify(actions)
+        return jsonify({'actions': actions})
+
     if request.method == 'POST':
         data = request.get_json() or {}
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"[DEBUG] /post_substage_actions POST incoming data: {data}")
         post_id = data.get('post_id')
-        substage = data.get('substage')
+        step_id = data.get('step_id')
         action_id = data.get('action_id')
         input_field = data.get('input_field')
         output_field = data.get('output_field') if 'output_field' in data else None
@@ -946,99 +934,25 @@ def post_substage_actions():
         missing = []
         if not post_id:
             missing.append('post_id')
-        if not substage:
-            missing.append('substage')
+        if not step_id:
+            missing.append('step_id')
         if not action_id:
             missing.append('action_id')
         if missing:
-            logger.error(f"[DEBUG] /post_substage_actions POST missing fields: {missing}")
-            return jsonify({'error': 'post_id, substage, and action_id required', 'missing': missing, 'data': data}), 400
-        try:
-            with get_db_conn() as conn:
-                with conn.cursor() as cur:
-                    # --- AUTO-MAP FIELDS IF NEEDED ---
-                    # Import canonical field list and substage/stage info
-                    import sys
-                    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-                    from app.blog.fields import WORKFLOW_FIELDS
-                    from app.main.routes import WORKFLOW_STAGES, WORKFLOW_SUBSTAGES
-                    # Helper: get all valid field names
-                    valid_fields = set()
-                    for fields in WORKFLOW_FIELDS.values():
-                        valid_fields.update(fields)
-                    # Helper: get substage_id and stage_id
-                    def get_substage_info(substage_name):
-                        for sub in WORKFLOW_SUBSTAGES:
-                            if sub['name'] == substage_name:
-                                return sub['id'], sub['stage_id']
-                        return None, None
-                    substage_id, stage_id = get_substage_info(substage)
-                    # Helper: auto-insert mapping if needed
-                    def ensure_field_mapping(field_name):
-                        try:
-                            if not field_name or not substage_id or not stage_id:
-                                return
-                            # Allow any field_name, even if not in valid_fields, for cross-stage persistence
-                            cur.execute("SELECT 1 FROM workflow_field_mapping WHERE field_name=%s AND substage_id=%s", (field_name, substage_id))
-                            if not cur.fetchone():
-                                # Get next order_index for this substage
-                                cur.execute("SELECT COALESCE(MAX(order_index), 0) + 1 FROM workflow_field_mapping WHERE substage_id=%s", (substage_id,))
-                                fetch = cur.fetchone()
-                                order_index = fetch['coalesce'] if isinstance(fetch, dict) and 'coalesce' in fetch else fetch[0] if fetch and len(fetch) > 0 else 0
-                                cur.execute("INSERT INTO workflow_field_mapping (field_name, stage_id, substage_id, order_index) VALUES (%s, %s, %s, %s)", (field_name, stage_id, substage_id, order_index))
-                        except Exception as e:
-                            current_app.logger.error(f"[DEBUG] ensure_field_mapping error: {e} field_name={field_name} substage_id={substage_id} stage_id={stage_id}")
-                    ensure_field_mapping(input_field)
-                    ensure_field_mapping(output_field)
-                    # Upsert: if exists, update; else insert
-                    cur.execute("""
-                        SELECT id FROM post_substage_action WHERE post_id=%s AND substage=%s
-                    """, (post_id, substage))
-                    row = cur.fetchone()
-                    current_app.logger.error(f"[DEBUG] post_substage_actions upsert: row={row} type={type(row)}")
-                    if row:
-                        # Robust: handle both dict and tuple
-                        if isinstance(row, dict):
-                            row_id = row['id']
-                        elif isinstance(row, (list, tuple)):
-                            row_id = row[0]
-                        else:
-                            current_app.logger.error(f"[DEBUG] Unexpected row type in post_substage_actions: {type(row)} value: {row}")
-                            return jsonify({'status': 'error', 'error': f'Unexpected row type: {type(row)}', 'row': str(row)}), 400
-                        cur.execute("""
-                            UPDATE post_substage_action
-                            SET action_id=%s, input_field=%s, output_field=%s, button_label=%s, button_order=%s
-                            WHERE id=%s
-                        """, (action_id, input_field, output_field, button_label, button_order, row_id))
-                        new_id = row_id
-                    else:
-                        current_app.logger.error(f"[DEBUG] post_substage_actions upsert: row is None (no existing record)")
-                        cur.execute("""
-                            INSERT INTO post_substage_action (post_id, substage, action_id, input_field, output_field, button_label, button_order)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s)
-                            RETURNING id
-                        """, (post_id, substage, action_id, input_field, output_field, button_label, button_order))
-                        fetch = cur.fetchone()
-                        if fetch is None:
-                            current_app.logger.error(f"[DEBUG] post_substage_actions insert: fetch is None after insert!")
-                            return jsonify({'status': 'error', 'error': 'Insert failed, no id returned'}), 400
-                        if isinstance(fetch, dict):
-                            new_id = fetch.get('id')
-                        elif isinstance(fetch, (list, tuple)):
-                            new_id = fetch[0]
-                        else:
-                            current_app.logger.error(f"[DEBUG] post_substage_actions insert: Unexpected fetch type: {type(fetch)} value: {fetch}")
-                            return jsonify({'status': 'error', 'error': f'Unexpected fetch type: {type(fetch)}', 'fetch': str(fetch)}), 400
-                    conn.commit()
-            return jsonify({'id': new_id, 'status': 'success'})
-        except Exception as e:
-            import traceback
-            print('DEBUG: Exception in post_substage_actions:', type(e), e)
-            traceback.print_exc()
-            return jsonify({'status': 'error', 'error': f'{type(e).__name__}: {e}'}), 400
+            return jsonify({'error': 'post_id, step_id, and action_id required', 'missing': missing, 'data': data}), 400
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO post_workflow_step_action (post_id, step_id, action_id, input_field, output_field, button_label, button_order)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (post_id, step_id, action_id, input_field, output_field, button_label, button_order))
+                new_id = cur.fetchone()[0]
+                conn.commit()
+        return jsonify({'status': 'success', 'id': new_id})
 
-@bp.route('/post_substage_actions/<int:psa_id>', methods=['PUT', 'DELETE'])
-def post_substage_action_detail(psa_id):
+@bp.route('/post_workflow_step_actions/<int:pws_id>', methods=['PUT', 'DELETE'])
+def post_workflow_step_action_detail(pws_id):
     if request.method == 'PUT':
         data = request.get_json() or {}
         button_label = data.get('button_label')
@@ -1048,62 +962,54 @@ def post_substage_action_detail(psa_id):
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    UPDATE post_substage_action
+                    UPDATE post_workflow_step_action
                     SET button_label = %s, button_order = %s, input_field = %s, output_field = %s
                     WHERE id = %s
-                """, (button_label, button_order, input_field, output_field, psa_id))
+                """, (button_label, button_order, input_field, output_field, pws_id))
                 conn.commit()
         return jsonify({'status': 'success'})
     if request.method == 'DELETE':
         with get_db_conn() as conn:
             with conn.cursor() as cur:
-                cur.execute("DELETE FROM post_substage_action WHERE id = %s", (psa_id,))
+                cur.execute("DELETE FROM post_workflow_step_action WHERE id = %s", (pws_id,))
                 conn.commit()
         return jsonify({'status': 'success'})
 
-# --- Substage Action Default Endpoints ---
-@bp.route('/substage_action_default', methods=['GET', 'POST'])
-def substage_action_default():
-    if request.method == 'GET':
-        substage = request.args.get('substage', type=str)
-        if not substage:
-            return jsonify({'error': 'substage required'}), 400
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT substage, action_id FROM substage_action_default WHERE substage = %s
-                """, (substage,))
-                row = cur.fetchone()
-                if not row:
-                    return jsonify({'substage': substage, 'action_id': None})
-                # Support both tuple and dict
-                action_id = row['action_id'] if isinstance(row, dict) else row[1]
-                return jsonify({'substage': substage, 'action_id': action_id})
-    if request.method == 'POST':
-        data = request.get_json() or {}
-        substage = data.get('substage')
-        action_id = data.get('action_id')
-        if not substage or not action_id:
-            return jsonify({'error': 'substage and action_id required'}), 400
-        try:
-            with get_db_conn() as conn:
-                with conn.cursor() as cur:
-                    # Upsert logic
-                    cur.execute("""
-                        INSERT INTO substage_action_default (substage, action_id)
-                        VALUES (%s, %s)
-                        ON CONFLICT (substage) DO UPDATE SET action_id = EXCLUDED.action_id
-                        RETURNING id
-                    """, (substage, action_id))
-                    fetch = cur.fetchone()
-                    new_id = fetch['id'] if isinstance(fetch, dict) else fetch[0] if fetch else None
-                    conn.commit()
-            return jsonify({'id': new_id, 'status': 'success'})
-        except Exception as e:
-            import traceback
-            print('DEBUG: Exception in substage_action_default:', type(e), e)
-            traceback.print_exc()
-            return jsonify({'status': 'error', 'error': f'{type(e).__name__}: {e}'}), 400
+@bp.route('/post_workflow_step_actions/list', methods=['GET'])
+def list_post_workflow_step_actions():
+    """List all post_workflow_step_action entries, paginated and ordered by post.updated_at DESC."""
+    page = int(request.args.get('page', 1))
+    page_size = int(request.args.get('page_size', 20))
+    offset = (page - 1) * page_size
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('SELECT COUNT(*) FROM post_workflow_step_action')
+            total_count = cur.fetchone()[0]
+            cur.execute('''
+                SELECT pws.id, pws.post_id, pws.step_id, pws.action_id, pws.input_field, pws.output_field, pws.button_label, pws.button_order, p.updated_at
+                FROM post_workflow_step_action pws
+                JOIN post p ON pws.post_id = p.id
+                ORDER BY p.updated_at DESC NULLS LAST, p.id DESC
+                LIMIT %s OFFSET %s
+            ''', (page_size, offset))
+            rows = cur.fetchall()
+            actions = []
+            for row in rows:
+                if isinstance(row, dict):
+                    actions.append(row)
+                else:
+                    actions.append({
+                        'id': row[0],
+                        'post_id': row[1],
+                        'step_id': row[2],
+                        'action_id': row[3],
+                        'input_field': row[4],
+                        'output_field': row[5],
+                        'button_label': row[6],
+                        'button_order': row[7],
+                        'updated_at': row[8],
+                    })
+    return jsonify({'actions': actions, 'total_count': total_count, 'page': page, 'page_size': page_size})
 
 @bp.route('/ollama/start', methods=['POST'])
 def start_ollama():
@@ -1306,43 +1212,6 @@ def test_direct():
     }
     r = requests.post("http://localhost:11434/api/generate", json=payload, timeout=60)
     return jsonify(r.json())
-
-@bp.route('/post_substage_actions/list', methods=['GET'])
-def list_post_substage_actions():
-    """List all post_substage_action entries, paginated and ordered by post.updated_at DESC."""
-    page = int(request.args.get('page', 1))
-    page_size = int(request.args.get('page_size', 20))
-    offset = (page - 1) * page_size
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            # Join with post to get updated_at for ordering
-            cur.execute('SELECT COUNT(*) FROM post_substage_action')
-            total_count = cur.fetchone()[0]
-            cur.execute('''
-                SELECT psa.id, psa.post_id, psa.substage, psa.action_id, psa.input_field, psa.output_field, psa.button_label, psa.button_order, p.updated_at
-                FROM post_substage_action psa
-                JOIN post p ON psa.post_id = p.id
-                ORDER BY p.updated_at DESC NULLS LAST, p.id DESC
-                LIMIT %s OFFSET %s
-            ''', (page_size, offset))
-            rows = cur.fetchall()
-            actions = []
-            for row in rows:
-                if isinstance(row, dict):
-                    actions.append(row)
-                else:
-                    actions.append({
-                        'id': row[0],
-                        'post_id': row[1],
-                        'substage': row[2],
-                        'action_id': row[3],
-                        'input_field': row[4],
-                        'output_field': row[5],
-                        'button_label': row[6],
-                        'button_order': row[7],
-                        'updated_at': row[8],
-                    })
-    return jsonify({'actions': actions, 'total_count': total_count, 'page': page, 'page_size': page_size})
 
 @bp.route('/ollama/status', methods=['GET'])
 def ollama_status():

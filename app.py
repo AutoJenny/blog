@@ -13,7 +13,7 @@ def create_app():
     load_dotenv()
 
     # Initialize Flask app
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder="app/templates")
     app.config.from_object(get_config())
 
     # Ensure logs directory exists
@@ -34,6 +34,8 @@ def create_app():
     app.logger.info('Application startup')
 
     # Register blueprints
+    from app.main import bp as main_bp
+    app.register_blueprint(main_bp)
     from app.blog import bp as blog_bp
     app.register_blueprint(blog_bp, url_prefix='/blog')
 
