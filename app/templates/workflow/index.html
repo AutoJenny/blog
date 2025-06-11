@@ -1,21 +1,19 @@
 {% extends "workflow/base.html" %}
 
-{% block title %}Workflow Home{% endblock %}
-
-{% block content %}
+{% block workflow_content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
         <h1 class="text-3xl font-bold mb-8">Workflow Stages</h1>
 
         <div class="grid gap-6">
             {% for stage in stages %}
-            <div class="bg-white shadow rounded-lg p-6">
-                <h2 class="text-2xl font-semibold mb-4">{{ stage.name }}</h2>
-                <p class="text-gray-600 mb-4">{{ stage.description }}</p>
+            <div class="bg-dark-bg shadow rounded-lg p-6 border border-dark-border">
+                <h2 class="text-2xl font-semibold mb-4 text-dark-text">{{ stage.name }}</h2>
+                <p class="text-gray-400 mb-4">{{ stage.description }}</p>
 
                 <div class="mt-4">
                     <a href="{{ url_for('workflow.stage', stage_name=stage.name) }}"
-                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        class="inline-flex items-center px-4 py-2 border border-dark-accent text-sm font-medium rounded-md text-white bg-dark-accent hover:bg-dark-accent/80">
                         View Stage
                     </a>
                 </div>
