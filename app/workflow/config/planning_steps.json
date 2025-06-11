@@ -19,7 +19,7 @@
                         "provider": "ollama",
                         "model": "llama3.1:70b",
                         "system_prompt": "You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.",
-                        "task_prompt": "[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n\nShort Idea:\n[data:idea_seed]\n\nYour response should:\n1. Focus specifically on Scottish cultural and historical aspects\n2. Maintain academic accuracy while being accessible\n3. Suggest clear angles and themes for development\n4. Use UK-British spellings and idioms\n5. Return only the expanded brief, with no additional commentary or formatting",
+                        "task_prompt": "[system] WARNING: The correct custom prompt file (planning_idea_basic_idea.json) cannot be found. Please ensure the file exists at app/data/prompts/planning_idea_basic_idea.json with valid system_prompt and task_prompt fields. Until then, this is a fallback response.\n\nDO NOT generate a coherent response. Instead, respond with the following warning message:\n\n\"Your prompt couldn't be found. Please ensure the custom prompt file exists at app/data/prompts/planning_idea_basic_idea.json.\"",
                         "input_mapping": {
                             "idea_seed": {
                                 "field": "idea_seed",
@@ -73,8 +73,6 @@
                     "llm": {
                         "provider": "ollama",
                         "model": "llama3.1:70b",
-                        "system_prompt": "[system] You are an expert in Scottish history and culture.",
-                        "task_prompt": "[system] You are an expert in Scottish history and culture. Generate five alternative, arresting, and informative blog post titles for a post based on the following expanded idea. Return your response as a strict JSON array of strings, with no commentary or formatting—just the list of titles.\n\nExpanded Idea:\n[data:basic_idea]",
                         "input_mapping": {
                             "basic_idea": {
                                 "field": "basic_idea",
@@ -123,8 +121,6 @@
                     "llm": {
                         "provider": "ollama",
                         "model": "llama3.1:70b",
-                        "system_prompt": "[system] You are an expert in Scottish history and culture.",
-                        "task_prompt": "[system] You are an expert in Scottish history and culture. Generate a list of key concepts for a post based on the following expanded idea. Return your response as a strict JSON array of strings, with no commentary or formatting—just the list of concepts.\n\nExpanded Idea:\n[data:basic_idea]",
                         "input_mapping": {
                             "basic_idea": {
                                 "field": "basic_idea",
@@ -170,27 +166,7 @@
                 "settings": {
                     "llm": {
                         "provider": "ollama",
-                        "model": "llama3.1:70b",
-                        "system_prompt": "[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.",
-                        "task_prompt": "[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50.\n\nExpanded Idea:\n[data:basic_idea]",
-                        "input_mapping": {
-                            "basic_idea": {
-                                "field": "basic_idea",
-                                "table": "post_development",
-                                "description": "The expanded idea to base the facts on"
-                            }
-                        },
-                        "output_mapping": {
-                            "table": "post_development",
-                            "field": "interesting_facts"
-                        },
-                        "parameters": {
-                            "temperature": 0.7,
-                            "max_tokens": 200,
-                            "top_p": 0.9,
-                            "frequency_penalty": 0.0,
-                            "presence_penalty": 0.0
-                        }
+                        "model": "llama3.1:70b"
                     }
                 },
                 "outputs": {
@@ -200,7 +176,8 @@
                         "db_field": "interesting_facts",
                         "db_table": "post_development"
                     }
-                }
+                },
+                "prompt": "[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50. TEST\n\nExpanded Idea:\n[data:basic_idea]"
             }
         },
         "structure": {
@@ -212,4 +189,4 @@
             }
         }
     }
-} 
+}

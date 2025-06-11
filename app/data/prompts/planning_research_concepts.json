@@ -1,0 +1,4 @@
+{
+  "system_prompt": "[system] You are an expert in Scottish history and culture.",
+  "task_prompt": "[system] You are an expert in Scottish history and culture. Generate a list of key concepts for a post based on the following expanded idea. Return your response as a strict JSON array of strings, with no commentary or formatting—just the list of concepts.\n\nExpanded Idea:\n[data:basic_idea]"
+} 
