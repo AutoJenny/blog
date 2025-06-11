@@ -1,52 +1,20 @@
 {% extends "workflow/base.html" %}
 
 {% block workflow_content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <h2>Basic Idea</h2>
-            <form id="basicIdeaForm" class="mt-4">
-                <div class="mb-4">
-                    <label for="ideaText" class="form-label">What's your basic idea for this post?</label>
-                    <textarea class="form-control" id="ideaText" rows="4"
-                        placeholder="Enter your initial thoughts about the post..."></textarea>
-                </div>
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-dark-text">Basic Idea</h1>
 
-                <div class="mb-4">
-                    <label class="form-label">Key Points to Consider</label>
-                    <div class="card">
-                        <div class="card-body">
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <i class="bi bi-check-circle text-success"></i>
-                                    What's the main message or takeaway?
-                                </li>
-                                <li class="mb-2">
-                                    <i class="bi bi-check-circle text-success"></i>
-                                    Who is the target audience?
-                                </li>
-                                <li class="mb-2">
-                                    <i class="bi bi-check-circle text-success"></i>
-                                    What problem does this solve?
-                                </li>
-                                <li class="mb-2">
-                                    <i class="bi bi-check-circle text-success"></i>
-                                    What makes this unique or interesting?
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+        <div class="bg-dark-bg shadow rounded-lg p-6 border border-dark-border">
+            <div class="prose max-w-none text-dark-text">
+                <p class="text-gray-400 mb-4">Enter your basic idea for the post here.</p>
 
-                <div class="d-flex justify-content-between">
-                    <button type="button" class="btn btn-outline-secondary" id="saveDraft">
-                        <i class="bi bi-save"></i> Save Draft
-                    </button>
-                    <button type="submit" class="btn btn-primary" id="saveAndContinue">
-                        Save and Continue to Provisional Title
-                    </button>
+                <!-- Basic Idea content area -->
+                <div class="mt-8">
+                    <textarea class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4" rows="6"
+                        placeholder="Type your basic idea here..."></textarea>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
