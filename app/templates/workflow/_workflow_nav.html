@@ -26,17 +26,17 @@
             <div class="flex flex-col items-center">
                 <span class="text-xs text-gray-400 mb-1">Planning</span>
                 <div class="flex gap-4">
-                    <a href="{{ url_for('workflow.step', stage_name='planning', substage_name='idea', step_name='basic_idea') }}"
+                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='idea', step_name='basic_idea') }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'planning' and current_substage == 'idea' %}border-blue-500{% endif %}">
                         <i class="fas fa-lightbulb text-2xl mb-2 text-dark-text"></i>
                         <div class="text-xs text-dark-text">Idea</div>
                     </a>
-                    <a href="{{ url_for('workflow.step', stage_name='planning', substage_name='research', step_name='main') }}"
+                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='research', step_name='main') }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'planning' and current_substage == 'research' %}border-blue-500{% endif %}">
                         <i class="fas fa-search text-2xl mb-2 text-dark-text"></i>
                         <div class="text-xs text-dark-text">Research</div>
                     </a>
-                    <a href="{{ url_for('workflow.step', stage_name='planning', substage_name='outline', step_name='main') }}"
+                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='outline', step_name='main') }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'planning' and current_substage == 'outline' %}border-blue-500{% endif %}">
                         <i class="fas fa-sitemap text-2xl mb-2 text-dark-text"></i>
                         <div class="text-xs text-dark-text">Outline</div>
@@ -47,17 +47,17 @@
             <div class="flex flex-col items-center">
                 <span class="text-xs text-gray-400 mb-1">Writing</span>
                 <div class="flex gap-4">
-                    <a href="{{ url_for('workflow.step', stage_name='writing', substage_name='draft', step_name='main') }}"
+                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='writing', substage_name='draft', step_name='main') }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'writing' and current_substage == 'draft' %}border-blue-500{% endif %}">
                         <i class="fas fa-pen text-2xl mb-2 text-dark-text"></i>
                         <div class="text-xs text-dark-text">Draft</div>
                     </a>
-                    <a href="{{ url_for('workflow.step', stage_name='writing', substage_name='edit', step_name='main') }}"
+                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='writing', substage_name='edit', step_name='main') }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'writing' and current_substage == 'edit' %}border-blue-500{% endif %}">
                         <i class="fas fa-edit text-2xl mb-2 text-dark-text"></i>
                         <div class="text-xs text-dark-text">Edit</div>
                     </a>
-                    <a href="{{ url_for('workflow.step', stage_name='writing', substage_name='review', step_name='main') }}"
+                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='writing', substage_name='review', step_name='main') }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'writing' and current_substage == 'review' %}border-blue-500{% endif %}">
                         <i class="fas fa-check-double text-2xl mb-2 text-dark-text"></i>
                         <div class="text-xs text-dark-text">Review</div>
@@ -68,17 +68,17 @@
             <div class="flex flex-col items-center">
                 <span class="text-xs text-gray-400 mb-1">Publishing</span>
                 <div class="flex gap-4">
-                    <a href="{{ url_for('workflow.step', stage_name='publishing', substage_name='format', step_name='main') }}"
+                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='publishing', substage_name='format', step_name='main') }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'publishing' and current_substage == 'format' %}border-blue-500{% endif %}">
                         <i class="fas fa-file-alt text-2xl mb-2 text-dark-text"></i>
                         <div class="text-xs text-dark-text">Format</div>
                     </a>
-                    <a href="{{ url_for('workflow.step', stage_name='publishing', substage_name='media', step_name='main') }}"
+                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='publishing', substage_name='media', step_name='main') }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'publishing' and current_substage == 'media' %}border-blue-500{% endif %}">
                         <i class="fas fa-image text-2xl mb-2 text-dark-text"></i>
                         <div class="text-xs text-dark-text">Media</div>
                     </a>
-                    <a href="{{ url_for('workflow.step', stage_name='publishing', substage_name='publish', step_name='main') }}"
+                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='publishing', substage_name='publish', step_name='main') }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'publishing' and current_substage == 'publish' %}border-blue-500{% endif %}">
                         <i class="fas fa-paper-plane text-2xl mb-2 text-dark-text"></i>
                         <div class="text-xs text-dark-text">Publish</div>
@@ -91,28 +91,28 @@
         <div class="border-b border-dark-border mb-6">
             <div class="flex space-x-4">
                 {% if current_substage == 'idea' %}
-                <a href="{{ url_for('workflow.step', stage_name='planning', substage_name='idea', step_name='basic_idea') }}"
+                <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='idea', step_name='basic_idea') }}"
                     class="px-4 py-2 border-b-2 {% if current_step == 'basic_idea' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
                     Basic Idea
                 </a>
-                <a href="{{ url_for('workflow.step', stage_name='planning', substage_name='idea', step_name='provisional_title') }}"
+                <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='idea', step_name='provisional_title') }}"
                     class="px-4 py-2 border-b-2 {% if current_step == 'provisional_title' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
                     Provisional Title
                 </a>
                 {% else %}
-                <a href="{{ url_for('workflow.step', stage_name=current_stage, substage_name=current_substage, step_name='main') }}"
+                <a href="{{ url_for('workflow.step', post_id=post_id, stage_name=current_stage, substage_name=current_substage, step_name='main') }}"
                     class="px-4 py-2 border-b-2 {% if current_step == 'main' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
                     Main
                 </a>
-                <a href="{{ url_for('workflow.step', stage_name=current_stage, substage_name=current_substage, step_name='step1') }}"
+                <a href="{{ url_for('workflow.step', post_id=post_id, stage_name=current_stage, substage_name=current_substage, step_name='step1') }}"
                     class="px-4 py-2 border-b-2 {% if current_step == 'step1' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
                     Step 1
                 </a>
-                <a href="{{ url_for('workflow.step', stage_name=current_stage, substage_name=current_substage, step_name='step2') }}"
+                <a href="{{ url_for('workflow.step', post_id=post_id, stage_name=current_stage, substage_name=current_substage, step_name='step2') }}"
                     class="px-4 py-2 border-b-2 {% if current_step == 'step2' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
                     Step 2
                 </a>
-                <a href="{{ url_for('workflow.step', stage_name=current_stage, substage_name=current_substage, step_name='step3') }}"
+                <a href="{{ url_for('workflow.step', post_id=post_id, stage_name=current_stage, substage_name=current_substage, step_name='step3') }}"
                     class="px-4 py-2 border-b-2 {% if current_step == 'step3' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
                     Step 3
                 </a>
