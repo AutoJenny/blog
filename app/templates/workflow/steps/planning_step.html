@@ -1,0 +1,199 @@
+{% extends "workflow/base.html" %}
+
+{% block workflow_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        {% block step_heading %}
+        <h1 class="text-3xl font-bold mb-6 text-dark-text">
+            {{ step_config.title }}{% if post and post.title %}: {{ post.title }}{% endif %}
+        </h1>
+        {% endblock %}
+
+        {% block step_description %}
+        {% if step_config.description %}
+        <p class="text-gray-400 mb-6">{{ step_config.description }}</p>
+        {% endif %}
+        {% endblock %}
+
+        <div class="space-y-4">
+            <!-- Inputs Accordion -->
+            <div class="border border-dark-border rounded-lg overflow-hidden">
+                <button
+                    class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+                    onclick="toggleAccordion('inputs')">
+                    <span class="font-medium text-dark-text">Inputs</span>
+                    <span class="text-gray-400" id="inputs-summary">
+                        {% if step_config.inputs %}
+                        {% set ns = namespace(summary='') %}
+                        {% for input_id, input_config in step_config.inputs.items() %}
+                        {% set val = input_values[input_id] if input_values and input_id in input_values else '—' %}
+                        {% if not loop.first %}{% set ns.summary = ns.summary + ', ' %}{% endif %}
+                        {% set ns.summary = ns.summary + '[' + input_id + ']: ' + val %}
+                        {% endfor %}
+                        {{ ns.summary }}
+                        {% else %}
+                        No inputs configured
+                        {% endif %}
+                    </span>
+                    <svg class="w-5 h-5 transform transition-transform" id="inputs-icon" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="inputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
+                    {% if step_config.inputs %}
+                    {% for input_id, input_config in step_config.inputs.items() %}
+                    <div class="mb-4">
+                        <label for="{{ input_id }}" class="block text-sm font-medium text-gray-400 mb-2">
+                            {{ input_config.label }}
+                            {% if input_config.required %}
+                            <span class="text-red-500">*</span>
+                            {% endif %}
+                        </label>
+                        {% if input_config.type == 'textarea' %}
+                        <textarea id="{{ input_id }}" name="{{ input_id }}"
+                            class="w-full h-32 bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                            placeholder="{{ input_config.placeholder }}" data-db-field="{{ input_config.db_field }}"
+                            data-db-table="{{ input_config.db_table }}">{{ input_values[input_id] if input_values and input_id in input_values else '' }}</textarea>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-gray-400">No inputs configured for this step.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Prompt Accordion -->
+            <div class="border border-dark-border rounded-lg overflow-hidden">
+                <button
+                    class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+                    onclick="toggleAccordion('prompt')">
+                    <span class="font-medium text-dark-text">Prompt</span>
+                    <span class="text-gray-400" id="prompt-summary">
+                        {% if step_config.prompt %}
+                        {{ step_config.prompt.template|truncate(50) }}
+                        {% else %}
+                        No prompt configured
+                        {% endif %}
+                    </span>
+                    <svg class="w-5 h-5 transform transition-transform" id="prompt-icon" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="prompt-content" class="hidden p-4 bg-dark-bg text-dark-text">
+                    {% if step_config.prompt %}
+                    <div class="mb-4">
+                        <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
+                        <pre
+                            class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.prompt.template }}</pre>
+                    </div>
+                    {% if step_config.prompt.settings %}
+                    <div class="mt-4">
+                        <h3 class="text-lg font-medium mb-2 text-dark-text">Settings</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            {% for setting, value in step_config.prompt.settings.items() %}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400">{{ setting }}</label>
+                                <input type="text" value="{{ value }}"
+                                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                    readonly>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-gray-400">No prompt configured for this step.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Outputs Accordion -->
+            <div class="border border-dark-border rounded-lg overflow-hidden">
+                <button
+                    class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+                    onclick="toggleAccordion('outputs')">
+                    <span class="font-medium text-dark-text">Outputs</span>
+                    <span class="text-gray-400" id="outputs-summary">
+                        {% if step_config.outputs %}
+                        {% set output_count = step_config.outputs|length %}
+                        {{ output_count }} output{{ 's' if output_count != 1 else '' }} configured
+                        {% else %}
+                        No outputs configured
+                        {% endif %}
+                    </span>
+                    <svg class="w-5 h-5 transform transition-transform" id="outputs-icon" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
+                    {% if step_config.outputs %}
+                    {% for output_id, output_config in step_config.outputs.items() %}
+                    <div class="mb-4">
+                        <label for="{{ output_id }}" class="block text-sm font-medium text-gray-400 mb-2">
+                            {{ output_config.label }}
+                        </label>
+                        {% if output_config.type == 'textarea' %}
+                        <textarea id="{{ output_id }}" name="{{ output_id }}"
+                            class="w-full h-32 bg-dark-bg border border-dark-border text-dark-text rounded p-4" readonly
+                            data-db-field="{{ output_config.db_field }}"
+                            data-db-table="{{ output_config.db_table }}">{{ output_values[output_id] if output_values and output_id in output_values else '' }}</textarea>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-gray-400">No outputs configured for this step.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAccordion(id) {
+        const content = document.getElementById(id + '-content');
+        const icon = document.getElementById(id + '-icon');
+        if (content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            icon.classList.add('rotate-180');
+        } else {
+            content.classList.add('hidden');
+            icon.classList.remove('rotate-180');
+        }
+    }
+
+    // Save input values when they change
+    document.querySelectorAll('textarea[data-db-field]').forEach(textarea => {
+        textarea.addEventListener('change', async function () {
+            const field = this.dataset.dbField;
+            const table = this.dataset.dbTable;
+            const value = this.value;
+
+            try {
+                const response = await fetch(`/api/workflow/posts/${postId}/${stage}/${substage}/${step}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        field: field,
+                        table: table,
+                        value: value
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save');
+                }
+            } catch (error) {
+                console.error('Error saving:', error);
+                // TODO: Show error toast
+            }
+        });
+    });
+</script>
+{% endblock %}
