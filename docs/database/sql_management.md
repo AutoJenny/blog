@@ -208,4 +208,10 @@ psql $DATABASE_URL -U nickfiddes -c "REASSIGN OWNED BY nickfiddes TO postgres;"
   - Check that critical tables (e.g., post, post_section, post_development, llm_action, etc.) contain data if expected.
   - If a table is empty, determine if this is expected (e.g., new feature, not yet used) or a sign of a backup/restore issue.
   - Validate with curl or browser before proceeding with further destructive or schema-changing operations.
-  - For new tables/features, check if they are present in the backup and document if they are not yet in use. 
+  - For new tables/features, check if they are present in the backup and document if they are not yet in use.
+
+## Canonical Workflow Tables
+
+- The canonical workflow tables are: workflow_stage_entity, workflow_sub_stage_entity, workflow_step_entity, and workflow_field_mapping.
+- When seeding workflow tables, always ensure workflow_step_entity is included and seeded with at least a 'Main' step for each sub-stage.
+- All schema changes to workflow_step_entity must be documented in /docs/database/schema.md and backed up before applying. 

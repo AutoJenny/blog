@@ -2,6 +2,19 @@
 
 ## Overview
 
+This directory contains the current, active documentation for the workflow system.
+
+## Legacy Documentation
+
+Historical workflow documentation and references are maintained in `/docs/legacy/workflow/`. These files are kept for reference purposes only and should not be used for active development.
+
+The legacy documentation includes:
+- Historical stage and substage definitions
+- Legacy field mappings and data structures
+- Previous database schema definitions
+
+For all current development, please use the documentation in this directory.
+
 The workflow system is a structured content creation pipeline that guides users through the process of creating blog posts from initial idea to final publication. The system is divided into three main stages:
 
 1. **Planning Stage**
