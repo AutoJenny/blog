@@ -7,6 +7,7 @@ from config import get_config
 import redis
 import psutil
 import time
+from app.workflow import workflow
 
 def create_app():
     # Load environment variables
@@ -38,10 +39,17 @@ def create_app():
     app.register_blueprint(main_bp)
     from app.blog import bp as blog_bp
     app.register_blueprint(blog_bp, url_prefix='/blog')
+    from app.llm import bp as llm_bp
+    app.register_blueprint(llm_bp, url_prefix='/llm')
+    app.register_blueprint(workflow, url_prefix='/workflow')
 
     @app.route('/health')
     def health_check():
-        return jsonify({'status': 'healthy'}), 200
+        """Basic health check endpoint."""
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': time.time()
+        })
 
     @app.route('/favicon.ico')
     def favicon():

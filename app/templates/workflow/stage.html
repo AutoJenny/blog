@@ -1,26 +1,32 @@
 {% extends "workflow/base.html" %}
 
-{% block title %}{{ stage.name }} - Workflow{% endblock %}
-
-{% block workflow_content %}
-<div class="workflow-header">
-    <h1 class="workflow-title">{{ stage.name }}</h1>
-    <p class="workflow-description">{{ stage.description }}</p>
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for substage in substages if substage.stage_id == stage.id %}
-    <a href="{{ url_for('workflow.substage_view', stage_id=stage.id, substage_id=substage.id) }}" class="block">
-        <div class="bg-dark-bg border border-dark-border rounded-xl p-6 hover:border-dark-accent transition">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="bg-dark-accent/10 p-3 rounded-lg">
-                    <i class="fa-solid fa-folder text-dark-accent text-xl"></i>
-                </div>
-                <h2 class="text-xl font-bold text-white">{{ substage.name }}</h2>
-            </div>
-            <p class="text-gray-400">{{ substage.description }}</p>
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <a href="{{ url_for('workflow.index') }}" class="text-blue-600 hover:text-blue-800">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Workflow
+            </a>
         </div>
-    </a>
-    {% endfor %}
+
+        <h1 class="text-3xl font-bold mb-6">{{ stage.name }}</h1>
+        <p class="text-gray-600 mb-8">{{ stage.description }}</p>
+
+        <div class="grid gap-6">
+            {% for substage in substages %}
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">{{ substage.name }}</h2>
+                <p class="text-gray-600 mb-4">{{ substage.description }}</p>
+
+                <div class="mt-4">
+                    <a href="{{ url_for('workflow.substage', stage_name=stage.name, substage_name=substage.name) }}"
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        View Substage
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 {% endblock %}

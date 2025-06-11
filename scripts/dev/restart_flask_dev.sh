@@ -1,31 +1,33 @@
 #!/bin/bash
 
-# Stop all processes using port 5000
 PORT=5000
+LOGFILE="flask.log"
 
-# Find and kill processes listening on port 5000
+# Stop any process using port 5000
 PIDS=$(lsof -ti :$PORT)
 if [ -n "$PIDS" ]; then
   echo "Stopping processes on port $PORT: $PIDS"
   kill -9 $PIDS
 else
-  echo "No processes found on port $PORT."
+  echo "No process found on port $PORT."
 fi
 
-# Kill any background Flask, Gunicorn, or Python servers
-pkill -f run.py 2>/dev/null && echo "Killed run.py" || echo "No run.py process found."
-pkill -f flask 2>/dev/null && echo "Killed flask" || echo "No flask process found."
-pkill -f gunicorn 2>/dev/null && echo "Killed gunicorn" || echo "No gunicorn process found."
-pkill -f python3 2>/dev/null && echo "Killed python3" || echo "No python3 process found."
+# Stop any background Flask, Gunicorn, or Python servers
+pkill -f run.py 2>/dev/null || true
+pkill -f flask 2>/dev/null || true
+pkill -f gunicorn 2>/dev/null || true
+pkill -f python3 2>/dev/null || true
 
-# Wait a moment for processes to exit
-sleep 2
-
-# Start Flask server with full dev diagnostics
-export FLASK_ENV=development
-export FLASK_DEBUG=1
+# Start Flask server in background with logging
 export PYTHONUNBUFFERED=1
+nohup python3 -u run.py > $LOGFILE 2>&1 &
 
-# Use python -u for unbuffered output
-echo "Starting Flask server (run.py) with full dev diagnostics..."
-python3 -u run.py 
+# Wait for server to start
+sleep 2
+if curl -s http://localhost:$PORT > /dev/null; then
+  echo "Flask server started successfully on port $PORT. Logs: $LOGFILE"
+else
+  echo "Failed to start Flask server. Check $LOGFILE for details."
+  tail -20 $LOGFILE
+  exit 1
+fi 

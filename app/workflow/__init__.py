@@ -1,8 +1,8 @@
 from flask import Blueprint
 
-bp = Blueprint('workflow', __name__, url_prefix='/workflow')
+workflow = Blueprint('workflow', __name__)
 
-from app.workflow import routes
+from . import routes
 from app.workflow.navigation import init_app
 
 def init_workflow(app):
