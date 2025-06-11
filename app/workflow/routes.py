@@ -35,11 +35,15 @@ def get_all_posts():
 
 def load_step_config(stage_name: str, substage_name: str, step_name: str):
     config_path = os.path.join(os.path.dirname(__file__), 'config', f'{stage_name}_steps.json')
+    print(f"DEBUG: Loading config from {config_path}")
     try:
         with open(config_path, 'r') as f:
             config = json.load(f)
-            return config.get(stage_name, {}).get(substage_name, {}).get(step_name, {})
-    except (FileNotFoundError, json.JSONDecodeError):
+            result = config.get(stage_name, {}).get(substage_name, {}).get(step_name, {})
+            print(f"DEBUG: Config for {stage_name}/{substage_name}/{step_name}: {result}")
+            return result
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"DEBUG: Error loading config: {e}")
         return {}
 
 @workflow.route('/')
@@ -94,6 +98,7 @@ def substage(post_id, stage_name: str, substage_name: str):
 
 @workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/')
 def step(post_id, stage_name: str, substage_name: str, step_name: str):
+    print(f"DEBUG: step route called with post_id={post_id}, stage_name={stage_name}, substage_name={substage_name}, step_name={step_name}")
     navigator.load_navigation()
     stage = next((s for s in navigator.stages if s['name'] == stage_name), None)
     if not stage:
@@ -209,4 +214,8 @@ def api_run_llm():
         else:
             return jsonify({'status': 'error', 'error': result.stderr}), 500
     except Exception as e:
-        return jsonify({'status': 'error', 'error': str(e)}), 500 
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@workflow.route('/<int:post_id>/<stage_name>/<substage_name>/test/')
+def test_step(post_id, stage_name: str, substage_name: str):
+    return f"Test route: post_id={post_id}, stage_name={stage_name}, substage_name={substage_name}" 

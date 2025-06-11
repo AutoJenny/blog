@@ -1,5 +1,20 @@
 <!-- Workflow Content Module -->
 <div class="space-y-4">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-dark-text">
+            {% block step_heading %}{{ step_config.title }}{% endblock %}
+        </h2>
+        <button id="run-llm" class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">
+            Run LLM
+        </button>
+    </div>
+
+    {% block step_description %}
+    {% if step_config.description %}
+    <p class="text-gray-400 mb-6">{{ step_config.description }}</p>
+    {% endif %}
+    {% endblock %}
+
     <!-- Inputs Accordion -->
     <div class="border border-dark-border rounded-lg overflow-hidden">
         <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
@@ -283,39 +298,27 @@
         });
     });
 
-    function runLLM() {
-        const postId = window.post_id || {{ post_id| tojson
-    }};
-    const stageName = window.current_stage || {{ current_stage| tojson }};
-    const substageName = window.current_substage || {{ current_substage| tojson }};
-    const stepName = window.current_step || {{ current_step| tojson }};
-    const btn = event.target;
-    btn.disabled = true;
-    btn.textContent = 'Running...';
-    fetch('/workflow/api/run_llm/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            post_id: postId,
-            stage_name: stageName,
-            substage_name: substageName,
-            step_name: stepName
+    document.getElementById('run-llm').addEventListener('click', function () {
+        // Trigger the LLM processing script
+        fetch('/workflow/api/run_llm/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                post_id: {{ post_id }},
+            step_name: '{{ current_step }}',
+            substage_name: '{{ current_substage }}',
+            stage_name: '{{ current_stage }}'
+            })
         })
-    })
         .then(response => response.json())
         .then(data => {
-            if (data.status === 'success') {
-                location.reload();
-            } else {
-                alert('LLM error: ' + (data.error || 'Unknown error'));
-                btn.disabled = false;
-                btn.textContent = 'Run LLM';
-            }
+            console.log('LLM processing result:', data);
+            // Handle the response, e.g., update the output field
         })
-        .catch(err => {
-            alert('Request failed: ' + err);
-            btn.disabled = false;
-            btn.textContent = 'Run LLM';
+        .catch(error => {
+            console.error('Error:', error);
         });
-    }
+    });
 </script>
