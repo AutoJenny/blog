@@ -28,8 +28,9 @@
                         {% for input_id, input_config in step_config.inputs.items() %}
                         {% set val = input_values[input_id] if input_values and input_id in input_values else '—' %}
                         {% if not loop.first %}{% set ns.summary = ns.summary + ', ' %}{% endif %}
+                        {% set first_line = val.split('\n')[0] if val else '' %}
                         {% set ns.summary = ns.summary + '<span class=\"text-blue-500\">[' + input_id + ']</span>: ' +
-                        val %}
+                        first_line %}
                         {% endfor %}
                         {{ ns.summary|safe }}
                         {% else %}
@@ -41,7 +42,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
-                <div id="inputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
+                <div id="inputs-content" class="hidden p-4 bg-dark-bg text-dark-text" style="max-height:none;">
                     {% if step_config.inputs %}
                     {% for input_id, input_config in step_config.inputs.items() %}
                     <div class="mb-4">
@@ -49,10 +50,10 @@
                             [{{ input_id }}]
                         </label>
                         {% if input_config.type == 'textarea' %}
-                        <textarea id="{{ input_id }}" name="{{ input_id }}"
-                            class="w-full h-32 bg-dark-bg border border-dark-border text-dark-text rounded p-4"
-                            placeholder="{{ input_config.placeholder }}" data-db-field="{{ input_config.db_field }}"
-                            data-db-table="{{ input_config.db_table }}">{{ input_values[input_id] if input_values and input_id in input_values else '' }}</textarea>
+                        <pre id="{{ input_id }}" name="{{ input_id }}"
+                            class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4 whitespace-pre-wrap break-words"
+                            data-db-field="{{ input_config.db_field }}"
+                            data-db-table="{{ input_config.db_table }}">{{ input_values[input_id] if input_values and input_id in input_values else '' }}</pre>
                         {% endif %}
                     </div>
                     {% endfor %}
@@ -216,10 +217,20 @@
                             [{{ output_id }}]
                         </label>
                         {% if output_config.type == 'textarea' %}
+                        {% if output_titles %}
+                        <ul class="list-disc pl-6">
+                            {% for title in output_titles %}
+                            <li>{{ title }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        {% set output_val = output_values[output_id] if output_values and output_id in output_values
+                        else '' %}
                         <pre id="{{ output_id }}" name="{{ output_id }}"
                             class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4 whitespace-pre-wrap break-words"
                             data-db-field="{{ output_config.db_field }}"
-                            data-db-table="{{ output_config.db_table }}">{{ output_values[output_id] if output_values and output_id in output_values else '' }}</pre>
+                            data-db-table="{{ output_config.db_table }}">{{ output_val }}</pre>
+                        {% endif %}
                         {% endif %}
                     </div>
                     {% endfor %}

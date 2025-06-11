@@ -141,6 +141,17 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
     print(f"DEBUG: input_values for post_id={post_id}: {input_values}")
     print(f"DEBUG: output_values for post_id={post_id}: {output_values}")
 
+    # Parse output as JSON array if possible (for outputs like provisional_title)
+    output_titles = None
+    if 'outputs' in step_config:
+        for output_id in step_config['outputs']:
+            val = output_values.get(output_id)
+            if val and isinstance(val, str) and val.strip().startswith('[') and val.strip().endswith(']'):
+                try:
+                    output_titles = json.loads(val)
+                except Exception:
+                    output_titles = None
+
     return render_template(
         f'workflow/steps/{step_name}.html',
         stage=stage,
@@ -154,7 +165,8 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
         current_step=step_name,
         step_config=step_config,
         input_values=input_values,
-        output_values=output_values
+        output_values=output_values,
+        output_titles=output_titles
     )
 
 # Redirect old URLs to new format with post_id
