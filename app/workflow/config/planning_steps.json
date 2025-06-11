@@ -55,6 +55,54 @@
                         "db_table": "post_development"
                     }
                 }
+            },
+            "provisional_title": {
+                "title": "Provisional Title",
+                "description": "Generate a provisional title for your post based on the expanded idea.",
+                "inputs": {
+                    "basic_idea": {
+                        "type": "textarea",
+                        "label": "Expanded Idea",
+                        "placeholder": "The expanded idea from the previous step...",
+                        "db_field": "basic_idea",
+                        "db_table": "post_development",
+                        "required": true
+                    }
+                },
+                "settings": {
+                    "llm": {
+                        "provider": "ollama",
+                        "model": "llama3.1:70b",
+                        "system_prompt": "[system] You are an expert in Scottish history and culture.",
+                        "task_prompt": "[system] You are an expert in Scottish history and culture. Generate five alternative, arresting, and informative blog post titles for a post based on the following expanded idea. Return your response as a strict JSON array of strings, with no commentary or formatting—just the list of titles.\n\nExpanded Idea:\n[data:basic_idea]",
+                        "input_mapping": {
+                            "basic_idea": {
+                                "field": "basic_idea",
+                                "table": "post_development",
+                                "description": "The expanded idea to base the title on"
+                            }
+                        },
+                        "output_mapping": {
+                            "table": "post_development",
+                            "field": "provisional_title"
+                        },
+                        "parameters": {
+                            "temperature": 0.7,
+                            "max_tokens": 100,
+                            "top_p": 0.9,
+                            "frequency_penalty": 0.0,
+                            "presence_penalty": 0.0
+                        }
+                    }
+                },
+                "outputs": {
+                    "provisional_title": {
+                        "type": "textarea",
+                        "label": "Provisional Title",
+                        "db_field": "provisional_title",
+                        "db_table": "post_development"
+                    }
+                }
             }
         }
     }
