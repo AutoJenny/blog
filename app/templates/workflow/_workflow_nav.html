@@ -4,14 +4,16 @@
         <!-- Line 1: Breadcrumbs and Post Selector -->
         <div class="flex justify-between items-center mb-4">
             <div class="text-dark-text">
-                <span class="text-gray-400">Workflow</span>
+                <a href="{{ url_for('workflow.index') }}" class="text-gray-400 hover:text-dark-accent">Workflow</a>
                 {% if stage %}
                 <span class="mx-2">/</span>
-                <span class="text-dark-accent">{{ stage.name }}</span>
+                <a href="{{ url_for('workflow.stage', stage_name=stage.name) }}"
+                    class="text-dark-accent hover:text-dark-accent/80">{{ stage.name }}</a>
                 {% endif %}
                 {% if substage %}
                 <span class="mx-2">/</span>
-                <span class="text-dark-accent">{{ substage.name }}</span>
+                <a href="{{ url_for('workflow.substage', stage_name=stage.name, substage_name=substage.name) }}"
+                    class="text-dark-accent hover:text-dark-accent/80">{{ substage.name }}</a>
                 {% endif %}
             </div>
             <div class="relative">
@@ -26,58 +28,71 @@
         <div class="flex justify-between mb-4">
             <!-- Planning Stage -->
             <div class="flex space-x-4">
-                <div class="text-center">
+                <a href="{{ url_for('workflow.substage', stage_name='planning', substage_name='idea') }}"
+                    class="text-center">
                     <i class="fas fa-lightbulb text-2xl text-dark-accent"></i>
                     <div class="text-sm text-dark-text">Idea</div>
-                </div>
-                <div class="text-center">
+                </a>
+                <a href="{{ url_for('workflow.substage', stage_name='planning', substage_name='research') }}"
+                    class="text-center">
                     <i class="fas fa-search text-2xl text-dark-accent"></i>
                     <div class="text-sm text-dark-text">Research</div>
-                </div>
-                <div class="text-center">
+                </a>
+                <a href="{{ url_for('workflow.substage', stage_name='planning', substage_name='structure') }}"
+                    class="text-center">
                     <i class="fas fa-sitemap text-2xl text-dark-accent"></i>
                     <div class="text-sm text-dark-text">Structure</div>
-                </div>
+                </a>
             </div>
             <!-- Writing Stage -->
             <div class="flex space-x-4">
-                <div class="text-center">
+                <a href="{{ url_for('workflow.substage', stage_name='writing', substage_name='draft') }}"
+                    class="text-center">
                     <i class="fas fa-pen text-2xl text-dark-accent"></i>
                     <div class="text-sm text-dark-text">Draft</div>
-                </div>
-                <div class="text-center">
+                </a>
+                <a href="{{ url_for('workflow.substage', stage_name='writing', substage_name='review') }}"
+                    class="text-center">
                     <i class="fas fa-check text-2xl text-dark-accent"></i>
                     <div class="text-sm text-dark-text">Review</div>
-                </div>
-                <div class="text-center">
+                </a>
+                <a href="{{ url_for('workflow.substage', stage_name='writing', substage_name='images') }}"
+                    class="text-center">
                     <i class="fas fa-image text-2xl text-dark-accent"></i>
                     <div class="text-sm text-dark-text">Images</div>
-                </div>
+                </a>
             </div>
             <!-- Publishing Stage -->
             <div class="flex space-x-4">
-                <div class="text-center">
+                <a href="{{ url_for('workflow.substage', stage_name='publishing', substage_name='finalize') }}"
+                    class="text-center">
                     <i class="fas fa-flag text-2xl text-dark-accent"></i>
                     <div class="text-sm text-dark-text">Finalize</div>
-                </div>
-                <div class="text-center">
+                </a>
+                <a href="{{ url_for('workflow.substage', stage_name='publishing', substage_name='launch') }}"
+                    class="text-center">
                     <i class="fas fa-rocket text-2xl text-dark-accent"></i>
                     <div class="text-sm text-dark-text">Launch</div>
-                </div>
-                <div class="text-center">
+                </a>
+                <a href="{{ url_for('workflow.substage', stage_name='publishing', substage_name='syndication') }}"
+                    class="text-center">
                     <i class="fas fa-share-alt text-2xl text-dark-accent"></i>
                     <div class="text-sm text-dark-text">Syndicate</div>
-                </div>
+                </a>
             </div>
         </div>
 
         <!-- Line 3: Tabs for steps in the current sub-stage -->
         <div class="border-b border-dark-border">
             <div class="flex space-x-4">
-                <a href="#" class="px-4 py-2 text-dark-accent border-b-2 border-dark-accent">Main</a>
-                <a href="#" class="px-4 py-2 text-dark-text hover:text-dark-accent">Step 1</a>
-                <a href="#" class="px-4 py-2 text-dark-text hover:text-dark-accent">Step 2</a>
-                <a href="#" class="px-4 py-2 text-dark-text hover:text-dark-accent">Step 3</a>
+                <a href="{{ url_for('workflow.step', stage_name=stage.name, substage_name=substage.name, step_name='Main') }}"
+                    class="px-4 py-2 text-dark-accent border-b-2 border-dark-accent">Main</a>
+                <a href="{{ url_for('workflow.step', stage_name=stage.name, substage_name=substage.name, step_name='Step1') }}"
+                    class="px-4 py-2 text-dark-text hover:text-dark-accent">Step 1</a>
+                <a href="{{ url_for('workflow.step', stage_name=stage.name, substage_name=substage.name, step_name='Step2') }}"
+                    class="px-4 py-2 text-dark-text hover:text-dark-accent">Step 2</a>
+                <a href="{{ url_for('workflow.step', stage_name=stage.name, substage_name=substage.name, step_name='Step3') }}"
+                    class="px-4 py-2 text-dark-text hover:text-dark-accent">Step 3</a>
             </div>
         </div>
     </div>
