@@ -18,7 +18,7 @@
     <!-- Inputs Accordion -->
     <div class="border border-dark-border rounded-lg overflow-hidden">
         <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="toggleAccordion('inputs')">
+            onclick="document.getElementById('inputs-content').classList.toggle('hidden'); document.getElementById('inputs-icon').classList.toggle('rotate-180');">
             <span class="font-medium text-dark-text">Inputs</span>
             <span class="text-gray-400" id="inputs-summary">
                 {% if step_config.inputs %}
@@ -40,7 +40,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
         </button>
-        <div id="inputs-content" class="hidden p-4 bg-dark-bg text-dark-text" style="max-height:none;">
+        <div id="inputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
             {% if step_config.inputs %}
             {% for input_id, input_config in step_config.inputs.items() %}
             <div class="mb-4">
@@ -64,7 +64,7 @@
     <!-- Prompt Accordion -->
     <div class="border border-dark-border rounded-lg overflow-hidden">
         <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="toggleAccordion('prompt')">
+            onclick="document.getElementById('prompt-content').classList.toggle('hidden'); document.getElementById('prompt-icon').classList.toggle('rotate-180');">
             <span class="font-medium text-dark-text">Prompt</span>
             <span class="text-gray-400" id="prompt-summary">
                 {% if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt %}
@@ -86,14 +86,39 @@
         <div id="prompt-content" class="hidden p-4 bg-dark-bg text-dark-text">
             {% if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt %}
             <div class="mb-4">
-                <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
-                <pre
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-lg font-medium text-dark-text">Prompt Template</h3>
+                    <div class="space-x-2">
+                        <button id="edit-prompt" class="text-dark-accent hover:text-dark-hover">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button id="save-prompt" class="text-dark-accent hover:text-dark-hover hidden">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </div>
+                </div>
+                <pre id="prompt-display"
                     class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.settings.llm.task_prompt }}</pre>
+                <textarea id="prompt-edit"
+                    class="w-full h-32 bg-dark-hover p-4 rounded-lg text-sm text-dark-text hidden">{{ step_config.settings.llm.task_prompt }}</textarea>
             </div>
             {% elif step_config.prompt and step_config.prompt.template %}
             <div class="mb-4">
-                <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
-                <pre class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.prompt.template }}</pre>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-lg font-medium text-dark-text">Prompt Template</h3>
+                    <div class="space-x-2">
+                        <button id="edit-prompt" class="text-dark-accent hover:text-dark-hover">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button id="save-prompt" class="text-dark-accent hover:text-dark-hover hidden">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </div>
+                </div>
+                <pre id="prompt-display"
+                    class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.prompt.template }}</pre>
+                <textarea id="prompt-edit"
+                    class="w-full h-32 bg-dark-hover p-4 rounded-lg text-sm text-dark-text hidden">{{ step_config.prompt.template }}</textarea>
             </div>
             {% else %}
             <p class="text-gray-400">No prompt configured for this step.</p>
@@ -104,7 +129,7 @@
     <!-- Settings Accordion -->
     <div class="border border-dark-border rounded-lg overflow-hidden">
         <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="toggleAccordion('settings')">
+            onclick="document.getElementById('settings-content').classList.toggle('hidden'); document.getElementById('settings-icon').classList.toggle('rotate-180');">
             <span class="font-medium text-dark-text">Settings</span>
             <span class="text-gray-400" id="settings-summary">
                 {% if step_config.settings and step_config.settings.llm %}
@@ -176,7 +201,7 @@
     <!-- Outputs Accordion -->
     <div class="border border-dark-border rounded-lg overflow-hidden">
         <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="toggleAccordion('outputs')">
+            onclick="document.getElementById('outputs-content').classList.toggle('hidden'); document.getElementById('outputs-icon').classList.toggle('rotate-180');">
             <span class="font-medium text-dark-text">Outputs</span>
             <span class="text-gray-400" id="outputs-summary">
                 {% if output_titles and output_titles|length > 0 %}
@@ -197,7 +222,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
         </button>
-        <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text" style="max-height:none;">
+        <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
             {% if step_config.outputs %}
             {% for output_id, output_config in step_config.outputs.items() %}
             <div class="mb-4">
@@ -256,9 +281,17 @@
 </div>
 
 <script>
+    // Accordion functionality
     function toggleAccordion(id) {
-        const content = document.getElementById(id + '-content');
-        const icon = document.getElementById(id + '-icon');
+        console.log('Toggling accordion:', id); // Debug log
+        const content = document.getElementById(`${id}-content`);
+        const icon = document.getElementById(`${id}-icon`);
+
+        if (!content || !icon) {
+            console.error('Could not find elements for accordion:', id);
+            return;
+        }
+
         if (content.classList.contains('hidden')) {
             content.classList.remove('hidden');
             icon.classList.add('rotate-180');
@@ -267,6 +300,18 @@
             icon.classList.remove('rotate-180');
         }
     }
+
+    // Add click handlers to all accordion buttons
+    document.addEventListener('DOMContentLoaded', function () {
+        const accordionButtons = document.querySelectorAll('[onclick^="toggleAccordion"]');
+        accordionButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const id = this.getAttribute('onclick').match(/toggleAccordion\('(.+?)'\)/)[1];
+                toggleAccordion(id);
+            });
+        });
+    });
 
     // Save input values when they change
     document.querySelectorAll('textarea[data-db-field]').forEach(textarea => {
@@ -321,4 +366,60 @@
             console.error('Error:', error);
         });
     });
+
+    // Prompt editing functionality
+    const editPromptBtn = document.getElementById('edit-prompt');
+    const savePromptBtn = document.getElementById('save-prompt');
+    const promptDisplay = document.getElementById('prompt-display');
+    const promptEdit = document.getElementById('prompt-edit');
+
+    if (editPromptBtn && savePromptBtn && promptDisplay && promptEdit) {
+        editPromptBtn.addEventListener('click', function () {
+            promptDisplay.classList.add('hidden');
+            promptEdit.classList.remove('hidden');
+            editPromptBtn.classList.add('hidden');
+            savePromptBtn.classList.remove('hidden');
+        });
+
+        savePromptBtn.addEventListener('click', function () {
+            const newPrompt = promptEdit.value;
+
+            // Update the display
+            promptDisplay.textContent = newPrompt;
+            promptDisplay.classList.remove('hidden');
+            promptEdit.classList.add('hidden');
+            editPromptBtn.classList.remove('hidden');
+            savePromptBtn.classList.add('hidden');
+
+            // Save to the server
+            fetch('/workflow/api/update_prompt/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    post_id: {{ post_id }},
+                step_name: '{{ current_step }}',
+                substage_name: '{{ current_substage }}',
+                stage_name: '{{ current_stage }}',
+                prompt: newPrompt
+                })
+    })
+            .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Prompt updated successfully');
+            } else {
+                console.error('Failed to update prompt:', data.error);
+                // Revert the display if the save failed
+                promptDisplay.textContent = '{{ step_config.prompt.template if step_config.prompt and step_config.prompt.template else step_config.settings.llm.task_prompt if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt else "" }}';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Revert the display if there was an error
+            promptDisplay.textContent = '{{ step_config.prompt.template if step_config.prompt and step_config.prompt.template else step_config.settings.llm.task_prompt if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt else "" }}';
+        });
+        });
+    }
 </script>
