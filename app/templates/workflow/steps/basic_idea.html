@@ -1,80 +1,23 @@
-{% extends "workflow/base.html" %}
+{% extends "workflow/steps/planning_step.html" %}
+
+{% block step_heading %}
+<h1 class="text-3xl font-bold mb-6 text-dark-text">
+    Basic Idea{% if post and post.idea_seed %}: {{ post.idea_seed }}{% endif %}
+</h1>
+{% endblock %}
+
+{% block step_description %}{% endblock %}
 
 {% block workflow_content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold mb-6 text-dark-text">
-            Basic Idea{% if post and post.idea_seed %}: {{ post.idea_seed }}{% endif %}
-        </h1>
-
-        <div class="bg-dark-bg shadow rounded-lg p-6 border border-dark-border">
-            <div class="prose max-w-none text-dark-text">
-                <p class="text-gray-400 mb-4">Enter your basic idea for the post here. This will be the foundation of
-                    your content.</p>
-
-                <!-- Basic Idea content area -->
-                <div class="mt-8">
-                    <textarea class="w-full h-32 bg-dark-bg border border-dark-border text-dark-text rounded p-4"
-                        placeholder="Type your basic idea here..."></textarea>
-                </div>
-            </div>
-        </div>
+        {% set parent_content = super() %}
+        {{ parent_content
+        | replace('<h1 class="text-3xl font-bold mb-6 text-dark-text">' ~ step_config.title ~ (post.title and ': ' ~
+            post.title or '') ~ '</h1>', '')
+        | replace('<p class="text-gray-400 mb-6">Enter your basic idea for the post here. This will be the foundation of
+            your content.</p>', '')
+        }}
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('basicIdeaForm');
-        const ideaText = document.getElementById('ideaText');
-        const saveDraftBtn = document.getElementById('saveDraft');
-        const saveAndContinueBtn = document.getElementById('saveAndContinue');
-
-        // Load existing content if available
-        fetch(`/api/workflow/posts/${currentPostId}/planning/idea/basic_idea`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.content) {
-                    ideaText.value = data.content;
-                }
-            });
-
-        // Save draft
-        saveDraftBtn.addEventListener('click', function () {
-            saveContent(false);
-        });
-
-        // Save and continue
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            saveContent(true);
-        });
-
-        function saveContent(continueToNext) {
-            const content = ideaText.value;
-
-            fetch(`/api/workflow/posts/${currentPostId}/planning/idea/basic_idea`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ content })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (continueToNext) {
-                            window.location.href = `/workflow/planning/idea/provisional_title?post_id=${currentPostId}`;
-                        } else {
-                            // Show success message
-                            const toast = new bootstrap.Toast(document.createElement('div'));
-                            toast.show();
-                        }
-                    }
-                });
-        }
-    });
-</script>
 {% endblock %}
