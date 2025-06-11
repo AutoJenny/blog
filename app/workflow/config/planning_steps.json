@@ -1,0 +1,61 @@
+{
+    "planning": {
+        "idea": {
+            "basic_idea": {
+                "title": "Basic Idea",
+                "description": "Enter your basic idea for the post here. This will be the foundation of your content.",
+                "inputs": {
+                    "idea_seed": {
+                        "type": "textarea",
+                        "label": "Basic Idea",
+                        "placeholder": "Type your basic idea here...",
+                        "db_field": "idea_seed",
+                        "db_table": "post_development",
+                        "required": true
+                    }
+                },
+                "settings": {
+                    "llm": {
+                        "provider": "ollama",
+                        "model": "llama2",
+                        "system_prompt": "You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.",
+                        "task_prompt": "Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.",
+                        "input_mapping": {
+                            "idea_seed": {
+                                "field": "idea_seed",
+                                "table": "post_development",
+                                "description": "The core idea to be expanded"
+                            }
+                        },
+                        "output_mapping": {
+                            "table": "post_development",
+                            "field": "basic_idea"
+                        },
+                        "parameters": {
+                            "temperature": 0.7,
+                            "max_tokens": 500,
+                            "top_p": 0.9,
+                            "frequency_penalty": 0.0,
+                            "presence_penalty": 0.0
+                        }
+                    }
+                },
+                "prompt": {
+                    "template": "Based on the following basic idea: {idea_seed}\n\nGenerate a detailed blog post outline that expands on this concept.",
+                    "settings": {
+                        "temperature": 0.7,
+                        "max_tokens": 500
+                    }
+                },
+                "outputs": {
+                    "basic_idea": {
+                        "type": "textarea",
+                        "label": "Generated Basic Idea",
+                        "db_field": "basic_idea",
+                        "db_table": "post_development"
+                    }
+                }
+            }
+        }
+    }
+} 
