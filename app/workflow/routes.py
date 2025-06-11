@@ -209,4 +209,23 @@ def api_run_llm():
         else:
             return jsonify({'status': 'error', 'error': result.stderr}), 500
     except Exception as e:
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@workflow.route('/api/update_title_order/', methods=['POST'])
+def update_title_order():
+    data = request.get_json()
+    post_id = data.get('post_id')
+    titles = data.get('titles')
+    if not post_id or not titles or not isinstance(titles, list) or not titles:
+        return jsonify({'status': 'error', 'error': 'Missing or invalid parameters'}), 400
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE post_development SET provisional_title = %s, provisional_title_primary = %s WHERE post_id = %s",
+                    (json.dumps(titles), titles[0], post_id)
+                )
+                conn.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
         return jsonify({'status': 'error', 'error': str(e)}), 500 
