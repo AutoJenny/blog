@@ -1,52 +1,20 @@
 {% extends "workflow/base.html" %}
 
 {% block workflow_content %}
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <h2>Provisional Title</h2>
-            <form id="provisionalTitleForm" class="mt-4">
-                <div class="mb-4">
-                    <label for="titleText" class="form-label">Enter a provisional title for your post</label>
-                    <input type="text" class="form-control" id="titleText" placeholder="Enter a working title...">
-                    <div class="form-text">This can be refined later in the process</div>
-                </div>
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-dark-text">Provisional Title</h1>
 
-                <div class="mb-4">
-                    <label class="form-label">Title Guidelines</label>
-                    <div class="card">
-                        <div class="card-body">
-                            <ul class="list-unstyled">
-                                <li class="mb-2">
-                                    <i class="bi bi-lightbulb text-warning"></i>
-                                    Keep it clear and descriptive
-                                </li>
-                                <li class="mb-2">
-                                    <i class="bi bi-lightbulb text-warning"></i>
-                                    Include key terms for SEO
-                                </li>
-                                <li class="mb-2">
-                                    <i class="bi bi-lightbulb text-warning"></i>
-                                    Make it engaging but not clickbait
-                                </li>
-                                <li class="mb-2">
-                                    <i class="bi bi-lightbulb text-warning"></i>
-                                    Aim for 50-60 characters
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+        <div class="bg-dark-bg shadow rounded-lg p-6 border border-dark-border">
+            <div class="prose max-w-none text-dark-text">
+                <p class="text-gray-400 mb-4">Enter a provisional title for your post here.</p>
 
-                <div class="d-flex justify-content-between">
-                    <button type="button" class="btn btn-outline-secondary" id="saveDraft">
-                        <i class="bi bi-save"></i> Save Draft
-                    </button>
-                    <button type="submit" class="btn btn-primary" id="saveAndContinue">
-                        Save and Continue
-                    </button>
+                <!-- Provisional Title content area -->
+                <div class="mt-8">
+                    <input type="text" class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                        placeholder="Type your provisional title here...">
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
