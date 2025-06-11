@@ -32,7 +32,7 @@
                         <i class="fas fa-lightbulb text-2xl mb-2 text-dark-text"></i>
                         <div class="text-sm text-dark-text">Idea</div>
                     </a>
-                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='research', step_name='research_plan') }}"
+                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='research', step_name='concepts') }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'planning' and current_substage == 'research' %}border-blue-500{% endif %}">
                         <i class="fas fa-search text-2xl mb-2 text-dark-text"></i>
                         <div class="text-sm text-dark-text">Research</div>
@@ -99,6 +99,15 @@
                 <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='idea', step_name='provisional_title') }}"
                     class="px-4 py-2 border-b-2 {% if current_step == 'provisional_title' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
                     Provisional Title
+                </a>
+                {% elif current_substage == 'research' %}
+                <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='research', step_name='concepts') }}"
+                    class="px-4 py-2 border-b-2 {% if current_step == 'concepts' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                    Concepts
+                </a>
+                <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='research', step_name='facts') }}"
+                    class="px-4 py-2 border-b-2 {% if current_step == 'facts' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                    Facts
                 </a>
                 {% else %}
                 <a href="{{ url_for('workflow.step', post_id=post_id, stage_name=current_stage, substage_name=current_substage, step_name='main') }}"
