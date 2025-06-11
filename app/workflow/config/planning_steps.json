@@ -17,9 +17,9 @@
                 "settings": {
                     "llm": {
                         "provider": "ollama",
-                        "model": "llama2",
+                        "model": "llama3.1:70b",
                         "system_prompt": "You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.",
-                        "task_prompt": "Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.",
+                        "task_prompt": "[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n\nShort Idea:\n[data:idea_seed]\n\nYour response should:\n1. Focus specifically on Scottish cultural and historical aspects\n2. Maintain academic accuracy while being accessible\n3. Suggest clear angles and themes for development\n4. Use UK-British spellings and idioms\n5. Return only the expanded brief, with no additional commentary or formatting",
                         "input_mapping": {
                             "idea_seed": {
                                 "field": "idea_seed",
@@ -33,7 +33,7 @@
                         },
                         "parameters": {
                             "temperature": 0.7,
-                            "max_tokens": 500,
+                            "max_tokens": 1000,
                             "top_p": 0.9,
                             "frequency_penalty": 0.0,
                             "presence_penalty": 0.0
