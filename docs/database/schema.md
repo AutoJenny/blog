@@ -50,30 +50,30 @@ The Blog CMS uses PostgreSQL (or SQLite in dev) for all persistent storage. Belo
 
 All workflow logic should reference these tables for stage and sub-stage lists, not hard-coded values.
 
-## Table: post_substage_action
+## Table: post_workflow_step_action
 
-Tracks LLM action button settings for each post and workflow substage. Used to store which LLM action is selected for a given substage of a post, and the button label/order for the UI.
+Tracks LLM action button settings for each post and workflow step. Used to store which LLM action is selected for a given step of a post, and the button label/order for the UI.
 
 | Column        | Type         | Description                                      |
 |--------------|--------------|--------------------------------------------------|
 | id           | SERIAL       | Primary key                                      |
 | post_id      | INTEGER      | References post(id)                              |
-| substage     | VARCHAR(64)  | Substage name                                    |
+| step_id      | INTEGER      | References workflow_step_entity(id)              |
 | action_id    | INTEGER      | References llm_action(id)                        |
-| input_field  | VARCHAR(128) | **NEW**: Selected input field for this action    |
-| output_field | VARCHAR(128) | **NEW**: Selected output field for this action   |
+| input_field  | VARCHAR(128) | Selected input field for this action             |
+| output_field | VARCHAR(128) | Selected output field for this action            |
 | button_label | TEXT         | Button label (optional)                          |
 | button_order | INTEGER      | Button order (default 0)                         |
 
-**2025-05-30:** Added `input_field` and `output_field` columns to `post_substage_action` for LLM workflow field persistence.
+**2024-06-11:** Table renamed from post_substage_action to post_workflow_step_action. Now references workflow_step_entity (step_id) instead of substage. All LLM workflow actions are now step-based for maximum granularity and future extensibility.
 
-Example usage: Allows the UI to save and restore which LLM action is selected for a post's substage, and how it appears in the workflow editor.
+Example usage: Allows the UI to save and restore which LLM action is selected for a post's step, and how it appears in the workflow editor.
 
-### post_substage_action
+### post_workflow_step_action
 
-- **PUT /api/v1/llm/post_substage_actions/<int:psa_id>**
-  - Now supports updating `input_field` and `output_field` in addition to `button_label` and `button_order`.
-  - Enables field persistence for workflow UI.
+- **PUT /api/v1/llm/post_workflow_step_actions/<int:pws_id>**
+  - Supports updating `input_field`, `output_field`, `button_label`, and `button_order`.
+  - Enables field persistence for workflow UI at the step level.
 
 ## Table: workflow_field_mapping
 
@@ -123,8 +123,8 @@ Stores prompt templates for LLM actions. As of 2024-06, supports both legacy fla
 
 ### [2024-06-10] Workflow UI Field Persistence
 
-- The workflow UI now loads and saves all input/output fields to the `post_development` table, and LLM action selections to the `post_substage_action` table, for each post and substage.
-- This enables robust, permanent persistence of workflow state and makes the interface easily transferable to other stages/substages.
+- The workflow UI now loads and saves all input/output fields to the `post_development` table, and LLM action selections to the `post_workflow_step_action` table, for each post and step.
+- This enables robust, permanent persistence of workflow state and makes the interface easily transferable to other steps/stages.
 - See also: docs/frontend/templates.md for frontend details.
 
 ## Table: post_workflow_stage
@@ -177,8 +177,8 @@ Stores LLM prompt/action templates. As of 2025-06, supports both legacy flat str
 
 ### [2024-06-10] Workflow UI Field Persistence
 
-- The workflow UI now loads and saves all input/output fields to the `post_development` table, and LLM action selections to the `post_substage_action` table, for each post and substage.
-- This enables robust, permanent persistence of workflow state and makes the interface easily transferable to other stages/substages.
+- The workflow UI now loads and saves all input/output fields to the `post_development` table, and LLM action selections to the `post_workflow_step_action` table, for each post and step.
+- This enables robust, permanent persistence of workflow state and makes the interface easily transferable to other steps/stages.
 - See also: docs/frontend/templates.md for frontend details.
 
 ## Table: post_workflow_stage
@@ -202,3 +202,23 @@ Tracks the status and timing of each workflow stage for a post. As of 2025-06-10
 - Always make a full backup and save the current create_tables.sql before running this migration.
 - If restoring a backup made before this change, use the matching create_tables.sql from the backup directory.
 - If you need to bring restored data up to the new schema, run the migration SQL to add the new columns after restore. 
+
+## Table: workflow_step_entity
+
+Canonical list of steps for each workflow sub-stage. Each step belongs to a sub-stage and is ordered. Used for fine-grained workflow navigation and UI logic.
+
+| Column        | Type         | Description                                      |
+|--------------|--------------|--------------------------------------------------|
+| id           | SERIAL (PK)  | Unique row ID                                    |
+| sub_stage_id | INTEGER      | FK to workflow_sub_stage_entity(id)              |
+| name         | VARCHAR(100) | Step name (e.g., 'Main')                         |
+| description  | TEXT         | Step description                                 |
+| step_order   | INTEGER      | Order for display (default 1)                    |
+
+- **UNIQUE(sub_stage_id, name)**: Ensures no duplicate step names within a sub-stage.
+- Used by the workflow navigation system to allow multiple steps per sub-stage (future extensibility).
+- All workflow navigation and seeding scripts must reference this table for step data.
+
+### Example Usage
+- Each sub-stage is seeded with a default 'Main' step.
+- Additional steps can be added for more granular workflow processes. 
