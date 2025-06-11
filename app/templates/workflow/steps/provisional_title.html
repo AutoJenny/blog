@@ -1,33 +1,13 @@
 {% extends "workflow/steps/planning_step.html" %}
 
 {% block step_heading %}
-<div class="flex justify-between items-center">
-    <h1 class="text-3xl font-bold mb-6 text-dark-text">
-        Provisional Title{% if post and post.idea_seed %}: {{ post.idea_seed }}{% endif %}
-    </h1>
-    <button
-        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-        onclick="runLLM()">
-        Run LLM
-    </button>
-</div>
+<h1 class="text-3xl font-bold mb-6 text-dark-text">
+    Planning: Provisional Title{% if post and post.title %}: {{ post.title }}{% endif %}
+</h1>
 {% endblock %}
 
-{% block step_description %}{% endblock %}
-
-{% block workflow_content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-        {% set parent_content = super() %}
-        {{ parent_content
-        | replace('<h1 class="text-3xl font-bold mb-6 text-dark-text">' ~ step_config.title ~ (post.title and ': ' ~
-            post.title or '') ~ '</h1>', '')
-        | replace('<p class="text-gray-400 mb-6">Read the input (basic_idea) and suggest exactly 5 eye-catching and
-            authoritative titles for a blog article. Put the one you think best first and provide four others in a list
-            format as JSON.</p>', '')
-        }}
-    </div>
-</div>
+{% block step_description %}
+<p class="text-gray-400 mb-6">Generate and select a provisional title for your post.</p>
 {% endblock %}
 
 <script>
