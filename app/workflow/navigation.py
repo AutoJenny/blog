@@ -17,8 +17,8 @@ class WorkflowNavigator:
                     FROM workflow_stage_entity 
                     ORDER BY stage_order
                 """)
-                self.stages = cur.fetchall()
-                print("[DEBUG] Loaded stages:", self.stages)
+                self.stages = [dict(row) for row in cur.fetchall()]
+                current_app.logger.debug(f"Loaded stages: {self.stages}")
 
                 # Load substages
                 cur.execute("""
@@ -26,8 +26,8 @@ class WorkflowNavigator:
                     FROM workflow_sub_stage_entity 
                     ORDER BY sub_stage_order
                 """)
-                self.substages = cur.fetchall()
-                print("[DEBUG] Loaded substages:", self.substages)
+                self.substages = [dict(row) for row in cur.fetchall()]
+                current_app.logger.debug(f"Loaded substages: {self.substages}")
 
                 # Load steps
                 cur.execute("""
@@ -35,8 +35,8 @@ class WorkflowNavigator:
                     FROM workflow_step_entity 
                     ORDER BY step_order
                 """)
-                self.steps = cur.fetchall()
-                print("[DEBUG] Loaded steps:", self.steps)
+                self.steps = [dict(row) for row in cur.fetchall()]
+                current_app.logger.debug(f"Loaded steps: {self.steps}")
 
     def get_stage(self, stage_id):
         """Get a specific stage by ID."""

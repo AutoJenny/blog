@@ -80,14 +80,16 @@
                         class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
                         <span class="icon-circle"><i class="fa-solid fa-paper-plane text-blue-400 text-xl"></i></span>
                         <span class="text-lg font-semibold text-white">Publishing</span>
-                        <p class="text-dark-accent text-sm text-center">Prepare and publish your post</p>
+                        <p class="text-dark-accent text-sm text-center">Review and publish your content</p>
                     </div>
                 </a>
             </div>
         </section>
+
         <!-- Technical Modules -->
         <section class="mb-12">
-            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Technical
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-cubes"></i>
+                Technical
                 Modules</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <a href="/db/" class="block group">
@@ -103,7 +105,8 @@
                         class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
                         <span class="icon-circle"><i class="fa-solid fa-brain text-pink-400 text-xl"></i></span>
                         <span class="text-lg font-semibold text-white">AI</span>
-                        <p class="text-dark-accent text-sm text-center">Configure models, prompts, and assistance</p>
+                        <p class="text-dark-accent text-sm text-center">Configure models, prompts, and assistance
+                        </p>
                     </div>
                 </a>
                 <a href="/llm/images/" class="block group">
@@ -143,7 +146,8 @@
                             <i class="fa-solid fa-file-lines text-dark-accent"></i> {{ post.title }}
                         </h3>
                         <p class="text-dark-accent text-sm mb-2">{{ post.summary|default('No summary')|safe }}</p>
-                        <span class="text-xs text-gray-400">{{ post.created_at[:10] if post.created_at else '' }}</span>
+                        <span class="text-xs text-gray-400">{{ post.created_at[:10] if post.created_at else ''
+                            }}</span>
                     </div>
                 </a>
                 {% else %}

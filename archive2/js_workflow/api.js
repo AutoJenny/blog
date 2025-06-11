@@ -57,19 +57,19 @@ export async function runLLMAction(actionId, input, postId) {
 }
 
 /**
- * Fetch post_substage_action for a post/substage.
+ * Fetch post_workflow_step_action for a post/step.
  */
-export async function fetchPostSubstageAction(postId, substage) {
-  const resp = await fetch(`/api/v1/llm/post_substage_actions?post_id=${postId}&substage=${substage}`);
+export async function fetchPostWorkflowStepAction(postId, stepId) {
+  const resp = await fetch(`/api/v1/llm/post_workflow_step_actions?post_id=${postId}&step_id=${stepId}`);
   return resp.ok ? await resp.json() : null;
 }
 
 /**
- * Save post_substage_action (action, input, output selections).
+ * Save post_workflow_step_action (action, input, output selections).
  */
-export async function savePostSubstageAction(postId, substage, actionId, inputField, outputField) {
-  const payload = { post_id: postId, substage, action_id: actionId, input_field: inputField, output_field: outputField };
-  const resp = await fetch('/api/v1/llm/post_substage_actions', {
+export async function savePostWorkflowStepAction(postId, stepId, actionId, inputField, outputField) {
+  const payload = { post_id: postId, step_id: stepId, action_id: actionId, input_field: inputField, output_field: outputField };
+  const resp = await fetch('/api/v1/llm/post_workflow_step_actions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -78,15 +78,15 @@ export async function savePostSubstageAction(postId, substage, actionId, inputFi
 }
 
 /**
- * Fetch the most recent post_substage_action for a given substage (excluding current post).
+ * Fetch the most recent post_workflow_step_action for a given step (excluding current post).
  */
-export async function fetchLastPostSubstageAction(substage, excludePostId) {
-  const resp = await fetch(`/api/v1/llm/post_substage_actions/list?page=1&page_size=50`);
+export async function fetchLastPostWorkflowStepAction(stepId, excludePostId) {
+  const resp = await fetch(`/api/v1/llm/post_workflow_step_actions/list?page=1&page_size=50`);
   if (!resp.ok) return null;
   const data = await resp.json();
   if (!data.actions) return null;
-  // Find the most recent action for this substage, not for the current post
-  return data.actions.find(a => a.substage === substage && a.post_id != excludePostId) || null;
+  // Find the most recent action for this step, not for the current post
+  return data.actions.find(a => a.step_id === stepId && a.post_id != excludePostId) || null;
 }
 
 /**
