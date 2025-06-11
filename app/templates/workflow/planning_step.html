@@ -1,0 +1,61 @@
+{% extends "workflow/base.html" %}
+
+{% block title %}Research: Concepts{% endblock %}
+
+{% block workflow_content %}
+{% with %}
+{% set post_id = post_id %}
+{% set current_stage = current_stage %}
+{% set current_substage = current_substage %}
+{% set current_step = current_step %}
+{% set all_posts = all_posts %}
+{% include 'workflow/_workflow_nav.html' %}
+{% endwith %}
+post_id: {{ post_id }}<br>
+{% endblock %}
+
+{% block content2 %}
+{% with %}
+{% set post_id = post_id %}
+{% set current_stage = current_stage %}
+{% set current_substage = current_substage %}
+{% set current_step = current_step %}
+{% set all_posts = all_posts %}
+{% include 'workflow/_workflow_nav.html' %}
+{% endwith %}
+{% block workflow_content2 %}
+post_id: {{ post_id }}<br>
+{% endblock %}
+{% endblock %}
+
+{% block content3 %}
+{% with %}
+{% set post_id = post_id %}
+{% set current_stage = current_stage %}
+{% set current_substage = current_substage %}
+{% set current_step = current_step %}
+{% set all_posts = all_posts %}
+{% include 'workflow/_workflow_nav.html' %}
+{% endwith %}
+{% block workflow_content3 %}
+post_id: {{ post_id }}<br>
+{% endblock %}
+{% endblock %}
+
+{% block content4 %}
+{% with %}
+{% set post_id = post_id %}
+{% set current_stage = current_stage %}
+{% set current_substage = current_substage %}
+{% set current_step = current_step %}
+{% set all_posts = all_posts %}
+{% include 'workflow/_workflow_nav.html' %}
+{% endwith %}
+{% block workflow_content4 %}
+post_id: {{ post_id }}<br>
+{% endblock %}
+{% endblock %}
+
+{% block step_heading %}
+<h2 class="text-2xl font-bold text-dark-text">{{ step_config.title }}</h2>
+{% endblock %}
