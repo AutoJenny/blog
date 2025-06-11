@@ -22,8 +22,9 @@
         {{ parent_content
         | replace('<h1 class="text-3xl font-bold mb-6 text-dark-text">' ~ step_config.title ~ (post.title and ': ' ~
             post.title or '') ~ '</h1>', '')
-        | replace('<p class="text-gray-400 mb-6">Generate a provisional title for your post based on the expanded idea.
-        </p>', '')
+        | replace('<p class="text-gray-400 mb-6">Read the input (basic_idea) and suggest exactly 5 eye-catching and
+            authoritative titles for a blog article. Put the one you think best first and provide four others in a list
+            format as JSON.</p>', '')
         }}
     </div>
 </div>
@@ -65,4 +66,65 @@
             btn.textContent = 'Run LLM';
         });
     }
+
+    function saveTitleOrder() {
+        var el = document.getElementById('output-list');
+        if (el) {
+            var items = Array.from(el.children).map(li => li.querySelector('.title-text').textContent);
+            fetch('/workflow/api/update_title_order/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    post_id: 22,
+                    titles: items
+                })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Order saved successfully!');
+                    } else {
+                        alert('Error saving order: ' + (data.error || 'Unknown error'));
+                    }
+                });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var el = document.getElementById('output-list');
+        if (el) {
+            var sortable = Sortable.create(el, {
+                handle: '.handle',
+                animation: 150,
+                onEnd: function () {
+                    var items = Array.from(el.children).map(li => li.querySelector('.title-text').textContent);
+                    fetch('/workflow/api/update_title_order/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            post_id: 22,
+                            titles: items
+                        })
+                    })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                // Update the primary label
+                                el.querySelectorAll('li').forEach((li, index) => {
+                                    if (index === 0) {
+                                        li.classList.add('font-bold', 'text-green-400');
+                                        li.querySelector('.primary-label').textContent = '(Primary)';
+                                    } else {
+                                        li.classList.remove('font-bold', 'text-green-400');
+                                        li.querySelector('.primary-label').textContent = '';
+                                    }
+                                });
+                            } else {
+                                alert('Error saving order: ' + (data.error || 'Unknown error'));
+                            }
+                        });
+                }
+            });
+        }
+    });
 </script>
