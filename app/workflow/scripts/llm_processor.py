@@ -5,6 +5,11 @@ import requests
 from typing import Dict, Any, Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from jinja2 import Template
+
+PROMPTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'data', 'prompts')
+def get_prompt_file_path(step_name, substage_name, stage_name):
+    return os.path.join(PROMPTS_DIR, f"{stage_name}_{substage_name}_{step_name}.json")
 
 def get_db_conn():
     """Get database connection using environment variables."""
@@ -27,11 +32,21 @@ def get_llm_model(conn, model_id: int = 14) -> str:
         return result[0]
 
 def load_step_config(post_id: int, stage: str, substage: str, step: str) -> Dict[str, Any]:
-    """Load step configuration from planning_steps.json."""
+    """Load step configuration from planning_steps.json and patch with latest prompt from JSON file if present."""
     config_path = os.path.join(os.path.dirname(__file__), '..', 'config', 'planning_steps.json')
     with open(config_path, 'r') as f:
         config = json.load(f)
-    return config[stage][substage][step]
+    step_config = config[stage][substage][step]
+    # Patch with latest prompt from JSON file if present
+    prompt_file = get_prompt_file_path(step, substage, stage)
+    if os.path.exists(prompt_file):
+        with open(prompt_file, 'r') as pf:
+            prompt_data = json.load(pf)
+            if 'system_prompt' in prompt_data and 'task_prompt' in prompt_data:
+                if 'settings' in step_config and 'llm' in step_config['settings']:
+                    step_config['settings']['llm']['system_prompt'] = prompt_data['system_prompt']
+                    step_config['settings']['llm']['task_prompt'] = prompt_data['task_prompt']
+    return step_config
 
 def get_input_values(conn, post_id: int, input_mapping: Dict[str, Any]) -> Dict[str, str]:
     """Fetch input values from database based on input mapping."""
@@ -47,8 +62,16 @@ def get_input_values(conn, post_id: int, input_mapping: Dict[str, Any]) -> Dict[
 
 def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str]) -> str:
     """Construct the full prompt for the LLM."""
-    input_text = "\n".join([f"{k}: {v}" for k, v in inputs.items()])
-    return f"{system_prompt}\n\n{task_prompt}\n\n{input_text}"
+    print(f"DEBUG: Constructing prompt with system_prompt: {system_prompt}")
+    print(f"DEBUG: Constructing prompt with task_prompt: {task_prompt}")
+    print(f"DEBUG: Constructing prompt with inputs: {inputs}")
+    
+    # Use Jinja2 to handle template variables in task_prompt
+    task_prompt = Template(task_prompt).render(**inputs)
+    
+    prompt = f"{system_prompt}\n\n{task_prompt}"
+    print(f"DEBUG: Final constructed prompt: {prompt}")
+    return prompt
 
 def call_llm(prompt: str, parameters: Dict[str, Any], conn) -> str:
     """Call Ollama API with the constructed prompt."""
@@ -76,7 +99,7 @@ def save_output(conn, post_id: int, output: str, mapping: dict):
 def process_step(post_id: int, stage: str, substage: str, step: str):
     """Main function to process a workflow step."""
     try:
-        # Load configuration
+        # Load configuration (patched with latest prompt from JSON file)
         config = load_step_config(post_id, stage, substage, step)
         llm_config = config['settings']['llm']
         
@@ -92,6 +115,7 @@ def process_step(post_id: int, stage: str, substage: str, step: str):
             llm_config['task_prompt'],
             inputs
         )
+        print(f"DEBUG: Constructed prompt for step {step}:\n{prompt}")
         
         # Call LLM
         output = call_llm(prompt, llm_config['parameters'], conn)
