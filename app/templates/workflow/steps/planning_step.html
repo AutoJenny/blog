@@ -274,5 +274,41 @@
             }
         });
     });
+
+    function runLLM() {
+        const postId = window.post_id || {{ post_id| tojson
+    }};
+    const stageName = window.current_stage || {{ current_stage| tojson }};
+    const substageName = window.current_substage || {{ current_substage| tojson }};
+    const stepName = window.current_step || {{ current_step| tojson }};
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+    fetch('/workflow/api/run_llm/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            post_id: postId,
+            stage_name: stageName,
+            substage_name: substageName,
+            step_name: stepName
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert('LLM error: ' + (data.error || 'Unknown error'));
+                btn.disabled = false;
+                btn.textContent = 'Run LLM';
+            }
+        })
+        .catch(err => {
+            alert('Request failed: ' + err);
+            btn.disabled = false;
+            btn.textContent = 'Run LLM';
+        });
+    }
 </script>
 {% endblock %}
