@@ -45,13 +45,18 @@
             {% for input_id, input_config in step_config.inputs.items() %}
             <div class="mb-4">
                 <label for="{{ input_id }}" class="block text-sm font-medium text-blue-500 mb-2">
-                    [{{ input_id }}]
+                    [{{ input_id }}] {{ input_config.label }}
                 </label>
+                <div class="text-xs text-gray-400 mb-1">
+                    Type: {{ input_config.type }}{% if input_config.db_field %}, DB Field: {{ input_config.db_field }}{%
+                    endif %}{% if input_config.db_table %}, Table: {{ input_config.db_table }}{% endif %}{% if
+                    input_config.required %}, Required{% endif %}
+                </div>
                 {% if input_config.type == 'textarea' %}
-                <pre id="{{ input_id }}" name="{{ input_id }}"
-                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4 whitespace-pre-wrap break-words"
+                <textarea id="{{ input_id }}" name="{{ input_id }}"
+                    class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     data-db-field="{{ input_config.db_field }}"
-                    data-db-table="{{ input_config.db_table }}">{{ input_values[input_id] if input_values and input_id in input_values else '' }}</pre>
+                    data-db-table="{{ input_config.db_table }}">{{ input_values[input_id] if input_values and input_id in input_values else '' }}</textarea>
                 {% endif %}
             </div>
             {% endfor %}
@@ -69,9 +74,6 @@
             <span class="text-gray-400" id="prompt-summary">
                 {% if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt %}
                 {{ step_config.settings.llm.task_prompt.split('\n')[0]|truncate(50) }}
-                {% if step_config.settings.llm.input_mapping %}
-                (inputs: {{ step_config.settings.llm.input_mapping.keys()|join(', ') }})
-                {% endif %}
                 {% elif step_config.prompt and step_config.prompt.template %}
                 {{ step_config.prompt.template.split('\n')[0]|truncate(50) }}
                 {% else %}
@@ -84,41 +86,23 @@
             </svg>
         </button>
         <div id="prompt-content" class="hidden p-4 bg-dark-bg text-dark-text">
-            {% if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt %}
+            {% set llm = step_config.settings.llm if step_config.settings and step_config.settings.llm else None %}
+            {% if llm %}
             <div class="mb-4">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-lg font-medium text-dark-text">Prompt Template</h3>
-                    <div class="space-x-2">
-                        <button id="edit-prompt" class="text-dark-accent hover:text-dark-hover">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button id="save-prompt" class="text-dark-accent hover:text-dark-hover hidden">
-                            <i class="fas fa-save"></i> Save
-                        </button>
-                    </div>
-                </div>
-                <pre id="prompt-display"
-                    class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.settings.llm.task_prompt }}</pre>
-                <textarea id="prompt-edit"
-                    class="w-full h-32 bg-dark-hover p-4 rounded-lg text-sm text-dark-text hidden">{{ step_config.settings.llm.task_prompt }}</textarea>
+                <label class="block text-sm font-medium text-blue-500 mb-2">System Prompt</label>
+                <textarea id="system-prompt"
+                    class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 mb-4">{{ llm.system_prompt }}</textarea>
+                <label class="block text-sm font-medium text-blue-500 mb-2">Task Prompt</label>
+                <textarea id="task-prompt"
+                    class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4">{{ llm.task_prompt }}</textarea>
+                <button id="save-prompt" class="btn btn-primary mt-4">Save Prompt</button>
             </div>
             {% elif step_config.prompt and step_config.prompt.template %}
             <div class="mb-4">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-lg font-medium text-dark-text">Prompt Template</h3>
-                    <div class="space-x-2">
-                        <button id="edit-prompt" class="text-dark-accent hover:text-dark-hover">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button id="save-prompt" class="text-dark-accent hover:text-dark-hover hidden">
-                            <i class="fas fa-save"></i> Save
-                        </button>
-                    </div>
-                </div>
-                <pre id="prompt-display"
-                    class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.prompt.template }}</pre>
-                <textarea id="prompt-edit"
-                    class="w-full h-32 bg-dark-hover p-4 rounded-lg text-sm text-dark-text hidden">{{ step_config.prompt.template }}</textarea>
+                <label class="block text-sm font-medium text-blue-500 mb-2">Prompt Template</label>
+                <textarea id="prompt-template"
+                    class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4">{{ step_config.prompt.template }}</textarea>
+                <button id="save-prompt" class="btn btn-primary mt-4">Save Prompt</button>
             </div>
             {% else %}
             <p class="text-gray-400">No prompt configured for this step.</p>
@@ -133,11 +117,14 @@
             <span class="font-medium text-dark-text">Settings</span>
             <span class="text-gray-400" id="settings-summary">
                 {% if step_config.settings and step_config.settings.llm %}
-                <span class="text-blue-500">Model:</span> {{ step_config.settings.llm.model }},
-                <span class="text-blue-500">Temp:</span> {{ step_config.settings.llm.parameters.temperature }},
+                <span class="text-blue-500">Provider:</span> {{ step_config.settings.llm.provider }},
+                <span class="text-blue-500">Model:</span> {{ step_config.settings.llm.model }}
+                {% if step_config.settings.llm.parameters %}
+                , <span class="text-blue-500">Temp:</span> {{ step_config.settings.llm.parameters.temperature }},
                 <span class="text-blue-500">Max tokens:</span> {{ step_config.settings.llm.parameters.max_tokens }}
+                {% endif %}
                 {% elif step_config.settings %}
-                {{ step_config.settings|length }} setting{{ 's' if step_config.settings|length != 1 else 's' }}
+                {{ step_config.settings|length }} setting{{ 's' if step_config.settings|length != 1 else '' }}
                 configured
                 {% else %}
                 No settings configured
@@ -152,10 +139,16 @@
             {% if step_config.settings and step_config.settings.llm %}
             <div class="grid grid-cols-2 gap-4">
                 <div>
+                    <label class="block text-sm font-medium text-blue-500">Provider</label>
+                    <input type="text" value="{{ step_config.settings.llm.provider }}"
+                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-blue-500">Model</label>
                     <input type="text" value="{{ step_config.settings.llm.model }}"
                         class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
                 </div>
+                {% if step_config.settings.llm.parameters %}
                 <div>
                     <label class="block text-sm font-medium text-blue-500">Temperature</label>
                     <input type="text" value="{{ step_config.settings.llm.parameters.temperature }}"
@@ -181,6 +174,7 @@
                     <input type="text" value="{{ step_config.settings.llm.parameters.presence_penalty }}"
                         class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
                 </div>
+                {% endif %}
             </div>
             {% elif step_config.settings %}
             <div class="grid grid-cols-2 gap-4">
@@ -198,228 +192,94 @@
         </div>
     </div>
 
-    <!-- Outputs Accordion -->
+    <!-- Outputs Accordion (summary is truncated, not first line) -->
     <div class="border border-dark-border rounded-lg overflow-hidden">
         <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="document.getElementById('outputs-content').classList.toggle('hidden'); document.getElementById('outputs-icon').classList.toggle('rotate-180');">
+            onclick="document.getElementById('outputs-content-unique').classList.toggle('hidden'); document.getElementById('outputs-icon-unique').classList.toggle('rotate-180');">
             <span class="font-medium text-dark-text">Outputs</span>
-            <span class="text-gray-400" id="outputs-summary">
-                {% if output_titles and output_titles|length > 0 %}
-                <span class="text-blue-500">[provisional_title]:</span> <span
-                    class="font-bold text-green-400">(Primary)</span> {{ output_titles[0] }}
-                {% elif output_values and output_values.basic_idea %}
-                <span class="text-blue-500">[basic_idea]:</span> {{ output_values.basic_idea.split('\n')[0]|truncate(50)
-                }}
-                {% elif step_config.outputs %}
-                {% set output_count = step_config.outputs|length %}
-                {{ output_count }} output{{ 's' if output_count != 1 else '' }} configured
-                {% else %}
-                No outputs configured
-                {% endif %}
+            <span class="text-gray-400" id="outputs-summary-unique">
+                {% set val = output_values['basic_idea'] if output_values and 'basic_idea' in output_values else '—' %}
+                {% set summary = val[:80] ~ ('...' if val|length > 80 else '') %}
+                <span class="text-blue-500">[basic_idea]</span>: {{ summary }}
             </span>
-            <svg class="w-5 h-5 transform transition-transform" id="outputs-icon" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
+            <svg class="w-5 h-5 transform transition-transform" id="outputs-icon-unique" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
         </button>
-        <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
-            {% if step_config.outputs %}
-            {% for output_id, output_config in step_config.outputs.items() %}
+        <div id="outputs-content-unique" class="hidden p-4 bg-dark-bg text-dark-text">
             <div class="mb-4">
-                <label for="{{ output_id }}" class="block text-sm font-medium text-blue-500 mb-2">
-                    [{{ output_id }}]
+                <label for="basic_idea" class="block text-sm font-medium text-blue-500 mb-2">
+                    [basic_idea] Basic Idea
                 </label>
-                {% if output_config.type == 'textarea' %}
-                {% if output_titles %}
-                <ul id="output-list" class="list-disc pl-6">
-                    {% for title in output_titles %}
-                    <li class="draggable flex items-center mb-2 {% if loop.first %}font-bold text-green-400{% endif %}"
-                        data-index="{{ loop.index0 }}">
-                        <span class="handle cursor-move mr-2">☰</span>
-                        {% if loop.first %}<span class="mr-2 primary-label">(Primary)</span>{% endif %}
-                        <span class="title-text">{{ title }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-                <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        var el = document.getElementById('output-list');
-                        if (el) {
-                            var sortable = Sortable.create(el, {
-                                handle: '.handle',
-                                animation: 150,
-                                onEnd: function () {
-                                    var items = Array.from(el.children).map(li => li.querySelector('.title-text').textContent);
-                                    fetch('/workflow/api/update_title_order/', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                            post_id: {{ post_id| tojson }},
-                                titles: items
-                            })
-                        });
-                                }
-                            });
-                        }
-                    });
-                </script>
-                {% else %}
-                <pre id="{{ output_id }}" name="{{ output_id }}"
-                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4 whitespace-pre-wrap break-words"
-                    data-db-field="{{ output_config.db_field }}"
-                    data-db-table="{{ output_config.db_table }}">{{ output_values[output_id] if output_values and output_id in output_values else '' }}</pre>
-                {% endif %}
-                {% endif %}
+                <div class="text-xs text-gray-400 mb-1">
+                    Type: text, DB Field: basic_idea, Table: post_development
+                </div>
+                <div class="bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-300 whitespace-pre-wrap">
+                    {{ output_values['basic_idea'] if output_values and 'basic_idea' in output_values else '' }}
+                </div>
             </div>
-            {% endfor %}
-            {% else %}
-            <p class="text-gray-400">No outputs configured for this step.</p>
-            {% endif %}
         </div>
     </div>
 </div>
 
-<script>
-    // Accordion functionality
-    function toggleAccordion(id) {
-        console.log('Toggling accordion:', id); // Debug log
-        const content = document.getElementById(`${id}-content`);
-        const icon = document.getElementById(`${id}-icon`);
+<script type="text/javascript">
+    window.postId = {{ post_id | tojson }};
+    window.currentStep = {{ current_step | tojson }};
+    window.currentSubstage = {{ current_substage | tojson }};
+    window.currentStage = {{ current_stage | tojson }};
+    window.originalPrompt = {{ (step_config.prompt.template if step_config.prompt and step_config.prompt.template else step_config.settings.llm.task_prompt if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt else "")| tojson }};
 
-        if (!content || !icon) {
-            console.error('Could not find elements for accordion:', id);
-            return;
-        }
-
-        if (content.classList.contains('hidden')) {
-            content.classList.remove('hidden');
-            icon.classList.add('rotate-180');
-        } else {
-            content.classList.add('hidden');
-            icon.classList.remove('rotate-180');
-        }
-    }
-
-    // Add click handlers to all accordion buttons
-    document.addEventListener('DOMContentLoaded', function () {
-        const accordionButtons = document.querySelectorAll('[onclick^="toggleAccordion"]');
-        accordionButtons.forEach(button => {
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                const id = this.getAttribute('onclick').match(/toggleAccordion\('(.+?)'\)/)[1];
-                toggleAccordion(id);
-            });
-        });
+    // Save prompt changes
+    document.getElementById('save-prompt').addEventListener('click', function () {
+        const systemPrompt = document.getElementById('system-prompt').value;
+        const taskPrompt = document.getElementById('task-prompt').value;
+        savePrompt(systemPrompt, taskPrompt);
     });
 
-    // Save input values when they change
-    document.querySelectorAll('textarea[data-db-field]').forEach(textarea => {
-        textarea.addEventListener('change', async function () {
-            const field = this.dataset.dbField;
-            const table = this.dataset.dbTable;
-            const value = this.value;
-
-            try {
-                const response = await fetch(`/api/workflow/posts/${postId}/${stage}/${substage}/${step}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        field: field,
-                        table: table,
-                        value: value
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to save');
-                }
-            } catch (error) {
-                console.error('Error saving:', error);
-                // TODO: Show error toast
-            }
-        });
-    });
-
-    document.getElementById('run-llm').addEventListener('click', function () {
-        // Trigger the LLM processing script
-        fetch('/workflow/api/run_llm/', {
+    function savePrompt(systemPrompt, taskPrompt) {
+        fetch(`/workflow/{{ post_id }}/{{ current_stage }}/{{ current_substage }}/{{ current_step }}/save_prompt`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                post_id: {{ post_id }},
-            step_name: '{{ current_step }}',
-            substage_name: '{{ current_substage }}',
-            stage_name: '{{ current_stage }}'
+                system_prompt: systemPrompt,
+                task_prompt: taskPrompt
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            console.log('LLM processing result:', data);
-            // Handle the response, e.g., update the output field
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    });
-
-    // Prompt editing functionality
-    const editPromptBtn = document.getElementById('edit-prompt');
-    const savePromptBtn = document.getElementById('save-prompt');
-    const promptDisplay = document.getElementById('prompt-display');
-    const promptEdit = document.getElementById('prompt-edit');
-
-    if (editPromptBtn && savePromptBtn && promptDisplay && promptEdit) {
-        editPromptBtn.addEventListener('click', function () {
-            promptDisplay.classList.add('hidden');
-            promptEdit.classList.remove('hidden');
-            editPromptBtn.classList.add('hidden');
-            savePromptBtn.classList.remove('hidden');
-        });
-
-        savePromptBtn.addEventListener('click', function () {
-            const newPrompt = promptEdit.value;
-
-            // Update the display
-            promptDisplay.textContent = newPrompt;
-            promptDisplay.classList.remove('hidden');
-            promptEdit.classList.add('hidden');
-            editPromptBtn.classList.remove('hidden');
-            savePromptBtn.classList.add('hidden');
-
-            // Save to the server
-            fetch('/workflow/api/update_prompt/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    post_id: {{ post_id }},
-                step_name: '{{ current_step }}',
-                substage_name: '{{ current_substage }}',
-                stage_name: '{{ current_stage }}',
-                prompt: newPrompt
-                })
-    })
             .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Prompt updated successfully');
-            } else {
-                console.error('Failed to update prompt:', data.error);
-                // Revert the display if the save failed
-                promptDisplay.textContent = '{{ step_config.prompt.template if step_config.prompt and step_config.prompt.template else step_config.settings.llm.task_prompt if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt else "" }}';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Revert the display if there was an error
-            promptDisplay.textContent = '{{ step_config.prompt.template if step_config.prompt and step_config.prompt.template else step_config.settings.llm.task_prompt if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt else "" }}';
+            .then(data => {
+                if (data.success) {
+                    // Update the summary text
+                    document.getElementById('prompt-summary').textContent = taskPrompt.split('\n')[0].substring(0, 50) + '...';
+                    // Show success message
+                    alert('Prompt saved successfully');
+                } else {
+                    alert('Error saving prompt: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving prompt');
+            });
+    }
+
+    function toggleOutputAccordion(outputId) {
+        // Close all
+        document.querySelectorAll('[id^="output-content-"]').forEach(function (el) {
+            el.classList.add('hidden');
         });
+        document.querySelectorAll('[id^="icon-"]').forEach(function (icon) {
+            icon.classList.remove('rotate-180');
         });
+        // Open selected
+        var content = document.getElementById('output-content-' + outputId);
+        var icon = document.getElementById('icon-' + outputId);
+        if (content && content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            if (icon) icon.classList.add('rotate-180');
+        }
     }
 </script>
+<script src="{{ url_for('static', filename='js/workflow.js') }}"></script>
