@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% import "workflow/workflow_indicator.html" as indicator %}
+
+{% block title %}Planning Workflow{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    <!-- New Process Indicator -->
+    {{ indicator.process_indicator(substages, stages, current_substage_id) }}
+    <!-- Current Sub-stage Card -->
+    {% if current_substage %}
+    <div
+        class="max-w-xl mx-auto bg-{{ current_substage.color }}-50 border-l-4 border-{{ current_substage.color }}-600 rounded-lg shadow p-6 mb-8">
+        <div class="flex items-center mb-4">
+            <div
+                class="w-10 h-10 flex items-center justify-center rounded-full bg-{{ current_substage.color }}-600 text-white text-2xl mr-4">
+                <i class="fa {{ current_substage.icon }}"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-{{ current_substage.color }}-800">{{ current_substage.label }}</h2>
+                <p class="text-{{ current_substage.color }}-700 text-sm">{{ current_substage.description }}</p>
+            </div>
+        </div>
+        <div class="mb-4 text-gray-700">
+            <p class="font-medium">Instructions:</p>
+            <p>{{ current_substage.instructions }}</p>
+        </div>
+        <!-- Placeholder for sub-stage-specific actions -->
+        <div class="mb-6">
+            <div class="bg-white border border-gray-200 rounded p-4 text-gray-500 italic text-center">
+                [Action area for {{ current_substage.label }} goes here]
+            </div>
+        </div>
+        <form method="post" class="flex justify-between mt-6">
+            <button type="submit" name="prev"
+                class="px-4 py-2 rounded bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300" {% if current_idx==0
+                %}disabled{% endif %}>Back</button>
+            <button type="submit" name="next"
+                class="px-4 py-2 rounded bg-{{ current_substage.color }}-600 text-white font-semibold hover:bg-{{ current_substage.color }}-700"
+                {% if current_idx==total-1 %}disabled{% endif %}>Next</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+<!--
+Note: This template uses FontAwesome icons (fa-*) and Tailwind color classes. Ensure FontAwesome is loaded in base.html.
+-->

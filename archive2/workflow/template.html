@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% import "workflow/workflow_indicator.html" as indicator %}
+{% import "blog/_post_header.html" as blog_macros %}
+
+{% block title %}Article Template View{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    <!-- Breadcrumbs / Navigation -->
+    <nav class="mb-4 text-sm text-gray-500">
+        <a href="/" class="hover:underline">Home</a> /
+        <a href="/workflow/" class="hover:underline">Workflow</a> /
+        <span class="text-gray-700">Template</span>
+    </nav>
+    <div id="template-root"><!-- Dynamic Template View will be rendered here --></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/workflow/template_view.js') }}"></script>
+{% endblock %}
