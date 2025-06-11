@@ -1,0 +1,84 @@
+<!-- Workflow Navigation Wireframe -->
+<div class="bg-dark-bg border-b border-dark-border py-4">
+    <div class="container mx-auto px-4">
+        <!-- Line 1: Breadcrumbs and Post Selector -->
+        <div class="flex justify-between items-center mb-4">
+            <div class="text-dark-text">
+                <span class="text-gray-400">Workflow</span>
+                {% if stage %}
+                <span class="mx-2">/</span>
+                <span class="text-dark-accent">{{ stage.name }}</span>
+                {% endif %}
+                {% if substage %}
+                <span class="mx-2">/</span>
+                <span class="text-dark-accent">{{ substage.name }}</span>
+                {% endif %}
+            </div>
+            <div class="relative">
+                <select class="bg-dark-bg border border-dark-border text-dark-text rounded px-3 py-2">
+                    <option>Select Post</option>
+                    <!-- Post options will be populated dynamically -->
+                </select>
+            </div>
+        </div>
+
+        <!-- Line 2: Sub-stages as named icons -->
+        <div class="flex justify-between mb-4">
+            <!-- Planning Stage -->
+            <div class="flex space-x-4">
+                <div class="text-center">
+                    <i class="fas fa-lightbulb text-2xl text-dark-accent"></i>
+                    <div class="text-sm text-dark-text">Idea</div>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-search text-2xl text-dark-accent"></i>
+                    <div class="text-sm text-dark-text">Research</div>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-sitemap text-2xl text-dark-accent"></i>
+                    <div class="text-sm text-dark-text">Structure</div>
+                </div>
+            </div>
+            <!-- Writing Stage -->
+            <div class="flex space-x-4">
+                <div class="text-center">
+                    <i class="fas fa-pen text-2xl text-dark-accent"></i>
+                    <div class="text-sm text-dark-text">Draft</div>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-check text-2xl text-dark-accent"></i>
+                    <div class="text-sm text-dark-text">Review</div>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-image text-2xl text-dark-accent"></i>
+                    <div class="text-sm text-dark-text">Images</div>
+                </div>
+            </div>
+            <!-- Publishing Stage -->
+            <div class="flex space-x-4">
+                <div class="text-center">
+                    <i class="fas fa-flag text-2xl text-dark-accent"></i>
+                    <div class="text-sm text-dark-text">Finalize</div>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-rocket text-2xl text-dark-accent"></i>
+                    <div class="text-sm text-dark-text">Launch</div>
+                </div>
+                <div class="text-center">
+                    <i class="fas fa-share-alt text-2xl text-dark-accent"></i>
+                    <div class="text-sm text-dark-text">Syndicate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Line 3: Tabs for steps in the current sub-stage -->
+        <div class="border-b border-dark-border">
+            <div class="flex space-x-4">
+                <a href="#" class="px-4 py-2 text-dark-accent border-b-2 border-dark-accent">Main</a>
+                <a href="#" class="px-4 py-2 text-dark-text hover:text-dark-accent">Step 1</a>
+                <a href="#" class="px-4 py-2 text-dark-text hover:text-dark-accent">Step 2</a>
+                <a href="#" class="px-4 py-2 text-dark-text hover:text-dark-accent">Step 3</a>
+            </div>
+        </div>
+    </div>
+</div>
