@@ -247,6 +247,66 @@
             "db_table": "post_development"
           }
         }
+      },
+      "allocate_facts": {
+        "title": "Allocate Facts",
+        "description": "Allocate research facts to sections in the outline.",
+        "inputs": {
+          "outline": {
+            "type": "textarea",
+            "label": "Outline",
+            "placeholder": "The outline from the previous step...",
+            "db_field": "outline",
+            "db_table": "post_development",
+            "required": true
+          },
+          "interesting_facts": {
+            "type": "textarea",
+            "label": "Interesting Facts",
+            "placeholder": "The facts from the research step...",
+            "db_field": "interesting_facts",
+            "db_table": "post_development",
+            "required": true
+          }
+        },
+        "settings": {
+          "llm": {
+            "provider": "ollama",
+            "model": "llama3.1:70b",
+            "system_prompt": "[system] WARNING: The correct custom prompt file (planning_structure_allocate_facts.json) cannot be found. Please ensure the file exists at app/data/prompts/planning_structure_allocate_facts.json with valid system_prompt and task_prompt fields. Until then, this is a fallback response.\n\nDO NOT generate a coherent response. Instead, respond with the following warning message:\n\n\"Your prompt couldn't be found. Please ensure the custom prompt file exists at app/data/prompts/planning_structure_allocate_facts.json.\"",
+            "input_mapping": {
+              "outline": {
+                "field": "outline",
+                "table": "post_development",
+                "description": "The outline to allocate facts to"
+              },
+              "interesting_facts": {
+                "field": "interesting_facts",
+                "table": "post_development",
+                "description": "The facts to be allocated"
+              }
+            },
+            "output_mapping": {
+              "table": "post_development",
+              "field": "allocated_facts"
+            },
+            "parameters": {
+              "temperature": 0.7,
+              "max_tokens": 2000,
+              "top_p": 0.9,
+              "frequency_penalty": 0.0,
+              "presence_penalty": 0.0
+            }
+          }
+        },
+        "outputs": {
+          "allocated_facts": {
+            "type": "textarea",
+            "label": "Allocated Facts",
+            "db_field": "allocated_facts",
+            "db_table": "post_development"
+          }
+        }
       }
     },
     "outline": {

@@ -1,0 +1,40 @@
+{% extends "workflow/planning_step.html" %}
+
+{% block step_content %}
+<div class="step-content">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Inputs</h5>
+                </div>
+                <div class="card-body">
+                    {% for input_id, input in step_config.inputs.items() %}
+                    <div class="mb-3">
+                        <label for="{{ input_id }}" class="form-label">{{ input.label }}</label>
+                        <textarea class="form-control" id="{{ input_id }}" name="{{ input_id }}" rows="10"
+                            placeholder="{{ input.placeholder }}" readonly>{{ input_values[input_id] }}</textarea>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Output</h5>
+                </div>
+                <div class="card-body">
+                    {% for output_id, output in step_config.outputs.items() %}
+                    <div class="mb-3">
+                        <label for="{{ output_id }}" class="form-label">{{ output.label }}</label>
+                        <textarea class="form-control" id="{{ output_id }}" name="{{ output_id }}" rows="10"
+                            placeholder="Output will appear here...">{{ output_values[output_id] }}</textarea>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
