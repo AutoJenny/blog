@@ -101,6 +101,7 @@
                 <textarea id="task-prompt"
                     class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4">{{ llm.task_prompt }}</textarea>
                 <button id="save-prompt" class="btn btn-primary mt-4">Save Prompt</button>
+                <span id="prompt-summary" class="ml-4 text-green-400"></span>
             </div>
             {% elif step_config.prompt and step_config.prompt.template %}
             <div class="mb-4">
@@ -521,8 +522,56 @@
         const savePromptButton = document.getElementById('save-prompt');
         if (savePromptButton) {
             savePromptButton.addEventListener('click', function () {
-                // Save prompt logic here
-                console.log('Save prompt clicked');
+                const systemPrompt = document.getElementById('system-prompt') ? document.getElementById('system-prompt').value : '';
+                const taskPrompt = document.getElementById('task-prompt') ? document.getElementById('task-prompt').value : '';
+                // Get the current URL path and extract the components
+                const pathParts = window.location.pathname.split('/');
+                const postId = pathParts[2];
+                const stageName = pathParts[3];
+                const substageName = pathParts[4];
+                const stepName = pathParts[5];
+                fetch(`/workflow/${postId}/${stageName}/${substageName}/${stepName}/save_prompt`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system_prompt: systemPrompt,
+                        task_prompt: taskPrompt
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update the summary text
+                            const summary = document.getElementById('prompt-summary');
+                            if (summary) {
+                                summary.textContent = 'Saved!';
+                                summary.classList.remove('text-red-400');
+                                summary.classList.add('text-green-400');
+                            }
+                            // Show floating green message
+                            const message = document.createElement('div');
+                            message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50';
+                            message.textContent = 'Prompt saved successfully!';
+                            document.body.appendChild(message);
+                            setTimeout(() => message.remove(), 3000);
+                        } else {
+                            throw new Error(data.error || 'Failed to save prompt');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error saving prompt:', error);
+                        const summary = document.getElementById('prompt-summary');
+                        if (summary) {
+                            summary.textContent = 'Error!';
+                            summary.classList.remove('text-green-400');
+                            summary.classList.add('text-red-400');
+                        }
+                        const message = document.createElement('div');
+                        message.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50';
+                        message.textContent = 'Error saving prompt: ' + error.message;
+                        document.body.appendChild(message);
+                        setTimeout(() => message.remove(), 3000);
+                    });
             });
         }
     });
