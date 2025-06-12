@@ -153,3 +153,11 @@
         }
     });
 </script>
+
+{% if post_id and current_stage and current_substage %}
+<!-- Existing navigation code here (entire file content) -->
+{% else %}
+<div class="text-red-500 bg-dark-bg p-4 rounded-lg border border-red-700 mt-4">
+    Workflow navigation is unavailable: missing required context variables.
+</div>
+{% endif %}

@@ -93,7 +93,7 @@ def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str
     
     # Join all parts with double newlines for clear separation
     final_prompt = "\n\n".join(prompt_parts)
-    print(f"DEBUG: Final constructed prompt: {final_prompt}")
+    print(f"DEBUG: Final constructed prompt: {final_prompt}", file=sys.stderr)
     return final_prompt
 
 def call_llm(prompt: str, parameters: Dict[str, Any], conn) -> str:
@@ -138,7 +138,7 @@ def process_step(post_id: int, stage: str, substage: str, step: str):
             llm_config['task_prompt'],
             inputs
         )
-        print(f"DEBUG: Constructed prompt for step {step}:\n{prompt}")
+        print(f"DEBUG: Constructed prompt for step {step}:\n{prompt}", file=sys.stderr)
         
         # Call LLM
         output = call_llm(prompt, llm_config['parameters'], conn)
@@ -146,11 +146,15 @@ def process_step(post_id: int, stage: str, substage: str, step: str):
         # Save output
         save_output(conn, post_id, output, llm_config['output_mapping'])
         
-        print(f"Successfully processed step for post {post_id}")
+        print(f"DEBUG: Successfully processed step for post {post_id}", file=sys.stderr)
+        # Print clean JSON output to stdout
+        print(json.dumps({"status": "success", "output": output}))
         return output
         
     except Exception as e:
-        print(f"Error processing step: {str(e)}", file=sys.stderr)
+        error_msg = f"Error processing step: {str(e)}"
+        print(error_msg, file=sys.stderr)
+        print(json.dumps({"status": "error", "message": error_msg}))
         raise
     finally:
         if 'conn' in locals():

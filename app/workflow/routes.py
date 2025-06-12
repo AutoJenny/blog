@@ -1,5 +1,4 @@
-from flask import render_template, redirect, url_for, abort, request, jsonify
-from app.workflow import workflow
+from flask import render_template, redirect, url_for, abort, request, jsonify, Blueprint
 from .navigation import navigator
 from app.db import get_db_conn
 import json
@@ -7,6 +6,9 @@ import os
 import subprocess
 import sys
 import traceback
+from app.workflow.handlers import outline_handler
+
+workflow = Blueprint('workflow', __name__, url_prefix='/workflow')
 
 # Helper to get the most recent, non-deleted post
 def get_latest_post():
@@ -245,26 +247,96 @@ def api_run_llm():
     if not all([post_id, stage_name, substage_name, step_name]):
         return jsonify({'error': 'Missing required parameters'}), 400
     try:
-        # Run the backend script
-        result = subprocess.run(
-            [
-                sys.executable,
-                'app/workflow/scripts/llm_processor.py',
-                str(post_id),
-                stage_name,
-                substage_name,
-                step_name
-            ],
-            capture_output=True,
-            text=True,
-            cwd='/Users/nickfiddes/Code/projects/blog'
+        # Load step configuration
+        step_config = load_step_config(stage_name, substage_name, step_name)
+        if not step_config:
+            return jsonify({'error': 'Step configuration not found'}), 404
+
+        # Get input values from database
+        input_values = {}
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                if 'inputs' in step_config:
+                    for input_id, input_config in step_config['inputs'].items():
+                        db_field = input_config.get('db_field')
+                        db_table = input_config.get('db_table')
+                        if db_field and db_table:
+                            cur.execute(f"SELECT {db_field} FROM {db_table} WHERE post_id = %s", (post_id,))
+                            result = cur.fetchone()
+                            if result and db_field in result and result[db_field] is not None:
+                                input_values[input_id] = result[db_field]
+
+        # Get LLM settings
+        llm_settings = step_config.get('settings', {}).get('llm', {})
+        if not llm_settings:
+            return jsonify({'error': 'LLM settings not found in step configuration'}), 400
+
+        # Prepare prompt
+        system_prompt = llm_settings.get('system_prompt', '')
+        task_prompt = llm_settings.get('task_prompt', '')
+        
+        # Format task prompt with input values
+        try:
+            from jinja2 import Template
+            task_prompt = Template(task_prompt).render(**input_values)
+        except Exception as e:
+            return jsonify({'error': f'Error formatting task prompt: {str(e)}'}), 500
+
+        # Call LLM service
+        from app.llm.services import LLMService
+        llm_service = LLMService()
+        response = llm_service.generate(
+            prompt=f"{system_prompt}\n\n{task_prompt}",
+            model_name=llm_settings.get('model', 'mistral'),
+            temperature=llm_settings.get('parameters', {}).get('temperature', 0.7),
+            max_tokens=llm_settings.get('parameters', {}).get('max_tokens', 2000)
         )
-        if result.returncode == 0:
-            return jsonify({'status': 'success', 'output': result.stdout})
-        else:
-            return jsonify({'status': 'error', 'error': result.stderr}), 500
+
+        if not response:
+            return jsonify({'error': 'No response from LLM service'}), 500
+
+        # Process output if needed
+        output_field = llm_settings.get('output_mapping', {}).get('field')
+        if output_field:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(f"UPDATE post_development SET {output_field} = %s WHERE post_id = %s", (response, post_id))
+                    conn.commit()
+
+        return jsonify({
+            'status': 'success',
+            'response': response,
+            'output_field': output_field
+        })
+
     except Exception as e:
-        return jsonify({'status': 'error', 'error': str(e)}), 500
+        import traceback
+        print(f"Error in run_llm: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({'error': str(e)}), 500
+
+@workflow.route('/api/run_outline_postprocess/', methods=['POST'])
+def api_run_outline_postprocess():
+    print('DEBUG: api_run_outline_postprocess route loaded')
+    data = request.get_json()
+    post_id = data.get('post_id')
+    if not post_id:
+        return jsonify({'status': 'error', 'message': 'Missing post_id'}), 400
+    # Fetch outline from post_development
+    outline = None
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('SELECT outline FROM post_development WHERE post_id = %s', (post_id,))
+            row = cur.fetchone()
+            if row and 'outline' in row:
+                outline = row['outline']
+            elif row and len(row) > 0:
+                outline = row[0]
+    if not outline:
+        return jsonify({'status': 'error', 'message': 'No outline found for this post.'}), 404
+    # Call the post-processing handler
+    result = outline_handler.process_outline_output(post_id, outline)
+    return jsonify(result)
 
 @workflow.route('/<int:post_id>/<stage_name>/<substage_name>/test/')
 def test_step(post_id, stage_name: str, substage_name: str):
