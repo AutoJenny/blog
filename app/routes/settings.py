@@ -93,4 +93,29 @@ def workflow_prompts_json():
                     
         return jsonify(prompts)
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@settings_bp.route('/planning_steps', methods=['GET'])
+def planning_steps():
+    planning_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'workflow', 'config', 'planning_steps.json')
+    with open(planning_path, 'r') as f:
+        planning_data = json.load(f)
+    return render_template('settings/planning_steps.html', planning_steps=planning_data)
+
+@settings_bp.route('/planning_steps_json', methods=['GET', 'POST'])
+def planning_steps_json():
+    planning_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'workflow', 'config', 'planning_steps.json')
+    if request.method == 'POST':
+        try:
+            data = request.get_json()
+            with open(planning_path, 'w') as f:
+                json.dump(data, f, indent=2)
+            return jsonify({'status': 'success'})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    try:
+        with open(planning_path, 'r') as f:
+            planning_data = json.load(f)
+        return jsonify(planning_data)
+    except Exception as e:
         return jsonify({'error': str(e)}), 500 

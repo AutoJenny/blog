@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Planning Steps JSON{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-gray-100">Planning Steps JSON</h1>
+    <div class="mb-6">
+        <button id="tab-tree" class="px-4 py-2 rounded-t bg-gray-700 text-white font-semibold focus:outline-none">Tree
+            View</button>
+        <button id="tab-json"
+            class="px-4 py-2 rounded-t bg-gray-700 text-white font-semibold focus:outline-none ml-2">Raw JSON</button>
+    </div>
+    <div id="tree-view" class="bg-gray-800 p-4 rounded-b-lg text-gray-200 font-mono" style="display:block;">
+        <pre id="tree-content"></pre>
+    </div>
+    <div id="json-view" class="bg-gray-800 p-4 rounded-b-lg text-gray-200 font-mono" style="display:none;">
+        <textarea id="json-textarea"
+            class="w-full h-96 bg-gray-900 text-gray-200 rounded border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
+            rows="24">{{ planning_steps | tojson(indent=2) }}</textarea>
+        <div id="save-button-container" class="flex justify-end mt-6">
+            <button id="save-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save
+                Changes</button>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabTree = document.getElementById('tab-tree');
+        const tabJson = document.getElementById('tab-json');
+        const treeView = document.getElementById('tree-view');
+        const jsonView = document.getElementById('json-view');
+        const treeContent = document.getElementById('tree-content');
+        const jsonTextarea = document.getElementById('json-textarea');
+        const saveButton = document.getElementById('save-button');
+        // Tab switching
+        tabTree.addEventListener('click', function () {
+            tabTree.classList.add('bg-blue-700');
+            tabJson.classList.remove('bg-blue-700');
+            treeView.style.display = 'block';
+            jsonView.style.display = 'none';
+        });
+        tabJson.addEventListener('click', function () {
+            tabJson.classList.add('bg-blue-700');
+            tabTree.classList.remove('bg-blue-700');
+            treeView.style.display = 'none';
+            jsonView.style.display = 'block';
+        });
+        // Pretty-print tree view
+        function prettyPrint(obj, indent = 0) {
+            let out = '';
+            const pad = '  '.repeat(indent);
+            if (typeof obj === 'object' && obj !== null) {
+                if (Array.isArray(obj)) {
+                    out += '[\n';
+                    obj.forEach((item, i) => {
+                        out += pad + '  ' + prettyPrint(item, indent + 1) + (i < obj.length - 1 ? ',\n' : '\n');
+                    });
+                    out += pad + ']';
+                } else {
+                    out += '{\n';
+                    const keys = Object.keys(obj);
+                    keys.forEach((key, i) => {
+                        out += pad + '  ' + key + ': ' + prettyPrint(obj[key], indent + 1) + (i < keys.length - 1 ? ',\n' : '\n');
+                    });
+                    out += pad + '}';
+                }
+            } else {
+                out += JSON.stringify(obj);
+            }
+            return out;
+        }
+        treeContent.textContent = prettyPrint({{ planning_steps | tojson }});
+    // Save button logic
+    saveButton.addEventListener('click', async function () {
+        let data;
+        try {
+            data = JSON.parse(jsonTextarea.value);
+        } catch (e) {
+            alert('Invalid JSON: ' + e.message);
+            return;
+        }
+        const resp = await fetch('/settings/planning_steps_json', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await resp.json();
+        if (result.status === 'success') {
+            const message = document.createElement('div');
+            message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg';
+            message.textContent = 'Planning steps saved successfully!';
+            document.body.appendChild(message);
+            setTimeout(() => message.remove(), 3000);
+        } else {
+            alert('Error saving: ' + (result.error || 'Unknown error'));
+        }
+    });
+    });
+</script>
+{% endblock %}
