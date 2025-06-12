@@ -61,17 +61,40 @@ def get_input_values(conn, post_id: int, input_mapping: Dict[str, Any]) -> Dict[
     return inputs
 
 def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str]) -> str:
-    """Construct the full prompt for the LLM."""
-    print(f"DEBUG: Constructing prompt with system_prompt: {system_prompt}")
-    print(f"DEBUG: Constructing prompt with task_prompt: {task_prompt}")
-    print(f"DEBUG: Constructing prompt with inputs: {inputs}")
+    """
+    Assemble the LLM prompt in three labeled sections:
+    1. Context: (system prompt)
+    2. Data to process: (all input fields, labeled)
+    3. Instructions: (task/user prompt)
     
-    # Use Jinja2 to handle template variables in task_prompt
-    task_prompt = Template(task_prompt).render(**inputs)
+    Args:
+        system_prompt: The system/context prompt (no placeholders)
+        task_prompt: The user/task instructions (no placeholders)
+        inputs: Dictionary of input field names and their values
     
-    prompt = f"{system_prompt}\n\n{task_prompt}"
-    print(f"DEBUG: Final constructed prompt: {prompt}")
-    return prompt
+    Returns:
+        str: The fully constructed prompt
+    """
+    # 1. Context section
+    prompt_parts = ["Context:", system_prompt.strip()]
+    
+    # 2. Data to process section (all input fields, labeled)
+    if inputs:
+        data_lines = ["Data to process:"]
+        for field_name, value in inputs.items():
+            if value:
+                data_lines.append(f"{field_name}:")
+                data_lines.append(value.strip())
+        prompt_parts.append("\n".join(data_lines))
+    
+    # 3. Instructions section
+    prompt_parts.append("Instructions:")
+    prompt_parts.append(task_prompt.strip())
+    
+    # Join all parts with double newlines for clear separation
+    final_prompt = "\n\n".join(prompt_parts)
+    print(f"DEBUG: Final constructed prompt: {final_prompt}")
+    return final_prompt
 
 def call_llm(prompt: str, parameters: Dict[str, Any], conn) -> str:
     """Call Ollama API with the constructed prompt."""
