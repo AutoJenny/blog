@@ -189,6 +189,50 @@
     </div>
 </div>
 
+<!-- Add this modal HTML before the closing </div> of the main container -->
+<div id="section-editor-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden">
+    <div class="bg-dark-bg rounded-lg p-6 max-w-4xl mx-auto mt-20">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-dark-text" id="modal-title">Edit Section</h2>
+            <button onclick="closeSectionEditor()" class="text-gray-400 hover:text-dark-text">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-blue-500 mb-2">Heading</label>
+                <input type="text" id="section-heading"
+                    class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-dark-text focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500 mb-2">Description</label>
+                <textarea id="section-description"
+                    class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-dark-text focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    rows="3"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500 mb-2">Content</label>
+                <textarea id="section-content"
+                    class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-dark-text focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    rows="10"></textarea>
+            </div>
+            <div class="flex justify-end gap-4">
+                <button onclick="closeSectionEditor()"
+                    class="bg-dark-bg text-dark-text px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-hover transition">
+                    Cancel
+                </button>
+                <button onclick="saveSection()"
+                    class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">
+                    Save Section
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     #output-dnd-list {
         margin: 0 !important;
@@ -210,94 +254,196 @@
 </style>
 
 <script type="text/javascript">
-    // DEBUG: Minimal sections functionality
-    alert('DEBUG: Script starting\nURL: ' + window.location.href);
+    // Initialize workflow context from template variables
+    const workflowContext = {
+        postId: {{ post_id }},
+    stage: '{{ current_stage }}',
+        substage: '{{ current_substage }}',
+            step: '{{ current_step }}'
+    };
 
-    // Extract workflow context from URL
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
-    alert('DEBUG: Path parts: ' + JSON.stringify(pathParts));
+    let currentSectionId = null;
+    let sections = [];
 
-    // Validate path structure
-    if (pathParts.length < 5) {
-        alert('DEBUG: Invalid URL structure: ' + window.location.pathname);
-        document.getElementById('sections-container').innerHTML = `
-            <div class="text-red-500 p-4 border border-red-500 rounded">
-                Error: Invalid URL structure. Expected /workflow/post_id/stage/substage/step/
-            </div>
-        `;
-    } else {
-        const workflowContext = {
-            postId: parseInt(pathParts[1]),
-            stage: pathParts[2],
-            substage: pathParts[3],
-            step: pathParts[4]
-        };
-        alert('DEBUG: Workflow context: ' + JSON.stringify(workflowContext));
+    // Load sections from the API
+    async function loadSections() {
+        console.log('Loading sections...');
+        const url = `/workflow/${workflowContext.postId}/${workflowContext.stage}/${workflowContext.substage}/${workflowContext.step}/sections/`;
+        console.log('URL:', url);
 
-        // Validate all required fields
-        if (!workflowContext.postId || !workflowContext.stage || !workflowContext.substage || !workflowContext.step) {
-            alert('DEBUG: Missing required workflow parameters: ' + JSON.stringify(workflowContext));
-            document.getElementById('sections-container').innerHTML = `
-                <div class="text-red-500 p-4 border border-red-500 rounded">
-                    Error: Missing required workflow parameters
-                </div>
-            `;
-        } else {
-            async function loadSections() {
-                alert('DEBUG: loadSections called');
-
-                // Construct URL from context
-                const url = `/workflow/${workflowContext.postId}/${workflowContext.stage}/${workflowContext.substage}/${workflowContext.step}/sections/`;
-                alert('DEBUG: Loading from URL: ' + url);
-
-                try {
-                    const response = await fetch(url);
-                    alert('DEBUG: Response status: ' + response.status);
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    alert('DEBUG: Received data: ' + JSON.stringify(data));
-
-                    // Minimal render
-                    const container = document.getElementById('sections-container');
-                    if (!container) {
-                        alert('DEBUG: sections-container not found');
-                        return;
-                    }
-
-                    if (!data || data.length === 0) {
-                        container.innerHTML = '<div class="text-gray-400">No sections found</div>';
-                        return;
-                    }
-
-                    container.innerHTML = data.map(section => `
-                        <div class="border border-dark-border rounded-lg p-4 mb-4">
-                            <h4 class="font-bold">${section.title || section.section_heading || 'Untitled'}</h4>
-                            <p class="text-gray-400">${section.description || section.section_description || 'No description'}</p>
-                        </div>
-                    `).join('');
-
-                } catch (error) {
-                    alert('DEBUG: Error in loadSections: ' + error.message);
-                    const container = document.getElementById('sections-container');
-                    if (container) {
-                        container.innerHTML = `
-                            <div class="text-red-500 p-4 border border-red-500 rounded">
-                                Error loading sections: ${error.message}
-                            </div>
-                        `;
-                    }
-                }
+        try {
+            const response = await fetch(url);
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            // Initialize on page load
-            document.addEventListener('DOMContentLoaded', function () {
-                alert('DEBUG: DOMContentLoaded fired');
-                loadSections();
-            });
+            sections = await response.json();
+            console.log('Sections loaded:', sections);
+            renderSections();
+        } catch (error) {
+            console.error('Error loading sections:', error);
+            document.getElementById('sections-container').innerHTML = `
+                <div class="text-red-500 p-4 border border-red-500 rounded">
+                    Error loading sections: ${error.message}
+                </div>
+            `;
         }
     }
+
+    // Render sections in the container
+    function renderSections() {
+        console.log('Rendering sections...');
+        const container = document.getElementById('sections-container');
+        if (!container) {
+            console.error('Sections container not found!');
+            return;
+        }
+
+        if (!sections || sections.length === 0) {
+            console.log('No sections to render');
+            container.innerHTML = '<div class="text-gray-400">No sections found</div>';
+            return;
+        }
+
+        console.log('Rendering', sections.length, 'sections');
+        container.innerHTML = sections.map((section, index) => `
+            <div class="border border-dark-border rounded-lg overflow-hidden" id="section-${section.id}">
+                <div class="flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover cursor-pointer" onclick="toggleSection(${section.id})">
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-400">${index + 1}.</span>
+                            <span class="font-medium text-dark-text">${section.title || '[No heading]'}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="event.stopPropagation(); editSection(${section.id})" class="text-blue-500 hover:text-blue-400 p-2 rounded hover:bg-gray-800">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                        <button onclick="event.stopPropagation(); deleteSection(${section.id})" class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg flex items-center gap-2 border-2 border-red-600 shadow-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                        <svg class="w-5 h-5 transform transition-transform" id="section-icon-${section.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div id="section-content-${section.id}" class="hidden p-4 bg-dark-bg">
+                    <div class="text-gray-400 mb-2">${section.description || '[No description]'}</div>
+                    <div class="text-dark-text">${section.content || '[No content]'}</div>
+                </div>
+            </div>
+        `).join('');
+        console.log('Sections rendered');
+    }
+
+    // Edit section
+    function editSection(sectionId) {
+        currentSectionId = sectionId;
+        const section = sections.find(s => s.id === sectionId);
+
+        document.getElementById('section-heading').value = section?.title || '';
+        document.getElementById('section-description').value = section?.description || '';
+        document.getElementById('section-content').value = section?.content || '';
+        document.getElementById('modal-title').textContent = section ? 'Edit Section' : 'New Section';
+
+        document.getElementById('section-editor-modal').classList.remove('hidden');
+    }
+
+    // Close section editor
+    function closeSectionEditor() {
+        document.getElementById('section-editor-modal').classList.add('hidden');
+        currentSectionId = null;
+    }
+
+    // Save section
+    async function saveSection() {
+        const heading = document.getElementById('section-heading').value;
+        const description = document.getElementById('section-description').value;
+        const content = document.getElementById('section-content').value;
+
+        try {
+            const url = currentSectionId
+                ? `/workflow/${workflowContext.postId}/${workflowContext.stage}/${workflowContext.substage}/${workflowContext.step}/sections/${currentSectionId}`
+                : `/workflow/${workflowContext.postId}/${workflowContext.stage}/${workflowContext.substage}/${workflowContext.step}/sections/`;
+
+            const response = await fetch(url, {
+                method: currentSectionId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: heading,
+                    description: description,
+                    content: content
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            await loadSections();
+            closeSectionEditor();
+        } catch (error) {
+            console.error('Error saving section:', error);
+            alert('Error saving section: ' + error.message);
+        }
+    }
+
+    // Delete section
+    async function deleteSection(sectionId) {
+        if (!confirm('Are you sure you want to delete this section?')) return;
+
+        try {
+            const url = `/workflow/${workflowContext.postId}/${workflowContext.stage}/${workflowContext.substage}/${workflowContext.step}/sections/${sectionId}`;
+            const response = await fetch(url, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            await loadSections();
+        } catch (error) {
+            console.error('Error deleting section:', error);
+            alert('Error deleting section: ' + error.message);
+        }
+    }
+
+    // Toggle section visibility
+    function toggleSection(sectionId) {
+        const content = document.getElementById(`section-content-${sectionId}`);
+        const icon = document.getElementById(`section-icon-${sectionId}`);
+        content.classList.toggle('hidden');
+        icon.classList.toggle('rotate-180');
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        loadSections();
+
+        // Add event listeners
+        document.getElementById('add-section').addEventListener('click', () => {
+            currentSectionId = null;
+            editSection();
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !document.getElementById('section-editor-modal').classList.contains('hidden')) {
+                closeSectionEditor();
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('section-editor-modal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeSectionEditor();
+            }
+        });
+    });
 </script>
