@@ -47,30 +47,39 @@
             jsonView.style.display = 'block';
         });
         // Pretty-print tree view
-        function prettyPrint(obj, indent = 0) {
-            let out = '';
-            const pad = '  '.repeat(indent);
-            if (typeof obj === 'object' && obj !== null) {
-                if (Array.isArray(obj)) {
-                    out += '[\n';
-                    obj.forEach((item, i) => {
-                        out += pad + '  ' + prettyPrint(item, indent + 1) + (i < obj.length - 1 ? ',\n' : '\n');
-                    });
-                    out += pad + ']';
-                } else {
-                    out += '{\n';
-                    const keys = Object.keys(obj);
-                    keys.forEach((key, i) => {
-                        out += pad + '  ' + key + ': ' + prettyPrint(obj[key], indent + 1) + (i < keys.length - 1 ? ',\n' : '\n');
-                    });
-                    out += pad + '}';
-                }
-            } else {
-                out += JSON.stringify(obj);
+        function buildAccordion(obj, level = 0) {
+            if (typeof obj !== 'object' || obj === null) {
+                return JSON.stringify(obj);
             }
-            return out;
+            let html = '';
+            if (Array.isArray(obj)) {
+                html += '<ul class="list-disc pl-4">';
+                obj.forEach((item, i) => {
+                    html += '<li>' + buildAccordion(item, level + 1) + '</li>';
+                });
+                html += '</ul>';
+            } else {
+                const keys = Object.keys(obj);
+                if (level === 1 || level === 2) {
+                    html += '<div class="accordion mb-2">';
+                    keys.forEach((key, i) => {
+                        html += '<div class="accordion-item border border-gray-700 rounded mb-1">';
+                        html += '<button class="accordion-header w-full text-left px-4 py-2 bg-gray-700 hover:bg-gray-600 focus:outline-none" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">' + key + '</button>';
+                        html += '<div class="accordion-content hidden px-4 py-2 bg-gray-800">' + buildAccordion(obj[key], level + 1) + '</div>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                } else {
+                    html += '{<ul class="list-none pl-4">';
+                    keys.forEach((key, i) => {
+                        html += '<li>' + key + ': ' + buildAccordion(obj[key], level + 1) + (i < keys.length - 1 ? ',' : '') + '</li>';
+                    });
+                    html += '}</ul>';
+                }
+            }
+            return html;
         }
-        treeContent.textContent = prettyPrint({{ planning_steps | tojson }});
+        treeContent.innerHTML = buildAccordion({{ planning_steps | tojson }});
     // Save button logic
     saveButton.addEventListener('click', async function () {
         let data;
