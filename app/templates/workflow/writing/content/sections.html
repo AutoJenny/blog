@@ -1,304 +1,48 @@
-{% extends "base.html" %}
+{% extends "workflow/base.html" %}
 {% import "workflow/workflow_indicator.html" as indicator %}
 {% import "blog/_post_header.html" as blog_macros %}
 
 {% block title %}Writing: Sections{% endblock %}
 
-{% block content %}
-<div class="container mx-auto px-6 py-8">
-    {{ blog_macros.post_header(post, active_view='template') }}
-    {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
+{% block workflow_content %}
+<!-- Debug Output -->
+<div class="hidden">
+    Debug: step_config={{ step_config|tojson }},
+    input_values={{ input_values|tojson }},
+    output_values={{ output_values|tojson }}
+</div>
 
-    <!-- Main Content Area -->
-    <div class="mt-8 space-y-6">
-        <!-- Section Management Header -->
-        <div class="flex justify-between items-center">
-            <div>
-                <h2 class="text-2xl font-bold text-dark-text">Sections</h2>
-                <p class="text-gray-400 mt-1">Manage and organize your post sections</p>
-            </div>
-            <div class="flex gap-4">
-                <button id="add-section"
-                    class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    Add Section
-                </button>
-                <button id="reorder-sections"
-                    class="bg-dark-bg text-dark-text px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-hover transition flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                    Reorder
-                </button>
-            </div>
-        </div>
+<!-- Workflow Navigation -->
+{% with %}
+{% set post_id = post_id %}
+{% set current_stage = current_stage %}
+{% set current_substage = current_substage %}
+{% set current_step = current_step %}
+{% set all_posts = all_posts %}
+{% include 'workflow/_workflow_nav.html' %}
+{% endwith %}
 
-        <!-- Sections Container -->
-        <div id="sections-container" class="space-y-4">
-            <!-- Sections will be loaded here dynamically -->
-        </div>
-    </div>
+<!-- Step Content -->
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        {% block step_heading %}
+        <h1 class="text-3xl font-bold mb-6 text-dark-text">
+            {{ step_config.title }}{% if post and post.title %}: {{ post.title }}{% endif %}
+        </h1>
+        {% endblock %}
 
-    <!-- Section Editor Modal -->
-    <div id="section-editor-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden">
-        <div class="bg-dark-bg rounded-lg p-6 max-w-4xl mx-auto mt-20">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-dark-text" id="modal-title">Edit Section</h2>
-                <button onclick="closeSectionEditor()" class="text-gray-400 hover:text-dark-text">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
-                </button>
-            </div>
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-blue-500 mb-2">Heading</label>
-                    <input type="text" id="section-heading"
-                        class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-dark-text focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500 mb-2">Description</label>
-                    <textarea id="section-description"
-                        class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-dark-text focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        rows="3"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500 mb-2">Content</label>
-                    <textarea id="section-content"
-                        class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-dark-text focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        rows="10"></textarea>
-                </div>
-                <div class="flex justify-end gap-4">
-                    <button onclick="closeSectionEditor()"
-                        class="bg-dark-bg text-dark-text px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-hover transition">
-                        Cancel
-                    </button>
-                    <button onclick="saveSection()"
-                        class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">
-                        Save Section
-                    </button>
-                </div>
-            </div>
-        </div>
+        {% block step_description %}
+        {% if step_config.description %}
+        <p class="text-gray-400 mb-6">{{ step_config.description }}</p>
+        {% endif %}
+        {% endblock %}
+
+        <!-- Include the Workflow Content Module -->
+        {% include 'workflow/_workflow_content.html' %}
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script>
-    // Set window variables from template context
-    window.postId = {{ post_id }};
-    window.currentStage = '{{ current_stage }}';
-    window.currentSubstage = '{{ current_substage }}';
-    window.currentStep = '{{ current_step }}';
-
-    let currentSectionId = null;
-    let sections = [];
-
-    // Load sections on page load
-    document.addEventListener('DOMContentLoaded', async () => {
-        await loadSections();
-        setupEventListeners();
-    });
-
-    function setupEventListeners() {
-        document.getElementById('add-section').addEventListener('click', () => {
-            currentSectionId = null;
-            editSection();
-        });
-
-        document.getElementById('reorder-sections').addEventListener('click', () => {
-            const container = document.getElementById('sections-container');
-            container.classList.toggle('reordering');
-            const button = document.getElementById('reorder-sections');
-            if (container.classList.contains('reordering')) {
-                button.classList.add('bg-blue-500', 'text-white');
-                button.classList.remove('bg-dark-bg', 'text-dark-text');
-                button.innerHTML = `
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Save Order
-                `;
-            } else {
-                button.classList.remove('bg-blue-500', 'text-white');
-                button.classList.add('bg-dark-bg', 'text-dark-text');
-                button.innerHTML = `
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                    Reorder
-                `;
-                saveSectionOrder();
-            }
-        });
-    }
-
-    async function loadSections() {
-        try {
-            const response = await fetch(`/workflow/${window.postId}/${window.currentStage}/${window.currentSubstage}/${window.currentStep}/sections/`);
-            if (!response.ok) throw new Error('Failed to load sections');
-            sections = await response.json();
-            renderSections();
-        } catch (error) {
-            console.error('Error loading sections:', error);
-            showNotification('Error loading sections', 'error');
-        }
-    }
-
-    function renderSections() {
-        const container = document.getElementById('sections-container');
-        container.innerHTML = sections.map((section, index) => `
-            <div class="border border-dark-border rounded-lg overflow-hidden" id="section-${section.id}">
-                <div class="flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover">
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-gray-400">${index + 1}.</span>
-                            <span class="font-medium text-dark-text">${section.title || '[No heading]'}</span>
-                        </div>
-                        <span class="px-2 py-1 text-xs rounded-full ${getStatusClass(section.status)}">${section.status || 'Draft'}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="editSection(${section.id})" class="text-blue-500 hover:text-blue-400">
-                            Edit
-                        </button>
-                        <button onclick="toggleSection(${section.id})" class="text-gray-400 hover:text-dark-text">
-                            <svg class="w-5 h-5 transform transition-transform" id="section-icon-${section.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div id="section-content-${section.id}" class="hidden p-4 bg-dark-bg">
-                    <div class="text-gray-400 mb-2">${section.description || '[No description]'}</div>
-                    <div class="text-dark-text">${section.content || '[No content]'}</div>
-                </div>
-            </div>
-        `).join('');
-
-        // Initialize drag and drop if in reordering mode
-        if (container.classList.contains('reordering')) {
-            new Sortable(container, {
-                animation: 150,
-                handle: '.drag-handle',
-                onEnd: function () {
-                    // Update section numbers
-                    container.querySelectorAll('.section-number').forEach((el, index) => {
-                        el.textContent = `${index + 1}.`;
-                    });
-                }
-            });
-        }
-    }
-
-    function getStatusClass(status) {
-        switch (status?.toLowerCase()) {
-            case 'complete':
-                return 'bg-green-100 text-green-800';
-            case 'needs work':
-                return 'bg-red-100 text-red-800';
-            default:
-                return 'bg-yellow-100 text-yellow-800';
-        }
-    }
-
-    function editSection(sectionId) {
-        currentSectionId = sectionId;
-        const section = sections.find(s => s.id === sectionId);
-
-        document.getElementById('section-heading').value = section?.title || '';
-        document.getElementById('section-description').value = section?.description || '';
-        document.getElementById('section-content').value = section?.content || '';
-        document.getElementById('modal-title').textContent = section ? 'Edit Section' : 'New Section';
-
-        document.getElementById('section-editor-modal').classList.remove('hidden');
-    }
-
-    function closeSectionEditor() {
-        document.getElementById('section-editor-modal').classList.add('hidden');
-        currentSectionId = null;
-    }
-
-    async function saveSection() {
-        const heading = document.getElementById('section-heading').value;
-        const description = document.getElementById('section-description').value;
-        const content = document.getElementById('section-content').value;
-
-        try {
-            const url = currentSectionId
-                ? `/workflow/${window.postId}/${window.currentStage}/${window.currentSubstage}/${window.currentStep}/sections/${currentSectionId}`
-                : `/workflow/${window.postId}/${window.currentStage}/${window.currentSubstage}/${window.currentStep}/sections/create`;
-
-            const response = await fetch(url, {
-                method: currentSectionId ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: heading,
-                    description: description,
-                    content: content,
-                    status: 'draft'
-                })
-            });
-
-            if (!response.ok) throw new Error('Failed to save section');
-
-            await loadSections();
-            closeSectionEditor();
-            showNotification('Section saved successfully', 'success');
-        } catch (error) {
-            console.error('Error saving section:', error);
-            showNotification('Error saving section', 'error');
-        }
-    }
-
-    async function saveSectionOrder() {
-        try {
-            const sectionIds = Array.from(document.getElementById('sections-container').children)
-                .map(el => parseInt(el.id.split('-')[1]));
-
-            const response = await fetch(`/workflow/${window.postId}/${window.currentStage}/${window.currentSubstage}/${window.currentStep}/sections/reorder`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ section_ids: sectionIds })
-            });
-
-            if (!response.ok) throw new Error('Failed to save section order');
-
-            showNotification('Section order saved successfully', 'success');
-        } catch (error) {
-            console.error('Error saving section order:', error);
-            showNotification('Error saving section order', 'error');
-        }
-    }
-
-    function toggleSection(sectionId) {
-        const content = document.getElementById(`section-content-${sectionId}`);
-        const icon = document.getElementById(`section-icon-${sectionId}`);
-        content.classList.toggle('hidden');
-        icon.classList.toggle('rotate-180');
-    }
-
-    function showNotification(message, type = 'success') {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'
-            } text-white`;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
-    }
-</script>
-
-<style>
-    .reordering .border {
-        cursor: move;
-    }
-
-    .reordering .border:hover {
-        border-color: #3b82f6;
-    }
-</style>
+<!-- Remove workflow.js script -->
 {% endblock %}
