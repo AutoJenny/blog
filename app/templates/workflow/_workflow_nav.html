@@ -109,6 +109,15 @@
                     class="px-4 py-2 border-b-2 {% if current_step == 'facts' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
                     Facts
                 </a>
+                {% elif current_substage == 'structure' %}
+                <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='structure', step_name='outline') }}"
+                    class="px-4 py-2 border-b-2 {% if current_step == 'outline' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                    Outline
+                </a>
+                <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='structure', step_name='allocate_facts') }}"
+                    class="px-4 py-2 border-b-2 {% if current_step == 'allocate_facts' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                    Allocate Facts
+                </a>
                 {% else %}
                 <a href="{{ url_for('workflow.step', post_id=post_id, stage_name=current_stage, substage_name=current_substage, step_name='main') }}"
                     class="px-4 py-2 border-b-2 {% if current_step == 'main' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
