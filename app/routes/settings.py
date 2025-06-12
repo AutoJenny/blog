@@ -1,5 +1,5 @@
 import json
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, render_template, jsonify, request, redirect, url_for, flash
 import os
 from app.database import get_db_conn
 
@@ -29,12 +29,55 @@ def workflow_field_mapping():
             substages = cur.fetchall()
     return render_template('settings/workflow_field_mapping.html', field_mappings=field_mappings, stages=stages, substages=substages)
 
-@settings_bp.route('/workflow_prompts')
+@settings_bp.route('/workflow_prompts', methods=['GET', 'POST'])
 def workflow_prompts():
-    return render_template('settings/workflow_prompts.html')
+    prompts_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'prompts')
+    prompts = {}
+    # Load all prompt files
+    for filename in os.listdir(prompts_dir):
+        if filename.endswith('.json'):
+            with open(os.path.join(prompts_dir, filename), 'r') as file:
+                prompt_data = json.load(file)
+                key = os.path.splitext(filename)[0]
+                prompts[key] = prompt_data
 
-@settings_bp.route('/workflow_prompts_json')
+    if request.method == 'POST':
+        # Reconstruct the prompts dict from the form
+        new_prompts = {}
+        for prompt_name, fields in prompts.items():
+            new_prompts[prompt_name] = {}
+            for field in fields:
+                form_key = f'{prompt_name}__{field}'
+                new_prompts[prompt_name][field] = request.form.get(form_key, '')
+        # Save each prompt to its respective file
+        for key, content in new_prompts.items():
+            filename = f"{key}.json"
+            filepath = os.path.join(prompts_dir, filename)
+            with open(filepath, 'w') as file:
+                json.dump(content, file, indent=2)
+        flash('Prompts updated successfully!', 'success')
+        return redirect(url_for('settings.workflow_prompts'))
+
+    return render_template('settings/workflow_prompts.html', prompts=prompts)
+
+@settings_bp.route('/workflow_prompts_json', methods=['GET', 'POST'])
 def workflow_prompts_json():
+    if request.method == 'POST':
+        try:
+            data = request.get_json()
+            prompts_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'prompts')
+            
+            # Save each prompt to its respective file
+            for key, content in data.items():
+                filename = f"{key}.json"
+                filepath = os.path.join(prompts_dir, filename)
+                with open(filepath, 'w') as file:
+                    json.dump(content, file, indent=2)
+            
+            return jsonify({'status': 'success'})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
     try:
         prompts_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'prompts')
         prompts = {}
