@@ -6,6 +6,7 @@ import json
 import os
 import subprocess
 import sys
+import traceback
 
 # Helper to get the most recent, non-deleted post
 def get_latest_post():
@@ -334,13 +335,11 @@ def update_prompt():
             return jsonify({'success': True})
         except Exception as write_error:
             print(f"DEBUG: Write error: {str(write_error)}")
-            import traceback
             print(f"DEBUG: Write error traceback: {traceback.format_exc()}")
             return jsonify({'success': False, 'error': f'Error writing config: {str(write_error)}'}), 500
 
     except Exception as e:
         print(f"DEBUG: General error: {str(e)}")
-        import traceback
         print(f"DEBUG: Error traceback: {traceback.format_exc()}")
         return jsonify({'success': False, 'error': str(e)}), 500 
 
@@ -374,7 +373,6 @@ def update_title_order():
         
     except Exception as e:
         print(f"DEBUG: Error updating title order: {str(e)}")
-        import traceback
         print(f"DEBUG: Error traceback: {traceback.format_exc()}")
         return jsonify({'success': False, 'error': str(e)}), 500 
 
@@ -424,7 +422,6 @@ def save_prompt(post_id, stage_name, substage_name, step_name):
         return jsonify({'success': True})
     except Exception as e:
         print(f"DEBUG: Error saving prompt: {str(e)}")
-        import traceback
         print(f"DEBUG: Error traceback: {traceback.format_exc()}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
