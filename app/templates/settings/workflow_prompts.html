@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings: Workflow Prompts</title>
+</head>
+
+<body>
+    <h1>Settings: Workflow Prompts</h1>
+    <pre id="prompts-json"></pre>
+    <script>
+        fetch('/settings/workflow_prompts_json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('prompts-json').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Error loading prompts:', error);
+            });
+    </script>
+</body>
+
+</html>

@@ -137,6 +137,9 @@ def create_app(config_class=Config):
     from app.workflow import workflow
     app.register_blueprint(workflow, url_prefix='/workflow')
 
+    from app.routes.settings import settings_bp
+    app.register_blueprint(settings_bp, url_prefix='/settings')
+
     # Add debug route listing
     @app.route('/debug/routes')
     def list_routes():
