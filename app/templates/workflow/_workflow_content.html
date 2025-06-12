@@ -1,295 +1,190 @@
 <!-- Workflow Content Module -->
-<div class="space-y-4">
-    <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-dark-text">
-            {% block step_heading %}{{ step_config.title }}{% endblock %}
-        </h2>
-        <button id="run-llm" class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">
+<div class="space-y-6">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-bold text-dark-text">
+                {% block step_heading %}{{ step_config.title }}{% endblock %}
+            </h2>
+            {% if step_config.description %}
+            <p class="text-gray-400 mt-2">{{ step_config.description }}</p>
+            {% endif %}
+        </div>
+        <button id="run-llm"
+            class="bg-dark-accent text-white px-6 py-3 rounded-lg hover:bg-dark-hover transition flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
             Run LLM
         </button>
     </div>
 
-    {% block step_description %}
-    {% if step_config.description %}
-    <p class="text-gray-400 mb-6">{{ step_config.description }}</p>
-    {% endif %}
-    {% endblock %}
-
-    <!-- Inputs Accordion (abbreviate summary, full content when open) -->
-    <div class="border border-dark-border rounded-lg overflow-hidden">
-        <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="document.getElementById('inputs-content').classList.toggle('hidden'); document.getElementById('inputs-icon').classList.toggle('rotate-180');">
-            <span class="font-medium text-dark-text">Inputs</span>
-            <span class="text-gray-400" id="inputs-summary">
-                {% if step_config.inputs %}
-                {% set ns = namespace(summary='') %}
-                {% for input_id, input_config in step_config.inputs.items() %}
-                {% set val = input_values[input_id] if input_values and input_id in input_values else '—' %}
-                {% if not loop.first %}{% set ns.summary = ns.summary + ', ' %}{% endif %}
-                {% set summary = val[:80] ~ ('...' if val|length > 80 else '') %}
-                {% set ns.summary = ns.summary + '<span class=\"text-blue-500\">[' + input_id + ']</span>: ' + summary
-                %}
-                {% endfor %}
-                {{ ns.summary|safe }}
-                {% else %}
-                No inputs configured
-                {% endif %}
-            </span>
-            <svg class="w-5 h-5 transform transition-transform" id="inputs-icon" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-        </button>
-        <div id="inputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
-            {% if step_config.inputs %}
-            {% for input_id, input_config in step_config.inputs.items() %}
-            <div class="mb-4">
-                <div class="flex justify-between items-center mb-2">
-                    <label for="{{ input_id }}" class="block text-sm font-medium text-blue-500">
-                        [{{ input_id }}] {{ input_config.label }}
-                    </label>
-                    <select class="input-field-select bg-gray-900 text-gray-200 rounded-lg p-2 border border-gray-700"
-                        data-input-id="{{ input_id }}" onchange="updateInputField(this)">
-                        <option value="">Select a field...</option>
-                    </select>
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Left Column: Sections -->
+        <div class="space-y-6">
+            <!-- Sections Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-dark-text">Sections</h3>
+                        <button id="add-section"
+                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Section
+                        </button>
+                    </div>
+                    <div id="sections-container" class="space-y-4">
+                        <!-- Sections will be loaded here dynamically -->
+                    </div>
                 </div>
-                <div class="text-xs text-gray-400 mb-1">
-                    Type: {{ input_config.type }}{% if input_config.db_field %}, DB Field: {{ input_config.db_field }}{%
-                    endif %}{% if input_config.db_table %}, Table: {{ input_config.db_table }}{% endif %}{% if
-                    input_config.required %}, Required{% endif %}
-                </div>
-                {% if input_config.type == 'textarea' %}
-                <div class="bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-300 whitespace-pre-wrap">
-                    {{ input_values[input_id] if input_values and input_id in input_values else '' }}
-                </div>
-                {% endif %}
             </div>
-            {% endfor %}
-            {% else %}
-            <p class="text-gray-400">No inputs configured for this step.</p>
-            {% endif %}
+
+            <!-- Prompt Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark-text mb-4">Prompt</h3>
+                    {% set llm = step_config.settings.llm if step_config.settings and step_config.settings.llm else None
+                    %}
+                    {% if llm %}
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500 mb-2">System Prompt</label>
+                            <textarea id="system-prompt"
+                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ llm.system_prompt }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500 mb-2">Task Prompt</label>
+                            <textarea id="task-prompt"
+                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ llm.task_prompt }}</textarea>
+                        </div>
+                        <button id="save-prompt"
+                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">Save
+                            Prompt</button>
+                    </div>
+                    {% elif step_config.prompt and step_config.prompt.template %}
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500 mb-2">Prompt Template</label>
+                            <textarea id="prompt-template"
+                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ step_config.prompt.template }}</textarea>
+                        </div>
+                        <button id="save-prompt"
+                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">Save
+                            Prompt</button>
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400">No prompt configured for this step.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- Prompt Accordion -->
-    <div class="border border-dark-border rounded-lg overflow-hidden">
-        <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="document.getElementById('prompt-content').classList.toggle('hidden'); document.getElementById('prompt-icon').classList.toggle('rotate-180');">
-            <span class="font-medium text-dark-text">Prompt</span>
-            <span class="text-gray-400" id="prompt-summary">
-                {% if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt %}
-                {{ step_config.settings.llm.task_prompt.split('\n')[0]|truncate(50) }}
-                {% elif step_config.prompt and step_config.prompt.template %}
-                {{ step_config.prompt.template.split('\n')[0]|truncate(50) }}
-                {% else %}
-                No prompt configured
-                {% endif %}
-            </span>
-            <svg class="w-5 h-5 transform transition-transform" id="prompt-icon" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-        </button>
-        <div id="prompt-content" class="hidden p-4 bg-dark-bg text-dark-text">
-            {% set llm = step_config.settings.llm if step_config.settings and step_config.settings.llm else None %}
-            {% if llm %}
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-blue-500 mb-2">System Prompt</label>
-                <textarea id="system-prompt"
-                    class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 mb-4">{{ llm.system_prompt }}</textarea>
-                <label class="block text-sm font-medium text-blue-500 mb-2">Task Prompt</label>
-                <textarea id="task-prompt"
-                    class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4">{{ llm.task_prompt }}</textarea>
-                <button id="save-prompt" class="btn btn-primary mt-4">Save Prompt</button>
-                <span id="prompt-summary" class="ml-4 text-green-400"></span>
-            </div>
-            {% elif step_config.prompt and step_config.prompt.template %}
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-blue-500 mb-2">Prompt Template</label>
-                <textarea id="prompt-template"
-                    class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4">{{ step_config.prompt.template }}</textarea>
-                <button id="save-prompt" class="btn btn-primary mt-4">Save Prompt</button>
-            </div>
-            {% else %}
-            <p class="text-gray-400">No prompt configured for this step.</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Settings Accordion -->
-    <div class="border border-dark-border rounded-lg overflow-hidden">
-        <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="document.getElementById('settings-content').classList.toggle('hidden'); document.getElementById('settings-icon').classList.toggle('rotate-180');">
-            <span class="font-medium text-dark-text">Settings</span>
-            <span class="text-gray-400" id="settings-summary">
-                {% if step_config.settings and step_config.settings.llm %}
-                <span class="text-blue-500">Provider:</span> {{ step_config.settings.llm.provider }},
-                <span class="text-blue-500">Model:</span> {{ step_config.settings.llm.model }}
-                {% if step_config.settings.llm.parameters %}
-                , <span class="text-blue-500">Temp:</span> {{ step_config.settings.llm.parameters.temperature }},
-                <span class="text-blue-500">Max tokens:</span> {{ step_config.settings.llm.parameters.max_tokens }}
-                {% endif %}
-                {% elif step_config.settings %}
-                {{ step_config.settings|length }} setting{{ 's' if step_config.settings|length != 1 else '' }}
-                configured
-                {% else %}
-                No settings configured
-                {% endif %}
-            </span>
-            <svg class="w-5 h-5 transform transition-transform" id="settings-icon" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-        </button>
-        <div id="settings-content" class="hidden p-4 bg-dark-bg text-dark-text">
-            {% if step_config.settings and step_config.settings.llm %}
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Provider</label>
-                    <input type="text" value="{{ step_config.settings.llm.provider }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Model</label>
-                    <input type="text" value="{{ step_config.settings.llm.model }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                {% if step_config.settings.llm.parameters %}
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Temperature</label>
-                    <input type="text" value="{{ step_config.settings.llm.parameters.temperature }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Max tokens</label>
-                    <input type="text" value="{{ step_config.settings.llm.parameters.max_tokens }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Top P</label>
-                    <input type="text" value="{{ step_config.settings.llm.parameters.top_p }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Frequency Penalty</label>
-                    <input type="text" value="{{ step_config.settings.llm.parameters.frequency_penalty }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Presence Penalty</label>
-                    <input type="text" value="{{ step_config.settings.llm.parameters.presence_penalty }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                {% endif %}
-            </div>
-            {% elif step_config.settings %}
-            <div class="grid grid-cols-2 gap-4">
-                {% for setting, value in step_config.settings.items() %}
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">{{ setting }}</label>
-                    <input type="text" value="{{ value }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <p class="text-gray-400">No settings configured for this step.</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Outputs Accordion (summary is truncated, not first line) -->
-    <div class="border border-dark-border rounded-lg overflow-hidden">
-        <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="document.getElementById('outputs-content').classList.toggle('hidden'); document.getElementById('outputs-icon').classList.toggle('rotate-180');">
-            <span class="font-medium text-dark-text">Outputs</span>
-            <span class="text-gray-400" id="outputs-summary">
-                {% if output_field %}
-                <span class="text-blue-500">[{{ output_field }}]</span>: {{ (output_value[:80] ~ ('...' if output_value
-                and output_value|length > 80 else '')) if output_value else '' }}
-                {% else %}
-                No output field selected
-                {% endif %}
-            </span>
-            <svg class="w-5 h-5 transform transition-transform" id="outputs-icon" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-        </button>
-        <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
-            {% if output_field %}
-            <div class="mb-4">
-                <div class="flex justify-between items-center mb-2">
-                    <label for="output_field_select" class="block text-sm font-medium text-blue-500">
-                        Select Output Field
-                    </label>
-                    <select id="output_field_select"
-                        class="output-field-select bg-gray-900 text-gray-200 rounded-lg p-2 border border-gray-700"
-                        onchange="updateOutputField(this)">
-                        <option value="">Select a field...</option>
-                        {% for field in fields %}
-                        <option value="{{ field }}" {% if field==output_field %}selected{% endif %}>{{ field }}</option>
+        <!-- Right Column: Inputs and Outputs -->
+        <div class="space-y-6">
+            <!-- Inputs Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark-text mb-4">Inputs</h3>
+                    {% if step_config.inputs %}
+                    <div class="space-y-4">
+                        {% for input_id, input_config in step_config.inputs.items() %}
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-medium text-blue-500">
+                                    [{{ input_id }}] {{ input_config.label }}
+                                </label>
+                                <select
+                                    class="input-field-select bg-gray-800 text-gray-200 rounded-lg p-2 border border-gray-700"
+                                    data-input-id="{{ input_id }}" onchange="updateInputField(this)">
+                                    <option value="">Select a field...</option>
+                                </select>
+                            </div>
+                            <div class="text-xs text-gray-400">
+                                Type: {{ input_config.type }}
+                                {% if input_config.db_field %}, DB Field: {{ input_config.db_field }}{% endif %}
+                                {% if input_config.db_table %}, Table: {{ input_config.db_table }}{% endif %}
+                                {% if input_config.required %}, Required{% endif %}
+                            </div>
+                            {% if input_config.type == 'textarea' %}
+                            <div
+                                class="mt-2 bg-gray-800 text-gray-200 rounded-lg p-4 border border-gray-700 whitespace-pre-wrap">
+                                {{ input_values[input_id] if input_values and input_id in input_values else '' }}
+                            </div>
+                            {% endif %}
+                        </div>
                         {% endfor %}
-                    </select>
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400">No inputs configured for this step.</p>
+                    {% endif %}
                 </div>
-                <div class="bg-gray-900 text-gray-200 rounded-lg border border-gray-300" style="padding:0 !important;">
-                    <ul id="output-dnd-list" class="space-y-0"
-                        style="margin:0; padding:0; white-space:normal !important;">
-                        {% if output_titles_dnd %}
-                        {% for title in output_titles_dnd %}
-                        <li class="flex items-center space-x-2 bg-gray-800 rounded cursor-move {% if loop.first %}font-bold text-green-400{% endif %}"
-                            style="padding:10px 12px; line-height:2.5; margin:0; min-height:unset;">
-                            <span class="handle cursor-move text-gray-400" style="margin:0;">⋮⋮</span>
-                            <span class="title-text flex-grow" style="margin:0;">{{ title }}</span>
-                            <span class="primary-label text-sm text-gray-400" style="margin:0;">{% if loop.first
-                                %}(Primary){% endif %}</span>
-                        </li>
-                        {% endfor %}
+            </div>
+
+            <!-- Outputs Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark-text mb-4">Outputs</h3>
+                    {% if output_field %}
+                    <div class="space-y-4">
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-medium text-blue-500">Output Field</label>
+                                <select id="output_field_select"
+                                    class="output-field-select bg-gray-800 text-gray-200 rounded-lg p-2 border border-gray-700"
+                                    onchange="updateOutputField(this)">
+                                    <option value="">Select a field...</option>
+                                    {% for field in fields %}
+                                    <option value="{{ field }}" {% if field==output_field %}selected{% endif %}>{{ field
+                                        }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div
+                                class="mt-2 bg-gray-800 text-gray-200 rounded-lg p-4 border border-gray-700 whitespace-pre-wrap">
+                                {{ output_value if output_value else 'No output value' }}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400">No output field selected.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Settings Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark-text mb-4">Settings</h3>
+                    {% if step_config.settings and step_config.settings.llm %}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <label class="block text-sm font-medium text-blue-500 mb-1">Provider</label>
+                            <div class="text-gray-200">{{ step_config.settings.llm.provider }}</div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <label class="block text-sm font-medium text-blue-500 mb-1">Model</label>
+                            <div class="text-gray-200">{{ step_config.settings.llm.model }}</div>
+                        </div>
+                        {% if step_config.settings.llm.parameters %}
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <label class="block text-sm font-medium text-blue-500 mb-1">Temperature</label>
+                            <div class="text-gray-200">{{ step_config.settings.llm.parameters.temperature }}</div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <label class="block text-sm font-medium text-blue-500 mb-1">Max tokens</label>
+                            <div class="text-gray-200">{{ step_config.settings.llm.parameters.max_tokens }}</div>
+                        </div>
                         {% endif %}
-                    </ul>
-                    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function () {
-                            var el = document.getElementById('output-dnd-list');
-                            if (el) {
-                                var sortable = Sortable.create(el, {
-                                    handle: '.handle',
-                                    animation: 150,
-                                    onEnd: function () {
-                                        var items = Array.from(el.children).map(li => li.querySelector('.title-text').textContent);
-                                        fetch('/workflow/api/update_title_order/', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({
-                                                post_id: {{ post_id| tojson }},
-                                    titles: items
-                                })
-                            })
-                            .then(r => r.json())
-                            .then(data => {
-                                if (data.success) {
-                                    // Update the primary label
-                                    el.querySelectorAll('li').forEach((li, index) => {
-                                        if (index === 0) {
-                                            li.classList.add('font-bold', 'text-green-400');
-                                            li.querySelector('.primary-label').textContent = '(Primary)';
-                                        } else {
-                                            li.classList.remove('font-bold', 'text-green-400');
-                                            li.querySelector('.primary-label').textContent = '';
-                                        }
-                                    });
-                                } else {
-                                    alert('Error saving order: ' + (data.error || 'Unknown error'));
-                                }
-                            });
-                            }
-                        });
-                    </script>
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400">No settings configured for this step.</p>
+                    {% endif %}
                 </div>
             </div>
-            {% else %}
-            <p class="text-gray-400">No output field selected for this step.</p>
-            {% endif %}
         </div>
     </div>
 </div>
@@ -315,323 +210,94 @@
 </style>
 
 <script type="text/javascript">
-    window.postId = {{ post_id | tojson }};
-    window.currentStep = {{ current_step | tojson }};
-    window.currentSubstage = {{ current_substage | tojson }};
-    window.currentStage = {{ current_stage | tojson }};
-    window.stepId = {{ step_id | tojson }};
-    window.originalPrompt = {{ (step_config.prompt.template if step_config.prompt and step_config.prompt.template else step_config.settings.llm.task_prompt if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt else "")| tojson }};
-    window.outputValues = {{ output_values | tojson }};
-    window.outputMappingField = {{ (step_config.settings.llm.output_mapping.field if step_config.settings and step_config.settings.llm and step_config.settings.llm.output_mapping else "") | tojson }};
+    // DEBUG: Minimal sections functionality
+    alert('DEBUG: Script starting\nURL: ' + window.location.href);
 
-    // Fetch available fields from post_development table
-    async function fetchAvailableFields() {
-        try {
-            const response = await fetch('/api/v1/post_development/fields');
-            const data = await response.json();
-            return data.fields || [];
-        } catch (error) {
-            console.error('Error fetching fields:', error);
-            return [];
-        }
-    }
+    // Extract workflow context from URL
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    alert('DEBUG: Path parts: ' + JSON.stringify(pathParts));
 
-    // Populate field selectors
-    async function populateFieldSelectors() {
-        const fields = await fetchAvailableFields();
-        const inputSelects = document.querySelectorAll('.input-field-select');
-        const outputSelects = document.querySelectorAll('.output-field-select');
+    // Validate path structure
+    if (pathParts.length < 5) {
+        alert('DEBUG: Invalid URL structure: ' + window.location.pathname);
+        document.getElementById('sections-container').innerHTML = `
+            <div class="text-red-500 p-4 border border-red-500 rounded">
+                Error: Invalid URL structure. Expected /workflow/post_id/stage/substage/step/
+            </div>
+        `;
+    } else {
+        const workflowContext = {
+            postId: parseInt(pathParts[1]),
+            stage: pathParts[2],
+            substage: pathParts[3],
+            step: pathParts[4]
+        };
+        alert('DEBUG: Workflow context: ' + JSON.stringify(workflowContext));
 
-        // Fetch current mapping from backend
-        let mapping = {};
-        if (window.stepId !== null && window.stepId !== undefined && window.stepId !== 'null') {
-            try {
-                const resp = await fetch(`/api/v1/llm/post_workflow_step_actions?post_id=${window.postId}&step_id=${window.stepId}`);
-                if (resp.ok) {
-                    const data = await resp.json();
-                    if (data.actions && data.actions.length > 0) {
-                        data.actions.forEach(action => {
-                            if (action.input_field) mapping[action.input_field] = 'input';
-                            if (action.output_field) mapping[action.output_field] = 'output';
-                        });
-                    }
-                }
-            } catch (err) {
-                console.error('Error fetching mapping:', err);
-            }
+        // Validate all required fields
+        if (!workflowContext.postId || !workflowContext.stage || !workflowContext.substage || !workflowContext.step) {
+            alert('DEBUG: Missing required workflow parameters: ' + JSON.stringify(workflowContext));
+            document.getElementById('sections-container').innerHTML = `
+                <div class="text-red-500 p-4 border border-red-500 rounded">
+                    Error: Missing required workflow parameters
+                </div>
+            `;
         } else {
-            console.warn('populateFieldSelectors: stepId is null or invalid:', window.stepId);
-        }
+            async function loadSections() {
+                alert('DEBUG: loadSections called');
 
-        // Debug: print available fields and mapping
-        console.log('Available fields:', fields);
-        console.log('Mapping:', mapping);
+                // Construct URL from context
+                const url = `/workflow/${workflowContext.postId}/${workflowContext.stage}/${workflowContext.substage}/${workflowContext.step}/sections/`;
+                alert('DEBUG: Loading from URL: ' + url);
 
-        // Populate input field selects
-        inputSelects.forEach(select => {
-            const inputId = select.getAttribute('data-input-id');
-            select.innerHTML = '<option value="">Select a field...</option>';
-            fields.forEach(field => {
-                const option = document.createElement('option');
-                option.value = field;
-                option.textContent = field;
-                if (mapping[field] === 'input') option.selected = true;
-                select.appendChild(option);
-            });
-            // If mapped value is not in fields, add it
-            Object.keys(mapping).forEach(mappedField => {
-                if (mapping[mappedField] === 'input' && !fields.includes(mappedField)) {
-                    const option = document.createElement('option');
-                    option.value = mappedField;
-                    option.textContent = mappedField + ' (missing)';
-                    option.selected = true;
-                    select.appendChild(option);
-                }
-            });
-        });
+                try {
+                    const response = await fetch(url);
+                    alert('DEBUG: Response status: ' + response.status);
 
-        // Populate output field selects
-        outputSelects.forEach(select => {
-            const outputId = select.getAttribute('data-output-id');
-            select.innerHTML = '<option value="">Select a field...</option>';
-            fields.forEach(field => {
-                const option = document.createElement('option');
-                option.value = field;
-                option.textContent = field;
-                if (mapping[field] === 'output') option.selected = true;
-                select.appendChild(option);
-            });
-            // If mapped value is not in fields, add it
-            Object.keys(mapping).forEach(mappedField => {
-                if (mapping[mappedField] === 'output' && !fields.includes(mappedField)) {
-                    const option = document.createElement('option');
-                    option.value = mappedField;
-                    option.textContent = mappedField + ' (missing)';
-                    option.selected = true;
-                    select.appendChild(option);
-                }
-            });
-            // If nothing is selected, use outputMappingField from config
-            if (!select.value && window.outputMappingField && fields.includes(window.outputMappingField)) {
-                select.value = window.outputMappingField;
-            }
-            // If still nothing is selected, default to the field name (outputId)
-            if (!select.value) {
-                for (let i = 0; i < select.options.length; i++) {
-                    if (select.options[i].value === outputId) {
-                        select.options[i].selected = true;
-                        break;
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    alert('DEBUG: Received data: ' + JSON.stringify(data));
+
+                    // Minimal render
+                    const container = document.getElementById('sections-container');
+                    if (!container) {
+                        alert('DEBUG: sections-container not found');
+                        return;
+                    }
+
+                    if (!data || data.length === 0) {
+                        container.innerHTML = '<div class="text-gray-400">No sections found</div>';
+                        return;
+                    }
+
+                    container.innerHTML = data.map(section => `
+                        <div class="border border-dark-border rounded-lg p-4 mb-4">
+                            <h4 class="font-bold">${section.title || section.section_heading || 'Untitled'}</h4>
+                            <p class="text-gray-400">${section.description || section.section_description || 'No description'}</p>
+                        </div>
+                    `).join('');
+
+                } catch (error) {
+                    alert('DEBUG: Error in loadSections: ' + error.message);
+                    const container = document.getElementById('sections-container');
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="text-red-500 p-4 border border-red-500 rounded">
+                                Error loading sections: ${error.message}
+                            </div>
+                        `;
                     }
                 }
             }
-        });
-    }
 
-    // Update input field mapping
-    async function updateInputField(select) {
-        const inputId = select.getAttribute('data-input-id');
-        const newField = select.value;
-
-        try {
-            const response = await fetch(`/api/v1/llm/post_workflow_step_actions/${window.postId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    input_field: newField
-                })
-            });
-
-            if (response.ok) {
-                // Update the UI to reflect the change
-                const summary = document.getElementById('inputs-summary');
-                const currentText = summary.innerHTML;
-                const newText = currentText.replace(
-                    new RegExp(`\\[${inputId}\\]`),
-                    `[${newField}]`
-                );
-                summary.innerHTML = newText;
-            }
-        } catch (error) {
-            console.error('Error updating input field:', error);
-        }
-    }
-
-    // Update output field mapping
-    async function updateOutputField(select) {
-        const outputId = select.getAttribute('data-output-id');
-        const newField = select.value;
-
-        // Persist the mapping to the JSON config
-        try {
-            const response = await fetch('/workflow/api/update_output_mapping/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    stage_name: window.currentStage,
-                    substage_name: window.currentSubstage,
-                    step_name: window.currentStep,
-                    field: newField
-                })
-            });
-            if (response.ok) {
-                // Update the UI to reflect the change
-                const summary = document.getElementById('outputs-summary');
-                const currentText = summary.innerHTML;
-                const newText = currentText.replace(
-                    new RegExp(`\[${outputId}\]`),
-                    `[${newField}]`
-                );
-                summary.innerHTML = newText;
-
-                // Update the output value display
-                const outputValue = document.querySelector('.output-value');
-                if (outputValue) {
-                    // Fetch the current post development data
-                    const postDevResponse = await fetch(`/api/v1/llm/post_development/${window.postId}`);
-                    if (postDevResponse.ok) {
-                        const postDev = await postDevResponse.json();
-                        outputValue.textContent = postDev[newField] || '(No value)';
-                    }
-                }
-
-                // Update the output field select to show the new value
-                const outputFieldSelect = document.getElementById('output_field_select');
-                if (outputFieldSelect) {
-                    outputFieldSelect.value = newField;
-                }
-            } else {
-                const data = await response.json();
-                alert('Error saving output mapping: ' + (data.error || 'Unknown error'));
-            }
-        } catch (error) {
-            console.error('Error updating output field mapping:', error);
-        }
-    }
-
-    // Initialize the page
-    document.addEventListener('DOMContentLoaded', function () {
-        populateFieldSelectors();
-
-        // Add event listener for the save-prompt button if it exists
-        const savePromptButton = document.getElementById('save-prompt');
-        if (savePromptButton) {
-            savePromptButton.addEventListener('click', function () {
-                const systemPrompt = document.getElementById('system-prompt') ? document.getElementById('system-prompt').value : '';
-                const taskPrompt = document.getElementById('task-prompt') ? document.getElementById('task-prompt').value : '';
-                // Get the current URL path and extract the components
-                const pathParts = window.location.pathname.split('/');
-                const postId = pathParts[2];
-                const stageName = pathParts[3];
-                const substageName = pathParts[4];
-                const stepName = pathParts[5];
-                fetch(`/workflow/${postId}/${stageName}/${substageName}/${stepName}/save_prompt`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        system_prompt: systemPrompt,
-                        task_prompt: taskPrompt
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Update the summary text
-                            const summary = document.getElementById('prompt-summary');
-                            if (summary) {
-                                summary.textContent = 'Saved!';
-                                summary.classList.remove('text-red-400');
-                                summary.classList.add('text-green-400');
-                            }
-                            // Show floating green message
-                            const message = document.createElement('div');
-                            message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50';
-                            message.textContent = 'Prompt saved successfully!';
-                            document.body.appendChild(message);
-                            setTimeout(() => message.remove(), 3000);
-                        } else {
-                            throw new Error(data.error || 'Failed to save prompt');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error saving prompt:', error);
-                        const summary = document.getElementById('prompt-summary');
-                        if (summary) {
-                            summary.textContent = 'Error!';
-                            summary.classList.remove('text-green-400');
-                            summary.classList.add('text-red-400');
-                        }
-                        const message = document.createElement('div');
-                        message.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50';
-                        message.textContent = 'Error saving prompt: ' + error.message;
-                        document.body.appendChild(message);
-                        setTimeout(() => message.remove(), 3000);
-                    });
+            // Initialize on page load
+            document.addEventListener('DOMContentLoaded', function () {
+                alert('DEBUG: DOMContentLoaded fired');
+                loadSections();
             });
         }
-
-        // Add event listener for the run-llm button
-        document.getElementById('run-llm').addEventListener('click', async function () {
-            try {
-                // Show loading state
-                this.disabled = true;
-                this.textContent = 'Running...';
-
-                // Call the run_llm endpoint
-                const response = await fetch('/workflow/api/run_llm/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        post_id: window.postId,
-                        stage_name: window.currentStage,
-                        substage_name: window.currentSubstage,
-                        step_name: window.currentStep
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                // Update the output display if we have an output field
-                if (data.output_field) {
-                    const outputSummary = document.getElementById('outputs-summary');
-                    if (outputSummary) {
-                        const outputValue = data.response;
-                        const truncatedValue = outputValue.length > 80 ? outputValue.substring(0, 80) + '...' : outputValue;
-                        outputSummary.innerHTML = `<span class="text-blue-500">[${data.output_field}]</span>: ${truncatedValue}`;
-                    }
-                }
-
-                // Show success message
-                const message = document.createElement('div');
-                message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50';
-                message.textContent = 'LLM processing completed successfully!';
-                document.body.appendChild(message);
-                setTimeout(() => message.remove(), 3000);
-
-            } catch (error) {
-                console.error('Error running LLM:', error);
-
-                // Show error message
-                const message = document.createElement('div');
-                message.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50';
-                message.textContent = 'Error: ' + error.message;
-                document.body.appendChild(message);
-                setTimeout(() => message.remove(), 3000);
-            } finally {
-                // Reset button state
-                this.disabled = false;
-                this.textContent = 'Run LLM';
-            }
-        });
-    });
+    }
 </script>
-<script src="{{ url_for('static', filename='js/workflow.js') }}"></script>
