@@ -1227,3 +1227,80 @@ def ollama_status():
         return jsonify({"status": "running"})
     else:
         return jsonify({"status": "not running"})
+
+@bp.route('/debug/post_workflow_step_actions/<int:post_id>', methods=['GET'])
+def debug_post_workflow_step_actions(post_id):
+    """Debug endpoint to check post_workflow_step_action records."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # First, get the step_id for provisional_title
+                cur.execute("""
+                    SELECT id FROM workflow_step WHERE name = 'provisional_title'
+                """)
+                step_result = cur.fetchone()
+                if not step_result:
+                    return jsonify({
+                        "status": "error",
+                        "message": "provisional_title step not found"
+                    }), 404
+                step_id = step_result[0]
+
+                # Then get the post_workflow_step_action records
+                cur.execute("""
+                    SELECT pwsa.*, ws.name as step_name
+                    FROM post_workflow_step_action pwsa
+                    JOIN workflow_step ws ON pwsa.step_id = ws.id
+                    WHERE pwsa.post_id = %s AND pwsa.step_id = %s
+                """, (post_id, step_id))
+                rows = cur.fetchall()
+                if rows:
+                    return jsonify({
+                        "status": "success",
+                        "count": len(rows),
+                        "records": [dict(row) for row in rows]
+                    })
+                else:
+                    # If no records exist, create them
+                    cur.execute("""
+                        INSERT INTO post_workflow_step_action (post_id, step_id, input_field, output_field)
+                        VALUES (%s, %s, 'provisional_title', 'provisional_title')
+                        RETURNING id
+                    """, (post_id, step_id))
+                    new_id = cur.fetchone()[0]
+                    conn.commit()
+                    return jsonify({
+                        "status": "success",
+                        "message": "Created new post_workflow_step_action record",
+                        "id": new_id
+                    })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@bp.route('/post_workflow_step_actions/<int:pws_id>', methods=['PUT'])
+def update_post_workflow_step_action(pws_id):
+    """Update input_field or output_field for a post_workflow_step_action."""
+    data = request.get_json()
+    input_field = data.get('input_field')
+    output_field = data.get('output_field')
+    value = data.get('value')
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                if input_field:
+                    cur.execute(
+                        "UPDATE post_workflow_step_action SET input_field = %s WHERE id = %s",
+                        (value, pws_id)
+                    )
+                if output_field:
+                    cur.execute(
+                        "UPDATE post_workflow_step_action SET output_field = %s WHERE id = %s",
+                        (value, pws_id)
+                    )
+                conn.commit()
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500

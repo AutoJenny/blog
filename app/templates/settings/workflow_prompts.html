@@ -1,25 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings: Workflow Prompts</title>
-</head>
+{% block title %}Workflow Prompts{% endblock %}
 
-<body>
-    <h1>Settings: Workflow Prompts</h1>
-    <pre id="prompts-json"></pre>
-    <script>
-        fetch('/settings/workflow_prompts_json')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('prompts-json').textContent = JSON.stringify(data, null, 2);
-            })
-            .catch(error => {
-                console.error('Error loading prompts:', error);
-            });
-    </script>
-</body>
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-gray-100">Workflow Prompts</h1>
 
-</html>
+    <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+        <pre id="prompts-json" class="text-gray-200 bg-gray-900 p-4 rounded-lg overflow-auto max-h-[600px]"></pre>
+    </div>
+</div>
+
+<script>
+    fetch('/settings/workflow_prompts_json')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('prompts-json').textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+            console.error('Error loading prompts:', error);
+            document.getElementById('prompts-json').textContent = 'Error loading prompts: ' + error.message;
+        });
+</script>
+{% endblock %}

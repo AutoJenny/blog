@@ -32,11 +32,8 @@ def execute_llm_request(request_data):
         prompt_template = request_data.get('prompt', '').strip()
         input_text = request_data.get('input', '').strip()
         
-        # Strip [system] and similar tags from prompt
-        cleaned_prompt = re.sub(r'\[.*?\]', '', prompt_template).strip()
-        
         # Format the prompt in a clear, explicit way
-        prompt = f"""{cleaned_prompt}
+        prompt = f"""{prompt_template}
 
 Input: {input_text}"""
 

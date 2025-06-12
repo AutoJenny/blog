@@ -706,4 +706,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Initial load
   await init();
-})(); 
+})();
+
+// Add this function to re-fetch post_workflow_step_actions
+async function fetchPostWorkflowStepActions(postId, stepId) {
+  const resp = await fetch(`/api/v1/llm/post_workflow_step_actions?post_id=${postId}&step_id=${stepId}`);
+  return resp.ok ? await resp.json() : null;
+}
+
+// Update the updateFieldMapping function to re-fetch data after a successful update and update the UI with the new data. This will ensure the UI reflects the latest data after a PUT request.
+async function updateFieldMapping(pwsId, field, value) {
+  const resp = await fetch(`/api/v1/llm/post_workflow_step_actions/${pwsId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ [field]: value })
+  });
+  if (resp.ok) {
+    // Re-fetch the data to update the UI
+    const data = await fetchPostWorkflowStepActions(window.postId, window.currentStep.id);
+    if (data) {
+      // Update the UI with the new data
+      console.log('Updated data:', data);
+      // Update the dropdowns with the new data
+      if (data.actions && data.actions.length > 0) {
+        const action = data.actions[0];
+        if (action.input_field) {
+          const inputFieldSelect = document.getElementById('inputFieldSelect');
+          if (inputFieldSelect) inputFieldSelect.value = action.input_field;
+        }
+        if (action.output_field) {
+          const outputFieldSelect = document.getElementById('outputFieldSelect');
+          if (outputFieldSelect) outputFieldSelect.value = action.output_field;
+        }
+      }
+    }
+  }
+} 

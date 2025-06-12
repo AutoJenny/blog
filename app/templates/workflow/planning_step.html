@@ -9,9 +9,10 @@
 {% set current_substage = current_substage %}
 {% set current_step = current_step %}
 {% set all_posts = all_posts %}
+{% set step_id = step_id %}
 {% include 'workflow/_workflow_nav.html' %}
 {% endwith %}
-post_id: {{ post_id }}<br>
+{% include 'workflow/_workflow_content.html' %}
 {% endblock %}
 
 {% block content2 %}
@@ -21,6 +22,7 @@ post_id: {{ post_id }}<br>
 {% set current_substage = current_substage %}
 {% set current_step = current_step %}
 {% set all_posts = all_posts %}
+{% set step_id = step_id %}
 {% include 'workflow/_workflow_nav.html' %}
 {% endwith %}
 {% block workflow_content2 %}
@@ -35,6 +37,7 @@ post_id: {{ post_id }}<br>
 {% set current_substage = current_substage %}
 {% set current_step = current_step %}
 {% set all_posts = all_posts %}
+{% set step_id = step_id %}
 {% include 'workflow/_workflow_nav.html' %}
 {% endwith %}
 {% block workflow_content3 %}
@@ -49,6 +52,7 @@ post_id: {{ post_id }}<br>
 {% set current_substage = current_substage %}
 {% set current_step = current_step %}
 {% set all_posts = all_posts %}
+{% set step_id = step_id %}
 {% include 'workflow/_workflow_nav.html' %}
 {% endwith %}
 {% block workflow_content4 %}

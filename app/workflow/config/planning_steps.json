@@ -201,10 +201,52 @@
     },
     "structure": {
       "outline": {
-        "title": "Outline (Placeholder)",
-        "description": "This is a placeholder for the structure outline step.",
-        "inputs": {},
-        "outputs": {}
+        "title": "Outline",
+        "description": "Generate a detailed blog post outline based on the expanded idea.",
+        "inputs": {
+          "basic_idea": {
+            "type": "textarea",
+            "label": "Expanded Idea",
+            "placeholder": "The expanded idea from the previous step...",
+            "db_field": "basic_idea",
+            "db_table": "post_development",
+            "required": true
+          }
+        },
+        "settings": {
+          "llm": {
+            "provider": "ollama",
+            "model": "llama3.1:70b",
+            "system_prompt": "[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.",
+            "task_prompt": "[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Do NOT add introductions, conclusions, or commentary of any kind. Just give a list of facts. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50.\n\nExpanded Idea:\n[data:basic_idea]",
+            "input_mapping": {
+              "basic_idea": {
+                "field": "basic_idea",
+                "table": "post_development",
+                "description": "The expanded idea to base the outline on"
+              }
+            },
+            "output_mapping": {
+              "table": "post_development",
+              "field": "outline"
+            },
+            "parameters": {
+              "temperature": 0.7,
+              "max_tokens": 2000,
+              "top_p": 0.9,
+              "frequency_penalty": 0.0,
+              "presence_penalty": 0.0
+            }
+          }
+        },
+        "outputs": {
+          "outline": {
+            "type": "textarea",
+            "label": "Generated Outline",
+            "db_field": "outline",
+            "db_table": "post_development"
+          }
+        }
       }
     }
   }

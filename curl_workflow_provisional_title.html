@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow</title>
+    <!-- Tailwind CSS -->
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+    </style>
+    
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    <!-- Header -->
+    <header class="header-gradient shadow-lg border-b border-dark-border py-4">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+                <div class="flex items-center space-x-8 flex-1 min-w-0">
+                    <!-- Logo and Title -->
+                    <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+                        <img src="/static/images/site/brand-logo.png" alt="BlogForge Logo"
+                            class="w-10 h-10 rounded-full shadow"
+                            style="background:#23273a; width: 40px; height: 40px;" />
+                        <span class="font-bold text-white">BlogForge</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4 ml-8">
+                    <!-- Modules Dropdown -->
+                    <div class="relative group nav-group" tabindex="0">
+                        <button
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down text-xs"></i>
+                        </button>
+                        <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                            <a href="/db/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-database text-purple-400"></i> Database</a>
+                            <a href="/llm/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-brain text-pink-400"></i> AI</a>
+                            <a href="/llm/images"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-image text-dark-accent"></i> Images</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+                    <a href="/blog/posts"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
+                    <button
+                        class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition"
+                        id="newPostBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        New Post
+                    </button>
+                    <a href="/docs/"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Docs</a>
+                    <a href="/settings"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Settings</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    
+    
+    
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+post_id: 22<br>
+
+<!-- Debug Output -->
+<div class="hidden">
+    Debug: step_config={"description": "Generate a provisional title for your post based on the expanded idea.", "inputs": {"basic_idea": {"db_field": "basic_idea", "db_table": "post_development", "label": "Expanded Idea", "placeholder": "The expanded idea from the previous step...", "required": true, "type": "textarea"}}, "outputs": {"provisional_title": {"db_field": "provisional_title", "db_table": "post_development", "label": "Provisional Title", "type": "textarea"}}, "settings": {"llm": {"input_mapping": {"basic_idea": {"description": "The expanded idea to base the title on", "field": "basic_idea", "table": "post_development"}}, "model": "llama3.1:70b", "output_mapping": {"field": "provisional_title", "table": "post_development"}, "parameters": {"frequency_penalty": 0.0, "max_tokens": 100, "presence_penalty": 0.0, "temperature": 0.7, "top_p": 0.9}, "provider": "ollama", "system_prompt": "You are an expert in Scottish history and culture.", "task_prompt": "Generate five alternative, arresting, and informative blog post titles for a post based on the following expanded idea. Return your response as a strict JSON array of strings, with no commentary or formatting\u2014just the list of titles.\n\nExpanded Idea:\n[data:basic_idea]"}}, "title": "Provisional Title"},
+    input_values={"basic_idea": "In Scotland, the art of storytelling has been woven into the very fabric of its culture for centuries. This tradition of oral narrative is not merely a quaint relic of the past but an integral component of Scottish identity. As we delve into the realm of Scottish story-telling, we\u0027ll explore how this ancient practice evolved from the medieval bards to the modern-day ceilidh hosts, and examine the significance of tales like Tam o\u0027 Shanter and The Three Sisters in shaping Scotland\u0027s unique cultural heritage. This blog article will delve into the historical context of Scotland\u0027s oral tradition, tracing its roots to the Gaelic-speaking communities of the Highlands and Islands, where poetry, music, and storytelling were intertwined as a means of preserving history, myth, and social commentary. We\u0027ll also examine how the Industrial Revolution transformed the way stories were told and consumed in Scotland, with the rise of urban folk festivals and literary movements such as the Scottish Renaissance of the early 20th century. By exploring the diverse strands that comprise Scotland\u0027s story-telling tapestry, we can gain a deeper understanding not only of its rich cultural heritage but also of the enduring power of oral narrative to unite, educate, and inspire communities."},
+    output_values={"provisional_title": "[\"Weaving Words, Winding Paths: The Forgotten History of Scottish Folklore and its Modern Revival\", \"Telling Tales of Tartan: Unpacking the Enduring Power of Scottish Oral Tradition\", \"The Story Keepers of Scotland: Uncovering the Hidden Histories that Bind the Nation\", \"The Bardic Voice of Scotland: Exploring the Evolution of Storytelling in the Highlands and Lowlands\", \"Scotland\u0027s Sonic Sagas: How Traditional Storytelling Shaped the Nation\u0027s Cultural Identity\"]"}
+</div>
+
+<!-- Workflow Navigation -->
+
+
+
+
+
+
+<!-- Workflow Navigation Wireframe -->
+<div class="bg-dark-bg border-b border-dark-border py-4">
+    <div class="container mx-auto px-4">
+        <!-- Line 1: Breadcrumbs and Post Selector -->
+        <div class="flex justify-between items-center mb-6">
+            <nav class="text-sm text-gray-400">
+                <a href="/workflow/" class="hover:text-dark-text">Workflow</a>
+                <span class="mx-2">/</span>
+                <a href="/workflow/22/planning/"
+                    class="hover:text-dark-text">Planning</a>
+                <span class="mx-2">/</span>
+                <span class="text-dark-text">Idea</span>
+            </nav>
+            <div class="relative">
+                <select id="post-selector"
+                    class="bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text">
+                    
+                    <option value="22" selected>story-telling</option>
+                    
+                    <option value="21" >kilts for weddings</option>
+                    
+                    <option value="6" >The Tradition of the Scottish Quaich</option>
+                    
+                    <option value="5" >English tartans</option>
+                    
+                    <option value="4" >The Evolution of the Modern Scottish Kilt</option>
+                    
+                    <option value="2" >hand-fasting...</option>
+                    
+                </select>
+            </div>
+        </div>
+
+        <!-- Second line: All sub-stages as named icons in three groups of three, with stage label above each group -->
+        <div class="flex justify-center gap-8 mb-6">
+            <!-- Planning Group -->
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-gray-400 mb-1">Planning</span>
+                <div class="flex gap-4">
+                    <a href="/workflow/22/planning/idea/basic_idea/"
+                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover border-blue-500">
+                        <i class="fas fa-lightbulb text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">Idea</div>
+                    </a>
+                    <a href="/workflow/22/planning/research/concepts/"
+                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover ">
+                        <i class="fas fa-search text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">Research</div>
+                    </a>
+                    <a href="/workflow/22/planning/structure/outline/"
+                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover ">
+                        <i class="fas fa-sitemap text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">Structure</div>
+                    </a>
+                </div>
+            </div>
+            <!-- Writing Group -->
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-gray-400 mb-1">Writing</span>
+                <div class="flex gap-4">
+                    <a href="/workflow/22/writing/content/draft/"
+                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover ">
+                        <i class="fas fa-pen text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">Content</div>
+                    </a>
+                    <a href="/workflow/22/writing/meta_info/metadata/"
+                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover ">
+                        <i class="fas fa-tags text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">Meta Info</div>
+                    </a>
+                    <a href="/workflow/22/writing/images/image_plan/"
+                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover ">
+                        <i class="fas fa-image text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">Images</div>
+                    </a>
+                </div>
+            </div>
+            <!-- Publishing Group -->
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-gray-400 mb-1">Publishing</span>
+                <div class="flex gap-4">
+                    <a href="/workflow/22/publishing/preflight/review/"
+                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover ">
+                        <i class="fas fa-check-circle text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">Preflight</div>
+                    </a>
+                    <a href="/workflow/22/publishing/launch/publish/"
+                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover ">
+                        <i class="fas fa-rocket text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">Launch</div>
+                    </a>
+                    <a href="/workflow/22/publishing/syndication/syndicate/"
+                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover ">
+                        <i class="fas fa-share-alt text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">Syndication</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Line 3: Tabs for steps in the current sub-stage -->
+        <div class="border-b border-dark-border mb-6">
+            <div class="flex space-x-4">
+                
+                <a href="/workflow/22/planning/idea/basic_idea/"
+                    class="px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-dark-text">
+                    Basic Idea
+                </a>
+                <a href="/workflow/22/planning/idea/provisional_title/"
+                    class="px-4 py-2 border-b-2 border-blue-500 text-blue-500">
+                    Provisional Title
+                </a>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('post-selector')?.addEventListener('change', function () {
+        const newPostId = this.value;
+        // Build the new URL, preserving stage/substage/step
+        let path = window.location.pathname.split('/').filter(Boolean);
+        // path: ["workflow", post_id, stage, substage, step]
+        if (path.length >= 2) {
+            path[1] = newPostId;
+            window.location.pathname = '/' + path.join('/') + '/';
+        }
+    });
+</script>
+
+
+<!-- Step Content -->
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        
+<h1 class="text-3xl font-bold mb-6 text-dark-text">
+    Planning: Provisional Title
+</h1>
+
+
+        
+<p class="text-gray-400 mb-6">Generate and select a provisional title for your post.</p>
+
+
+        <!-- Include the Workflow Content Module -->
+        <!-- Workflow Content Module -->
+<div class="space-y-4">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-dark-text">
+            Provisional Title
+        </h2>
+        <button id="run-llm" class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">
+            Run LLM
+        </button>
+    </div>
+
+    
+    
+    <p class="text-gray-400 mb-6">Generate a provisional title for your post based on the expanded idea.</p>
+    
+    
+
+    <!-- Inputs Accordion (abbreviate summary, full content when open) -->
+    <div class="border border-dark-border rounded-lg overflow-hidden">
+        <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+            onclick="document.getElementById('inputs-content').classList.toggle('hidden'); document.getElementById('inputs-icon').classList.toggle('rotate-180');">
+            <span class="font-medium text-dark-text">Inputs</span>
+            <span class="text-gray-400" id="inputs-summary">
+                
+                
+                
+                
+                
+                
+                
+                
+                <span class="text-blue-500">[basic_idea]</span>: In Scotland, the art of storytelling has been woven into the very fabric of its ...
+                
+            </span>
+            <svg class="w-5 h-5 transform transition-transform" id="inputs-icon" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        <div id="inputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
+            
+            
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="basic_idea" class="block text-sm font-medium text-blue-500">
+                        [basic_idea] Expanded Idea
+                    </label>
+                    <select class="input-field-select bg-gray-900 text-gray-200 rounded-lg p-2 border border-gray-700"
+                        data-input-id="basic_idea" onchange="updateInputField(this)">
+                        <option value="">Select a field...</option>
+                    </select>
+                </div>
+                <div class="text-xs text-gray-400 mb-1">
+                    Type: textarea, DB Field: basic_idea, Table: post_development, Required
+                </div>
+                
+                <div class="bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-300 whitespace-pre-wrap">
+                    In Scotland, the art of storytelling has been woven into the very fabric of its culture for centuries. This tradition of oral narrative is not merely a quaint relic of the past but an integral component of Scottish identity. As we delve into the realm of Scottish story-telling, we&#39;ll explore how this ancient practice evolved from the medieval bards to the modern-day ceilidh hosts, and examine the significance of tales like Tam o&#39; Shanter and The Three Sisters in shaping Scotland&#39;s unique cultural heritage. This blog article will delve into the historical context of Scotland&#39;s oral tradition, tracing its roots to the Gaelic-speaking communities of the Highlands and Islands, where poetry, music, and storytelling were intertwined as a means of preserving history, myth, and social commentary. We&#39;ll also examine how the Industrial Revolution transformed the way stories were told and consumed in Scotland, with the rise of urban folk festivals and literary movements such as the Scottish Renaissance of the early 20th century. By exploring the diverse strands that comprise Scotland&#39;s story-telling tapestry, we can gain a deeper understanding not only of its rich cultural heritage but also of the enduring power of oral narrative to unite, educate, and inspire communities.
+                </div>
+                
+            </div>
+            
+            
+        </div>
+    </div>
+
+    <!-- Prompt Accordion -->
+    <div class="border border-dark-border rounded-lg overflow-hidden">
+        <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+            onclick="document.getElementById('prompt-content').classList.toggle('hidden'); document.getElementById('prompt-icon').classList.toggle('rotate-180');">
+            <span class="font-medium text-dark-text">Prompt</span>
+            <span class="text-gray-400" id="prompt-summary">
+                
+                Generate five alternative, arresting, and...
+                
+            </span>
+            <svg class="w-5 h-5 transform transition-transform" id="prompt-icon" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        <div id="prompt-content" class="hidden p-4 bg-dark-bg text-dark-text">
+            
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-blue-500 mb-2">System Prompt</label>
+                <textarea id="system-prompt"
+                    class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 mb-4">You are an expert in Scottish history and culture.</textarea>
+                <label class="block text-sm font-medium text-blue-500 mb-2">Task Prompt</label>
+                <textarea id="task-prompt"
+                    class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4">Generate five alternative, arresting, and informative blog post titles for a post based on the following expanded idea. Return your response as a strict JSON array of strings, with no commentary or formatting—just the list of titles.
+
+Expanded Idea:
+[data:basic_idea]</textarea>
+                <button id="save-prompt" class="btn btn-primary mt-4">Save Prompt</button>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Settings Accordion -->
+    <div class="border border-dark-border rounded-lg overflow-hidden">
+        <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+            onclick="document.getElementById('settings-content').classList.toggle('hidden'); document.getElementById('settings-icon').classList.toggle('rotate-180');">
+            <span class="font-medium text-dark-text">Settings</span>
+            <span class="text-gray-400" id="settings-summary">
+                
+                <span class="text-blue-500">Provider:</span> ollama,
+                <span class="text-blue-500">Model:</span> llama3.1:70b
+                
+                , <span class="text-blue-500">Temp:</span> 0.7,
+                <span class="text-blue-500">Max tokens:</span> 100
+                
+                
+            </span>
+            <svg class="w-5 h-5 transform transition-transform" id="settings-icon" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        <div id="settings-content" class="hidden p-4 bg-dark-bg text-dark-text">
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-blue-500">Provider</label>
+                    <input type="text" value="ollama"
+                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-blue-500">Model</label>
+                    <input type="text" value="llama3.1:70b"
+                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-blue-500">Temperature</label>
+                    <input type="text" value="0.7"
+                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-blue-500">Max tokens</label>
+                    <input type="text" value="100"
+                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-blue-500">Top P</label>
+                    <input type="text" value="0.9"
+                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-blue-500">Frequency Penalty</label>
+                    <input type="text" value="0.0"
+                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-blue-500">Presence Penalty</label>
+                    <input type="text" value="0.0"
+                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Outputs Accordion (summary is truncated, not first line) -->
+    <div class="border border-dark-border rounded-lg overflow-hidden">
+        <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+            onclick="document.getElementById('outputs-content').classList.toggle('hidden'); document.getElementById('outputs-icon').classList.toggle('rotate-180');">
+            <span class="font-medium text-dark-text">Outputs</span>
+            <span class="text-gray-400" id="outputs-summary">
+                
+                <span class="text-blue-500">[provisional_title]</span>: [&#34;Weaving Words, Winding Paths: The Forgotten History of Scottish Folklore and i...
+                
+            </span>
+            <svg class="w-5 h-5 transform transition-transform" id="outputs-icon" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
+            
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="output_field_select" class="block text-sm font-medium text-blue-500">
+                        Select Output Field
+                    </label>
+                    <select id="output_field_select"
+                        class="output-field-select bg-gray-900 text-gray-200 rounded-lg p-2 border border-gray-700"
+                        onchange="updateOutputField(this)">
+                        <option value="">Select a field...</option>
+                        
+                        <option value="id" >id</option>
+                        
+                        <option value="post_id" >post_id</option>
+                        
+                        <option value="basic_idea" >basic_idea</option>
+                        
+                        <option value="provisional_title" selected>provisional_title</option>
+                        
+                        <option value="idea_scope" >idea_scope</option>
+                        
+                        <option value="topics_to_cover" >topics_to_cover</option>
+                        
+                        <option value="interesting_facts" >interesting_facts</option>
+                        
+                        <option value="tartans_products" >tartans_products</option>
+                        
+                        <option value="section_planning" >section_planning</option>
+                        
+                        <option value="section_headings" >section_headings</option>
+                        
+                        <option value="section_order" >section_order</option>
+                        
+                        <option value="main_title" >main_title</option>
+                        
+                        <option value="subtitle" >subtitle</option>
+                        
+                        <option value="intro_blurb" >intro_blurb</option>
+                        
+                        <option value="conclusion" >conclusion</option>
+                        
+                        <option value="basic_metadata" >basic_metadata</option>
+                        
+                        <option value="tags" >tags</option>
+                        
+                        <option value="categories" >categories</option>
+                        
+                        <option value="image_captions" >image_captions</option>
+                        
+                        <option value="seo_optimization" >seo_optimization</option>
+                        
+                        <option value="self_review" >self_review</option>
+                        
+                        <option value="peer_review" >peer_review</option>
+                        
+                        <option value="final_check" >final_check</option>
+                        
+                        <option value="scheduling" >scheduling</option>
+                        
+                        <option value="deployment" >deployment</option>
+                        
+                        <option value="verification" >verification</option>
+                        
+                        <option value="feedback_collection" >feedback_collection</option>
+                        
+                        <option value="content_updates" >content_updates</option>
+                        
+                        <option value="version_control" >version_control</option>
+                        
+                        <option value="platform_selection" >platform_selection</option>
+                        
+                        <option value="content_adaptation" >content_adaptation</option>
+                        
+                        <option value="distribution" >distribution</option>
+                        
+                        <option value="engagement_tracking" >engagement_tracking</option>
+                        
+                        <option value="summary" >summary</option>
+                        
+                        <option value="idea_seed" >idea_seed</option>
+                        
+                        <option value="provisional_title_primary" >provisional_title_primary</option>
+                        
+                        <option value="concepts" >concepts</option>
+                        
+                        <option value="facts" >facts</option>
+                        
+                    </select>
+                </div>
+                <div class="bg-gray-900 text-gray-200 rounded-lg p-2 border border-gray-300 whitespace-pre-wrap">
+                    
+                    <ul id="output-dnd-list" class="space-y-0" style="margin:0;">
+                        
+                        <li class="flex items-center space-x-2 bg-gray-800 rounded cursor-move font-bold text-green-400"
+                            style="padding:2px 4px; line-height:1.2; margin:0; min-height:unset;">
+                            <span class="handle cursor-move text-gray-400" style="margin:0;">⋮⋮</span>
+                            <span class="title-text flex-grow" style="margin:0;">Weaving Words, Winding Paths: The Forgotten History of Scottish Folklore and its Modern Revival</span>
+                            <span class="primary-label text-sm text-gray-400" style="margin:0;">(Primary)</span>
+                        </li>
+                        
+                        <li class="flex items-center space-x-2 bg-gray-800 rounded cursor-move "
+                            style="padding:2px 4px; line-height:1.2; margin:0; min-height:unset;">
+                            <span class="handle cursor-move text-gray-400" style="margin:0;">⋮⋮</span>
+                            <span class="title-text flex-grow" style="margin:0;">Telling Tales of Tartan: Unpacking the Enduring Power of Scottish Oral Tradition</span>
+                            <span class="primary-label text-sm text-gray-400" style="margin:0;"></span>
+                        </li>
+                        
+                        <li class="flex items-center space-x-2 bg-gray-800 rounded cursor-move "
+                            style="padding:2px 4px; line-height:1.2; margin:0; min-height:unset;">
+                            <span class="handle cursor-move text-gray-400" style="margin:0;">⋮⋮</span>
+                            <span class="title-text flex-grow" style="margin:0;">The Story Keepers of Scotland: Uncovering the Hidden Histories that Bind the Nation</span>
+                            <span class="primary-label text-sm text-gray-400" style="margin:0;"></span>
+                        </li>
+                        
+                        <li class="flex items-center space-x-2 bg-gray-800 rounded cursor-move "
+                            style="padding:2px 4px; line-height:1.2; margin:0; min-height:unset;">
+                            <span class="handle cursor-move text-gray-400" style="margin:0;">⋮⋮</span>
+                            <span class="title-text flex-grow" style="margin:0;">The Bardic Voice of Scotland: Exploring the Evolution of Storytelling in the Highlands and Lowlands</span>
+                            <span class="primary-label text-sm text-gray-400" style="margin:0;"></span>
+                        </li>
+                        
+                        <li class="flex items-center space-x-2 bg-gray-800 rounded cursor-move "
+                            style="padding:2px 4px; line-height:1.2; margin:0; min-height:unset;">
+                            <span class="handle cursor-move text-gray-400" style="margin:0;">⋮⋮</span>
+                            <span class="title-text flex-grow" style="margin:0;">Scotland&#39;s Sonic Sagas: How Traditional Storytelling Shaped the Nation&#39;s Cultural Identity</span>
+                            <span class="primary-label text-sm text-gray-400" style="margin:0;"></span>
+                        </li>
+                        
+                    </ul>
+                    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var el = document.getElementById('output-dnd-list');
+                            if (el) {
+                                var sortable = Sortable.create(el, {
+                                    handle: '.handle',
+                                    animation: 150,
+                                    onEnd: function () {
+                                        var items = Array.from(el.children).map(li => li.querySelector('.title-text').textContent);
+                                        fetch('/workflow/api/update_title_order/', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                post_id: 22,
+                                    titles: items
+                                })
+                            })
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Update the primary label
+                                    el.querySelectorAll('li').forEach((li, index) => {
+                                        if (index === 0) {
+                                            li.classList.add('font-bold', 'text-green-400');
+                                            li.querySelector('.primary-label').textContent = '(Primary)';
+                                        } else {
+                                            li.classList.remove('font-bold', 'text-green-400');
+                                            li.querySelector('.primary-label').textContent = '';
+                                        }
+                                    });
+                                } else {
+                                    alert('Error saving order: ' + (data.error || 'Unknown error'));
+                                }
+                            });
+                                    }
+                                });
+                            }
+                        });
+                    </script>
+                    
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<style>
+    #output-dnd-list {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #output-dnd-list li {
+        margin: 0 !important;
+        padding: 2px 4px !important;
+        line-height: 1.1 !important;
+        min-height: unset !important;
+    }
+
+    #output-dnd-list .handle,
+    #output-dnd-list .title-text,
+    #output-dnd-list .primary-label {
+        margin: 0 !important;
+    }
+</style>
+
+<script type="text/javascript">
+    window.postId = 22;
+    window.currentStep = "provisional_title";
+    window.currentSubstage = "idea";
+    window.currentStage = "planning";
+    window.stepId = 11;
+    window.originalPrompt = "Generate five alternative, arresting, and informative blog post titles for a post based on the following expanded idea. Return your response as a strict JSON array of strings, with no commentary or formatting\u2014just the list of titles.\n\nExpanded Idea:\n[data:basic_idea]";
+    window.outputValues = {"provisional_title": "[\"Weaving Words, Winding Paths: The Forgotten History of Scottish Folklore and its Modern Revival\", \"Telling Tales of Tartan: Unpacking the Enduring Power of Scottish Oral Tradition\", \"The Story Keepers of Scotland: Uncovering the Hidden Histories that Bind the Nation\", \"The Bardic Voice of Scotland: Exploring the Evolution of Storytelling in the Highlands and Lowlands\", \"Scotland\u0027s Sonic Sagas: How Traditional Storytelling Shaped the Nation\u0027s Cultural Identity\"]"};
+    window.outputMappingField = "provisional_title";
+
+    // Fetch available fields from post_development table
+    async function fetchAvailableFields() {
+        try {
+            const response = await fetch('/api/v1/post_development/fields');
+            const data = await response.json();
+            return data.fields || [];
+        } catch (error) {
+            console.error('Error fetching fields:', error);
+            return [];
+        }
+    }
+
+    // Populate field selectors
+    async function populateFieldSelectors() {
+        const fields = await fetchAvailableFields();
+        const inputSelects = document.querySelectorAll('.input-field-select');
+        const outputSelects = document.querySelectorAll('.output-field-select');
+
+        // Fetch current mapping from backend
+        let mapping = {};
+        try {
+            const resp = await fetch(`/api/v1/llm/post_workflow_step_actions?post_id=${window.postId}&step_id=${window.stepId}`);
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.actions && data.actions.length > 0) {
+                    data.actions.forEach(action => {
+                        if (action.input_field) mapping[action.input_field] = 'input';
+                        if (action.output_field) mapping[action.output_field] = 'output';
+                    });
+                }
+            }
+        } catch (err) {
+            console.error('Error fetching mapping:', err);
+        }
+
+        // Debug: print available fields and mapping
+        console.log('Available fields:', fields);
+        console.log('Mapping:', mapping);
+
+        // Populate input field selects
+        inputSelects.forEach(select => {
+            const inputId = select.getAttribute('data-input-id');
+            select.innerHTML = '<option value="">Select a field...</option>';
+            fields.forEach(field => {
+                const option = document.createElement('option');
+                option.value = field;
+                option.textContent = field;
+                if (mapping[field] === 'input') option.selected = true;
+                select.appendChild(option);
+            });
+            // If mapped value is not in fields, add it
+            Object.keys(mapping).forEach(mappedField => {
+                if (mapping[mappedField] === 'input' && !fields.includes(mappedField)) {
+                    const option = document.createElement('option');
+                    option.value = mappedField;
+                    option.textContent = mappedField + ' (missing)';
+                    option.selected = true;
+                    select.appendChild(option);
+                }
+            });
+        });
+
+        // Populate output field selects
+        outputSelects.forEach(select => {
+            const outputId = select.getAttribute('data-output-id');
+            select.innerHTML = '<option value="">Select a field...</option>';
+            fields.forEach(field => {
+                const option = document.createElement('option');
+                option.value = field;
+                option.textContent = field;
+                if (mapping[field] === 'output') option.selected = true;
+                select.appendChild(option);
+            });
+            // If mapped value is not in fields, add it
+            Object.keys(mapping).forEach(mappedField => {
+                if (mapping[mappedField] === 'output' && !fields.includes(mappedField)) {
+                    const option = document.createElement('option');
+                    option.value = mappedField;
+                    option.textContent = mappedField + ' (missing)';
+                    option.selected = true;
+                    select.appendChild(option);
+                }
+            });
+            // If nothing is selected, use outputMappingField from config
+            if (!select.value && window.outputMappingField && fields.includes(window.outputMappingField)) {
+                select.value = window.outputMappingField;
+            }
+            // If still nothing is selected, default to the field name (outputId)
+            if (!select.value) {
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === outputId) {
+                        select.options[i].selected = true;
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    // Update input field mapping
+    async function updateInputField(select) {
+        const inputId = select.getAttribute('data-input-id');
+        const newField = select.value;
+
+        try {
+            const response = await fetch(`/api/v1/llm/post_workflow_step_actions/${window.postId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    input_field: newField
+                })
+            });
+
+            if (response.ok) {
+                // Update the UI to reflect the change
+                const summary = document.getElementById('inputs-summary');
+                const currentText = summary.innerHTML;
+                const newText = currentText.replace(
+                    new RegExp(`\\[${inputId}\\]`),
+                    `[${newField}]`
+                );
+                summary.innerHTML = newText;
+            }
+        } catch (error) {
+            console.error('Error updating input field:', error);
+        }
+    }
+
+    // Update output field mapping
+    async function updateOutputField(select) {
+        const outputId = select.getAttribute('data-output-id');
+        const newField = select.value;
+
+        // Persist the mapping to the JSON config
+        try {
+            const response = await fetch('/workflow/api/update_output_mapping/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    stage_name: window.currentStage,
+                    substage_name: window.currentSubstage,
+                    step_name: window.currentStep,
+                    field: newField
+                })
+            });
+            if (response.ok) {
+                // Update the UI to reflect the change
+                const summary = document.getElementById('outputs-summary');
+                const currentText = summary.innerHTML;
+                const newText = currentText.replace(
+                    new RegExp(`\[${outputId}\]`),
+                    `[${newField}]`
+                );
+                summary.innerHTML = newText;
+
+                // Update the output value display
+                const outputValue = document.querySelector('.output-value');
+                if (outputValue) {
+                    // Fetch the current post development data
+                    const postDevResponse = await fetch(`/api/v1/llm/post_development/${window.postId}`);
+                    if (postDevResponse.ok) {
+                        const postDev = await postDevResponse.json();
+                        outputValue.textContent = postDev[newField] || '(No value)';
+                    }
+                }
+
+                // Update the output field select to show the new value
+                const outputFieldSelect = document.getElementById('output_field_select');
+                if (outputFieldSelect) {
+                    outputFieldSelect.value = newField;
+                }
+            } else {
+                const data = await response.json();
+                alert('Error saving output mapping: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error updating output field mapping:', error);
+        }
+    }
+
+    // Initialize field selectors when the page loads
+    document.addEventListener('DOMContentLoaded', populateFieldSelectors);
+
+    // Save prompt changes
+    document.getElementById('save-prompt').addEventListener('click', function () {
+        const systemPrompt = document.getElementById('system-prompt').value;
+        const taskPrompt = document.getElementById('task-prompt').value;
+        savePrompt(systemPrompt, taskPrompt);
+    });
+
+    function savePrompt(systemPrompt, taskPrompt) {
+        fetch(`/workflow/22/planning/idea/provisional_title/save_prompt`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                system_prompt: systemPrompt,
+                task_prompt: taskPrompt
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the summary text
+                    document.getElementById('prompt-summary').textContent = taskPrompt.split('\n')[0].substring(0, 50) + '...';
+                    // Show success message
+                    alert('Prompt saved successfully');
+                } else {
+                    alert('Error saving prompt: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error saving prompt');
+            });
+    }
+
+    function toggleOutputAccordion(outputId) {
+        // Close all
+        document.querySelectorAll('[id^="output-content-"]').forEach(function (el) {
+            el.classList.add('hidden');
+        });
+        document.querySelectorAll('[id^="icon-"]').forEach(function (icon) {
+            icon.classList.remove('rotate-180');
+        });
+        // Open selected
+        var content = document.getElementById('output-content-' + outputId);
+        var icon = document.getElementById('icon-' + outputId);
+        if (content && content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            if (icon) icon.classList.add('rotate-180');
+        }
+    }
+</script>
+<script src="/static/js/workflow.js"></script>
+    </div>
+</div>
+
+
+    </main>
+    
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">
+                &copy; 2025 Blog CMS. All rights reserved. |
+                <a href="/docs" class="text-indigo-300 hover:text-indigo-100 underline ml-2">Docs</a>
+            </p>
+        </div>
+    </footer>
+
+    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var newPostBtn = document.getElementById('newPostBtn');
+            if (newPostBtn) {
+                newPostBtn.addEventListener('click', async () => {
+                    const basicIdea = prompt('Enter your basic idea for the post:');
+                    if (!basicIdea) return;
+                    try {
+                        const response = await fetch("/blog/new", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ basic_idea: basicIdea })
+                        });
+                        const data = await response.json();
+                        if (response.ok && data.id) {
+                            window.location.href = `/blog/post/${data.id}`;
+                        } else {
+                            alert(data.error || 'Failed to create post');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to create post');
+                    }
+                });
+            }
+
+            // Dropdown accessibility: open on click, close on outside click or Escape
+            function setupDropdown() {
+                document.querySelectorAll('.nav-group').forEach(function (group) {
+                    var btn = group.querySelector('button');
+                    var dropdown = group.querySelector('.nav-dropdown');
+                    if (!btn || !dropdown) return;
+                    // Toggle on click
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var isOpen = !dropdown.classList.contains('hidden');
+                        document.querySelectorAll('.nav-dropdown').forEach(d => { d.classList.add('hidden'); d.classList.remove('block'); });
+                        if (!isOpen) { dropdown.classList.remove('hidden'); dropdown.classList.add('block'); }
+                    });
+                    // Open on focus
+                    btn.addEventListener('focus', function () {
+                        dropdown.classList.remove('hidden');
+                        dropdown.classList.add('block');
+                    });
+                    // Close on blur (with delay for click)
+                    btn.addEventListener('blur', function () {
+                        setTimeout(() => { dropdown.classList.add('hidden'); dropdown.classList.remove('block'); }, 100);
+                    });
+                    // Close on Escape
+                    group.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape') { dropdown.classList.add('hidden'); dropdown.classList.remove('block'); }
+                    });
+                });
+                // Close all dropdowns on outside click
+                document.addEventListener('click', function (e) {
+                    document.querySelectorAll('.nav-dropdown').forEach(d => { d.classList.add('hidden'); d.classList.remove('block'); });
+                });
+            }
+            setupDropdown();
+        });
+    </script>
+    
+
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+
+    <!-- Mermaid.js for diagrams in markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.mermaid) {
+                setTimeout(function () {
+                    mermaid.initialize({ startOnLoad: false });
+                    document.querySelectorAll('pre > code.language-mermaid').forEach(function (block, i) {
+                        var parent = block.parentElement;
+                        var code = block.innerText;
+                        var d = document.createElement('div');
+                        d.className = 'mermaid';
+                        d.innerText = code;
+                        parent.replaceWith(d);
+                    });
+                    try {
+                        mermaid.run();
+                    } catch (e) {
+                        console.error('Mermaid render error:', e);
+                        document.querySelectorAll('.mermaid').forEach(function (el) {
+                            el.innerHTML = '<div style="color:#f87171;background:#23273a;padding:1em;border-radius:.5em;">Mermaid render error:<br>' + e.message + '</div>';
+                        });
+                    }
+                }, 100);
+            }
+        });
+    </script>
+</body>
+
+</html>

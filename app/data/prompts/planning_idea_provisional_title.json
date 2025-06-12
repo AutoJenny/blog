@@ -1,0 +1,4 @@
+{
+  "system_prompt": "You are an expert in Scottish history and culture.",
+  "task_prompt": "Generate five alternative, arresting, and informative blog post titles for a post based on the following expanded idea. Return your response as a strict JSON array of strings, with no commentary or formatting\u2014just the list of titles.\n\nExpanded Idea:\n[data:basic_idea]"
+}

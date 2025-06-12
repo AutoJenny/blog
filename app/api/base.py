@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, Response
 from functools import wraps
 import time
 import logging
@@ -83,6 +83,10 @@ class APIBlueprint(Blueprint):
                 try:
                     # Execute route handler
                     response = f(*args, **kwargs)
+                    
+                    # --- FIX: If already a Flask Response, return as is ---
+                    if isinstance(response, Response):
+                        return response
                     
                     # Format response
                     if isinstance(response, tuple):
