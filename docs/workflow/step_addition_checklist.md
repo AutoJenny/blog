@@ -3,6 +3,7 @@
 ## 1. Update the Step Configuration
 - [ ] Add the new step to the correct substage in `app/workflow/config/planning_steps.json`.
   - Include: `title`, `description`, `inputs`, `outputs`, and `settings` (LLM, etc).
+  - Note: Prompt elements (system prompt, task prompt) are stored in this JSON file.
 
 ## 2. Database Preparation
 - [ ] Ensure all referenced fields in `inputs` and `outputs` exist in the relevant database table (e.g., `post_development`).
