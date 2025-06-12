@@ -5,21 +5,43 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-8 text-gray-100">Workflow Prompts</h1>
-
-    <div class="bg-gray-800 rounded-lg shadow-lg p-6">
-        <pre id="prompts-json" class="text-gray-200 bg-gray-900 p-4 rounded-lg overflow-auto max-h-[600px]"></pre>
-    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="mb-4">
+        {% for category, message in messages %}
+        <li class="text-green-400">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    <form method="POST">
+        {% for prompt_name, fields in prompts.items() %}
+        <div class="border border-gray-700 rounded-lg overflow-hidden mb-2">
+            <button type="button"
+                class="w-full px-4 py-3 text-left bg-gray-700 hover:bg-gray-600 transition-colors duration-200 flex justify-between items-center"
+                onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('hidden')">
+                <span class="font-semibold text-gray-200">{{ prompt_name }}</span>
+                <svg class="w-5 h-5 transform transition-transform duration-200" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div class="hidden px-4 py-3 bg-gray-800">
+                {% for field, value in fields.items() %}
+                <div class="mb-4">
+                    <label class="block text-gray-300 font-semibold mb-1">{{ field }}</label>
+                    <textarea name="{{ prompt_name }}__{{ field }}"
+                        class="w-full px-3 py-2 bg-gray-700 text-gray-200 rounded border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        rows="4">{{ value }}</textarea>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        <div class="flex justify-end mt-6">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save
+                Changes</button>
+        </div>
+    </form>
 </div>
-
-<script>
-    fetch('/settings/workflow_prompts_json')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('prompts-json').textContent = JSON.stringify(data, null, 2);
-        })
-        .catch(error => {
-            console.error('Error loading prompts:', error);
-            document.getElementById('prompts-json').textContent = 'Error loading prompts: ' + error.message;
-        });
-</script>
 {% endblock %}
