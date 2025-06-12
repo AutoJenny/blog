@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, abort, request, jsonify, Blueprint
+from flask import render_template, redirect, url_for, abort, request, jsonify, Blueprint, current_app
 from .navigation import navigator
 from app.db import get_db_conn
 import json
@@ -27,7 +27,12 @@ def get_latest_post():
 def get_post_and_idea_seed(post_id):
     with get_db_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT p.id, pd.idea_seed FROM post p LEFT JOIN post_development pd ON p.id = pd.post_id WHERE p.id = %s", (post_id,))
+            cur.execute("""
+                SELECT p.*, pd.idea_seed
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.id = %s
+            """, (post_id,))
             return cur.fetchone()
 
 def get_all_posts():
@@ -49,24 +54,23 @@ def load_step_config(stage_name: str, substage_name: str, step_name: str):
             # Check for a custom prompt file
             prompt_file = get_prompt_file_path(step_name, substage_name, stage_name)
             print(f"DEBUG: Looking for custom prompt file at {prompt_file}")
-            if not os.path.exists(prompt_file):
-                raise FileNotFoundError(f"Custom prompt file not found at {prompt_file}")
-            try:
-                with open(prompt_file, 'r') as f:
-                    prompt_config = json.load(f)
-                    print(f"DEBUG: Found custom prompt config: {prompt_config}")
-                    if 'system_prompt' in prompt_config and 'task_prompt' in prompt_config:
-                        # Update the prompts in the config
-                        if 'settings' in result and 'llm' in result['settings']:
-                            result['settings']['llm']['system_prompt'] = prompt_config['system_prompt']
-                            result['settings']['llm']['task_prompt'] = prompt_config['task_prompt']
-                            print(f"DEBUG: Updated config with custom prompts: {result}")
-                        else:
-                            result['prompt'] = {'template': prompt_config['task_prompt']}
-                            print(f"DEBUG: Updated config with custom prompt template: {result}")
-            except Exception as e:
-                print(f"DEBUG: Error reading prompt file: {e}")
-                raise
+            if os.path.exists(prompt_file):
+                try:
+                    with open(prompt_file, 'r') as f:
+                        prompt_config = json.load(f)
+                        print(f"DEBUG: Found custom prompt config: {prompt_config}")
+                        if 'system_prompt' in prompt_config and 'task_prompt' in prompt_config:
+                            # Update the prompts in the config
+                            if 'settings' in result and 'llm' in result['settings']:
+                                result['settings']['llm']['system_prompt'] = prompt_config['system_prompt']
+                                result['settings']['llm']['task_prompt'] = prompt_config['task_prompt']
+                                print(f"DEBUG: Updated config with custom prompts: {result}")
+                            else:
+                                result['prompt'] = {'template': prompt_config['task_prompt']}
+                                print(f"DEBUG: Updated config with custom prompt template: {result}")
+                except Exception as e:
+                    print(f"DEBUG: Error reading prompt file: {e}")
+                    # Don't raise the error, just continue without custom prompts
             
             return result
     except (FileNotFoundError, json.JSONDecodeError) as e:
@@ -91,20 +95,7 @@ def stages(post_id):
     return render_template('workflow/index.html', stages=stages, post=post, post_id=post_id, all_posts=all_posts, current_stage=None, current_substage=None, current_step=None)
 
 @workflow.route('/<int:post_id>/<stage_name>/')
-def stage(post_id, stage_name: str):
-    navigator.load_navigation()
-    stage = next((s for s in navigator.stages if s['name'] == stage_name), None)
-    if not stage:
-        abort(404, f"Stage '{stage_name}' not found.")
-    substages = navigator.get_substages_for_stage(stage['id'])
-    post = get_post_and_idea_seed(post_id)
-    if not post:
-        abort(404, f"Post {post_id} not found.")
-    all_posts = get_all_posts()
-    return render_template('workflow/stage.html', stage=stage, substages=substages, post=post, post_id=post_id, all_posts=all_posts, current_stage=stage_name, current_substage=None, current_step=None)
-
-@workflow.route('/<int:post_id>/<stage_name>/<substage_name>/')
-def substage(post_id, stage_name: str, substage_name: str):
+def substage_redirect(post_id, stage_name: str, substage_name: str):
     navigator.load_navigation()
     stage = next((s for s in navigator.stages if s['name'] == stage_name), None)
     if not stage:
@@ -116,12 +107,9 @@ def substage(post_id, stage_name: str, substage_name: str):
     steps = navigator.get_steps_for_substage(substage['id'])
     if not steps:
         abort(404, f"No steps found for substage '{substage_name}'.")
-    post = get_post_and_idea_seed(post_id)
-    if not post:
-        abort(404, f"Post {post_id} not found.")
-    all_posts = get_all_posts()
-    # Redirect to first step
-    return redirect(url_for('workflow.step', post_id=post_id, stage_name=stage_name, substage_name=substage_name, step_name=steps[0]['name']))
+    # Default to first step (or 'sections' for writing/content)
+    default_step = 'sections' if stage_name == 'writing' and substage_name == 'content' else steps[0]['name']
+    return redirect(url_for('workflow.step', post_id=post_id, stage_name=stage_name, substage_name=substage_name, step_name=default_step))
 
 @workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/')
 def step(post_id, stage_name: str, substage_name: str, step_name: str):
@@ -209,7 +197,12 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
             cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development'")
             fields = [row["column_name"] for row in cur.fetchall()]
 
-    return render_template('workflow/planning_step.html',
+    # Choose the correct template based on the stage and step
+    template = 'workflow/planning_step.html'
+    if stage_name == 'writing' and substage_name == 'content' and step_name == 'sections':
+        template = 'workflow/writing/content/sections.html'
+
+    return render_template(template,
                            post_id=post_id,
                            current_stage=stage_name,
                            current_substage=substage_name,
@@ -635,3 +628,165 @@ def outline_step(post_id):
                            output_value=output_value,
                            output_titles_dnd=output_titles_dnd,
                            fields=fields) 
+
+@workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/sections/', methods=['GET'])
+def get_sections(post_id, stage_name, substage_name, step_name):
+    """Get all sections for a post."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, section_heading as title, section_description as description, 
+                           ideas_to_include as content
+                    FROM post_section
+                    WHERE post_id = %s
+                    ORDER BY id
+                """, (post_id,))
+                sections = [dict(row) for row in cur.fetchall()]
+        return jsonify(sections)
+    except Exception as e:
+        current_app.logger.error(f"Error getting sections: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/sections/create', methods=['POST'])
+def create_section(post_id, stage_name, substage_name, step_name):
+    """Create a new section for a post."""
+    try:
+        data = request.get_json()
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO post_section (post_id, section_heading, section_description, ideas_to_include, status)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id, section_heading as title, section_description as description, 
+                             ideas_to_include as content, status
+                """, (post_id, data.get('title'), data.get('description'), data.get('content'), 'draft'))
+                section = dict(cur.fetchone())
+        return jsonify(section), 201
+    except Exception as e:
+        current_app.logger.error(f"Error creating section: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/sections/<int:section_id>', methods=['PUT'])
+def update_section(post_id, stage_name, substage_name, step_name, section_id):
+    """Update an existing section."""
+    try:
+        data = request.get_json()
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE post_section
+                    SET section_heading = %s,
+                        section_description = %s,
+                        ideas_to_include = %s,
+                        status = %s
+                    WHERE id = %s AND post_id = %s
+                    RETURNING id, section_heading as title, section_description as description, 
+                             ideas_to_include as content, status
+                """, (data.get('title'), data.get('description'), data.get('content'), 
+                      data.get('status', 'draft'), section_id, post_id))
+                section = dict(cur.fetchone())
+        return jsonify(section)
+    except Exception as e:
+        current_app.logger.error(f"Error updating section: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/sections/<int:section_id>', methods=['DELETE'])
+def delete_section(post_id, stage_name, substage_name, step_name, section_id):
+    """Delete a section."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM post_section WHERE id = %s AND post_id = %s", (section_id, post_id))
+        return '', 204
+    except Exception as e:
+        current_app.logger.error(f"Error deleting section: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/sections/reorder', methods=['POST'])
+def reorder_sections(post_id, stage_name, substage_name, step_name):
+    """Reorder sections for a post."""
+    try:
+        data = request.get_json()
+        section_ids = data.get('section_ids', [])
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                for index, section_id in enumerate(section_ids):
+                    cur.execute("""
+                        UPDATE post_section
+                        SET section_order = %s
+                        WHERE id = %s AND post_id = %s
+                    """, (index, section_id, post_id))
+        return jsonify({'message': 'Sections reordered successfully'})
+    except Exception as e:
+        current_app.logger.error(f"Error reordering sections: {str(e)}")
+        return jsonify({'error': str(e)}), 500 
+
+@workflow.route('/api/sections/', methods=['POST'])
+def api_sections():
+    """Get or save sections for a post, stage, substage, and step."""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        stage_name = data.get('stage_name')
+        substage_name = data.get('substage_name')
+        step_name = data.get('step_name')
+
+        if not all([post_id, stage_name, substage_name, step_name]):
+            return jsonify({'error': 'Missing required parameters'}), 400
+
+        navigator.load_navigation()
+        stage = next((s for s in navigator.stages if s['name'] == stage_name), None)
+        if not stage:
+            return jsonify({'error': f"Stage '{stage_name}' not found."}), 404
+        substages = navigator.get_substages_for_stage(stage['id'])
+        substage = next((s for s in substages if s['name'] == substage_name), None)
+        if not substage:
+            return jsonify({'error': f"Substage '{substage_name}' not found in stage '{stage_name}'."}), 404
+        steps = navigator.get_steps_for_substage(substage['id'])
+        step = next((s for s in steps if s['name'] == step_name), None)
+        if not step:
+            return jsonify({'error': f"Step '{step_name}' not found in substage '{substage_name}'."}), 404
+        step_id = step['id']
+
+        # If sections are provided in the request, save them
+        if 'sections' in data:
+            sections = data['sections']
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    # Delete existing sections
+                    cur.execute("DELETE FROM post_section WHERE post_id = %s", (post_id,))
+                    # Insert new sections
+                    for i, section in enumerate(sections):
+                        cur.execute("""
+                            INSERT INTO post_section (post_id, section_heading, section_description, ideas_to_include, section_order)
+                            VALUES (%s, %s, %s, %s, %s)
+                        """, (
+                            post_id,
+                            section.get('title', ''),
+                            section.get('description', ''),
+                            json.dumps(section.get('content', '')),
+                            i
+                        ))
+                    conn.commit()
+            return jsonify({'success': True})
+
+        # Otherwise, get sections from the database
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id, section_heading as title, section_description as description, ideas_to_include as content
+                    FROM post_section
+                    WHERE post_id = %s
+                    ORDER BY section_order
+                """, (post_id,))
+                sections = [dict(row) for row in cur.fetchall()]
+
+        return jsonify({
+            'success': True,
+            'sections': sections
+        })
+
+    except Exception as e:
+        current_app.logger.error(f"Error handling sections: {str(e)}")
+        return jsonify({'error': str(e)}), 500 
