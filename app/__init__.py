@@ -123,22 +123,23 @@ def create_app(config_class=Config):
     from app.llm import bp as llm_bp
     app.register_blueprint(llm_bp, url_prefix='/llm')
 
-    print('[AUDIT] About to import llm_api_bp from app.api.llm')
     from app.api.llm import bp as llm_api_bp
-    print('[AUDIT] Imported llm_api_bp, registering...')
     app.register_blueprint(llm_api_bp, url_prefix='/api/v1/llm')
-    print('[AUDIT] llm_api_bp registered.')
 
     from app.api import bp as api_bp
-    print('[AUDIT] About to register api_bp...')
     app.register_blueprint(api_bp, url_prefix='/api/v1')
-    print('[AUDIT] api_bp registered.')
 
-    from app.workflow.routes import workflow
-    app.register_blueprint(workflow)
+    from app.workflow.routes import workflow as workflow_bp
+    app.register_blueprint(workflow_bp, url_prefix='/workflow')
 
     from app.routes.settings import settings_bp
     app.register_blueprint(settings_bp, url_prefix='/settings')
+
+    from app.errors import bp as errors_bp
+    app.register_blueprint(errors_bp)
+
+    from app.database.routes import bp as db_bp
+    app.register_blueprint(db_bp)
 
     # Add debug route listing
     @app.route('/debug/routes')
@@ -156,14 +157,6 @@ def create_app(config_class=Config):
     for rule in app.url_map.iter_rules():
         print(f"{rule.endpoint}: {rule.methods} {rule}")
     print("=======================\n")
-
-    from app.errors import bp as errors_bp
-    app.register_blueprint(errors_bp)
-
-    from app.database.routes import bp as db_bp
-    print("[DEBUG] Registering db Blueprint...")
-    app.register_blueprint(db_bp)
-    print("[DEBUG] db Blueprint registered.")
 
     return app
 

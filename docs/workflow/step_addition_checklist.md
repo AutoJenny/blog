@@ -1,46 +1,54 @@
 # Workflow Step Addition Checklist
 
-## 1. Configuration
-- [ ] Add the new step to the correct substage in `app/workflow/config/planning_steps.json`.
-    - Use a dict for `inputs` and `outputs` (not a list!).
-    - Ensure each input/output has: `type`, `label`, `db_field`, `db_table`, and `required` (if needed).
-    - Under `settings.llm`, specify `provider`, `model`, `system_prompt`, `task_prompt`, `input_mapping`, `output_mapping`, and `parameters`.
-    - Double-check that the config structure matches other working steps.
-- [ ] If using a custom prompt file, ensure it exists in `app/data/prompts/` and is referenced correctly.
+## Configuration
+- [ ] Use dictionaries for `inputs` and `outputs` in the step configuration
+- [ ] Ensure the step is properly defined in `app/workflow/config/planning_steps.json` or `app/workflow/config/writing_steps.json`
+- [ ] Verify all required fields are present in the configuration
 
-## 2. Database
-- [ ] Confirm the required input/output fields exist in the relevant database table (e.g., `post_development`).
-- [ ] If needed, add new fields to the database and document them in `/docs/database/`.
+## Database
+- [ ] Confirm required fields exist in the database
+- [ ] Document any new fields added to the schema
 
-## 3. Navigation & Registration
-- [ ] Ensure the new step is registered in the workflow navigation (database tables: `workflow_step_entity`, etc.).
-- [ ] Confirm the step appears in the UI navigation for its substage.
+## Navigation & Registration
+- [ ] Register the new step in the workflow navigation
+- [ ] Ensure the step appears correctly in the UI
+- [ ] Check that the step is properly linked in the main navigation panel
+- [ ] Verify the step appears in the correct substage tabs in `_workflow_nav.html`
+- [ ] For substages with multiple steps, ensure the default step routing is correct in `routes.py`
+  - [ ] If a specific step should be the default, add a condition in the substage route
+  - [ ] Example: For content substage, explicitly route to 'sections' step
+  - [ ] For other substages, use the first registered step
 
-## 4. Backend Route Logic
-- [ ] In any custom route (e.g., `/planning/structure/outline/`), always iterate over `step_config['inputs']` and `step_config['outputs']` as dicts using `.items()`, not as lists.
-- [ ] When passing data to templates, always set:
-    - `input_values` and `output_values` as dicts keyed by input/output id.
-    - `output_field` and `output_value` for summary display (using the output mapping from config).
-    - `fields` as a list of available DB fields for selectors.
-- [ ] Use the same variable names and structure as the main `step` route for consistency.
+## Backend Route Logic
+- [ ] Iterate over `step_config` as dictionaries
+- [ ] Ensure consistent variable names throughout
+- [ ] Handle input/output field mapping correctly
 
-## 5. Template Logic
-- [ ] Ensure the step template (e.g., `workflow/steps/outline.html`) extends `planning_step.html` and does not override core blocks unless needed.
-- [ ] The shared `_workflow_content.html` template expects `step_config`, `input_values`, `output_values`, `output_field`, `output_value`, and `fields`.
-- [ ] Do not hardcode logic for a specific step; rely on config and backend variables.
+## Template Logic
+- [ ] Ensure templates extend correctly
+- [ ] Don't hardcode logic for specific steps
 
-## 6. Testing
-- [ ] Use `curl` to test the new step route (e.g., `curl -X GET http://localhost:5000/workflow/1/planning/structure/outline/`).
-- [ ] Confirm the page loads with no errors and displays the correct input, output, and prompt sections.
-- [ ] If the UI says "No inputs configured" or "No prompt configured", check:
-    - The config structure (dicts, not lists)
-    - That the backend is passing all required variables
-    - That the database has the required fields and data
-- [ ] Test the LLM generation for the step if applicable.
+## Testing
+- [ ] Test the new step route with `curl`
+- [ ] Verify inputs and outputs display correctly
+- [ ] Test the LLM endpoint with the new step
 
-## 7. Documentation
-- [ ] Update this checklist and `/docs/database/` as needed with any new learnings or requirements.
-- [ ] Document all new fields, endpoints, and config changes.
+## Documentation
+- [ ] Update this checklist
+- [ ] Document any new fields or changes
+
+## Troubleshooting
+- [ ] If getting 500 errors, check the step configuration
+- [ ] If undefined columns, verify database schema
+- [ ] If navigation issues:
+  - [ ] Check the step is registered in `workflow_step_entity`
+  - [ ] Verify the step name matches in all places
+  - [ ] Check the default step routing in `routes.py`
+  - [ ] Ensure the step is properly linked in `_workflow_nav.html`
+- [ ] If configuration loading issues:
+  - [ ] Check the JSON file exists and is valid
+  - [ ] Verify the step is defined in the correct stage/substage
+  - [ ] Check for any custom prompt files
 
 ---
 
@@ -79,6 +87,23 @@
   curl -v http://localhost:5000/workflow/<post_id>/<stage>/<substage>/<step>/
   ```
 
+**6. Navigation Issues:**
+- If the main navigation panel shows the wrong step name or link:
+  1. Check the stage group section in `_workflow_nav.html` (e.g., Writing panel)
+  2. Ensure the link uses the correct step name (e.g., 'sections' not 'draft')
+  3. Verify the URL parameters match the registered step
+- If the substage tabs are missing or incorrect:
+  1. Check the `elif current_substage == '...'` blocks in `_workflow_nav.html`
+  2. Add the step to the correct substage block
+  3. Use the same step name consistently in both navigation elements
+
+**7. Configuration Loading Issues:**
+- If step configuration isn't loading:
+  1. Check that the config file exists in the correct location (`planning_steps.json` or `writing_steps.json`)
+  2. Verify the config structure matches other working steps
+  3. Make sure custom prompt files are optional in `load_step_config()`
+  4. Check that the step is registered in the database with the correct name
+
 ---
 
 **Summary:**
@@ -87,6 +112,8 @@
 - Use the standard route.
 - Test with curl.
 - No new schema or custom routes needed for most steps.
+- Check both navigation elements (main panel and tabs).
+- Use consistent step names throughout.
 
 ---
 
@@ -96,4 +123,7 @@
 - Always set `output_field` and `output_value` for summary display.
 - Always test with `curl` before considering a step "working".
 - If the UI is blank or says "not configured", check config structure, backend variable passing, and DB fields.
-- Always ensure `stepId` is passed from backend to template and checked in JavaScript before making API calls. If `stepId` is null/undefined, log a warning and do not call the API. This prevents 500 errors from invalid stepId values. 
+- Always ensure `stepId` is passed from backend to template and checked in JavaScript before making API calls.
+- Check both navigation elements for correct step names and links.
+- Use the correct config file for the stage (`planning_steps.json` or `writing_steps.json`).
+- Make custom prompt files optional in `load_step_config()`. 

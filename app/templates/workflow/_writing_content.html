@@ -1,0 +1,237 @@
+<!-- Writing Content Module -->
+<div class="space-y-4">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-dark-text">
+            {% block step_heading %}{{ step_config.title }}{% endblock %}
+        </h2>
+        <div class="flex gap-2">
+            <select id="section-selector"
+                class="bg-dark-bg text-dark-text border border-dark-border rounded-lg px-4 py-2">
+                <option value="all">All Sections</option>
+                <!-- Sections will be populated dynamically -->
+            </select>
+            <button id="run-llm" class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">
+                Run LLM
+            </button>
+        </div>
+    </div>
+
+    {% block step_description %}
+    {% if step_config.description %}
+    <p class="text-gray-400 mb-6">{{ step_config.description }}</p>
+    {% endif %}
+    {% endblock %}
+
+    <!-- Section Selection Panel -->
+    <div class="border border-dark-border rounded-lg overflow-hidden mb-4">
+        <div class="p-4 bg-dark-bg">
+            <h3 class="text-lg font-medium text-dark-text mb-2">Section Selection</h3>
+            <div id="section-checkboxes" class="grid grid-cols-2 gap-2">
+                <!-- Section checkboxes will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Sections Container -->
+    <div id="sections-container" class="space-y-4">
+        <!-- Section accordions will be populated dynamically -->
+    </div>
+</div>
+
+<script type="text/javascript">
+    window.postId = {{ post_id | tojson }};
+    window.currentStep = {{ current_step | tojson }};
+    window.currentSubstage = {{ current_substage | tojson }};
+    window.currentStage = {{ current_stage | tojson }};
+    window.stepId = {{ step_id | tojson }};
+
+    // Section template for dynamic creation
+    const sectionTemplate = (section) => `
+        <div class="border border-dark-border rounded-lg overflow-hidden" id="section-${section.id}">
+            <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+                onclick="toggleSection('${section.id}')">
+                <div class="flex items-center gap-4">
+                    <span class="font-medium text-dark-text">${section.title}</span>
+                    <span class="text-sm text-gray-400">${section.status}</span>
+                </div>
+                <svg class="w-5 h-5 transform transition-transform" id="section-icon-${section.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div id="section-content-${section.id}" class="hidden p-4 bg-dark-bg">
+                <!-- Text Accordion -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center p-2 bg-gray-800 rounded-lg"
+                        onclick="toggleSubsection('text-${section.id}')">
+                        <span class="text-dark-text">Text</span>
+                        <svg class="w-4 h-4 transform transition-transform" id="text-icon-${section.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="text-content-${section.id}" class="hidden p-4">
+                        <div class="prose prose-invert max-w-none">
+                            ${section.content || 'No content yet'}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resources Accordion -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center p-2 bg-gray-800 rounded-lg"
+                        onclick="toggleSubsection('resources-${section.id}')">
+                        <span class="text-dark-text">Resources</span>
+                        <svg class="w-4 h-4 transform transition-transform" id="resources-icon-${section.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="resources-content-${section.id}" class="hidden p-4">
+                        <div class="space-y-2">
+                            ${section.resources ? section.resources.map(r => `
+                                <div class="p-2 bg-gray-700 rounded">
+                                    <div class="font-medium">${r.title}</div>
+                                    <div class="text-sm text-gray-400">${r.description}</div>
+                                </div>
+                            `).join('') : 'No resources yet'}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Meta Accordion -->
+                <div class="mb-4">
+                    <button class="w-full flex justify-between items-center p-2 bg-gray-800 rounded-lg"
+                        onclick="toggleSubsection('meta-${section.id}')">
+                        <span class="text-dark-text">Meta</span>
+                        <svg class="w-4 h-4 transform transition-transform" id="meta-icon-${section.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="meta-content-${section.id}" class="hidden p-4">
+                        <div class="space-y-2">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400">Word Count</label>
+                                    <div class="text-dark-text">${section.wordCount || 0}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400">Status</label>
+                                    <div class="text-dark-text">${section.status}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Toggle section visibility
+    function toggleSection(sectionId) {
+        const content = document.getElementById(`section-content-${sectionId}`);
+        const icon = document.getElementById(`section-icon-${sectionId}`);
+        content.classList.toggle('hidden');
+        icon.classList.toggle('rotate-180');
+    }
+
+    // Toggle subsection visibility
+    function toggleSubsection(subsectionId) {
+        const content = document.getElementById(`${subsectionId}-content`);
+        const icon = document.getElementById(`${subsectionId}-icon`);
+        content.classList.toggle('hidden');
+        icon.classList.toggle('rotate-180');
+    }
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', async function () {
+        // Fetch sections data
+        try {
+            const response = await fetch(`/api/v1/workflow/sections/${window.postId}`);
+            const sections = await response.json();
+
+            // Populate section selector
+            const selector = document.getElementById('section-selector');
+            sections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section.id;
+                option.textContent = section.title;
+                selector.appendChild(option);
+            });
+
+            // Populate section checkboxes
+            const checkboxes = document.getElementById('section-checkboxes');
+            sections.forEach(section => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2';
+                div.innerHTML = `
+                    <input type="checkbox" id="section-${section.id}-checkbox" 
+                           class="rounded border-gray-600 text-blue-500 focus:ring-blue-500"
+                           value="${section.id}">
+                    <label for="section-${section.id}-checkbox" class="text-dark-text">${section.title}</label>
+                `;
+                checkboxes.appendChild(div);
+            });
+
+            // Populate sections container
+            const container = document.getElementById('sections-container');
+            sections.forEach(section => {
+                container.insertAdjacentHTML('beforeend', sectionTemplate(section));
+            });
+        } catch (error) {
+            console.error('Error loading sections:', error);
+        }
+
+        // Add event listener for the run-llm button
+        document.getElementById('run-llm').addEventListener('click', async function () {
+            try {
+                // Show loading state
+                this.disabled = true;
+                this.textContent = 'Running...';
+
+                // Get selected sections
+                const selectedSections = Array.from(document.querySelectorAll('#section-checkboxes input:checked'))
+                    .map(cb => cb.value);
+
+                // Call the run_llm endpoint
+                const response = await fetch('/workflow/api/run_llm/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        post_id: window.postId,
+                        stage_name: window.currentStage,
+                        substage_name: window.currentSubstage,
+                        step_name: window.currentStep,
+                        sections: selectedSections
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Show success message
+                const message = document.createElement('div');
+                message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50';
+                message.textContent = 'LLM processing completed successfully!';
+                document.body.appendChild(message);
+                setTimeout(() => message.remove(), 3000);
+
+            } catch (error) {
+                console.error('Error running LLM:', error);
+
+                // Show error message
+                const message = document.createElement('div');
+                message.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50';
+                message.textContent = 'Error: ' + error.message;
+                document.body.appendChild(message);
+                setTimeout(() => message.remove(), 3000);
+            } finally {
+                // Reset button state
+                this.disabled = false;
+                this.textContent = 'Run LLM';
+            }
+        });
+    });
+</script>

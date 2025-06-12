@@ -323,5 +323,70 @@
         }
       }
     }
+  },
+  "writing": {
+    "content": {
+      "sections": {
+        "title": "Sections",
+        "description": "Generate detailed content for each section of the outline.",
+        "inputs": {
+          "outline": {
+            "type": "textarea",
+            "label": "Outline",
+            "placeholder": "The outline from the previous step...",
+            "db_field": "outline",
+            "db_table": "post_development",
+            "required": true
+          },
+          "basic_idea": {
+            "type": "textarea",
+            "label": "Basic Idea",
+            "placeholder": "The basic idea from earlier steps...",
+            "db_field": "basic_idea",
+            "db_table": "post_development",
+            "required": true
+          }
+        },
+        "settings": {
+          "llm": {
+            "provider": "ollama",
+            "model": "llama3.1:8b",
+            "system_prompt": "You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.",
+            "task_prompt": "Based on the provided outline and basic idea, generate detailed content for each section. Each section should be well-researched, engaging, and maintain a consistent voice throughout. Focus on making the content accessible while maintaining academic accuracy. Your response must be a single valid JSON object with sections as keys and their content as values. Do not include any text before or after the JSON.",
+            "input_mapping": {
+              "outline": {
+                "field": "outline",
+                "table": "post_development",
+                "description": "The outline to base the sections on"
+              },
+              "basic_idea": {
+                "field": "basic_idea",
+                "table": "post_development",
+                "description": "The basic idea to maintain focus"
+              }
+            },
+            "output_mapping": {
+              "table": "post_development",
+              "field": "sections"
+            },
+            "parameters": {
+              "temperature": 0.7,
+              "max_tokens": 4000,
+              "top_p": 0.9,
+              "frequency_penalty": 0.0,
+              "presence_penalty": 0.0
+            }
+          }
+        },
+        "outputs": {
+          "sections": {
+            "type": "textarea",
+            "label": "Generated Sections",
+            "db_field": "sections",
+            "db_table": "post_development"
+          }
+        }
+      }
+    }
   }
 }
