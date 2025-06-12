@@ -21,69 +21,7 @@
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Left Column: Sections -->
-        <div class="space-y-6">
-            <!-- Sections Card -->
-            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
-                <div class="p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold text-dark-text">Sections</h3>
-                        <button id="add-section"
-                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4" />
-                            </svg>
-                            Add Section
-                        </button>
-                    </div>
-                    <div id="sections-container" class="space-y-4">
-                        <!-- Sections will be loaded here dynamically -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Prompt Card -->
-            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-dark-text mb-4">Prompt</h3>
-                    {% set llm = step_config.settings.llm if step_config.settings and step_config.settings.llm else None
-                    %}
-                    {% if llm %}
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-blue-500 mb-2">System Prompt</label>
-                            <textarea id="system-prompt"
-                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ llm.system_prompt }}</textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-blue-500 mb-2">Task Prompt</label>
-                            <textarea id="task-prompt"
-                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ llm.task_prompt }}</textarea>
-                        </div>
-                        <button id="save-prompt"
-                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">Save
-                            Prompt</button>
-                    </div>
-                    {% elif step_config.prompt and step_config.prompt.template %}
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-blue-500 mb-2">Prompt Template</label>
-                            <textarea id="prompt-template"
-                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ step_config.prompt.template }}</textarea>
-                        </div>
-                        <button id="save-prompt"
-                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">Save
-                            Prompt</button>
-                    </div>
-                    {% else %}
-                    <p class="text-gray-400">No prompt configured for this step.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Column: Inputs and Outputs -->
+        <!-- Left Column: Inputs and Sections -->
         <div class="space-y-6">
             <!-- Inputs Card -->
             <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
@@ -120,6 +58,68 @@
                     </div>
                     {% else %}
                     <p class="text-gray-400">No inputs configured for this step.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sections Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-dark-text">Sections</h3>
+                        <button id="add-section"
+                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Section
+                        </button>
+                    </div>
+                    <div id="sections-container" class="space-y-4">
+                        <!-- Sections will be loaded here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Prompt and Outputs -->
+        <div class="space-y-6">
+            <!-- Prompt Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark-text mb-4">Prompt</h3>
+                    {% set llm = step_config.settings.llm if step_config.settings and step_config.settings.llm else None
+                    %}
+                    {% if llm %}
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500 mb-2">System Prompt</label>
+                            <textarea id="system-prompt"
+                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ llm.system_prompt }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500 mb-2">Task Prompt</label>
+                            <textarea id="task-prompt"
+                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ llm.task_prompt }}</textarea>
+                        </div>
+                        <button id="save-prompt"
+                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">Save
+                            Prompt</button>
+                    </div>
+                    {% elif step_config.prompt and step_config.prompt.template %}
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500 mb-2">Prompt Template</label>
+                            <textarea id="prompt-template"
+                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ step_config.prompt.template }}</textarea>
+                        </div>
+                        <button id="save-prompt"
+                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">Save
+                            Prompt</button>
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400">No prompt configured for this step.</p>
                     {% endif %}
                 </div>
             </div>
@@ -189,7 +189,7 @@
     </div>
 </div>
 
-<!-- Add this modal HTML before the closing </div> of the main container -->
+<!-- Section Editor Modal -->
 <div id="section-editor-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden">
     <div class="bg-dark-bg rounded-lg p-6 max-w-4xl mx-auto mt-20">
         <div class="flex justify-between items-center mb-6">
