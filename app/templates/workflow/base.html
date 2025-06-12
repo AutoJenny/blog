@@ -6,3 +6,8 @@
 post_id: {{ post_id }}<br>
 {% block workflow_content %}{% endblock %}
 {% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% block workflow_scripts %}{% endblock %}
+{% endblock %}

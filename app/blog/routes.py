@@ -448,14 +448,39 @@ def deprecated_develop(post_id):
 
 @bp.route("/api/v1/post_development/fields", methods=["GET"])
 def get_post_development_fields():
+    import logging
+    logger = logging.getLogger("blog_debug")
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development' AND column_name NOT IN ('id', 'post_id')")
-                columns = [row["column_name"] for row in cur.fetchall()]
-        return jsonify({"fields": columns})
+                columns = [row[0] for row in cur.fetchall()]
+        return {"fields": columns}  # Return plain dict, not jsonify
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error in get_post_development_fields: {str(e)}")
+        logger.error(f"Error in get_post_development_fields: {str(e)}", exc_info=True)
+        return {"error": str(e)}, 500
+
+
+@bp.route('/debug_post_workflow_step_actions/<int:post_id>', methods=['GET'])
+def debug_post_workflow_step_actions(post_id):
+    """Debug endpoint to check post_workflow_step_action records for a given post_id."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT pwsa.*, ws.name as step_name
+                    FROM post_workflow_step_action pwsa
+                    JOIN workflow_step ws ON pwsa.step_id = ws.id
+                    WHERE pwsa.post_id = %s
+                """, (post_id,))
+                rows = cur.fetchall()
+                if rows:
+                    return {"status": "success", "count": len(rows), "records": [dict(row) for row in rows]}
+                else:
+                    return {"status": "error", "message": f"No post_workflow_step_action records found for post_id {post_id}"}, 404
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
 
 
 @bp.errorhandler(404)

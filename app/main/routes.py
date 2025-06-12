@@ -290,24 +290,24 @@ def db_restore():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/settings')
-def settings_panel():
-    field_mappings = []
-    stages = []
-    substages = []
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute('''
-                SELECT wfm.id, wfm.field_name, wfm.stage_id, wfm.substage_id, wfm.order_index
-                FROM workflow_field_mapping wfm
-                ORDER BY wfm.order_index ASC, wfm.field_name ASC
-            ''')
-            field_mappings = cur.fetchall()
-            cur.execute('SELECT id, name FROM workflow_stage_entity ORDER BY stage_order')
-            stages = cur.fetchall()
-            cur.execute('SELECT id, stage_id, name FROM workflow_sub_stage_entity ORDER BY sub_stage_order')
-            substages = cur.fetchall()
-    return render_template('main/settings.html', field_mappings=field_mappings, stages=stages, substages=substages)
+# @bp.route('/settings')
+# def settings_panel():
+#     field_mappings = []
+#     stages = []
+#     substages = []
+#     with get_db_conn() as conn:
+#         with conn.cursor() as cur:
+#             cur.execute('''
+#                 SELECT wfm.id, wfm.field_name, wfm.stage_id, wfm.substage_id, wfm.order_index
+#                 FROM workflow_field_mapping wfm
+#                 ORDER BY wfm.order_index ASC, wfm.field_name ASC
+#             ''')
+#             field_mappings = cur.fetchall()
+#             cur.execute('SELECT id, name FROM workflow_stage_entity ORDER BY stage_order')
+#             stages = cur.fetchall()
+#             cur.execute('SELECT id, stage_id, name FROM workflow_sub_stage_entity ORDER BY sub_stage_order')
+#             substages = cur.fetchall()
+#     return render_template('main/settings.html', field_mappings=field_mappings, stages=stages, substages=substages)
 
 @bp.route('/api/settings/field-mapping', methods=['GET'])
 def api_get_field_mapping():
