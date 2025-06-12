@@ -1,4 +1,4 @@
 {
-  "system_prompt": "You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.",
-  "task_prompt": "Generate a detailed blog post outline based on the expanded idea."
-} 
+  "system_prompt": "You are an expert in Scottish history and culture.",
+  "task_prompt": "Generate a detailed blog post outline based on the expanded idea. Just provide a list of sections that appropriately divide up the content into coherent topics. Do not give a title but describe each section's ideal content emphasising both what it should include and also what it should not cover with respect to topics covered in other sections. Your entire response must be a single valid JSON array of section objects. Do not include any text before or after the JSON. Do not include any introductions, explanations, or commentary. Only output the JSON."
+}

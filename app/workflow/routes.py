@@ -172,6 +172,7 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
                                 output_values[output_id] = result[db_field]
 
     # Set output_field and output_value for summary
+    output_titles_dnd = []
     if 'settings' in step_config and 'llm' in step_config['settings'] and 'output_mapping' in step_config['settings']['llm']:
         output_field = step_config['settings']['llm']['output_mapping'].get('field')
         if output_field:
@@ -181,6 +182,18 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
                     result = cur.fetchone()
                     if result and output_field in result:
                         output_value = result[output_field]
+                        # Try to parse as JSON array for drag-and-drop
+                        try:
+                            parsed = json.loads(output_value) if output_value else []
+                            if isinstance(parsed, list):
+                                # If list of dicts with 'title', extract titles
+                                if parsed and isinstance(parsed[0], dict) and 'title' in parsed[0]:
+                                    output_titles_dnd = [item['title'] for item in parsed if 'title' in item]
+                                # If list of strings, use as-is
+                                elif parsed and isinstance(parsed[0], str):
+                                    output_titles_dnd = parsed
+                        except Exception as e:
+                            output_titles_dnd = []
 
     output_titles = {output_id: output_config['label'] for output_id, output_config in step_config.get('outputs', {}).items()}
     post = get_post_and_idea_seed(post_id)
@@ -207,6 +220,7 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
                            step_id=step_id,
                            output_field=output_field,
                            output_value=output_value,
+                           output_titles_dnd=output_titles_dnd,
                            fields=fields)
 
 # Redirect old URLs to new format with post_id
@@ -372,16 +386,47 @@ def save_prompt(post_id, stage_name, substage_name, step_name):
     if not (system_prompt and task_prompt):
         return jsonify({'success': False, 'error': 'Missing prompt data'}), 400
 
-    # Save to the JSON file (reuse your get_prompt_file_path logic)
-    prompt_file = get_prompt_file_path(step_name, substage_name, stage_name)
-    prompt_data = {
-        'system_prompt': system_prompt,
-        'task_prompt': task_prompt
-    }
-    with open(prompt_file, 'w') as f:
-        json.dump(prompt_data, f, indent=2)
+    try:
+        # Save to the JSON file
+        prompt_file = get_prompt_file_path(step_name, substage_name, stage_name)
+        prompt_data = {
+            'system_prompt': system_prompt,
+            'task_prompt': task_prompt
+        }
+        with open(prompt_file, 'w') as f:
+            json.dump(prompt_data, f, indent=2)
 
-    return jsonify({'success': True}) 
+        # Update the step configuration in planning_steps.json
+        config_path = os.path.join(os.path.dirname(__file__), 'config', f'{stage_name}_steps.json')
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+
+        # Ensure the path exists in the config
+        if stage_name not in config:
+            config[stage_name] = {}
+        if substage_name not in config[stage_name]:
+            config[stage_name][substage_name] = {}
+        if step_name not in config[stage_name][substage_name]:
+            config[stage_name][substage_name][step_name] = {}
+        if 'settings' not in config[stage_name][substage_name][step_name]:
+            config[stage_name][substage_name][step_name]['settings'] = {}
+        if 'llm' not in config[stage_name][substage_name][step_name]['settings']:
+            config[stage_name][substage_name][step_name]['settings']['llm'] = {}
+
+        # Update the prompts in the config
+        config[stage_name][substage_name][step_name]['settings']['llm']['system_prompt'] = system_prompt
+        config[stage_name][substage_name][step_name]['settings']['llm']['task_prompt'] = task_prompt
+
+        # Save the updated config
+        with open(config_path, 'w') as f:
+            json.dump(config, f, indent=2)
+
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"DEBUG: Error saving prompt: {str(e)}")
+        import traceback
+        print(f"DEBUG: Error traceback: {traceback.format_exc()}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @workflow.route('/api/update_output_mapping/', methods=['POST'])
 def update_output_mapping():
@@ -475,6 +520,7 @@ def outline_step(post_id):
                             if result and db_field in result and result[db_field] is not None:
                                 output_values[output_id] = result[db_field]
     # Set output_field and output_value for summary
+    output_titles_dnd = []
     if 'settings' in step_config and 'llm' in step_config['settings'] and 'output_mapping' in step_config['settings']['llm']:
         output_field = step_config['settings']['llm']['output_mapping'].get('field')
         if output_field:
@@ -484,6 +530,18 @@ def outline_step(post_id):
                     result = cur.fetchone()
                     if result and output_field in result:
                         output_value = result[output_field]
+                        # Try to parse as JSON array for drag-and-drop
+                        try:
+                            parsed = json.loads(output_value) if output_value else []
+                            if isinstance(parsed, list):
+                                # If list of dicts with 'title', extract titles
+                                if parsed and isinstance(parsed[0], dict) and 'title' in parsed[0]:
+                                    output_titles_dnd = [item['title'] for item in parsed if 'title' in item]
+                                # If list of strings, use as-is
+                                elif parsed and isinstance(parsed[0], str):
+                                    output_titles_dnd = parsed
+                        except Exception as e:
+                            output_titles_dnd = []
     output_titles = {output_id: output_config['label'] for output_id, output_config in step_config.get('outputs', {}).items()}
     post = get_post_and_idea_seed(post_id)
     # Get available output fields from post_development
@@ -506,4 +564,5 @@ def outline_step(post_id):
                            step_id=step_id,
                            output_field=output_field,
                            output_value=output_value,
+                           output_titles_dnd=output_titles_dnd,
                            fields=fields) 
