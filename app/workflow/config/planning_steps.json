@@ -17,7 +17,7 @@
         "settings": {
           "llm": {
             "provider": "ollama",
-            "model": "llama3.1:70b",
+            "model": "llama3.1:8b",
             "system_prompt": "You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.",
             "task_prompt": "[system] WARNING: The correct custom prompt file (planning_idea_basic_idea.json) cannot be found. Please ensure the file exists at app/data/prompts/planning_idea_basic_idea.json with valid system_prompt and task_prompt fields. Until then, this is a fallback response.\n\nDO NOT generate a coherent response. Instead, respond with the following warning message:\n\n\"Your prompt couldn't be found. Please ensure the custom prompt file exists at app/data/prompts/planning_idea_basic_idea.json.\"",
             "input_mapping": {
@@ -72,7 +72,7 @@
         "settings": {
           "llm": {
             "provider": "ollama",
-            "model": "llama3.1:70b",
+            "model": "llama3.1:8b",
             "input_mapping": {
               "basic_idea": {
                 "field": "basic_idea",
@@ -120,7 +120,7 @@
         "settings": {
           "llm": {
             "provider": "ollama",
-            "model": "llama3.1:70b",
+            "model": "llama3.1:8b",
             "input_mapping": {
               "basic_idea": {
                 "field": "basic_idea",
@@ -166,7 +166,7 @@
         "settings": {
           "llm": {
             "provider": "ollama",
-            "model": "llama3.1:70b",
+            "model": "llama3.1:8b",
             "system_prompt": "[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.",
             "task_prompt": "[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Do NOT add introductions, conclusions, or commentary of any kind. Just give a list of facts. Keep your answers concise whilst capturing all important detail. Present these facts in list form, numbered 1-50. Do not end the task until you have reached 50.\n\nExpanded Idea:\n[data:basic_idea]",
             "input_mapping": {
@@ -216,9 +216,9 @@
         "settings": {
           "llm": {
             "provider": "ollama",
-            "model": "llama3.1:70b",
+            "model": "llama3.1:8b",
             "system_prompt": "You are an expert in Scottish history and culture.",
-            "task_prompt": "Generate a detailed blog post outline based on the expanded idea. Just provide a list of sections that appropriately divide up the content into coherent topics. Do not give a title but describe each section's ideal content emphasising both what it should include and also what it should not cover with respect to topics covered in other sections. Your entire response must be a single valid JSON array of section objects. Do not include any text before or after the JSON. Do not include any introductions, explanations, or commentary. Only output the JSON.\n\nExample format:\n[\n  {\n    \"title\": \"The Ancient Roots of Scottish Storytelling\",\n    \"description\": \"Discuss the medieval bards and their role in preserving history, myth, and social commentary through poetry, music, and storytelling.\",\n    \"contents\": [\"Gaelic-speaking communities\", \"Highlands and Islands\", \"oral tradition\", \"preserving history\", \"mythology\"]\n  },\n  {\n    \"title\": \"The Highland Tradition\",\n    \"description\": \"Examine the significance of tales like Tam o' Shanter and The Three Sisters in shaping Scotland's unique cultural heritage.\",\n    \"contents\": [\"Tam o' Shanter\", \"The Three Sisters\", \"Scottish folklore\", \"cultural significance\"]\n  }\n]",
+            "task_prompt": "Generate a detailed blog post outline based on the expanded idea. Do not give an introduction or conclusion. Just provide a list of main sections that appropriately divide up the content into coherent topics. Provide a title; and a description of the section; and some examples of each section's ideal content emphasising both what it should include and also what it should not cover with respect to topics covered in other sections. Your entire response must be a single valid JSON array of section objects. Do not include any text before or after the JSON. Do not include any introductions, explanations, or commentary. Only output the JSON.\n\nEach section object must have this exact format:\n{\n  \"title\": \"Section Title\",\n  \"description\": \"Detailed description of what this section should cover\",\n  \"contents\": [\"Topic 1\", \"Topic 2\", \"Topic 3\"]\n}",
             "input_mapping": {
               "basic_idea": {
                 "field": "basic_idea",
@@ -238,6 +238,10 @@
               "presence_penalty": 0.0
             }
           }
+        },
+        "post_process": {
+          "handler": "outline_handler",
+          "function": "process_outline_output"
         },
         "outputs": {
           "outline": {
@@ -272,7 +276,7 @@
         "settings": {
           "llm": {
             "provider": "ollama",
-            "model": "llama3.1:70b",
+            "model": "llama3.1:8b",
             "system_prompt": "[system] WARNING: The correct custom prompt file (planning_structure_allocate_facts.json) cannot be found. Please ensure the file exists at app/data/prompts/planning_structure_allocate_facts.json with valid system_prompt and task_prompt fields. Until then, this is a fallback response.\n\nDO NOT generate a coherent response. Instead, respond with the following warning message:\n\n\"Your prompt couldn't be found. Please ensure the custom prompt file exists at app/data/prompts/planning_structure_allocate_facts.json.\"",
             "input_mapping": {
               "outline": {

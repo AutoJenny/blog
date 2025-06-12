@@ -134,8 +134,8 @@ def create_app(config_class=Config):
     app.register_blueprint(api_bp, url_prefix='/api/v1')
     print('[AUDIT] api_bp registered.')
 
-    from app.workflow import workflow
-    app.register_blueprint(workflow, url_prefix='/workflow')
+    from app.workflow.routes import workflow
+    app.register_blueprint(workflow)
 
     from app.routes.settings import settings_bp
     app.register_blueprint(settings_bp, url_prefix='/settings')

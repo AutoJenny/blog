@@ -572,6 +572,66 @@
                     });
             });
         }
+
+        // Add event listener for the run-llm button
+        document.getElementById('run-llm').addEventListener('click', async function () {
+            try {
+                // Show loading state
+                this.disabled = true;
+                this.textContent = 'Running...';
+
+                // Call the run_llm endpoint
+                const response = await fetch('/workflow/api/run_llm/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        post_id: window.postId,
+                        stage_name: window.currentStage,
+                        substage_name: window.currentSubstage,
+                        step_name: window.currentStep
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Update the output display if we have an output field
+                if (data.output_field) {
+                    const outputSummary = document.getElementById('outputs-summary');
+                    if (outputSummary) {
+                        const outputValue = data.response;
+                        const truncatedValue = outputValue.length > 80 ? outputValue.substring(0, 80) + '...' : outputValue;
+                        outputSummary.innerHTML = `<span class="text-blue-500">[${data.output_field}]</span>: ${truncatedValue}`;
+                    }
+                }
+
+                // Show success message
+                const message = document.createElement('div');
+                message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50';
+                message.textContent = 'LLM processing completed successfully!';
+                document.body.appendChild(message);
+                setTimeout(() => message.remove(), 3000);
+
+            } catch (error) {
+                console.error('Error running LLM:', error);
+
+                // Show error message
+                const message = document.createElement('div');
+                message.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50';
+                message.textContent = 'Error: ' + error.message;
+                document.body.appendChild(message);
+                setTimeout(() => message.remove(), 3000);
+            } finally {
+                // Reset button state
+                this.disabled = false;
+                this.textContent = 'Run LLM';
+            }
+        });
     });
 </script>
 <script src="{{ url_for('static', filename='js/workflow.js') }}"></script>
