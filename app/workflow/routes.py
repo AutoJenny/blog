@@ -122,7 +122,7 @@ def substage(post_id, stage_name: str, substage_name: str):
 
 @workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/')
 def step(post_id, stage_name: str, substage_name: str, step_name: str):
-    print(f"DEBUG: step route called with post_id={post_id}, stage_name={stage_name}, substage_name={substage_name}, step_name={step_name}")
+    # Load navigation and find step_id
     navigator.load_navigation()
     stage = next((s for s in navigator.stages if s['name'] == stage_name), None)
     if not stage:
@@ -135,19 +135,45 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
     step = next((s for s in steps if s['name'] == step_name), None)
     if not step:
         abort(404, f"Step '{step_name}' not found in substage '{substage_name}'.")
-    post = get_post_and_idea_seed(post_id)
-    if not post:
-        abort(404, f"Post {post_id} not found.")
-    all_posts = get_all_posts()
+    step_id = step['id']
 
     # Load step configuration
     step_config = load_step_config(stage_name, substage_name, step_name)
-    # Debug: print output_mapping field from config
+    print('DEBUG: step_config:', step_config)
+    input_values = {}
+    output_values = {}
+    output_titles = None
     output_field = None
     output_value = None
+
+    # Load input and output values from database
+    if step_config:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Load input values
+                if 'inputs' in step_config:
+                    for input_id, input_config in step_config['inputs'].items():
+                        db_field = input_config.get('db_field')
+                        db_table = input_config.get('db_table')
+                        if db_field and db_table:
+                            cur.execute(f"SELECT {db_field} FROM {db_table} WHERE post_id = %s", (post_id,))
+                            result = cur.fetchone()
+                            if result and db_field in result and result[db_field] is not None:
+                                input_values[input_id] = result[db_field]
+                # Load output values
+                if 'outputs' in step_config:
+                    for output_id, output_config in step_config['outputs'].items():
+                        db_field = output_config.get('db_field')
+                        db_table = output_config.get('db_table')
+                        if db_field and db_table:
+                            cur.execute(f"SELECT {db_field} FROM {db_table} WHERE post_id = %s", (post_id,))
+                            result = cur.fetchone()
+                            if result and db_field in result and result[db_field] is not None:
+                                output_values[output_id] = result[db_field]
+
+    # Set output_field and output_value for summary
     if 'settings' in step_config and 'llm' in step_config['settings'] and 'output_mapping' in step_config['settings']['llm']:
         output_field = step_config['settings']['llm']['output_mapping'].get('field')
-        print(f"DEBUG: output_mapping.field for {stage_name}/{substage_name}/{step_name}: {output_field}")
         if output_field:
             with get_db_conn() as conn:
                 with conn.cursor() as cur:
@@ -156,63 +182,9 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
                     if result and output_field in result:
                         output_value = result[output_field]
 
-    # Load input and output values from database
-    input_values = {}
-    output_values = {}
-    pws_ids = {}
-    if step_config:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                # Load input values
-                if 'inputs' in step_config:
-                    for input_id, input_config in step_config['inputs'].items():
-                        cur.execute(f"SELECT {input_config['db_field']} FROM {input_config['db_table']} WHERE post_id = %s", (post_id,))
-                        result = cur.fetchone()
-                        if result is not None and input_config['db_field'] in result and result[input_config['db_field']] is not None:
-                            input_values[input_id] = result[input_config['db_field']]
-                
-                # Load output values
-                if 'outputs' in step_config:
-                    for output_id, output_config in step_config['outputs'].items():
-                        cur.execute(f"SELECT {output_config['db_field']} FROM {output_config['db_table']} WHERE post_id = %s", (post_id,))
-                        result = cur.fetchone()
-                        if result is not None and output_config['db_field'] in result and result[output_config['db_field']] is not None:
-                            output_values[output_id] = result[output_config['db_field']]
-                
-                # Query post_workflow_step_action for pws_id
-                cur.execute("""
-                    SELECT id, input_field, output_field
-                    FROM post_workflow_step_action
-                    WHERE post_id = %s AND step_id = %s
-                """, (post_id, step['id']))
-                rows = cur.fetchall()
-                for row in rows:
-                    if isinstance(row, dict):
-                        pws_id, input_field, output_field = row['id'], row['input_field'], row['output_field']
-                    else:
-                        pws_id, input_field, output_field = row[0], row[1], row[2]
-                    if input_field:
-                        pws_ids[input_field] = pws_id
-                    if output_field:
-                        pws_ids[output_field] = pws_id
-
-    # Debug print statements
-    print(f"DEBUG: step_config for {stage_name}/{substage_name}/{step_name}: {step_config}")
-    print(f"DEBUG: input_values for post_id={post_id}: {input_values}")
-    print(f"DEBUG: output_values for post_id={post_id}: {output_values}")
-    print(f"DEBUG: pws_ids for post_id={post_id}: {pws_ids}")
-    print(f"DEBUG: step_id: {step['id']}")
-
-    # Parse output as JSON array if possible (for outputs like provisional_title)
-    output_titles = None
-    if 'outputs' in step_config:
-        for output_id in step_config['outputs']:
-            val = output_values.get(output_id)
-            if val and isinstance(val, str) and val.strip().startswith('[') and val.strip().endswith(']'):
-                try:
-                    output_titles = json.loads(val)
-                except Exception:
-                    output_titles = None
+    output_titles = {output_id: output_config['label'] for output_id, output_config in step_config.get('outputs', {}).items()}
+    post = get_post_and_idea_seed(post_id)
+    all_posts = get_all_posts()
 
     # Get available output fields from post_development
     fields = []
@@ -221,27 +193,21 @@ def step(post_id, stage_name: str, substage_name: str, step_name: str):
             cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development'")
             fields = [row["column_name"] for row in cur.fetchall()]
 
-    return render_template(
-        f'workflow/steps/{step_name}.html',
-        stage=stage,
-        substage=substage,
-        step=step,
-        post=post,
-        post_id=post_id,
-        all_posts=all_posts,
-        current_stage=stage_name,
-        current_substage=substage_name,
-        current_step=step_name,
-        step_config=step_config,
-        input_values=input_values,
-        output_values=output_values,
-        output_titles=output_titles,
-        pws_ids=pws_ids,
-        step_id=step['id'],
-        output_field=output_field,
-        output_value=output_value,
-        fields=fields
-    )
+    return render_template('workflow/planning_step.html',
+                           post_id=post_id,
+                           current_stage=stage_name,
+                           current_substage=substage_name,
+                           current_step=step_name,
+                           all_posts=all_posts,
+                           step_config=step_config,
+                           input_values=input_values,
+                           output_values=output_values,
+                           output_titles=output_titles,
+                           post=post,
+                           step_id=step_id,
+                           output_field=output_field,
+                           output_value=output_value,
+                           fields=fields)
 
 # Redirect old URLs to new format with post_id
 def _redirect_to_new(post_id, *args):
@@ -431,9 +397,113 @@ def update_output_mapping():
     try:
         with open(config_path, 'r') as f:
             config = json.load(f)
+        
+        # Ensure the path exists in the config
+        if stage_name not in config:
+            config[stage_name] = {}
+        if substage_name not in config[stage_name]:
+            config[stage_name][substage_name] = {}
+        if step_name not in config[stage_name][substage_name]:
+            config[stage_name][substage_name][step_name] = {}
+        if 'settings' not in config[stage_name][substage_name][step_name]:
+            config[stage_name][substage_name][step_name]['settings'] = {}
+        if 'llm' not in config[stage_name][substage_name][step_name]['settings']:
+            config[stage_name][substage_name][step_name]['settings']['llm'] = {}
+        if 'output_mapping' not in config[stage_name][substage_name][step_name]['settings']['llm']:
+            config[stage_name][substage_name][step_name]['settings']['llm']['output_mapping'] = {}
+
+        # Update the output mapping
         config[stage_name][substage_name][step_name]['settings']['llm']['output_mapping']['field'] = new_field
+
+        # Save the updated config
         with open(config_path, 'w') as f:
             json.dump(config, f, indent=2)
-        return jsonify({'success': True})
+
+        return jsonify({
+            'success': True,
+            'field': new_field
+        })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500 
+
+@workflow.route('/<int:post_id>/planning/structure/outline/', methods=['GET'])
+def outline_step(post_id):
+    # Load navigation and find step_id
+    navigator.load_navigation()
+    stage = next((s for s in navigator.stages if s['name'] == 'planning'), None)
+    substage = None
+    step = None
+    step_id = None
+    if stage:
+        substages = navigator.get_substages_for_stage(stage['id'])
+        substage = next((s for s in substages if s['name'] == 'structure'), None)
+        if substage:
+            steps = navigator.get_steps_for_substage(substage['id'])
+            step = next((s for s in steps if s['name'] == 'outline'), None)
+            if step:
+                step_id = step['id']
+    # Load step configuration
+    step_config = load_step_config('planning', 'structure', 'outline')
+    print('DEBUG: outline_step step_config:', step_config)
+    input_values = {}
+    output_values = {}
+    output_titles = None
+    output_field = None
+    output_value = None
+    # Load input and output values from database
+    if step_config:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Load input values
+                if 'inputs' in step_config:
+                    for input_id, input_config in step_config['inputs'].items():
+                        db_field = input_config.get('db_field')
+                        db_table = input_config.get('db_table')
+                        if db_field and db_table:
+                            cur.execute(f"SELECT {db_field} FROM {db_table} WHERE post_id = %s", (post_id,))
+                            result = cur.fetchone()
+                            if result and db_field in result and result[db_field] is not None:
+                                input_values[input_id] = result[db_field]
+                # Load output values
+                if 'outputs' in step_config:
+                    for output_id, output_config in step_config['outputs'].items():
+                        db_field = output_config.get('db_field')
+                        db_table = output_config.get('db_table')
+                        if db_field and db_table:
+                            cur.execute(f"SELECT {db_field} FROM {db_table} WHERE post_id = %s", (post_id,))
+                            result = cur.fetchone()
+                            if result and db_field in result and result[db_field] is not None:
+                                output_values[output_id] = result[db_field]
+    # Set output_field and output_value for summary
+    if 'settings' in step_config and 'llm' in step_config['settings'] and 'output_mapping' in step_config['settings']['llm']:
+        output_field = step_config['settings']['llm']['output_mapping'].get('field')
+        if output_field:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(f"SELECT {output_field} FROM post_development WHERE post_id = %s", (post_id,))
+                    result = cur.fetchone()
+                    if result and output_field in result:
+                        output_value = result[output_field]
+    output_titles = {output_id: output_config['label'] for output_id, output_config in step_config.get('outputs', {}).items()}
+    post = get_post_and_idea_seed(post_id)
+    # Get available output fields from post_development
+    fields = []
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development'")
+            fields = [row["column_name"] for row in cur.fetchall()]
+    return render_template('workflow/planning_step.html',
+                           post_id=post_id,
+                           current_stage='planning',
+                           current_substage='structure',
+                           current_step='outline',
+                           all_posts=get_all_posts(),
+                           step_config=step_config,
+                           input_values=input_values,
+                           output_values=output_values,
+                           output_titles=output_titles,
+                           post=post,
+                           step_id=step_id,
+                           output_field=output_field,
+                           output_value=output_value,
+                           fields=fields) 
