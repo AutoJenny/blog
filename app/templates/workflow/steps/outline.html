@@ -1,0 +1,30 @@
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Existing code for populateFieldSelectors, etc.
+
+        // Add event listener for the save-prompt button
+        const savePromptButton = document.getElementById('save-prompt');
+        if (savePromptButton) {
+            savePromptButton.addEventListener('click', function () {
+                console.log('Save prompt clicked');
+                const systemPrompt = document.getElementById('system-prompt').value;
+                const taskPrompt = document.getElementById('task-prompt').value;
+                fetch('/workflow/api/save_prompt/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system_prompt: systemPrompt,
+                        task_prompt: taskPrompt
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Prompt saved:', data);
+                    })
+                    .catch(error => {
+                        console.error('Error saving prompt:', error);
+                    });
+            });
+        }
+    });
+</script>
