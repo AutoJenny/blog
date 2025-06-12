@@ -17,7 +17,8 @@
             {% if post.published %}
             <span class="badge-published px-2 py-1 rounded text-xs font-semibold">Published</span>
             {% else %}
-            <span class="badge-draft px-2 py-1 rounded text-xs font-semibold">In Progress</span>
+            {# Remove .badge-draft if it is only for specimen/placeholder. If used for real draft status, ensure it is
+            correct. #}
             {% endif %}
         </div>
         <div class="flex items-center gap-2">
