@@ -31,17 +31,17 @@ This document outlines the development plan for the Writing stage of the blog po
   - [x] Implement section accordion framework
   - [x] Add section-specific navigation
 
-- [ ] Implement section display components
-  - [ ] Primary section accordions
+- [x] Implement section display components
+  - [x] Primary section accordions
+  - [x] Section selection interface
+  - [x] Progress indicators
   - [ ] Secondary accordion groups (Text, Resources, Meta)
-  - [ ] Section selection interface
-  - [ ] Progress indicators
 
-- [ ] Add section content display
-  - [ ] Title display
-  - [ ] Description display
+- [x] Add section content display
+  - [x] Title display
+  - [x] Description display
+  - [x] Content preview areas
   - [ ] Ideas display
-  - [ ] Content preview areas
 
 ### Phase 2: Database Structure
 - [ ] Extend workflow_step_entity table
