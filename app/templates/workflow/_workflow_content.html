@@ -231,8 +231,59 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-300 whitespace-pre-wrap">
-                    {{ output_value if output_value is not none else '' }}
+                <div class="bg-gray-900 text-gray-200 rounded-lg border border-gray-300" style="padding:0 !important;">
+                    <ul id="output-dnd-list" class="space-y-0"
+                        style="margin:0; padding:0; white-space:normal !important;">
+                        {% for title in output_titles_dnd %}
+                        <li class="flex items-center space-x-2 bg-gray-800 rounded cursor-move {% if loop.first %}font-bold text-green-400{% endif %}"
+                            style="padding:10px 12px; line-height:2.5; margin:0; min-height:unset;">
+                            <span class="handle cursor-move text-gray-400" style="margin:0;">⋮⋮</span>
+                            <span class="title-text flex-grow" style="margin:0;">{{ title }}</span>
+                            <span class="primary-label text-sm text-gray-400" style="margin:0;">{% if loop.first
+                                %}(Primary){% endif %}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var el = document.getElementById('output-dnd-list');
+                            if (el) {
+                                var sortable = Sortable.create(el, {
+                                    handle: '.handle',
+                                    animation: 150,
+                                    onEnd: function () {
+                                        var items = Array.from(el.children).map(li => li.querySelector('.title-text').textContent);
+                                        fetch('/workflow/api/update_title_order/', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                post_id: {{ post_id| tojson }},
+                                    titles: items
+                                })
+                            })
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Update the primary label
+                                    el.querySelectorAll('li').forEach((li, index) => {
+                                        if (index === 0) {
+                                            li.classList.add('font-bold', 'text-green-400');
+                                            li.querySelector('.primary-label').textContent = '(Primary)';
+                                        } else {
+                                            li.classList.remove('font-bold', 'text-green-400');
+                                            li.querySelector('.primary-label').textContent = '';
+                                        }
+                                    });
+                                } else {
+                                    alert('Error saving order: ' + (data.error || 'Unknown error'));
+                                }
+                            });
+                                    }
+                                });
+                            }
+                        });
+                    </script>
                 </div>
             </div>
             {% else %}
@@ -241,6 +292,26 @@
         </div>
     </div>
 </div>
+
+<style>
+    #output-dnd-list {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #output-dnd-list li {
+        margin: 0 !important;
+        padding: 2px 4px !important;
+        line-height: 2.1 !important;
+        min-height: unset !important;
+    }
+
+    #output-dnd-list .handle,
+    #output-dnd-list .title-text,
+    #output-dnd-list .primary-label {
+        margin: 0 !important;
+    }
+</style>
 
 <script type="text/javascript">
     window.postId = {{ post_id | tojson }};
@@ -410,6 +481,23 @@
                     `[${newField}]`
                 );
                 summary.innerHTML = newText;
+
+                // Update the output value display
+                const outputValue = document.querySelector('.output-value');
+                if (outputValue) {
+                    // Fetch the current post development data
+                    const postDevResponse = await fetch(`/api/v1/llm/post_development/${window.postId}`);
+                    if (postDevResponse.ok) {
+                        const postDev = await postDevResponse.json();
+                        outputValue.textContent = postDev[newField] || '(No value)';
+                    }
+                }
+
+                // Update the output field select to show the new value
+                const outputFieldSelect = document.getElementById('output_field_select');
+                if (outputFieldSelect) {
+                    outputFieldSelect.value = newField;
+                }
             } else {
                 const data = await response.json();
                 alert('Error saving output mapping: ' + (data.error || 'Unknown error'));
