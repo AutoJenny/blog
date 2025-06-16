@@ -1,0 +1,40 @@
+{% extends "workflow/base.html" %}
+
+{% block title %}{{ current_substage|title }} - {{ current_stage|title }}{% endblock %}
+
+{% block workflow_content %}
+<div class="workflow-header">
+    <h1 class="workflow-title">{{ current_substage|title }}</h1>
+    <p class="workflow-description">{{ substage_description }}</p>
+</div>
+
+<div class="workflow-grid">
+    {% for step in steps %}
+    <div class="workflow-card">
+        <div class="workflow-card-header">
+            <h2 class="workflow-card-title">{{ step.name|title }}</h2>
+            <span class="workflow-status status-{{ step.status }}">{{ step.status|title }}</span>
+        </div>
+        <div class="workflow-card-content">
+            <p class="text-gray-400 mb-4">{{ step.description }}</p>
+            <div class="workflow-progress">
+                <div class="workflow-progress-bar" style="width: {{ step.progress }}%"></div>
+                <span class="workflow-progress-text">{{ step.progress }}% Complete</span>
+            </div>
+        </div>
+        <div class="workflow-card-footer">
+            <a href="{{ url_for('workflow.step', stage_id=current_stage.id, substage_id=current_substage.id, step_id=step.id) }}"
+                class="workflow-button">
+                View Step
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block workflow_scripts %}
+<script>
+    // Add any substage-specific JavaScript here
+</script>
+{% endblock %}

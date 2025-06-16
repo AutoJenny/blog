@@ -1,0 +1,30 @@
+{% extends "base_core.html" %}
+
+{% block title %}Test Core Template{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-white mb-6">Test Core Template</h1>
+    <div class="bg-dark-bg-secondary p-6 rounded-lg shadow-lg">
+        <p class="text-dark-text mb-4">This is a test page using the new core template.</p>
+        <div class="flex gap-4">
+            <button class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-accent-hover transition">
+                <i class="fa-solid fa-check mr-2"></i>Test Button
+            </button>
+            <button
+                class="bg-dark-bg border border-dark-border text-dark-text px-4 py-2 rounded-lg hover:bg-dark-bg-hover transition">
+                <i class="fa-solid fa-times mr-2"></i>Cancel
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('Test page initialized');
+    });
+</script>
+{% endblock %}

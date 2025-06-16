@@ -1,0 +1,141 @@
+{% extends "workflow/base.html" %}
+
+{% block title %}{{ current_step|title }} - {{ current_substage|title }} - {{ current_stage|title }}{% endblock %}
+
+{% block workflow_content %}
+<div class="workflow-header">
+    <h1 class="workflow-title">{{ current_step|title }}</h1>
+    <p class="workflow-description">{{ step_description }}</p>
+</div>
+
+<div class="workflow-panel">
+    <div class="workflow-panel-header">
+        <h2 class="workflow-panel-title">Input</h2>
+        <span class="workflow-status status-{{ input_status }}">{{ input_status|title }}</span>
+    </div>
+    <div class="workflow-panel-content">
+        <div class="mb-4">
+            <label for="input-field" class="block text-sm font-medium text-gray-400 mb-2">Input Field</label>
+            <select id="input-field"
+                class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text">
+                {% for field in input_fields %}
+                <option value="{{ field.id }}">{{ field.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="input-content" class="block text-sm font-medium text-gray-400 mb-2">Content</label>
+            <textarea id="input-content" rows="4"
+                class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text">{{ input_content }}</textarea>
+        </div>
+    </div>
+</div>
+
+<div class="workflow-panel">
+    <div class="workflow-panel-header">
+        <h2 class="workflow-panel-title">LLM Action</h2>
+    </div>
+    <div class="workflow-panel-content">
+        <div class="mb-4">
+            <label for="action-select" class="block text-sm font-medium text-gray-400 mb-2">Select Action</label>
+            <select id="action-select"
+                class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text">
+                {% for action in llm_actions %}
+                <option value="{{ action.id }}">{{ action.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button id="run-action" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg">
+            Run Action
+        </button>
+    </div>
+</div>
+
+<div class="workflow-panel">
+    <div class="workflow-panel-header">
+        <h2 class="workflow-panel-title">Output</h2>
+        <span class="workflow-status status-{{ output_status }}">{{ output_status|title }}</span>
+    </div>
+    <div class="workflow-panel-content">
+        <div class="mb-4">
+            <label for="output-field" class="block text-sm font-medium text-gray-400 mb-2">Output Field</label>
+            <select id="output-field"
+                class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text">
+                {% for field in output_fields %}
+                <option value="{{ field.id }}">{{ field.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="output-content" class="block text-sm font-medium text-gray-400 mb-2">Generated Content</label>
+            <textarea id="output-content" rows="4"
+                class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text"
+                readonly>{{ output_content }}</textarea>
+        </div>
+        <button id="accept-output" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg">
+            Accept Output
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block workflow_scripts %}
+<script>
+    document.getElementById('run-action')?.addEventListener('click', async function () {
+        const inputField = document.getElementById('input-field').value;
+        const inputContent = document.getElementById('input-content').value;
+        const actionId = document.getElementById('action-select').value;
+
+        try {
+            const response = await fetch('/api/workflow/action/run', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    input_field: inputField,
+                    input_content: inputContent,
+                    action_id: actionId
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to run action');
+            }
+
+            const result = await response.json();
+            document.getElementById('output-content').value = result.output;
+        } catch (error) {
+            console.error('Error running action:', error);
+            alert('Failed to run action. Please try again.');
+        }
+    });
+
+    document.getElementById('accept-output')?.addEventListener('click', async function () {
+        const outputField = document.getElementById('output-field').value;
+        const outputContent = document.getElementById('output-content').value;
+
+        try {
+            const response = await fetch('/api/workflow/action/accept', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    output_field: outputField,
+                    output_content: outputContent
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to accept output');
+            }
+
+            alert('Output accepted successfully');
+        } catch (error) {
+            console.error('Error accepting output:', error);
+            alert('Failed to accept output. Please try again.');
+        }
+    });
+</script>
+{% endblock %}

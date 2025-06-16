@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Documentation Index</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 1rem;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Documentation Index</h1>
+    <ul>
+        {% macro render_tree(tree, parent_path='') %}
+        {% for node in tree %}
+        {% if node.type == 'dir' %}
+        <li class="dir">{{ node.name }}/
+            <ul class="tree-indent">
+                {{ render_tree(node.children, parent_path ~ node.name ~ '/') }}
+            </ul>
+        </li>
+        {% elif node.type == 'file' %}
+        <li>
+            {% set rel_path = parent_path ~ node.name %}
+            <a href="/docs/view/{{ rel_path }}">{{ node.name }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        {% endmacro %}
+        {{ render_tree(tree) }}
+    </ul>
+</body>
+
+</html>
