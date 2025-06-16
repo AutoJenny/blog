@@ -1,119 +1,209 @@
-# Modular Git Branch Framework for Firewalled Components
+# Modular Refactoring Project
 
-## Overview
-This document describes the architecture, schema, and operating manual for a robust modular development workflow using **firewalled git branches** for each major component/module. The goal is to ensure that no module can overwrite or interfere with another, while still allowing seamless integration and live testing in the main site (the HUB branch).
+## ⚠️ CRITICAL WARNING ⚠️
 
----
+This project operates under a **ZERO TOLERANCE** policy for unauthorized changes or deviations from the defined process. Any attempt to:
+- Skip steps
+- Make unauthorized changes
+- Modify working code without permission
+- Proceed without explicit user approval
+- Assume functionality without verification
 
-## 1. Directory & Branch Schema
+**WILL RESULT IN IMMEDIATE ROLLBACK AND POTENTIAL PROJECT DELAYS**
 
-```
-repo-root/
-├── docs/
-│   └── git_modules/
-│       └── README.md  # This file
-├── modules/
-│   ├── nav/           # Nav module (only in nav branch)
-│   ├── llm_action/    # LLM-Action module (only in llm_action branch)
-│   └── sections/      # Sections module (only in sections branch)
-├── hub/               # Main site shell (in HUB branch)
-├── ...                # Other shared assets
-```
+## Core Principles and Rules
 
-- **Each module branch** (e.g., `nav`, `llm_action`, `sections`) contains only its own `/modules/<module_name>/` directory and nothing else.
-- **The `HUB` branch** contains the full site shell, with dynamic includes for modules.
+This project implements a strict modular architecture where each module operates as an independent silo. The primary goals are:
 
----
+1. **Module Independence**: Each module must be self-sufficient and cannot interfere with other modules
+2. **LLM Safety**: Even a determined LLM cannot damage one module while working in another without explicit user permission
+3. **Controlled Evolution**: All changes must follow the defined workflow and obtain user permission for any modifications beyond the strict remit
 
-## 2. Branching & Isolation
+## MANDATORY Rules (No Exceptions)
 
-- **Module branches**: Only the code for that module exists in the branch. No other code is present.
-- **HUB branch**: Contains only the shell and dynamic includes for modules. No module code is directly edited here.
-- **No merging between module branches.** Only the HUB branch can "see" all modules, and only via includes.
+1. **NEVER** make changes to code or data beyond the strict remit in these documents without explicit user permission
+2. **ALWAYS** check the [Transition Checklist](transition_checklist.md) before starting any work
+3. **NEVER** modify working code without explicit permission
+4. **ALWAYS** test thoroughly before claiming any functionality is working
+5. **NEVER** proceed with coding without explicit instructions
+6. **ALWAYS** verify each step is complete before proceeding
+7. **NEVER** assume anything works without testing
+8. **ALWAYS** document all changes and test results
+9. **NEVER** skip validation steps
+10. **ALWAYS** wait for user review before proceeding
 
----
+## Getting Started
 
-## 3. Integration & Includes
+1. First, read this README completely
+2. Review the [Transition Checklist](transition_checklist.md) to understand current progress
+3. Consult the [Technical Implementation Guide](transition_implementation.md) for detailed steps
+4. Follow the [Development Setup Guide](dev_setup.md) to configure your environment
+5. **VERIFY** you understand all requirements before proceeding
 
-- The HUB branch uses a dynamic import system (e.g., Flask blueprints, Python importlib, or JS dynamic imports) to load modules if present.
-- If a module is missing, the site still runs, but that feature is disabled or stubbed.
-- For local development, symlinks or scripts can be used to "mount" a module into the HUB branch for live testing.
+## Documentation Structure
 
----
+### Core Implementation
+- [Transition Checklist](transition_checklist.md) - Track progress and next steps
+- [Technical Implementation Guide](transition_implementation.md) - Detailed implementation steps
+- [Module Contracts](module_contracts.md) - Module interface definitions
+- [Code Mapping](code_mapping.md) - Current to new code structure mapping
 
-## 4. Workflow & Operating Manual
+### Standards and Guidelines
+- [API Standards](api_standards.md) - API design and implementation standards
+- [Testing Standards](testing_standards.md) - Testing requirements and procedures
+- [Error Handling Guide](error_handling.md) - Error handling patterns and procedures
+- [Security Guide](security_guide.md) - Security requirements and best practices
 
-### A. Developing a Module
-1. **Checkout the module branch:**
-   ```sh
-   git checkout nav  # or llm_action, sections, etc.
-   ```
-2. **Work only in `/modules/<module_name>/`.**
-3. **Test locally:** Use a script to symlink or copy the module into a local clone of the HUB branch for integration testing.
+### Development Process
+- [Development Setup](dev_setup.md) - Environment setup and configuration
+- [Testing Guide](testing_guide.md) - Comprehensive testing procedures
+- [Integration Guide](integration_guide.md) - Module integration procedures
+- [Versioning Guide](versioning.md) - Version control and release procedures
 
-### B. Updating a Module in the Main Site
-1. **Push changes to the module branch.**
-2. **In the HUB branch, run:**
-   ```sh
-   ./scripts/update_module.sh <module_name>
-   ```
-   - This script pulls the latest from the module branch and integrates it into the HUB branch.
-   - Runs tests/builds as needed.
-   - Commits the update.
+### Performance and Monitoring
+- [Performance Optimization](performance_optimization.md) - Performance requirements and optimization
+- [Monitoring and Logging](monitoring_logging.md) - System monitoring and logging standards
 
-### C. CI/CD Enforcement
-- CI checks ensure that only the intended module directory is updated in the HUB branch.
-- No code outside `/modules/<module_name>/` is changed in a module update.
-- The HUB branch only updates module includes, not module code directly.
+## Workflow Process
 
-### D. Restoring/Cloning
-- After cloning, run:
-  ```sh
-  ./scripts/setup.sh
-  ```
-  - This script checks out the HUB branch and sets up symlinks or copies for all modules as needed.
+1. **Check Current Status** (MANDATORY)
+   - Review the [Transition Checklist](transition_checklist.md)
+   - Identify the next uncompleted task
+   - Verify no other work is in progress
+   - **DO NOT PROCEED** without completing this step
 
----
+2. **Implementation** (MANDATORY)
+   - Follow the [Technical Implementation Guide](transition_implementation.md)
+   - Adhere to all standards and guidelines
+   - Test thoroughly before proceeding
+   - **DO NOT PROCEED** without completing this step
 
-## 5. Automation Scripts (to be implemented)
-- `update_module.sh`: Updates a module in the HUB branch.
-- `test_integration.sh`: Runs integration tests with all modules present.
-- `dev_symlink.sh`: Symlinks a module for local development.
-- `setup.sh`: Sets up the repo after clone.
-- `ci_check.sh`: Ensures no cross-module contamination in PRs.
+3. **Validation** (MANDATORY)
+   - Complete all required tests
+   - Verify against performance requirements
+   - Document any issues or deviations
+   - **DO NOT PROCEED** without completing this step
 
----
+4. **Review** (MANDATORY)
+   - Mark completed tasks in the checklist
+   - Update relevant documentation
+   - Wait for user review before proceeding
+   - **DO NOT PROCEED** without completing this step
 
-## 6. Best Practices
-- **Never edit module code in the HUB branch.**
-- **Never merge module branches into each other.**
-- **Always use scripts for integration and updates.**
-- **Document module APIs and contracts clearly.**
+## Module Independence
 
----
+Each module must:
+1. Have its own isolated codebase
+2. Define clear interfaces through contracts
+3. Handle its own errors and logging
+4. Maintain its own test suite
+5. Have independent deployment procedures
 
-## 7. Example Workflow
+## LLM Safety Measures
 
-1. Developer works on `modules/nav/` in the `nav` branch.
-2. When ready, pushes changes to `nav` branch.
-3. In the HUB branch, runs `./scripts/update_module.sh nav` to pull in the latest nav module.
-4. CI checks ensure only `/modules/nav/` is updated.
-5. The site is tested and deployed from the HUB branch.
+1. **Strict Boundaries**
+   - Each module has defined interfaces
+   - No direct access to other modules' internals
+   - All cross-module communication through defined channels
 
----
+2. **Permission System**
+   - Explicit user permission required for cross-module changes
+   - Clear documentation of module boundaries
+   - Validation of all cross-module operations
 
-## 8. FAQ
+3. **Change Control**
+   - All changes must follow the defined workflow
+   - No autonomous modifications without permission
+   - Thorough testing of all changes
 
-**Q: What if a module needs to communicate with another?**
-- Use well-defined APIs, events, or shared database tables. Never direct imports.
+## Progress Tracking
 
-**Q: What if a module breaks the site?**
-- Revert the module branch or remove its include from the HUB branch.
+1. **Daily Progress** (MANDATORY)
+   - Update the [Transition Checklist](transition_checklist.md)
+   - Document completed tasks
+   - Note any issues or blockers
+   - **VERIFY** all steps are complete
 
-**Q: Can I work on multiple modules at once?**
-- Yes, but always in their own branches. Integrate via the HUB branch only.
+2. **Review Points** (MANDATORY)
+   - After each phase completion
+   - Before major changes
+   - When encountering issues
+   - **DO NOT PROCEED** without review
 
----
+3. **Documentation Updates** (MANDATORY)
+   - Keep all documentation current
+   - Update relevant guides
+   - Maintain change logs
+   - **VERIFY** all updates are complete
 
-## 9. Change Log
-- _[Add entries here as the system evolves]_ 
+## Emergency Procedures
+
+1. **Code Issues**
+   - Stop all work immediately
+   - Document the issue
+   - Wait for user guidance
+   - **DO NOT ATTEMPT FIXES** without permission
+
+2. **System Problems**
+   - Use the restart script: `/scripts/dev/restart_flask_dev.sh`
+   - Never use alternative ports
+   - Follow the error handling guide
+   - **DO NOT MODIFY** system configuration
+
+3. **Data Problems**
+   - Do not attempt fixes without permission
+   - Document the issue
+   - Wait for user guidance
+   - **DO NOT MODIFY** any data
+
+## Important Reminders
+
+1. **NEVER**:
+   - Make unauthorized changes
+   - Skip testing steps
+   - Modify working code without permission
+   - Assume functionality without verification
+   - Use alternative ports or configurations
+   - Proceed without explicit permission
+   - Skip documentation updates
+   - Ignore error messages
+   - Make assumptions about functionality
+   - Take shortcuts in the process
+
+2. **ALWAYS**:
+   - Check documentation first
+   - Test thoroughly
+   - Get explicit permission
+   - Follow the defined workflow
+   - Update the checklist
+   - Verify each step
+   - Document all changes
+   - Wait for user review
+   - Follow error handling procedures
+   - Maintain proper logs
+
+## Getting Help
+
+1. **Documentation**
+   - Review all relevant guides
+   - Check the checklist
+   - Consult implementation details
+   - **DO NOT PROCEED** without understanding
+
+2. **Issues**
+   - Document the problem
+   - Check existing documentation
+   - Wait for user guidance
+   - **DO NOT ATTEMPT FIXES** without permission
+
+3. **Questions**
+   - Review all documentation
+   - Check the checklist
+   - Ask for clarification
+   - **DO NOT MAKE ASSUMPTIONS**
+
+## ⚠️ FINAL WARNING ⚠️
+
+Remember: When in doubt, stop and ask. It's better to wait for guidance than to make potentially harmful changes. Any deviation from these guidelines will result in immediate rollback and potential project delays.
+
+**THERE ARE NO SHORTCUTS IN THIS PROCESS** 
