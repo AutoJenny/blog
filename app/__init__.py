@@ -14,6 +14,8 @@ from flask_migrate import Migrate
 from app.database import get_db_conn
 from app.core.routes.core_routes import core_bp
 from flask_jwt_extended import JWTManager
+from app.routes.settings import settings_bp
+from hub import hub_bp
 
 # DEPRECATED: SQLAlchemy ORM is being removed. Use direct SQL (psycopg2) for all DB access.
 
@@ -146,6 +148,7 @@ def create_app(config_class=Config):
     app.register_blueprint(db_bp)
 
     app.register_blueprint(core_bp, url_prefix='/core')
+    app.register_blueprint(hub_bp, url_prefix='/hub')
 
     # Add debug route listing
     @app.route('/debug/routes')
