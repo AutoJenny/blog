@@ -2,81 +2,45 @@
 
 This document provides detailed technical implementation steps for transitioning the blog system to the new modular architecture. For the step-by-step checklist, see [Transition Checklist](transition_checklist.md).
 
+⚠️ **CRITICAL DATABASE WARNING** ⚠️
+The existing database schema is fully functional and must be preserved exactly as is. No database changes are allowed without explicit written permission. See [Database Integration Guide](database_integration.md) for details.
+
 ---
 
 ## Phase 1: Core Infrastructure
 
-### 1. Database Migration
+### 1. Database Integration
 
-#### Schema Updates
+#### Schema Usage
 ```python
-def migrate_core_schema():
-    """Migrate core database schema."""
-    # Create workflow tables
-    execute_query("""
-    CREATE TABLE IF NOT EXISTS workflow_stage_entity (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        description TEXT,
-        order_index INTEGER NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
+def get_workflow_stages():
+    """Get workflow stages using existing schema."""
+    return execute_query("""
+        SELECT * FROM workflow_stage_entity 
+        ORDER BY order_index
     """)
-    
-    # Create field mapping table
-    execute_query("""
-    CREATE TABLE IF NOT EXISTS workflow_field_mapping (
-        id SERIAL PRIMARY KEY,
-        field_name VARCHAR(128) NOT NULL,
-        stage_id INTEGER REFERENCES workflow_stage_entity(id),
-        order_index INTEGER NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
-    
-    # Create LLM action table
-    execute_query("""
-    CREATE TABLE IF NOT EXISTS llm_action (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(128) NOT NULL,
-        prompt_template TEXT NOT NULL,
-        input_field VARCHAR(128) NOT NULL,
-        output_field VARCHAR(128) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
+
+def get_workflow_steps(stage_id):
+    """Get workflow steps using existing schema."""
+    return execute_query("""
+        SELECT * FROM workflow_step_entity 
+        WHERE sub_stage_id IN (
+            SELECT id FROM workflow_sub_stage_entity 
+            WHERE stage_id = %s
+        )
+        ORDER BY step_order
+    """, (stage_id,))
 ```
 
-#### Data Migration
+#### Data Access
 ```python
-def migrate_core_data():
-    """Migrate core data to new schema."""
-    # Migrate workflow stages
-    stages = [
-        ('planning', 'Initial planning and research', 1),
-        ('authoring', 'Content creation and editing', 2),
-        ('review', 'Content review and feedback', 3),
-        ('publishing', 'Final review and publishing', 4)
-    ]
-    
-    for name, description, order in stages:
-        execute_query("""
-        INSERT INTO workflow_stage_entity (name, description, order_index)
-        VALUES (%s, %s, %s)
-        """, (name, description, order))
-    
-    # Migrate field mappings
-    fields = [
-        ('title', 1, 1),
-        ('content', 2, 1),
-        ('status', 3, 1)
-    ]
-    
-    for field, stage_id, order in fields:
-        execute_query("""
-        INSERT INTO workflow_field_mapping (field_name, stage_id, order_index)
-        VALUES (%s, %s, %s)
-        """, (field, stage_id, order))
+def update_workflow_status(post_id, stage_id, status):
+    """Update workflow status using existing schema."""
+    return execute_query("""
+        UPDATE post_workflow_stage 
+        SET status = %s 
+        WHERE post_id = %s AND stage_id = %s
+    """, (status, post_id, stage_id))
 ```
 
 ### 2. Testing Infrastructure
@@ -200,50 +164,23 @@ def register_workflow_module():
 def setup_core_templates():
     """Setup core templates."""
     # Create template directory
-    os.makedirs('templates/core', exist_ok=True)
+    os.makedirs('modules/core/templates', exist_ok=True)
     
     # Create base template
-    with open('templates/core/base.html', 'w') as f:
-        f.write("""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>{% block title %}{% endblock %}</title>
-            <link rel="stylesheet" href="{{ url_for('static', filename='css/core.css') }}">
-        </head>
-        <body>
-            {% block content %}{% endblock %}
-            <script src="{{ url_for('static', filename='js/core.js') }}"></script>
-        </body>
-        </html>
-        """)
+    with open('modules/core/templates/base.html', 'w') as f:
+        f.write('{% extends "base.html" %}\n')
 ```
 
-#### Static Assets
+#### Core CSS
 ```python
-def setup_core_assets():
-    """Setup core static assets."""
-    # Create asset directories
-    os.makedirs('static/css', exist_ok=True)
-    os.makedirs('static/js', exist_ok=True)
+def setup_core_css():
+    """Setup core CSS."""
+    # Create CSS directory
+    os.makedirs('modules/core/static/css', exist_ok=True)
     
-    # Create core CSS
-    with open('static/css/core.css', 'w') as f:
-        f.write("""
-        /* Core styles */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        """)
-    
-    # Create core JS
-    with open('static/js/core.js', 'w') as f:
-        f.write("""
-        // Core JavaScript
-        console.log('Core module loaded');
-        """)
+    # Create core CSS file
+    with open('modules/core/static/css/core.css', 'w') as f:
+        f.write('/* Core module styles */\n')
 ```
 
 ### 2. Workflow UI
@@ -253,177 +190,104 @@ def setup_core_assets():
 def setup_workflow_templates():
     """Setup workflow templates."""
     # Create template directory
-    os.makedirs('templates/workflow', exist_ok=True)
+    os.makedirs('modules/workflow/templates', exist_ok=True)
     
     # Create workflow template
-    with open('templates/workflow/stage.html', 'w') as f:
-        f.write("""
-        {% extends "core/base.html" %}
-        
-        {% block title %}Workflow Stage{% endblock %}
-        
-        {% block content %}
-        <div class="workflow-stage">
-            <h1>{{ stage.name }}</h1>
-            <div class="stage-content">
-                {% block stage_content %}{% endblock %}
-            </div>
-        </div>
-        {% endblock %}
-        """)
+    with open('modules/workflow/templates/workflow.html', 'w') as f:
+        f.write('{% extends "base.html" %}\n')
 ```
 
-#### Workflow Assets
+#### Workflow CSS
 ```python
-def setup_workflow_assets():
-    """Setup workflow static assets."""
-    # Create workflow CSS
-    with open('static/css/workflow.css', 'w') as f:
-        f.write("""
-        /* Workflow styles */
-        .workflow-stage {
-            padding: 20px;
-        }
-        """)
+def setup_workflow_css():
+    """Setup workflow CSS."""
+    # Create CSS directory
+    os.makedirs('modules/workflow/static/css', exist_ok=True)
     
-    # Create workflow JS
-    with open('static/js/workflow.js', 'w') as f:
-        f.write("""
-        // Workflow JavaScript
-        console.log('Workflow module loaded');
-        """)
+    # Create workflow CSS file
+    with open('modules/workflow/static/css/workflow.css', 'w') as f:
+        f.write('/* Workflow module styles */\n')
 ```
 
 ---
 
 ## Phase 4: Testing and Validation
 
-### 1. Automated Testing
+### 1. Unit Testing
 
-#### Unit Tests
+#### Core Tests
 ```python
-def setup_unit_tests():
-    """Setup unit tests."""
+def setup_core_tests():
+    """Setup core module tests."""
     # Create test directory
-    os.makedirs('tests/unit', exist_ok=True)
+    os.makedirs('modules/core/tests', exist_ok=True)
     
-    # Create core tests
-    with open('tests/unit/test_core.py', 'w') as f:
-        f.write("""
-        def test_core_functionality():
-            assert True
-        
-        def test_core_validation():
-            assert True
-        """)
+    # Create test files
+    files = [
+        'modules/core/tests/__init__.py',
+        'modules/core/tests/test_routes.py',
+        'modules/core/tests/test_models.py',
+        'modules/core/tests/test_schemas.py',
+        'modules/core/tests/test_utils.py'
+    ]
     
-    # Create workflow tests
-    with open('tests/unit/test_workflow.py', 'w') as f:
-        f.write("""
-        def test_workflow_functionality():
-            assert True
-        
-        def test_workflow_validation():
-            assert True
-        """)
+    for file in files:
+        with open(file, 'w') as f:
+            f.write('# Core module tests\n')
 ```
 
-#### Integration Tests
+#### Workflow Tests
+```python
+def setup_workflow_tests():
+    """Setup workflow module tests."""
+    # Create test directory
+    os.makedirs('modules/workflow/tests', exist_ok=True)
+    
+    # Create test files
+    files = [
+        'modules/workflow/tests/__init__.py',
+        'modules/workflow/tests/test_routes.py',
+        'modules/workflow/tests/test_models.py',
+        'modules/workflow/tests/test_schemas.py',
+        'modules/workflow/tests/test_utils.py'
+    ]
+    
+    for file in files:
+        with open(file, 'w') as f:
+            f.write('# Workflow module tests\n')
+```
+
+### 2. Integration Testing
+
+#### Test Setup
 ```python
 def setup_integration_tests():
     """Setup integration tests."""
     # Create test directory
     os.makedirs('tests/integration', exist_ok=True)
     
-    # Create API tests
-    with open('tests/integration/test_api.py', 'w') as f:
-        f.write("""
-        def test_api_endpoints():
-            assert True
-        
-        def test_api_validation():
-            assert True
-        """)
+    # Create test files
+    files = [
+        'tests/integration/__init__.py',
+        'tests/integration/test_core.py',
+        'tests/integration/test_workflow.py'
+    ]
     
-    # Create workflow tests
-    with open('tests/integration/test_workflow.py', 'w') as f:
-        f.write("""
-        def test_workflow_integration():
-            assert True
-        
-        def test_workflow_validation():
-            assert True
-        """)
+    for file in files:
+        with open(file, 'w') as f:
+            f.write('# Integration tests\n')
 ```
 
-### 2. Manual Testing
-
-#### Test Cases
+#### Test Configuration
 ```python
-def setup_manual_tests():
-    """Setup manual test cases."""
-    # Create test directory
-    os.makedirs('tests/manual', exist_ok=True)
+def setup_test_config():
+    """Setup test configuration."""
+    # Create config directory
+    os.makedirs('tests/config', exist_ok=True)
     
-    # Create core test cases
-    with open('tests/manual/core_test_cases.md', 'w') as f:
-        f.write("""
-        # Core Module Test Cases
-        
-        ## Basic Functionality
-        1. Test core module loading
-        2. Test core module initialization
-        3. Test core module cleanup
-        
-        ## Error Handling
-        1. Test error logging
-        2. Test error recovery
-        3. Test error reporting
-        """)
-    
-    # Create workflow test cases
-    with open('tests/manual/workflow_test_cases.md', 'w') as f:
-        f.write("""
-        # Workflow Module Test Cases
-        
-        ## Stage Management
-        1. Test stage creation
-        2. Test stage transition
-        3. Test stage validation
-        
-        ## Field Management
-        1. Test field mapping
-        2. Test field validation
-        3. Test field persistence
-        """)
-```
-
-#### Test Scripts
-```python
-def setup_test_scripts():
-    """Setup test scripts."""
-    # Create script directory
-    os.makedirs('scripts/test', exist_ok=True)
-    
-    # Create core test script
-    with open('scripts/test/test_core.sh', 'w') as f:
-        f.write("""
-        #!/bin/bash
-        
-        # Run core tests
-        python -m pytest tests/unit/test_core.py
-        python -m pytest tests/integration/test_core.py
-        """)
-    
-    # Create workflow test script
-    with open('scripts/test/test_workflow.sh', 'w') as f:
-        f.write("""
-        #!/bin/bash
-        
-        # Run workflow tests
-        python -m pytest tests/unit/test_workflow.py
-        python -m pytest tests/integration/test_workflow.py
-        """)
+    # Create config file
+    with open('tests/config/test_config.py', 'w') as f:
+        f.write('# Test configuration\n')
 ```
 
 ---
@@ -435,100 +299,79 @@ def setup_test_scripts():
 #### Core Deployment
 ```python
 def setup_core_deployment():
-    """Setup core deployment scripts."""
-    # Create script directory
-    os.makedirs('scripts/deploy', exist_ok=True)
+    """Setup core module deployment."""
+    # Create deployment directory
+    os.makedirs('modules/core/deployment', exist_ok=True)
     
-    # Create core deployment script
-    with open('scripts/deploy/deploy_core.sh', 'w') as f:
-        f.write("""
-        #!/bin/bash
-        
-        # Deploy core module
-        echo "Deploying core module..."
-        
-        # Run tests
-        ./scripts/test/test_core.sh
-        
-        # Deploy module
-        cp -r modules/core /app/modules/
-        cp -r templates/core /app/templates/
-        cp -r static/css/core.css /app/static/css/
-        cp -r static/js/core.js /app/static/js/
-        
-        echo "Core module deployed"
-        """)
+    # Create deployment files
+    files = [
+        'modules/core/deployment/__init__.py',
+        'modules/core/deployment/deploy.py',
+        'modules/core/deployment/rollback.py'
+    ]
+    
+    for file in files:
+        with open(file, 'w') as f:
+            f.write('# Core module deployment\n')
 ```
 
 #### Workflow Deployment
 ```python
 def setup_workflow_deployment():
-    """Setup workflow deployment scripts."""
-    # Create workflow deployment script
-    with open('scripts/deploy/deploy_workflow.sh', 'w') as f:
-        f.write("""
-        #!/bin/bash
-        
-        # Deploy workflow module
-        echo "Deploying workflow module..."
-        
-        # Run tests
-        ./scripts/test/test_workflow.sh
-        
-        # Deploy module
-        cp -r modules/workflow /app/modules/
-        cp -r templates/workflow /app/templates/
-        cp -r static/css/workflow.css /app/static/css/
-        cp -r static/js/workflow.js /app/static/js/
-        
-        echo "Workflow module deployed"
-        """)
+    """Setup workflow module deployment."""
+    # Create deployment directory
+    os.makedirs('modules/workflow/deployment', exist_ok=True)
+    
+    # Create deployment files
+    files = [
+        'modules/workflow/deployment/__init__.py',
+        'modules/workflow/deployment/deploy.py',
+        'modules/workflow/deployment/rollback.py'
+    ]
+    
+    for file in files:
+        with open(file, 'w') as f:
+            f.write('# Workflow module deployment\n')
 ```
 
-### 2. Rollback Scripts
+### 2. Monitoring Setup
 
-#### Core Rollback
+#### Core Monitoring
 ```python
-def setup_core_rollback():
-    """Setup core rollback scripts."""
-    # Create core rollback script
-    with open('scripts/deploy/rollback_core.sh', 'w') as f:
-        f.write("""
-        #!/bin/bash
-        
-        # Rollback core module
-        echo "Rolling back core module..."
-        
-        # Restore from backup
-        cp -r /backup/modules/core /app/modules/
-        cp -r /backup/templates/core /app/templates/
-        cp -r /backup/static/css/core.css /app/static/css/
-        cp -r /backup/static/js/core.js /app/static/js/
-        
-        echo "Core module rolled back"
-        """)
+def setup_core_monitoring():
+    """Setup core module monitoring."""
+    # Create monitoring directory
+    os.makedirs('modules/core/monitoring', exist_ok=True)
+    
+    # Create monitoring files
+    files = [
+        'modules/core/monitoring/__init__.py',
+        'modules/core/monitoring/metrics.py',
+        'modules/core/monitoring/alerts.py'
+    ]
+    
+    for file in files:
+        with open(file, 'w') as f:
+            f.write('# Core module monitoring\n')
 ```
 
-#### Workflow Rollback
+#### Workflow Monitoring
 ```python
-def setup_workflow_rollback():
-    """Setup workflow rollback scripts."""
-    # Create workflow rollback script
-    with open('scripts/deploy/rollback_workflow.sh', 'w') as f:
-        f.write("""
-        #!/bin/bash
-        
-        # Rollback workflow module
-        echo "Rolling back workflow module..."
-        
-        # Restore from backup
-        cp -r /backup/modules/workflow /app/modules/
-        cp -r /backup/templates/workflow /app/templates/
-        cp -r /backup/static/css/workflow.css /app/static/css/
-        cp -r /backup/static/js/workflow.js /app/static/js/
-        
-        echo "Workflow module rolled back"
-        """)
+def setup_workflow_monitoring():
+    """Setup workflow module monitoring."""
+    # Create monitoring directory
+    os.makedirs('modules/workflow/monitoring', exist_ok=True)
+    
+    # Create monitoring files
+    files = [
+        'modules/workflow/monitoring/__init__.py',
+        'modules/workflow/monitoring/metrics.py',
+        'modules/workflow/monitoring/alerts.py'
+    ]
+    
+    for file in files:
+        with open(file, 'w') as f:
+            f.write('# Workflow module monitoring\n')
 ```
 
 ---

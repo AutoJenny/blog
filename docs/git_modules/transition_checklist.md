@@ -2,40 +2,32 @@
 
 ⚠️ **CRITICAL**: This checklist must be followed exactly. No steps may be skipped or modified without explicit user permission.
 
+⚠️ **CRITICAL DATABASE WARNING** ⚠️
+1. **NEVER** modify the database schema without explicit written permission
+2. **NEVER** run any database migration scripts without explicit written permission
+3. **NEVER** create new database tables without explicit written permission
+4. **ALWAYS** check /docs/database/ before any database-related work
+5. **ALWAYS** use existing database schema as documented
+6. **ALWAYS** verify database operations against /docs/database/schema.md
+7. **ALWAYS** make a full backup using `pg_dump` before any database changes
+8. **ALWAYS** test database changes in a development environment first
+9. **ALWAYS** document any database changes in /docs/database/changes.md
+10. **ALWAYS** get user review and approval for any database changes
+
 ## Phase 1: Core Infrastructure
 
-### Database Migration
-- [ ] Create workflow_stage_entity table
-  - [ ] Verify table creation
-  - [ ] Test all fields
-  - [ ] Document schema
-- [ ] Create workflow_field_mapping table
-  - [ ] Verify table creation
-  - [ ] Test all fields
-  - [ ] Document schema
-- [ ] Create llm_action table
-  - [ ] Verify table creation
-  - [ ] Test all fields
-  - [ ] Document schema
-- [ ] Migrate existing workflow stages
-  - [ ] Verify data integrity
-  - [ ] Test all relationships
-  - [ ] Document migration
-- [ ] Migrate existing field mappings
-  - [ ] Verify data integrity
-  - [ ] Test all relationships
-  - [ ] Document migration
-- [ ] Validate database schema
-  - [ ] Run all validation tests
-  - [ ] Verify constraints
-  - [ ] Document validation
-- [ ] Test database queries
-  - [ ] Test all CRUD operations
-  - [ ] Verify performance
-  - [ ] Document test results
-- [ ] Document schema changes
-  - [ ] Update schema documentation
-  - [ ] Verify documentation
+### Database Integration
+- [ ] Review existing schema
+  - [ ] Document current tables
+  - [ ] Document relationships
+  - [ ] Document constraints
+- [ ] Verify database access
+  - [ ] Test all queries
+  - [ ] Verify permissions
+  - [ ] Document access patterns
+- [ ] Document schema usage
+  - [ ] Write usage guidelines
+  - [ ] Document best practices
   - [ ] Get user review
 
 ### Testing Infrastructure
@@ -295,18 +287,18 @@
 ## Validation Checkpoints
 
 ### After Phase 1
-- [ ] Database schema is valid
-  - [ ] Verify all tables
+- [ ] Database integration is verified
+  - [ ] Verify all queries
   - [ ] Test all relationships
   - [ ] Document validation
-- [ ] All tables are created
+- [ ] All tables are accessible
   - [ ] Verify all tables
-  - [ ] Test all tables
-  - [ ] Document creation
-- [ ] Data is migrated correctly
+  - [ ] Test all access
+  - [ ] Document access
+- [ ] Data is accessible
   - [ ] Verify all data
-  - [ ] Test all data
-  - [ ] Document migration
+  - [ ] Test all access
+  - [ ] Document access
 - [ ] Health checks are working
   - [ ] Test all checks
   - [ ] Verify results
@@ -436,6 +428,7 @@
 
 ## References
 - [Technical Implementation Guide](transition_implementation.md)
+- [Database Integration Guide](database_integration.md)
 - [API Standards](api_standards.md)
 - [Testing Standards](testing_standards.md)
 - [Performance Guide](performance_optimization.md)

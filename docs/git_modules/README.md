@@ -1,5 +1,19 @@
 # Modular Refactoring Project
 
+⚠️ **CRITICAL DATABASE WARNING** ⚠️
+1. **NEVER** modify the database schema without explicit written permission
+2. **NEVER** run any database migration scripts without explicit written permission
+3. **NEVER** create new database tables without explicit written permission
+4. **ALWAYS** check /docs/database/ before any database-related work
+5. **ALWAYS** use existing database schema as documented
+6. **ALWAYS** verify database operations against /docs/database/schema.md
+7. **ALWAYS** make a full backup using `pg_dump` before any database changes
+8. **ALWAYS** test database changes in a development environment first
+9. **ALWAYS** document any database changes in /docs/database/changes.md
+10. **ALWAYS** get user review and approval for any database changes
+
+The existing database schema is fully functional and powers the current system. Any unauthorized database changes will be considered a critical security violation.
+
 ## ⚠️ CRITICAL WARNING ⚠️
 
 This project operates under a **ZERO TOLERANCE** policy for unauthorized changes or deviations from the defined process. Any attempt to:
