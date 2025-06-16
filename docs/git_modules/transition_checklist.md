@@ -172,26 +172,26 @@
 ## Phase 5: Core UI
 
 ### Core UI
-- [ ] Create base templates
-  - [ ] Create all templates
-  - [ ] Test all templates
-  - [ ] Document templates
-- [ ] Setup core CSS
-  - [ ] Create all styles
-  - [ ] Test all styles
-  - [ ] Document styles
-- [ ] Add core JavaScript
-  - [ ] Create all scripts
-  - [ ] Test all scripts
-  - [ ] Document scripts
-- [ ] Test core UI
-  - [ ] Run all tests
-  - [ ] Verify results
-  - [ ] Document tests
-- [ ] Validate responsive design
-  - [ ] Test all breakpoints
-  - [ ] Verify responsiveness
-  - [ ] Document validation
+- [x] Create base templates
+  - [x] Create all templates
+  - [x] Test all templates
+  - [x] Document templates
+- [x] Setup core CSS
+  - [x] Create all styles
+  - [x] Test all styles
+  - [x] Document styles
+- [x] Add core JavaScript
+  - [x] Create all scripts
+  - [x] Test all scripts
+  - [x] Document scripts
+- [x] Test core UI
+  - [x] Run all tests
+  - [x] Verify results
+  - [x] Document tests
+- [x] Validate responsive design
+  - [x] Test all breakpoints
+  - [x] Verify responsiveness
+  - [x] Document validation
 - [ ] Document UI components
   - [ ] Write all documentation
   - [ ] Verify documentation
