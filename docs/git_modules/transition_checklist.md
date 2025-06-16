@@ -105,35 +105,7 @@
 > **NOTE:**
 > The Core Module has been successfully implemented with a robust directory structure, core routes, models, schemas, and utilities. All functionality has been tested and documented. The module is registered with the application and verified to work as expected.
 
-## Phase 3: Core UI
-
-### Core UI
-- [ ] Create base templates
-  - [ ] Create all templates
-  - [ ] Test all templates
-  - [ ] Document templates
-- [ ] Setup core CSS
-  - [ ] Create all styles
-  - [ ] Test all styles
-  - [ ] Document styles
-- [ ] Add core JavaScript
-  - [ ] Create all scripts
-  - [ ] Test all scripts
-  - [ ] Document scripts
-- [ ] Test core UI
-  - [ ] Run all tests
-  - [ ] Verify results
-  - [ ] Document tests
-- [ ] Validate responsive design
-  - [ ] Test all breakpoints
-  - [ ] Verify responsiveness
-  - [ ] Document validation
-- [ ] Document UI components
-  - [ ] Write all documentation
-  - [ ] Verify documentation
-  - [ ] Get user review
-
-## Phase 4: Workflow Module (Backend)
+## Phase 3: Workflow Module (Backend)
 
 ### Workflow Module
 - [x] Create module directory structure
@@ -169,7 +141,7 @@
   - [x] Verify documentation
   - [x] Get user review
 
-## Phase 5: Workflow UI
+## Phase 4: Workflow UI
 
 ### Workflow UI
 - [x] Create workflow templates
@@ -196,6 +168,34 @@
   - [x] Write all documentation
   - [x] Verify documentation
   - [x] Get user review
+
+## Phase 5: Core UI
+
+### Core UI
+- [ ] Create base templates
+  - [ ] Create all templates
+  - [ ] Test all templates
+  - [ ] Document templates
+- [ ] Setup core CSS
+  - [ ] Create all styles
+  - [ ] Test all styles
+  - [ ] Document styles
+- [ ] Add core JavaScript
+  - [ ] Create all scripts
+  - [ ] Test all scripts
+  - [ ] Document scripts
+- [ ] Test core UI
+  - [ ] Run all tests
+  - [ ] Verify results
+  - [ ] Document tests
+- [ ] Validate responsive design
+  - [ ] Test all breakpoints
+  - [ ] Verify responsiveness
+  - [ ] Document validation
+- [ ] Document UI components
+  - [ ] Write all documentation
+  - [ ] Verify documentation
+  - [ ] Get user review
 
 ## Phase 6: Testing and Validation
 
