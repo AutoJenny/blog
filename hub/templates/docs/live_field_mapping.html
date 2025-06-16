@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Database Schema & Live Field Mapping{% endblock %}
+{% block content %}
+<div class="docs-markdown">{{ file_html|safe }}</div>
+<hr>
+<h2>Live Field Mapping Table</h2>
+<p>This table is dynamically generated from the current database mapping. To edit, use the <a href="/settings">Settings
+        Panel</a>.</p>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Field Name</th>
+            <th>Stage</th>
+            <th>Substage</th>
+            <th>Order</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in mappings %}
+        <tr>
+            <td>{{ row.field_name }}</td>
+            <td>{{ row.stage_name|capitalize }}</td>
+            <td>{{ row.substage_name|capitalize }}</td>
+            <td>{{ row.order_index }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
