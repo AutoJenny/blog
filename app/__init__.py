@@ -12,6 +12,7 @@ from datetime import timedelta, datetime
 from flask_cors import CORS
 from flask_migrate import Migrate
 from app.database import get_db_conn
+from app.core.routes.core_routes import core_bp
 
 # DEPRECATED: SQLAlchemy ORM is being removed. Use direct SQL (psycopg2) for all DB access.
 
@@ -129,8 +130,11 @@ def create_app(config_class=Config):
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1')
 
-    from app.workflow.routes import workflow as workflow_bp
+    from app.workflow.routes import workflow_bp, stage_bp, substage_bp, action_bp
     app.register_blueprint(workflow_bp, url_prefix='/workflow')
+    app.register_blueprint(stage_bp, url_prefix='/workflow/stage')
+    app.register_blueprint(substage_bp, url_prefix='/workflow/substage')
+    app.register_blueprint(action_bp, url_prefix='/workflow/action')
 
     from app.routes.settings import settings_bp
     app.register_blueprint(settings_bp, url_prefix='/settings')
@@ -140,6 +144,8 @@ def create_app(config_class=Config):
 
     from app.database.routes import bp as db_bp
     app.register_blueprint(db_bp)
+
+    app.register_blueprint(core_bp, url_prefix='/core')
 
     # Add debug route listing
     @app.route('/debug/routes')
