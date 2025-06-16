@@ -115,7 +115,7 @@ def create_app(config_class=Config):
         return {"year": datetime.utcnow().year}
 
     # Register blueprints
-    from app.main import bp as main_bp
+    from app.routes.main import main_bp
     app.register_blueprint(main_bp)
 
     from app.blog import bp as blog_bp
@@ -138,6 +138,9 @@ def create_app(config_class=Config):
 
     from app.routes.settings import settings_bp
     app.register_blueprint(settings_bp, url_prefix='/settings')
+
+    from app.preview.routes import preview
+    app.register_blueprint(preview, url_prefix='/preview')
 
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
