@@ -5,6 +5,7 @@ stage_bp = Blueprint('stage', __name__, url_prefix='/workflow/stage')
 substage_bp = Blueprint('substage', __name__, url_prefix='/workflow/substage')
 action_bp = Blueprint('action', __name__, url_prefix='/workflow/action')
 
+# Import routes after blueprint creation to avoid circular imports
 from . import routes
 from . import models
 from . import schemas

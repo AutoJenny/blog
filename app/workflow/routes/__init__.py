@@ -1,3 +1,4 @@
+# This file intentionally left empty to mark the routes directory as a Python package
 from .workflow_routes import workflow_bp
 from .stage_routes import stage_bp
 from .substage_routes import substage_bp
