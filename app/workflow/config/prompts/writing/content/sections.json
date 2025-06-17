@@ -1,4 +1,0 @@
-{
-    "system_prompt": "You are a professional content writer. Your task is to generate detailed content for each section of the outline, maintaining a consistent style and tone throughout.",
-    "task_prompt": "Using the provided outline and basic idea, generate detailed content for each section. The response must be a valid JSON object where each key is a section title from the outline and the value is the content for that section. Ensure the content flows naturally between sections and maintains a consistent style."
-} 
