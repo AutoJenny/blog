@@ -1,0 +1,449 @@
+<!-- Workflow Content Module -->
+<div class="space-y-6">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-bold text-dark-text">
+                {% block step_heading %}{{ step_config.title }}{% endblock %}
+            </h2>
+            {% if step_config.description %}
+            <p class="text-gray-400 mt-2">{{ step_config.description }}</p>
+            {% endif %}
+        </div>
+        <button id="run-llm"
+            class="bg-dark-accent text-white px-6 py-3 rounded-lg hover:bg-dark-hover transition flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Run LLM
+        </button>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Left Column: Inputs and Sections -->
+        <div class="space-y-6">
+            <!-- Inputs Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark-text mb-4">Inputs</h3>
+                    {% if step_config.inputs %}
+                    <div class="space-y-4">
+                        {% for input_id, input_config in step_config.inputs.items() %}
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-medium text-blue-500">
+                                    [{{ input_id }}] {{ input_config.label }}
+                                </label>
+                                <select
+                                    class="input-field-select bg-gray-800 text-gray-200 rounded-lg p-2 border border-gray-700"
+                                    data-input-id="{{ input_id }}" onchange="updateInputField(this)">
+                                    <option value="">Select a field...</option>
+                                </select>
+                            </div>
+                            <div class="text-xs text-gray-400">
+                                Type: {{ input_config.type }}
+                                {% if input_config.db_field %}, DB Field: {{ input_config.db_field }}{% endif %}
+                                {% if input_config.db_table %}, Table: {{ input_config.db_table }}{% endif %}
+                                {% if input_config.required %}, Required{% endif %}
+                            </div>
+                            {% if input_config.type == 'textarea' %}
+                            <div
+                                class="mt-2 bg-gray-800 text-gray-200 rounded-lg p-4 border border-gray-700 whitespace-pre-wrap">
+                                {{ input_values[input_id] if input_values and input_id in input_values else '' }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400">No inputs configured for this step.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sections Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-dark-text">Sections</h3>
+                        <button id="add-section"
+                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Section
+                        </button>
+                    </div>
+                    <div id="sections-container" class="space-y-4">
+                        <!-- Sections will be loaded here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Prompt and Outputs -->
+        <div class="space-y-6">
+            <!-- Prompt Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark-text mb-4">Prompt</h3>
+                    {% set llm = step_config.settings.llm if step_config.settings and step_config.settings.llm else None
+                    %}
+                    {% if llm %}
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500 mb-2">System Prompt</label>
+                            <textarea id="system-prompt"
+                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ llm.system_prompt }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500 mb-2">Task Prompt</label>
+                            <textarea id="task-prompt"
+                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ llm.task_prompt }}</textarea>
+                        </div>
+                        <button id="save-prompt"
+                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">Save
+                            Prompt</button>
+                    </div>
+                    {% elif step_config.prompt and step_config.prompt.template %}
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-500 mb-2">Prompt Template</label>
+                            <textarea id="prompt-template"
+                                class="w-full h-32 bg-gray-900 text-gray-200 rounded-lg p-4 border border-gray-700">{{ step_config.prompt.template }}</textarea>
+                        </div>
+                        <button id="save-prompt"
+                            class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">Save
+                            Prompt</button>
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400">No prompt configured for this step.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Outputs Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark-text mb-4">Outputs</h3>
+                    {% if output_field %}
+                    <div class="space-y-4">
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-medium text-blue-500">Output Field</label>
+                                <select id="output_field_select"
+                                    class="output-field-select bg-gray-800 text-gray-200 rounded-lg p-2 border border-gray-700"
+                                    onchange="updateOutputField(this)">
+                                    <option value="">Select a field...</option>
+                                    {% for field in fields %}
+                                    <option value="{{ field }}" {% if field==output_field %}selected{% endif %}>{{ field
+                                        }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div
+                                class="mt-2 bg-gray-800 text-gray-200 rounded-lg p-4 border border-gray-700 whitespace-pre-wrap">
+                                {{ output_value if output_value else 'No output value' }}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400">No output field selected.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Settings Card -->
+            <div class="bg-dark-bg border border-dark-border rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-dark-text mb-4">Settings</h3>
+                    {% if step_config.settings and step_config.settings.llm %}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <label class="block text-sm font-medium text-blue-500 mb-1">Provider</label>
+                            <div class="text-gray-200">{{ step_config.settings.llm.provider }}</div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <label class="block text-sm font-medium text-blue-500 mb-1">Model</label>
+                            <div class="text-gray-200">{{ step_config.settings.llm.model }}</div>
+                        </div>
+                        {% if step_config.settings.llm.parameters %}
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <label class="block text-sm font-medium text-blue-500 mb-1">Temperature</label>
+                            <div class="text-gray-200">{{ step_config.settings.llm.parameters.temperature }}</div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <label class="block text-sm font-medium text-blue-500 mb-1">Max tokens</label>
+                            <div class="text-gray-200">{{ step_config.settings.llm.parameters.max_tokens }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400">No settings configured for this step.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section Editor Modal -->
+<div id="section-editor-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden">
+    <div class="bg-dark-bg rounded-lg p-6 max-w-4xl mx-auto mt-20">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-dark-text" id="modal-title">Edit Section</h2>
+            <button onclick="closeSectionEditor()" class="text-gray-400 hover:text-dark-text">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-blue-500 mb-2">Heading</label>
+                <input type="text" id="section-heading"
+                    class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-dark-text focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500 mb-2">Description</label>
+                <textarea id="section-description"
+                    class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-dark-text focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    rows="3"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500 mb-2">Content</label>
+                <textarea id="section-content"
+                    class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 text-dark-text focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    rows="10"></textarea>
+            </div>
+            <div class="flex justify-end gap-4">
+                <button onclick="closeSectionEditor()"
+                    class="bg-dark-bg text-dark-text px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-hover transition">
+                    Cancel
+                </button>
+                <button onclick="saveSection()"
+                    class="bg-dark-accent text-white px-4 py-2 rounded-lg hover:bg-dark-hover transition">
+                    Save Section
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #output-dnd-list {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #output-dnd-list li {
+        margin: 0 !important;
+        padding: 2px 4px !important;
+        line-height: 2.1 !important;
+        min-height: unset !important;
+    }
+
+    #output-dnd-list .handle,
+    #output-dnd-list .title-text,
+    #output-dnd-list .primary-label {
+        margin: 0 !important;
+    }
+</style>
+
+<script type="text/javascript">
+    // Initialize workflow context from template variables
+    const workflowContext = {
+        postId: {{ post_id }},
+    stage: '{{ current_stage }}',
+        substage: '{{ current_substage }}',
+            step: '{{ current_step }}'
+    };
+
+    let currentSectionId = null;
+    let sections = [];
+
+    // Load sections from the API
+    async function loadSections() {
+        console.log('Loading sections...');
+        const url = `/workflow/${workflowContext.postId}/${workflowContext.stage}/${workflowContext.substage}/${workflowContext.step}/sections/`;
+        console.log('URL:', url);
+
+        try {
+            const response = await fetch(url);
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            sections = await response.json();
+            console.log('Sections loaded:', sections);
+            renderSections();
+        } catch (error) {
+            console.error('Error loading sections:', error);
+            document.getElementById('sections-container').innerHTML = `
+                <div class="text-red-500 p-4 border border-red-500 rounded">
+                    Error loading sections: ${error.message}
+                </div>
+            `;
+        }
+    }
+
+    // Render sections in the container
+    function renderSections() {
+        console.log('Rendering sections...');
+        const container = document.getElementById('sections-container');
+        if (!container) {
+            console.error('Sections container not found!');
+            return;
+        }
+
+        if (!sections || sections.length === 0) {
+            console.log('No sections to render');
+            container.innerHTML = '<div class="text-gray-400">No sections found</div>';
+            return;
+        }
+
+        console.log('Rendering', sections.length, 'sections');
+        container.innerHTML = sections.map((section, index) => `
+            <div class="border border-dark-border rounded-lg overflow-hidden" id="section-${section.id}">
+                <div class="flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover cursor-pointer" onclick="toggleSection(${section.id})">
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-400">${index + 1}.</span>
+                            <span class="font-medium text-dark-text">${section.title || '[No heading]'}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="event.stopPropagation(); editSection(${section.id})" class="text-blue-500 hover:text-blue-400 p-2 rounded hover:bg-gray-800">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                        <button onclick="event.stopPropagation(); deleteSection(${section.id})" class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg flex items-center gap-2 border-2 border-red-600 shadow-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                        <svg class="w-5 h-5 transform transition-transform" id="section-icon-${section.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div id="section-content-${section.id}" class="hidden p-4 bg-dark-bg">
+                    <div class="text-gray-400 mb-2">${section.description || '[No description]'}</div>
+                    <div class="text-dark-text">${section.content || '[No content]'}</div>
+                </div>
+            </div>
+        `).join('');
+        console.log('Sections rendered');
+    }
+
+    // Edit section
+    function editSection(sectionId) {
+        currentSectionId = sectionId;
+        const section = sections.find(s => s.id === sectionId);
+
+        document.getElementById('section-heading').value = section?.title || '';
+        document.getElementById('section-description').value = section?.description || '';
+        document.getElementById('section-content').value = section?.content || '';
+        document.getElementById('modal-title').textContent = section ? 'Edit Section' : 'New Section';
+
+        document.getElementById('section-editor-modal').classList.remove('hidden');
+    }
+
+    // Close section editor
+    function closeSectionEditor() {
+        document.getElementById('section-editor-modal').classList.add('hidden');
+        currentSectionId = null;
+    }
+
+    // Save section
+    async function saveSection() {
+        const heading = document.getElementById('section-heading').value;
+        const description = document.getElementById('section-description').value;
+        const content = document.getElementById('section-content').value;
+
+        try {
+            const url = currentSectionId
+                ? `/workflow/${workflowContext.postId}/${workflowContext.stage}/${workflowContext.substage}/${workflowContext.step}/sections/${currentSectionId}`
+                : `/workflow/${workflowContext.postId}/${workflowContext.stage}/${workflowContext.substage}/${workflowContext.step}/sections/`;
+
+            const response = await fetch(url, {
+                method: currentSectionId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: heading,
+                    description: description,
+                    content: content
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            await loadSections();
+            closeSectionEditor();
+        } catch (error) {
+            console.error('Error saving section:', error);
+            alert('Error saving section: ' + error.message);
+        }
+    }
+
+    // Delete section
+    async function deleteSection(sectionId) {
+        if (!confirm('Are you sure you want to delete this section?')) return;
+
+        try {
+            const url = `/workflow/${workflowContext.postId}/${workflowContext.stage}/${workflowContext.substage}/${workflowContext.step}/sections/${sectionId}`;
+            const response = await fetch(url, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            await loadSections();
+        } catch (error) {
+            console.error('Error deleting section:', error);
+            alert('Error deleting section: ' + error.message);
+        }
+    }
+
+    // Toggle section visibility
+    function toggleSection(sectionId) {
+        const content = document.getElementById(`section-content-${sectionId}`);
+        const icon = document.getElementById(`section-icon-${sectionId}`);
+        content.classList.toggle('hidden');
+        icon.classList.toggle('rotate-180');
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        loadSections();
+
+        // Add event listeners
+        document.getElementById('add-section').addEventListener('click', () => {
+            currentSectionId = null;
+            editSection();
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !document.getElementById('section-editor-modal').classList.contains('hidden')) {
+                closeSectionEditor();
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('section-editor-modal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeSectionEditor();
+            }
+        });
+    });
+</script>
