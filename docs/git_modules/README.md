@@ -1,209 +1,177 @@
-# Modular Refactoring Project
+# Modular Branch Architecture Project
 
 ## ⚠️ CRITICAL WARNING ⚠️
 
-This project operates under a **ZERO TOLERANCE** policy for unauthorized changes or deviations from the defined process. Any attempt to:
-- Skip steps
-- Make unauthorized changes
-- Modify working code without permission
-- Proceed without explicit user approval
-- Assume functionality without verification
+This project operates under a **ZERO TOLERANCE** policy for cross-module contamination or unauthorized branch changes. Any attempt to:
+- Modify code in branches other than the current working branch
+- Mix code between module branches
+- Make changes without explicit branch switching
+- Merge into `hub` without review
+- Assume module isolation without verification
 
-**WILL RESULT IN IMMEDIATE ROLLBACK AND POTENTIAL PROJECT DELAYS**
+**WILL RESULT IN IMMEDIATE BRANCH ROLLBACK AND PROJECT RESTART**
 
 ## Core Principles and Rules
 
-This project implements a strict modular architecture where each module operates as an independent silo. The primary goals are:
+This project implements a strict branch-based modular architecture where each module exists in its own git branch, completely isolated from others. The primary goals are:
 
-1. **Module Independence**: Each module must be self-sufficient and cannot interfere with other modules
-2. **LLM Safety**: Even a determined LLM cannot damage one module while working in another without explicit user permission
-3. **Controlled Evolution**: All changes must follow the defined workflow and obtain user permission for any modifications beyond the strict remit
+1. **Absolute Module Isolation**: Each module branch contains ONLY its own code, with no possibility of cross-contamination
+2. **Technical Enforcement**: Module separation is enforced by git branch boundaries, making it technically impossible to modify other modules
+3. **Explicit Integration**: All module combinations happen only through reviewed merges into the `hub` branch
 
 ## MANDATORY Rules (No Exceptions)
 
-1. **NEVER** make changes to code or data beyond the strict remit in these documents without explicit user permission
-2. **ALWAYS** check the [Transition Checklist](transition_checklist.md) before starting any work
-3. **NEVER** modify working code without explicit permission
-4. **ALWAYS** test thoroughly before claiming any functionality is working
-5. **NEVER** proceed with coding without explicit instructions
-6. **ALWAYS** verify each step is complete before proceeding
-7. **NEVER** assume anything works without testing
-8. **ALWAYS** document all changes and test results
-9. **NEVER** skip validation steps
-10. **ALWAYS** wait for user review before proceeding
+1. **NEVER** work in multiple module branches simultaneously
+2. **ALWAYS** check [ORIENTATION.md](ORIENTATION.md) before any work
+3. **NEVER** copy code between module branches
+4. **ALWAYS** use the data/API layer for module communication
+5. **NEVER** merge into `hub` without complete verification
+6. **ALWAYS** start from empty branches for new modules
+7. **NEVER** share templates or JS between modules
+8. **ALWAYS** document all branch operations
+9. **NEVER** bypass branch protection rules
+10. **ALWAYS** wait for review before integration
+
+## Branch Structure
+
+1. **Module Branches** (Isolated Development)
+   - `base-framework`: Site shell, shared CSS/config only
+   - `workflow-navigation`: Navigation module only
+   - `workflow-llm-actions`: LLM actions module only
+   - `workflow-sections`: Sections module only
+
+2. **Integration Branch**
+   - `hub`: Only updated via reviewed merges
+   - Contains the integrated, deployable system
+   - Protected by strict merge rules
 
 ## Getting Started
 
 1. First, read this README completely
-2. Review the [Transition Checklist](transition_checklist.md) to understand current progress
-3. Consult the [Technical Implementation Guide](transition_implementation.md) for detailed steps
-4. Follow the [Development Setup Guide](dev_setup.md) to configure your environment
-5. **VERIFY** you understand all requirements before proceeding
-
-## Documentation Structure
-
-### Core Implementation
-- [Transition Checklist](transition_checklist.md) - Track progress and next steps
-- [Technical Implementation Guide](transition_implementation.md) - Detailed implementation steps
-- [Module Contracts](module_contracts.md) - Module interface definitions
-- [Code Mapping](code_mapping.md) - Current to new code structure mapping
-
-### Standards and Guidelines
-- [API Standards](api_standards.md) - API design and implementation standards
-- [Testing Standards](testing_standards.md) - Testing requirements and procedures
-- [Error Handling Guide](error_handling.md) - Error handling patterns and procedures
-- [Security Guide](security_guide.md) - Security requirements and best practices
-
-### Development Process
-- [Development Setup](dev_setup.md) - Environment setup and configuration
-- [Testing Guide](testing_guide.md) - Comprehensive testing procedures
-- [Integration Guide](integration_guide.md) - Module integration procedures
-- [Versioning Guide](versioning.md) - Version control and release procedures
-
-### Performance and Monitoring
-- [Performance Optimization](performance_optimization.md) - Performance requirements and optimization
-- [Monitoring and Logging](monitoring_logging.md) - System monitoring and logging standards
+2. Review [ORIENTATION.md](ORIENTATION.md) for architecture overview
+3. Consult [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for step-by-step process
+4. Study [code_mapping.md](code_mapping.md) for module boundaries
+5. **VERIFY** you understand branch isolation requirements
 
 ## Workflow Process
 
-1. **Check Current Status** (MANDATORY)
-   - Review the [Transition Checklist](transition_checklist.md)
-   - Identify the next uncompleted task
-   - Verify no other work is in progress
-   - **DO NOT PROCEED** without completing this step
+1. **Branch Selection** (MANDATORY)
+   - Identify target module branch
+   - Verify current branch is correct
+   - Ensure no mixed branch operations
+   - **DO NOT PROCEED** without verification
 
-2. **Implementation** (MANDATORY)
-   - Follow the [Technical Implementation Guide](transition_implementation.md)
-   - Adhere to all standards and guidelines
-   - Test thoroughly before proceeding
-   - **DO NOT PROCEED** without completing this step
+2. **Module Development** (MANDATORY)
+   - Work only in current module branch
+   - Follow code_mapping.md strictly
+   - Remove any cross-module code
+   - **DO NOT PROCEED** if other module code found
 
-3. **Validation** (MANDATORY)
-   - Complete all required tests
-   - Verify against performance requirements
-   - Document any issues or deviations
-   - **DO NOT PROCEED** without completing this step
+3. **Integration** (MANDATORY)
+   - Verify module is completely isolated
+   - Test all endpoints and functionality
+   - Document changes for review
+   - **DO NOT PROCEED** without complete testing
 
-4. **Review** (MANDATORY)
-   - Mark completed tasks in the checklist
-   - Update relevant documentation
-   - Wait for user review before proceeding
-   - **DO NOT PROCEED** without completing this step
+4. **Hub Merge** (MANDATORY)
+   - Request review of changes
+   - Verify no cross-contamination
+   - Follow merge checklist
+   - **DO NOT PROCEED** without approval
 
 ## Module Independence
 
-Each module must:
-1. Have its own isolated codebase
-2. Define clear interfaces through contracts
-3. Handle its own errors and logging
-4. Maintain its own test suite
-5. Have independent deployment procedures
+Each module branch must:
+1. Contain only its own code
+2. Use only the shared data/API layer
+3. Have no direct dependencies on other modules
+4. Maintain its own templates and assets
+5. Be deployable in isolation
 
-## LLM Safety Measures
+## Technical Safeguards
 
-1. **Strict Boundaries**
-   - Each module has defined interfaces
-   - No direct access to other modules' internals
-   - All cross-module communication through defined channels
+1. **Branch Protection**
+   - Protected branches require review
+   - No direct pushes to `hub`
+   - Strict merge requirements
+   - Automated contamination checks
 
-2. **Permission System**
-   - Explicit user permission required for cross-module changes
-   - Clear documentation of module boundaries
-   - Validation of all cross-module operations
+2. **Code Isolation**
+   - No shared templates or JS
+   - Only CSS/config in base-framework
+   - Explicit API boundaries
+   - No cross-branch imports
 
-3. **Change Control**
-   - All changes must follow the defined workflow
-   - No autonomous modifications without permission
-   - Thorough testing of all changes
-
-## Progress Tracking
-
-1. **Daily Progress** (MANDATORY)
-   - Update the [Transition Checklist](transition_checklist.md)
-   - Document completed tasks
-   - Note any issues or blockers
-   - **VERIFY** all steps are complete
-
-2. **Review Points** (MANDATORY)
-   - After each phase completion
-   - Before major changes
-   - When encountering issues
-   - **DO NOT PROCEED** without review
-
-3. **Documentation Updates** (MANDATORY)
-   - Keep all documentation current
-   - Update relevant guides
-   - Maintain change logs
-   - **VERIFY** all updates are complete
+3. **Integration Control**
+   - Reviewed merges only
+   - Complete testing required
+   - Documented changes
+   - Explicit approval needed
 
 ## Emergency Procedures
 
-1. **Code Issues**
+1. **Branch Contamination**
    - Stop all work immediately
-   - Document the issue
-   - Wait for user guidance
-   - **DO NOT ATTEMPT FIXES** without permission
+   - Document the contamination
+   - Reset branch to clean state
+   - **DO NOT ATTEMPT FIXES** without review
 
-2. **System Problems**
-   - Use the restart script: `/scripts/dev/restart_flask_dev.sh`
-   - Never use alternative ports
-   - Follow the error handling guide
-   - **DO NOT MODIFY** system configuration
+2. **Integration Issues**
+   - Revert `hub` merge immediately
+   - Document the problem
+   - Reset to last known good state
+   - **DO NOT FORCE PUSH** or bypass protection
 
-3. **Data Problems**
-   - Do not attempt fixes without permission
+3. **Data Layer Problems**
    - Document the issue
-   - Wait for user guidance
-   - **DO NOT MODIFY** any data
+   - Test in isolation
+   - Wait for review
+   - **DO NOT MODIFY** shared interfaces
 
 ## Important Reminders
 
 1. **NEVER**:
-   - Make unauthorized changes
-   - Skip testing steps
-   - Modify working code without permission
-   - Assume functionality without verification
-   - Use alternative ports or configurations
-   - Proceed without explicit permission
-   - Skip documentation updates
-   - Ignore error messages
-   - Make assumptions about functionality
-   - Take shortcuts in the process
+   - Mix code between branches
+   - Skip branch verification
+   - Modify multiple modules at once
+   - Assume branch isolation
+   - Bypass merge protection
+   - Share code between modules
+   - Make cross-branch changes
+   - Force push to protected branches
+   - Skip integration tests
+   - Merge without review
 
 2. **ALWAYS**:
-   - Check documentation first
-   - Test thoroughly
-   - Get explicit permission
-   - Follow the defined workflow
-   - Update the checklist
-   - Verify each step
+   - Verify current branch
+   - Test in isolation
+   - Get explicit review
+   - Follow merge process
    - Document all changes
-   - Wait for user review
-   - Follow error handling procedures
-   - Maintain proper logs
+   - Check for contamination
+   - Use data layer only
+   - Wait for approval
+   - Maintain branch boundaries
+   - Follow protection rules
 
 ## Getting Help
 
 1. **Documentation**
-   - Review all relevant guides
-   - Check the checklist
-   - Consult implementation details
+   - Review ORIENTATION.md
+   - Check IMPLEMENTATION_PLAN.md
+   - Consult code_mapping.md
    - **DO NOT PROCEED** without understanding
 
 2. **Issues**
    - Document the problem
-   - Check existing documentation
-   - Wait for user guidance
-   - **DO NOT ATTEMPT FIXES** without permission
+   - Identify affected branches
+   - Wait for review
+   - **DO NOT ATTEMPT FIXES** without approval
 
 3. **Questions**
-   - Review all documentation
-   - Check the checklist
-   - Ask for clarification
+   - Review all documentation first
+   - Ask about specific branch/module
+   - Wait for explicit guidance
    - **DO NOT MAKE ASSUMPTIONS**
 
-## ⚠️ FINAL WARNING ⚠️
-
-Remember: When in doubt, stop and ask. It's better to wait for guidance than to make potentially harmful changes. Any deviation from these guidelines will result in immediate rollback and potential project delays.
-
-**THERE ARE NO SHORTCUTS IN THIS PROCESS** 
+Remember: The entire purpose of this architecture is to make it **technically impossible** to accidentally modify code in other modules. If you find yourself able to affect other modules, something is wrong - stop immediately and seek review. 
