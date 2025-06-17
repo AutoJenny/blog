@@ -13,10 +13,11 @@
     "sortablejs": "^1.15.6"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.17",
-    "postcss": "^8.4.35",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
     "postcss-cli": "^11.0.1",
-    "tailwindcss": "^3.4.1"
+    "source-map-js": "^1.2.1",
+    "tailwindcss": "^3.4.17"
   },
   "main": "rendered_llm_templates_script.js",
   "directories": {
