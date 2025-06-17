@@ -26,11 +26,8 @@
             <summary>Inputs</summary>
             <div class="llm-accordion-content">
                 <label for="inputField">Input Field</label>
-                <select id="inputField">
-                    <option value="idea_seed">Idea Seed</option>
-                    <option value="topic">Topic</option>
-                </select>
-                <textarea id="inputValue" rows="3" style="width:100%;margin-top:8px;">story-telling</textarea>
+                <select id="inputField"></select>
+                <textarea id="inputValue" rows="3" style="width:100%;margin-top:8px;"></textarea>
             </div>
         </details>
         <!-- Prompt Accordion -->
@@ -61,13 +58,14 @@
             <summary>Outputs</summary>
             <div class="llm-accordion-content">
                 <label for="outputField">Output Field</label>
-                <select id="outputField">
-                    <option value="basic_idea">Basic Idea</option>
-                </select>
-                <textarea id="outputValue" rows="6" style="width:100%;margin-top:8px;" readonly>Output will appear here...</textarea>
+                <select id="outputField"></select>
+                <textarea id="outputValue" rows="6" style="width:100%;margin-top:8px;" readonly></textarea>
             </div>
         </details>
     </div>
     <script src="/static/js/llm_actions.js"></script>
+    <script>
+        window.postDevFields = {{ post_dev|tojson }};
+    </script>
 </body>
 </html> 

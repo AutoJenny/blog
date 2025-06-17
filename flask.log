@@ -1,0 +1,42 @@
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 126-631-804
+127.0.0.1 - - [17/Jun/2025 14:20:36] "[35m[1mGET /?post_id=22 HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 1488, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 1466, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 1463, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 872, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 870, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/flask/app.py", line 855, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nickfiddes/Code/projects/blog/app.py", line 35, in llm_actions
+    posts = get_posts()
+            ^^^^^^^^^^^
+  File "/Users/nickfiddes/Code/projects/blog/app.py", line 12, in get_posts
+    cur.execute("SELECT id, title FROM post ORDER BY updated DESC")
+psycopg2.errors.UndefinedColumn: column "updated" does not exist
+LINE 1: SELECT id, title FROM post ORDER BY updated DESC
+                                            ^
+HINT:  Perhaps you meant to reference the column "post.updated_at".
+
+ * Detected change in '/Users/nickfiddes/Code/projects/blog/app.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 126-631-804
