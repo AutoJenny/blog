@@ -7,7 +7,20 @@
 </head>
 <body style="background:#181a20;color:#e0e0e0;font-family:sans-serif;">
     <div id="llm-actions-root" style="max-width:700px;margin:40px auto;">
-        <h1 style="text-align:center;font-size:2rem;margin-bottom:2rem;">LLM Actions (Standalone)</h1>
+        <!-- Heading area with post selector and Run LLM button -->
+        <div class="llm-heading" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;gap:1.5rem;">
+            <div style="display:flex;align-items:center;gap:1rem;">
+                <span class="font-bold text-lg">Post:</span>
+                <select id="post-selector">
+                    {% for p in posts %}
+                        <option value="{{ p.id }}" {% if p.id==post.id %}selected{% endif %}>{{ p.title }}</option>
+                    {% endfor %}
+                </select>
+                <span style="margin-left:1.5em;color:#7ecfff;">post_id: {{ post.id }}</span>
+            </div>
+            <button id="runLLM" style="padding:0.7em 2em;font-size:1.1em;">Run LLM</button>
+        </div>
+        <!-- Accordions -->
         <!-- Inputs Accordion -->
         <details open class="llm-accordion">
             <summary>Inputs</summary>
@@ -52,7 +65,6 @@
                     <option value="basic_idea">Basic Idea</option>
                 </select>
                 <textarea id="outputValue" rows="6" style="width:100%;margin-top:8px;" readonly>Output will appear here...</textarea>
-                <button id="runLLM" style="margin-top:12px;width:100%;">Run LLM</button>
             </div>
         </details>
     </div>

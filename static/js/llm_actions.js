@@ -1,3 +1,8 @@
+document.getElementById('post-selector').addEventListener('change', function() {
+    const newPostId = this.value;
+    window.location.search = '?post_id=' + newPostId;
+});
+
 document.getElementById('runLLM').addEventListener('click', function() {
     const input = document.getElementById('inputValue').value;
     const systemPrompt = document.getElementById('systemPrompt').value;
