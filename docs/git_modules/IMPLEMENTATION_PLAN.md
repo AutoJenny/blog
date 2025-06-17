@@ -5,12 +5,12 @@ This plan outlines every step required to transition to the new modular branch a
 ---
 
 ## 1. Branch Preparation
-- [ ] Backup current definitive branch (`NEW_HUB`)
-- [ ] Create `base-framework` branch from `NEW_HUB` (not `main`)
-- [ ] Create `workflow-navigation` branch from `NEW_HUB`
-- [ ] Create `workflow-llm-actions` branch from `NEW_HUB`
-- [ ] Create `workflow-sections` branch from `NEW_HUB`
-- [ ] Create `hub` integration branch from `NEW_HUB`
+- [x] Backup current definitive branch (`NEW_HUB`)
+- [x] Create `base-framework` branch from `NEW_HUB` (not `main`)
+- [x] Create `workflow-navigation` branch from `NEW_HUB`
+- [x] Create `workflow-llm-actions` branch from `NEW_HUB`
+- [x] Create `workflow-sections` branch from `NEW_HUB`
+- [x] Create `hub` integration branch from `NEW_HUB`
 - [ ] Protect all module branches and `hub` branch (branch protection rules)
 
 **Important:**
@@ -19,11 +19,11 @@ This plan outlines every step required to transition to the new modular branch a
 ---
 
 ## 2. Base Framework Setup (`base-framework` branch)
-- [ ] Remove all workflow-specific code (navigation, LLM, sections) from base framework
-- [ ] Retain only header, footer, technical modules, docs, and site-wide CSS/config
-- [ ] Move all shared CSS and config to appropriate locations
-- [ ] Verify only base framework code remains
-- [ ] Backend: `git status` and `git diff` show no workflow code
+- [x] Remove all workflow-specific code (navigation, LLM, sections) from base framework
+- [x] Retain only header, footer, technical modules, docs, and site-wide CSS/config
+- [x] Move all shared CSS and config to appropriate locations
+- [x] Verify only base framework code remains
+- [x] Backend: `git status` and `git diff` show no workflow code
 - [ ] Curl: Check all base framework endpoints (/, /posts, /settings, /docs, etc.)
 
 ---
@@ -81,7 +81,7 @@ This plan outlines every step required to transition to the new modular branch a
 ---
 
 ## 9. Ongoing Maintenance
-- [ ] Update code_mapping.md and ORIENTATION.md with every change
+- [x] Update code_mapping.md and ORIENTATION.md with every change
 - [ ] Require review for all merges into `hub`
 - [ ] Periodically audit branches for cross-contamination
 
