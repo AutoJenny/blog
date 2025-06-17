@@ -1,0 +1,7 @@
+/* Minimal dark theme for standalone sections panel */
+.bg-dark-bg { background-color: #181a1b !important; }
+.text-dark-text { color: #e5e7eb !important; }
+.border-dark-border { border-color: #333842 !important; }
+.bg-dark-accent { background-color: #2563eb !important; }
+.hover\:bg-dark-hover:hover { background-color: #1e293b !important; }
+.dragging { opacity: 0.5 !important; } 

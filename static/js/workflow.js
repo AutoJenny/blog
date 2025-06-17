@@ -15,16 +15,16 @@ function renderSections() {
     list.innerHTML = '';
     sections.forEach(section => {
         const card = document.createElement('div');
-        card.className = 'section-card';
+        card.className = 'section-card bg-dark-bg border border-dark-border rounded-lg mb-4 p-4 shadow flex flex-col gap-2';
         card.setAttribute('draggable', 'true');
         card.setAttribute('data-id', section.id);
         card.innerHTML = `
-            <div class="section-header">${section.section_heading}</div>
-            <div class="section-desc">${section.section_description}</div>
-            <div class="section-ideas"><em>${section.ideas_to_include}</em></div>
-            <div class="section-actions">
-                <button onclick="editSection(${section.id})">Edit</button>
-                <button onclick="deleteSection(${section.id})">Delete</button>
+            <div class="section-header font-bold text-lg text-dark-text mb-1">${section.section_heading}</div>
+            <div class="section-desc text-dark-text mb-1">${section.section_description}</div>
+            <div class="section-ideas italic text-dark-text mb-2"><em>${section.ideas_to_include}</em></div>
+            <div class="section-actions mt-2 flex gap-2">
+                <button class="bg-dark-accent text-white px-3 py-1 rounded hover:bg-dark-hover transition" onclick="editSection(${section.id})">Edit</button>
+                <button class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-800 transition" onclick="deleteSection(${section.id})">Delete</button>
             </div>
         `;
         // Drag events
