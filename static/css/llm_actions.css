@@ -1,0 +1,8 @@
+.llm-accordion { border: 1px solid #333; border-radius: 8px; margin-bottom: 1.5rem; background: #23262e; }
+.llm-accordion summary { font-weight: bold; font-size: 1.1rem; padding: 0.7em 1em; cursor: pointer; outline: none; }
+.llm-accordion-content { padding: 1em; }
+.llm-accordion[open] { box-shadow: 0 2px 8px #0003; }
+label { display: block; margin-top: 1em; margin-bottom: 0.3em; color: #7ecfff; }
+select, textarea, input[type=number] { background: #181a20; color: #e0e0e0; border: 1px solid #444; border-radius: 4px; padding: 0.5em; width: 100%; }
+button { background: #7ecfff; color: #181a20; border: none; border-radius: 4px; padding: 0.7em 1.2em; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+button:hover { background: #4bb3fa; } 

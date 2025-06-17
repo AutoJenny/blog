@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LLM Actions Module</title>
+    <link rel="stylesheet" href="/static/css/llm_actions.css">
+</head>
+<body style="background:#181a20;color:#e0e0e0;font-family:sans-serif;">
+    <div id="llm-actions-root" style="max-width:700px;margin:40px auto;">
+        <h1 style="text-align:center;font-size:2rem;margin-bottom:2rem;">LLM Actions (Standalone)</h1>
+        <!-- Inputs Accordion -->
+        <details open class="llm-accordion">
+            <summary>Inputs</summary>
+            <div class="llm-accordion-content">
+                <label for="inputField">Input Field</label>
+                <select id="inputField">
+                    <option value="idea_seed">Idea Seed</option>
+                    <option value="topic">Topic</option>
+                </select>
+                <textarea id="inputValue" rows="3" style="width:100%;margin-top:8px;">story-telling</textarea>
+            </div>
+        </details>
+        <!-- Prompt Accordion -->
+        <details class="llm-accordion">
+            <summary>Prompt</summary>
+            <div class="llm-accordion-content">
+                <label for="systemPrompt">System Prompt</label>
+                <textarea id="systemPrompt" rows="2" style="width:100%;margin-bottom:8px;">You are an expert in Scottish history and culture...</textarea>
+                <label for="taskPrompt">Task Prompt</label>
+                <textarea id="taskPrompt" rows="3" style="width:100%;">Expand the following short idea into a paragraph-length brief for a long-form big article: {{ idea_seed }}</textarea>
+            </div>
+        </details>
+        <!-- Settings Accordion -->
+        <details class="llm-accordion">
+            <summary>Settings</summary>
+            <div class="llm-accordion-content">
+                <label for="model">Model</label>
+                <select id="model">
+                    <option value="llama3">llama3</option>
+                    <option value="mistral">mistral</option>
+                </select>
+                <label for="temperature">Temperature</label>
+                <input type="number" id="temperature" value="0.7" min="0" max="2" step="0.1">
+            </div>
+        </details>
+        <!-- Outputs Accordion -->
+        <details class="llm-accordion">
+            <summary>Outputs</summary>
+            <div class="llm-accordion-content">
+                <label for="outputField">Output Field</label>
+                <select id="outputField">
+                    <option value="basic_idea">Basic Idea</option>
+                </select>
+                <textarea id="outputValue" rows="6" style="width:100%;margin-top:8px;" readonly>Output will appear here...</textarea>
+                <button id="runLLM" style="margin-top:12px;width:100%;">Run LLM</button>
+            </div>
+        </details>
+    </div>
+    <script src="/static/js/llm_actions.js"></script>
+</body>
+</html> 
