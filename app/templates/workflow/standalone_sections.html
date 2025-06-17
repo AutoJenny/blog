@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Standalone Sections Panel</title>
+    <style>
+        body { font-family: sans-serif; background: #f8f8f8; margin: 0; padding: 2em; }
+        .section-card { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1em; padding: 1em; box-shadow: 0 2px 4px rgba(0,0,0,0.03); cursor: grab; }
+        .section-card.dragging { opacity: 0.5; }
+        .section-header { font-weight: bold; font-size: 1.2em; margin-bottom: 0.5em; }
+        .section-edit { margin-top: 0.5em; }
+        .section-edit input, .section-edit textarea { width: 100%; margin-bottom: 0.5em; }
+        .section-actions { margin-top: 0.5em; }
+        .add-section-btn { margin-bottom: 1em; }
+    </style>
+</head>
+<body>
+    <h2>Sections (Standalone Demo)</h2>
+    <button class="add-section-btn" onclick="addSection()">Add Section</button>
+    <div id="sections-list">
+        {% for section in sections %}
+        <div class="section-card" draggable="true" data-id="{{ section.id }}">
+            <div class="section-header">{{ section.section_heading }}</div>
+            <div class="section-desc">{{ section.section_description }}</div>
+            <div class="section-ideas"><em>{{ section.ideas_to_include }}</em></div>
+            <div class="section-actions">
+                <button onclick="editSection({{ section.id }})">Edit</button>
+                <button onclick="deleteSection({{ section.id }})">Delete</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div id="edit-modal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; border-radius:8px; padding:2em; z-index:1000; min-width:300px;">
+        <h3>Edit Section</h3>
+        <form id="edit-form">
+            <input type="hidden" id="edit-id">
+            <label>Heading:<br><input type="text" id="edit-heading"></label><br>
+            <label>Description:<br><textarea id="edit-desc"></textarea></label><br>
+            <label>Ideas to Include:<br><textarea id="edit-ideas"></textarea></label><br>
+            <button type="button" onclick="saveEdit()">Save</button>
+            <button type="button" onclick="closeEdit()">Cancel</button>
+        </form>
+    </div>
+    <script src="/static/js/workflow.js"></script>
+    <script>
+        // Minimal drag & drop and edit logic will be handled in workflow.js
+    </script>
+</body>
+</html> 
