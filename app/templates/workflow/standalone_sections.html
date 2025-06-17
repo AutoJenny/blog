@@ -1,49 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Standalone Sections Panel</title>
-    <style>
-        body { font-family: sans-serif; background: #f8f8f8; margin: 0; padding: 2em; }
-        .section-card { background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1em; padding: 1em; box-shadow: 0 2px 4px rgba(0,0,0,0.03); cursor: grab; }
-        .section-card.dragging { opacity: 0.5; }
-        .section-header { font-weight: bold; font-size: 1.2em; margin-bottom: 0.5em; }
-        .section-edit { margin-top: 0.5em; }
-        .section-edit input, .section-edit textarea { width: 100%; margin-bottom: 0.5em; }
-        .section-actions { margin-top: 0.5em; }
-        .add-section-btn { margin-bottom: 1em; }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h2>Sections (Standalone Demo)</h2>
-    <button class="add-section-btn" onclick="addSection()">Add Section</button>
-    <div id="sections-list">
-        {% for section in sections %}
-        <div class="section-card" draggable="true" data-id="{{ section.id }}">
-            <div class="section-header">{{ section.section_heading }}</div>
-            <div class="section-desc">{{ section.section_description }}</div>
-            <div class="section-ideas"><em>{{ section.ideas_to_include }}</em></div>
-            <div class="section-actions">
-                <button onclick="editSection({{ section.id }})">Edit</button>
-                <button onclick="deleteSection({{ section.id }})">Delete</button>
+
+<body class="bg-dark-bg text-dark-text min-h-screen p-8">
+    <div class="max-w-2xl mx-auto">
+        <h2 class="text-2xl font-bold mb-6 text-dark-text">Sections (Standalone Demo)</h2>
+        <button class="add-section-btn mb-4 bg-dark-accent text-white px-4 py-2 rounded hover:bg-dark-hover transition"
+            onclick="addSection()">Add Section</button>
+        <div id="sections-list">
+            {% for section in sections %}
+            <div class="section-card bg-dark-bg border border-dark-border rounded-lg mb-4 p-4 shadow" draggable="true"
+                data-id="{{ section.id }}">
+                <div class="section-header font-bold text-lg mb-2 text-dark-text">{{ section.section_heading }}</div>
+                <div class="section-desc text-dark-text mb-1">{{ section.section_description }}</div>
+                <div class="section-ideas italic text-dark-text mb-2"><em>{{ section.ideas_to_include }}</em></div>
+                <div class="section-actions mt-2">
+                    <button class="bg-dark-accent text-white px-3 py-1 rounded mr-2 hover:bg-dark-hover transition"
+                        onclick="editSection({{ section.id }})">Edit</button>
+                    <button class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-800 transition"
+                        onclick="deleteSection({{ section.id }})">Delete</button>
+                </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-    <div id="edit-modal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; border-radius:8px; padding:2em; z-index:1000; min-width:300px;">
-        <h3>Edit Section</h3>
-        <form id="edit-form">
-            <input type="hidden" id="edit-id">
-            <label>Heading:<br><input type="text" id="edit-heading"></label><br>
-            <label>Description:<br><textarea id="edit-desc"></textarea></label><br>
-            <label>Ideas to Include:<br><textarea id="edit-ideas"></textarea></label><br>
-            <button type="button" onclick="saveEdit()">Save</button>
-            <button type="button" onclick="closeEdit()">Cancel</button>
-        </form>
+        <div id="edit-modal"
+            class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 bg-dark-bg border border-dark-border rounded-lg p-8 z-50 min-w-[300px] shadow-lg">
+            <h3 class="text-lg font-bold mb-4 text-dark-text">Edit Section</h3>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <label class="block mb-2 text-dark-text">Heading:<br><input type="text" id="edit-heading"
+                        class="w-full p-2 rounded border border-dark-border bg-dark-bg text-dark-text"></label>
+                <label class="block mb-2 text-dark-text">Description:<br><textarea id="edit-desc"
+                        class="w-full p-2 rounded border border-dark-border bg-dark-bg text-dark-text"></textarea></label>
+                <label class="block mb-2 text-dark-text">Ideas to Include:<br><textarea id="edit-ideas"
+                        class="w-full p-2 rounded border border-dark-border bg-dark-bg text-dark-text"></textarea></label>
+                <div class="mt-4 flex gap-2">
+                    <button type="button"
+                        class="bg-dark-accent text-white px-4 py-2 rounded hover:bg-dark-hover transition"
+                        onclick="saveEdit()">Save</button>
+                    <button type="button" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-800 transition"
+                        onclick="closeEdit()">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
     <script src="/static/js/workflow.js"></script>
-    <script>
-        // Minimal drag & drop and edit logic will be handled in workflow.js
-    </script>
 </body>
-</html> 
+
+</html>
