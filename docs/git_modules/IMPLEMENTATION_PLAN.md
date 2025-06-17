@@ -24,16 +24,16 @@ This plan outlines every step required to transition to the new modular branch a
 - [x] Move all shared CSS and config to appropriate locations
 - [x] Verify only base framework code remains
 - [x] Backend: `git status` and `git diff` show no workflow code
-- [ ] Curl: Check all base framework endpoints (/, /posts, /settings, /docs, etc.)
+- [x] Curl: Check all base framework endpoints (/, /posts, /settings, /docs, etc.)
 
 ---
 
 ## 3. Workflow Navigation Module (`workflow-navigation` branch)
-- [ ] Remove all code except navigation UI, logic, and assets
-- [ ] Ensure no LLM or sections code present
-- [ ] Place navigation templates, JS, and CSS in branch
-- [ ] Backend: `git status` and `git diff` show only navigation code
-- [ ] Curl: Check navigation rendering on all relevant workflow pages
+- [x] Remove all code except navigation UI, logic, and assets
+- [x] Ensure no LLM or sections code present
+- [x] Place navigation templates, JS, and CSS in branch
+- [x] Backend: `git status` and `git diff` show only navigation code
+- [x] Curl: Check navigation rendering on all relevant workflow pages
 
 ---
 
