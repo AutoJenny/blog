@@ -1,3 +1,9 @@
+# DO NOT EDIT THIS DIRECTORY IN MAIN BRANCH
+
+This directory is firewalled. All edits must be made in its owning branch (e.g., workflow_navigation). In main or consuming branches, update only by merging from the owning branch.
+
+---
+
 # Workflow Navigation Module
 
 This module provides the navigation interface for the workflow system. It handles stage, substage, and step navigation, as well as post selection.
@@ -67,4 +73,9 @@ The module provides a `workflow_context` function that can be used in templates:
 
 - Flask
 - Font Awesome (for icons)
-- Tailwind CSS (for styling) 
+- Tailwind CSS (for styling)
+
+---
+
+**WARNING:**
+This directory is firewalled. Do not edit in this branch. All changes must be made in the owning branch and merged in. 
