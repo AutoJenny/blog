@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Blog Home{% endblock %}
+
+{% block styles %}
+<style>
+    .gradient-header {
+        background: linear-gradient(90deg, #23273a 0%, #181c2a 100%);
+        border: 1px solid #31364a;
+        box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+    }
+
+    .icon-circle {
+        background: #23273a;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .card-dark {
+        background: #181c2a;
+        border: 1px solid #31364a;
+        color: #e0e0e0;
+        box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .card-dark:hover {
+        background: #23273a;
+        border-color: #6366f1;
+    }
+
+    .section-title {
+        color: #a5b4fc;
+        font-weight: 700;
+    }
+
+    .input-dark {
+        background: #23273a;
+        color: #e0e0e0;
+        border: 1px solid #31364a;
+    }
+
+    .input-dark:focus {
+        border-color: #6366f1;
+        outline: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-dark-bg text-dark-text">
+    <div class="max-w-7xl mx-auto px-4 py-10">
+        <!-- Workflow (now at the top) -->
+        <section class="mb-12">
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-sitemap"></i> Workflow
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Planning Panel -->
+                <div class="card-dark rounded-xl p-6 transition flex flex-col gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="icon-circle"><i class="fa-solid fa-lightbulb text-yellow-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Planning</span>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='planning', substage_name='idea', step_name='basic_idea') }}"
+                            class="text-white hover:text-dark-accent transition">Idea</a>
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='planning', substage_name='research', step_name='concepts') }}"
+                            class="text-white hover:text-dark-accent transition">Research</a>
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='planning', substage_name='structure', step_name='outline') }}"
+                            class="text-white hover:text-dark-accent transition">Structure</a>
+                    </div>
+                </div>
+
+                <!-- Writing Panel -->
+                <div class="card-dark rounded-xl p-6 transition flex flex-col gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="icon-circle"><i class="fa-solid fa-pen text-blue-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Writing</span>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='writing', substage_name='content', step_name='sections') }}"
+                            class="text-white hover:text-dark-accent transition">Sections</a>
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='writing', substage_name='meta_info', step_name='metadata') }}"
+                            class="text-white hover:text-dark-accent transition">Meta Info</a>
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='writing', substage_name='images', step_name='image_plan') }}"
+                            class="text-white hover:text-dark-accent transition">Images</a>
+                    </div>
+                </div>
+
+                <!-- Publishing Panel -->
+                <div class="card-dark rounded-xl p-6 transition flex flex-col gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="icon-circle"><i class="fa-solid fa-paper-plane text-green-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Publishing</span>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='publishing', substage_name='preflight', step_name='review') }}"
+                            class="text-white hover:text-dark-accent transition">Preflight</a>
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='publishing', substage_name='launch', step_name='publish') }}"
+                            class="text-white hover:text-dark-accent transition">Launch</a>
+                        <a href="{{ url_for('workflow.step', post_id=22, stage_name='publishing', substage_name='syndication', step_name='syndicate') }}"
+                            class="text-white hover:text-dark-accent transition">Syndication</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Modules -->
+        <section class="mb-12">
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Technical
+                Modules</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="/db/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-database text-purple-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Database</span>
+                        <p class="text-dark-accent text-sm text-center">Manage schemas, data, and migrations</p>
+                    </div>
+                </a>
+                <a href="/llm/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-brain text-pink-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">AI</span>
+                        <p class="text-dark-accent text-sm text-center">Configure models, prompts, and assistance</p>
+                    </div>
+                </a>
+                <a href="/llm/images/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-image text-dark-accent text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Images</span>
+                        <p class="text-dark-accent text-sm text-center">Generate and manage blog images</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Documentation -->
+        <section class="mb-12">
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-book"></i>
+                Documentation</h2>
+            <div class="card-dark rounded-xl p-8 flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center gap-3 mb-4 md:mb-0">
+                    <span class="icon-circle"><i class="fa-solid fa-book-open text-dark-accent text-xl"></i></span>
+                    <span class="text-lg font-semibold text-white">Project Documentation</span>
+                </div>
+                <a href="/docs/"
+                    class="bg-dark-accent hover:bg-dark-bg text-white font-semibold px-5 py-2 rounded-lg border border-dark-accent transition">View
+                    Docs</a>
+            </div>
+        </section>
+
+        <!-- Recent Posts -->
+        <section>
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-clock"></i> Recent
+                Posts</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {% for post in posts[:3] %}
+                <a href="{{ url_for('blog.post_view', post_id=post.id) }}" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col gap-2 h-full group-hover:border-dark-accent">
+                        <h3 class="text-lg font-bold mb-1 text-white flex items-center gap-2">
+                            <i class="fa-solid fa-file-lines text-dark-accent"></i> {{ post.title }}
+                        </h3>
+                        <p class="text-dark-accent text-sm mb-2">{{ post.summary|default('No summary')|safe }}</p>
+                        <span class="text-xs text-gray-400">{{ post.created_at[:10] if post.created_at else '' }}</span>
+                    </div>
+                </a>
+                {% else %}
+                <div class="text-dark-accent text-center text-lg col-span-3">No posts yet</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // Floating new post button logic
+    const newPostBtn = document.getElementById('floatingNewPostBtn');
+    if (newPostBtn) {
+        newPostBtn.addEventListener('click', async () => {
+            const basicIdea = prompt('Enter your basic idea for the post:');
+            if (!basicIdea) return;
+            try {
+                const response = await fetch('/blog/new', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ basic_idea: basicIdea })
+                });
+                const data = await response.json();
+                if (data && data.slug) {
+                    window.location.href = `/workflow/idea/?post_id=${data.id}`;
+                } else {
+                    alert('Failed to create post');
+                }
+            } catch (err) {
+                alert('Error creating post');
+            }
+        });
+    }
+</script>
+{% endblock %}

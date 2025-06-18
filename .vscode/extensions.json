@@ -1,0 +1,18 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "samuelcolvin.jinjahtml",
+        "wholroyd.jinja",
+        "streetsidesoftware.code-spell-checker",
+        "eamodio.gitlens",
+        "njpwerner.autodocstring"
+    ],
+    "unwantedRecommendations": [
+        "TabbyML.vscode-tabby",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "Codeium.codeium"
+    ]
+} 

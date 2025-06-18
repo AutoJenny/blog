@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Posts List{% endblock %}
+
+{% block styles %}
+<style>
+    .posts-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: #181c2a;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .posts-table th,
+    .posts-table td {
+        padding: 1rem 1.25rem;
+        text-align: left;
+    }
+
+    .posts-table th {
+        background: #23273a;
+        color: #a5b4fc;
+        font-weight: 700;
+        border-bottom: 2px solid #31364a;
+    }
+
+    .posts-table tr {
+        transition: background 0.2s;
+    }
+
+    .posts-table tr:nth-child(even) {
+        background: #20243a;
+    }
+
+    .posts-table tr:nth-child(odd) {
+        background: #181c2a;
+    }
+
+    .posts-table tr:hover {
+        background: #23273a;
+    }
+
+    .posts-table td {
+        color: #e0e0e0;
+        border-bottom: 1px solid #23273a;
+        vertical-align: middle;
+    }
+
+    .posts-table td.actions {
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.5rem;
+        background: none;
+        color: #a5b4fc;
+        border: 1px solid transparent;
+        transition: background 0.15s, color 0.15s, border 0.15s;
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
+        font-size: 1.2rem;
+    }
+
+    .icon-btn:hover {
+        background: #23273a;
+        color: #6366f1;
+        border: 1px solid #6366f1;
+    }
+
+    .status {
+        display: inline-block;
+        padding: 0.25em 0.75em;
+        border-radius: 0.5em;
+        font-size: 0.95em;
+        font-weight: 600;
+        background: #23273a;
+        color: #a5b4fc;
+        border: 1px solid #31364a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-10">
+    <h1 class="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+        <i class="fa-solid fa-list"></i> Posts
+    </h1>
+    <div class="mb-4 flex items-center gap-4">
+        <label class="flex items-center gap-2 text-dark-accent text-lg font-medium">
+            <input type="checkbox" id="showDeleted" {% if show_deleted %}checked{% endif %}>
+            Show Deleted
+        </label>
+    </div>
+    <div class="overflow-x-auto rounded-xl shadow-lg">
+        <table class="posts-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                <tr class="clickable-row" data-edit-url="/workflow/{{ post.id }}/planning/idea/basic_idea/">
+                    <td>{{ post.title }}</td>
+                    <td><span class="status">{{ post.status }}</span></td>
+                    <td>{{ post.created_ago }}</td>
+                    <td>{{ post.updated_ago }}</td>
+                    <td class="actions">
+                        <a href="/workflow/{{ post.id }}/planning/idea/basic_idea/" class="icon-btn edit-btn"
+                            title="Edit">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <a href="/blog/public/{{ post.id }}/" class="icon-btn preview-btn" title="Preview"
+                            onclick="event.stopPropagation();">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                        <button class="icon-btn delete-btn" title="Delete" data-post-id="{{ post.id }}"
+                            onclick="event.stopPropagation();">
+                            <i class="fa-solid fa-xmark" style="color:#ef4444;"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-dark-accent py-8">No posts found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            if (!confirm('Are you sure you want to delete this post?')) return;
+            const postId = btn.dataset.postId;
+            const resp = await fetch(`/blog/api/v1/post/${postId}/fields/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: 'deleted' })
+            });
+            if (resp.ok) {
+                btn.closest('tr').remove();
+            } else {
+                alert('Failed to delete post');
+            }
+        });
+    });
+    document.querySelectorAll('.restore-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const postId = btn.dataset.postId;
+            const resp = await fetch(`/blog/api/v1/post/${postId}/fields/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: 'draft' })
+            });
+            if (resp.ok) {
+                btn.closest('tr').remove();
+            } else {
+                alert('Failed to restore post');
+            }
+        });
+    });
+    document.getElementById('showDeleted').addEventListener('change', function () {
+        const checked = this.checked;
+        const url = new URL(window.location.href);
+        if (checked) {
+            url.searchParams.set('show_deleted', '1');
+        } else {
+            url.searchParams.delete('show_deleted');
+        }
+        window.location.href = url.toString();
+    });
+    // Persist active post_id on edit
+    document.querySelectorAll('a.icon-btn[title="Edit"]').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            const url = new URL(btn.href, window.location.origin);
+            const postId = url.pathname.split('/')[2];
+            if (postId) {
+                localStorage.setItem('active_post_id', postId);
+            }
+        });
+    });
+    // Make rows clickable except for action buttons
+    document.querySelectorAll('.clickable-row').forEach(row => {
+        row.addEventListener('click', function (e) {
+            if (e.target.closest('.icon-btn')) return; // Ignore clicks on action icons
+            const url = row.getAttribute('data-edit-url');
+            if (url) window.location.href = url;
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+{
+  "posts": [
+    {
+      "created_ago": "23 hours ago",
+      "created_at": "Tue, 27 May 2025 15:12:33 GMT",
+      "id": 15,
+      "slug": "cream-distillation",
+      "status": "draft",
+      "substage_id": null,
+      "title": "cream distillation...",
+      "updated_ago": "23 hours ago",
+      "updated_at": "Tue, 27 May 2025 15:12:33 GMT"
+    },
+    {
+      "created_ago": "a day ago",
+      "created_at": "Mon, 26 May 2025 20:12:36 GMT",
+      "id": 14,
+      "slug": "mangle-wrangling",
+      "status": "draft",
+      "substage_id": null,
+      "title": "mangle wrangling...",
+      "updated_ago": "a day ago",
+      "updated_at": "Mon, 26 May 2025 20:12:36 GMT"
+    },
+    {
+      "created_ago": "a day ago",
+      "created_at": "Mon, 26 May 2025 19:57:47 GMT",
+      "id": 3,
+      "slug": "tartan-fabrics",
+      "status": "draft",
+      "substage_id": null,
+      "title": "tartan fabrics...",
+      "updated_ago": "a day ago",
+      "updated_at": "Mon, 26 May 2025 19:57:47 GMT"
+    },
+    {
+      "created_ago": "24 days ago",
+      "created_at": "Sun, 04 May 2025 09:47:22 GMT",
+      "id": 2,
+      "slug": "hand-fasting-1",
+      "status": "draft",
+      "substage_id": 1,
+      "title": "hand-fasting...",
+      "updated_ago": "23 days ago",
+      "updated_at": "Sun, 04 May 2025 16:15:45 GMT"
+    },
+    {
+      "created_ago": "a month ago",
+      "created_at": "Fri, 18 Apr 2025 00:00:00 GMT",
+      "id": 5,
+      "slug": "english-tartans",
+      "status": "draft",
+      "substage_id": 1,
+      "title": "English tartans",
+      "updated_ago": "9 days ago",
+      "updated_at": "Sun, 18 May 2025 16:25:20 GMT"
+    },
+    {
+      "created_ago": "1 year, 7 months ago",
+      "created_at": "Fri, 27 Oct 2023 00:00:00 GMT",
+      "id": 6,
+      "slug": "quaich-traditions",
+      "status": "draft",
+      "substage_id": 1,
+      "title": "The Tradition of the Scottish Quaich",
+      "updated_ago": "9 days ago",
+      "updated_at": "Sun, 18 May 2025 16:25:20 GMT"
+    },
+    {
+      "created_ago": "1 year, 7 months ago",
+      "created_at": "Fri, 20 Oct 2023 00:00:00 GMT",
+      "id": 4,
+      "slug": "kilt-evolution",
+      "status": "draft",
+      "substage_id": 1,
+      "title": "The Evolution of the Modern Scottish Kilt",
+      "updated_ago": "9 days ago",
+      "updated_at": "Sun, 18 May 2025 16:25:20 GMT"
+    }
+  ],
+  "show_deleted": false,
+  "substages": {
+    "1": "idea",
+    "2": "research",
+    "3": "structure",
+    "4": "content",
+    "5": "meta_info",
+    "6": "images",
+    "7": "preflight",
+    "8": "launch",
+    "9": "syndication"
+  }
+}

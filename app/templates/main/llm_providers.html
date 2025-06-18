@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .provider-status {
+        display: inline-block;
+        padding: 0.25em 0.75em;
+        border-radius: 9999px;
+        font-size: 0.95em;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: #22c55e;
+        color: #fff;
+    }
+
+    .status-error {
+        background: #ef4444;
+        color: #fff;
+    }
+
+    .status-inactive {
+        background: #64748b;
+        color: #fff;
+    }
+
+    .status-default {
+        background: #6366f1;
+        color: #fff;
+    }
+
+    .action-btn {
+        @apply text-indigo-400 hover:text-indigo-200 px-2;
+    }
+
+    .action-btn[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .modal-bg {
+        background: rgba(24, 28, 42, 0.85);
+    }
+</style>
+<div class="container mx-auto py-10 px-4">
+    <div class="flex justify-between items-center mb-8">
+        <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+            <i class="fa-solid fa-server"></i> LLM Providers
+        </div>
+        <button id="addProviderBtn"
+            class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Add Provider
+        </button>
+    </div>
+    <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+        <table class="min-w-full text-left">
+            <thead>
+                <tr class="text-indigo-200 border-b border-dark-border">
+                    <th class="py-2 px-3">Provider</th>
+                    <th class="py-2 px-3">Type</th>
+                    <th class="py-2 px-3">Status</th>
+                    <th class="py-2 px-3">Last Tested</th>
+                    <th class="py-2 px-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if providers and providers|length > 0 %}
+                {% for provider in providers %}
+                <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                    <td class="py-2 px-3 font-semibold text-white">{{ provider.name }}</td>
+                    <td class="py-2 px-3">{{ provider.type }}</td>
+                    <td class="py-2 px-3">
+                        {% if provider.status == 'active' %}
+                        <span class="provider-status status-active">Active</span>
+                        {% elif provider.status == 'error' %}
+                        <span class="provider-status status-error">Error</span>
+                        {% elif provider.status == 'inactive' %}
+                        <span class="provider-status status-inactive">Inactive</span>
+                        {% else %}
+                        <span class="provider-status status-default">Unknown</span>
+                        {% endif %}
+                        {% if provider.is_default %}
+                        <span class="provider-status status-default ml-2">Default</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-2 px-3">{{ provider.last_tested or '-' }}</td>
+                    <td class="py-2 px-3 flex gap-2">
+                        <button class="action-btn" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="action-btn test-provider-btn" data-id="{{ provider.id }}" title="Test"><i
+                                class="fa-solid fa-vial"></i> Test</button>
+                        <button class="action-btn" title="Set Default"><i class="fa-solid fa-star"></i></button>
+                        <button class="action-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        {% if 'ollama' in provider.type|lower or 'ollama' in provider.name|lower %}
+                        <button class="action-btn start-ollama-btn" data-id="{{ provider.id }}" title="Start Ollama"><i
+                                class="fa-solid fa-play"></i> Start</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" class="py-4 text-center text-indigo-200">No providers found.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Add Provider Modal (placeholder) -->
+    <div id="addProviderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+            <button id="closeAddProvider" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-plus"></i>
+                Add Provider</div>
+            <form>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Provider Name</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. OpenAI" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Type</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
+                        <option>OpenAI</option>
+                        <option>Ollama</option>
+                        <option>Anthropic</option>
+                        <option>Custom</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">API Key / Endpoint</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="API Key or URL" />
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button"
+                        class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Test
+                        Connection</button>
+                    <button type="submit"
+                        class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Test Provider Modal (placeholder) -->
+    <div id="testProviderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <button id="closeTestProvider" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-vial"></i>
+                Test Provider</div>
+            <div class="mb-4 text-dark-accent">(Test result will appear here)</div>
+            <div class="flex justify-end">
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Modal open/close logic (placeholder)
+    document.getElementById('addProviderBtn').onclick = function () {
+        document.getElementById('addProviderModal').classList.remove('hidden');
+    };
+    document.getElementById('closeAddProvider').onclick = function () {
+        document.getElementById('addProviderModal').classList.add('hidden');
+    };
+    document.getElementById('closeTestProvider').onclick = function () {
+        document.getElementById('testProviderModal').classList.add('hidden');
+    };
+    // Add more modal logic as needed
+
+    // Start Ollama logic
+    document.querySelectorAll('.start-ollama-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Starting...';
+            const providerId = btn.dataset.id;
+            try {
+                const resp = await fetch('/api/v1/llm/providers/start', { method: 'POST' });
+                const data = await resp.json();
+                if (resp.ok && data.success) {
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Started';
+                    // After starting, trigger test to update status
+                    const testBtn = btn.closest('tr').querySelector('.test-provider-btn');
+                    if (testBtn) testBtn.click();
+                } else {
+                    btn.innerHTML = '<i class="fa-solid fa-play"></i> Start';
+                    alert(data.error || 'Failed to start Ollama');
+                }
+            } catch (e) {
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> Start';
+                alert('Error starting Ollama: ' + e);
+            }
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-play"></i> Start';
+            }, 2000);
+        });
+    });
+
+    // Test Provider logic
+    document.querySelectorAll('.test-provider-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Testing...';
+            const providerId = btn.dataset.id;
+            const row = btn.closest('tr');
+            const statusCell = row.querySelector('td:nth-child(3)');
+            try {
+                const resp = await fetch(`/api/v1/llm/providers/${providerId}/test`, { method: 'POST' });
+                const data = await resp.json();
+                if (resp.ok && data.success) {
+                    statusCell.innerHTML = '<span class="provider-status status-active">Active</span>';
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Tested';
+                } else {
+                    statusCell.innerHTML = '<span class="provider-status status-error">Error</span>';
+                    btn.innerHTML = '<i class="fa-solid fa-vial"></i> Test';
+                    alert(data.error || 'Test failed');
+                }
+            } catch (e) {
+                statusCell.innerHTML = '<span class="provider-status status-error">Error</span>';
+                btn.innerHTML = '<i class="fa-solid fa-vial"></i> Test';
+                alert('Error testing provider: ' + e);
+            }
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-vial"></i> Test';
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}

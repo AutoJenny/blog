@@ -1,0 +1,1 @@
+ALTER TABLE post_section ADD COLUMN section_description TEXT; 

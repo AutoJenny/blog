@@ -1,0 +1,24 @@
+# Default owners for everything in the repo
+* @nickfiddes
+
+# App core
+/app/main/ @nickfiddes
+/app/api/ @nickfiddes
+
+# Authentication related files
+/app/auth/ @nickfiddes
+
+# Blog content and templates
+/app/blog/ @nickfiddes
+/app/templates/ @nickfiddes
+
+# LLM integration
+/app/llm/ @nickfiddes
+
+# Database migrations
+/migrations/ @nickfiddes
+
+# Configuration and deployment
+*.py @nickfiddes
+/config/ @nickfiddes
+requirements.txt @nickfiddes 

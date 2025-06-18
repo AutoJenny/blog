@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% import "workflow/workflow_indicator.html" as indicator %}
+{% import "blog/_post_header.html" as blog_macros %}
+
+{% block title %}Planning: Structure{% endblock %}
+
+{#
+NOTE: This template is one of several workflow substages using the modular workflow panel structure.
+All such templates must remain structurally identical—any change to one must be applied to all.
+Do not introduce variants or reorder panels. Consistency is required for maintainability and modular JS.
+#}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    {{ blog_macros.post_header(post, active_view='template') }}
+    {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
+
+    <!-- Structure Stage Custom UI -->
+    <div class="mt-8 space-y-8">
+        <!-- Tabs -->
+        <div class="flex space-x-4 border-b border-gray-700">
+            <button class="tab-button active-tab px-4 py-2 text-gray-300 border-b-2 border-blue-500"
+                data-tab="plan-tab">
+                Plan Sections
+            </button>
+            <button class="tab-button px-4 py-2 text-gray-300" data-tab="assign-tab">
+                Assign Content
+            </button>
+        </div>
+
+        <!-- Plan Tab -->
+        <div id="plan-tab" class="tab-content">
+            <!-- Inputs Panel -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Inputs</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Title</label>
+                        <input type="text" id="post-title" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+                            value="{{ post.title if post else '' }}" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Basic Idea</label>
+                        <textarea id="basic-idea" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+                            rows="3">{{ post_development.basic_idea if post_development else '' }}</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Interesting Facts</label>
+                        <textarea id="interesting-facts" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg"
+                            rows="3">{{ post_development.interesting_facts if post_development else '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LLM Action Panel -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Generate Structure</h2>
+                <div class="flex items-center space-x-4">
+                    <button id="plan-sections" class="btn btn-primary">Generate Structure</button>
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Section Structure</h2>
+                <ul id="sections-list" class="space-y-4" data-post-id="{{ post.id if post else '' }}"></ul>
+            </div>
+
+            <!-- Save Panel -->
+            <div class="bg-gray-800 rounded-lg p-6 mt-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Save Structure</h2>
+                <button id="save-structure" class="btn btn-success">Save Structure</button>
+            </div>
+        </div>
+
+        <div id="assign-tab" class="tab-content hidden">
+            <!-- Post Overview Panel -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Post Overview</h2>
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-200">{{ post.title if post else '' }}</h3>
+                </div>
+                <div class="mb-4">
+                    <h4 class="text-md font-medium text-gray-300 mb-2">Basic Idea</h4>
+                    <p class="text-gray-200">{{ post_development.basic_idea if post_development else '' }}</p>
+                </div>
+            </div>
+
+            <!-- Sections Panel -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-xl font-bold text-gray-100 mb-4">Sections</h2>
+                <div id="sections-container" class="space-y-4">
+                    <!-- Sections will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/workflow/tab_manager.js"></script>
+<script src="/static/js/workflow/structure_stage.js"></script>
+{% endblock %}

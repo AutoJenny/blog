@@ -1,0 +1,761 @@
+2025-05-27 11:47:28
+
+- Removed all references to hand-fasting as a post/field from seed data and ensured no code or schema dependency.
+
+2025-05-27 11:06:56
+
+- Added workflow_field_mapping table, settings panel, and live docs view for field-to-workflow mapping. Seeded all post development fields with intuitive mappings. Fixed backend to use get_db_conn.
+
+# Changes Log
+
+All notable changes to this project are documented in this file.
+
+## [Unreleased]
+
+### Added
+- LLM integration with improved interface and functionality
+  - Added Test button to LLM Action modal in blog develop interface
+  - Added '+ Add New Prompt' link in LLM settings panel
+  - Added /api/v1/llm/prompts POST endpoint for creating new LLMPrompt records
+  - Added comprehensive API documentation for workflow endpoints
+  - Added docs/workflow/field_reference.md for workflow sub-stage fields
+- Database management interface improvements
+  - Enhanced virtual environment handling in run_server.sh
+  - Added automatic venv detection and activation
+- Major UI redesign of blog index page
+  - Replaced table with modern, responsive card/grid layout
+  - Added floating 'New Post' button
+  - Added modern toggle for showing deleted posts
+  - Improved accessibility and mobile responsiveness
+  - Refined dark theme with improved contrast
+  - Added json, edit, and delete icons/links to each post row
+- Added new LLM API endpoints:
+  - GET /api/v1/llm/templates for prompt templates
+  - GET /api/v1/llm/config for LLM configuration
+  - GET /api/v1/llm/prompts for prompt management
+  - Enhanced /api/v1/llm/models/ollama endpoint
+- Add: New LLM landing page at /llm/ with links to LLM Config, Actions, Templates, and Images.
+- Add: New LLM Images sub-page at /llm/images for image workflow management (placeholder).
+- Add: Main header menu link to /llm/config for easy access to LLM configuration.
+
+### Changed
+- Updated all workflow documentation for asynchronous model
+- Moved New Post button to main header
+- Enhanced LLM interface JavaScript functionality
+- Improved LLMService timeout handling and error reporting
+- Increased LLM backend request timeout to 60 seconds
+- Reorganized Idea Scope and Provisional Title fields with independent LLM modals
+- Updated DEPENDENCIES.md with current project dependencies
+- Standardized all LLM API endpoints to use /api/v1/llm/ prefix
+  - Updated routes in app/llm/routes.py
+  - Updated documentation in docs/api/llm_endpoints.md
+  - Updated test cases in tests/test_llm.py
+- Change: Removed LLM Config from the main menu; LLMs now links to a new landing page with a tabbed sub-header for Templates, Images, and Config. All LLM sub-pages now have consistent tabbed navigation.
+- Completely rewrote the database display UI front-end code in app/templates/db/index.html from scratch for robustness, clarity, and accessibility. Replicates all previous functionality with modern, maintainable, and accessible JavaScript. Updated documentation accordingly.
+
+### Fixed
+- Fixed incorrect route registration for /blog/develop/<post_id>
+- Fixed all fetch URLs in blog development template
+- Fixed Post.updated_at updates for PostDevelopment fields
+- Fixed LLM Test Interface model selection and display
+- Fixed Idea Scope modal prompt template saving
+- Fixed template dropdown population in LLM settings panels
+- Fixed Generate button functionality in LLM settings panels
+- Fixed blueprint registration issues
+- Fixed template rendering problems
+- Improved error handling in LLMService
+- Fixed prompt template loading in LLM Actions builder
+- Fixed LLM model selection in builder interface
+- Fixed prompt template management endpoints
+- Improved LLM configuration handling with default values
+- Fixed prompt template and model loading in LLM Actions builder
+- Standardized API endpoints across LLM management interfaces
+- Improved model loading state display in builder interface
+- Fixed LLM model selection persistence in configuration
+- Added automatic configuration saving when model is selected
+- Improved model selection state management across pages
+- Fixed LLM model dropdown population in Actions builder page
+- Synchronized model selection between LLM management and Actions builder
+- Added current model selection state to model dropdowns
+- Fixed action builder form submission in LLM Actions page
+- Corrected field mapping between form and API endpoint
+- Added proper error handling and success feedback for action creation
+- Fixed action creation in LLM Actions builder
+- Added proper validation for required fields in action creation
+- Improved error handling and logging for action creation
+- Added default values for temperature and max_tokens
+- Fixed route path for action creation in LLM Actions builder
+- Updated JavaScript to use correct endpoint path
+- Improved route registration to avoid prefix duplication
+- Reorganized LLM routes to avoid conflicts between blueprints
+- Moved action creation endpoint to API blueprint
+- Fixed endpoint paths in JavaScript code
+- Improved route organization and documentation
+- Cleaned up route organization to separate UI and API routes
+- Removed duplicate route definitions
+- Fixed route conflicts between blueprints
+- Improved code organization and maintainability
+- Fix: Updated all fetch URLs in develop.html to use the /blog/api/v1/posts/... prefix to match the Flask route registration and resolve 404 errors when saving global and section fields.
+- Fix: Section LLM Action dropdowns and Generate buttons are now always populated and wired up after DOM is ready, ensuring Actions are available for all section content fields in the develop page.
+- Fix: Replaced all inline Jinja2 postId usage in JavaScript in develop2.html with the robust data attribute approach, using document.getElementById('stage-accordion').dataset.postId. This prevents Jinja2 syntax errors and ensures consistent postId access.
+- Fix: Purged all Python cache files, confirmed only one develop.html exists, added a telltale comment to the template, and verified the correct template is now loaded and the /api/v1/llm/actions/3/execute endpoint works without error.
+- Fix: Remove nested event listeners in workflow/planning/idea/index.html JS. This bug caused the Select Action dropdown to fail to populate in the Ideas workflow view. Now the dropdown always loads available LLM actions as expected.
+
+### Removed
+- Removed PromptTemplate model and table
+- Removed legacy references to sequential workflow initialization
+- [REMOVED] All test Postgres and test database configuration, scripts, and test infrastructure have been deleted. Backup and restore functionality is retained. This is a belt-and-braces removal; test infrastructure can be rebuilt later if needed.
+
+## [0.1.0] - 2024-03-01
+
+### Added
+- Initial project setup
+- Basic blog functionality
+- User authentication system
+- API endpoints for core features
+- Database models and migrations
+- Frontend templates and styling
+- Development environment configuration
+- Testing framework implementation
+- Documentation structure
+
+2024-03-21
+- Updated development interface to properly sync template selection with textarea
+- Enhanced stages documentation to include references to development interface and LLM assistance
+- Added LLM assistance details to Development Stage documentation
+- Updated API documentation for LLM actions endpoint
+  - Added detailed request/response formats for template management
+  - Added documentation for GET template settings endpoint
+  - Updated error response format documentation
+  - Added template_name field for new template creation
+
+2024-03-26
+- Updated documentation for template management functionality
+  - Added template management section to DEVELOPMENT.md
+  - Updated LLM architecture documentation with template persistence details
+  - Enhanced documentation of settings persistence and synchronization
+- Updated LLM API documentation to include new template settings persistence endpoint
+- Added documentation for automatic template settings persistence in UI
+- Updated LLM Action Test Feature documentation to reflect current functionality
+
+2024-03-27
+- Updated API documentation for LLM endpoints
+  - Added template management endpoints documentation
+  - Added documentation for /api/v1/llm/actions/ endpoint
+  - Added documentation for /api/v1/llm/test endpoint
+  - Enhanced error response documentation with timeout details
+- Standardized API route prefixes to consistently use /api/v1/llm/
+- Updated frontend fetch calls in develop.html to use consistent API paths
+- Updated backend routes in llm.py to use proper URL prefix
+- Fixed route path mismatches between frontend and backend
+
+2024-03-28
+- Fixed template persistence in LLM modals
+  - Updated element IDs to use consistent field name suffixes
+  - Fixed template selection and persistence for provisional_title field
+  - Synchronized template dropdown with textarea across all fields
+  - Ensured proper saving of LLM settings for all fields
+
+2024-03-29
+- Fixed prompt template text persistence
+  - Fixed prompt template saving and loading in both idea_scope and provisional_title modals
+  - Ensured both dropdown and textarea are properly synchronized
+  - Fixed element ID references in JavaScript code
+  - Added proper error handling for template loading
+
+[2024-03-XX]
+- Enhanced template management system:
+  - Added automatic synchronization between template dropdown and textarea
+  - Improved template settings persistence
+  - Added real-time saving of LLM settings
+  - Enhanced error handling and user feedback
+  - Updated development documentation to reflect changes
+
+2025-04-30
+- Enhanced LLM Actions system:
+  - Added source field selection from workflow fields
+  - Added prompt template selection from existing templates
+  - Added LLM model selection with status indicators
+  - Added test functionality with input/output preview
+  - Updated database models for better action tracking
+  - Improved error handling and logging
+  - Added execution history with status tracking
+
+2025-05-01 - LLM Actions UI Improvements
+- Redesigned LLM Actions page with improved styling and contrast
+- Added clear action cards with detailed information display
+- Improved tab navigation with better visual feedback
+- Enhanced form styling with better input contrast and labels
+- Removed URL parameters from action creation
+- Fixed action display in the Actions tab
+- Improved modal styling and form organization
+- Added proper field name display in action cards
+- Standardized button styles and layout
+- Added consistent dark theme styling across all components
+
+2025-05-01 - LLM Action Routing Fix
+- Fixed duplicate route definitions between llm and api blueprints
+- Consolidated all API routes into app/api/llm.py
+- Moved UI routes to app/llm/routes.py
+- Updated frontend code to use correct API endpoints
+- Fixed issue with LLM action creation not working due to route conflicts
+
+2025-05-01 - LLM Actions Additional Improvements
+- Added delete functionality for LLM actions
+- Fixed prompt template text wrapping in action cards
+- Updated edit functionality to load actions into Builder tab
+- Improved action update/create form handling
+- Added confirmation dialog for action deletion
+- Enhanced error handling for action operations
+
+2025-05-01 - LLM Actions Test Tab Improvements
+- Fixed Test tab functionality
+- Added proper test execution with loading states
+- Added error handling for test runs
+- Improved test output display with proper wrapping
+- Added action details to test selection dropdown
+- Enhanced user feedback during test execution
+
+[2024-03-21] LLM Actions Test Functionality
+- Added missing /api/v1/llm/test endpoint for testing LLM actions
+- Implemented execute_llm_request function in services.py
+- Fixed "No output generated" issue by adding proper error handling and logging
+- Added detailed request/response logging for better debugging
+- Improved error messages in the UI for better user feedback
+
+[2024-03-21] Enhanced LLM Error Handling
+- Added comprehensive error handling in LLM services
+- Added model availability validation before test execution
+- Improved error messages with specific failure reasons
+- Added detailed logging throughout LLM request lifecycle
+- Added timeout handling with appropriate error responses
+- Added validation for required fields with specific error messages
+- Added response format validation for Ollama service
+- Enhanced logging for request/response debugging
+
+[2024-03-21] Fixed Ollama Response Format Handling
+- Updated LLM service to handle multiple Ollama response formats
+- Added support for responses with model_used field
+- Improved response format validation and error handling
+- Fixed "No output generated" error in test functionality
+
+[2024-03-21] Standardized LLM Response Format
+- Updated frontend to handle multiple response formats
+- Standardized backend response format for consistency
+- Added model information to test responses
+- Improved error handling for unexpected formats
+- Fixed frontend display of test results
+
+[2024-03-21] Fixed LLM Test Input and Response Handling
+- Fixed prompt template formatting to properly incorporate test input
+- Moved prompt formatting to frontend for better transparency
+- Updated response handling to support all Ollama response formats
+- Fixed "No output generated" error by improving response parsing
+- Added support for direct string responses
+- Improved error messages for better debugging
+
+[2025-05-01]
+- Fixed LLM test functionality:
+  - Added proper prompt template with {{input}} placeholder
+  - Added validation to ensure templates have required placeholder
+  - Added comprehensive logging throughout request lifecycle
+  - Fixed prompt + input combination logic
+  - Added better error messages for template issues
+
+[2025-05-01]
+- Split LLM interface into separate pages:
+  - Created dedicated configuration page (config.html)
+  - Created dedicated prompt templates page (templates.html)
+  - Created dedicated test interface (test.html)
+  - Added consistent navigation between pages
+  - Improved UI/UX with better feedback and error handling
+  - Added live preview of prompt + input combination
+
+[2024-03-21]
+- Improved LLM templates page styling:
+  - Added consistent admin styling system integration
+  - Enhanced button styles with proper hover states and visual hierarchy
+  - Improved modal design with better spacing and transitions
+  - Updated form elements for better usability
+  - Added proper color variables usage from admin theme
+  - Enhanced template cards with better shadows and animations
+  - Improved navigation tabs styling
+
+[2024-03-21]
+- Fixed LLM template editing functionality:
+  - Added missing GET endpoint for retrieving single prompt by ID
+  - Fixed route path for fetching prompt details
+  - Improved error handling for prompt editing
+
+[2024-03-21]
+- Enhanced LLM prompt template editor:
+  - Improved field selector with stage-based grouping
+  - Added drag & drop functionality for field insertion
+  - Enhanced visual feedback for drag & drop interactions
+  - Added placeholder text and help messages
+  - Improved template editor styling and usability
+  - Fixed field insertion at cursor position
+
+[2024-03-21]
+- Fixed route name mismatches across LLM templates:
+  - Updated 'llm.templates_page' to 'llm.templates' in all template files
+  - Fixed navigation links in config.html, templates.html, and test.html
+  - Ensured consistent route naming across the LLM management interface
+
+[2024-03-21]
+- Fixed JavaScript template literal syntax in templates.html:
+  - Fixed conflict between JavaScript template literals and Jinja2 syntax
+  - Updated field insertion code to use string concatenation
+  - Fixed 500 error in templates route
+
+[2024-03-21]
+- Improved LLM template field selector:
+  - Replaced long field list with two-level dropdown system
+  - Added stage selection dropdown to filter fields
+  - Added dynamic field tag creation for selected fields
+  - Fixed field insertion syntax in template editor
+  - Enhanced drag and drop interaction with better visual feedback
+  - Improved field tag styling and usability
+
+[2025-05-01]
+- Fixed issue where test suite was accidentally dropping production database
+- Created separate test database (blog_test) to prevent test suite from affecting production data
+
+[2025-05-01]
+- Standardized styling across LLM management interface:
+  - Updated navigation tabs with consistent styling and hover effects
+  - Unified card and section styling with consistent shadows and animations
+  - Standardized form elements and button styles
+  - Improved visual hierarchy and spacing
+  - Enhanced dark theme consistency
+
+[2025-05-01]
+- Improved button styling in LLM interface:
+  - Added proper primary button styling for main actions
+  - Standardized action button appearance across all pages
+  - Enhanced visual hierarchy for primary actions
+
+[2025-05-01]
+- Fixed field placeholder insertion in template editor:
+  - Resolved string concatenation issues with Jinja2 template
+  - Improved JavaScript handling of template placeholders
+  - Fixed field text insertion at cursor position
+  - Added proper handling of curly braces in JavaScript
+
+[2025-05-01]
+- Fixed template modal functionality:
+  - Fixed New Template and Edit Template buttons
+  - Added proper modal open/close handling
+  - Improved form reset and field clearing
+  - Added modal close on outside click
+  - Fixed body scroll lock when modal is open
+  - Enhanced error handling for template operations
+
+[2025-05-01]
+- Fixed template button functionality:
+  - Replaced onclick attributes with proper event listeners
+  - Added data-id attributes for template actions
+  - Improved button event handling
+  - Fixed modal open/close functionality
+  - Enhanced error handling for template operations
+
+[2025-05-01]
+- Fixed JavaScript syntax error in templates page:
+  - Fixed unexpected EOF error
+  - Reorganized function definitions
+  - Added proper error handling
+  - Added debug logging
+  - Improved code structure and organization
+
+2024-05-02: Fixed TypeError in /llm/templates New Template button (showNewTemplateModal) by adding null and classList check before accessing classList.contains on selectedFields.firstChild.
+
+2024-05-02: Removed 'Source Field' and all test functionality from /llm/actions page, including UI, form fields, tabs, and related JavaScript logic. Actions now only define field name, prompt template, model, temperature, and max tokens.
+
+2024-05-02: Fix New Action modal to populate LLM model and prompt template selects using availableModels and availablePrompts, matching builder tab.
+
+2024-05-02: Unify modal and builder form field names/IDs for LLM Action creation, and update modal JS to match builder logic. Fixes 'Unknown error' on Action save.
+
+2024-05-02: Improve action form submission logic to prevent false error alerts, disable submit button, log result, and reload only after success. Fixes misleading 'Unknown error' alert.
+
+2024-05-02: Prevent error alert after successful action save by reloading and returning immediately. Fixes race condition in both builder and modal forms.
+
+2024-05-02: Remove duplicate modal form event handlers before adding a new one, using a named handler. Prevents false error alerts after successful save.
+
+- FIX: Standardized all /api/v1/llm/actions and /api/v1/llm/actions/<id> endpoints to return {status: 'success', action: ...} or {status: 'error', error: ...} for all GET, PUT, and DELETE requests. This resolves frontend error dialog issues due to inconsistent API responses.
+
+- ENHANCEMENT: Added prompt_template_id to LLMAction model and API responses. The edit form for LLM Actions now pre-selects the correct prompt template when editing an action.
+
+- FIX: Removed all debug alert and console messages from LLM Actions page scripts. Improved editAction logic to ensure dropdowns are reliably pre-loaded with the correct values when editing an action.
+
+- FIX: Edit Action form now always pre-loads dropdowns with the correct values by awaiting data initialization before setting form values.
+
+- Fix: LLM Actions Edit now pre-populates fields correctly (uses data.action.<field>).
+- Fix: New Action modal now starts with blank/placeholder selects for model and prompt template, so nothing is pre-selected by default.
+
+- Fix: Corrected TemplateSyntaxError in app/templates/blog/develop.html by adding missing closing brace to the Jinja expression for postId in the LLM action button scripts for 'idea_scope' and 'provisional_title'.
+
+2024-07-09: Fix LLMAction prompt template field substitution. Prompt templates now support {{field}} for any PostDevelopment field (e.g., {{basic_idea}}), not just {input}. Backend fetches all fields for the post and substitutes them using Jinja2. This enables LLM actions to work as expected for all referenced fields in prompts.
+
+2024-07-09: Add robust logging for Jinja2 template errors in LLMAction.process_template. Now logs the template string and fields dict to help debug template rendering issues.
+
+2024-07-09: Add debug endpoint /api/v1/llm/actions/debug/list_templates to list all LLMAction prompt templates for troubleshooting template errors.
+
+- Fix: Resolved TemplateSyntaxError in app/templates/llm/templates.html caused by Jinja2 parsing a JavaScript template literal (`{{ ${draggedField} }}`) in the template editor. Wrapped the line in `{% raw %}...{% endraw %}` to prevent Jinja2 from interpreting it.
+
+- Fix: Drag&drop field insertion in app/templates/llm/templates.html now inserts {{field_name}} (no spaces, no hidden chars). Removed hidden characters that caused backend template errors.
+
+- Add: Implemented /api/v1/posts/<post_id>/fields/<field> endpoint to allow saving individual PostDevelopment fields from the develop page. This fixes saving for global fields like Idea Scope.
+
+- Refactor: Switched postId passing in develop.html to use a data attribute on the main container, and updated all JS to read postId from the DOM instead of inline Jinja2. This prevents template syntax errors and is more robust.
+
+- Enhancement: Added LLM Action selector and Generate button to every field (except sections) on the develop page, and ensured the Generate button saves the field after generation. This makes LLM generation available for all fields and ensures saving works.
+
+- Enhancement: Replaced the Section Order textarea in the Outlining Stage with a Grab Headings button, draggable list, and Save button. This allows users to visually reorder section headings and save the new order as JSON.
+
+- Added DELETE endpoint /api/v1/section/<int:section_id> to allow deleting sections from the Authoring stage in the post development interface.
+
+- UI/UX: Improved section accordions in the Authoring stage. Added chevron icon, highlight for open section, hover effect, and animated open/close for better usability.
+
+- Enhancement: 'Ideas to include' and 'Facts to include' fields in each section are now persisted in the database and auto-saved in the UI, with values pre-populated from the backend.
+
+- Added endpoint: PUT /api/v1/posts/<post_id>/sections/<section_id>/fields/<field> to allow saving individual section fields (including new ones) from the UI.
+
+- Refactor: Deprecated app/services/llm.py and consolidated all LLM service logic into app/llm/services.py. Updated all imports and usages. See docs/llm_service_refactor.md for details.
+
+- Enhancement: The Idea Scope LLM Generate button now auto-saves the generated content to the backend, ensuring the UI and db are updated immediately after generation.
+
+2025-05-05 Fix: Removed unwanted special character from draggable field template string in llm/templates.html. Field insertion now correctly uses {{field_name}} syntax without extra characters.
+
+2025-05-05 Added 'ideas_to_include', 'facts_to_include', and 'section_heading' to the Authoring Stage in WORKFLOW_FIELDS (app/blog/fields.py) so they are available for prompt templates and saving in the UI.
+
+2025-05-05 Enhancement: Added LLM action selectors beside each Generate button for section fields in the Authoring stage in develop.html, and updated JS to use the selected action for section content generation.
+
+2025-05-05 Fix: Section LLM action selectors now populate reliably—JS populates all selectors after DOM is ready, before attaching click handlers, ensuring menus are filled as soon as the page loads.
+
+- Enhancement: Automatic database backup now runs after every commit (insert, update, or delete), with old backups rotated to prevent bloat. This uses a SQLAlchemy event listener and the existing backup script.
+
+- UI: Section Generate buttons now show 'Generating...' and are disabled while the request is in progress, preventing double-clicks and giving clear feedback to the user.
+
+- Enhancement: Added drag-and-drop reordering for prompt templates with visible gap indicator. Order is now persisted in the database and respected in all selection menus. Added /api/v1/llm/prompts/order endpoint to update order.
+
+- Fix: LLM prompt templates and selection menus now always reflect the persisted order by ordering on the 'order' field in all UI routes.
+
+- Refactored LLM Actions page (`/llm/actions`) to use accordion and drag-and-drop UI, matching the prompt templates page.
+    - Each action is now a draggable accordion item with only the title and Edit button visible by default.
+    - Clicking the header expands to show action details.
+    - Drag-and-drop reordering is enabled and persists order via the API.
+
+- Add: Implemented /api/v1/llm/actions/order endpoint and added 'order' field to LLMAction model to support drag-and-drop ordering of actions in the admin UI.
+- Fix: Migration now sets all NULL values in llm_prompt.order to 0 before making the column NOT NULL, preventing migration errors.
+
+- Fix: The LLM Actions page modal is now a true overlay, never rendered inline. The modal is hidden by default and only shown when triggered. All legacy builder form and tab logic is removed. The modal is now the only way to add/edit actions, and overlays the page properly.
+
+- Change: The New Action form is now hidden by default and only appears above the list when the New Action button is clicked. Editing an action also shows the form. A Cancel button hides the form. All modal and always-visible logic is removed.
+
+- Enhancement: The /api/v1/llm/actions/<id>/execute endpoint now merges section_fields from the request into the template context, allowing LLM prompt templates to use section-specific variables like {{section_heading}}, {{ideas_to_include}}, etc. This enables section actions (e.g., Write Section first draft) to access all relevant per-section data.
+
+- Debug patch: Added a visible log area and debug output to the Generate All Sections button handler in app/templates/blog/develop.html. This includes:
+  - A log area above the button to show progress and errors.
+  - Console log and alert at the start of the click handler to confirm it is firing.
+  - Error handling for fetch failures and network errors.
+  - Improved feedback for each section's generation attempt.
+
+- Made Content, Images, and Meta areas within each Section of the Authoring Stage in develop.html visually distinct and collapsible:
+  - Added unique background colors and borders for each inner panel.
+  - Added chevrons to each inner-accordion-header.
+  - Implemented JavaScript to toggle inner-accordion-content and ensure only one is open at a time per section.
+
+- Refactor: Broke up the Authoring Stage (Sections) in develop.html into three separate stages: 'Sections - Authoring', 'Sections - Images', and 'Sections - Meta', each with its own accordion panel and relevant fields.
+
+[YYYY-MM-DD] Added CRUD API endpoints for ImageStyle (list, get, create, update, delete) in app/api/routes.py under /api/v1/images/styles and /api/v1/images/styles/<id>.
+
+[YYYY-MM-DD] UI: Image style dropdown in images_prompts.html is now dynamic, fetching from the API, and supports adding new styles via modal dialog. Edit/delete coming next.
+
+[YYYY-MM-DD] UI: Edit and delete functionality for image styles is now available in the image prompt creation UI (images_prompts.html). Users can edit or delete styles directly from the dropdown.
+
+[YYYY-MM-DD] Enhancement: ImageStyle.description column changed from String(255) to Text (unlimited length). Migration applied.
+
+[YYYY-MM-DD] Add: ImageFormat model and CRUD API endpoints for format management (description limited to 255 chars), mirroring ImageStyle functionality.
+
+- Debug: Added robust debug logging to the /api/v1/llm/actions/<id>/execute endpoint in app/api/llm.py. This logs all incoming data, constructed fields, and full stack traces for any errors, to surface the root cause of persistent 500 errors during LLM Action execution.
+
+- Enhancement: Added a full CRUD Format menu to the LLM Images Prompts page, mirroring the Styles menu. Users can now add, edit, and delete image formats via a dropdown, modal, and API integration with /api/v1/images/formats.
+
+2025-05-07: Added ImageSetting UI to /llm/images/prompts. New menu above Style/Format allows selecting, creating, editing, and deleting ImageSettings (name, style, format). Selecting an ImageSetting auto-selects the corresponding Style and Format. Includes modal for add/edit and full JS integration.
+
+[UI] Move ImageSetting menu above Style/Format in images_prompts.html so it appears as the first field in the form.
+
+2025-05-07: Add /api/v1/comfyui/status and /api/v1/comfyui/start endpoints to allow the UI to check if ComfyUI is running and start it if needed (for hybrid integration).
+
+2025-05-07: Add /api/v1/images/generate endpoint for prompt-to-image generation using ComfyUI and SD1.5, with output image copying for UI display in the hybrid UI.
+
+2025-05-07: Major navigation and tab refactor. Added 'Images' as a top-level menu item in the main header. Refactored all /llm/images/* pages to use consistent, modern-styled tabs for section and sub-section navigation (Image Configs, Image Prompts, Image Previews; Simple/Advanced under Configs).
+
+2024-07-09: Updated the ComfyUI workflow in app/api/routes.py generate_image endpoint to use a separate CLIPLoader node for SD 3.5 Large, resolving the issue where the CLIP was not recognized from the checkpoint.
+
+- Excluded sd3.5_large_turbo_all_files/ (comfyUI files) in .gitignore to prevent git commit hangs due to large files.
+
+2024-07-09: Comprehensive update to docs/sd_integration.md with full Stable Diffusion + ComfyUI implementation details, including architecture, setup, endpoints, UI, workflow, file handling, extensibility, and troubleshooting.
+
+2024-07-09: Added batch image generation UI to blog post workflow (develop.html) and updated implementation plan to reflect progress on LLM image generation system.
+
+2024-07-09: Enabled automated image generation for new/updated posts and updated implementation plan to reflect this progress.
+
+2024-07-09: Implemented inline admin review and override panel for generated images in blog workflow UI (develop.html), and updated implementation plan to reflect this progress.
+
+2024-07-09: Improved error handling, logging, and user feedback in the admin image review workflow (develop.html), and updated implementation plan to reflect this progress.
+
+2025-05-XX
+- Updated docs/temp/llm_images_mini_project.md:
+  - Checked off all completed items to reflect current project state
+  - Added a note at the top referring users to llm_images_implementation_plan.md for the authoritative plan
+  - Marked the file as archived to prevent confusion
+
+2025-05-XX
+- Fix: Added required 'type': 'sd3' input to CLIPLoader node in SD3.5 ComfyUI workflow (app/api/routes.py) to resolve prompt_outputs_failed_validation error when testing prompts via /llm/images/prompts.
+
+2025-05-XX
+- Enhancement: The /api/v1/images/generate endpoint now returns the full prompt, settings, and workflow JSON for SD requests. The /llm/images/prompts UI displays this info below each test result with a Show Debug toggle, making it easy to inspect exactly what is sent to ComfyUI for each image generation.
+
+2025-05-XX
+- Fix: Removed all JavaScript code referencing styleSelect and formatSelect from app/templates/llm/images_prompts.html, resolving JS errors and restoring Test button functionality after UI refactor.
+
+2025-05-XX
+- Fix: Updated backend image polling logic to wait for file size to be stable for 3 seconds before serving, preventing partial/black images when ComfyUI is still writing the file.
+
+2025-05-XX
+- Enhancement: The Image Setting dropdown in /llm/images/prompts now supports saving, editing, and deleting full ComfyUI settings (width, height, steps, guidance scale, etc.) with a Name field and Save button. Selecting a setting populates all fields. All changes are synced with the backend.
+
+2025-05-18: Fixed a BuildError in main/index.html by updating url_for('preview.landing') to url_for('preview.listing') to match the correct endpoint. Site now loads successfully.
+
+2025-05-18: Major redesign of intranet landing page and navigation bar. Added workflow-based sections, icons, colour accents, search bar, recent activity, and help links. Navigation now features grouped dropdowns and a vibrant gradient background.
+
+2025-05-18: Added modern_index.html and /modern route for a new, vibrant intranet landing page UI test.
+
+[assistant_config.env] Created assistant_config.env at project root with DATABASE_URL for assistant and tool reference, bypassing .env restrictions. (2024-06-13)
+
+2025-05-18: Fixed /db/ page by commenting out buttons for non-existent endpoints (db.backup, db.vacuum, db.check_integrity) in app/templates/db/index.html. The Database Management page now loads without error.
+
+2025-05-18: UI fix for /db/: admin cards now always stack vertically (removed md:grid-cols-2 from grid layout in app/templates/db/index.html).
+
+2025-05-18: Started deprecating SQLAlchemy ORM in favor of direct SQL using psycopg2. Added psycopg2 to requirements.txt. Beginning codebase refactor to remove all SQLAlchemy usage.
+
+2025-05-18: All /db/ admin routes now use direct SQL via psycopg2. Removed all SQLAlchemy usage from app/database/routes.py. This is the first major step in the ORM deprecation.
+
+2025-05-18: Blog index route (/) now uses direct SQL via psycopg2. Removed SQLAlchemy usage from the index view in app/blog/routes.py. Migration to direct SQL continues.
+
+2025-05-18: Removed SQLAlchemy and Flask-SQLAlchemy from requirements.txt. The project now uses only direct SQL for all database operations. ORM fully deprecated.
+
+2025-05-18: Added scripts/populate_sample_data.py and used it to insert sample data into category, tag, post, post_development, and post_section tables using direct SQL.
+
+[2025-05-18] Enhanced import_from_old_blog.py to:
+- Use blog/__blog_old/posts/ and blog/__blog_old/_data/image_library.json as sources.
+- Skip importing posts/images that already exist in the database.
+- Copy image files to app/static/images/posts/.
+- Print a summary of imported and skipped items.
+
+- Restored /tables route in blog/app/database/routes.py to previous working version (flat list, no grouping) after grouped version caused all tables to vanish from DB Content page.
+
+- Reintroduced grouping in /tables route (blog/app/database/routes.py), but now omits empty groups and falls back to a flat list if no groups have tables. This prevents the DB Content page from being empty if grouping fails.
+
+- /tables route now always returns both a flat 'tables' list and a 'groups' list (if grouping is possible), ensuring compatibility with the frontend and preventing empty DB Content display.
+
+- DB Content UI now displays tables grouped by theme if available, with a fallback to a flat list. Updated blog/app/templates/db/index.html JavaScript to support this.
+
+- /tables route now returns groups ordered alphabetically by group name (A-Z), so 'Blog/Post Related' comes first in the UI.
+
+2025-05-20: Unified styling with blogforge
+- Replaced app/static/css/src/main.css with blogforge's globals.css structure and variables.
+- Removed all content from blog.css, style.css, and admin.css to disable legacy styles.
+- Updated tailwind.config.js to add custom color tokens for border, background, etc. to support new utilities.
+- Rebuilt Tailwind CSS output.
+- Site now uses a modern, utility-first, variable-driven design matching blogforge.
+
+2025-05-20: Workflow table migration
+- Dropped old workflow_status table (multi-column, JSON-style, deprecated)
+- Added new workflow table with columns:
+    - id (PK)
+    - post_id (FK to post.id, unique)
+    - stage (ENUM: idea, research, structure, content, meta_information, images, preflight, publishing, syndication)
+    - status (ENUM: draft, published, review, deleted)
+    - created (timestamp, default now)
+    - updated (timestamp, auto-updated)
+- Updated create_tables.sql and docs/database/schema.md
+- All future workflow tracking and API endpoints should use the new workflow table
+
+2025-05-21: Normalized workflow stages and sub-stages
+- Removed legacy stages from workflow_stage_entity, keeping only: planning, authoring, publishing
+- Seeded workflow_sub_stage_entity with ordered sub-stages for each main stage:
+  - planning: idea, research, structure
+  - authoring: content, meta_info, images
+  - publishing: preflight, launch, syndication
+- Ensured all stages and sub-stages are ordered and normalized for future workflow logic
+
+2024-05-21
+- Blog index and header redesigned for a true dark theme.
+- Unified header, navigation, and cards for a premium, cohesive look.
+- All sections now use dark backgrounds, accent borders, and light text.
+- Blog index moved from /blog/ to root URL (/).
+- Fully redesigned the main page with a modern, stylish, and intuitive UI (see app/templates/blog/index.html).
+- Navigation in base.html updated to use root for blog listing.
+- Removed old blog.index endpoint and root_link.html template.
+- Updated /docs/frontend/templates.md to reflect new structure and design.
+- All references to the blog index now point to the root URL.
+
+2024-05-21
+- Redesigned workflow process indicator for dark theme: shallow, touchscreen-friendly, with three stage backgrounds and nine substages.
+- Updated planning/index.html to use new indicator macro for process navigation.
+
+2024-06-13: Created a comprehensive hybrid LLM framework refactor/extension implementation plan in docs/temp/llm_framework_hybrid_refactor.md. The plan documents rationale, step-by-step checklists, and onboarding notes for new developers, covering data model enhancements, service refactor, RESTful API design, UI/UX modernization, testing, documentation, and migration. This will guide the sustainable redevelopment of LLM operations in line with project conventions.
+
+2025-05-22: Scaffolded LLM Actions, Logs, and Settings admin pages with modern UI, placeholder tables, modals, and forms. All LLM admin sub-pages are now scaffolded.
+
+2025-05-22: UI: /llm/actions - removed repeated Actions heading, moved New Action button to top right, widened list container to max-w-5xl.
+
+2024-06-13: Removed all specimen, sample, and hardcoded LLM action data from UI, templates, and routes. All LLM actions, prompts, and logs are now DB-driven only. Updated documentation to reflect this policy.
+
+2024-05-22: Added /docs/project/flask_app_structure.md documenting the working Flask app structure, config, environment, and troubleshooting lessons to prevent future template/config issues.
+
+[2025-05-22] Refactor: Updated LLMAction.to_dict() to include input_field, output_field, and full prompt part details. Refactored LLMService.execute_action to use modular prompt parts and input/output fields for robust, flexible action execution.
+
+[2025-05-22] Add: CRUD API endpoints for LLMPromptPart and LLMActionPromptPart, including endpoints to manage prompt parts for a given action (add, reorder, remove, list).
+
+[2025-05-22] Fix: LLMAction model and serialization now include 'field_name' for action name display in list and details UI. DB, model, and UI are now aligned.
+
+[2025-05-22] Add: Script scripts/llm_workflow_fields_introspect.py outputs workflow substages and valid fields by introspecting the DB and cross-checking with WORKFLOW_FIELDS. Warns about mismatches for robust admin/UX use.
+
+2025-05-23: Fixed critical DB privilege issue for llm_provider_id_seq (see docs/llm/llm_framework_hybrid_refactor.md). Granted superuser to postgres to prevent future permission errors. Successfully tested /api/v1/llm/providers CRUD endpoint. Updated implementation plan doc with progress.
+
+2025-05-23: LLM Action modal now uses provider/model dropdowns, filtered by provider, and is fully registry-driven. Updated implementation plan doc with this progress.
+
+2025-05-23: Added 'role' field (ENUM) to llm_prompt_part for message-based prompts. Updated implementation plan doc with this progress.
+
+2025-05-23: Scaffolded Action Details modal for prompt part management (CRUD, reordering, test action) in LLM Actions UI. Updated implementation plan doc with this progress.
+
+2025-05-23: Successfully performed a lossless restore of post and action data from backup, including all fields. llm_prompt_part was empty in the backup. Updated modular prompt refactor plan doc with details.
+
+2025-05-25
+- Fixed workflow action save bug: created post_substage_action table in PostgreSQL (not SQLite!)
+- Removed all SQLite code and files; project is now PostgreSQL-only as per docs
+- Updated docs/database/schema.md to document post_substage_action table
+- Ensured all schema changes are non-destructive and follow backup-first policy
+- LLM Action wizard Step 2 now loads Provider and Model dropdowns dynamically from the database, with robust loading and error handling. Improves UX and ensures DB-driven selection.
+
+[2024-06-13] Fixed AttributeError for httpx.TimeoutError (now TimeoutException) in LLMService. Also fixed bug where Ollama API URL was not set in /api/v1/llm/test endpoint, causing ValueError. Verified fix with curl: /api/v1/llm/test now returns a valid LLM response.
+
+[2024-06-13] Fixed /api/v1/llm/test to combine prompt and input: supports {{input}} template substitution or appends input as user message. Verified with curl that LLM responds to test data (e.g., 'dogs').
+
+[2024-06-13] /api/v1/llm/test now always returns {response: ...} for UI compatibility; wizard test output now displays correctly. Next: remodel Action Details page as a static version of the wizard.
+
+[2024-06-13] Refactored Action Details page to use wizard-style panels and disabled dropdowns for provider/model/template, matching the wizard visually. All fields are read-only except the test area. UI is now consistent and user-friendly.
+
+2025-06-XX: Resolved llm_prompt_id_seq sequence ownership and permission issue
+- Diagnosed and fixed a persistent permission error on llm_prompt_id_seq by granting superuser to postgres and recreating the sequence as postgres.
+- Updated documentation in docs/database/sql_management.md to clarify superuser requirements and sequence recovery steps.
+- Created a new full database backup after the fix: blog_backup_YYYYMMDD_HHMMSS_after_seqfix.sql
+- All changes committed to git.
+
+2025-06-XX: Fix LLM Provider/Model dropdowns not loading
+- Removed DOMContentLoaded wrapper from builder JS; now calls loadProviders and loadPromptTemplates directly at script end.
+- Provider and Model dropdowns now reliably populate on page load.
+
+2025-06-XX: Add fully functional non-modal Action Builder panel
+- Added a non-modal Action Builder panel to the bottom of /llm/actions.
+- Provider, Model, and Prompt Template dropdowns are now always present and populated, matching the modal wizard behavior.
+- Users can now create new actions directly from the page without using the modal.
+- All changes committed to git.
+
+2025-06-XX: Refactored /llm/actions non-modal Action Builder
+- The non-modal Action Builder panel below the action list now displays all four stages (Basic Info, Model Settings, Prompt Template, Test & Save) as always-visible, vertically stacked sections.
+- UI and logic match the modal wizard: dropdowns, prompt preview, test run, and save are all supported.
+- JavaScript updated for robust dropdown population, preview, test, and save logic in the always-visible layout.
+- Fully accessible and robust; all fields validated; clear error and success feedback.
+
+2025-06-XX: LLM Actions Builder Test & Save Button Fixes
+- Test button is now only enabled for existing actions (edit mode) and calls the correct endpoint.
+- Test is disabled for new actions, with a tooltip explaining why.
+- Save button always sends all required fields; clear error messages for missing fields or backend errors.
+- UI and logic are robust and user-friendly.
+
+2025-06-XX: LLM Action Test Robust Data Variable Support
+- Test input in the Action Builder now maps to [data:variable] placeholders in prompt templates.
+- Frontend extracts [data:var] and sends test input as { var: value }.
+- Backend replaces [data:var] with {{ var }} and flattens input mapping for Jinja2 rendering.
+- Enables robust, real-world testing of actions with data variables directly from the UI.
+
+2025-05-27: Removed Action Details tab and all related JS/UI from /llm/actions for a simpler, table-only UX. No more tab navigation or details form; only the actions table and New Action button remain. All tab logic and builder form JS removed.
+
+2025-05-27: LLM Actions: Edit button now links to /llm/actions/<id> for editing and testing actions (restores detail/edit UX).
+
+2025-05-27: Restored llm_actions.html to last known good state (menus, layout, builder, test) before tab removal. Reverts recent breaking changes and restores full LLM Action management UX.
+
+2025-05-27: Fix: LLM-generated summary in Idea workflow is now saved to the DB after action run, so it persists on reload (matches Research workflow pattern).
+
+2025-05-27: Added summary field to post_development table (schema, migration, API). Now persists LLM-generated summary in Idea workflow. DB backup made before migration.
+
+2025-05-27: Refactor: Modular LLM workflow panels for Idea stage (Input, Actions, Output, Post Development Fields). Remove LLM Actions Table. All dropdowns and logic are reusable for other stages.
+- fix(settings): settings panel now shows all post_development fields, including unmapped, for mapping to workflow stages/substages
+- feat(settings): unmapped post_development fields now appear in settings panel and can be mapped via Add button
+- fix(settings): settings panel now shows all post_development fields (including unmapped) by merging with mapping table in route handler
+- fix(settings): restore grouping of mapped fields by stage/substage with headings; unmapped fields remain at top
+- fix(settings): ensure mapped fields retain correct stage_id/substage_id as integers for proper grouping in template
+- fix(settings): explicitly split mapped/unmapped fields in template; only render mapped fields in grouped table and unmapped in unmapped section
+- fix(settings): cast all stage_id/substage_id to int in template for robust grouping and correct display
+- revert(settings): rollback settings.html to last known good grouping and display commit (bb02bef)
+- revert(settings): roll back settings.html to commit a806d2b (pre-major changes, grouping logic stable)
+
+[2024-05-28] LLM Actions UI/UX update: Removed Edit button, renamed Details as Edit, removed modal/details page, made Edit/New anchor to builder area, and made builder support both create and update modes in-page.
+
+2024-05-28: Schema migration: Added provider_id INTEGER NOT NULL REFERENCES llm_provider(id) to llm_action. Updated create_tables.sql. Migration performed with full backup, SQL migration script, and verification. No data loss.
+
+2024-05-28: UI improvement: LLM Actions page now scrolls to top on load, and after update anchors and highlights the updated action in the list for better UX.
+
+2025-05-28 fix: blog posts listing restored
+- Updated app/blog/routes.py get_db_conn to always reload DATABASE_URL from assistant_config.env using dotenv_values, matching the robust pattern in app/database/routes.py.
+- This ensures /blog/posts always connects to the correct database, fixing the empty posts list bug.
+- Verified with curl and browser: posts now display as expected.
+
+- Updated workflow/planning/idea/index.html: Input/output dropdowns now fetch fields from post_development table for the current post via /api/v1/post/<post_id>/development, with fallback to mock fields if unavailable. Ensures correct fields are shown for workflow actions.
+
+2024-06-13: UI - Prompt Parts and Assembler now use blue for system, deep green for user, and deep purple for assistant backgrounds, with tag colors unchanged. Applies to both tabs. Docs updated.
+
+2025-05-29 Fix: LLM Run Action button now uses correct modular prompt for each action
+- Removed hardcoded prompt patch; restored dynamic prompt construction from database.
+- Added detailed prompt construction logging and diagnostics.
+- See docs/temp/llm_prompt_debugging_action_plan.md for full engineering summary and action plan.
+
+2025-05-29 Fix: Robust handling of cur.fetchone() after insert in /post_substage_actions
+- Prevents 400 errors and KeyError/TypeError on repeated generations.
+- Patch tested and confirmed resolved.
+
+[2024-06-10] Patch: workflow/idea/index.html now persists input/output/LLM action fields to the backend (not just localStorage), using correct API endpoints. Logic is generalized for reuse in other stages/substages. Enables robust, permanent persistence and transferability of the workflow UI.
+
+2025-05-30 Refactor: Ollama error/start alert logic is now a shared JS utility (llm_utils.js). All workflow LLM actions (including Run Action and Generate Summary) now show the Start Ollama button if the backend is unreachable, regardless of which button or script is used. Updated docs/README.md to reflect this robust, unified behavior.
+
+2024-06-09
+
+- Milestone: Consolidated workflow idea templates into a modular, reusable structure for all workflow stages.
+- Deprecated and archived duplicate idea/index.html templates.
+- Modularized field selection logic; dropdowns now support stage categorization and persistence.
+- Fixed server and script issues, including Flask port hangs and JS module loading errors.
+- Improved maintainability and set foundation for replicating modular workflow for other stages.
+
+- fix: allow updating input_field and output_field in post_substage_action PUT handler (app/api/llm.py)
+  - Now supports field persistence for workflow UI
+
+- fix(workflow): always re-fetch postSubstageAction after save in workflow_modular_llm.js to ensure output_field persists in UI
+
+2025-05-30 fix: workflow modular output dropdown persistence
+- Output dropdown in workflow modular UI now loads value from DB identically to input dropdown.
+- Removed action handler logic that forcibly set output field, which caused persistent bug.
+- Now both input and output dropdowns always reflect DB state and persist correctly.
+2025-06-01: Added timeout INTEGER DEFAULT 60 to llm_action for per-action LLM request timeout. Updated schema, docs, and backup/restore scripts.
+
+[YYYY-MM-DD] Implemented custom Structure stage UI skeleton in planning/structure/index.html as per section-based article workflow refactor plan. Includes Inputs, LLM Action, Output, and Accept panels (UI only).
+
+[YYYY-MM-DD] Created static Template View (template.html) in app/templates/workflow/ with all required UI blocks (title, status, progress, intro, sections, conclusion, metadata, add/reorder controls, color-coded status, edit links, breadcrumbs).
+- Updated article_structure_and_preview_ui_implementation_checklist.md to check off Template View static layout items.
+- Static frontend is ready for stakeholder review before backend/API work begins.
+
+[YYYY-MM-DD] Add: Unified /api/v1/post/<post_id>/structure endpoint in app/blog/routes.py for Template/Preview views. Returns post, intro, sections, conclusion, metadata, and status in a single JSON object for robust frontend integration.
+- Updated article_structure_and_preview_ui_implementation_checklist.md to check off API endpoint implementation.

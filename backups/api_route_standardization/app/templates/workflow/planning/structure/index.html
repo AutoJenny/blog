@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% import "workflow/workflow_indicator.html" as indicator %}
+{% import "blog/_post_header.html" as blog_macros %}
+
+{% block title %}Planning: Structure{% endblock %}
+
+{#
+NOTE: This template is one of several workflow substages using the modular workflow panel structure.
+All such templates must remain structurally identical—any change to one must be applied to all.
+Do not introduce variants or reorder panels. Consistency is required for maintainability and modular JS.
+#}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    {{ blog_macros.post_header(post, active_view='template') }}
+    {{ indicator.process_indicator(substages, stages, current_substage_id, post=post) }}
+    <!-- Structure Stage Custom UI -->
+    <div class="mt-8 space-y-8">
+        <!-- Inputs Panel -->
+        <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6">
+            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Inputs</h2>
+            <div class="mb-2">
+                <label class="block font-semibold text-gray-700 dark:text-gray-200">Title</label>
+                <input type="text"
+                    class="input w-full bg-gray-900 dark:bg-[#181c23] text-gray-200 placeholder-gray-400 border border-gray-700"
+                    value="[Post Title]" placeholder="[Post Title]" />
+            </div>
+            <div class="mb-2">
+                <label class="block font-semibold text-gray-700 dark:text-gray-200">Basic Idea</label>
+                <textarea
+                    class="input w-full bg-gray-900 dark:bg-[#181c23] text-gray-200 placeholder-gray-400 border border-gray-700"
+                    rows="2" placeholder="[Basic idea text]">[Basic idea text]</textarea>
+            </div>
+            <div class="mb-2">
+                <label class="block font-semibold text-gray-700 dark:text-gray-200">Interesting Facts</label>
+                <textarea
+                    class="input w-full bg-gray-900 dark:bg-[#181c23] text-gray-200 placeholder-gray-400 border border-gray-700"
+                    rows="3" placeholder="[Fact 1\nFact 2\nFact 3]">[Fact 1\nFact 2\nFact 3]</textarea>
+            </div>
+        </div>
+        <!-- LLM Action Panel -->
+        <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6">
+            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Section Planning</h2>
+            <div class="mb-2 text-gray-700 dark:text-gray-200">Select inputs to use:</div>
+            <div class="flex gap-4 mb-4">
+                <label class="text-gray-700 dark:text-gray-200"><input type="checkbox" checked /> Title</label>
+                <label class="text-gray-700 dark:text-gray-200"><input type="checkbox" checked /> Basic Idea</label>
+                <label class="text-gray-700 dark:text-gray-200"><input type="checkbox" checked /> Interesting
+                    Facts</label>
+            </div>
+            <button class="btn btn-primary">Plan Sections (LLM)</button>
+        </div>
+        <!-- Output Panel -->
+        <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6">
+            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Proposed Sections</h2>
+            <ul id="sections-list" class="space-y-2">
+                <!-- Section rows will be rendered here by JS -->
+            </ul>
+        </div>
+        <!-- Unassigned Items Panel -->
+        <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6">
+            <h2 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-200">Unassigned Items</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Ideas</h3>
+                    <div id="unassigned-ideas"
+                        class="flex flex-wrap gap-2 min-h-[50px] p-2 bg-gray-900 dark:bg-[#181c23] rounded">
+                        <!-- Unassigned ideas will be rendered here -->
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Facts</h3>
+                    <div id="unassigned-facts"
+                        class="flex flex-wrap gap-2 min-h-[50px] p-2 bg-gray-900 dark:bg-[#181c23] rounded">
+                        <!-- Unassigned facts will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Save/Accept Panel -->
+        <div class="panel bg-gray-800 dark:bg-[#23293a] rounded-lg p-6 flex justify-end">
+            <button class="btn btn-success bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save
+                Changes</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/workflow/sortable.min.js"></script>
+<script type="module" src="/static/js/workflow/structure_stage.js"></script>
+{% endblock %}

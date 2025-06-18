@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}LLM Configuration{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    /* Navigation */
+    .nav-links {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--admin-border);
+        padding-bottom: 0.5rem;
+    }
+
+    .nav-link {
+        color: var(--admin-text-secondary);
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .nav-link:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    .nav-link.active {
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.1);
+        border-bottom: 2px solid var(--admin-accent);
+        margin-bottom: -1px;
+    }
+
+    /* Config Cards */
+    .config-card {
+        background: var(--admin-bg-card);
+        border: 1px solid var(--admin-border);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .config-section {
+        background: var(--admin-bg-row-odd);
+        border: 1px solid var(--admin-border);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+    }
+
+    .config-section:hover {
+        border-color: var(--admin-accent);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Form Elements */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        color: var(--admin-text);
+        font-weight: 600;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-input,
+    .form-select {
+        background: var(--admin-bg-card);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        width: 100%;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        border-color: var(--admin-accent);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-size: 0.875rem;
+    }
+
+    .btn-primary {
+        background: var(--admin-accent);
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: var(--admin-accent-hover);
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: var(--admin-bg-row-even);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text);
+    }
+
+    .btn-secondary:hover {
+        background: var(--admin-bg-row-odd);
+        border-color: var(--admin-accent);
+        transform: translateY(-1px);
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .status-badge.success {
+        background: rgba(34, 197, 94, 0.2);
+        color: #22c55e;
+    }
+
+    .status-badge.warning {
+        background: rgba(234, 179, 8, 0.2);
+        color: #eab308;
+    }
+
+    .llm-tab-nav {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--admin-border);
+        padding-bottom: 0.5rem;
+    }
+
+    .llm-tab-link {
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        border: none;
+        color: var(--admin-text-secondary);
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .llm-tab-link:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    .llm-tab-link.active {
+        color: var(--admin-accent);
+        border-bottom: 2px solid var(--admin-accent);
+        background: rgba(99, 102, 241, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block area_nav %}
+{% include 'llm/_llm_nav.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-10">
+    <div class="admin-content">
+        <div class="admin-card">
+            <h1 class="admin-title mb-6">
+                <i class="fas fa-robot mr-2"></i>
+                LLM Management
+            </h1>
+
+            <div class="config-card">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Current Settings -->
+                    <div class="config-section">
+                        <h3 class="text-lg font-medium text-dark-text mb-3">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Current Settings
+                        </h3>
+                        <div class="result-container">
+                            <p class="mb-2">
+                                <i class="fas fa-plug mr-2"></i>
+                                <strong>Provider:</strong>
+                                <span id="current-provider">{{ config.provider_type|default('ollama') }}</span>
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-microchip mr-2"></i>
+                                <strong>Model:</strong>
+                                <span id="current-model">{{ config.model_name|default('mistral') }}</span>
+                            </p>
+                            <p class="mb-0">
+                                <i class="fas fa-server mr-2"></i>
+                                <strong>API Base:</strong>
+                                <span id="current-api-base">{{ config.api_base|default('http://localhost:11434')
+                                    }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Update Settings -->
+                    <div class="config-section">
+                        <h3 class="text-lg font-medium text-dark-text mb-3">
+                            <i class="fas fa-edit mr-2"></i>
+                            Update Settings
+                        </h3>
+                        <form id="config-form" class="space-y-4">
+                            <div class="form-group">
+                                <label class="form-label" for="provider">
+                                    <i class="fas fa-plug"></i>
+                                    Provider
+                                </label>
+                                <select id="provider" name="provider" class="form-select">
+                                    <option value="ollama" {% if config.provider_type=='ollama' %}selected{% endif %}>
+                                        Ollama
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="model">
+                                    <i class="fas fa-microchip"></i>
+                                    Model
+                                </label>
+                                <select id="model" name="model" class="form-select">
+                                    <option value="loading">Loading available models...</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="api-base">
+                                    <i class="fas fa-server"></i>
+                                    API Base URL
+                                </label>
+                                <input type="text" id="api-base" name="api-base" class="form-input"
+                                    value="{{ config.api_base|default('http://localhost:11434') }}">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const configForm = document.getElementById('config-form');
+        const modelSelect = document.getElementById('model');
+        const currentModel = '{{ config.model_name }}';
+
+        // Load available models
+        fetch('/api/v1/llm/models/ollama')
+            .then(response => response.json())
+            .then(data => {
+                modelSelect.innerHTML = '';
+                data.models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.text = model;
+                    if (model === currentModel) {
+                        option.selected = true;
+                    }
+                    modelSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading models:', error);
+                modelSelect.innerHTML = '<option value="error">Error loading models</option>';
+            });
+
+        // Handle form submission
+        configForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const submitButton = configForm.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                const response = await fetch('/api/v1/llm/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        provider_type: document.getElementById('provider').value,
+                        model_name: document.getElementById('model').value,
+                        api_base: document.getElementById('api-base').value
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('current-provider').textContent = data.provider_type;
+                    document.getElementById('current-model').textContent = data.model_name;
+                    document.getElementById('current-api-base').textContent = data.api_base;
+                    alert('Settings updated successfully!');
+                } else {
+                    alert('Error updating settings');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error updating settings');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            }
+        });
+    });
+</script>
+{% endblock %}

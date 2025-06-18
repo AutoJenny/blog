@@ -1,0 +1,12 @@
+[
+  {
+    "action_id": 48,
+    "button_label": null,
+    "button_order": 0,
+    "id": 34,
+    "input_field": "idea_scope",
+    "output_field": "intro_blurb",
+    "post_id": 15,
+    "substage": "research"
+  }
+]

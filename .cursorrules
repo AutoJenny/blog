@@ -1,0 +1,114 @@
+Absolutely! Below is a rewritten set of rules, tailored specifically for your current stack: **Python, Flask, direct SQL (no SQLAlchemy), Marshmallow, Flask-RESTful, Flask-JWT-Extended, Flask-Migrate, Flask-Caching, Celery, and related tools**. This guide is designed for robustness, efficiency, and consistency.
+
+---
+
+# **Flask Project Engineering Rules**
+
+## **General Principles**
+- Write concise, technical Python code with accurate, real-world examples.
+- Use functional and declarative programming; avoid classes except for Flask views and Marshmallow schemas.
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., is_active, has_permission).
+- Use lowercase with underscores for directories and files (e.g., blueprints/user_routes.py).
+- Favor named exports for routes and utility functions.
+- Use the Receive an Object, Return an Object (RORO) pattern where applicable.
+
+---
+
+## **Project Structure**
+- Organize code by feature using Blueprints (e.g., `app/blog/routes.py`, `app/blog/models.py`).
+- Separate concerns: routes, business logic, data access, and serialization.
+- Use an application factory pattern for initializing the Flask app.
+- Store configuration in environment variables and use Flask’s config object for management.
+
+---
+
+## **Python/Flask Coding Style**
+- Use `def` for function definitions.
+- Add type hints to all function signatures.
+- Use concise, one-line syntax for simple conditionals (e.g., `if condition: do_something()`).
+- Avoid unnecessary curly braces and deeply nested code.
+- Use early returns for error conditions (guard clauses); avoid unnecessary else statements.
+- Place the happy path last in the function for improved readability.
+
+---
+
+## **Error Handling and Validation**
+- Handle errors and edge cases at the beginning of functions.
+- Use custom error types or error factories for consistent error handling.
+- Implement proper error logging and user-friendly error messages.
+- Use Marshmallow schemas for input validation and serialization.
+- Implement custom error handlers for different types of exceptions.
+
+---
+
+## **Database Interaction**
+- Use direct SQL commands (no SQLAlchemy).
+- Use parameterized queries to prevent SQL injection.
+- Implement connection pooling and proper session management.
+- Optimize queries (e.g., use indexes, avoid N+1 queries, use eager loading where possible).
+
+---
+
+## **Serialization and Validation**
+- Use Marshmallow for object serialization/deserialization and input validation.
+- Create a schema class for each model.
+- Validate all incoming data at the API boundary.
+
+---
+
+## **Authentication and Authorization**
+- Use Flask-JWT-Extended for JWT-based authentication.
+- Protect routes with decorators (e.g., `@jwt_required()`).
+- Store sensitive information in environment variables.
+
+---
+
+## **API Design**
+- Use Flask-RESTful for RESTful APIs with class-based views.
+- Document all endpoints using Flasgger or Flask-RESTX for Swagger/OpenAPI.
+- Ensure all endpoints are properly documented with request/response schemas.
+
+---
+
+## **Performance Optimization**
+- Use Flask-Caching for frequently accessed data.
+- Offload time-consuming tasks to background jobs using Celery.
+- Monitor and optimize API performance (response time, latency, throughput).
+
+---
+
+## **Testing**
+- Write unit tests using pytest.
+- Use Flask’s test client for integration testing.
+- Implement test fixtures for database and application setup.
+
+---
+
+## **Deployment**
+- Use Gunicorn or uWSGI as the WSGI HTTP server.
+- Implement proper logging and monitoring in production.
+- Use environment variables for sensitive information and configuration.
+
+---
+
+## **Key Conventions**
+1. Use Flask’s application and request context appropriately.
+2. Prioritize API performance metrics.
+3. Use blueprints for modularizing the application.
+4. Use environment variables for configuration management.
+5. Keep documentation up to date in the `/docs` directory.
+
+---
+
+## **References**
+- [Flask Documentation](https://flask.palletsprojects.com/)
+- [Flask-RESTful Documentation](https://flask-restful.readthedocs.io/)
+- [Marshmallow Documentation](https://marshmallow.readthedocs.io/)
+- [Flask-JWT-Extended Documentation](https://flask-jwt-extended.readthedocs.io/)
+- [Flasgger Documentation](https://flasgger.pythonanywhere.com/)
+
+---
+
+**Use this as your engineering rulebook for all code, reviews, and documentation in this project.**  
+Let me know if you want this in a specific file or format!
