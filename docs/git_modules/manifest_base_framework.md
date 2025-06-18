@@ -1,3 +1,29 @@
+# RESTORE POINT: STABLE_TAILWIND_OK
+
+**This tag marks a fully working, vandalism-proof state with Tailwind CSS and all framework elements verified.**
+
+## How to Restore
+
+1. Checkout the MAIN_HUB branch:
+   ```sh
+   git checkout MAIN_HUB
+   ```
+2. Fetch tags (if needed):
+   ```sh
+   git fetch --tags
+   ```
+3. Reset to the stable tag:
+   ```sh
+   git reset --hard STABLE_TAILWIND_OK
+   git clean -fdx
+   ```
+4. Rebuild Tailwind CSS (if needed):
+   ```sh
+   npx tailwindcss -c tailwind.config.js -i ./static/styles.css -o ./static/css/dist/main.css --minify
+   ```
+
+---
+
 # Base-Framework Branch: File Manifest & Deletion Plan
 
 ## Purpose
