@@ -1,1 +1,0 @@
-{"error":"column \"model\" does not exist\nLINE 2:                     SELECT type, model, api_key, api_endpoin...\n                                         ^\n"}
