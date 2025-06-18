@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Blog{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    {% include 'workflow_nav/nav.html' %}
+    
+    <main class="min-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html> 
