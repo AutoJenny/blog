@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Test</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Navigation CSS -->
+    <link rel="stylesheet" href="{{ url_for('workflow_nav.static', filename='css/nav.css') }}">
+    <style>
+        body {
+            background: #181c2a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'nav.html' %}
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-2xl font-bold mb-4">Navigation Test Page</h1>
+        <p class="mb-4">This page demonstrates the workflow navigation module.</p>
+
+        <div class="bg-dark-bg border border-dark-border rounded-lg p-4">
+            <h2 class="text-xl font-semibold mb-2">Current Context:</h2>
+            <pre class="font-mono text-sm">
+Post ID: {{ post_id }}
+Stage: {{ current_stage }}
+Substage: {{ current_substage }}
+Step: {{ current_step }}
+            </pre>
+        </div>
+    </div>
+
+    <!-- Navigation JavaScript -->
+    <script src="{{ url_for('workflow_nav.static', filename='js/nav.js') }}"></script>
+</body>
+
+</html>
