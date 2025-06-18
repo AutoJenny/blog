@@ -1,5 +1,18 @@
+<<<<<<< Updated upstream
 from flask import Flask, render_template, request
 import psycopg2
+=======
+from flask import Flask, make_response, send_from_directory, jsonify, redirect, url_for, render_template
+import os
+from dotenv import load_dotenv
+import logging
+from logging.handlers import RotatingFileHandler
+from config import get_config
+import redis
+import psutil
+import time
+from app.workflow import workflow
+>>>>>>> Stashed changes
 
 app = Flask(__name__)
 
@@ -42,6 +55,7 @@ def get_post_development(post_id):
         return dict(zip(columns, row))
     return None
 
+<<<<<<< Updated upstream
 @app.route('/')
 def llm_actions():
     post_id = request.args.get('post_id', default=22, type=int)
@@ -51,6 +65,52 @@ def llm_actions():
     posts = get_posts()
     post_dev = get_post_development(post_id)
     return render_template('llm_actions.html', posts=posts, post=post, post_dev=post_dev)
+=======
+    @app.route('/test')
+    def test():
+        """Test route to verify basic functionality."""
+        return render_template('nav/test.html')
+
+    @app.route('/health')
+    def health_check():
+        """Basic health check endpoint."""
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': time.time()
+        })
+
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(os.path.join(app.root_path, 'static'),
+                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+    @app.route('/apple-touch-icon.png')
+    def apple_touch_icon():
+        return send_from_directory(os.path.join(app.root_path, 'static'),
+                                'apple-touch-icon.png', mimetype='image/png')
+
+    @app.route('/apple-touch-icon-precomposed.png')
+    def apple_touch_icon_precomposed():
+        return send_from_directory(os.path.join(app.root_path, 'static'),
+                                'apple-touch-icon.png', mimetype='image/png')
+
+    @app.route('/')
+    def index():
+        return jsonify({"status": "ok", "message": "Server is running"})
+
+    # Error handlers
+    @app.errorhandler(404)
+    def not_found_error(error):
+        app.logger.error(f'Page not found: {error}')
+        return jsonify({'error': 'Not found'}), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        app.logger.error(f'Server Error: {error}')
+        return jsonify({'error': 'Internal server error'}), 500
+
+    return app
+>>>>>>> Stashed changes
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000) 
