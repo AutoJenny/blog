@@ -130,9 +130,9 @@ def create_app(config_class=Config):
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1')
 
-    # Temporarily disabled workflow blueprint
-    # from app.workflow.routes import workflow as workflow_bp
-    # app.register_blueprint(workflow_bp, url_prefix='/workflow')
+    # Register workflow blueprint
+    from app.routes.workflow import workflow_bp
+    app.register_blueprint(workflow_bp)
 
     from app.routes.settings import settings_bp
     app.register_blueprint(settings_bp, url_prefix='/settings')
