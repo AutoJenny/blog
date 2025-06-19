@@ -14,6 +14,7 @@ module.exports = {
         'dark-border': '#31364a',
         'dark-text': '#e0e0e0',
         'dark-accent': '#6366f1',
+        'dark-hover': '#23273a',
         // Blogforge-style tokens for Tailwind utilities
         border: 'hsl(var(--border) / <alpha-value>)',
         background: 'hsl(var(--background) / <alpha-value>)',
@@ -52,13 +53,27 @@ module.exports = {
     require('@tailwindcss/aspect-ratio'),
   ],
   safelist: [
+    // Dark theme classes
     'bg-dark-bg',
     'bg-dark-surface',
+    'bg-dark-hover',
     'border-dark-border',
     'text-dark-text',
     'text-dark-accent',
     'hover:text-dark-accent',
     'hover:bg-dark-surface',
-    'hover:border-dark-accent'
+    'hover:border-dark-accent',
+    'hover:bg-dark-hover',
+    // Navigation specific classes
+    'border-blue-500',
+    'text-blue-500',
+    'text-gray-400',
+    'hover:text-dark-text',
+    'font-medium',
+    'transition-colors',
+    'duration-200',
+    // Active state classes
+    'bg-dark-hover',
+    'text-blue-500'
   ]
 } 
