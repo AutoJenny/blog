@@ -17,6 +17,9 @@ def workflow_index(post_id=None, stage='planning', substage='idea', step='basic_
     if post_id is None and all_posts:
         post_id = all_posts[0]['id']
     
+    # Get the workflow context first
+    workflow_ctx = get_workflow_context()
+    
     # Build context with current navigation state
     context = {
         'post_id': post_id,
@@ -27,5 +30,8 @@ def workflow_index(post_id=None, stage='planning', substage='idea', step='basic_
         'workflow_ready': True,
         'llm_actions_data': None  # Placeholder for future context
     }
+    
+    # Update with workflow context
+    context.update(workflow_ctx)
     
     return render_template('workflow/index.html', **context) 
