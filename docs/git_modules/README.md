@@ -1,87 +1,86 @@
-# Modular Branch Architecture Project
+# Modular Architecture Project
 
-## ⚠️ CRITICAL WARNING ⚠️
+## ⚠️ CRITICAL FIREWALL RULE ⚠️
 
-This project operates under a **ZERO TOLERANCE** policy for cross-module contamination or unauthorized branch changes. Any attempt to:
-- Modify code in branches other than the current working branch
-- Mix code between module branches
-- Make changes without explicit branch switching
-- Merge into `hub` without review
-- Assume module isolation without verification
+**NEVER EDIT MODULES DIRECTLY IN MAIN_HUB BRANCH**
 
-**WILL RESULT IN IMMEDIATE BRANCH ROLLBACK AND PROJECT RESTART**
+- **Modules in MAIN_HUB are READ-ONLY** - they come from their source branches via merge script
+- **Only integration code** (Flask routes, imports, etc.) can be edited in MAIN_HUB
+- **Module development** happens ONLY in their source branches (workflow-navigation, etc.)
+- **Any direct module edits in MAIN_HUB will be lost** on next merge
+
+**VIOLATION = IMMEDIATE ROLLBACK**
 
 ## Core Principles and Rules
 
-This project implements a strict branch-based modular architecture where each module exists in its own git branch, completely isolated from others. The primary goals are:
+This project implements a strict modular architecture where each module exists as a self-contained directory, integrated into the main site via controlled merges. The primary goals are:
 
-1. **Absolute Module Isolation**: Each module branch contains ONLY its own code, with no possibility of cross-contamination
-2. **Technical Enforcement**: Module separation is enforced by git branch boundaries, making it technically impossible to modify other modules
-3. **Explicit Integration**: All module combinations happen only through reviewed merges into the `hub` branch
+1. **Absolute Module Isolation**: Each module contains ONLY its own code, with no cross-contamination
+2. **Firewall Protection**: Modules in MAIN_HUB are never edited directly
+3. **Explicit Integration**: All module updates happen through the merge script from source branches
+4. **Technical Enforcement**: Module separation is enforced by the merge process and file structure
 
 ## MANDATORY Rules (No Exceptions)
 
-1. **NEVER** work in multiple module branches simultaneously
-2. **ALWAYS** check [ORIENTATION.md](ORIENTATION.md) before any work
-3. **NEVER** copy code between module branches
-4. **ALWAYS** use the data/API layer for module communication
-5. **NEVER** merge into `hub` without complete verification
-6. **ALWAYS** start from empty branches for new modules
+1. **NEVER** edit files in `modules/` directories in MAIN_HUB branch
+2. **ALWAYS** develop modules in their source branches (workflow-navigation, etc.)
+3. **NEVER** copy code between modules
+4. **ALWAYS** use the merge script to update modules in MAIN_HUB
+5. **NEVER** bypass the merge process
+6. **ALWAYS** test integration code in MAIN_HUB after merges
 7. **NEVER** share templates or JS between modules
-8. **ALWAYS** document all branch operations
-9. **NEVER** bypass branch protection rules
-10. **ALWAYS** wait for review before integration
+8. **ALWAYS** document all merge operations
+9. **NEVER** modify module internals in MAIN_HUB
+10. **ALWAYS** wait for merge script completion before testing
 
-## Branch Structure
+## Current Architecture
 
-1. **Module Branches** (Isolated Development)
-   - `base-framework`: Site shell, shared CSS/config only
-   - `workflow-navigation`: Navigation module only
-   - `workflow-llm-actions`: LLM actions module only
-   - `workflow-sections`: Sections module only
+1. **Module Source Branches** (Development)
+   - `workflow-navigation`: Navigation module development
+   - `workflow-llm-actions`: LLM actions module development
+   - `workflow-sections`: Sections module development
 
 2. **Integration Branch**
-   - `hub`: Only updated via reviewed merges
-   - Contains the integrated, deployable system
-   - Protected by strict merge rules
+   - `MAIN_HUB`: Contains integrated, deployable system
+   - Modules are imported via merge script
+   - Only integration code is edited here
+
+3. **Module Structure in MAIN_HUB**
+   - `modules/nav/`: Navigation module (READ-ONLY)
+   - `modules/llm/`: LLM actions module (READ-ONLY)
+   - `modules/sections/`: Sections module (READ-ONLY)
+   - `app/routes/workflow.py`: Integration code (EDITABLE)
 
 ## Getting Started
 
 1. First, read this README completely
 2. Review [ORIENTATION.md](ORIENTATION.md) for architecture overview
-3. Consult [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for step-by-step process
-4. Study [code_mapping.md](code_mapping.md) for module boundaries
-5. **VERIFY** you understand branch isolation requirements
+3. Study [code_mapping.md](code_mapping.md) for module boundaries
+4. **VERIFY** you understand the firewall rule
 
 ## Workflow Process
 
-1. **Branch Selection** (MANDATORY)
-   - Identify target module branch
-   - Verify current branch is correct
-   - Ensure no mixed branch operations
-   - **DO NOT PROCEED** without verification
-
-2. **Module Development** (MANDATORY)
-   - Work only in current module branch
+1. **Module Development** (MANDATORY)
+   - Work ONLY in source module branch
    - Follow code_mapping.md strictly
    - Remove any cross-module code
    - **DO NOT PROCEED** if other module code found
 
-3. **Integration** (MANDATORY)
-   - Verify module is completely isolated
+2. **Integration** (MANDATORY)
+   - Use merge script to bring changes to MAIN_HUB
+   - Verify module is properly integrated
    - Test all endpoints and functionality
-   - Document changes for review
    - **DO NOT PROCEED** without complete testing
 
-4. **Hub Merge** (MANDATORY)
-   - Request review of changes
-   - Verify no cross-contamination
-   - Follow merge checklist
-   - **DO NOT PROCEED** without approval
+3. **Maintenance** (MANDATORY)
+   - Edit only integration code in MAIN_HUB
+   - Never touch module internals
+   - Use merge script for all module updates
+   - **DO NOT PROCEED** without following process
 
 ## Module Independence
 
-Each module branch must:
+Each module must:
 1. Contain only its own code
 2. Use only the shared data/API layer
 3. Have no direct dependencies on other modules
@@ -90,37 +89,37 @@ Each module branch must:
 
 ## Technical Safeguards
 
-1. **Branch Protection**
-   - Protected branches require review
-   - No direct pushes to `hub`
-   - Strict merge requirements
-   - Automated contamination checks
+1. **Firewall Protection**
+   - Modules in MAIN_HUB are READ-ONLY
+   - Only integration code is editable
+   - Merge script enforces separation
+   - No direct module editing allowed
 
 2. **Code Isolation**
    - No shared templates or JS
-   - Only CSS/config in base-framework
+   - Only CSS/config in base framework
    - Explicit API boundaries
-   - No cross-branch imports
+   - No cross-module imports
 
 3. **Integration Control**
-   - Reviewed merges only
+   - Merge script only
    - Complete testing required
    - Documented changes
    - Explicit approval needed
 
 ## Emergency Procedures
 
-1. **Branch Contamination**
+1. **Module Contamination**
    - Stop all work immediately
    - Document the contamination
-   - Reset branch to clean state
+   - Reset to last clean merge
    - **DO NOT ATTEMPT FIXES** without review
 
 2. **Integration Issues**
-   - Revert `hub` merge immediately
+   - Revert to last working state
    - Document the problem
-   - Reset to last known good state
-   - **DO NOT FORCE PUSH** or bypass protection
+   - Check merge script logs
+   - **DO NOT FORCE** module edits
 
 3. **Data Layer Problems**
    - Document the issue
@@ -131,47 +130,47 @@ Each module branch must:
 ## Important Reminders
 
 1. **NEVER**:
-   - Mix code between branches
-   - Skip branch verification
+   - Edit modules in MAIN_HUB
+   - Skip merge process
    - Modify multiple modules at once
-   - Assume branch isolation
-   - Bypass merge protection
+   - Assume module isolation
+   - Bypass firewall rules
    - Share code between modules
-   - Make cross-branch changes
-   - Force push to protected branches
+   - Make direct module changes
+   - Force module edits
    - Skip integration tests
    - Merge without review
 
 2. **ALWAYS**:
-   - Verify current branch
-   - Test in isolation
+   - Use source branches for development
+   - Use merge script for updates
+   - Test integration code
    - Get explicit review
    - Follow merge process
    - Document all changes
    - Check for contamination
    - Use data layer only
    - Wait for approval
-   - Maintain branch boundaries
-   - Follow protection rules
+   - Maintain firewall rules
 
 ## Getting Help
 
 1. **Documentation**
    - Review ORIENTATION.md
-   - Check IMPLEMENTATION_PLAN.md
-   - Consult code_mapping.md
+   - Check code_mapping.md
+   - Consult ARCHITECTURE.md
    - **DO NOT PROCEED** without understanding
 
 2. **Issues**
    - Document the problem
-   - Identify affected branches
+   - Identify affected modules
    - Wait for review
    - **DO NOT ATTEMPT FIXES** without approval
 
 3. **Questions**
    - Review all documentation first
-   - Ask about specific branch/module
+   - Ask about specific module/branch
    - Wait for explicit guidance
    - **DO NOT MAKE ASSUMPTIONS**
 
-Remember: The entire purpose of this architecture is to make it **technically impossible** to accidentally modify code in other modules. If you find yourself able to affect other modules, something is wrong - stop immediately and seek review. 
+Remember: The entire purpose of this architecture is to make it **technically impossible** to accidentally modify module code in MAIN_HUB. If you find yourself able to edit modules directly in MAIN_HUB, something is wrong - stop immediately and seek review. 

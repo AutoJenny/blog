@@ -1,78 +1,192 @@
-# Code Mapping: Monolithic to Modular Branch Architecture
+# Code Mapping - Module Boundaries
 
-This document maps all existing files, endpoints, and fields to their new locations and responsibilities in the modular branch architecture. Use this as a reference and checklist during the transition. All changes must be explicit, reviewable, and in line with the orientation document.
+## ⚠️ CRITICAL FIREWALL RULE ⚠️
 
----
+**NEVER EDIT MODULES DIRECTLY IN MAIN_HUB BRANCH**
 
-## Column Legend
-| Old File/Path | Old Endpoint/Route | Old Field | New Module/Branch | New File/Path | New Endpoint/Route | New Field | Notes/Dependencies |
-|--------------|--------------------|-----------|-------------------|---------------|--------------------|-----------|--------------------|
-
----
-
-## Base Framework (base-framework branch)
-| Old File/Path                | Old Endpoint/Route      | Old Field | New Module/Branch | New File/Path                      | New Endpoint/Route         | New Field | Notes/Dependencies                |
-|------------------------------|------------------------|-----------|-------------------|------------------------------------|----------------------------|-----------|-----------------------------------|
-| app/templates/base.html      | /                      |           | base-framework    | templates/base.html                | /                          |           | Site shell, header, footer        |
-| app/routes.py                | /posts, /settings      |           | base-framework    | routes.py                          | /posts, /settings          |           |                                   |
-| app/templates/main/docs_browser.html | /docs/browser |           | base-framework    | templates/main/docs_browser.html   | /docs/browser              |           | Docs browser                      |
-| app/static/css/style.css     |                        |           | base-framework    | static/css/style.css               |                            |           | Site-wide CSS                     |
-| app/static/css/admin.css     |                        |           | base-framework    | static/css/admin.css               |                            |           | Admin CSS                         |
-| app/static/images/site/*     |                        |           | base-framework    | static/images/site/*               |                            |           | Site images                       |
+- Modules in MAIN_HUB are READ-ONLY and come from source branches via merge script
+- Only integration code can be edited in MAIN_HUB
+- Module development happens ONLY in source branches
 
 ---
 
-## Workflow Navigation (workflow-navigation branch)
-| Old File/Path                | Old Endpoint/Route      | Old Field | New Module/Branch | New File/Path                      | New Endpoint/Route         | New Field | Notes/Dependencies                |
-|------------------------------|------------------------|-----------|-------------------|------------------------------------|----------------------------|-----------|-----------------------------------|
-| app/templates/workflow/_workflow_nav.html | (included) |           | workflow-navigation | templates/_workflow_nav.html      | (included)                 |           | Navigation bar, breadcrumbs       |
-| app/static/js/workflow.js    |                        |           | workflow-navigation | static/js/workflow_nav.js         |                            |           | Navigation JS                     |
-| app/static/css/src/nav.css   |                        |           | workflow-navigation | static/css/nav.css                |                            |           | Navigation styles                  |
+## Module Architecture Overview
+
+This document maps the strict boundaries between modules in the BlogForge workflow system. Each module is completely self-contained and communicates only through the data layer.
+
+### Current Module Structure
+
+1. **Navigation Module** (`modules/nav/` in MAIN_HUB)
+   - Source: `workflow-navigation` branch
+   - Purpose: Workflow stage navigation and UI
+   - Status: ✅ Implemented and integrated
+
+2. **LLM Actions Module** (`modules/llm/` in MAIN_HUB)
+   - Source: `workflow-llm-actions` branch
+   - Purpose: LLM action management and execution
+   - Status: 🔄 In development
+
+3. **Sections Module** (`modules/sections/` in MAIN_HUB)
+   - Source: `workflow-sections` branch
+   - Purpose: Article section management
+   - Status: 📋 Planned
 
 ---
 
-## LLM-Actions (workflow-llm-actions branch)
-| Old File/Path                | Old Endpoint/Route      | Old Field | New Module/Branch | New File/Path                      | New Endpoint/Route         | New Field | Notes/Dependencies                |
-|------------------------------|------------------------|-----------|-------------------|------------------------------------|----------------------------|-----------|-----------------------------------|
-| app/templates/llm/actions.html| /llm/                  |           | workflow-llm-actions | templates/llm/actions.html        | /llm/                      |           | LLM action interface              |
-| app/static/js/llm.js         |                        |           | workflow-llm-actions | static/js/llm.js                  |                            |           | LLM interaction logic             |
-| app/llm/actions/idea.py      | /llm/idea              |           | workflow-llm-actions | llm/actions/idea.py               | /llm/idea                  |           | LLM action backend                |
-| app/workflow/scripts/llm_processor.py | (internal)    |           | workflow-llm-actions | scripts/llm_processor.py          | (internal)                 |           | LLM processing logic              |
-| app/data/prompts/planning_idea_basic_idea.json | (config) | | workflow-llm-actions | data/prompts/planning_idea_basic_idea.json | (config) | | LLM prompt config |
+## Module Boundaries
+
+### Navigation Module (`modules/nav/`)
+
+**Allowed Code:**
+- Navigation templates and UI components
+- Navigation-specific JavaScript
+- Navigation route handlers
+- Navigation CSS (module-specific only)
+
+**Forbidden Code:**
+- LLM action logic
+- Section management code
+- Any code not related to navigation
+- Cross-module imports or dependencies
+
+**Integration Points:**
+- Uses workflow data from database
+- Displays workflow stages and substages
+- Integrates with main workflow route
+
+### LLM Actions Module (`modules/llm/`)
+
+**Allowed Code:**
+- LLM action management
+- LLM provider integration
+- Action execution logic
+- LLM-specific templates and UI
+
+**Forbidden Code:**
+- Navigation logic
+- Section management code
+- Any code not related to LLM actions
+- Cross-module imports or dependencies
+
+**Integration Points:**
+- Uses LLM action data from database
+- Executes actions via API
+- Integrates with workflow system
+
+### Sections Module (`modules/sections/`)
+
+**Allowed Code:**
+- Section creation and management
+- Section templates and UI
+- Section-specific logic
+- Section CSS (module-specific only)
+
+**Forbidden Code:**
+- Navigation logic
+- LLM action code
+- Any code not related to sections
+- Cross-module imports or dependencies
+
+**Integration Points:**
+- Uses section data from database
+- Manages article sections
+- Integrates with workflow system
 
 ---
 
-## Sections (workflow-sections branch)
-| Old File/Path                | Old Endpoint/Route      | Old Field | New Module/Branch | New File/Path                      | New Endpoint/Route         | New Field | Notes/Dependencies                |
-|------------------------------|------------------------|-----------|-------------------|------------------------------------|----------------------------|-----------|-----------------------------------|
-| app/templates/workflow/steps/sections.html | /workflow/sections | | workflow-sections | templates/sections.html            | /workflow/sections         |           | Section management UI             |
-| app/static/js/sections.js    |                        |           | workflow-sections | static/js/sections.js              |                            |           | Section drag & drop logic         |
-| app/workflow/config/prompts/writing/content/sections.json | (config) | | workflow-sections | config/sections.json               | (config)                   |           | Section prompt config             |
+## Integration Code (EDITABLE in MAIN_HUB)
+
+### `app/routes/workflow.py`
+- Main workflow route handler
+- Module integration logic
+- Data layer coordination
+- Template rendering coordination
+
+**Responsibilities:**
+- Import and initialize modules
+- Coordinate module interactions
+- Handle workflow state management
+- Provide data to modules
+
+**Forbidden:**
+- Direct module code implementation
+- Module-specific business logic
+- Cross-module code sharing
 
 ---
 
-## Shared Data/API Layer (all branches, via base-framework)
-| Old File/Path                | Old Endpoint/Route      | Old Field | New Module/Branch | New File/Path                      | New Endpoint/Route         | New Field | Notes/Dependencies                |
-|------------------------------|------------------------|-----------|-------------------|------------------------------------|----------------------------|-----------|-----------------------------------|
-| app/db.py                    | (DB connection)        |           | base-framework    | db.py                              | (DB connection)            |           | Shared DB connection              |
-| app/database/routes.py       | /api/db/*              |           | base-framework    | database/routes.py                 | /api/db/*                  |           | DB API endpoints                  |
-| app/models.py                | (models)               |           | base-framework    | models.py                          | (models)                   |           | Shared models                     |
+## Data Layer (Shared)
+
+### Database Tables
+- `workflow_stages`: Workflow stage definitions
+- `workflow_sub_stages`: Workflow substage definitions
+- `workflow_step_entity`: Workflow step data
+- `llm_actions`: LLM action definitions
+- `posts`: Post data
+- `post_sections`: Section data
+
+### API Endpoints
+- `/workflow/`: Main workflow endpoint
+- `/api/llm/`: LLM API endpoints
+- `/api/posts/`: Post management endpoints
 
 ---
 
-## Database Fields (reference)
-| Old Table/Field              | New Table/Field         | Notes/Dependencies                |
-|------------------------------|-------------------------|-----------------------------------|
-| post.id                      | post.id                 | Unchanged                         |
-| post.title                   | post.title              | Unchanged                         |
-| post_section.id              | post_section.id         | Unchanged                         |
-| post_section.title           | post_section.title      | Unchanged                         |
-| workflow_step_entity.*       | workflow_step_entity.*  | Canonical for workflow steps      |
+## Module Development Rules
+
+### Source Branch Development
+1. **Work ONLY in source branch** (workflow-navigation, etc.)
+2. **Follow module boundaries strictly**
+3. **Remove any cross-module code**
+4. **Test module in isolation**
+5. **Use merge script to update MAIN_HUB**
+
+### MAIN_HUB Integration
+1. **NEVER edit modules directly**
+2. **Edit only integration code**
+3. **Test integration after merges**
+4. **Document all changes**
 
 ---
 
-## Notes
-- All modules must interact only via the data/API layer or explicit shared config.
-- No direct imports or code dependencies between module branches.
-- Only site-wide CSS and minimal config may be shared, and only via the base-framework branch.
-- This mapping must be updated with every migration or refactor. 
+## Firewall Enforcement
+
+### Technical Safeguards
+- Modules in MAIN_HUB are READ-ONLY
+- Only integration code is editable
+- Merge script enforces separation
+- No direct module editing allowed
+
+### Process Safeguards
+- Source branch development only
+- Merge script for all updates
+- Complete testing required
+- Explicit review process
+
+---
+
+## Emergency Procedures
+
+### Module Contamination
+1. **Stop immediately**
+2. **Document contamination**
+3. **Reset to last clean merge**
+4. **Seek review before proceeding**
+
+### Integration Issues
+1. **Revert to working state**
+2. **Check merge script logs**
+3. **Document the problem**
+4. **Wait for review**
+
+---
+
+## Key Principles
+
+1. **Absolute Module Isolation**: Each module contains only its own code
+2. **Firewall Protection**: Modules in MAIN_HUB are never edited directly
+3. **Explicit Integration**: All updates go through merge script
+4. **Data Layer Communication**: Modules interact only via database/API
+5. **Technical Enforcement**: Architecture prevents cross-contamination
+
+**Remember: The entire purpose is to make it technically impossible to accidentally modify module code in MAIN_HUB. If you can edit modules directly in MAIN_HUB, something is wrong - stop immediately.** 
