@@ -25,12 +25,34 @@ def nav_dev():
     # Get real post data from database
     all_posts = get_all_posts()
     
+    # Default to first post or 1 if no posts exist
+    default_post_id = all_posts[0]['id'] if all_posts else 1
+    
     # Provide context variables as required by nav.html
     context = {
-        'post_id': all_posts[0]['id'] if all_posts else 1,  # Use first post as default
+        'post_id': default_post_id,
         'current_stage': 'planning',
         'current_substage': 'idea',
         'current_step': 'basic_idea',
-        'all_posts': all_posts
+        'all_posts': all_posts,
+        'workflow_ready': True  # Add this to ensure navigation is shown
+    }
+    return render_template('nav.html', **context)
+
+@bp.route('/dev/posts/<int:post_id>')
+@bp.route('/dev/posts/<int:post_id>/<stage>')
+@bp.route('/dev/posts/<int:post_id>/<stage>/<substage>')
+@bp.route('/dev/posts/<int:post_id>/<stage>/<substage>/<step>')
+def nav_dev_with_context(post_id, stage='planning', substage='idea', step='basic_idea'):
+    """Preview with specific context."""
+    all_posts = get_all_posts()
+    
+    context = {
+        'post_id': post_id,
+        'current_stage': stage,
+        'current_substage': substage,
+        'current_step': step,
+        'all_posts': all_posts,
+        'workflow_ready': True
     }
     return render_template('nav.html', **context) 

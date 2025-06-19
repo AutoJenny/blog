@@ -44,6 +44,7 @@ trap 'handle_error $LINENO' ERR
 SOURCE_BRANCH="workflow-navigation"
 TARGET_BRANCH="MAIN_HUB"
 NAV_MODULE_PATH="modules/nav"
+APP_NAV_PATH="app/templates/workflow_nav"
 TIMESTAMP=$(date '+%Y%m%d-%H%M%S')
 TEMP_BRANCH="nav-merge-$TIMESTAMP"
 
@@ -86,8 +87,8 @@ log "Step 4: Creating temporary branch $TEMP_BRANCH..."
 git checkout -b "$TEMP_BRANCH"
 log "✅ Temporary branch created"
 
-# Step 5: Remove existing nav module
-log "Step 5: Removing existing nav module..."
+# Step 5: Remove existing nav module and integration points
+log "Step 5: Removing existing nav module and integration points..."
 if [[ -d "$NAV_MODULE_PATH" ]]; then
     rm -rf "$NAV_MODULE_PATH"
     log "✅ Existing nav module removed"
@@ -95,43 +96,57 @@ else
     log "ℹ️  No existing nav module found"
 fi
 
+if [[ -d "$APP_NAV_PATH" ]]; then
+    rm -rf "$APP_NAV_PATH"
+    log "✅ Existing app nav integration removed"
+else
+    log "ℹ️  No existing app nav integration found"
+fi
+
 # Step 6: Checkout nav module from source branch
 log "Step 6: Checking out nav module from $SOURCE_BRANCH..."
 git checkout "$SOURCE_BRANCH" -- "$NAV_MODULE_PATH"
 log "✅ Nav module checked out from $SOURCE_BRANCH"
 
-# Step 7: Stage the changes
-log "Step 7: Staging nav module changes..."
+# Step 7: Create symlink for integration point
+log "Step 7: Creating integration point symlink..."
+mkdir -p "$(dirname "$APP_NAV_PATH")"
+ln -s "../../$NAV_MODULE_PATH/templates" "$APP_NAV_PATH"
+log "✅ Integration point symlink created"
+
+# Step 8: Stage the changes
+log "Step 8: Staging nav module changes..."
 git add "$NAV_MODULE_PATH"
+git add "$APP_NAV_PATH"
 log "✅ Changes staged"
 
-# Step 8: Show what will be changed
-log "Step 8: Showing changes to be applied..."
+# Step 9: Show what will be changed
+log "Step 9: Showing changes to be applied..."
 git diff --cached --name-only
 log "✅ Changes preview complete"
 
-# Step 9: Commit changes to temporary branch
-log "Step 9: Committing changes to temporary branch..."
+# Step 10: Commit changes to temporary branch
+log "Step 10: Committing changes to temporary branch..."
 git commit -m "Merge nav module from $SOURCE_BRANCH - $TIMESTAMP"
 log "✅ Changes committed to temporary branch"
 
-# Step 10: Switch back to MAIN_HUB
-log "Step 10: Switching back to $TARGET_BRANCH..."
+# Step 11: Switch back to MAIN_HUB
+log "Step 11: Switching back to $TARGET_BRANCH..."
 git checkout "$TARGET_BRANCH"
 log "✅ Switched to $TARGET_BRANCH"
 
-# Step 11: Merge temporary branch into MAIN_HUB
-log "Step 11: Merging temporary branch into $TARGET_BRANCH..."
+# Step 12: Merge temporary branch into MAIN_HUB
+log "Step 12: Merging temporary branch into $TARGET_BRANCH..."
 git merge "$TEMP_BRANCH" --no-edit
 log "✅ Merge completed successfully"
 
-# Step 12: Clean up temporary branch
-log "Step 12: Cleaning up temporary branch..."
+# Step 13: Clean up temporary branch
+log "Step 13: Cleaning up temporary branch..."
 git branch -D "$TEMP_BRANCH"
 log "✅ Temporary branch deleted"
 
-# Step 13: Final verification
-log "Step 13: Final verification..."
+# Step 14: Final verification
+log "Step 14: Final verification..."
 if [[ -d "$NAV_MODULE_PATH" ]]; then
     log "✅ Nav module exists in $TARGET_BRANCH"
     log "📁 Nav module contents:"
@@ -141,8 +156,17 @@ else
     exit 1
 fi
 
-# Step 14: Show final status
-log "Step 14: Final status..."
+if [[ -L "$APP_NAV_PATH" ]]; then
+    log "✅ Integration point symlink exists"
+    log "📁 Integration point target:"
+    ls -la "$APP_NAV_PATH"
+else
+    log "❌ ERROR: Integration point symlink not found"
+    exit 1
+fi
+
+# Step 15: Show final status
+log "Step 15: Final status..."
 git status --porcelain
 log "✅ Merge completed successfully!"
 
@@ -152,6 +176,7 @@ log "   - Source: $SOURCE_BRANCH"
 log "   - Target: $TARGET_BRANCH"
 log "   - Temp Branch: $TEMP_BRANCH (deleted)"
 log "   - Nav Module: $NAV_MODULE_PATH (updated)"
+log "   - Integration Point: $APP_NAV_PATH (symlinked)"
 log "   - Current Branch: $(git branch --show-current)"
 log ""
 log "🚀 Ready to test the updated navigation module!" 

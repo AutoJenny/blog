@@ -1,17 +1,31 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 from modules.nav.services import get_workflow_stages, get_workflow_context, get_all_posts
 
 workflow_bp = Blueprint('workflow', __name__, url_prefix='/workflow')
 
 @workflow_bp.route('/')
-def workflow_index():
-    # Get workflow context from nav module
-    workflow_context = get_workflow_context()
+@workflow_bp.route('/posts/<int:post_id>')
+@workflow_bp.route('/posts/<int:post_id>/<stage>')
+@workflow_bp.route('/posts/<int:post_id>/<stage>/<substage>')
+@workflow_bp.route('/posts/<int:post_id>/<stage>/<substage>/<step>')
+def workflow_index(post_id=None, stage='planning', substage='idea', step='basic_idea'):
+    """Main workflow route that handles all workflow navigation."""
+    # Get all posts for the selector
+    all_posts = get_all_posts()
     
-    # Pass through all context variables directly
+    # If no post_id provided, use the first post
+    if post_id is None and all_posts:
+        post_id = all_posts[0]['id']
+    
+    # Build context with current navigation state
     context = {
-        **workflow_context,  # Include all workflow context
-        'llm_actions_data': None,  # Placeholder for future context
+        'post_id': post_id,
+        'current_stage': stage,
+        'current_substage': substage,
+        'current_step': step,
+        'all_posts': all_posts,
+        'workflow_ready': True,
+        'llm_actions_data': None  # Placeholder for future context
     }
     
     return render_template('workflow/index.html', **context) 
