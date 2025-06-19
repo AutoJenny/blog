@@ -22,196 +22,136 @@ handle_error() {
     log "Recent git log:"
     git log --oneline -3 2>/dev/null || echo "Unable to get git log"
     
-    # Cleanup on error
-    if [ -n "$TEMP_BRANCH" ] && git show-ref --verify --quiet refs/heads/"$TEMP_BRANCH" 2>/dev/null; then
-        log "Cleaning up temporary branch $TEMP_BRANCH..."
-        git checkout MAIN_HUB 2>/dev/null || true
-        git branch -D "$TEMP_BRANCH" 2>/dev/null || true
-    fi
-    
-    if [ "$STASHED" = true ]; then
-        log "Restoring stashed changes..."
-        git stash pop 2>/dev/null || true
+    # Cleanup: try to return to MAIN_HUB and clean up temp branch
+    if [[ "$(git branch --show-current 2>/dev/null)" != "MAIN_HUB" ]]; then
+        log "🔄 Attempting cleanup..."
+        git checkout MAIN_HUB 2>/dev/null || log "⚠️  Could not checkout MAIN_HUB"
+        
+        # Try to delete temp branch if it exists
+        local temp_branch=$(git branch --list | grep "nav-merge-" | head -1 | tr -d ' *')
+        if [[ -n "$temp_branch" ]]; then
+            git branch -D "$temp_branch" 2>/dev/null || log "⚠️  Could not delete temp branch $temp_branch"
+        fi
     fi
     
     exit $exit_code
 }
 
-# Set up error trapping
+# Set up error handling
 trap 'handle_error $LINENO' ERR
 
-echo "=== Navigation Module Merge Script ==="
-echo "Source: workflow-navigation branch"
-echo "Target: MAIN_HUB branch"
-echo "Directory: modules/nav/"
-echo "AUTO-APPROVE: Enabled (no confirmation required)"
-echo ""
+# Configuration
+SOURCE_BRANCH="workflow-navigation"
+TARGET_BRANCH="MAIN_HUB"
+NAV_MODULE_PATH="modules/nav"
+TIMESTAMP=$(date '+%Y%m%d-%H%M%S')
+TEMP_BRANCH="nav-merge-$TIMESTAMP"
 
-# Check if we're in a git repository
-log "Step 1: Checking git repository..."
-if ! git rev-parse --git-dir > /dev/null 2>&1; then
-    log "❌ Error: Not in a git repository"
-    exit 1
-fi
-log "✅ Git repository found"
+log "🚀 Starting Navigation Module Merge Script"
+log "AUTO-COMMIT: Enabled - All changes will be committed before merge"
+log "Source: $SOURCE_BRANCH"
+log "Target: $TARGET_BRANCH"
+log "Temp Branch: $TEMP_BRANCH"
 
-# Check current branch
+# Step 1: Verify we're on MAIN_HUB
+log "Step 1: Verifying current branch..."
 CURRENT_BRANCH=$(git branch --show-current)
-log "Current branch: $CURRENT_BRANCH"
-
-# Ensure we're on MAIN_HUB branch
-log "Step 2: Verifying we're on MAIN_HUB branch..."
-if [ "$CURRENT_BRANCH" != "MAIN_HUB" ]; then
-    log "❌ Error: Must be on MAIN_HUB branch to perform merge"
-    log "Current branch: $CURRENT_BRANCH"
-    log "Please checkout MAIN_HUB first: git checkout MAIN_HUB"
+if [[ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]]; then
+    log "❌ ERROR: Must be on $TARGET_BRANCH branch to start merge. Current: $CURRENT_BRANCH"
     exit 1
 fi
-log "✅ On MAIN_HUB branch"
+log "✅ Currently on $TARGET_BRANCH"
 
-# Check for uncommitted changes
-log "Step 3: Checking for uncommitted changes..."
-if ! git diff-index --quiet HEAD --; then
-    log "⚠️  Warning: You have uncommitted changes"
-    log "Stashing changes for safety..."
-    git stash push -m "Auto-stash before nav module merge"
-    STASHED=true
-    log "✅ Changes stashed"
+# Step 2: Check for uncommitted changes and commit them
+log "Step 2: Checking for uncommitted changes..."
+if [[ -n "$(git status --porcelain)" ]]; then
+    log "📝 Found uncommitted changes - committing them first..."
+    git add .
+    git commit -m "Auto-commit before nav module merge - $TIMESTAMP"
+    log "✅ Changes committed successfully"
 else
-    STASHED=false
-    log "✅ No uncommitted changes"
+    log "✅ No uncommitted changes found"
 fi
 
-# Check if workflow-navigation branch exists
-log "Step 4: Verifying workflow-navigation branch exists..."
-if ! git show-ref --verify --quiet refs/heads/workflow-navigation; then
-    log "❌ Error: workflow-navigation branch does not exist"
-    log "Available branches:"
-    git branch -a
+# Step 3: Verify source branch exists
+log "Step 3: Verifying source branch exists..."
+if ! git show-ref --verify --quiet refs/heads/$SOURCE_BRANCH; then
+    log "❌ ERROR: Source branch $SOURCE_BRANCH does not exist"
     exit 1
 fi
-log "✅ workflow-navigation branch exists"
+log "✅ Source branch $SOURCE_BRANCH exists"
 
-# Check if modules/nav/ exists in workflow-navigation
-log "Step 5: Verifying modules/nav/ exists in workflow-navigation..."
-if ! git show workflow-navigation:modules/nav/ > /dev/null 2>&1; then
-    log "❌ Error: modules/nav/ does not exist in workflow-navigation branch"
-    log "Files in workflow-navigation:"
-    git ls-tree -r --name-only workflow-navigation | head -20
-    exit 1
-fi
-log "✅ modules/nav/ exists in workflow-navigation"
-
-# Create temporary branch for safe merging
-TEMP_BRANCH="nav-merge-$(date +%Y%m%d-%H%M%S)"
-log "Step 6: Creating temporary branch: $TEMP_BRANCH"
+# Step 4: Create temporary branch
+log "Step 4: Creating temporary branch $TEMP_BRANCH..."
 git checkout -b "$TEMP_BRANCH"
 log "✅ Temporary branch created"
 
-# Fetch latest changes from workflow-navigation
-log "Step 7: Fetching latest changes from workflow-navigation..."
-git fetch origin workflow-navigation:workflow-navigation
-log "✅ Latest changes fetched"
-
-# Show what we're about to merge
-log "Step 8: Analyzing changes to be merged..."
-log "Files in workflow-navigation modules/nav/:"
-git ls-tree -r --name-only workflow-navigation modules/nav/ | head -10
-
-log "Files in current modules/nav/:"
-if git ls-tree -r --name-only HEAD modules/nav/ > /dev/null 2>&1; then
-    git ls-tree -r --name-only HEAD modules/nav/ | head -10
+# Step 5: Remove existing nav module
+log "Step 5: Removing existing nav module..."
+if [[ -d "$NAV_MODULE_PATH" ]]; then
+    rm -rf "$NAV_MODULE_PATH"
+    log "✅ Existing nav module removed"
 else
-    log "No modules/nav/ in current branch"
+    log "ℹ️  No existing nav module found"
 fi
 
-# Merge only the modules/nav/ directory from workflow-navigation
-log "Step 9: Merging modules/nav/ from workflow-navigation..."
-git checkout workflow-navigation -- modules/nav/
-log "✅ Files checked out from workflow-navigation"
+# Step 6: Checkout nav module from source branch
+log "Step 6: Checking out nav module from $SOURCE_BRANCH..."
+git checkout "$SOURCE_BRANCH" -- "$NAV_MODULE_PATH"
+log "✅ Nav module checked out from $SOURCE_BRANCH"
 
-# Check what files were changed
-log "Step 10: Analyzing changes..."
-log "=== Files Changed ==="
-git status --porcelain modules/nav/
+# Step 7: Stage the changes
+log "Step 7: Staging nav module changes..."
+git add "$NAV_MODULE_PATH"
+log "✅ Changes staged"
 
-# Verify only navigation module files were touched
-CHANGED_FILES=$(git status --porcelain | grep -v "^M.*modules/nav/" | grep -v "^A.*modules/nav/" | grep -v "^D.*modules/nav/" || true)
-if [ -n "$CHANGED_FILES" ]; then
-    log "❌ Error: Files outside modules/nav/ were changed:"
-    echo "$CHANGED_FILES"
-    log "Aborting merge for safety"
-    git checkout MAIN_HUB
-    git branch -D "$TEMP_BRANCH"
-    if [ "$STASHED" = true ]; then
-        git stash pop
-    fi
-    exit 1
-fi
-log "✅ Only modules/nav/ files were changed"
+# Step 8: Show what will be changed
+log "Step 8: Showing changes to be applied..."
+git diff --cached --name-only
+log "✅ Changes preview complete"
 
-# Show diff of changes
-log "Step 11: Showing changes to be merged..."
-log "=== Changes to be merged ==="
-git diff HEAD modules/nav/
-
-# Auto-approve the merge (no confirmation required)
-log "Step 12: Auto-approving merge (no confirmation required)..."
-log "✅ Merge automatically approved"
-
-# Commit the changes
-log "Step 13: Committing navigation module merge..."
-git add modules/nav/
-git commit -m "Merge navigation module from workflow-navigation branch
-
-- Source: workflow-navigation branch
-- Target: MAIN_HUB branch  
-- Directory: modules/nav/
-- Following firewall protocol: DO NOT EDIT in MAIN_HUB directly
-- Auto-approved merge
-
-This merge updates the navigation module with latest changes from the owning branch."
+# Step 9: Commit changes to temporary branch
+log "Step 9: Committing changes to temporary branch..."
+git commit -m "Merge nav module from $SOURCE_BRANCH - $TIMESTAMP"
 log "✅ Changes committed to temporary branch"
 
-# Switch back to MAIN_HUB and merge the temporary branch
-log "Step 14: Switching back to MAIN_HUB..."
-git checkout MAIN_HUB
-log "✅ Switched to MAIN_HUB"
+# Step 10: Switch back to MAIN_HUB
+log "Step 10: Switching back to $TARGET_BRANCH..."
+git checkout "$TARGET_BRANCH"
+log "✅ Switched to $TARGET_BRANCH"
 
-log "Step 15: Merging temporary branch into MAIN_HUB..."
-git merge "$TEMP_BRANCH" --no-ff -m "Merge navigation module updates from workflow-navigation
+# Step 11: Merge temporary branch into MAIN_HUB
+log "Step 11: Merging temporary branch into $TARGET_BRANCH..."
+git merge "$TEMP_BRANCH" --no-edit
+log "✅ Merge completed successfully"
 
-- Merged: modules/nav/ directory
-- Source: workflow-navigation branch
-- Protocol: Firewall-compliant merge
-- Auto-approved"
-log "✅ Temporary branch merged into MAIN_HUB"
-
-# Clean up temporary branch
-log "Step 16: Cleaning up temporary branch..."
+# Step 12: Clean up temporary branch
+log "Step 12: Cleaning up temporary branch..."
 git branch -D "$TEMP_BRANCH"
 log "✅ Temporary branch deleted"
 
-# Restore stashed changes if any
-if [ "$STASHED" = true ]; then
-    log "Step 17: Restoring stashed changes..."
-    git stash pop
-    log "✅ Stashed changes restored"
+# Step 13: Final verification
+log "Step 13: Final verification..."
+if [[ -d "$NAV_MODULE_PATH" ]]; then
+    log "✅ Nav module exists in $TARGET_BRANCH"
+    log "📁 Nav module contents:"
+    ls -la "$NAV_MODULE_PATH"
+else
+    log "❌ ERROR: Nav module not found after merge"
+    exit 1
 fi
 
-# Final verification
-log "Step 18: Final verification..."
-log "Current branch: $(git branch --show-current)"
-log "Recent commits:"
-git log --oneline -3
+# Step 14: Show final status
+log "Step 14: Final status..."
+git status --porcelain
+log "✅ Merge completed successfully!"
 
-echo ""
-log "✅ Navigation module merge completed successfully!"
-log "✅ Source: workflow-navigation branch"
-log "✅ Target: MAIN_HUB branch"
-log "✅ Directory: modules/nav/"
-log "✅ Protocol: Firewall-compliant"
-log "✅ Auto-approved merge"
-echo ""
-log "The navigation module has been updated in MAIN_HUB from workflow-navigation."
-log "Remember: DO NOT EDIT modules/nav/ directly in MAIN_HUB - all changes must come from workflow-navigation branch." 
+log "🎉 NAVIGATION MODULE MERGE COMPLETE!"
+log "📋 Summary:"
+log "   - Source: $SOURCE_BRANCH"
+log "   - Target: $TARGET_BRANCH"
+log "   - Temp Branch: $TEMP_BRANCH (deleted)"
+log "   - Nav Module: $NAV_MODULE_PATH (updated)"
+log "   - Current Branch: $(git branch --show-current)"
+log ""
+log "🚀 Ready to test the updated navigation module!" 
