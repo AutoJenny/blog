@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Navigation</title>
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Embedded nav styles to avoid CSS path issues */
+        .bg-dark-bg { background-color: #1a1a1a; }
+        .border-dark-border { border-color: #333; }
+        .text-dark-text { color: #e5e5e5; }
+        .text-gray-400 { color: #9ca3af; }
+        .hover\:bg-dark-hover:hover { background-color: #2d2d2d; }
+        .hover\:text-dark-text:hover { color: #e5e5e5; }
+        .border-blue-500 { border-color: #3b82f6; }
+        .text-blue-500 { color: #3b82f6; }
+    </style>
+</head>
+<body class="min-h-screen bg-dark-bg text-dark-text">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">Workflow Navigation</h1>
+        
+        <!-- Workflow Navigation - Embedded from modules/nav/templates/nav.html -->
+        <div class="bg-dark-bg border-b border-dark-border py-4">
+            <div class="container mx-auto px-4">
+                <!-- Line 1: Breadcrumbs and Post Selector -->
+                <div class="flex justify-between items-center mb-6">
+                    <nav class="text-sm text-gray-400">
+                        <span class="text-dark-text">{{ current_stage|title }}</span>
+                    </nav>
+                    <div class="relative">
+                        <select id="post-selector"
+                            class="bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text">
+                            {% for p in all_posts %}
+                            <option value="{{ p.id }}" {% if p.id==post_id %}selected{% endif %}>{{ p.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Second line: All sub-stages as named icons in three groups of three, with stage label above each group -->
+                <div class="flex justify-center gap-8 mb-6">
+                    <!-- Planning Group -->
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs text-gray-400 mb-1">Planning</span>
+                        <div class="flex gap-4">
+                            <a href="#"
+                                class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'planning' and current_substage == 'idea' %}border-blue-500{% endif %}">
+                                <i class="fas fa-lightbulb text-2xl mb-2 text-dark-text"></i>
+                                <div class="text-sm text-dark-text">Idea</div>
+                            </a>
+                            <a href="#"
+                                class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'planning' and current_substage == 'research' %}border-blue-500{% endif %}">
+                                <i class="fas fa-search text-2xl mb-2 text-dark-text"></i>
+                                <div class="text-sm text-dark-text">Research</div>
+                            </a>
+                            <a href="#"
+                                class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'planning' and current_substage == 'structure' %}border-blue-500{% endif %}">
+                                <i class="fas fa-sitemap text-2xl mb-2 text-dark-text"></i>
+                                <div class="text-sm text-dark-text">Structure</div>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Writing Group -->
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs text-gray-400 mb-1">Writing</span>
+                        <div class="flex gap-4">
+                            <a href="#"
+                                class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'writing' and current_substage == 'content' %}border-blue-500{% endif %}">
+                                <i class="fas fa-pen text-2xl mb-2 text-dark-text"></i>
+                                <div class="text-sm text-dark-text">Content</div>
+                            </a>
+                            <a href="#"
+                                class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'writing' and current_substage == 'meta_info' %}border-blue-500{% endif %}">
+                                <i class="fas fa-tags text-2xl mb-2 text-dark-text"></i>
+                                <div class="text-sm text-dark-text">Meta Info</div>
+                            </a>
+                            <a href="#"
+                                class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'writing' and current_substage == 'images' %}border-blue-500{% endif %}">
+                                <i class="fas fa-image text-2xl mb-2 text-dark-text"></i>
+                                <div class="text-sm text-dark-text">Images</div>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Publishing Group -->
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs text-gray-400 mb-1">Publishing</span>
+                        <div class="flex gap-4">
+                            <a href="#"
+                                class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'publishing' and current_substage == 'preflight' %}border-blue-500{% endif %}">
+                                <i class="fas fa-check-circle text-2xl mb-2 text-dark-text"></i>
+                                <div class="text-sm text-dark-text">Preflight</div>
+                            </a>
+                            <a href="#"
+                                class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'publishing' and current_substage == 'launch' %}border-blue-500{% endif %}">
+                                <i class="fas fa-rocket text-2xl mb-2 text-dark-text"></i>
+                                <div class="text-sm text-dark-text">Launch</div>
+                            </a>
+                            <a href="#"
+                                class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'publishing' and current_substage == 'syndication' %}border-blue-500{% endif %}">
+                                <i class="fas fa-share-alt text-2xl mb-2 text-dark-text"></i>
+                                <div class="text-sm text-dark-text">Syndication</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Line 3: Tabs for steps in the current sub-stage -->
+                <div class="border-b border-dark-border mb-6">
+                    <div class="flex space-x-4">
+                        {% if current_substage == 'idea' %}
+                        <a href="#"
+                            class="px-4 py-2 border-b-2 {% if current_step == 'basic_idea' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                            Basic Idea
+                        </a>
+                        <a href="#"
+                            class="px-4 py-2 border-b-2 {% if current_step == 'provisional_title' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                            Provisional Title
+                        </a>
+                        {% elif current_substage == 'research' %}
+                        <a href="#"
+                            class="px-4 py-2 border-b-2 {% if current_step == 'concepts' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                            Concepts
+                        </a>
+                        <a href="#"
+                            class="px-4 py-2 border-b-2 {% if current_step == 'facts' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                            Facts
+                        </a>
+                        {% elif current_substage == 'structure' %}
+                        <a href="#"
+                            class="px-4 py-2 border-b-2 {% if current_step == 'outline' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                            Outline
+                        </a>
+                        <a href="#"
+                            class="px-4 py-2 border-b-2 {% if current_step == 'allocate_facts' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                            Allocate Facts
+                        </a>
+                        {% elif current_substage == 'content' %}
+                        <a href="#"
+                            class="px-4 py-2 border-b-2 {% if current_step == 'sections' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                            Sections
+                        </a>
+                        {% else %}
+                        <a href="#"
+                            class="px-4 py-2 border-b-2 {% if current_step == 'step2' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                            Step 2
+                        </a>
+                        <a href="#"
+                            class="px-4 py-2 border-b-2 {% if current_step == 'step3' %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
+                            Step 3
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if post_id and current_stage and current_substage %}
+        <!-- Navigation is ready -->
+        <div class="text-green-500 bg-dark-bg p-4 rounded-lg border border-green-700 mt-4">
+            ✅ Workflow navigation is ready and connected to nav module
+        </div>
+        {% else %}
+        <div class="text-red-500 bg-dark-bg p-4 rounded-lg border border-red-700 mt-4">
+            ❌ Workflow navigation is unavailable: missing required context variables.
+        </div>
+        {% endif %}
+        
+        <div id="workflow-modules" class="mt-8">
+            <h2 class="text-xl font-bold mb-4">Workflow Modules</h2>
+            <p>Other workflow modules will appear here.</p>
+        </div>
+        
+        <div id="workflow-llm-actions" class="mt-8">
+            <h2 class="text-xl font-bold mb-4">LLM Actions</h2>
+            <p>LLM Actions Template</p>
+        </div>
+    </div>
+</body>
+</html> 
