@@ -30,7 +30,23 @@ def get_workflow_stages():
     conn = get_db_conn()
     if not conn:
         # Return fallback data if database connection fails
-        return get_workflow_stages_fallback()
+        return {
+            "Planning": {
+                "Idea": ["Basic Idea", "Provisional Title"],
+                "Research": ["Concepts", "Facts"],
+                "Structure": ["Outline", "Allocate Facts"]
+            },
+            "Writing": {
+                "Content": ["Sections"],
+                "Meta Info": ["Meta Info"],
+                "Images": ["Images"]
+            },
+            "Publishing": {
+                "Preflight": ["Preflight"],
+                "Launch": ["Launch"],
+                "Syndication": ["Syndication"]
+            }
+        }
     
     try:
         cur = conn.cursor()
