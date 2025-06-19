@@ -21,6 +21,19 @@ handle_error() {
     git status --porcelain 2>/dev/null || echo "Unable to get git status"
     log "Recent git log:"
     git log --oneline -3 2>/dev/null || echo "Unable to get git log"
+    
+    # Cleanup on error
+    if [ -n "$TEMP_BRANCH" ] && git show-ref --verify --quiet refs/heads/"$TEMP_BRANCH" 2>/dev/null; then
+        log "Cleaning up temporary branch $TEMP_BRANCH..."
+        git checkout MAIN_HUB 2>/dev/null || true
+        git branch -D "$TEMP_BRANCH" 2>/dev/null || true
+    fi
+    
+    if [ "$STASHED" = true ]; then
+        log "Restoring stashed changes..."
+        git stash pop 2>/dev/null || true
+    fi
+    
     exit $exit_code
 }
 
@@ -31,6 +44,7 @@ echo "=== Navigation Module Merge Script ==="
 echo "Source: workflow-navigation branch"
 echo "Target: MAIN_HUB branch"
 echo "Directory: modules/nav/"
+echo "AUTO-APPROVE: Enabled (no confirmation required)"
 echo ""
 
 # Check if we're in a git repository
@@ -141,22 +155,12 @@ log "Step 11: Showing changes to be merged..."
 log "=== Changes to be merged ==="
 git diff HEAD modules/nav/
 
-# Ask for confirmation
-echo ""
-read -p "Do you want to proceed with the merge? (y/N): " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    log "Merge cancelled by user"
-    git checkout MAIN_HUB
-    git branch -D "$TEMP_BRANCH"
-    if [ "$STASHED" = true ]; then
-        git stash pop
-    fi
-    exit 0
-fi
+# Auto-approve the merge (no confirmation required)
+log "Step 12: Auto-approving merge (no confirmation required)..."
+log "✅ Merge automatically approved"
 
 # Commit the changes
-log "Step 12: Committing navigation module merge..."
+log "Step 13: Committing navigation module merge..."
 git add modules/nav/
 git commit -m "Merge navigation module from workflow-navigation branch
 
@@ -164,37 +168,39 @@ git commit -m "Merge navigation module from workflow-navigation branch
 - Target: MAIN_HUB branch  
 - Directory: modules/nav/
 - Following firewall protocol: DO NOT EDIT in MAIN_HUB directly
+- Auto-approved merge
 
 This merge updates the navigation module with latest changes from the owning branch."
 log "✅ Changes committed to temporary branch"
 
 # Switch back to MAIN_HUB and merge the temporary branch
-log "Step 13: Switching back to MAIN_HUB..."
+log "Step 14: Switching back to MAIN_HUB..."
 git checkout MAIN_HUB
 log "✅ Switched to MAIN_HUB"
 
-log "Step 14: Merging temporary branch into MAIN_HUB..."
+log "Step 15: Merging temporary branch into MAIN_HUB..."
 git merge "$TEMP_BRANCH" --no-ff -m "Merge navigation module updates from workflow-navigation
 
 - Merged: modules/nav/ directory
 - Source: workflow-navigation branch
-- Protocol: Firewall-compliant merge"
+- Protocol: Firewall-compliant merge
+- Auto-approved"
 log "✅ Temporary branch merged into MAIN_HUB"
 
 # Clean up temporary branch
-log "Step 15: Cleaning up temporary branch..."
+log "Step 16: Cleaning up temporary branch..."
 git branch -D "$TEMP_BRANCH"
 log "✅ Temporary branch deleted"
 
 # Restore stashed changes if any
 if [ "$STASHED" = true ]; then
-    log "Step 16: Restoring stashed changes..."
+    log "Step 17: Restoring stashed changes..."
     git stash pop
     log "✅ Stashed changes restored"
 fi
 
 # Final verification
-log "Step 17: Final verification..."
+log "Step 18: Final verification..."
 log "Current branch: $(git branch --show-current)"
 log "Recent commits:"
 git log --oneline -3
@@ -205,6 +211,7 @@ log "✅ Source: workflow-navigation branch"
 log "✅ Target: MAIN_HUB branch"
 log "✅ Directory: modules/nav/"
 log "✅ Protocol: Firewall-compliant"
+log "✅ Auto-approved merge"
 echo ""
 log "The navigation module has been updated in MAIN_HUB from workflow-navigation."
 log "Remember: DO NOT EDIT modules/nav/ directly in MAIN_HUB - all changes must come from workflow-navigation branch." 
