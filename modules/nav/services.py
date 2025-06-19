@@ -1,16 +1,16 @@
 """Navigation services for workflow module."""
 
-from flask import current_app
-import os
+# Import shared services from MAIN_HUB
+try:
+    from app.services.shared import get_all_posts_from_db, get_workflow_stages_from_db
+except ImportError as e:
+    # If shared services are not available, this is a critical error
+    raise ImportError(f"Shared services not available: {e}. This indicates a configuration problem.")
 
 def get_workflow_stages():
-    """Get all workflow stages and their substages."""
-    try:
-        # Try to use shared services if available
-        from app.services.shared import get_workflow_stages as get_shared_stages
-        return get_shared_stages()
-    except ImportError:
-        return get_workflow_stages_fallback()
+    """Get all workflow stages and their substages from the database."""
+    # Use shared service from MAIN_HUB
+    return get_workflow_stages_from_db()
 
 def get_workflow_stages_fallback():
     """Return fallback workflow stages data."""
@@ -34,19 +34,8 @@ def get_workflow_stages_fallback():
 
 def get_all_posts():
     """Get all posts from the database for the post selector."""
-    try:
-        # Try to use shared services if available
-        from app.services.shared import get_all_posts as get_shared_posts
-        return get_shared_posts()
-    except ImportError:
-        return get_all_posts_fallback()
-
-def get_all_posts_fallback():
-    """Return fallback posts data."""
-    return [
-        {'id': 1, 'title': 'Demo Post (Standalone Mode)'},
-        {'id': 2, 'title': 'Second Post (Standalone Mode)'}
-    ]
+    # Use shared service from MAIN_HUB
+    return get_all_posts_from_db()
 
 def validate_context(context):
     """Validate that all required context variables are present."""
@@ -55,35 +44,18 @@ def validate_context(context):
     if missing:
         raise ValueError(f"Missing required context variables: {missing}")
 
-def get_workflow_context(stage=None, substage=None, step=None):
+def get_workflow_context():
     """Get workflow context for the current stage/substage/step."""
-    try:
-        # Try to use shared services if available
-        from app.services.shared import get_workflow_context as get_shared_context
-        context = get_shared_context(stage, substage, step)
-    except ImportError:
-        # Fallback to standalone mode
-        context = {
-            'current_stage': stage or 'planning',
-            'current_substage': substage or 'idea',
-            'current_step': step or 'basic_idea',
-            'stages': get_workflow_stages(),
-            'all_posts': get_all_posts(),
-            'post_id': 1  # Default post ID for standalone mode
-        }
+    # Get all posts to find a default post_id
+    all_posts = get_all_posts()
+    default_post_id = all_posts[0]['id'] if all_posts else None
     
-    try:
-        validate_context(context)
-    except ValueError as e:
-        current_app.logger.warning(f"Invalid workflow context: {e}")
-        # Add missing variables with defaults
-        if 'current_stage' not in context:
-            context['current_stage'] = 'planning'
-        if 'current_substage' not in context:
-            context['current_substage'] = 'idea'
-        if 'current_step' not in context:
-            context['current_step'] = 'basic_idea'
-        if 'post_id' not in context:
-            context['post_id'] = 1
-    
-    return context 
+    # Return context with default post_id
+    return {
+        'current_stage': 'planning',
+        'current_substage': 'idea',
+        'current_step': 'basic_idea',
+        'stages': get_workflow_stages(),
+        'all_posts': all_posts,
+        'post_id': default_post_id
+    } 

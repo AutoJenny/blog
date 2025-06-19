@@ -145,7 +145,7 @@ def create_app(config_class=Config):
 
     # Register nav module
     from modules.nav import bp as nav_bp
-    app.register_blueprint(nav_bp, url_prefix='/modules/nav')
+    app.register_blueprint(nav_bp, url_prefix='/workflow_nav')
 
     # Add debug route listing
     @app.route('/debug/routes')

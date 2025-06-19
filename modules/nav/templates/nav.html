@@ -4,11 +4,10 @@
 {# Context-aware static file loading for modular architecture #}
 {# This template works in both standalone and integrated contexts #}
 {% if request.blueprint == 'workflow_nav' %}
-    {# Standalone mode - use blueprint static (e.g., /modules/nav/) #}
+    {# Standalone mode - use blueprint static #}
     <link rel="stylesheet" href="{{ url_for('workflow_nav.static', filename='css/nav.dist.css') }}">
 {% else %}
     {# Integrated mode - use main app static with module-specific naming #}
-    {# Convention: modules/{module-name}/{filename} for multi-module support #}
     <link rel="stylesheet" href="{{ url_for('static', filename='modules/nav/nav.dist.css') }}">
 {% endif %}
 
@@ -22,8 +21,8 @@
             <div class="relative">
                 <select id="post-selector"
                     class="bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text">
-                    {% for p in all_posts %}
-                    <option value="{{ p.id }}" {% if p.id==post_id %}selected{% endif %}>{{ p.title }}</option>
+                    {% for post in all_posts %}
+                    <option value="{{ post.id }}" {% if post.id == current_post_id %}selected{% endif %}>{{ post.title }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -35,16 +34,16 @@
             <div class="flex flex-col items-center">
                 <span class="text-xs text-gray-400 mb-1">Planning</span>
                 <div class="flex gap-4">
-                    {% set planning_stages = [
-                        ('idea', 'lightbulb', 'Idea'),
-                        ('research', 'search', 'Research'),
-                        ('structure', 'sitemap', 'Structure')
-                    ] %}
-                    {% for substage, icon, label in planning_stages %}
-                    <a href="{{ url_for('workflow_nav.stage', stage='planning', substage=substage, post_id=post_id) if request.blueprint == 'workflow_nav' else url_for('workflow.index', stage='planning', substage=substage, post_id=post_id) }}"
+                    {% for substage in ['idea', 'research', 'structure'] %}
+                    {% set icon = {
+                        'idea': 'lightbulb',
+                        'research': 'search',
+                        'structure': 'sitemap'
+                    } %}
+                    <a href="{{ url_for('workflow_nav.stage', stage='planning', substage=substage, post_id=current_post_id) }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'planning' and current_substage == substage %}border-blue-500{% endif %}">
-                        <i class="fas fa-{{ icon }} text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">{{ label }}</div>
+                        <i class="fas fa-{{ icon[substage] }} text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">{{ substage|title }}</div>
                     </a>
                     {% endfor %}
                 </div>
@@ -53,16 +52,16 @@
             <div class="flex flex-col items-center">
                 <span class="text-xs text-gray-400 mb-1">Writing</span>
                 <div class="flex gap-4">
-                    {% set writing_stages = [
-                        ('content', 'pen', 'Content'),
-                        ('meta_info', 'tags', 'Meta Info'),
-                        ('images', 'image', 'Images')
-                    ] %}
-                    {% for substage, icon, label in writing_stages %}
-                    <a href="{{ url_for('workflow_nav.stage', stage='writing', substage=substage, post_id=post_id) if request.blueprint == 'workflow_nav' else url_for('workflow.index', stage='writing', substage=substage, post_id=post_id) }}"
+                    {% for substage in ['content', 'meta_info', 'images'] %}
+                    {% set icon = {
+                        'content': 'pen',
+                        'meta_info': 'tags',
+                        'images': 'image'
+                    } %}
+                    <a href="{{ url_for('workflow_nav.stage', stage='writing', substage=substage, post_id=current_post_id) }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'writing' and current_substage == substage %}border-blue-500{% endif %}">
-                        <i class="fas fa-{{ icon }} text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">{{ label }}</div>
+                        <i class="fas fa-{{ icon[substage] }} text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">{{ substage|title|replace('_', ' ') }}</div>
                     </a>
                     {% endfor %}
                 </div>
@@ -71,16 +70,16 @@
             <div class="flex flex-col items-center">
                 <span class="text-xs text-gray-400 mb-1">Publishing</span>
                 <div class="flex gap-4">
-                    {% set publishing_stages = [
-                        ('preflight', 'check-circle', 'Preflight'),
-                        ('launch', 'rocket', 'Launch'),
-                        ('syndication', 'share-alt', 'Syndication')
-                    ] %}
-                    {% for substage, icon, label in publishing_stages %}
-                    <a href="{{ url_for('workflow_nav.stage', stage='publishing', substage=substage, post_id=post_id) if request.blueprint == 'workflow_nav' else url_for('workflow.index', stage='publishing', substage=substage, post_id=post_id) }}"
+                    {% for substage in ['preflight', 'launch', 'syndication'] %}
+                    {% set icon = {
+                        'preflight': 'check-circle',
+                        'launch': 'rocket',
+                        'syndication': 'share-alt'
+                    } %}
+                    <a href="{{ url_for('workflow_nav.stage', stage='publishing', substage=substage, post_id=current_post_id) }}"
                         class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'publishing' and current_substage == substage %}border-blue-500{% endif %}">
-                        <i class="fas fa-{{ icon }} text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">{{ label }}</div>
+                        <i class="fas fa-{{ icon[substage] }} text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">{{ substage|title }}</div>
                     </a>
                     {% endfor %}
                 </div>
@@ -90,47 +89,11 @@
         <!-- Line 3: Tabs for steps in the current sub-stage -->
         <div class="border-b border-dark-border mb-6">
             <div class="flex space-x-4">
-                {% if current_substage == 'idea' %}
-                {% set idea_steps = [
-                    ('basic_idea', 'Basic Idea'),
-                    ('provisional_title', 'Provisional Title')
-                ] %}
-                {% for step, label in idea_steps %}
-                <a href="{{ url_for('workflow_nav.stage', stage=current_stage, substage=current_substage, step=step, post_id=post_id) if request.blueprint == 'workflow_nav' else url_for('workflow.index', stage=current_stage, substage=current_substage, step=step, post_id=post_id) }}"
+                {% if current_stage == 'planning' and current_substage == 'idea' %}
+                {% for step in ['basic_idea', 'provisional_title'] %}
+                <a href="{{ url_for('workflow_nav.stage', stage=current_stage, substage=current_substage, step=step, post_id=current_post_id) }}"
                     class="px-4 py-2 border-b-2 {% if current_step == step %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
-                    {{ label }}
-                </a>
-                {% endfor %}
-                {% elif current_substage == 'research' %}
-                {% set research_steps = [
-                    ('concepts', 'Concepts'),
-                    ('facts', 'Facts')
-                ] %}
-                {% for step, label in research_steps %}
-                <a href="{{ url_for('workflow_nav.stage', stage=current_stage, substage=current_substage, step=step, post_id=post_id) if request.blueprint == 'workflow_nav' else url_for('workflow.index', stage=current_stage, substage=current_substage, step=step, post_id=post_id) }}"
-                    class="px-4 py-2 border-b-2 {% if current_step == step %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
-                    {{ label }}
-                </a>
-                {% endfor %}
-                {% elif current_substage == 'structure' %}
-                {% set structure_steps = [
-                    ('outline', 'Outline'),
-                    ('allocate_facts', 'Allocate Facts')
-                ] %}
-                {% for step, label in structure_steps %}
-                <a href="{{ url_for('workflow_nav.stage', stage=current_stage, substage=current_substage, step=step, post_id=post_id) if request.blueprint == 'workflow_nav' else url_for('workflow.index', stage=current_stage, substage=current_substage, step=step, post_id=post_id) }}"
-                    class="px-4 py-2 border-b-2 {% if current_step == step %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
-                    {{ label }}
-                </a>
-                {% endfor %}
-                {% elif current_substage == 'content' %}
-                {% set content_steps = [
-                    ('sections', 'Sections')
-                ] %}
-                {% for step, label in content_steps %}
-                <a href="{{ url_for('workflow_nav.stage', stage=current_stage, substage=current_substage, step=step, post_id=post_id) if request.blueprint == 'workflow_nav' else url_for('workflow.index', stage=current_stage, substage=current_substage, step=step, post_id=post_id) }}"
-                    class="px-4 py-2 border-b-2 {% if current_step == step %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
-                    {{ label }}
+                    {{ step|title|replace('_', ' ') }}
                 </a>
                 {% endfor %}
                 {% endif %}
@@ -139,16 +102,10 @@
     </div>
 </div>
 
-{% if post_id and current_stage and current_substage %}
-<div class="text-green-500 bg-dark-bg p-4 rounded-lg border border-green-700 mt-4">
-    Workflow navigation is ready and connected to nav module
-</div>
-{% else %}
+{% if not current_post_id %}
 <div class="text-red-500 bg-dark-bg p-4 rounded-lg border border-red-700 mt-4">
     Workflow navigation is unavailable: missing required context variables.
-    {% if not post_id %}Missing: post_id{% endif %}
-    {% if not current_stage %}Missing: current_stage{% endif %}
-    {% if not current_substage %}Missing: current_substage{% endif %}
+    Missing: post_id
 </div>
 {% endif %}
 
@@ -159,9 +116,9 @@ document.getElementById('post-selector').addEventListener('change', function() {
     const currentSubstage = '{{ current_substage }}';
     
     // Determine the correct URL based on context
-    const baseUrl = '{{ request.blueprint }}' === 'workflow_nav' 
-        ? '{{ url_for("workflow_nav.select_post", post_id=0) }}'.replace('/0', `/${postId}`)
-        : '{{ url_for("workflow.index", post_id=0) }}'.replace('/0', `/${postId}`);
+    const baseUrl = '{{ request.blueprint }}' === 'workflow_nav'
+        ? '{{ url_for("workflow_nav.nav_index", post_id=0) }}'.replace('/0', `/${postId}`)
+        : '{{ url_for("workflow.index", post_id=0) if workflow_enabled else url_for("workflow_nav.nav_index", post_id=0) }}'.replace('/0', `/${postId}`);
     
     // Add stage parameters
     const url = new URL(baseUrl, window.location.origin);
