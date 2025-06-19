@@ -1,6 +1,6 @@
 from flask import render_template, jsonify
 from . import bp
-from .services import get_workflow_stages, get_workflow_context
+from .services import get_workflow_stages, get_workflow_context, get_all_posts
 
 @bp.route('/api/workflow/stages')
 def get_stages():
@@ -22,15 +22,15 @@ def nav_index():
 @bp.route('/dev')
 def nav_dev():
     """Standalone preview of the navigation module with mock context."""
-    # Provide mock context variables as required by nav.html
+    # Get real post data from database
+    all_posts = get_all_posts()
+    
+    # Provide context variables as required by nav.html
     context = {
-        'post_id': 1,
+        'post_id': all_posts[0]['id'] if all_posts else 1,  # Use first post as default
         'current_stage': 'planning',
         'current_substage': 'idea',
         'current_step': 'basic_idea',
-        'all_posts': [
-            {'id': 1, 'title': 'Demo Post'},
-            {'id': 2, 'title': 'Second Post'}
-        ]
+        'all_posts': all_posts
     }
     return render_template('nav.html', **context) 
