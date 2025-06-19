@@ -15,8 +15,9 @@
     <div class="container mx-auto px-6">
         <!-- Line 1: Breadcrumbs and Post Selector -->
         <div class="flex justify-between items-center mb-8">
-            <nav class="text-base text-gray-400">
-                <span class="text-dark-text font-medium">{{ current_stage|title }}</span>
+            <nav class="text-base">
+                <h2 class="text-2xl font-bold text-dark-text">{{ current_substage|title }} : {{
+                    all_posts|selectattr('id', 'equalto', current_post_id)|map(attribute='title')|first }}</h2>
             </nav>
             <div class="relative">
                 <select id="post-selector"
