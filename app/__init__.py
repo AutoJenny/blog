@@ -136,7 +136,7 @@ def create_app(config_class=Config):
 
     # Register nav module blueprint
     from modules.nav.routes import bp as nav_bp
-    app.register_blueprint(nav_bp, url_prefix='/modules/nav')
+    app.register_blueprint(nav_bp)
 
     from app.routes.settings import settings_bp
     app.register_blueprint(settings_bp, url_prefix='/settings')

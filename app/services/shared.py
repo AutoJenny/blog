@@ -66,11 +66,16 @@ def get_workflow_stages_from_db():
         
         cur = conn.cursor()
         
-        # Query workflow steps
+        # Query workflow steps using the normalized schema
         cur.execute('''
-            SELECT stage_name, substage_name, step_name
-            FROM workflow_step_entity
-            ORDER BY stage_order, substage_order, step_order
+            SELECT 
+                s.name as stage_name,
+                ss.name as substage_name,
+                ws.name as step_name
+            FROM workflow_stage_entity s
+            JOIN workflow_sub_stage_entity ss ON ss.stage_id = s.id
+            JOIN workflow_step_entity ws ON ws.sub_stage_id = ss.id
+            ORDER BY s.stage_order, ss.sub_stage_order, ws.step_order
         ''')
         
         stages = {}

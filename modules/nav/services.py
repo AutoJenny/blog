@@ -79,12 +79,16 @@ def get_workflow_stages_fallback():
 
 def get_workflow_context():
     """Get workflow context for the current stage/substage/step."""
-    # For now, return a default context
-    # This will be enhanced to fetch real data from the database
+    # Get all posts to find a default post_id
+    all_posts = get_all_posts()
+    default_post_id = all_posts[0]['id'] if all_posts else None
+    
+    # Return context with default post_id
     return {
         'current_stage': 'planning',
         'current_substage': 'idea',
         'current_step': 'basic_idea',
         'stages': get_workflow_stages(),
-        'all_posts': get_all_posts()
+        'all_posts': all_posts,
+        'post_id': default_post_id
     } 
