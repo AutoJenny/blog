@@ -23,6 +23,7 @@ def workflow_index(post_id=None, stage='planning', substage='idea', step='basic_
     # Build context with current navigation state
     context = {
         'post_id': post_id,
+        'current_post_id': post_id,
         'current_stage': stage,
         'current_substage': substage,
         'current_step': step,
