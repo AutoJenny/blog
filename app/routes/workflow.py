@@ -24,9 +24,6 @@ def workflow_index(post_id=None, stage='planning', substage='idea', step='basic_
     context = {
         'post_id': post_id,
         'current_post_id': post_id,
-        'current_stage': stage,
-        'current_substage': substage,
-        'current_step': step,
         'all_posts': all_posts,
         'workflow_ready': True,
         'llm_actions_data': None  # Placeholder for future context
@@ -34,5 +31,12 @@ def workflow_index(post_id=None, stage='planning', substage='idea', step='basic_
     
     # Update with workflow context
     context.update(workflow_ctx)
+    
+    # Override with current navigation state
+    context.update({
+        'current_stage': stage,
+        'current_substage': substage,
+        'current_step': step
+    })
     
     return render_template('workflow/index.html', **context) 

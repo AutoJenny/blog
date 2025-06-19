@@ -42,7 +42,7 @@
                     'structure': 'sitemap'
                     } %}
                     {% set is_active = current_stage == 'planning' and current_substage == substage %}
-                    <a href="{{ url_for('workflow_nav.stage', stage='planning', substage=substage, post_id=current_post_id) }}"
+                    <a href="{% if request.blueprint == 'workflow_nav' %}{{ url_for('workflow_nav.stage', stage='planning', substage=substage, post_id=current_post_id) }}{% else %}{{ url_for('workflow.workflow_index', stage='planning', substage=substage, post_id=current_post_id) }}{% endif %}"
                         class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 {% if is_active %}border-blue-500 bg-dark-hover{% else %}border-dark-border{% endif %}">
                         <i
                             class="fas fa-{{ icon[substage] }} text-2xl mb-3 {% if is_active %}text-blue-500{% else %}text-dark-text{% endif %}"></i>
@@ -64,7 +64,7 @@
                     'images': 'image'
                     } %}
                     {% set is_active = current_stage == 'writing' and current_substage == substage %}
-                    <a href="{{ url_for('workflow_nav.stage', stage='writing', substage=substage, post_id=current_post_id) }}"
+                    <a href="{% if request.blueprint == 'workflow_nav' %}{{ url_for('workflow_nav.stage', stage='writing', substage=substage, post_id=current_post_id) }}{% else %}{{ url_for('workflow.workflow_index', stage='writing', substage=substage, post_id=current_post_id) }}{% endif %}"
                         class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 {% if is_active %}border-blue-500 bg-dark-hover{% else %}border-dark-border{% endif %}">
                         <i
                             class="fas fa-{{ icon[substage] }} text-2xl mb-3 {% if is_active %}text-blue-500{% else %}text-dark-text{% endif %}"></i>
@@ -86,7 +86,7 @@
                     'syndication': 'share-alt'
                     } %}
                     {% set is_active = current_stage == 'publishing' and current_substage == substage %}
-                    <a href="{{ url_for('workflow_nav.stage', stage='publishing', substage=substage, post_id=current_post_id) }}"
+                    <a href="{% if request.blueprint == 'workflow_nav' %}{{ url_for('workflow_nav.stage', stage='publishing', substage=substage, post_id=current_post_id) }}{% else %}{{ url_for('workflow.workflow_index', stage='publishing', substage=substage, post_id=current_post_id) }}{% endif %}"
                         class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 {% if is_active %}border-blue-500 bg-dark-hover{% else %}border-dark-border{% endif %}">
                         <i
                             class="fas fa-{{ icon[substage] }} text-2xl mb-3 {% if is_active %}text-blue-500{% else %}text-dark-text{% endif %}"></i>
@@ -104,7 +104,7 @@
             <div class="flex space-x-6">
                 {% if current_stage == 'planning' and current_substage == 'idea' %}
                 {% for step in ['basic_idea', 'provisional_title'] %}
-                <a href="{{ url_for('workflow_nav.stage', stage=current_stage, substage=current_substage, step=step, post_id=current_post_id) }}"
+                <a href="{% if request.blueprint == 'workflow_nav' %}{{ url_for('workflow_nav.stage', stage=current_stage, substage=current_substage, step=step, post_id=current_post_id) }}{% else %}{{ url_for('workflow.workflow_index', stage=current_stage, substage=current_substage, step=step, post_id=current_post_id) }}{% endif %}"
                     class="px-4 py-2 border-b-2 font-medium {% if current_step == step %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
                     {{ step|title|replace('_', ' ') }}
                 </a>
