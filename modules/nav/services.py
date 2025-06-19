@@ -118,6 +118,69 @@ def get_workflow_stages_fallback():
         }
     }
 
+def get_all_posts():
+    """Get all posts from the database for the post selector."""
+    conn = get_db_conn()
+    if not conn:
+        # Return fallback data if database connection fails
+        return [
+            {'id': 1, 'title': 'Demo Post (DB Unavailable)'},
+            {'id': 2, 'title': 'Second Post (DB Unavailable)'}
+        ]
+    
+    try:
+        cur = conn.cursor()
+        
+        # Query posts table - check what columns exist first
+        cur.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'post'
+            ORDER BY ordinal_position
+        """)
+        columns = [row[0] for row in cur.fetchall()]
+        print(f"Available columns in post table: {columns}")
+        
+        # Query posts, excluding deleted ones
+        if 'id' in columns and 'title' in columns and 'status' in columns:
+            cur.execute('''
+                SELECT id, title
+                FROM post
+                WHERE status != 'deleted'
+                ORDER BY id DESC
+            ''')
+        elif 'id' in columns and 'title' in columns:
+            # No status column found, get all posts
+            cur.execute('''
+                SELECT id, title
+                FROM post
+                ORDER BY id DESC
+            ''')
+        else:
+            print(f"Could not find expected columns in post table")
+            return get_all_posts_fallback()
+        
+        posts = []
+        for row in cur.fetchall():
+            post_id, title = row
+            posts.append({'id': post_id, 'title': title})
+        
+        cur.close()
+        conn.close()
+        return posts
+        
+    except Exception as e:
+        print(f"Database query error: {e}")
+        conn.close()
+        return get_all_posts_fallback()
+
+def get_all_posts_fallback():
+    """Return fallback posts data."""
+    return [
+        {'id': 1, 'title': 'Demo Post (DB Error)'},
+        {'id': 2, 'title': 'Second Post (DB Error)'}
+    ]
+
 def get_workflow_context():
     """Get workflow context for the current stage/substage/step."""
     # For now, return a default context
@@ -126,5 +189,6 @@ def get_workflow_context():
         'current_stage': 'planning',
         'current_substage': 'idea',
         'current_step': 'basic_idea',
-        'stages': get_workflow_stages()
+        'stages': get_workflow_stages(),
+        'all_posts': get_all_posts()
     } 
