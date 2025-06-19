@@ -18,7 +18,7 @@ def get_all_posts_from_db():
     that needs to access post data.
     
     Returns:
-        list: List of post dictionaries with 'id' and 'title' keys
+        list: List of post dictionaries with 'id', 'title', and 'updated_at' keys
     """
     try:
         conn = get_db_conn()
@@ -30,15 +30,19 @@ def get_all_posts_from_db():
         
         # Query posts, excluding deleted ones
         cur.execute('''
-            SELECT id, title
+            SELECT id, title, updated_at
             FROM post
             WHERE status != 'deleted'
-            ORDER BY id DESC
+            ORDER BY updated_at DESC NULLS LAST
         ''')
         
         posts = []
         for row in cur.fetchall():
-            posts.append({'id': row['id'], 'title': row['title']})
+            posts.append({
+                'id': row['id'], 
+                'title': row['title'],
+                'updated_at': row['updated_at']
+            })
         
         cur.close()
         conn.close()

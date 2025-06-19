@@ -94,9 +94,13 @@
                         <h3 class="text-lg font-semibold text-white">Planning</h3>
                     </div>
                     <div class="flex flex-col">
-                        <a href="/workflow/posts/{{ post_id }}/planning/idea" class="workflow-step">Idea</a>
-                        <a href="/workflow/posts/{{ post_id }}/planning/research" class="workflow-step">Research</a>
-                        <a href="/workflow/posts/{{ post_id }}/planning/structure" class="workflow-step">Structure</a>
+                        {% set first_post_id = posts[0].id if posts else 1 %}
+                        <a href="{{ url_for('workflow.workflow_index', post_id=first_post_id, stage='planning', substage='idea') }}"
+                            class="workflow-step">Idea</a>
+                        <a href="{{ url_for('workflow.workflow_index', post_id=first_post_id, stage='planning', substage='research') }}"
+                            class="workflow-step">Research</a>
+                        <a href="{{ url_for('workflow.workflow_index', post_id=first_post_id, stage='planning', substage='structure') }}"
+                            class="workflow-step">Structure</a>
                     </div>
                 </div>
                 <!-- Writing -->
@@ -108,9 +112,12 @@
                         <h3 class="text-lg font-semibold text-white">Writing</h3>
                     </div>
                     <div class="flex flex-col">
-                        <a href="/workflow/posts/{{ post_id }}/writing/content" class="workflow-step">Content</a>
-                        <a href="/workflow/posts/{{ post_id }}/writing/meta_info" class="workflow-step">Meta Info</a>
-                        <a href="/workflow/posts/{{ post_id }}/writing/images" class="workflow-step">Images</a>
+                        <a href="{{ url_for('workflow.workflow_index', post_id=first_post_id, stage='writing', substage='content') }}"
+                            class="workflow-step">Content</a>
+                        <a href="{{ url_for('workflow.workflow_index', post_id=first_post_id, stage='writing', substage='meta_info') }}"
+                            class="workflow-step">Meta Info</a>
+                        <a href="{{ url_for('workflow.workflow_index', post_id=first_post_id, stage='writing', substage='images') }}"
+                            class="workflow-step">Images</a>
                     </div>
                 </div>
                 <!-- Publishing -->
@@ -122,9 +129,11 @@
                         <h3 class="text-lg font-semibold text-white">Publishing</h3>
                     </div>
                     <div class="flex flex-col">
-                        <a href="/workflow/posts/{{ post_id }}/publishing/preflight" class="workflow-step">Preflight</a>
-                        <a href="/workflow/posts/{{ post_id }}/publishing/launch" class="workflow-step">Launch</a>
-                        <a href="/workflow/posts/{{ post_id }}/publishing/syndication"
+                        <a href="{{ url_for('workflow.workflow_index', post_id=first_post_id, stage='publishing', substage='preflight') }}"
+                            class="workflow-step">Preflight</a>
+                        <a href="{{ url_for('workflow.workflow_index', post_id=first_post_id, stage='publishing', substage='launch') }}"
+                            class="workflow-step">Launch</a>
+                        <a href="{{ url_for('workflow.workflow_index', post_id=first_post_id, stage='publishing', substage='syndication') }}"
                             class="workflow-step">Syndication</a>
                     </div>
                 </div>
