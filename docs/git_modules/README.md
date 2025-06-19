@@ -173,4 +173,18 @@ Each module must:
    - Wait for explicit guidance
    - **DO NOT MAKE ASSUMPTIONS**
 
-Remember: The entire purpose of this architecture is to make it **technically impossible** to accidentally modify module code in MAIN_HUB. If you find yourself able to edit modules directly in MAIN_HUB, something is wrong - stop immediately and seek review. 
+Remember: The entire purpose of this architecture is to make it **technically impossible** to accidentally modify module code in MAIN_HUB. If you find yourself able to edit modules directly in MAIN_HUB, something is wrong - stop immediately and seek review.
+
+# Modular Git Modules: Service Layer Pattern
+
+This project uses a hybrid service layer pattern for robust modularity and integration.
+
+- Shared services for DB access and workflow logic are defined in MAIN_HUB (`app/services/shared.py`).
+- Module-specific services (e.g., `modules/nav/services.py`) import and use these shared services when available, or fallback to demo data in standalone mode.
+- MAIN_HUB integration code must always call module service functions for data access and mutation.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for full details.
+
+---
+
+_Last updated: [date]_ 

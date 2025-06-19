@@ -231,4 +231,31 @@ MAIN_HUB/
 - **Working Integration**: All modules work together properly
 - **Clear Boundaries**: Module responsibilities are well-defined
 
-**Remember: The entire purpose is to make it technically impossible to accidentally modify module code in MAIN_HUB. If you can edit modules directly in MAIN_HUB, something is wrong - stop immediately.** 
+**Remember: The entire purpose is to make it technically impossible to accidentally modify module code in MAIN_HUB. If you can edit modules directly in MAIN_HUB, something is wrong - stop immediately.**
+
+# Modular Service Layer Architecture
+
+## Hybrid Service Layer Pattern
+
+- Shared services for DB access and workflow logic are defined in MAIN_HUB (`app/services/shared.py`).
+- Module-specific services (e.g., `modules/nav/services.py`) import and use these shared services when available.
+- If MAIN_HUB is not present, modules fall back to local demo data for standalone development.
+
+## Integration
+- MAIN_HUB integration code (e.g., `app/routes/workflow.py`) must always call module service functions for data access and mutation.
+- This ensures a single source of truth and consistent behavior in both standalone and integrated modes.
+
+## Fallback Logic
+- If shared services are not importable, modules use fallback demo data for posts and workflow stages.
+
+## Testing
+- Test `/workflow/` for MAIN_HUB integration (should show real DB posts).
+- Test `/modules/nav/` for standalone mode (should show demo data if MAIN_HUB is not present, or real data if integrated).
+
+## Rationale
+- This approach balances modularity, maintainability, and robust integration.
+- It avoids circular imports and ensures modules can be developed and tested independently.
+
+---
+
+_Last updated: [date]_ 

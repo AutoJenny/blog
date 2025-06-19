@@ -89,4 +89,16 @@ This document defines the minimal set of files and directories required for the 
 ## 4. Next Steps
 - Delete all files/directories listed in section 2.
 - Retain only those in section 1 for a pure, firewalled base-framework.
-- Commit this manifest and all changes to git as a record of the branch state. 
+- Commit this manifest and all changes to git as a record of the branch state.
+
+---
+
+# Manifest Base Framework
+
+This project now uses a hybrid service layer pattern for modularity and integration.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for details.
+
+---
+
+_Last updated: [date]_ 

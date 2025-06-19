@@ -1,3 +1,19 @@
+# Code Mapping: Hybrid Service Layer
+
+- **Shared DB connection**: `app/database/routes.py:get_db_conn()`
+- **Shared services**: `app/services/shared.py` (MAIN_HUB)
+- **Nav module services**: `modules/nav/services.py`
+- **Workflow integration**: `app/routes/workflow.py`
+- **Nav blueprint registration**: `app/__init__.py`
+
+## Data Flow
+- MAIN_HUB integration code calls nav module service functions for all workflow/nav data.
+- Nav module service functions use shared services for DB access when available, fallback to demo data otherwise.
+
+---
+
+_Last updated: [date]_
+
 # Code Mapping - Module Boundaries
 
 ## ⚠️ CRITICAL FIREWALL RULE ⚠️

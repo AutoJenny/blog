@@ -93,4 +93,14 @@ Each source branch contains:
 
 ## Key Principle
 
-**This architecture is designed to make it technically impossible for the AI (or anyone) to accidentally or implicitly change module code in MAIN_HUB. All module updates are explicit, reviewable, and controlled through the merge script.** 
+**This architecture is designed to make it technically impossible for the AI (or anyone) to accidentally or implicitly change module code in MAIN_HUB. All module updates are explicit, reviewable, and controlled through the merge script.**
+
+# Orientation: Hybrid Service Layer
+
+- Shared services in MAIN_HUB, module-specific services in each module.
+- Modules fallback to demo data if MAIN_HUB is not present.
+- See ARCHITECTURE.md for details.
+
+---
+
+_Last updated: [date]_ 

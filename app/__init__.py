@@ -134,6 +134,10 @@ def create_app(config_class=Config):
     from app.routes.workflow import workflow_bp
     app.register_blueprint(workflow_bp)
 
+    # Register nav module blueprint
+    from modules.nav.routes import bp as nav_bp
+    app.register_blueprint(nav_bp, url_prefix='/modules/nav')
+
     from app.routes.settings import settings_bp
     app.register_blueprint(settings_bp, url_prefix='/settings')
 

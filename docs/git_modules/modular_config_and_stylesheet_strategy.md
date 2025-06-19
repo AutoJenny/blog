@@ -3,6 +3,10 @@
 ## Purpose
 This document records the issues, requirements, and solutions for managing configuration and stylesheets in a modular, firewalled Flask project. It is the canonical reference for ensuring that each module/branch can be developed, tested, and merged into a unified core branch without conflicts or cross-contamination.
 
+This project uses a hybrid service layer pattern for modularity and integration.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for details.
+
 ---
 
 ## 1. Config Management Issues & Solutions
@@ -68,4 +72,6 @@ This document records the issues, requirements, and solutions for managing confi
 ## 4. Next Steps
 - Begin implementation in the base-framework branch.
 - Apply these principles to each module branch in turn.
-- Review and update this document as the project evolves. 
+- Review and update this document as the project evolves.
+
+_Last updated: [date]_ 
