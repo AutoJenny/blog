@@ -42,7 +42,9 @@ def index():
                 posts = cur.fetchall()
     except Exception as e:
         posts = []
-    return render_template("blog/index.html", posts=posts)
+    # Get the first post's ID for the workflow links
+    post_id = posts[0]['id'] if posts else None
+    return render_template("blog/index.html", posts=posts, post_id=post_id)
 
 
 @bp.route("/health")

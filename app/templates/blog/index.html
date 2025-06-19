@@ -94,9 +94,9 @@
                         <h3 class="text-lg font-semibold text-white">Planning</h3>
                     </div>
                     <div class="flex flex-col">
-                        <a href="/workflow/planning/idea" class="workflow-step">Idea</a>
-                        <a href="/workflow/planning/research" class="workflow-step">Research</a>
-                        <a href="/workflow/planning/structure" class="workflow-step">Structure</a>
+                        <a href="/workflow/posts/{{ post_id }}/planning/idea" class="workflow-step">Idea</a>
+                        <a href="/workflow/posts/{{ post_id }}/planning/research" class="workflow-step">Research</a>
+                        <a href="/workflow/posts/{{ post_id }}/planning/structure" class="workflow-step">Structure</a>
                     </div>
                 </div>
                 <!-- Writing -->
@@ -108,9 +108,9 @@
                         <h3 class="text-lg font-semibold text-white">Writing</h3>
                     </div>
                     <div class="flex flex-col">
-                        <a href="/workflow/writing/sections" class="workflow-step">Sections</a>
-                        <a href="/workflow/writing/meta" class="workflow-step">Meta Info</a>
-                        <a href="/workflow/writing/images" class="workflow-step">Images</a>
+                        <a href="/workflow/posts/{{ post_id }}/writing/content" class="workflow-step">Content</a>
+                        <a href="/workflow/posts/{{ post_id }}/writing/meta_info" class="workflow-step">Meta Info</a>
+                        <a href="/workflow/posts/{{ post_id }}/writing/images" class="workflow-step">Images</a>
                     </div>
                 </div>
                 <!-- Publishing -->
@@ -122,9 +122,10 @@
                         <h3 class="text-lg font-semibold text-white">Publishing</h3>
                     </div>
                     <div class="flex flex-col">
-                        <a href="/workflow/publishing/preflight" class="workflow-step">Preflight</a>
-                        <a href="/workflow/publishing/launch" class="workflow-step">Launch</a>
-                        <a href="/workflow/publishing/syndication" class="workflow-step">Syndication</a>
+                        <a href="/workflow/posts/{{ post_id }}/publishing/preflight" class="workflow-step">Preflight</a>
+                        <a href="/workflow/posts/{{ post_id }}/publishing/launch" class="workflow-step">Launch</a>
+                        <a href="/workflow/posts/{{ post_id }}/publishing/syndication"
+                            class="workflow-step">Syndication</a>
                     </div>
                 </div>
             </div>
