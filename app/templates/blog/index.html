@@ -26,16 +26,41 @@
         border: 1px solid #31364a;
         color: #e0e0e0;
         box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+        transition: all 0.2s ease-in-out;
     }
 
     .card-dark:hover {
         background: #23273a;
         border-color: #6366f1;
+        transform: translateY(-2px);
     }
 
     .section-title {
         color: #a5b4fc;
         font-weight: 700;
+    }
+
+    .workflow-card {
+        background: #181c2a;
+        border: 1px solid #31364a;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .workflow-card:hover {
+        border-color: #6366f1;
+        transform: translateY(-2px);
+    }
+
+    .workflow-step {
+        color: #e0e0e0;
+        padding: 0.5rem 0;
+        transition: color 0.2s ease-in-out;
+    }
+
+    .workflow-step:hover {
+        color: #a5b4fc;
     }
 
     .input-dark {
@@ -54,30 +79,79 @@
 {% block content %}
 <div class="min-h-screen bg-dark-bg text-dark-text">
     <div class="max-w-7xl mx-auto px-4 py-10">
+        <!-- Workflow -->
+        <section class="mb-12">
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-diagram-project"></i> Workflow
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Planning -->
+                <div class="workflow-card">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="icon-circle">
+                            <i class="fa-solid fa-lightbulb text-yellow-400 text-xl"></i>
+                        </span>
+                        <h3 class="text-lg font-semibold text-white">Planning</h3>
+                    </div>
+                    <div class="flex flex-col">
+                        <a href="/workflow/planning/idea" class="workflow-step">Idea</a>
+                        <a href="/workflow/planning/research" class="workflow-step">Research</a>
+                        <a href="/workflow/planning/structure" class="workflow-step">Structure</a>
+                    </div>
+                </div>
+                <!-- Writing -->
+                <div class="workflow-card">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="icon-circle">
+                            <i class="fa-solid fa-pen-to-square text-blue-400 text-xl"></i>
+                        </span>
+                        <h3 class="text-lg font-semibold text-white">Writing</h3>
+                    </div>
+                    <div class="flex flex-col">
+                        <a href="/workflow/writing/sections" class="workflow-step">Sections</a>
+                        <a href="/workflow/writing/meta" class="workflow-step">Meta Info</a>
+                        <a href="/workflow/writing/images" class="workflow-step">Images</a>
+                    </div>
+                </div>
+                <!-- Publishing -->
+                <div class="workflow-card">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="icon-circle">
+                            <i class="fa-solid fa-paper-plane text-green-400 text-xl"></i>
+                        </span>
+                        <h3 class="text-lg font-semibold text-white">Publishing</h3>
+                    </div>
+                    <div class="flex flex-col">
+                        <a href="/workflow/publishing/preflight" class="workflow-step">Preflight</a>
+                        <a href="/workflow/publishing/launch" class="workflow-step">Launch</a>
+                        <a href="/workflow/publishing/syndication" class="workflow-step">Syndication</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Technical Modules -->
         <section class="mb-12">
-            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Technical
-                Modules</h2>
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-cubes"></i> Technical Modules
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <a href="/db/" class="block group">
-                    <div
-                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                    <div class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2">
                         <span class="icon-circle"><i class="fa-solid fa-database text-purple-400 text-xl"></i></span>
                         <span class="text-lg font-semibold text-white">Database</span>
                         <p class="text-dark-accent text-sm text-center">Manage schemas, data, and migrations</p>
                     </div>
                 </a>
                 <a href="/llm/" class="block group">
-                    <div
-                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                    <div class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2">
                         <span class="icon-circle"><i class="fa-solid fa-brain text-pink-400 text-xl"></i></span>
                         <span class="text-lg font-semibold text-white">AI</span>
                         <p class="text-dark-accent text-sm text-center">Configure models, prompts, and assistance</p>
                     </div>
                 </a>
                 <a href="/llm/images/" class="block group">
-                    <div
-                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                    <div class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2">
                         <span class="icon-circle"><i class="fa-solid fa-image text-dark-accent text-xl"></i></span>
                         <span class="text-lg font-semibold text-white">Images</span>
                         <p class="text-dark-accent text-sm text-center">Generate and manage blog images</p>
@@ -88,28 +162,34 @@
 
         <!-- Documentation -->
         <section class="mb-12">
-            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-book"></i>
-                Documentation</h2>
-            <div class="card-dark rounded-xl p-8 flex flex-col md:flex-row items-center justify-between">
-                <div class="flex items-center gap-3 mb-4 md:mb-0">
-                    <span class="icon-circle"><i class="fa-solid fa-book-open text-dark-accent text-xl"></i></span>
-                    <span class="text-lg font-semibold text-white">Project Documentation</span>
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-book"></i> Documentation
+            </h2>
+            <div class="card-dark rounded-xl p-8">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="flex items-center gap-3 mb-4 md:mb-0">
+                        <span class="icon-circle">
+                            <i class="fa-solid fa-book-open text-dark-accent text-xl"></i>
+                        </span>
+                        <h3 class="text-lg font-semibold text-white">Project Documentation</h3>
+                    </div>
+                    <a href="/docs/"
+                        class="bg-dark-accent hover:bg-dark-bg text-white font-semibold px-5 py-2 rounded-lg border border-dark-accent transition">
+                        View Docs
+                    </a>
                 </div>
-                <a href="/docs/"
-                    class="bg-dark-accent hover:bg-dark-bg text-white font-semibold px-5 py-2 rounded-lg border border-dark-accent transition">View
-                    Docs</a>
             </div>
         </section>
 
         <!-- Recent Posts -->
         <section>
-            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-clock"></i> Recent
-                Posts</h2>
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-clock"></i> Recent Posts
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {% for post in posts[:3] %}
                 <a href="{{ url_for('blog.post_public', post_id=post.id) }}" class="block group">
-                    <div
-                        class="card-dark rounded-xl p-6 transition flex flex-col gap-2 h-full group-hover:border-dark-accent">
+                    <div class="card-dark rounded-xl p-6 transition flex flex-col gap-2 h-full">
                         <h3 class="text-lg font-bold mb-1 text-white flex items-center gap-2">
                             <i class="fa-solid fa-file-lines text-dark-accent"></i> {{ post.title }}
                         </h3>

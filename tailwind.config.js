@@ -9,9 +9,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'dark-bg': '#1a1a1a',
-        'dark-surface': '#2d2d2d',
-        'dark-border': '#404040',
+        'dark-bg': '#181c2a',
+        'dark-surface': '#23273a',
+        'dark-border': '#31364a',
         'dark-text': '#e0e0e0',
         'dark-accent': '#6366f1',
         // Blogforge-style tokens for Tailwind utilities
@@ -57,6 +57,8 @@ module.exports = {
     'border-dark-border',
     'text-dark-text',
     'text-dark-accent',
-    'hover:text-dark-accent'
+    'hover:text-dark-accent',
+    'hover:bg-dark-surface',
+    'hover:border-dark-accent'
   ]
 } 
