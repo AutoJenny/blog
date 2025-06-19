@@ -13,7 +13,7 @@
 
 ## Architecture Overview
 
-This document describes the technical implementation of the modular architecture for BlogForge. The system uses a source branch → merge script → integration branch pattern to ensure absolute module isolation.
+This document describes the technical implementation of the modular architecture for BlogForge. The system uses a source branch → merge script → integration branch pattern to ensure absolute module isolation, with a hybrid service layer for data access and template integration via Flask blueprints.
 
 ### Core Architecture
 
@@ -30,7 +30,9 @@ Integration Branch (Deployment)
     ├── modules/nav/      (READ-ONLY)
     ├── modules/llm/      (READ-ONLY)
     ├── modules/sections/ (READ-ONLY)
-    └── app/routes/workflow.py (EDITABLE - Integration code)
+    ├── app/routes/workflow.py (EDITABLE - Integration code)
+    ├── app/services/shared.py (EDITABLE - Shared services)
+    └── app/templates/workflow/ (EDITABLE - Integration templates)
 ```
 
 ---
@@ -51,6 +53,8 @@ workflow-navigation/
 │   │   ├── css/
 │   │   └── js/
 │   └── templates/
+│       └── nav.html
+├── app/routes/workflow.py (matches MAIN_HUB integration)
 ├── README.md
 └── requirements.txt
 ```
@@ -68,12 +72,68 @@ MAIN_HUB/
 ├── app/
 │   ├── routes/
 │   │   └── workflow.py   (EDITABLE - Integration code)
+│   ├── services/
+│   │   └── shared.py     (EDITABLE - Shared services)
 │   ├── templates/
 │   │   └── workflow/     (EDITABLE - Integration templates)
 │   └── static/
 ├── merge_NAV_module.sh   (Merge script)
 └── requirements.txt
 ```
+
+---
+
+## Hybrid Service Layer Pattern
+
+### Shared Services (MAIN_HUB)
+- **Location**: `app/services/shared.py`
+- **Purpose**: Centralized database access and workflow logic
+- **Functions**: `get_all_posts_from_db()`, `get_workflow_stages_from_db()`
+- **Usage**: Used by all modules for consistent data access
+
+### Module Services
+- **Location**: `modules/[module]/services.py`
+- **Pattern**: Import shared services when available, fallback to local logic
+- **Fallback**: Demo data for standalone development
+- **Integration**: MAIN_HUB integration code calls module service functions
+
+### Service Layer Benefits
+- **Consistency**: Same data access logic across all modules
+- **Fallback Safety**: Modules work in both standalone and integrated modes
+- **Single Source of Truth**: Shared services prevent data inconsistencies
+- **Maintainability**: Centralized database logic
+
+---
+
+## Template Integration Pattern
+
+### Flask Blueprint Integration
+- **Module Blueprints**: Each module registers as a Flask blueprint
+- **Template Includes**: MAIN_HUB templates include module templates via blueprint names
+- **Example**: `{% include 'workflow_nav/nav.html' %}` includes nav module template
+- **Separation**: MAIN_HUB controls layout, modules provide functionality
+
+### Template Structure
+```
+MAIN_HUB Integration Template:
+app/templates/workflow/index.html
+├── Extends base.html
+├── Includes workflow_nav/nav.html (nav module)
+├── Includes llm_actions/llm_actions.html (LLM module)
+└── Controls overall workflow layout
+
+Module Template:
+modules/nav/templates/nav.html
+├── Self-contained navigation UI
+├── Uses context from integration code
+└── No knowledge of other modules
+```
+
+### Template Integration Benefits
+- **Blueprint Resolution**: Flask properly resolves template paths
+- **Context Sharing**: Integration code provides data to module templates
+- **Layout Control**: MAIN_HUB controls overall page structure
+- **Module Independence**: Modules don't know about each other
 
 ---
 
@@ -93,6 +153,11 @@ MAIN_HUB/
 - Modules communicate only via database/API
 - No direct code dependencies
 - Shared interfaces defined in integration code
+
+### 4. Service Layer Isolation
+- Shared services in MAIN_HUB
+- Module services import shared services when available
+- Fallback to local logic in standalone mode
 
 ---
 
@@ -117,9 +182,19 @@ MAIN_HUB/
 
 ### `app/routes/workflow.py`
 - **Module Coordination**: Import and initialize modules
-- **Data Provision**: Provide data to modules from database
+- **Data Provision**: Provide data to modules from database via service layer
 - **Template Rendering**: Coordinate template rendering
 - **State Management**: Handle workflow state transitions
+
+### `app/services/shared.py`
+- **Database Access**: Centralized database connection and queries
+- **Data Consistency**: Ensure consistent data across all modules
+- **Error Handling**: Robust error handling and fallback logic
+
+### `app/templates/workflow/index.html`
+- **Layout Control**: Define overall workflow page structure
+- **Module Integration**: Include module templates via blueprint names
+- **Context Provision**: Provide data context to module templates
 
 ### Forbidden in Integration Code
 - Direct module code implementation
@@ -156,10 +231,11 @@ MAIN_HUB/
 5. **Use merge script**: Update MAIN_HUB
 
 ### Integration Development (MAIN_HUB)
-1. **Edit integration code**: Only `app/routes/workflow.py`
-2. **Test integration**: Verify modules work together
-3. **Document changes**: Update integration docs
-4. **Never touch modules**: Modules are READ-ONLY
+1. **Edit integration code**: Only `app/routes/workflow.py`, `app/services/shared.py`
+2. **Edit integration templates**: Only `app/templates/workflow/`
+3. **Test integration**: Verify modules work together
+4. **Document changes**: Update integration docs
+5. **Never touch modules**: Modules are READ-ONLY
 
 ---
 
@@ -201,7 +277,9 @@ MAIN_HUB/
 2. **Firewall Protection**: Modules in MAIN_HUB are never edited directly
 3. **Explicit Integration**: All updates go through controlled process
 4. **Data Layer Communication**: Modules interact only via database/API
-5. **Technical Enforcement**: Architecture prevents cross-contamination
+5. **Service Layer Consistency**: Shared services ensure data consistency
+6. **Template Integration**: Blueprint-based template includes
+7. **Technical Enforcement**: Architecture prevents cross-contamination
 
 ---
 
@@ -210,9 +288,10 @@ MAIN_HUB/
 ### For Each Module
 - [ ] Module is self-contained
 - [ ] No cross-module dependencies
-- [ ] Uses only data layer for communication
+- [ ] Uses service layer for data access
 - [ ] Has clear integration points
 - [ ] Follows module boundaries
+- [ ] Template uses blueprint registration
 
 ### For Integration
 - [ ] Integration code coordinates modules
@@ -220,16 +299,20 @@ MAIN_HUB/
 - [ ] Complete testing after merges
 - [ ] Documentation updated
 - [ ] Firewall rules followed
+- [ ] Service layer properly implemented
+- [ ] Template includes use blueprint names
 
 ---
 
 ## Success Metrics
 
 - **Zero Cross-Contamination**: No module code in other modules
-- **Firewall Integrity**: No direct module editing in MAIN_HUB
-- **Clean Merges**: All merges complete successfully
-- **Working Integration**: All modules work together properly
-- **Clear Boundaries**: Module responsibilities are well-defined
+- [ ] Firewall Integrity: No direct module editing in MAIN_HUB
+- [ ] Clean Merges: All merges complete successfully
+- [ ] Working Integration: All modules work together properly
+- [ ] Clear Boundaries: Module responsibilities are well-defined
+- [ ] Service Layer Consistency: All modules use shared services
+- [ ] Template Integration: Module templates properly included
 
 **Remember: The entire purpose is to make it technically impossible to accidentally modify module code in MAIN_HUB. If you can edit modules directly in MAIN_HUB, something is wrong - stop immediately.**
 

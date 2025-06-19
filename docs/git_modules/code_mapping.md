@@ -5,14 +5,22 @@
 - **Nav module services**: `modules/nav/services.py`
 - **Workflow integration**: `app/routes/workflow.py`
 - **Nav blueprint registration**: `app/__init__.py`
+- **Template integration**: `app/templates/workflow/index.html` includes `workflow_nav/nav.html`
 
 ## Data Flow
 - MAIN_HUB integration code calls nav module service functions for all workflow/nav data.
 - Nav module service functions use shared services for DB access when available, fallback to demo data otherwise.
+- Templates are integrated via Flask blueprint includes (`workflow_nav/nav.html`)
+
+## Template Integration Pattern
+- **MAIN_HUB workflow template**: `app/templates/workflow/index.html` extends `base.html` and includes module templates
+- **Nav module template**: `modules/nav/templates/nav.html` provides navigation UI
+- **Blueprint include**: `{% include 'workflow_nav/nav.html' %}` uses blueprint name for proper Flask resolution
+- **Integration separation**: MAIN_HUB controls layout, modules provide functionality
 
 ---
 
-_Last updated: [date]_
+_Last updated: 2024-12-19_
 
 # Code Mapping - Module Boundaries
 

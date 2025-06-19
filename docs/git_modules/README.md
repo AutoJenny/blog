@@ -19,6 +19,8 @@ This project implements a strict modular architecture where each module exists a
 2. **Firewall Protection**: Modules in MAIN_HUB are never edited directly
 3. **Explicit Integration**: All module updates happen through the merge script from source branches
 4. **Technical Enforcement**: Module separation is enforced by the merge process and file structure
+5. **Service Layer Consistency**: Shared services in MAIN_HUB provide consistent data access
+6. **Template Integration**: Flask blueprint-based template includes for proper module integration
 
 ## MANDATORY Rules (No Exceptions)
 
@@ -32,6 +34,8 @@ This project implements a strict modular architecture where each module exists a
 8. **ALWAYS** document all merge operations
 9. **NEVER** modify module internals in MAIN_HUB
 10. **ALWAYS** wait for merge script completion before testing
+11. **ALWAYS** use shared services for database access
+12. **ALWAYS** use blueprint names for template includes
 
 ## Current Architecture
 
@@ -50,6 +54,28 @@ This project implements a strict modular architecture where each module exists a
    - `modules/llm/`: LLM actions module (READ-ONLY)
    - `modules/sections/`: Sections module (READ-ONLY)
    - `app/routes/workflow.py`: Integration code (EDITABLE)
+   - `app/services/shared.py`: Shared services (EDITABLE)
+   - `app/templates/workflow/`: Integration templates (EDITABLE)
+
+## Service Layer Pattern
+
+### Shared Services (MAIN_HUB)
+- **Location**: `app/services/shared.py`
+- **Purpose**: Centralized database access and workflow logic
+- **Usage**: All modules import and use these services when available
+
+### Module Services
+- **Pattern**: Import shared services when available, fallback to local logic
+- **Fallback**: Demo data for standalone development
+- **Integration**: MAIN_HUB integration code calls module service functions
+
+## Template Integration Pattern
+
+### Flask Blueprint Integration
+- **Module Blueprints**: Each module registers as a Flask blueprint
+- **Template Includes**: MAIN_HUB templates include module templates via blueprint names
+- **Example**: `{% include 'workflow_nav/nav.html' %}` includes nav module template
+- **Separation**: MAIN_HUB controls layout, modules provide functionality
 
 ## Getting Started
 
@@ -82,10 +108,11 @@ This project implements a strict modular architecture where each module exists a
 
 Each module must:
 1. Contain only its own code
-2. Use only the shared data/API layer
+2. Use service layer for data access
 3. Have no direct dependencies on other modules
 4. Maintain its own templates and assets
 5. Be deployable in isolation
+6. Use blueprint registration for templates
 
 ## Technical Safeguards
 
@@ -106,6 +133,11 @@ Each module must:
    - Complete testing required
    - Documented changes
    - Explicit approval needed
+
+4. **Service Layer Consistency**
+   - Shared services in MAIN_HUB
+   - Module services import shared services
+   - Fallback to local logic in standalone mode
 
 ## Emergency Procedures
 
@@ -140,6 +172,8 @@ Each module must:
    - Force module edits
    - Skip integration tests
    - Merge without review
+   - Bypass service layer
+   - Use direct template paths
 
 2. **ALWAYS**:
    - Use source branches for development
@@ -149,7 +183,8 @@ Each module must:
    - Follow merge process
    - Document all changes
    - Check for contamination
-   - Use data layer only
+   - Use service layer for data access
+   - Use blueprint names for templates
    - Wait for approval
    - Maintain firewall rules
 
@@ -187,4 +222,4 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for full details.
 
 ---
 
-_Last updated: [date]_ 
+_Last updated: 2024-12-19_ 
