@@ -128,15 +128,7 @@
         const currentStage = '{{ current_stage }}';
         const currentSubstage = '{{ current_substage }}';
 
-        // Determine the correct URL based on context
-        const baseUrl = '{{ request.blueprint }}' === 'workflow_nav'
-            ? '{{ url_for("workflow_nav.nav_index", post_id=0) }}'.replace('/0', `/${postId}`)
-            : '{{ url_for("workflow.index", post_id=0) if workflow_enabled else url_for("workflow_nav.nav_index", post_id=0) }}'.replace('/0', `/${postId}`);
-
-        // Add stage parameters
-        const url = new URL(baseUrl, window.location.origin);
-        url.searchParams.set('stage', currentStage);
-        url.searchParams.set('substage', currentSubstage);
-
-        window.location.href = url.toString();
-    });</script>
+        // Always use the workflow URL structure
+        window.location.href = `/workflow/posts/${postId}/${currentStage}/${currentSubstage}`;
+    });
+</script>
