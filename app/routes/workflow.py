@@ -5,15 +5,12 @@ workflow_bp = Blueprint('workflow', __name__)
 
 @workflow_bp.route('/')
 def workflow_index():
-    # Get workflow context with default stage/substage for demo
-    context = get_workflow_context('planning', 'idea', 'basic_idea')
+    # Get workflow context - self-contained function
+    context = get_workflow_context()
     
-    # Add real data for the template - this will be replaced with actual DB data
+    # Add additional data for the template
     context.update({
         'post_id': 1,
-        'current_stage': 'planning',
-        'current_substage': 'idea', 
-        'current_step': 'basic_idea',
         'all_posts': [{'id': 1, 'title': 'Demo Post'}]  # This will be real DB data
     })
     
