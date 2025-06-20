@@ -14,9 +14,7 @@
         <div class="px-6 -mt-20">
             <div id="workflow-llm-actions" style="background-color: #2D0A50; width: 100%; min-height: 400px;"
                 class="rounded-lg p-6 shadow-lg">
-                <iframe src="{{ url_for('llm_panel.panels', post_id=post_id, substage=substage) }}"
-                    style="width: 100%; min-height: 800px; border: none; background: transparent;"
-                    frameborder="0"></iframe>
+                {% include 'panel.html' %}
             </div>
         </div>
         {% elif current_stage == 'writing' %}
@@ -26,9 +24,7 @@
                 {# Left column - LLM Actions #}
                 <div id="workflow-llm-actions" style="background-color: #2D0A50; width: 50%;"
                     class="rounded-lg p-6 shadow-lg">
-                    <iframe src="{{ url_for('llm_panel.panels', post_id=post_id, substage=substage) }}"
-                        style="width: 100%; min-height: 800px; border: none; background: transparent;"
-                        frameborder="0"></iframe>
+                    {% include 'panel.html' %}
                 </div>
                 {# Right column - Sections #}
                 <div id="workflow-sections" style="background-color: #013828; width: 50%;"
