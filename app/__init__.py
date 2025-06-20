@@ -123,8 +123,8 @@ def create_app(config_class=Config):
     from app.routes.workflow import workflow_bp
     app.register_blueprint(workflow_bp)
 
-    from modules.llm_actions import bp as llm_actions_bp
-    app.register_blueprint(llm_actions_bp)
+    from modules.llm_panel import bp as llm_panel_bp
+    app.register_blueprint(llm_panel_bp)
 
     # Register nav module blueprint
     from modules.nav.routes import bp as nav_bp
