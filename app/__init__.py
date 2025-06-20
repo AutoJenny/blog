@@ -120,19 +120,11 @@ def create_app(config_class=Config):
     from app.blog import bp as blog_bp
     app.register_blueprint(blog_bp, url_prefix='/blog')
 
-    # Temporarily disabled LLM blueprints
-    # from app.llm import bp as llm_bp
-    # app.register_blueprint(llm_bp, url_prefix='/llm')
-
-    # from app.api.llm import bp as llm_api_bp
-    # app.register_blueprint(llm_api_bp, url_prefix='/api/v1/llm')
-
-    from app.api import bp as api_bp
-    app.register_blueprint(api_bp, url_prefix='/api/v1')
-
-    # Temporarily disabled workflow blueprint
     from app.routes.workflow import workflow_bp
     app.register_blueprint(workflow_bp)
+
+    from modules.llm_actions import bp as llm_actions_bp
+    app.register_blueprint(llm_actions_bp)
 
     # Register nav module blueprint
     from modules.nav.routes import bp as nav_bp
@@ -143,9 +135,6 @@ def create_app(config_class=Config):
 
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
-
-    from app.database.routes import bp as db_bp
-    app.register_blueprint(db_bp)
 
     # Add debug route listing
     @app.route('/debug/routes')

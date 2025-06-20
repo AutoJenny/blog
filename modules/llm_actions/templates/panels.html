@@ -6,37 +6,37 @@ This file is included by all workflow substages. It expects:
 #}
 <div id="llm-workflow-root" data-substage="{{ substage }}" data-post-id="{{ post.id }}"
     class="max-w-5xl mx-auto py-10 flex flex-col gap-8">
-    <!-- Actions Panel (full width) -->
-    <div class="panel bg-gray-800 rounded-lg p-6 mb-4">
-        <h2 class="text-lg font-bold mb-2">Actions</h2>
-        <div class="flex gap-2 items-center mb-2">
-            <label for="actionSelect" class="mr-2">Select Action</label>
-            <select id="actionSelect" class="mb-0"></select>
-            <button id="runActionBtn" class="btn btn-primary">Run Action</button>
+    <!-- LLM Actions Panels -->
+    <div class="llm-panels">
+        <div class="panel">
+            <h3>Input</h3>
+            <div class="panel-content">
+                <textarea placeholder="Enter input here..."></textarea>
+            </div>
         </div>
-        <div id="actionPromptPanel" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select an action to view
-            its prompt/template.</div>
-    </div>
-    <!-- Input/Output Panels side by side -->
-    <div class="flex flex-row gap-6">
-        <!-- Input Panel (half width) -->
-        <div id="inputPanel" class="panel bg-gray-800 rounded-lg p-6 mb-4 flex-1">
-            <h2 class="text-lg font-bold mb-2">Input</h2>
-            <label for="inputFieldSelect" class="block mb-1">Select Input Field</label>
-            <select id="inputFieldSelect" class="w-full mb-2"></select>
-            <div id="inputFieldValue" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select a field to view
-                its content.</div>
+
+        <div class="panel">
+            <h3>Prompt</h3>
+            <div class="panel-content">
+                <textarea placeholder="Configure prompt here..."></textarea>
+            </div>
         </div>
-        <!-- Output Panel (half width) -->
-        <div id="outputPanel" class="panel bg-gray-800 rounded-lg p-6 mb-4 flex-1">
-            <h2 class="text-lg font-bold mb-2">Output</h2>
-            <label for="outputFieldSelect" class="block mb-1">Select Output Field</label>
-            <select id="outputFieldSelect" class="w-full mb-2"></select>
-            <div id="outputFieldValue" class="bg-gray-900 text-gray-200 rounded p-3 min-h-[2rem]">Select a field to view
-                its content.</div>
-            <div id="actionOutputPanel" class="bg-gray-900 text-green-200 rounded p-3 min-h-[2rem] mt-2">Run an action
-                to see output here.</div>
-            <button id="saveOutputBtn" class="btn btn-success mt-2">Save Output to Field</button>
+
+        <div class="panel">
+            <h3>Settings</h3>
+            <div class="panel-content">
+                <select>
+                    <option>Select Model</option>
+                </select>
+                <input type="range" min="0" max="2" step="0.1" value="0.7">
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Output</h3>
+            <div class="panel-content">
+                <div>Output will appear here...</div>
+            </div>
         </div>
     </div>
     <!-- Post Development Fields Panel (full width) -->
@@ -44,55 +44,47 @@ This file is included by all workflow substages. It expects:
         <h2 class="text-lg font-bold mb-2">Post Development Fields</h2>
         <div id="postDevFieldsPanel"></div>
     </div>
-    <!-- Input Accordion -->
-    <details open class="llm-accordion" style="margin-bottom:1rem;border:1px solid #333;border-radius:4px;">
-        <summary style="padding:1rem;background:#2a2d35;cursor:pointer;font-weight:bold;">Input</summary>
-        <div class="llm-accordion-content" style="padding:1rem;background:#1e2127;">
-            <label for="inputType" style="display:block;margin-bottom:0.5rem;">Input Type</label>
-            <select id="inputType"
-                style="width:100%;padding:0.5rem;background:#2a2d35;color:#e0e0e0;border:1px solid #333;border-radius:4px;margin-bottom:8px;">
-                <option value="text">Text</option>
-                <option value="json">JSON</option>
-            </select>
-            <textarea id="inputValue" rows="3"
-                style="width:100%;margin-top:8px;padding:0.5rem;background:#2a2d35;color:#e0e0e0;border:1px solid #333;border-radius:4px;resize:vertical;"
-                placeholder="Enter your input here..."></textarea>
-        </div>
-    </details>
-    <!-- Prompt Accordion -->
-    <details class="llm-accordion" style="margin-bottom:1rem;border:1px solid #333;border-radius:4px;">
-        <summary style="padding:1rem;background:#2a2d35;cursor:pointer;font-weight:bold;">Prompt</summary>
-        <div class="llm-accordion-content" style="padding:1rem;background:#1e2127;">
-            <label for="systemPrompt" style="display:block;margin-bottom:0.5rem;">System Prompt</label>
-            <textarea id="systemPrompt" rows="2"
-                style="width:100%;margin-bottom:8px;padding:0.5rem;background:#2a2d35;color:#e0e0e0;border:1px solid #333;border-radius:4px;resize:vertical;">You are an expert in Scottish history and culture...</textarea>
-            <label for="taskPrompt" style="display:block;margin-bottom:0.5rem;">Task Prompt</label>
-            <textarea id="taskPrompt" rows="3"
-                style="width:100%;padding:0.5rem;background:#2a2d35;color:#e0e0e0;border:1px solid #333;border-radius:4px;resize:vertical;">Expand the following short idea into a paragraph-length brief for a long-form big article: {{ idea_seed }}</textarea>
-        </div>
-    </details>
-    <!-- Settings Accordion -->
-    <details class="llm-accordion" style="margin-bottom:1rem;border:1px solid #333;border-radius:4px;">
-        <summary style="padding:1rem;background:#2a2d35;cursor:pointer;font-weight:bold;">Settings</summary>
-        <div class="llm-accordion-content" style="padding:1rem;background:#1e2127;">
-            <label for="model" style="display:block;margin-bottom:0.5rem;">Model</label>
-            <select id="model"
-                style="width:100%;padding:0.5rem;background:#2a2d35;color:#e0e0e0;border:1px solid #333;border-radius:4px;margin-bottom:1rem;">
-                <option value="llama3">llama3</option>
-                <option value="mistral">mistral</option>
-            </select>
-            <label for="temperature" style="display:block;margin-bottom:0.5rem;">Temperature</label>
-            <input type="number" id="temperature" value="0.7" min="0" max="2" step="0.1"
-                style="width:100%;padding:0.5rem;background:#2a2d35;color:#e0e0e0;border:1px solid #333;border-radius:4px;">
-        </div>
-    </details>
-    <!-- Output Accordion -->
-    <details class="llm-accordion" style="margin-bottom:1rem;border:1px solid #333;border-radius:4px;">
-        <summary style="padding:1rem;background:#2a2d35;cursor:pointer;font-weight:bold;">Output</summary>
-        <div class="llm-accordion-content" style="padding:1rem;background:#1e2127;">
-            <div id="output"
-                style="width:100%;min-height:100px;padding:0.5rem;background:#2a2d35;color:#e0e0e0;border:1px solid #333;border-radius:4px;white-space:pre-wrap;">
-            </div>
-        </div>
-    </details>
 </div>
+
+<style>
+    .llm-panels {
+        color: white;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .panel {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 0.5rem;
+        padding: 1rem;
+    }
+
+    .panel h3 {
+        margin: 0 0 1rem 0;
+    }
+
+    .panel-content textarea {
+        width: 100%;
+        min-height: 100px;
+        background: rgba(0, 0, 0, 0.3);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+    }
+
+    .panel-content select {
+        width: 100%;
+        padding: 0.5rem;
+        background: rgba(0, 0, 0, 0.3);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .panel-content input[type="range"] {
+        width: 100%;
+    }
+</style>

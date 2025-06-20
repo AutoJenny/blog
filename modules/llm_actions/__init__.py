@@ -18,6 +18,6 @@ Note: This is a placeholder file. Implementation will be discussed.
 from flask import Blueprint
 
 bp = Blueprint('llm_actions', __name__,
-              template_folder='templates',
-              static_folder='static',
-              static_url_path='/static/llm_actions') 
+               template_folder='templates',
+               static_folder='static',
+               static_url_path='/static/llm_actions') 

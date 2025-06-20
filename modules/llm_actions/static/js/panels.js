@@ -46,4 +46,47 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     // Form submission handler will be implemented here
+});
+
+// Panel Toggle Functionality
+function togglePanel(panelId) {
+    const panel = document.getElementById(`${panelId}-panel`);
+    const content = document.getElementById(`${panelId}-content`);
+    const header = panel.querySelector('.panel-header');
+    
+    // Toggle aria-expanded state
+    const isExpanded = header.getAttribute('aria-expanded') === 'true';
+    header.setAttribute('aria-expanded', !isExpanded);
+    
+    // Toggle content visibility
+    content.classList.toggle('active');
+}
+
+// Initialize panels
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial states
+    const panels = document.querySelectorAll('.llm-panel');
+    panels.forEach(panel => {
+        const header = panel.querySelector('.panel-header');
+        const content = panel.querySelector('.panel-content');
+        
+        // Set initial aria-expanded state
+        header.setAttribute('aria-expanded', 'false');
+        
+        // Show the first panel by default
+        if (panel.id === 'input-panel') {
+            header.setAttribute('aria-expanded', 'true');
+            content.classList.add('active');
+        }
+    });
+
+    // Initialize temperature range input
+    const temperatureInput = document.getElementById('temperature');
+    const temperatureValue = document.getElementById('temperature-value');
+    
+    if (temperatureInput && temperatureValue) {
+        temperatureInput.addEventListener('input', function() {
+            temperatureValue.textContent = this.value;
+        });
+    }
 }); 
