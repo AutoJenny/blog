@@ -1,0 +1,21 @@
+<!-- Prompt Accordion -->
+<div class="border border-dark-border rounded-lg overflow-hidden mb-4">
+    <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+        onclick="toggleAccordion('prompt')">
+        <span class="font-medium text-dark-text">Prompt</span>
+        <svg class="w-5 h-5 transform transition-transform" id="prompt-icon" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+    <div id="prompt-content" class="hidden p-4 bg-dark-bg text-dark-text">
+        {% if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt %}
+        <div class="mb-4">
+            <pre
+                class="bg-dark-bg border border-dark-border text-dark-text rounded p-4">{{ step_config.settings.llm.task_prompt }}</pre>
+        </div>
+        {% else %}
+        <p class="text-gray-400">No prompt configured for this step.</p>
+        {% endif %}
+    </div>
+</div>

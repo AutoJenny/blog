@@ -1,0 +1,26 @@
+<!-- LLM Panel Content -->
+<div class="space-y-4">
+    {% include "components/inputs.html" %}
+    {% include "components/prompt.html" %}
+    {% include "components/settings.html" %}
+    {% include "components/outputs.html" %}
+</div>
+
+<!-- Styles -->
+<link rel="stylesheet" href="{{ url_for('llm_panel.static', filename='css/panel.css') }}">
+
+<!-- Scripts -->
+<script>
+    function toggleAccordion(id) {
+        const content = document.getElementById(`${id}-content`);
+        const icon = document.getElementById(`${id}-icon`);
+
+        if (content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            icon.classList.add('rotate-180');
+        } else {
+            content.classList.add('hidden');
+            icon.classList.remove('rotate-180');
+        }
+    }
+</script>

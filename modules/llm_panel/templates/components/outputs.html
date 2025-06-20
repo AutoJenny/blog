@@ -1,0 +1,28 @@
+<!-- Outputs Accordion -->
+<div class="border border-dark-border rounded-lg overflow-hidden mb-4">
+    <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+        onclick="toggleAccordion('outputs')">
+        <span class="font-medium text-dark-text">Outputs</span>
+        <svg class="w-5 h-5 transform transition-transform" id="outputs-icon" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+    <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
+        {% if step_config.outputs %}
+        {% for output_id, output_config in step_config.outputs.items() %}
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-blue-500 mb-2">
+                [{{ output_id }}]
+            </label>
+            <pre id="{{ output_id }}" name="{{ output_id }}"
+                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4 whitespace-pre-wrap break-words"
+                data-db-field="{{ output_config.db_field if output_config.db_field else '' }}"
+                data-db-table="{{ output_config.db_table if output_config.db_table else '' }}"></pre>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-gray-400">No outputs configured for this step.</p>
+        {% endif %}
+    </div>
+</div>
