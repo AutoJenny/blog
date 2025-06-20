@@ -1,0 +1,48 @@
+/**
+ * LLM Actions Panel Styling
+ */
+
+.llm-accordion {
+    margin-bottom: 1rem;
+    border: 1px solid #333;
+    border-radius: 4px;
+}
+
+.llm-accordion summary {
+    padding: 1rem;
+    background: #2a2d35;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.llm-accordion-content {
+    padding: 1rem;
+    background: #1e2127;
+}
+
+/* Form Elements */
+.llm-accordion input,
+.llm-accordion select,
+.llm-accordion textarea {
+    width: 100%;
+    padding: 0.5rem;
+    background: #2a2d35;
+    color: #e0e0e0;
+    border: 1px solid #333;
+    border-radius: 4px;
+}
+
+.llm-accordion textarea {
+    resize: vertical;
+}
+
+.llm-accordion label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* Output Panel */
+#output {
+    min-height: 100px;
+    white-space: pre-wrap;
+} 
