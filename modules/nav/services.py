@@ -44,18 +44,21 @@ def validate_context(context):
     if missing:
         raise ValueError(f"Missing required context variables: {missing}")
 
-def get_workflow_context():
+def get_workflow_context(stage=None, substage=None, step=None):
     """Get workflow context for the current stage/substage/step."""
     # Get all posts to find a default post_id
     all_posts = get_all_posts()
     default_post_id = all_posts[0]['id'] if all_posts else None
     
-    # Return context with default post_id
+    # Get stages data
+    stages = get_workflow_stages()
+    
+    # Return context with default post_id and stages data
     return {
-        'current_stage': 'planning',
-        'current_substage': 'idea',
-        'current_step': 'basic_idea',
-        'stages': get_workflow_stages(),
+        'current_stage': stage or 'planning',
+        'current_substage': substage or 'idea',
+        'current_step': step or 'basic_idea',
+        'stages': stages,
         'all_posts': all_posts,
         'post_id': default_post_id
     } 
