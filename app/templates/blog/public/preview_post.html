@@ -1,23 +1,23 @@
-{% extends 'base.html' %}
+{% extends "blog/public/base.html" %}
 {% block title %}{{ post.title }} | Preview{% endblock %}
 {% block content %}
 <div class="site-header">
     <img src="/static/header.jpg" alt="CLAN Blog Header" class="site-header-image">
 </div>
 <div class="post-navigation-top">
-    <a href="{{ url_for('preview.preview_listing') }}">&larr; Back to Blog Listing</a>
+    <a href="{{ url_for('blog.posts_listing') }}">&larr; Back to Blog Listing</a>
 </div>
 <article class="blog-post">
     <div class="blog-post__header">
         <h1>{{ post.title }}</h1>
         <div class="blog-post__subtitle">{{ post.subtitle }}</div>
         <div class="post-meta">
-            <span>{{ post.date }}</span>
+            <span>{{ post.created_at }}</span>
             <span class="post-meta__separator">&bull;</span>
             <span>{{ post.author }}</span>
         </div>
         <div class="blog-post__summary">
-            <p>{{ post.summary }}</p>
+            <p>{{ post.summary|safe }}</p>
         </div>
         {% if post.header_image %}
         <img src="{{ post.header_image }}" alt="Header image" class="site-header-image">
@@ -28,7 +28,7 @@
         <section class="blog-section">
             <h2>{{ section.heading }}</h2>
             <div class="section-text">
-                <p>{{ section.text }}</p>
+                <p>{{ section.text|safe }}</p>
             </div>
         </section>
         {% endfor %}
@@ -42,10 +42,10 @@
         </ul>
     </div>
     <div class="post-footer">
-        {{ post.footer }}
+        {{ post.footer|safe }}
     </div>
 </article>
 <div class="site-footer">
     <img src="/static/footer.jpg" alt="CLAN Blog Footer" class="site-footer-image">
 </div>
-{% endblock %} 
+{% endblock %}

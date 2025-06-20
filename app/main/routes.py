@@ -407,7 +407,7 @@ def api_test_provider(provider_id):
 
 @bp.route('/preview/')
 def preview_stub():
-    return render_template('main/preview_stub.html')
+    return render_template('blog/public/preview_listing.html')
 
 @bp.route('/structure/')
 def structure_stub():

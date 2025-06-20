@@ -12,6 +12,7 @@ from dotenv import load_dotenv, dotenv_values
 from humanize import naturaltime
 import pytz
 import json
+from app.database import get_db_conn
 
 # Load DATABASE_URL from assistant_config.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
@@ -383,46 +384,51 @@ def post_public(post_id):
 
 @bp.route('/posts', methods=['GET'])
 def posts_listing():
-    import logging
-    logger = logging.getLogger("blog_debug")
-    posts = []
-    substages = {}
-    show_deleted = request.args.get('show_deleted', '0') == '1'
-    debug = request.args.get('debug', '0') == '1'
-    # Print DATABASE_URL
-    print(f"[DEBUG] Flask DATABASE_URL: {DATABASE_URL}", flush=True)
+    show_deleted = request.args.get('show_deleted', '').lower() == 'true'
+    debug = request.args.get('debug', '').lower() == 'true'
+    
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
-                # Print current database, user, schema
-                cur.execute("SELECT current_database(), current_user, current_schema();")
-                dbinfo = cur.fetchone()
-                print(f"[DEBUG] DB info: {dbinfo}", flush=True)
-                # Get all substages
-                cur.execute("SELECT id, name FROM workflow_sub_stage_entity ORDER BY id;")
-                substages = {row['id']: row['name'] for row in cur.fetchall()}
-                # Get posts with substage_id, filter by deleted status
+                # Get all posts
                 if show_deleted:
                     cur.execute("""
-                        SELECT id, title, status, created_at, updated_at, slug, substage_id
-                        FROM post
-                        WHERE status = 'deleted'
-                        ORDER BY created_at DESC
+                        SELECT p.*, 
+                               COALESCE(s.name, 'Unknown') as status,
+                               array_agg(DISTINCT t.name) as tags
+                        FROM post p
+                        LEFT JOIN post_status s ON p.status_id = s.id
+                        LEFT JOIN post_tag pt ON p.id = pt.post_id
+                        LEFT JOIN tag t ON pt.tag_id = t.id
+                        GROUP BY p.id, s.name
+                        ORDER BY p.created_at DESC
                     """)
                 else:
                     cur.execute("""
-                        SELECT id, title, status, created_at, updated_at, slug, substage_id
-                        FROM post
-                        WHERE status != 'deleted'
-                        ORDER BY created_at DESC
+                        SELECT p.*, 
+                               COALESCE(s.name, 'Unknown') as status,
+                               array_agg(DISTINCT t.name) as tags
+                        FROM post p
+                        LEFT JOIN post_status s ON p.status_id = s.id
+                        LEFT JOIN post_tag pt ON p.id = pt.post_id
+                        LEFT JOIN tag t ON pt.tag_id = t.id
+                        WHERE p.deleted_at IS NULL
+                        GROUP BY p.id, s.name
+                        ORDER BY p.created_at DESC
                     """)
                 posts = cur.fetchall()
-                print(f"[DEBUG] Raw posts from DB: {posts}", flush=True)
-        logger.info(f"[DEBUG] posts_listing: fetched {len(posts)} posts: {posts}")
+                
+                # Get all substages for filtering
+                cur.execute("""
+                    SELECT DISTINCT substage 
+                    FROM workflow_stage 
+                    ORDER BY substage
+                """)
+                substages = [row[0] for row in cur.fetchall()]
     except Exception as e:
-        logger.error(f"[DEBUG] posts_listing: exception {e}")
-        posts = []
-    # Format dates as 'ago' using humanize, with Europe/London timezone
+        print(f"Database error: {e}")
+        return jsonify({"error": str(e)}), 500
+
     london = pytz.timezone('Europe/London')
     now = datetime.now(london)
     for post in posts:
@@ -435,7 +441,6 @@ def posts_listing():
         post['created_ago'] = naturaltime(now - created) if created else ''
         post['updated_ago'] = naturaltime(now - updated) if updated else ''
     if debug:
-        from flask import jsonify
         return jsonify({"posts": posts, "substages": substages, "show_deleted": show_deleted})
     return render_template('blog/posts_list.html', posts=posts, substages=substages, show_deleted=show_deleted)
 
