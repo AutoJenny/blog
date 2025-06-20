@@ -16,4 +16,31 @@
 ## [2024-12-19] - Template Architecture Refinement
 - **Blueprint-Based Includes**: Implemented proper Flask blueprint template includes for module integration
 - **Integration Code Separation**: MAIN_HUB controls workflow layout, modules provide functionality
-- **Template Path Resolution**: Fixed template include paths to use blueprint names for proper Flask resolution 
+- **Template Path Resolution**: Fixed template include paths to use blueprint names for proper Flask resolution
+
+## DEV12 Branch - Workflow Layout Implementation
+Created: [Current Date]
+
+### Key Changes
+- Implemented stage-specific layout panels with deep backgrounds
+- Full-width LLM panel for Planning stage (deep purple #2D0A50)
+- Split-width panels for Writing stage (LLM panel and Sections panel)
+- Renamed llm-actions module to llm_actions for consistency
+
+### Critical Dependencies
+- Base template: app/templates/base.html
+- Nav module template: modules/nav/templates/nav.html
+- CSS: app/static/css/dist/main.css
+
+### Layout Specifications
+- Planning stage: Full-width LLM panel
+- Writing stage: 50/50 split between LLM and Sections panels
+- Panel colors: 
+  - LLM Panel: #2D0A50 (deep purple)
+  - Sections Panel: #013828 (deep green)
+- Minimal spacing between nav and panels (-mt-20)
+
+### Notes
+- Layout is sensitive to changes in base template structure
+- Panel positioning relies on current nav module implementation
+- Consider pinning CSS version if making significant style changes in other branches 
