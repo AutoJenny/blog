@@ -1,24 +1,40 @@
 <!-- Inputs Accordion -->
-<div class="border border-dark-border rounded-lg overflow-hidden mb-4">
+<div class="border border-dark-border rounded-lg overflow-hidden">
     <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
         onclick="toggleAccordion('inputs')">
-        <span class="font-medium text-dark-text">Inputs [basic_idea]</span>
+        <span class="font-medium text-dark-text">Inputs</span>
+        <span class="text-gray-400" id="inputs-summary">
+            {% if step_config.inputs %}
+            {% set ns = namespace(summary='') %}
+            {% for input_id, input_config in step_config.inputs.items() %}
+            {% set val = input_values[input_id] if input_values and input_id in input_values else '—' %}
+            {% if not loop.first %}{% set ns.summary = ns.summary + ', ' %}{% endif %}
+            {% set first_line = val.split('\n')[0] if val else '' %}
+            {% set ns.summary = ns.summary + '<span class=\"text-blue-500\">[' + input_id + ']</span>: ' + first_line %}
+            {% endfor %}
+            {{ ns.summary|safe }}
+            {% else %}
+            No inputs configured
+            {% endif %}
+        </span>
         <svg class="w-5 h-5 transform transition-transform" id="inputs-icon" fill="none" stroke="currentColor"
             viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
     </button>
-    <div id="inputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
+    <div id="inputs-content" class="hidden p-4 bg-dark-bg text-dark-text" style="max-height:none;">
         {% if step_config.inputs %}
         {% for input_id, input_config in step_config.inputs.items() %}
         <div class="mb-4">
-            <label class="block text-sm font-medium text-blue-500 mb-2">
+            <label for="{{ input_id }}" class="block text-sm font-medium text-blue-500 mb-2">
                 [{{ input_id }}]
             </label>
+            {% if input_config.type == 'textarea' %}
             <pre id="{{ input_id }}" name="{{ input_id }}"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4 whitespace-pre-wrap break-words"
-                data-db-field="{{ input_config.db_field if input_config.db_field else '' }}"
-                data-db-table="{{ input_config.db_table if input_config.db_table else '' }}"></pre>
+                data-db-field="{{ input_config.db_field }}"
+                data-db-table="{{ input_config.db_table }}">{{ input_values[input_id] if input_values and input_id in input_values else '' }}</pre>
+            {% endif %}
         </div>
         {% endfor %}
         {% else %}

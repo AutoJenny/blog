@@ -1,24 +1,37 @@
 <!-- Outputs Accordion -->
-<div class="border border-dark-border rounded-lg overflow-hidden mb-4">
+<div class="border border-dark-border rounded-lg overflow-hidden">
     <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
         onclick="toggleAccordion('outputs')">
         <span class="font-medium text-dark-text">Outputs</span>
+        <span class="text-gray-400" id="outputs-summary">
+            {% if output_titles and output_titles|length > 0 %}
+            <span class="text-blue-500">[provisional_title]:</span> <span
+                class="font-bold text-green-400">(Primary)</span>
+            {{ output_titles[0] }}
+            {% elif output_values and output_values.basic_idea %}
+            <span class="text-blue-500">[basic_idea]:</span> {{ output_values.basic_idea|truncate(50) }}
+            {% else %}
+            No outputs configured
+            {% endif %}
+        </span>
         <svg class="w-5 h-5 transform transition-transform" id="outputs-icon" fill="none" stroke="currentColor"
             viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
     </button>
-    <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text">
+    <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text" style="max-height:none;">
         {% if step_config.outputs %}
         {% for output_id, output_config in step_config.outputs.items() %}
         <div class="mb-4">
-            <label class="block text-sm font-medium text-blue-500 mb-2">
+            <label for="{{ output_id }}" class="block text-sm font-medium text-blue-500 mb-2">
                 [{{ output_id }}]
             </label>
+            {% if output_config.type == 'textarea' %}
             <pre id="{{ output_id }}" name="{{ output_id }}"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4 whitespace-pre-wrap break-words"
-                data-db-field="{{ output_config.db_field if output_config.db_field else '' }}"
-                data-db-table="{{ output_config.db_table if output_config.db_table else '' }}"></pre>
+                data-db-field="{{ output_config.db_field }}"
+                data-db-table="{{ output_config.db_table }}">{{ output_values[output_id] if output_values and output_id in output_values else '' }}</pre>
+            {% endif %}
         </div>
         {% endfor %}
         {% else %}

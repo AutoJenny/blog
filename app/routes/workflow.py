@@ -13,8 +13,11 @@ def workflow_index(post_id=None, stage='planning', substage='idea', step='basic_
     # Get all posts for the selector
     all_posts = get_all_posts()
     
-    # If no post_id provided, use the first post
-    if post_id is None and all_posts:
+    # If no post_id provided or the provided post_id doesn't exist, use the first post
+    if not all_posts:
+        return "No posts found", 404
+        
+    if post_id is None or not any(p['id'] == post_id for p in all_posts):
         post_id = all_posts[0]['id']
     
     # Get the workflow context first
