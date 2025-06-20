@@ -29,8 +29,11 @@ Created: [Current Date]
 
 ### Critical Dependencies
 - Base template: app/templates/base.html
+  - Backup: app/templates/base.DEV12.html
 - Nav module template: modules/nav/templates/nav.html
+  - Pinned version: 1b7d78586eb8f770b2c767ebc3234d47c087d36e
 - CSS: app/static/css/dist/main.css
+  - Backup: app/static/css/dist/main.DEV12.css
 
 ### Layout Specifications
 - Planning stage: Full-width LLM panel
@@ -43,4 +46,19 @@ Created: [Current Date]
 ### Notes
 - Layout is sensitive to changes in base template structure
 - Panel positioning relies on current nav module implementation
-- Consider pinning CSS version if making significant style changes in other branches 
+- Consider pinning CSS version if making significant style changes in other branches
+
+### Recovery Instructions
+If layout breaks due to upstream changes:
+1. Check out nav module at pinned commit: 
+   ```
+   git checkout 1b7d78586eb8f770b2c767ebc3234d47c087d36e -- modules/nav/
+   ```
+2. Restore base template:
+   ```
+   cp app/templates/base.DEV12.html app/templates/base.html
+   ```
+3. Restore CSS:
+   ```
+   cp app/static/css/dist/main.DEV12.css app/static/css/dist/main.css
+   ``` 
