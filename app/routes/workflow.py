@@ -26,7 +26,9 @@ def workflow_index(post_id=None, stage='planning', substage='idea', step='basic_
         'current_post_id': post_id,
         'all_posts': all_posts,
         'workflow_ready': True,
-        'llm_actions_data': None  # Placeholder for future context
+        'llm_actions_data': None,  # Placeholder for future context
+        'substage': substage,  # Required by llm_actions/panels.html
+        'post': {'id': post_id}  # Required by llm_actions/panels.html
     }
     
     # Update with workflow context
