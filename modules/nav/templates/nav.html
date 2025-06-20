@@ -101,13 +101,13 @@
         </div>
 
         <!-- Line 3: Tabs for steps in the current sub-stage -->
-        <div class="border-b border-dark-border mb-6">
-            <div class="flex space-x-6">
-                {% if current_stage == 'planning' and current_substage == 'idea' %}
-                {% for step in ['basic_idea', 'provisional_title'] %}
-                <a href="{% if request.blueprint == 'workflow_nav' %}{{ url_for('workflow_nav.stage', stage=current_stage, substage=current_substage, step=step, post_id=current_post_id) }}{% else %}{{ url_for('workflow.workflow_index', stage=current_stage, substage=current_substage, step=step, post_id=current_post_id) }}{% endif %}"
-                    class="px-4 py-2 border-b-2 font-medium {% if current_step == step %}border-blue-500 text-blue-500{% else %}border-transparent text-gray-400 hover:text-dark-text{% endif %}">
-                    {{ step|title|replace('_', ' ') }}
+        <div class="bg-dark-bg border border-dark-border rounded-lg p-4 mb-6">
+            <div class="flex space-x-4">
+                {% if stages and current_stage in stages and current_substage in stages[current_stage] %}
+                {% for step in stages[current_stage][current_substage] %}
+                <a href="{% if request.blueprint == 'workflow_nav' %}{{ url_for('workflow_nav.stage', stage=current_stage, substage=current_substage, step=step|lower|replace(' ', '_'), post_id=current_post_id) }}{% else %}{{ url_for('workflow.workflow_index', stage=current_stage, substage=current_substage, step=step|lower|replace(' ', '_'), post_id=current_post_id) }}{% endif %}"
+                    class="px-6 py-3 rounded-lg font-medium transition-all duration-200 {% if current_step == step|lower|replace(' ', '_') %}bg-blue-500 text-white shadow-lg{% else %}text-gray-400 hover:bg-dark-hover hover:text-dark-text{% endif %}">
+                    {{ step|title }}
                 </a>
                 {% endfor %}
                 {% endif %}
