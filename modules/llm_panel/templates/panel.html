@@ -1,171 +1,41 @@
 <!-- LLM Panel Content -->
-<div class="space-y-4">
+<div class="space-y-4" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
+    data-current-step="{{ current_step }}">
     <!-- Inputs Accordion -->
-    <div class="accordion-item">
-        <button
-            class="accordion-header w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="toggleAccordion(this)">
-            <span class="font-medium text-dark-text">Inputs</span>
-            <span class="text-gray-400 flex-grow text-left ml-4" id="inputs-summary">
-                <span class="text-blue-500">[basic_idea]</span>: {{ input_values.basic_idea }}
-            </span>
-            <svg class="w-5 h-5 transform transition-transform accordion-icon" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-        </button>
-        <div class="accordion-content hidden p-4 bg-dark-bg text-dark-text border-t border-dark-border">
-            {% for field_name, field_value in input_values.items() %}
-            <div class="mb-4">
-                <label for="{{ field_name }}" class="block text-sm font-medium text-blue-500 mb-2">
-                    [{{ field_name }}]
-                </label>
-                <textarea id="{{ field_name }}" name="{{ field_name }}"
-                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
-                    data-db-field="{{ field_name }}" data-db-table="post_development"
-                    rows="4">{{ field_value }}</textarea>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+    {% include 'components/inputs.html' %}
 
     <!-- Prompt Accordion -->
-    <div class="accordion-item">
-        <button
-            class="accordion-header w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="toggleAccordion(this)">
-            <span class="font-medium text-dark-text">Prompt</span>
-            <span class="text-gray-400 flex-grow text-left ml-4" id="prompt-summary">
-                {{ step_config.settings.llm.task_prompt }}
-            </span>
-            <svg class="w-5 h-5 transform transition-transform accordion-icon" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-        </button>
-        <div class="accordion-content hidden p-4 bg-dark-bg text-dark-text border-t border-dark-border">
-            <div class="mb-4">
-                <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
-                <pre
-                    class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.settings.llm.task_prompt }}</pre>
-            </div>
-        </div>
-    </div>
+    {% include 'components/prompt.html' %}
 
     <!-- Settings Accordion -->
-    <div class="accordion-item">
-        <button
-            class="accordion-header w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="toggleAccordion(this)">
-            <span class="font-medium text-dark-text">Settings</span>
-            <span class="text-gray-400 flex-grow text-left ml-4" id="settings-summary">
-                <span class="text-blue-500">Model:</span> {{ step_config.settings.llm.model }},
-                <span class="text-blue-500">Temp:</span> {{ step_config.settings.llm.parameters.temperature }},
-                <span class="text-blue-500">Max tokens:</span> {{ step_config.settings.llm.parameters.max_tokens }}
-            </span>
-            <svg class="w-5 h-5 transform transition-transform accordion-icon" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-        </button>
-        <div class="accordion-content hidden p-4 bg-dark-bg text-dark-text border-t border-dark-border">
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Model</label>
-                    <input type="text" value="{{ step_config.settings.llm.model }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Temperature</label>
-                    <input type="text" value="{{ step_config.settings.llm.parameters.temperature }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Max tokens</label>
-                    <input type="text" value="{{ step_config.settings.llm.parameters.max_tokens }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Top P</label>
-                    <input type="text" value="{{ step_config.settings.llm.parameters.top_p }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Frequency Penalty</label>
-                    <input type="text" value="{{ step_config.settings.llm.parameters.frequency_penalty }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-blue-500">Presence Penalty</label>
-                    <input type="text" value="{{ step_config.settings.llm.parameters.presence_penalty }}"
-                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include 'components/settings.html' %}
 
     <!-- Outputs Accordion -->
-    <div class="accordion-item">
-        <button
-            class="accordion-header w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-            onclick="toggleAccordion(this)">
-            <span class="font-medium text-dark-text">Outputs</span>
-            <span class="text-gray-400 flex-grow text-left ml-4" id="outputs-summary">
-                {% if output_values %}
-                {% for field_name, field_value in output_values.items() %}
-                <span class="text-blue-500">[{{ field_name }}]</span>: {{ field_value }}
-                {% endfor %}
-                {% else %}
-                No outputs configured
-                {% endif %}
-            </span>
-            <svg class="w-5 h-5 transform transition-transform accordion-icon" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-        </button>
-        <div class="accordion-content hidden p-4 bg-dark-bg text-dark-text border-t border-dark-border">
-            {% if output_values %}
-            {% for field_name, field_value in output_values.items() %}
-            <div class="mb-4">
-                <label for="{{ field_name }}_output" class="block text-sm font-medium text-blue-500 mb-2">
-                    [{{ field_name }}]
-                </label>
-                <textarea id="{{ field_name }}_output" name="{{ field_name }}"
-                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
-                    data-db-field="{{ field_name }}" data-db-table="post_development"
-                    rows="4">{{ field_value }}</textarea>
-            </div>
-            {% endfor %}
-            {% endif %}
-        </div>
-    </div>
+    {% include 'components/outputs.html' %}
 </div>
 
 <!-- Scripts -->
-<script>
-    function toggleAccordion(button) {
-        const item = button.closest('.accordion-item');
-        const content = item.querySelector('.accordion-content');
-        const icon = item.querySelector('.accordion-icon');
-        const allContents = document.querySelectorAll('.accordion-content');
-        const allIcons = document.querySelectorAll('.accordion-icon');
+<script src="/llm/panel/static/llm_panel/js/accordion.js"></script>
 
-        // Close all other accordions
-        allContents.forEach(c => {
-            if (c !== content) {
-                c.classList.add('hidden');
-            }
-        });
-        allIcons.forEach(i => {
-            if (i !== icon) {
-                i.classList.remove('rotate-180');
-            }
-        });
+<!-- Field Selection Script -->
+<script type="module">
+    // Wait for both DOM and field selector script to be ready
+    const initializeApp = async () => {
+        try {
+            const { initializeFieldDropdowns } = await import('/llm/panel/static/llm_panel/js/field_selector.js');
+            console.log('Field selector script loaded');
+            await initializeFieldDropdowns();
+            console.log('Field dropdowns initialized');
+        } catch (error) {
+            console.error('Error loading field selector script:', error);
+        }
+    };
 
-        // Toggle current accordion
-        content.classList.toggle('hidden');
-        icon.classList.toggle('rotate-180');
+    // Initialize once everything is loaded
+    if (document.readyState === 'complete') {
+        initializeApp();
+    } else {
+        window.addEventListener('load', initializeApp);
     }
 </script>
 
