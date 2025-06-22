@@ -139,6 +139,10 @@ def create_app(config_class=Config):
     from app.database import bp as db_bp
     app.register_blueprint(db_bp)
 
+    # Register LLM API blueprint
+    from app.api.llm import bp as llm_api_bp
+    app.register_blueprint(llm_api_bp)
+
     # Add debug route listing
     @app.route('/debug/routes')
     def list_routes():

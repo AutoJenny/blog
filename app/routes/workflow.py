@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, jsonify
 from modules.nav.services import get_workflow_stages, get_workflow_context, get_all_posts
 from app.db import get_db_conn
 import json
-from psycopg2.extras import Json
+from psycopg2.extras import Json, DictCursor
 
 workflow_bp = Blueprint('workflow', __name__, url_prefix='/workflow')
 
@@ -28,7 +28,7 @@ def workflow_index(post_id=None, stage='planning', substage='idea', step='initia
     
     # Get step configuration from workflow_step_entity
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=DictCursor) as cur:
             # First get the step configuration
             cur.execute("""
                 SELECT wse.config
@@ -37,59 +37,14 @@ def workflow_index(post_id=None, stage='planning', substage='idea', step='initia
                 WHERE wsse.name = %s AND wse.name = %s
             """, (substage, step))
             result = cur.fetchone()
-            step_config = result['config'] if result else {}
+            if not result or not result['config']:
+                return "Step configuration not found", 404
             
-            # If no config exists, get field mappings from workflow_field_mapping
-            if not step_config:
-                cur.execute("""
-                    SELECT wfm.field_name
-                    FROM workflow_field_mapping wfm
-                    JOIN workflow_stage_entity ws ON wfm.stage_id = ws.id
-                    JOIN workflow_sub_stage_entity wss ON wfm.substage_id = wss.id
-                    WHERE ws.name = %s AND wss.name = %s
-                    ORDER BY wfm.order_index
-                """, (stage, substage))
-                fields = cur.fetchall()
-                
-                # Create minimal config using actual field mappings
-                step_config = {
-                    'inputs': {},
-                    'outputs': {},
-                    'settings': {
-                        'llm': {
-                            'model': 'mistral',
-                            'task_prompt': f'Process the {step} step.',
-                            'parameters': {
-                                'temperature': 0.7,
-                                'max_tokens': 1000,
-                                'top_p': 1.0,
-                                'frequency_penalty': 0.0,
-                                'presence_penalty': 0.0
-                            }
-                        }
-                    }
-                }
-                
-                # Add first field as input and second as output if available
-                if fields:
-                    first_field = fields[0]['field_name']
-                    step_config['inputs']['input_field'] = {
-                        'type': 'textarea',
-                        'db_field': first_field,
-                        'db_table': 'post_development'
-                    }
-                    
-                    if len(fields) > 1:
-                        second_field = fields[1]['field_name']
-                        step_config['outputs']['output_field'] = {
-                            'type': 'textarea',
-                            'db_field': second_field,
-                            'db_table': 'post_development'
-                        }
+            step_config = result['config']
     
     # Get input/output values from post_development table
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=DictCursor) as cur:
             # Get all fields that are mapped in the config
             fields = []
             for section in ['inputs', 'outputs']:
@@ -146,7 +101,7 @@ def get_field_mappings():
     """Get all available fields from post_development table with proper stage/substage grouping."""
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(cursor_factory=DictCursor) as cur:
                 # First get all mapped fields with their stage/substage info
                 cur.execute("""
                     SELECT DISTINCT ON (wfm.field_name) 
@@ -213,7 +168,7 @@ def update_field_mapping():
         return jsonify({'error': 'Missing required fields'}), 400
     
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=DictCursor) as cur:
             # Get the current config
             cur.execute("""
                 SELECT wse.id, wse.config
@@ -254,7 +209,7 @@ def get_field_value(field):
     
     try:
         with get_db_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(cursor_factory=DictCursor) as cur:
                 # Verify the field exists in post_development
                 cur.execute("""
                     SELECT column_name 

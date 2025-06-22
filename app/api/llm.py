@@ -1,6 +1,7 @@
 print('=== LLM API MODULE LOADED (AUDIT TEST) ===')
 # MIGRATION: This file is being refactored to use direct SQL (psycopg2) instead of ORM models.
 from flask import Blueprint, jsonify, request, current_app
+from app.api.base import APIBlueprint
 from app.llm.services import LLMService, execute_llm_request, log_llm_outgoing
 import requests
 import traceback
@@ -12,34 +13,39 @@ import subprocess
 import socket
 import time
 import re
-from psycopg2.extras import Json
+from psycopg2.extras import Json, DictCursor
 import os
 from dotenv import dotenv_values
 from app.llm.services import modular_prompt_to_canonical
 
-bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
+bp = APIBlueprint('llm_api', __name__, url_prefix='/api/v1/llm')
 
 
 @bp.route("/config", methods=["GET"])
 def get_config():
     """Get current LLM configuration"""
-    # LLMConfig and llm_config are deprecated. Use llm_provider/llm_model instead. Refactor config logic as needed.
-    config = None
-    if not config:
-        return jsonify(
-            {
-                "provider_type": "ollama",
-                "model_name": "mistral",
-                "api_base": "http://localhost:11434",
-            }
-        )
-    return jsonify(
-        {
-            "provider_type": config.provider_type,
-            "model_name": config.model_name,
-            "api_base": config.api_base,
-        }
-    )
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=DictCursor) as cur:
+                cur.execute("""
+                    SELECT provider_type, model_name, api_base
+                    FROM llm_config
+                    WHERE is_active = true
+                    ORDER BY id DESC
+                    LIMIT 1
+                """)
+                config = cur.fetchone()
+                if not config:
+                    return "No active LLM configuration found", 404
+                    
+                return jsonify({
+                    "provider_type": config['provider_type'],
+                    "model_name": config['model_name'],
+                    "api_base": config['api_base']
+                })
+    except Exception as e:
+        current_app.logger.error(f"Error getting LLM config: {str(e)}")
+        return "Error retrieving LLM configuration", 500
 
 
 @bp.route("/config", methods=["POST"])
@@ -47,24 +53,29 @@ def update_config():
     """Update LLM configuration"""
     data = request.get_json()
 
-    config = None
-    if not config:
-        config = LLMConfig()
-        db.session.add(config)
-
-    config.provider_type = data.get("provider_type", config.provider_type)
-    config.model_name = data.get("model_name", config.model_name)
-    config.api_base = data.get("api_base", config.api_base)
-
-    # Handle provider authentication
-    if "auth_token" in data and data["auth_token"]:
-        config.auth_token = data["auth_token"]
-
     try:
-        db.session.commit()
-        return jsonify({"success": True})
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE llm_config
+                    SET is_active = false
+                    WHERE is_active = true
+                """)
+                
+                cur.execute("""
+                    INSERT INTO llm_config (provider_type, model_name, api_base)
+                    VALUES (%s, %s, %s)
+                    RETURNING id
+                """, (
+                    data.get("provider_type"),
+                    data.get("model_name"),
+                    data.get("api_base")
+                ))
+                
+                conn.commit()
+                return jsonify({"success": True})
     except Exception as e:
-        db.session.rollback()
+        current_app.logger.error(f"Error updating LLM config: {str(e)}")
         return jsonify({"success": False, "error": str(e)})
 
 

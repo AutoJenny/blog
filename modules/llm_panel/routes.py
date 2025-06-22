@@ -1,5 +1,7 @@
 from flask import render_template, request
 from . import bp
+import os
+import json
 
 @bp.route('/test')
 def test():
@@ -15,39 +17,13 @@ def panels():
     if not post_id:
         return "Post ID is required", 400
         
-    # Example step configuration - this should come from your database
-    step_config = {
-        'inputs': {
-            'idea_seed': {
-                'type': 'textarea',
-                'db_field': 'idea_seed',
-                'db_table': 'post_development'
-            }
-        },
-        'outputs': {
-            'expanded_idea': {
-                'type': 'textarea',
-                'db_field': 'expanded_idea',
-                'db_table': 'post_development'
-            }
-        },
-        'settings': {
-            'llm': {
-                'model': 'mistral',
-                'task_prompt': 'Expand the initial idea into a more detailed concept.',
-                'input_mapping': {
-                    'idea_seed': 'idea_seed'
-                },
-                'parameters': {
-                    'temperature': 0.7,
-                    'max_tokens': 1000,
-                    'top_p': 1.0,
-                    'frequency_penalty': 0.0,
-                    'presence_penalty': 0.0
-                }
-            }
-        }
-    }
+    # Load configuration from planning_steps.json
+    config_path = os.path.join(os.path.dirname(__file__), 'config', 'planning_steps.json')
+    with open(config_path, 'r') as f:
+        planning_steps = json.load(f)
+    
+    # Get the configuration for the current substage
+    step_config = planning_steps['planning']['idea']['initial']
     
     # Example input/output values
     input_values = {
