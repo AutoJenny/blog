@@ -97,14 +97,14 @@ def workflow_prompts_json():
 
 @settings_bp.route('/planning_steps', methods=['GET'])
 def planning_steps():
-    planning_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'workflow', 'config', 'planning_steps.json')
+    planning_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'modules', 'llm_panel', 'config', 'planning_steps.json')
     with open(planning_path, 'r') as f:
         planning_data = json.load(f)
     return render_template('settings/planning_steps.html', planning_steps=planning_data)
 
 @settings_bp.route('/planning_steps_json', methods=['GET', 'POST'])
 def planning_steps_json():
-    planning_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'workflow', 'config', 'planning_steps.json')
+    planning_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'modules', 'llm_panel', 'config', 'planning_steps.json')
     if request.method == 'POST':
         try:
             data = request.get_json()

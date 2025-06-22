@@ -1,0 +1,109 @@
+{
+    "planning": {
+        "idea": {
+            "basic_idea": {
+                "title": "Basic Idea",
+                "description": "Enter your basic idea for the post here. This will be the foundation of your content.",
+                "inputs": {
+                    "idea_seed": {
+                        "type": "textarea",
+                        "label": "Basic Idea",
+                        "placeholder": "Type your basic idea here...",
+                        "db_field": "idea_seed",
+                        "db_table": "post_development",
+                        "required": true
+                    }
+                },
+                "settings": {
+                    "llm": {
+                        "provider": "ollama",
+                        "model": "llama3.1:70b",
+                        "system_prompt": "You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.",
+                        "task_prompt": "[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.\n\n[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.\n\nShort Idea:\n[data:idea_seed]\n\nYour response should:\n1. Focus specifically on Scottish cultural and historical aspects\n2. Maintain academic accuracy while being accessible\n3. Suggest clear angles and themes for development\n4. Use UK-British spellings and idioms\n5. Return only the expanded brief, with no additional commentary or formatting",
+                        "input_mapping": {
+                            "idea_seed": {
+                                "field": "idea_seed",
+                                "table": "post_development",
+                                "description": "The core idea to be expanded"
+                            }
+                        },
+                        "output_mapping": {
+                            "table": "post_development",
+                            "field": "basic_idea"
+                        },
+                        "parameters": {
+                            "temperature": 0.7,
+                            "max_tokens": 1000,
+                            "top_p": 0.9,
+                            "frequency_penalty": 0.0,
+                            "presence_penalty": 0.0
+                        }
+                    }
+                },
+                "prompt": {
+                    "template": "Based on the following basic idea: {idea_seed}\n\nGenerate a detailed blog post outline that expands on this concept.",
+                    "settings": {
+                        "temperature": 0.7,
+                        "max_tokens": 500
+                    }
+                },
+                "outputs": {
+                    "basic_idea": {
+                        "type": "textarea",
+                        "label": "Generated Basic Idea",
+                        "db_field": "basic_idea",
+                        "db_table": "post_development"
+                    }
+                }
+            },
+            "provisional_title": {
+                "title": "Provisional Title",
+                "description": "Generate a provisional title for your post based on the expanded idea.",
+                "inputs": {
+                    "basic_idea": {
+                        "type": "textarea",
+                        "label": "Expanded Idea",
+                        "placeholder": "The expanded idea from the previous step...",
+                        "db_field": "basic_idea",
+                        "db_table": "post_development",
+                        "required": true
+                    }
+                },
+                "settings": {
+                    "llm": {
+                        "provider": "ollama",
+                        "model": "llama3.1:70b",
+                        "system_prompt": "[system] You are an expert in Scottish history and culture.",
+                        "task_prompt": "[system] You are an expert in Scottish history and culture. Generate five alternative, arresting, and informative blog post titles for a post based on the following expanded idea. Return your response as a strict JSON array of strings, with no commentary or formatting—just the list of titles.\n\nExpanded Idea:\n[data:basic_idea]",
+                        "input_mapping": {
+                            "basic_idea": {
+                                "field": "basic_idea",
+                                "table": "post_development",
+                                "description": "The expanded idea to base the title on"
+                            }
+                        },
+                        "output_mapping": {
+                            "table": "post_development",
+                            "field": "provisional_title"
+                        },
+                        "parameters": {
+                            "temperature": 0.7,
+                            "max_tokens": 100,
+                            "top_p": 0.9,
+                            "frequency_penalty": 0.0,
+                            "presence_penalty": 0.0
+                        }
+                    }
+                },
+                "outputs": {
+                    "provisional_title": {
+                        "type": "textarea",
+                        "label": "Provisional Title",
+                        "db_field": "provisional_title",
+                        "db_table": "post_development"
+                    }
+                }
+            }
+        }
+    }
+} 
