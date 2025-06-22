@@ -8,30 +8,15 @@ except ImportError as e:
     raise ImportError(f"Shared services not available: {e}. This indicates a configuration problem.")
 
 def get_workflow_stages():
-    """Get the workflow stages and their substages."""
-    return {
-        "Planning": {
-            "Idea": ["Initial", "Title"],
-            "Research": ["Concepts", "Facts"],
-            "Structure": ["Outline", "Allocate Facts"]
-        },
-        "Writing": {
-            "Content": ["Draft", "Review", "Edit"],
-            "Meta Info": ["SEO", "Tags", "Description"],
-            "Images": ["Header", "Section", "Social"]
-        },
-        "Publishing": {
-            "Preflight": ["Check", "Preview"],
-            "Launch": ["Schedule", "Publish"],
-            "Syndication": ["Social", "Newsletter"]
-        }
-    }
+    """Get all workflow stages and their substages from the database."""
+    # Use shared service from MAIN_HUB
+    return get_workflow_stages_from_db()
 
 def get_workflow_stages_fallback():
-    """Return fallback workflow stages data if database is unavailable."""
+    """Return fallback workflow stages data."""
     return {
         "Planning": {
-            "Idea": ["initial_concept", "Provisional Title"],
+            "Idea": ["Basic Idea", "Provisional Title"],
             "Research": ["Concepts", "Facts"],
             "Structure": ["Outline", "Allocate Facts"]
         },
@@ -72,7 +57,7 @@ def get_workflow_context(stage=None, substage=None, step=None):
     return {
         'current_stage': stage or 'planning',
         'current_substage': substage or 'idea',
-        'current_step': step or 'initial',
+        'current_step': step or 'basic_idea',
         'stages': stages,
         'all_posts': all_posts,
         'post_id': default_post_id
