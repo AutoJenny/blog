@@ -53,28 +53,43 @@
             }
             let html = '';
             if (Array.isArray(obj)) {
-                html += '<ul class="list-disc pl-4">';
+                html += '<div class="pl-4">';
                 obj.forEach((item, i) => {
-                    html += '<li>' + buildAccordion(item, level + 1) + '</li>';
+                    html += buildAccordion(item, level + 1);
                 });
-                html += '</ul>';
+                html += '</div>';
             } else {
                 const keys = Object.keys(obj);
-                if (level === 1 || level === 2) {
-                    html += '<div class="accordion mb-2">';
+                if (level === 0 || level === 1) {
+                    html += '<div class="border border-gray-700 rounded-lg overflow-hidden mb-2">';
                     keys.forEach((key, i) => {
-                        html += '<div class="accordion-item border border-gray-700 rounded mb-1">';
-                        html += '<button class="accordion-header w-full text-left px-4 py-2 bg-gray-700 hover:bg-gray-600 focus:outline-none" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">' + key + '</button>';
-                        html += '<div class="accordion-content hidden px-4 py-2 bg-gray-800">' + buildAccordion(obj[key], level + 1) + '</div>';
-                        html += '</div>';
+                        html += `
+                            <div class="accordion-item">
+                                <button type="button"
+                                    class="w-full px-4 py-3 text-left bg-gray-700 hover:bg-gray-600 transition-colors duration-200 flex justify-between items-center"
+                                    onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('hidden')">
+                                    <span class="font-semibold text-gray-200">${key}</span>
+                                    <svg class="w-5 h-5 transform transition-transform duration-200" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                <div class="hidden px-4 py-3 bg-gray-800">
+                                    ${buildAccordion(obj[key], level + 1)}
+                                </div>
+                            </div>`;
                     });
                     html += '</div>';
                 } else {
-                    html += '{<ul class="list-none pl-4">';
+                    html += '<div class="pl-4">';
                     keys.forEach((key, i) => {
-                        html += '<li>' + key + ': ' + buildAccordion(obj[key], level + 1) + (i < keys.length - 1 ? ',' : '') + '</li>';
+                        const value = buildAccordion(obj[key], level + 1);
+                        html += `<div class="mb-2">
+                            <span class="text-gray-400">${key}:</span>
+                            <span class="text-gray-200 ml-2">${value}</span>
+                        </div>`;
                     });
-                    html += '}</ul>';
+                    html += '</div>';
                 }
             }
             return html;
