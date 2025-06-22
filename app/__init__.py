@@ -136,6 +136,9 @@ def create_app(config_class=Config):
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)
 
+    from app.database import bp as db_bp
+    app.register_blueprint(db_bp)
+
     # Add debug route listing
     @app.route('/debug/routes')
     def list_routes():
