@@ -330,6 +330,14 @@ def update_post_field(post_id, field):
                 valid_fields = [row["column_name"] for row in cur.fetchall()]
                 if field not in valid_fields:
                     return jsonify({"error": "Invalid field"}), 400
+                
+                # For status field, validate the value is a valid post_status enum value
+                if field == 'status':
+                    cur.execute("SELECT unnest(enum_range(NULL::post_status))")
+                    valid_statuses = [row[0] for row in cur.fetchall()]
+                    if data.get("value") not in valid_statuses:
+                        return jsonify({"error": f"Invalid status value. Must be one of: {', '.join(valid_statuses)}"}), 400
+                
                 cur.execute(f"UPDATE post SET {field} = %s, updated_at = NOW() WHERE id = %s RETURNING updated_at", (data.get("value", ""), post_id))
                 updated_at = cur.fetchone()["updated_at"]
                 conn.commit()
@@ -384,65 +392,85 @@ def post_public(post_id):
 
 @bp.route('/posts', methods=['GET'])
 def posts_listing():
-    show_deleted = request.args.get('show_deleted', '').lower() == 'true'
+    show_deleted = request.args.get('show_deleted', '').lower() == '1'
     debug = request.args.get('debug', '').lower() == 'true'
+    
+    posts = []
+    substages = []
+    error = None
     
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 # Get all posts
-                if show_deleted:
-                    cur.execute("""
-                        SELECT p.*, 
-                               COALESCE(s.name, 'Unknown') as status,
-                               array_agg(DISTINCT t.name) as tags
-                        FROM post p
-                        LEFT JOIN post_status s ON p.status_id = s.id
-                        LEFT JOIN post_tag pt ON p.id = pt.post_id
-                        LEFT JOIN tag t ON pt.tag_id = t.id
-                        GROUP BY p.id, s.name
-                        ORDER BY p.created_at DESC
-                    """)
-                else:
-                    cur.execute("""
-                        SELECT p.*, 
-                               COALESCE(s.name, 'Unknown') as status,
-                               array_agg(DISTINCT t.name) as tags
-                        FROM post p
-                        LEFT JOIN post_status s ON p.status_id = s.id
-                        LEFT JOIN post_tag pt ON p.id = pt.post_id
-                        LEFT JOIN tag t ON pt.tag_id = t.id
-                        WHERE p.deleted_at IS NULL
-                        GROUP BY p.id, s.name
-                        ORDER BY p.created_at DESC
-                    """)
+                query = """
+                    SELECT p.*, 
+                           COALESCE(p.status, 'draft'::post_status) as status,
+                           pd.basic_idea,
+                           pd.idea_seed
+                    FROM post p
+                    LEFT JOIN post_development pd ON p.id = pd.post_id
+                    {where_clause}
+                    GROUP BY p.id, pd.basic_idea, pd.idea_seed
+                    ORDER BY p.created_at DESC
+                """.format(where_clause="WHERE p.status != 'deleted'" if not show_deleted else "")
+                
+                cur.execute(query)
                 posts = cur.fetchall()
                 
                 # Get all substages for filtering
                 cur.execute("""
-                    SELECT DISTINCT substage 
-                    FROM workflow_stage 
-                    ORDER BY substage
+                    SELECT DISTINCT wsse.name as substage 
+                    FROM workflow_sub_stage_entity wsse
+                    ORDER BY wsse.name
                 """)
                 substages = [row[0] for row in cur.fetchall()]
     except Exception as e:
-        print(f"Database error: {e}")
-        return jsonify({"error": str(e)}), 500
+        print(f"Database error: {str(e)}")
+        error = str(e) if str(e) else "Database error occurred"
+        if debug:
+            return jsonify({"error": error}), 500
 
-    london = pytz.timezone('Europe/London')
-    now = datetime.now(london)
-    for post in posts:
-        created = post['created_at']
-        updated = post['updated_at']
-        if created and created.tzinfo is None:
-            created = london.localize(created)
-        if updated and updated.tzinfo is None:
-            updated = london.localize(updated)
-        post['created_ago'] = naturaltime(now - created) if created else ''
-        post['updated_ago'] = naturaltime(now - updated) if updated else ''
+    # Format dates and prepare post data
+    try:
+        formatted_posts = []
+        for post in posts:
+            post_dict = dict(post)
+            # Format dates for display
+            created = post_dict.get('created_at')
+            updated = post_dict.get('updated_at')
+            post_dict['created_ago'] = created.strftime('%Y-%m-%d %H:%M') if created else ''
+            post_dict['updated_ago'] = updated.strftime('%Y-%m-%d %H:%M') if updated else ''
+            
+            # Set default title if none exists
+            if not post_dict.get('title'):
+                post_dict['title'] = post_dict.get('basic_idea', '')[:50] + '...' if post_dict.get('basic_idea') else 'Untitled'
+            formatted_posts.append(post_dict)
+        posts = formatted_posts
+    except Exception as e:
+        print(f"Error formatting post data: {str(e)}")
+        error = str(e) if str(e) else "Error formatting post data"
+        if debug:
+            return jsonify({"error": error}), 500
+
     if debug:
-        return jsonify({"posts": posts, "substages": substages, "show_deleted": show_deleted})
-    return render_template('blog/posts_list.html', posts=posts, substages=substages, show_deleted=show_deleted)
+        return jsonify({
+            "posts": posts,
+            "substages": substages,
+            "show_deleted": show_deleted,
+            "error": error if error else None
+        })
+        
+    # Only pass error to template if it's a non-empty string
+    template_args = {
+        "posts": posts,
+        "substages": substages,
+        "show_deleted": show_deleted
+    }
+    if error:  # Only add error if it exists and is non-empty
+        template_args["error"] = error
+        
+    return render_template('blog/posts_list.html', **template_args)
 
 
 @bp.route('/blog/<int:post_id>/develop')
