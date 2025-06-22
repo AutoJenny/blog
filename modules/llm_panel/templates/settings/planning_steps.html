@@ -1,125 +1,111 @@
 {% extends "base.html" %}
 
-{% block title %}Planning Steps JSON{% endblock %}
+{% block title %}Planning Steps{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8 text-gray-100">Planning Steps JSON</h1>
-    <div class="mb-6">
-        <button id="tab-tree" class="px-4 py-2 rounded-t bg-gray-700 text-white font-semibold focus:outline-none">Tree
-            View</button>
-        <button id="tab-json"
-            class="px-4 py-2 rounded-t bg-gray-700 text-white font-semibold focus:outline-none ml-2">Raw JSON</button>
-    </div>
-    <div id="tree-view" class="bg-gray-800 p-4 rounded-b-lg text-gray-200 font-mono" style="display:block;">
-        <pre id="tree-content"></pre>
-    </div>
-    <div id="json-view" class="bg-gray-800 p-4 rounded-b-lg text-gray-200 font-mono" style="display:none;">
-        <textarea id="json-textarea"
-            class="w-full h-96 bg-gray-900 text-gray-200 rounded border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
-            rows="24">{{ planning_steps | tojson(indent=2) }}</textarea>
-        <div id="save-button-container" class="flex justify-end mt-6">
-            <button id="save-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save
-                Changes</button>
+    <h1 class="text-3xl font-bold mb-8 text-gray-100">Planning Steps</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class="mb-4">
+        {% for category, message in messages %}
+        <li class="text-green-400">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    <div id="prompts-container">
+        {% for step_key, step_data in planning_steps.items() %}
+        <div class="border border-gray-700 rounded-lg overflow-hidden mb-2">
+            <button type="button"
+                class="w-full px-4 py-3 text-left bg-gray-700 hover:bg-gray-600 transition-colors duration-200 flex justify-between items-center"
+                onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('hidden')">
+                <span class="font-semibold text-gray-200">{{ step_key }}</span>
+                <svg class="w-5 h-5 transform transition-transform duration-200" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div class="hidden px-4 py-3 bg-gray-800">
+                <div class="mb-4">
+                    <label class="block text-gray-300 font-semibold mb-1">Raw JSON</label>
+                    <textarea id="{{ step_key }}_json"
+                        class="w-full px-3 py-2 bg-gray-700 text-gray-200 rounded border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
+                        rows="8">{{ step_data | tojson(indent=2) }}</textarea>
+                </div>
+            </div>
         </div>
+        {% endfor %}
+    </div>
+    <div id="save-button-container" class="flex justify-end mt-6 hidden">
+        <button id="save-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save
+            Changes</button>
     </div>
 </div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const tabTree = document.getElementById('tab-tree');
-        const tabJson = document.getElementById('tab-json');
-        const treeView = document.getElementById('tree-view');
-        const jsonView = document.getElementById('json-view');
-        const treeContent = document.getElementById('tree-content');
-        const jsonTextarea = document.getElementById('json-textarea');
+        const saveButtonContainer = document.getElementById('save-button-container');
         const saveButton = document.getElementById('save-button');
-        // Tab switching
-        tabTree.addEventListener('click', function () {
-            tabTree.classList.add('bg-blue-700');
-            tabJson.classList.remove('bg-blue-700');
-            treeView.style.display = 'block';
-            jsonView.style.display = 'none';
+        const textareas = document.querySelectorAll('textarea[id$="_json"]');
+        let originalValues = {};
+
+        // Store original values
+        textareas.forEach(textarea => {
+            originalValues[textarea.id] = textarea.value;
         });
-        tabJson.addEventListener('click', function () {
-            tabJson.classList.add('bg-blue-700');
-            tabTree.classList.remove('bg-blue-700');
-            treeView.style.display = 'none';
-            jsonView.style.display = 'block';
+
+        // Add change event listeners to all textareas
+        textareas.forEach(textarea => {
+            textarea.addEventListener('input', function () {
+                const hasChanges = Array.from(textareas).some(t => t.value !== originalValues[t.id]);
+                saveButtonContainer.classList.toggle('hidden', !hasChanges);
+            });
         });
-        // Pretty-print tree view
-        function buildAccordion(obj, level = 0) {
-            if (typeof obj !== 'object' || obj === null) {
-                return JSON.stringify(obj);
-            }
-            let html = '';
-            if (Array.isArray(obj)) {
-                html += '<div class="pl-4">';
-                obj.forEach((item, i) => {
-                    html += buildAccordion(item, level + 1);
-                });
-                html += '</div>';
-            } else {
-                const keys = Object.keys(obj);
-                if (level === 0 || level === 1) {
-                    html += '<div class="border border-gray-700 rounded-lg overflow-hidden mb-2">';
-                    keys.forEach((key, i) => {
-                        html += `
-                            <div class="accordion-item">
-                                <button type="button"
-                                    class="w-full px-4 py-3 text-left bg-gray-700 hover:bg-gray-600 transition-colors duration-200 flex justify-between items-center"
-                                    onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('hidden')">
-                                    <span class="font-semibold text-gray-200">${key}</span>
-                                    <svg class="w-5 h-5 transform transition-transform duration-200" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </button>
-                                <div class="hidden px-4 py-3 bg-gray-800">
-                                    ${buildAccordion(obj[key], level + 1)}
-                                </div>
-                            </div>`;
-                    });
-                    html += '</div>';
-                } else {
-                    html += '<div class="pl-4">';
-                    keys.forEach((key, i) => {
-                        const value = buildAccordion(obj[key], level + 1);
-                        html += `<div class="mb-2">
-                            <span class="text-gray-400">${key}:</span>
-                            <span class="text-gray-200 ml-2">${value}</span>
-                        </div>`;
-                    });
-                    html += '</div>';
+
+        // Save button click handler
+        saveButton.addEventListener('click', async function () {
+            const planning_steps = {};
+            textareas.forEach(textarea => {
+                const stepKey = textarea.id.replace('_json', '');
+                try {
+                    planning_steps[stepKey] = JSON.parse(textarea.value);
+                } catch (e) {
+                    alert(`Invalid JSON in ${stepKey}: ${e.message}`);
+                    return;
                 }
+            });
+
+            try {
+                const response = await fetch('/settings/planning_steps_json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(planning_steps)
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    // Update original values
+                    textareas.forEach(textarea => {
+                        originalValues[textarea.id] = textarea.value;
+                    });
+                    saveButtonContainer.classList.add('hidden');
+                    // Show success message
+                    const message = document.createElement('div');
+                    message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg';
+                    message.textContent = 'Planning steps saved successfully!';
+                    document.body.appendChild(message);
+                    setTimeout(() => message.remove(), 3000);
+                } else {
+                    throw new Error(data.error || 'Failed to save planning steps');
+                }
+            } catch (error) {
+                alert('Error saving planning steps: ' + error.message);
             }
-            return html;
-        }
-        treeContent.innerHTML = buildAccordion({{ planning_steps | tojson }});
-    // Save button logic
-    saveButton.addEventListener('click', async function () {
-        let data;
-        try {
-            data = JSON.parse(jsonTextarea.value);
-        } catch (e) {
-            alert('Invalid JSON: ' + e.message);
-            return;
-        }
-        const resp = await fetch('/settings/planning_steps_json', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
         });
-        const result = await resp.json();
-        if (result.status === 'success') {
-            const message = document.createElement('div');
-            message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg';
-            message.textContent = 'Planning steps saved successfully!';
-            document.body.appendChild(message);
-            setTimeout(() => message.remove(), 3000);
-        } else {
-            alert('Error saving: ' + (result.error || 'Unknown error'));
-        }
-    });
     });
 </script>
 {% endblock %}

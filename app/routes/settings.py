@@ -100,7 +100,16 @@ def planning_steps():
     planning_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'modules', 'llm_panel', 'config', 'planning_steps.json')
     with open(planning_path, 'r') as f:
         planning_data = json.load(f)
-    return render_template('settings/planning_steps.html', planning_steps=planning_data)
+    
+    # Flatten the nested structure for display
+    flattened_steps = {}
+    for stage, stage_data in planning_data.items():
+        for substage, substage_data in stage_data.items():
+            for step, step_data in substage_data.items():
+                key = f"{stage}.{substage}.{step}"
+                flattened_steps[key] = step_data
+    
+    return render_template('settings/planning_steps.html', planning_steps=flattened_steps)
 
 @settings_bp.route('/planning_steps_json', methods=['GET', 'POST'])
 def planning_steps_json():
@@ -108,14 +117,31 @@ def planning_steps_json():
     if request.method == 'POST':
         try:
             data = request.get_json()
+            # Reconstruct the nested structure
+            nested_data = {}
+            for key, value in data.items():
+                stage, substage, step = key.split('.')
+                if stage not in nested_data:
+                    nested_data[stage] = {}
+                if substage not in nested_data[stage]:
+                    nested_data[stage][substage] = {}
+                nested_data[stage][substage][step] = value
+            
             with open(planning_path, 'w') as f:
-                json.dump(data, f, indent=2)
+                json.dump(nested_data, f, indent=2)
             return jsonify({'status': 'success'})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
     try:
         with open(planning_path, 'r') as f:
             planning_data = json.load(f)
-        return jsonify(planning_data)
+            # Flatten the nested structure for the response
+            flattened_steps = {}
+            for stage, stage_data in planning_data.items():
+                for substage, substage_data in stage_data.items():
+                    for step, step_data in substage_data.items():
+                        key = f"{stage}.{substage}.{step}"
+                        flattened_steps[key] = step_data
+            return jsonify(flattened_steps)
     except Exception as e:
         return jsonify({'error': str(e)}), 500 
