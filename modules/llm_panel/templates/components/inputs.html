@@ -11,10 +11,10 @@
             {% set val = input_values[input_id] if input_values and input_id in input_values else '—' %}
             {% if not loop.first %}{% set ns.summary = ns.summary + ', ' %}{% endif %}
             {% set first_line = val.split('\n')[0] if val else '' %}
-            {% set ns.summary = ns.summary + '[' + input_id + ']: ' + first_line[:100] + ('...' if first_line|length >
-            100 else '') %}
+            {% set ns.summary = ns.summary + '[' + '<span class="text-blue-500">' + input_config.db_field + '</span>' +
+            ']: ' + first_line[:100] + ('...' if first_line|length > 100 else '') %}
             {% endfor %}
-            {{ ns.summary }}
+            {{ ns.summary|safe }}
             {% else %}
             No inputs configured
             {% endif %}
@@ -28,9 +28,6 @@
         {% if step_config.inputs %}
         {% for input_id, input_config in step_config.inputs.items() %}
         <div class="mb-4">
-            <label for="{{ input_id }}" class="block text-sm font-medium text-blue-500 mb-2">
-                [{{ input_id }}]
-            </label>
             <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
                 data-target="{{ input_id }}" data-section="inputs" data-current-substage="{{ current_substage }}">
                 <!-- Options will be populated by JavaScript -->
@@ -38,7 +35,8 @@
             {% set val = input_values[input_id] if input_values and input_id in input_values else '' %}
             <textarea id="{{ input_id }}" name="{{ input_id }}"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
-                data-db-field="{{ input_id }}" data-db-table="post_development" rows="4">{{ val }}</textarea>
+                data-db-field="{{ input_config.db_field }}" data-db-table="post_development"
+                rows="4">{{ val }}</textarea>
         </div>
         {% endfor %}
         {% else %}

@@ -24,7 +24,7 @@ def nav_index(post_id):
     context = {
         'current_stage': stage,
         'current_substage': substage,
-        'current_step': 'basic_idea',
+        'current_step': 'idea',
         'all_posts': all_posts,
         'current_post_id': post_id,
         'workflow_enabled': is_workflow_enabled()
@@ -79,7 +79,7 @@ def nav_dev():
     context = {
         'current_stage': 'planning',
         'current_substage': 'idea',
-        'current_step': 'basic_idea',
+        'current_step': 'idea',
         'all_posts': all_posts,
         'workflow_enabled': is_workflow_enabled()
     }

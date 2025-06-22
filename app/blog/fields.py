@@ -1,7 +1,7 @@
 # Workflow fields grouped by stage for use in templates and logic
 WORKFLOW_FIELDS = {
     "Idea Stage": [
-        "basic_idea",
+        "expanded_idea",
         "provisional_title",
         "idea_scope",
     ],
@@ -64,4 +64,9 @@ WORKFLOW_FIELDS = {
         "distribution",
         "engagement_tracking",
     ],
-} 
+}
+
+DEVELOPMENT_FIELDS = [
+    "expanded_idea",
+    "idea_seed",
+] 

@@ -29,67 +29,19 @@ export async function initializeFieldDropdowns() {
         console.log('Found field selectors:', selectors.length);
         
         selectors.forEach(selector => {
-            // Clear existing options
-            selector.innerHTML = '';
-            
-            // Add a default "Select field" option
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = '-- Select field --';
-            defaultOption.disabled = true;
-            selector.appendChild(defaultOption);
-            
-            // Filter fields based on the current stage/substage
-            const relevantFields = fieldMappings.filter(mapping => 
-                mapping.stage_name === stage && 
-                mapping.substage_name === substage
-            );
-            console.log('Relevant fields:', relevantFields);
-            
-            // Add unmapped fields
-            const unmappedFields = fieldMappings.filter(mapping => 
-                mapping.stage_name === 'Unmapped' && 
-                mapping.substage_name === 'Available Fields'
-            );
-            console.log('Unmapped fields:', unmappedFields);
-            
-            // Add relevant fields
-            if (relevantFields.length > 0) {
-                const stageGroup = document.createElement('optgroup');
-                stageGroup.label = `${stage} - ${substage}`;
-                relevantFields.forEach(field => {
-                    const option = document.createElement('option');
-                    option.value = field.field_name;
-                    option.textContent = field.display_name || field.field_name;
-                    stageGroup.appendChild(option);
-                });
-                selector.appendChild(stageGroup);
-            }
-            
-            // Add unmapped fields
-            if (unmappedFields.length > 0) {
-                const unmappedGroup = document.createElement('optgroup');
-                unmappedGroup.label = 'Available Fields';
-                unmappedFields.forEach(field => {
-                    const option = document.createElement('option');
-                    option.value = field.field_name;
-                    option.textContent = field.display_name || field.field_name;
-                    unmappedGroup.appendChild(option);
-                });
-                selector.appendChild(unmappedGroup);
-            }
-            
-            // Set the current value if it exists
+            // Get the current field value from the textarea's data-db-field
             const targetField = selector.dataset.target;
+            let currentField = '';
             if (targetField) {
                 const textarea = document.getElementById(targetField);
                 if (textarea) {
-                    const dbField = textarea.dataset.dbField;
-                    if (dbField) {
-                        selector.value = dbField;
-                    }
+                    currentField = textarea.dataset.dbField;
+                    console.log('Current field from textarea:', currentField);
                 }
             }
+            
+            // Use the correct renderFieldDropdown function with the actual database field
+            renderFieldDropdown(selector, fieldMappings, currentField);
             
             // Add change event listener
             selector.addEventListener('change', async function() {
@@ -187,8 +139,13 @@ function renderFieldDropdown(select, mappings, selected) {
         }
         const opt = document.createElement('option');
         opt.value = m.field_name;
-        opt.textContent = m.display_name || m.field_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        if (selected === m.field_name) {
+        // Format the display name to be more user-friendly
+        opt.textContent = m.display_name || m.field_name
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        // Use the actual database field from the textarea for selection
+        if (m.field_name === selected) {
             opt.selected = true;
         }
         stageOptGroup.appendChild(opt);

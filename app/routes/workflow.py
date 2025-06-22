@@ -11,7 +11,7 @@ workflow_bp = Blueprint('workflow', __name__, url_prefix='/workflow')
 @workflow_bp.route('/posts/<int:post_id>/<stage>')
 @workflow_bp.route('/posts/<int:post_id>/<stage>/<substage>')
 @workflow_bp.route('/posts/<int:post_id>/<stage>/<substage>/<step>')
-def workflow_index(post_id=None, stage='planning', substage='idea', step='basic_idea'):
+def workflow_index(post_id=None, stage='planning', substage='idea', step='initial'):
     """Main workflow route that handles all workflow navigation."""
     # Get all posts for the selector
     all_posts = get_all_posts()
@@ -29,6 +29,7 @@ def workflow_index(post_id=None, stage='planning', substage='idea', step='basic_
     # Get step configuration from workflow_step_entity
     with get_db_conn() as conn:
         with conn.cursor() as cur:
+            # First get the step configuration
             cur.execute("""
                 SELECT wse.config
                 FROM workflow_step_entity wse
@@ -37,41 +38,54 @@ def workflow_index(post_id=None, stage='planning', substage='idea', step='basic_
             """, (substage, step))
             result = cur.fetchone()
             step_config = result['config'] if result else {}
-    
-    # If no config exists yet, use default configuration
-    if not step_config:
-        step_config = {
-            'inputs': {
-                'basic_idea': {
-                    'type': 'textarea',
-                    'db_field': 'idea_seed',
-                    'db_table': 'post_development'
-                }
-            },
-            'outputs': {
-                'refined_idea': {
-                    'type': 'textarea',
-                    'db_field': 'basic_idea',
-                    'db_table': 'post_development'
-                }
-            },
-            'settings': {
-                'llm': {
-                    'model': 'mistral',
-                    'task_prompt': 'Refine the basic idea into a more detailed concept.',
-                    'input_mapping': {
-                        'basic_idea': 'idea_seed'
-                    },
-                    'parameters': {
-                        'temperature': 0.7,
-                        'max_tokens': 1000,
-                        'top_p': 1.0,
-                        'frequency_penalty': 0.0,
-                        'presence_penalty': 0.0
+            
+            # If no config exists, get field mappings from workflow_field_mapping
+            if not step_config:
+                cur.execute("""
+                    SELECT wfm.field_name
+                    FROM workflow_field_mapping wfm
+                    JOIN workflow_stage_entity ws ON wfm.stage_id = ws.id
+                    JOIN workflow_sub_stage_entity wss ON wfm.substage_id = wss.id
+                    WHERE ws.name = %s AND wss.name = %s
+                    ORDER BY wfm.order_index
+                """, (stage, substage))
+                fields = cur.fetchall()
+                
+                # Create minimal config using actual field mappings
+                step_config = {
+                    'inputs': {},
+                    'outputs': {},
+                    'settings': {
+                        'llm': {
+                            'model': 'mistral',
+                            'task_prompt': f'Process the {step} step.',
+                            'parameters': {
+                                'temperature': 0.7,
+                                'max_tokens': 1000,
+                                'top_p': 1.0,
+                                'frequency_penalty': 0.0,
+                                'presence_penalty': 0.0
+                            }
+                        }
                     }
                 }
-            }
-        }
+                
+                # Add first field as input and second as output if available
+                if fields:
+                    first_field = fields[0]['field_name']
+                    step_config['inputs']['input_field'] = {
+                        'type': 'textarea',
+                        'db_field': first_field,
+                        'db_table': 'post_development'
+                    }
+                    
+                    if len(fields) > 1:
+                        second_field = fields[1]['field_name']
+                        step_config['outputs']['output_field'] = {
+                            'type': 'textarea',
+                            'db_field': second_field,
+                            'db_table': 'post_development'
+                        }
     
     # Get input/output values from post_development table
     with get_db_conn() as conn:
@@ -135,11 +149,12 @@ def get_field_mappings():
             with conn.cursor() as cur:
                 # First get all mapped fields with their stage/substage info
                 cur.execute("""
-                    SELECT wfm.field_name, ws.name as stage_name, wss.name as substage_name
+                    SELECT DISTINCT ON (wfm.field_name) 
+                        wfm.field_name, ws.name as stage_name, wss.name as substage_name
                     FROM workflow_field_mapping wfm
                     JOIN workflow_stage_entity ws ON wfm.stage_id = ws.id
                     JOIN workflow_sub_stage_entity wss ON wfm.substage_id = wss.id
-                    ORDER BY ws.stage_order, wss.sub_stage_order, wfm.order_index
+                    ORDER BY wfm.field_name, ws.stage_order, wss.sub_stage_order, wfm.order_index
                 """)
                 mapped_fields = cur.fetchall()
                 
@@ -229,3 +244,39 @@ def update_field_mapping():
                 return jsonify({'status': 'success'})
             else:
                 return jsonify({'error': 'Invalid section or target_id'}), 400 
+
+@workflow_bp.route('/api/field/<field>')
+def get_field_value(field):
+    """Get the value of a specific field for a post."""
+    post_id = request.args.get('post_id', type=int)
+    if not post_id:
+        return jsonify({'error': 'post_id is required'}), 400
+    
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Verify the field exists in post_development
+                cur.execute("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'post_development' 
+                    AND column_name = %s
+                """, (field,))
+                if not cur.fetchone():
+                    return jsonify({'error': f'Field {field} not found'}), 404
+                
+                # Get the field value
+                cur.execute(f"""
+                    SELECT {field} as value
+                    FROM post_development
+                    WHERE post_id = %s
+                """, (post_id,))
+                result = cur.fetchone()
+                
+                if result:
+                    return jsonify({'value': result['value'] or ''})
+                else:
+                    return jsonify({'value': ''})
+    except Exception as e:
+        print(f"Error in get_field_value: {str(e)}")
+        return jsonify({'error': str(e)}), 500 

@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS workflow_field_mapping (
     UNIQUE(field_name, stage_id, substage_id)
 );
 
--- Insert some default mappings for common fields
+-- Insert initial field mappings
 INSERT INTO workflow_field_mapping (field_name, stage_id, substage_id, order_index)
-SELECT 'basic_idea', wse.id, wsse.id, 0
+SELECT 'initial_concept', wse.id, wsse.id, 0
 FROM workflow_stage_entity wse
 JOIN workflow_sub_stage_entity wsse ON wsse.stage_id = wse.id
 WHERE wse.name = 'planning' AND wsse.name = 'idea';

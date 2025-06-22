@@ -101,15 +101,18 @@ def planning_steps():
     with open(planning_path, 'r') as f:
         planning_data = json.load(f)
     
-    # Flatten the nested structure for display
-    flattened_steps = {}
-    for stage, stage_data in planning_data.items():
-        for substage, substage_data in stage_data.items():
-            for step, step_data in substage_data.items():
-                key = f"{stage}.{substage}.{step}"
-                flattened_steps[key] = step_data
+    # Get the current step from the query parameters or use defaults
+    stage = request.args.get('stage', 'planning')
+    substage = request.args.get('substage', 'idea')
+    step = request.args.get('step', 'idea')
     
-    return render_template('settings/planning_steps.html', planning_steps=flattened_steps)
+    # Get the step configuration
+    step_config = planning_data[stage][substage][step]
+    
+    return render_template('settings/planning_steps.html', 
+                         step_config=step_config,
+                         input_values={},  # Empty for now since we're just configuring
+                         output_values={})  # Empty for now since we're just configuring
 
 @settings_bp.route('/planning_steps_json', methods=['GET', 'POST'])
 def planning_steps_json():

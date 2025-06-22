@@ -32,9 +32,9 @@ def get_db_conn():
 def new_post():
     try:
         data = request.get_json()
-        if not data or "basic_idea" not in data:
-            return jsonify({"error": "basic_idea is required"}), 400
-        temp_title = data["basic_idea"][:50] + "..."
+        if not data or "expanded_idea" not in data:
+            return jsonify({"error": "expanded_idea is required"}), 400
+        temp_title = data["expanded_idea"][:50] + "..."
         base_slug = slugify(temp_title)
         counter = 0
         slug = base_slug
@@ -59,10 +59,10 @@ def new_post():
                 # Insert post_development with idea_seed
                 cur.execute(
                     """
-                    INSERT INTO post_development (post_id, idea_seed)
+                    INSERT INTO post_development (post_id, expanded_idea)
                     VALUES (%s, %s)
                     """,
-                    (post_id, data["basic_idea"])
+                    (post_id, data["expanded_idea"])
                 )
                 # --- CLONE post_substage_action from previous post ---
                 cur.execute("SELECT id FROM post WHERE id != %s ORDER BY id DESC LIMIT 1", (post_id,))
@@ -244,7 +244,7 @@ def test_insert():
                 # Insert post development
                 cur.execute(
                     """
-                    INSERT INTO post_development (post_id, basic_idea)
+                    INSERT INTO post_development (post_id, expanded_idea)
                     VALUES (%s, %s)
                     RETURNING id
                 """,
@@ -406,12 +406,12 @@ def posts_listing():
                 query = """
                     SELECT p.*, 
                            COALESCE(p.status, 'draft'::post_status) as status,
-                           pd.basic_idea,
+                           pd.expanded_idea,
                            pd.idea_seed
                     FROM post p
                     LEFT JOIN post_development pd ON p.id = pd.post_id
                     {where_clause}
-                    GROUP BY p.id, pd.basic_idea, pd.idea_seed
+                    GROUP BY p.id, pd.expanded_idea, pd.idea_seed
                     ORDER BY p.created_at DESC
                 """.format(where_clause="WHERE p.status != 'deleted'" if not show_deleted else "")
                 
@@ -444,7 +444,7 @@ def posts_listing():
             
             # Set default title if none exists
             if not post_dict.get('title'):
-                post_dict['title'] = post_dict.get('basic_idea', '')[:50] + '...' if post_dict.get('basic_idea') else 'Untitled'
+                post_dict['title'] = post_dict.get('expanded_idea', '')[:50] + '...' if post_dict.get('expanded_idea') else 'Untitled'
             formatted_posts.append(post_dict)
         posts = formatted_posts
     except Exception as e:

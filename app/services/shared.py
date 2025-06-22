@@ -104,7 +104,7 @@ def get_workflow_stages_fallback():
     """Return fallback workflow stages data if database is unavailable."""
     return {
         "Planning": {
-            "Idea": ["Basic Idea", "Provisional Title"],
+            "Idea": ["initial_concept", "Provisional Title"],
             "Research": ["Concepts", "Facts"],
             "Structure": ["Outline", "Allocate Facts"]
         },

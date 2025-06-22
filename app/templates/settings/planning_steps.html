@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Planning Steps JSON{% endblock %}
+{% block title %}Planning Steps{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8 text-gray-100">Planning Steps JSON</h1>
+    <h1 class="text-3xl font-bold mb-8 text-gray-100">Planning Steps</h1>
     <div class="mb-6">
         <button id="tab-tree" class="px-4 py-2 rounded-t bg-gray-700 text-white font-semibold focus:outline-none">Tree
             View</button>
@@ -12,7 +12,103 @@
             class="px-4 py-2 rounded-t bg-gray-700 text-white font-semibold focus:outline-none ml-2">Raw JSON</button>
     </div>
     <div id="tree-view" class="bg-gray-800 p-4 rounded-b-lg text-gray-200 font-mono" style="display:block;">
-        <pre id="tree-content"></pre>
+        <!-- Inputs Accordion -->
+        <div class="accordion-item border border-gray-700 rounded-lg overflow-hidden mb-4">
+            <button
+                class="accordion-header w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+                onclick="toggleAccordion('inputs')">
+                <span class="font-medium text-dark-text">Inputs</span>
+                <span class="text-gray-400 flex-grow text-left ml-4" id="inputs-summary">
+                    {% if step_config.inputs %}
+                    {% set ns = namespace(summary='') %}
+                    {% for input_id, input_config in step_config.inputs.items() %}
+                    {% set val = input_values[input_id] if input_values and input_id in input_values else '—' %}
+                    {% if not loop.first %}{% set ns.summary = ns.summary + ', ' %}{% endif %}
+                    {% set first_line = val.split('\n')[0] if val else '' %}
+                    {% set ns.summary = ns.summary + '[' + input_id + ']: ' + first_line[:100] + ('...' if
+                    first_line|length > 100 else '') %}
+                    {% endfor %}
+                    {{ ns.summary }}
+                    {% else %}
+                    No inputs configured
+                    {% endif %}
+                </span>
+                <svg class="w-5 h-5 transform transition-transform" id="inputs-icon" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div id="inputs-content" class="hidden p-4 bg-dark-bg text-dark-text border-t border-dark-border">
+                {% if step_config.inputs %}
+                {% for input_id, input_config in step_config.inputs.items() %}
+                <div class="mb-4">
+                    <label for="{{ input_id }}" class="block text-sm font-medium text-blue-500 mb-2">
+                        [{{ input_id }}]
+                    </label>
+                    <select
+                        class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                        data-target="{{ input_id }}" data-section="inputs"
+                        data-current-substage="{{ current_substage }}">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                    {% set val = input_values[input_id] if input_values and input_id in input_values else '' %}
+                    <textarea id="{{ input_id }}" name="{{ input_id }}"
+                        class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                        data-db-field="{{ input_id }}" data-db-table="post_development" rows="4">{{ val }}</textarea>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-gray-400">No inputs configured for this step.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Outputs Accordion -->
+        <div class="accordion-item border border-gray-700 rounded-lg overflow-hidden mb-4">
+            <button
+                class="accordion-header w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+                onclick="toggleAccordion('outputs')">
+                <span class="font-medium text-dark-text">Outputs</span>
+                <span class="text-gray-400 flex-grow text-left ml-4" id="outputs-summary">
+                    {% if step_config.outputs %}
+                    {% set ns = namespace(summary='') %}
+                    {% for output_id, output_config in step_config.outputs.items() %}
+                    {% set val = output_values[output_id] if output_values and output_id in output_values else '—' %}
+                    {% if not loop.first %}{% set ns.summary = ns.summary + ', ' %}{% endif %}
+                    {% set first_line = val.split('\n')[0] if val else '' %}
+                    {% set ns.summary = ns.summary + '[' + output_id + ']: ' + first_line[:100] + ('...' if
+                    first_line|length > 100 else '') %}
+                    {% endfor %}
+                    {{ ns.summary }}
+                    {% endif %}
+                </span>
+                <svg class="w-5 h-5 transform transition-transform" id="outputs-icon" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div id="outputs-content" class="hidden p-4 bg-dark-bg text-dark-text border-t border-dark-border">
+                {% if step_config.outputs %}
+                {% for output_id, output_config in step_config.outputs.items() %}
+                <div class="mb-4">
+                    <label for="{{ output_id }}_output" class="block text-sm font-medium text-blue-500 mb-2">
+                        [{{ output_id }}]
+                    </label>
+                    <select
+                        class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                        data-target="{{ output_id }}_output" data-section="outputs"
+                        data-current-substage="{{ current_substage }}">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                    {% set val = output_values[output_id] if output_values and output_id in output_values else '' %}
+                    <textarea id="{{ output_id }}_output" name="{{ output_id }}"
+                        class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                        data-db-field="{{ output_id }}" data-db-table="post_development" rows="4">{{ val }}</textarea>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
     </div>
     <div id="json-view" class="bg-gray-800 p-4 rounded-b-lg text-gray-200 font-mono" style="display:none;">
         <textarea id="json-textarea"
@@ -24,15 +120,16 @@
         </div>
     </div>
 </div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const tabTree = document.getElementById('tab-tree');
         const tabJson = document.getElementById('tab-json');
         const treeView = document.getElementById('tree-view');
         const jsonView = document.getElementById('json-view');
-        const treeContent = document.getElementById('tree-content');
         const jsonTextarea = document.getElementById('json-textarea');
         const saveButton = document.getElementById('save-button');
+
         // Tab switching
         tabTree.addEventListener('click', function () {
             tabTree.classList.add('bg-blue-700');
@@ -40,71 +137,55 @@
             treeView.style.display = 'block';
             jsonView.style.display = 'none';
         });
+
         tabJson.addEventListener('click', function () {
             tabJson.classList.add('bg-blue-700');
             tabTree.classList.remove('bg-blue-700');
             treeView.style.display = 'none';
             jsonView.style.display = 'block';
         });
-        // Pretty-print tree view
-        function buildAccordion(obj, level = 0) {
-            if (typeof obj !== 'object' || obj === null) {
-                return JSON.stringify(obj);
-            }
-            let html = '';
-            if (Array.isArray(obj)) {
-                html += '<ul class="list-disc pl-4">';
-                obj.forEach((item, i) => {
-                    html += '<li>' + buildAccordion(item, level + 1) + '</li>';
-                });
-                html += '</ul>';
+
+        // Accordion toggle function
+        function toggleAccordion(id) {
+            const content = document.getElementById(id + '-content');
+            const icon = document.getElementById(id + '-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
             } else {
-                const keys = Object.keys(obj);
-                if (level === 1 || level === 2) {
-                    html += '<div class="accordion mb-2">';
-                    keys.forEach((key, i) => {
-                        html += '<div class="accordion-item border border-gray-700 rounded mb-1">';
-                        html += '<button class="accordion-header w-full text-left px-4 py-2 bg-gray-700 hover:bg-gray-600 focus:outline-none" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">' + key + '</button>';
-                        html += '<div class="accordion-content hidden px-4 py-2 bg-gray-800">' + buildAccordion(obj[key], level + 1) + '</div>';
-                        html += '</div>';
-                    });
-                    html += '</div>';
-                } else {
-                    html += '{<ul class="list-none pl-4">';
-                    keys.forEach((key, i) => {
-                        html += '<li>' + key + ': ' + buildAccordion(obj[key], level + 1) + (i < keys.length - 1 ? ',' : '') + '</li>';
-                    });
-                    html += '}</ul>';
-                }
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
             }
-            return html;
         }
-        treeContent.innerHTML = buildAccordion({{ planning_steps | tojson }});
-    // Save button logic
-    saveButton.addEventListener('click', async function () {
-        let data;
-        try {
-            data = JSON.parse(jsonTextarea.value);
-        } catch (e) {
-            alert('Invalid JSON: ' + e.message);
-            return;
-        }
-        const resp = await fetch('/settings/planning_steps_json', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+
+        // Save button logic
+        saveButton.addEventListener('click', async function () {
+            let data;
+            try {
+                data = JSON.parse(jsonTextarea.value);
+            } catch (e) {
+                alert('Invalid JSON: ' + e.message);
+                return;
+            }
+            const resp = await fetch('/settings/planning_steps_json', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await resp.json();
+            if (result.status === 'success') {
+                const message = document.createElement('div');
+                message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg';
+                message.textContent = 'Planning steps saved successfully!';
+                document.body.appendChild(message);
+                setTimeout(() => message.remove(), 3000);
+            } else {
+                alert('Error saving: ' + (result.error || 'Unknown error'));
+            }
         });
-        const result = await resp.json();
-        if (result.status === 'success') {
-            const message = document.createElement('div');
-            message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg';
-            message.textContent = 'Planning steps saved successfully!';
-            document.body.appendChild(message);
-            setTimeout(() => message.remove(), 3000);
-        } else {
-            alert('Error saving: ' + (result.error || 'Unknown error'));
-        }
-    });
+
+        // Make toggleAccordion available globally
+        window.toggleAccordion = toggleAccordion;
     });
 </script>
 {% endblock %}

@@ -1,14 +1,14 @@
 {
     "planning": {
         "idea": {
-            "basic_idea": {
-                "title": "Basic Idea",
-                "description": "Enter your basic idea for the post here. This will be the foundation of your content.",
+            "initial": {
+                "title": "Initial Concept",
+                "description": "Enter your initial concept for the post here.",
                 "inputs": {
                     "idea_seed": {
                         "type": "textarea",
-                        "label": "Basic Idea",
-                        "placeholder": "Type your basic idea here...",
+                        "label": "Initial Idea",
+                        "placeholder": "Type your idea here...",
                         "db_field": "idea_seed",
                         "db_table": "post_development",
                         "required": true
@@ -29,7 +29,7 @@
                         },
                         "output_mapping": {
                             "table": "post_development",
-                            "field": "basic_idea"
+                            "field": "expanded_idea"
                         },
                         "parameters": {
                             "temperature": 0.7,
@@ -41,30 +41,30 @@
                     }
                 },
                 "prompt": {
-                    "template": "Based on the following basic idea: {idea_seed}\n\nGenerate a detailed blog post outline that expands on this concept.",
+                    "template": "Based on the following idea: {idea_seed}\n\nGenerate a detailed blog post outline that expands on this concept.",
                     "settings": {
                         "temperature": 0.7,
                         "max_tokens": 500
                     }
                 },
                 "outputs": {
-                    "basic_idea": {
+                    "expanded_idea": {
                         "type": "textarea",
-                        "label": "Generated Basic Idea",
-                        "db_field": "basic_idea",
+                        "label": "Expanded Idea",
+                        "db_field": "expanded_idea",
                         "db_table": "post_development"
                     }
                 }
             },
-            "provisional_title": {
-                "title": "Provisional Title",
-                "description": "Generate a provisional title for your post based on the expanded idea.",
+            "title": {
+                "title": "Title",
+                "description": "Generate a title for your post based on the expanded idea.",
                 "inputs": {
-                    "basic_idea": {
+                    "expanded_idea": {
                         "type": "textarea",
                         "label": "Expanded Idea",
                         "placeholder": "The expanded idea from the previous step...",
-                        "db_field": "basic_idea",
+                        "db_field": "expanded_idea",
                         "db_table": "post_development",
                         "required": true
                     }
@@ -74,10 +74,10 @@
                         "provider": "ollama",
                         "model": "llama3.1:70b",
                         "system_prompt": "[system] You are an expert in Scottish history and culture.",
-                        "task_prompt": "[system] You are an expert in Scottish history and culture. Generate five alternative, arresting, and informative blog post titles for a post based on the following expanded idea. Return your response as a strict JSON array of strings, with no commentary or formatting—just the list of titles.\n\nExpanded Idea:\n[data:basic_idea]",
+                        "task_prompt": "[system] You are an expert in Scottish history and culture. Generate five alternative, arresting, and informative blog post titles for a post based on the following expanded idea. Return your response as a strict JSON array of strings, with no commentary or formatting—just the list of titles.\n\nExpanded Idea:\n[data:expanded_idea]",
                         "input_mapping": {
-                            "basic_idea": {
-                                "field": "basic_idea",
+                            "expanded_idea": {
+                                "field": "expanded_idea",
                                 "table": "post_development",
                                 "description": "The expanded idea to base the title on"
                             }
@@ -98,7 +98,7 @@
                 "outputs": {
                     "provisional_title": {
                         "type": "textarea",
-                        "label": "Provisional Title",
+                        "label": "Title",
                         "db_field": "provisional_title",
                         "db_table": "post_development"
                     }

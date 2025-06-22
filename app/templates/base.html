@@ -123,7 +123,7 @@
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ basic_idea: basicIdea })
+                            body: JSON.stringify({ expanded_idea: basicIdea })
                         });
                         const data = await response.json();
                         if (response.ok && data.id) {
