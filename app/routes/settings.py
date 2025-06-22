@@ -31,7 +31,7 @@ def workflow_field_mapping():
 
 @settings_bp.route('/workflow_prompts', methods=['GET', 'POST'])
 def workflow_prompts():
-    prompts_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'prompts')
+    prompts_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'modules', 'llm_panel', 'data', 'prompts')
     prompts = {}
     # Load all prompt files
     for filename in os.listdir(prompts_dir):
@@ -65,7 +65,7 @@ def workflow_prompts_json():
     if request.method == 'POST':
         try:
             data = request.get_json()
-            prompts_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'prompts')
+            prompts_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'modules', 'llm_panel', 'data', 'prompts')
             
             # Save each prompt to its respective file
             for key, content in data.items():
@@ -79,7 +79,7 @@ def workflow_prompts_json():
             return jsonify({'error': str(e)}), 500
     
     try:
-        prompts_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'prompts')
+        prompts_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'modules', 'llm_panel', 'data', 'prompts')
         prompts = {}
         
         # Walk through the prompts directory

@@ -1,0 +1,4 @@
+{
+  "system_prompt": "You are an expert in Scottish history and culture.",
+  "task_prompt": "Generate a detailed blog post outline based on the expanded idea. Do not give an introduction or conclusion. Just provide a list of main sections that appropriately divide up the content into coherent topics. Provide a title; and a description of the section; and some examples of each section's ideal content emphasising both what it should include and also what it should not cover with respect to topics covered in other sections. Your entire response must be a single valid JSON array of section objects. Do not include any text before or after the JSON. Do not include any introductions, explanations, or commentary. Only output the JSON.\n\nEach section object must have this exact format:\n{\n  \"title\": \"Section Title\",\n  \"description\": \"Detailed description of what this section should cover\",\n  \"contents\": [\"Topic 1\", \"Topic 2\", \"Topic 3\"]\n}"
+}
