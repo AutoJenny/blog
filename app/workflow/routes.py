@@ -1,11 +1,15 @@
 from flask import render_template, redirect, url_for, abort, request, jsonify
 from app.workflow import workflow
-from .navigation import navigator
-from app.db import get_db_conn
-import json
-import os
+# DISABLED - DO NOT USE TOXIC DUPLICATE
+# from .navigation import navigator
+
+# Use proper nav module instead
+from modules.nav.services import get_workflow_context, get_all_posts, get_workflow_stages
+from app.services.shared import get_all_posts_from_db
+from app.database import get_db_conn
 import subprocess
 import sys
+import json
 
 # Mapping of substage names to Font Awesome icons
 SUBSTAGE_ICONS = {
@@ -57,10 +61,18 @@ def load_step_config(stage_name: str, substage_name: str, step_name: str):
 
 @workflow.route('/')
 def index():
-    latest = get_latest_post()
-    if not latest:
+    """Workflow index page."""
+    all_posts = get_all_posts_from_db()
+    if not all_posts:
         abort(404, "No posts found.")
-    return redirect(url_for('workflow.stages', post_id=latest['id']))
+    return redirect(url_for('workflow.workflow_index', post_id=all_posts[0]['id'], stage='planning', substage='idea'))
+
+@workflow.route('/posts/<int:post_id>/<stage>/<substage>')
+def workflow_index(post_id, stage='planning', substage='idea'):
+    """Main workflow page."""
+    context = get_workflow_context(stage, substage)
+    context['current_post_id'] = post_id
+    return render_template('workflow/base.html', **context)
 
 @workflow.route('/<int:post_id>/')
 def stages(post_id):
@@ -125,60 +137,24 @@ def substage(post_id, stage_name: str, substage_name: str):
 
 @workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/')
 def step(post_id, stage_name: str, substage_name: str, step_name: str):
-    navigator.load_navigation()
-    
-    # Validate the path and get step
-    step = navigator.validate_path(stage_name, substage_name, step_name)
-    if not step:
+    """Handle old URL format and redirect to new format."""
+    # Get workflow context to validate the path
+    context = get_workflow_context(stage_name, substage_name, step_name)
+    if not context:
         abort(404, f"Invalid path: {stage_name}/{substage_name}/{step_name}")
-    
-    # Get stage and substage
-    stage = navigator.get_stage_by_name(stage_name)
-    substage = navigator.get_substage_by_name(stage_name, substage_name)
-    steps = navigator.get_steps_for_substage(substage['id'])
-    
-    # Get post data
-    post = get_post_and_idea_seed(post_id)
-    if not post:
-        abort(404, f"Post {post_id} not found.")
-    all_posts = get_all_posts()
+    return redirect(url_for('workflow.workflow_index', post_id=post_id, stage=stage_name, substage=substage_name))
 
-    # Get navigation context
-    nav_context = navigator.get_navigation_context(
-        current_stage_id=stage['id'],
-        current_substage_id=substage['id'],
-        current_step_id=step['id']
-    )
+# Redirect old URLs to new format
+@workflow.route('/<int:post_id>/<stage>/<substage>/<step>/')
+def old_step(post_id, stage, substage, step):
+    """Handle old URL format and redirect to new format."""
+    # Get workflow context to validate the path
+    context = get_workflow_context(stage, substage, step)
+    if not context:
+        abort(404, f"Invalid path: {stage}/{substage}/{step}")
+    return redirect(url_for('workflow.workflow_index', post_id=post_id, stage=stage, substage=substage))
 
-    return render_template(
-        f'workflow/steps/{step_name}.html',
-        stage=stage,
-        substage=substage,
-        step=step,
-        steps=steps,
-        post=post,
-        post_id=post_id,
-        all_posts=all_posts,
-        nav_context=nav_context,
-        substage_icons=SUBSTAGE_ICONS,
-        current_stage=stage_name,
-        current_substage=substage_name,
-        current_step=step_name
-    )
-
-# Redirect old URLs to new format with post_id
-@workflow.route('/<stage_name>/<substage_name>/<step_name>/')
-def legacy_step(stage_name, substage_name, step_name):
-    latest = get_latest_post()
-    if not latest:
-        abort(404, "No posts found.")
-    return redirect(url_for('workflow.step', 
-                          post_id=latest['id'], 
-                          stage_name=stage_name, 
-                          substage_name=substage_name, 
-                          step_name=step_name))
-
-@workflow.route('/api/run_llm/', methods=['POST'])
+@workflow.route('/api/v1/workflow/llm/', methods=['POST'])
 def api_run_llm():
     data = request.get_json()
     post_id = data.get('post_id')
@@ -206,5 +182,21 @@ def api_run_llm():
             return jsonify({'status': 'success', 'output': result.stdout})
         else:
             return jsonify({'status': 'error', 'error': result.stderr}), 500
+    except Exception as e:
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@workflow.route('/api/v1/workflow/title_order/', methods=['POST'])
+def api_update_title_order():
+    data = request.get_json()
+    post_id = data.get('post_id')
+    titles = data.get('titles')
+    if not all([post_id, titles]):
+        return jsonify({'error': 'Missing required parameters'}), 400
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("UPDATE post_development SET title_order = %s WHERE post_id = %s", (json.dumps(titles), post_id))
+                conn.commit()
+        return jsonify({'status': 'success'})
     except Exception as e:
         return jsonify({'status': 'error', 'error': str(e)}), 500 

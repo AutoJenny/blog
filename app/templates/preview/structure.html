@@ -20,7 +20,8 @@
                 <strong>Intro:</strong> <span class="text-gray-600">[content snippet]</span>
             </div>
             <div>
-                <a href="/workflow/stub/" class="btn btn-secondary">Edit</a>
+                <a href="{{ url_for('workflow_nav.stage', stage='planning', substage='idea', post_id=post.id) }}"
+                    class="btn btn-secondary">Edit</a>
                 <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
             </div>
         </div>
@@ -31,7 +32,8 @@
                 <div class="text-gray-600 mt-1">[Content snippet...]</div>
             </div>
             <div>
-                <a href="/workflow/stub/" class="btn btn-secondary">Edit</a>
+                <a href="{{ url_for('workflow_nav.stage', stage='planning', substage='idea', post_id=post.id) }}"
+                    class="btn btn-secondary">Edit</a>
                 <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
             </div>
         </div>
@@ -42,7 +44,8 @@
                 <div class="text-gray-600 mt-1">[Content snippet...]</div>
             </div>
             <div>
-                <a href="/workflow/stub/" class="btn btn-secondary">Edit</a>
+                <a href="{{ url_for('workflow_nav.stage', stage='planning', substage='idea', post_id=post.id) }}"
+                    class="btn btn-secondary">Edit</a>
                 <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
             </div>
         </div>
@@ -51,7 +54,8 @@
                 <strong>Conclusion:</strong> <span class="text-gray-600">[content snippet]</span>
             </div>
             <div>
-                <a href="/workflow/stub/" class="btn btn-secondary">Edit</a>
+                <a href="{{ url_for('workflow_nav.stage', stage='planning', substage='idea', post_id=post.id) }}"
+                    class="btn btn-secondary">Edit</a>
                 <span class="ml-2 px-2 py-1 rounded bg-red-100 text-red-800 text-xs">Needs Work</span>
             </div>
         </div>
@@ -60,7 +64,8 @@
                 <strong>Metadata:</strong> <span class="text-gray-600">[fields...]</span>
             </div>
             <div>
-                <a href="/workflow/stub/" class="btn btn-secondary">Edit</a>
+                <a href="{{ url_for('workflow_nav.stage', stage='planning', substage='idea', post_id=post.id) }}"
+                    class="btn btn-secondary">Edit</a>
                 <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
             </div>
         </div>

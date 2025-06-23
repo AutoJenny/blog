@@ -40,7 +40,7 @@
     const btn = event.target;
     btn.disabled = true;
     btn.textContent = 'Running...';
-    fetch('/workflow/api/run_llm/', {
+    fetch('/api/v1/workflow/llm/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -71,7 +71,7 @@
         var el = document.getElementById('output-list');
         if (el) {
             var items = Array.from(el.children).map(li => li.querySelector('.title-text').textContent);
-            fetch('/workflow/api/update_title_order/', {
+            fetch('/api/v1/workflow/title_order/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -98,7 +98,7 @@
                 animation: 150,
                 onEnd: function () {
                     var items = Array.from(el.children).map(li => li.querySelector('.title-text').textContent);
-                    fetch('/workflow/api/update_title_order/', {
+                    fetch('/api/v1/workflow/title_order/', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
