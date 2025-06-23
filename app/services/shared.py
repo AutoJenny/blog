@@ -55,4 +55,32 @@ def get_workflow_stages_from_db():
                     substage_steps = [s['name'] for s in steps if s['sub_stage_id'] == substage['id']]
                     workflow_structure[stage['name']][substage['name']] = substage_steps
 
-            return workflow_structure 
+            return workflow_structure
+
+def get_post_and_idea_seed(post_id):
+    """Get a post and its idea seed."""
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT p.*, pd.idea_seed
+                FROM post p
+                LEFT JOIN post_development pd ON pd.post_id = p.id
+                WHERE p.id = %s
+            """, (post_id,))
+            row = cur.fetchone()
+            if row:
+                return dict(row)
+            return None
+
+def get_all_posts():
+    """Get all posts."""
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT p.*, pd.idea_seed
+                FROM post p
+                LEFT JOIN post_development pd ON pd.post_id = p.id
+                WHERE p.status != 'deleted'
+                ORDER BY p.created_at DESC
+            """)
+            return [dict(row) for row in cur.fetchall()] 

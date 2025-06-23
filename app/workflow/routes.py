@@ -71,9 +71,22 @@ def index():
 @workflow.route('/posts/<int:post_id>')
 def workflow_index(post_id, stage=None, substage=None):
     """Main workflow page."""
+    post = get_post_and_idea_seed(post_id)
+    if not post:
+        abort(404, f"Post {post_id} not found.")
+    
     context = get_workflow_context(stage, substage)
-    context['current_post_id'] = post_id
-    return render_template('workflow/base.html', **context)
+    context.update({
+        'post': post,
+        'post_id': post_id,
+        'current_post_id': post_id,
+        'all_posts': get_all_posts(),
+        'substage_icons': SUBSTAGE_ICONS,
+        'current_stage': stage,
+        'current_substage': substage,
+        'current_step': None
+    })
+    return render_template('workflow/index.html', **context)
 
 @workflow.route('/posts/<int:post_id>/')
 def stages(post_id):

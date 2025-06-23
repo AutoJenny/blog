@@ -1,3 +1,9 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import 'panels.css';
+
 /* Copied and adapted from blogforge/styles/globals.css to unify look and layout with blogforge */
 @tailwind base;
 @tailwind components;
