@@ -16,7 +16,7 @@
                     class="rounded-md border border-indigo-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
             </div>
         </div>
-        <div class="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-12 my-8">
+        <div class="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-12 my-8">
             <!-- Create -->
             <div class="bg-blue-50 rounded-lg p-4 flex flex-col items-center shadow">
                 <svg class="w-5 h-5 text-blue-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
@@ -26,6 +26,16 @@
                 <a href="{{ url_for('blog.index') }}"
                     class="text-lg font-semibold text-blue-900 hover:text-blue-700 mt-1">New Post</a>
                 <span class="text-xs text-blue-700">Create a new blog post or draft</span>
+            </div>
+            <!-- Ideas -->
+            <div class="bg-indigo-50 rounded-lg p-4 flex flex-col items-center shadow">
+                <svg class="w-5 h-5 text-indigo-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <a href="{{ url_for('workflow.legacy_step', stage_name='planning', substage_name='idea', step_name='basic_idea') }}"
+                    class="text-lg font-semibold text-indigo-900 hover:text-indigo-700 mt-1">Ideas</a>
+                <span class="text-xs text-indigo-700">Brainstorm and develop ideas</span>
             </div>
             <!-- Develop -->
             <div class="bg-green-50 rounded-lg p-4 flex flex-col items-center shadow">
