@@ -42,7 +42,9 @@ def index():
                 posts = cur.fetchall()
     except Exception as e:
         posts = []
-    return render_template("blog/index.html", posts=posts)
+    # Get the first post's ID for the workflow links
+    post_id = posts[0]['id'] if posts else None
+    return render_template("blog/index.html", posts=posts, post_id=post_id)
 
 
 @bp.route("/health")
@@ -290,57 +292,36 @@ def db_restore():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/settings')
-def settings_panel():
-    field_mappings = []
-    stages = []
-    substages = []
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute('''
-                SELECT 
-                    wse.id,
-                    wse.name as step_name,
-                    wse.field_name,
-                    wste.id as stage_id,
-                    wste.name as stage_name,
-                    wsse.id as substage_id,
-                    wsse.name as substage_name,
-                    wse.order_index
-                FROM workflow_step_entity wse
-                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
-                JOIN workflow_stage_entity wste ON wsse.stage_id = wste.id
-                WHERE wse.field_name IS NOT NULL
-                ORDER BY wste.stage_order, wsse.sub_stage_order, wse.order_index
-            ''')
-            field_mappings = cur.fetchall()
-            cur.execute('SELECT id, name FROM workflow_stage_entity ORDER BY stage_order')
-            stages = cur.fetchall()
-            cur.execute('SELECT id, stage_id, name FROM workflow_sub_stage_entity ORDER BY sub_stage_order')
-            substages = cur.fetchall()
-    return render_template('main/settings.html', field_mappings=field_mappings, stages=stages, substages=substages)
+# @bp.route('/settings')
+# def settings_panel():
+#     field_mappings = []
+#     stages = []
+#     substages = []
+#     with get_db_conn() as conn:
+#         with conn.cursor() as cur:
+#             cur.execute('''
+#                 SELECT wfm.id, wfm.field_name, wfm.stage_id, wfm.substage_id, wfm.order_index
+#                 FROM workflow_field_mapping wfm
+#                 ORDER BY wfm.order_index ASC, wfm.field_name ASC
+#             ''')
+#             field_mappings = cur.fetchall()
+#             cur.execute('SELECT id, name FROM workflow_stage_entity ORDER BY stage_order')
+#             stages = cur.fetchall()
+#             cur.execute('SELECT id, stage_id, name FROM workflow_sub_stage_entity ORDER BY sub_stage_order')
+#             substages = cur.fetchall()
+#     return render_template('main/settings.html', field_mappings=field_mappings, stages=stages, substages=substages)
 
 @bp.route('/api/settings/field-mapping', methods=['GET'])
 def api_get_field_mapping():
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('''
-                SELECT 
-                    wse.id,
-                    wse.name as step_name,
-                    wse.field_name,
-                    wste.id as stage_id,
-                    wste.name as stage_name,
-                    wste.stage_order,
-                    wsse.id as substage_id,
-                    wsse.name as substage_name,
-                    wsse.sub_stage_order,
-                    wse.order_index
-                FROM workflow_step_entity wse
-                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
-                JOIN workflow_stage_entity wste ON wsse.stage_id = wste.id
-                WHERE wse.field_name IS NOT NULL
-                ORDER BY wste.stage_order, wsse.sub_stage_order, wse.order_index
+                SELECT wfm.id, wfm.field_name, wfm.stage_id, wfm.substage_id, wfm.order_index,
+                       ws.name as stage_name, ws.stage_order, wss.name as substage_name, wss.sub_stage_order
+                FROM workflow_field_mapping wfm
+                LEFT JOIN workflow_stage_entity ws ON wfm.stage_id = ws.id
+                LEFT JOIN workflow_sub_stage_entity wss ON wfm.substage_id = wss.id
+                ORDER BY ws.stage_order, wss.sub_stage_order, wfm.order_index, wfm.field_name
             ''')
             mappings = cur.fetchall()
     return jsonify([dict(row) for row in mappings])
@@ -349,17 +330,18 @@ def api_get_field_mapping():
 def api_update_field_mapping():
     data = request.get_json()
     mapping_id = data.get('id')
+    stage_id = data.get('stage_id')
     substage_id = data.get('substage_id')
     order_index = data.get('order_index')
-    if not mapping_id or not substage_id:
+    if not mapping_id or not stage_id or not substage_id:
         return jsonify({'status': 'error', 'message': 'Missing required fields'}), 400
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('''
-                UPDATE workflow_step_entity
-                SET sub_stage_id = %s, order_index = %s
+                UPDATE workflow_field_mapping
+                SET stage_id = %s, substage_id = %s, order_index = %s
                 WHERE id = %s
-            ''', (substage_id, order_index, mapping_id))
+            ''', (stage_id, substage_id, order_index, mapping_id))
             conn.commit()
     return jsonify({'status': 'success'})
 
@@ -381,16 +363,11 @@ def docs_live_field_mapping():
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             cur.execute('''
-                SELECT 
-                    wse.field_name,
-                    wste.name as stage_name,
-                    wsse.name as substage_name,
-                    wse.order_index
-                FROM workflow_step_entity wse
-                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
-                JOIN workflow_stage_entity wste ON wsse.stage_id = wste.id
-                WHERE wse.field_name IS NOT NULL
-                ORDER BY wste.stage_order, wsse.sub_stage_order, wse.order_index
+                SELECT wfm.field_name, ws.name as stage_name, wss.name as substage_name, wfm.order_index
+                FROM workflow_field_mapping wfm
+                LEFT JOIN workflow_stage_entity ws ON wfm.stage_id = ws.id
+                LEFT JOIN workflow_sub_stage_entity wss ON wfm.substage_id = wss.id
+                ORDER BY wfm.order_index ASC, wfm.field_name ASC
             ''')
             mappings = cur.fetchall()
     return render_template('docs/live_field_mapping.html', mappings=mappings)
@@ -430,7 +407,7 @@ def api_test_provider(provider_id):
 
 @bp.route('/preview/')
 def preview_stub():
-    return render_template('main/preview_stub.html')
+    return render_template('blog/public/preview_listing.html')
 
 @bp.route('/structure/')
 def structure_stub():

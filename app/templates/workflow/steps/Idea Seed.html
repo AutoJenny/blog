@@ -1,0 +1,11 @@
+{% extends "workflow/steps/planning_step.html" %}
+
+{% block step_heading %}
+<h1 class="text-3xl font-bold mb-6 text-dark-text">
+    Initial Post Idea{% if post and post.title %}: {{ post.title }}{% endif %}
+</h1>
+{% endblock %}
+
+{% block step_description %}
+<p class="text-gray-400 mb-6">Start with a seed idea for your blog post. This will be expanded in later steps.</p>
+{% endblock %}
