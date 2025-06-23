@@ -1,38 +1,54 @@
-{% extends "workflow/base.html" %}
+{% extends 'base.html' %}
 
-{% block workflow_content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold mb-8">Workflow Stages</h1>
+{% block content %}
+<div class="flex flex-col min-h-screen">
+    {# Navigation area #}
+    <div id="workflow-nav" class="mb-0">
+        {% include 'nav.html' %}
+    </div>
 
-        <div class="grid gap-6">
-            {% for stage in stages %}
-            <div class="bg-dark-bg shadow rounded-lg p-6 border border-dark-border">
-                <h2 class="text-2xl font-semibold mb-4 text-dark-text">{{ stage.name }}</h2>
-                <p class="text-gray-400 mb-4">{{ stage.description }}</p>
-
-                <!-- Substages -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {% for substage in substages if substage.stage_id == stage.id %}
-                    <a href="{{ url_for('workflow.workflow_index', post_id=post_id, stage=stage.name|lower, substage=substage.name|lower) }}"
-                        class="flex items-center p-3 bg-dark-hover rounded-lg border border-dark-border hover:border-blue-500 transition-colors duration-200">
-                        <div>
-                            <h3 class="text-lg font-medium text-dark-text">{{ substage.name }}</h3>
-                            <p class="text-sm text-gray-400">{{ substage.description }}</p>
-                        </div>
-                    </a>
-                    {% endfor %}
+    {# Content area #}
+    <div class="flex-grow">
+        {% if current_stage == 'planning' %}
+        {# Full-width LLM actions panel for Planning stage #}
+        <div class="px-6 -mt-20">
+            <div id="workflow-llm-actions" style="background-color: #2D0A50; width: 100%; min-height: 400px;"
+                class="rounded-lg p-6 shadow-lg">
+                {% include 'panel.html' %}
+            </div>
+        </div>
+        {% elif current_stage == 'writing' %}
+        {# Two-column layout for Writing stage #}
+        <div class="px-6 -mt-20">
+            <div class="flex gap-6" style="min-height: 400px;">
+                {# Left column - LLM Actions #}
+                <div id="workflow-llm-actions" style="background-color: #2D0A50; width: 50%;"
+                    class="rounded-lg p-6 shadow-lg">
+                    {% include 'panel.html' %}
                 </div>
-
-                <div class="mt-4">
-                    <a href="{{ url_for('workflow.stage', post_id=post_id, stage=stage.name|lower) }}"
-                        class="inline-flex items-center px-4 py-2 border border-dark-accent text-sm font-medium rounded-md text-white bg-dark-accent hover:bg-dark-accent/80">
-                        View Stage
-                    </a>
+                {# Right column - Sections #}
+                <div id="workflow-sections" style="background-color: #013828; width: 50%;"
+                    class="rounded-lg p-6 shadow-lg">
+                    <h2 class="text-2xl font-bold text-white mb-4">Sections Panel</h2>
+                    <div class="text-gray-200">
+                        <p>Sections module interface placeholder for Writing stage.</p>
+                    </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
+        {% else %}
+        <div class="px-6 -mt-20 text-white">
+            <p>Current stage: {{ current_stage }}</p>
+        </div>
+        {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/panels.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/panels.js') }}"></script>
 {% endblock %}
