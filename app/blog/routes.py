@@ -6,27 +6,11 @@ import logging
 from datetime import datetime
 from app.blog.fields import WORKFLOW_FIELDS
 import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from dotenv import load_dotenv, dotenv_values
 from humanize import naturaltime
 import pytz
 import json
 from app.llm.services import LLMService
-
-# Load DATABASE_URL from assistant_config.env
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
-DATABASE_URL = os.getenv('DATABASE_URL')
-
-def get_db_conn():
-    # Always reload assistant_config.env and ignore pre-existing env
-    config = dotenv_values(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'assistant_config.env'))
-    db_url = config.get('DATABASE_URL')
-    if not db_url or db_url.strip() == '':
-        print("[ERROR] DATABASE_URL is not set or is empty! Please check your assistant_config.env or environment variables.")
-        raise RuntimeError("DATABASE_URL is not set or is empty! Please check your assistant_config.env or environment variables.")
-    print(f"[DEBUG] DATABASE_URL used: {db_url}")
-    return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
+from app.database.routes import get_db_conn
 
 @bp.route("/new", methods=["POST"])
 def new_post():
@@ -390,8 +374,6 @@ def posts_listing():
     substages = {}
     show_deleted = request.args.get('show_deleted', '0') == '1'
     debug = request.args.get('debug', '0') == '1'
-    # Print DATABASE_URL
-    print(f"[DEBUG] Flask DATABASE_URL: {DATABASE_URL}", flush=True)
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
