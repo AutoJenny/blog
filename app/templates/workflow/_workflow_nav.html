@@ -5,11 +5,15 @@
         <div class="flex justify-between items-center mb-6">
             <nav class="text-sm text-gray-400">
                 <a href="{{ url_for('workflow.index') }}" class="hover:text-dark-text">Workflow</a>
+                {% if current_stage %}
                 <span class="mx-2">/</span>
                 <a href="{{ url_for('workflow.stage', post_id=post_id, stage_name=current_stage) }}"
                     class="hover:text-dark-text">{{ current_stage|title }}</a>
+                {% endif %}
+                {% if current_substage %}
                 <span class="mx-2">/</span>
                 <span class="text-dark-text">{{ current_substage|title }}</span>
+                {% endif %}
             </nav>
             <div class="relative">
                 <select id="post-selector"
@@ -21,74 +25,28 @@
             </div>
         </div>
 
-        <!-- Second line: All sub-stages as named icons in three groups of three, with stage label above each group -->
+        <!-- Second line: All sub-stages as named icons in groups by stage -->
         <div class="flex justify-center gap-8 mb-6">
-            <!-- Planning Group -->
+            {% for stage in nav_context.stages %}
             <div class="flex flex-col items-center">
-                <span class="text-xs text-gray-400 mb-1">Planning</span>
+                <span class="text-xs text-gray-400 mb-1">{{ stage.name|title }}</span>
                 <div class="flex gap-4">
-                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='idea', step_name='Idea Seed') }}"
-                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'planning' and current_substage == 'idea' %}border-blue-500{% endif %}">
-                        <i class="fas fa-lightbulb text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">Idea</div>
+                    {% for substage in nav_context.substages if substage.stage_id == stage.id %}
+                    {% set first_step = nav_context.steps|selectattr('sub_stage_id', 'equalto', substage.id)|first %}
+                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name=stage.name, substage_name=substage.name, step_name=first_step.name) }}"
+                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == stage.name and current_substage == substage.name %}border-blue-500{% endif %}">
+                        <i
+                            class="fas fa-{{ substage_icons[substage.name]|default('circle') }} text-2xl mb-2 text-dark-text"></i>
+                        <div class="text-sm text-dark-text">{{ substage.name|title }}</div>
                     </a>
-                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='research', step_name='Research Notes') }}"
-                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'planning' and current_substage == 'research' %}border-blue-500{% endif %}">
-                        <i class="fas fa-search text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">Research</div>
-                    </a>
-                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='planning', substage_name='structure', step_name='Structure') }}"
-                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'planning' and current_substage == 'structure' %}border-blue-500{% endif %}">
-                        <i class="fas fa-sitemap text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">Structure</div>
-                    </a>
+                    {% endfor %}
                 </div>
             </div>
-            <!-- Writing Group -->
-            <div class="flex flex-col items-center">
-                <span class="text-xs text-gray-400 mb-1">Writing</span>
-                <div class="flex gap-4">
-                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='writing', substage_name='content', step_name='Sections') }}"
-                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'writing' and current_substage == 'content' %}border-blue-500{% endif %}">
-                        <i class="fas fa-pen text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">Content</div>
-                    </a>
-                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='writing', substage_name='meta_info', step_name='Main') }}"
-                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'writing' and current_substage == 'meta_info' %}border-blue-500{% endif %}">
-                        <i class="fas fa-tags text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">Meta Info</div>
-                    </a>
-                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='writing', substage_name='images', step_name='Main') }}"
-                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'writing' and current_substage == 'images' %}border-blue-500{% endif %}">
-                        <i class="fas fa-image text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">Images</div>
-                    </a>
-                </div>
-            </div>
-            <!-- Publishing Group -->
-            <div class="flex flex-col items-center">
-                <span class="text-xs text-gray-400 mb-1">Publishing</span>
-                <div class="flex gap-4">
-                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='publishing', substage_name='preflight', step_name='Final Check') }}"
-                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'publishing' and current_substage == 'preflight' %}border-blue-500{% endif %}">
-                        <i class="fas fa-check-circle text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">Preflight</div>
-                    </a>
-                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='publishing', substage_name='launch', step_name='Verification') }}"
-                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'publishing' and current_substage == 'launch' %}border-blue-500{% endif %}">
-                        <i class="fas fa-rocket text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">Launch</div>
-                    </a>
-                    <a href="{{ url_for('workflow.step', post_id=post_id, stage_name='publishing', substage_name='syndication', step_name='Content Distribution') }}"
-                        class="p-4 bg-dark-bg border border-dark-border rounded-lg hover:bg-dark-hover {% if current_stage == 'publishing' and current_substage == 'syndication' %}border-blue-500{% endif %}">
-                        <i class="fas fa-share-alt text-2xl mb-2 text-dark-text"></i>
-                        <div class="text-sm text-dark-text">Syndication</div>
-                    </a>
-                </div>
-            </div>
+            {% endfor %}
         </div>
 
         <!-- Line 3: Tabs for steps in the current sub-stage -->
+        {% if current_substage %}
         <div class="border-b border-dark-border mb-6">
             <div class="flex space-x-4">
                 {% for step in steps %}
@@ -99,6 +57,7 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 
