@@ -9,17 +9,23 @@
             </a>
         </div>
 
-        <h1 class="text-3xl font-bold mb-6 text-dark-text">{{ stage.name }}</h1>
-        <p class="text-gray-400 mb-8">{{ stage.description }}</p>
+        <h1 class="text-3xl font-bold mb-6 text-dark-text">{{ current_stage|title }}</h1>
 
         <div class="grid gap-6">
-            {% for substage in substages %}
+            {% for substage_name, steps in stages[current_stage].items() %}
             <div class="bg-dark-bg shadow rounded-lg p-6 border border-dark-border">
-                <h2 class="text-2xl font-semibold mb-4 text-dark-text">{{ substage.name }}</h2>
-                <p class="text-gray-400 mb-4">{{ substage.description }}</p>
+                <h2 class="text-2xl font-semibold mb-4 text-dark-text">{{ substage_name }}</h2>
+                <div class="flex gap-2">
+                    {% for step in steps %}
+                    <a href="{{ url_for('workflow.workflow_index', post_id=post_id, stage=current_stage|lower, substage=substage_name|lower|replace(' ', '_')) }}"
+                        class="px-3 py-1 text-sm bg-dark-accent/10 text-dark-accent rounded hover:bg-dark-accent/20">
+                        {{ step }}
+                    </a>
+                    {% endfor %}
+                </div>
 
                 <div class="mt-4">
-                    <a href="{{ url_for('workflow.substage', stage_name=stage.name, substage_name=substage.name) }}"
+                    <a href="{{ url_for('workflow.substage', post_id=post_id, stage_name=current_stage|lower, substage_name=substage_name|lower|replace(' ', '_')) }}"
                         class="inline-flex items-center px-4 py-2 border border-dark-accent text-sm font-medium rounded-md text-white bg-dark-accent hover:bg-dark-accent/80">
                         View Substage
                     </a>

@@ -65,88 +65,87 @@ def index():
     all_posts = get_all_posts_from_db()
     if not all_posts:
         abort(404, "No posts found.")
-    return redirect(url_for('workflow.workflow_index', post_id=all_posts[0]['id'], stage='planning', substage='idea'))
+    return redirect(url_for('workflow.stages', post_id=all_posts[0]['id']))
 
 @workflow.route('/posts/<int:post_id>/<stage>/<substage>')
-def workflow_index(post_id, stage='planning', substage='idea'):
+@workflow.route('/posts/<int:post_id>')
+def workflow_index(post_id, stage=None, substage=None):
     """Main workflow page."""
     context = get_workflow_context(stage, substage)
     context['current_post_id'] = post_id
     return render_template('workflow/base.html', **context)
 
-@workflow.route('/<int:post_id>/')
+@workflow.route('/posts/<int:post_id>/')
 def stages(post_id):
-    navigator.load_navigation()
+    """Workflow stages index page."""
     post = get_post_and_idea_seed(post_id)
     if not post:
         abort(404, f"Post {post_id} not found.")
-    all_posts = get_all_posts()
-    nav_context = navigator.get_navigation_context()
-    return render_template('workflow/index.html', 
-                         post=post, 
-                         post_id=post_id, 
-                         all_posts=all_posts, 
-                         nav_context=nav_context,
-                         substage_icons=SUBSTAGE_ICONS,
-                         current_stage=None, 
-                         current_substage=None, 
-                         current_step=None)
+    
+    # Get workflow context from the nav module
+    context = get_workflow_context()
+    context.update({
+        'post': post,
+        'post_id': post_id,
+        'current_post_id': post_id,
+        'all_posts': get_all_posts(),
+        'substage_icons': SUBSTAGE_ICONS,
+        'current_stage': None,
+        'current_substage': None,
+        'current_step': None
+    })
+    
+    return render_template('workflow/index.html', **context)
 
-@workflow.route('/<int:post_id>/<stage_name>/')
-def stage(post_id, stage_name: str):
-    navigator.load_navigation()
-    stage = navigator.get_stage_by_name(stage_name)
-    if not stage:
-        abort(404, f"Stage '{stage_name}' not found.")
-    substages = navigator.get_substages_for_stage(stage['id'])
+@workflow.route('/posts/<int:post_id>/<stage>/')
+def stage(post_id, stage: str):
+    """Stage view page."""
     post = get_post_and_idea_seed(post_id)
     if not post:
         abort(404, f"Post {post_id} not found.")
-    all_posts = get_all_posts()
-    nav_context = navigator.get_navigation_context(current_stage_id=stage['id'])
-    return render_template('workflow/stage.html', 
-                         stage=stage, 
-                         substages=substages, 
-                         post=post, 
-                         post_id=post_id, 
-                         all_posts=all_posts, 
-                         nav_context=nav_context,
-                         substage_icons=SUBSTAGE_ICONS,
-                         current_stage=stage_name, 
-                         current_substage=None, 
-                         current_step=None)
+    
+    # Get workflow context from the nav module
+    context = get_workflow_context(stage)
+    context.update({
+        'post': post,
+        'post_id': post_id,
+        'current_post_id': post_id,
+        'all_posts': get_all_posts(),
+        'substage_icons': SUBSTAGE_ICONS,
+        'current_stage': stage,
+        'current_substage': None,
+        'current_step': None
+    })
+    
+    return render_template('workflow/index.html', **context)
 
-@workflow.route('/<int:post_id>/<stage_name>/<substage_name>/')
-def substage(post_id, stage_name: str, substage_name: str):
-    navigator.load_navigation()
-    substage = navigator.get_substage_by_name(stage_name, substage_name)
-    if not substage:
-        abort(404, f"Substage '{substage_name}' not found in stage '{stage_name}'.")
-    steps = navigator.get_steps_for_substage(substage['id'])
-    if not steps:
-        abort(404, f"No steps found for substage '{substage_name}'.")
+@workflow.route('/posts/<int:post_id>/<stage>/<substage>/')
+def substage(post_id, stage: str, substage: str):
+    """Substage view page."""
     post = get_post_and_idea_seed(post_id)
     if not post:
         abort(404, f"Post {post_id} not found.")
-    # Redirect to first step
-    return redirect(url_for('workflow.step', 
-                          post_id=post_id, 
-                          stage_name=stage_name, 
-                          substage_name=substage_name, 
-                          step_name=steps[0]['name']))
-
-@workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/')
-def step(post_id, stage_name: str, substage_name: str, step_name: str):
-    """Handle old URL format and redirect to new format."""
-    # Get workflow context to validate the path
-    context = get_workflow_context(stage_name, substage_name, step_name)
+    
+    # Get workflow context from the nav module
+    context = get_workflow_context(stage, substage)
     if not context:
-        abort(404, f"Invalid path: {stage_name}/{substage_name}/{step_name}")
-    return redirect(url_for('workflow.workflow_index', post_id=post_id, stage=stage_name, substage=substage_name))
+        abort(404, f"Invalid path: {stage}/{substage}")
+    
+    context.update({
+        'post': post,
+        'post_id': post_id,
+        'current_post_id': post_id,
+        'all_posts': get_all_posts(),
+        'substage_icons': SUBSTAGE_ICONS,
+        'current_stage': stage,
+        'current_substage': substage,
+        'current_step': None
+    })
+    
+    return render_template('workflow/index.html', **context)
 
-# Redirect old URLs to new format
-@workflow.route('/<int:post_id>/<stage>/<substage>/<step>/')
-def old_step(post_id, stage, substage, step):
+@workflow.route('/posts/<int:post_id>/<stage>/<substage>/<step>/')
+def step(post_id, stage: str, substage: str, step: str):
     """Handle old URL format and redirect to new format."""
     # Get workflow context to validate the path
     context = get_workflow_context(stage, substage, step)
