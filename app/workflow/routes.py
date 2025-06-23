@@ -7,6 +7,19 @@ import os
 import subprocess
 import sys
 
+# Mapping of substage names to Font Awesome icons
+SUBSTAGE_ICONS = {
+    'idea': 'lightbulb',
+    'research': 'search',
+    'structure': 'sitemap',
+    'content': 'pen',
+    'meta_info': 'tags',
+    'images': 'image',
+    'preflight': 'check-circle',
+    'launch': 'rocket',
+    'syndication': 'share-alt'
+}
+
 # Helper to get the most recent, non-deleted post
 def get_latest_post():
     with get_db_conn() as conn:
@@ -52,17 +65,25 @@ def index():
 @workflow.route('/<int:post_id>/')
 def stages(post_id):
     navigator.load_navigation()
-    stages = navigator.stages
     post = get_post_and_idea_seed(post_id)
     if not post:
         abort(404, f"Post {post_id} not found.")
     all_posts = get_all_posts()
-    return render_template('workflow/index.html', stages=stages, post=post, post_id=post_id, all_posts=all_posts, current_stage=None, current_substage=None, current_step=None)
+    nav_context = navigator.get_navigation_context()
+    return render_template('workflow/index.html', 
+                         post=post, 
+                         post_id=post_id, 
+                         all_posts=all_posts, 
+                         nav_context=nav_context,
+                         substage_icons=SUBSTAGE_ICONS,
+                         current_stage=None, 
+                         current_substage=None, 
+                         current_step=None)
 
 @workflow.route('/<int:post_id>/<stage_name>/')
 def stage(post_id, stage_name: str):
     navigator.load_navigation()
-    stage = next((s for s in navigator.stages if s['name'] == stage_name), None)
+    stage = navigator.get_stage_by_name(stage_name)
     if not stage:
         abort(404, f"Stage '{stage_name}' not found.")
     substages = navigator.get_substages_for_stage(stage['id'])
@@ -70,16 +91,23 @@ def stage(post_id, stage_name: str):
     if not post:
         abort(404, f"Post {post_id} not found.")
     all_posts = get_all_posts()
-    return render_template('workflow/stage.html', stage=stage, substages=substages, post=post, post_id=post_id, all_posts=all_posts, current_stage=stage_name, current_substage=None, current_step=None)
+    nav_context = navigator.get_navigation_context(current_stage_id=stage['id'])
+    return render_template('workflow/stage.html', 
+                         stage=stage, 
+                         substages=substages, 
+                         post=post, 
+                         post_id=post_id, 
+                         all_posts=all_posts, 
+                         nav_context=nav_context,
+                         substage_icons=SUBSTAGE_ICONS,
+                         current_stage=stage_name, 
+                         current_substage=None, 
+                         current_step=None)
 
 @workflow.route('/<int:post_id>/<stage_name>/<substage_name>/')
 def substage(post_id, stage_name: str, substage_name: str):
     navigator.load_navigation()
-    stage = next((s for s in navigator.stages if s['name'] == stage_name), None)
-    if not stage:
-        abort(404, f"Stage '{stage_name}' not found.")
-    substages = navigator.get_substages_for_stage(stage['id'])
-    substage = next((s for s in substages if s['name'] == substage_name), None)
+    substage = navigator.get_substage_by_name(stage_name, substage_name)
     if not substage:
         abort(404, f"Substage '{substage_name}' not found in stage '{stage_name}'.")
     steps = navigator.get_steps_for_substage(substage['id'])
@@ -88,97 +116,67 @@ def substage(post_id, stage_name: str, substage_name: str):
     post = get_post_and_idea_seed(post_id)
     if not post:
         abort(404, f"Post {post_id} not found.")
-    all_posts = get_all_posts()
     # Redirect to first step
-    return redirect(url_for('workflow.step', post_id=post_id, stage_name=stage_name, substage_name=substage_name, step_name=steps[0]['name']))
+    return redirect(url_for('workflow.step', 
+                          post_id=post_id, 
+                          stage_name=stage_name, 
+                          substage_name=substage_name, 
+                          step_name=steps[0]['name']))
 
 @workflow.route('/<int:post_id>/<stage_name>/<substage_name>/<step_name>/')
 def step(post_id, stage_name: str, substage_name: str, step_name: str):
     navigator.load_navigation()
-    stage = next((s for s in navigator.stages if s['name'] == stage_name), None)
-    if not stage:
-        abort(404, f"Stage '{stage_name}' not found.")
-    substages = navigator.get_substages_for_stage(stage['id'])
-    substage = next((s for s in substages if s['name'] == substage_name), None)
-    if not substage:
-        abort(404, f"Substage '{substage_name}' not found in stage '{stage_name}'.")
-    steps = navigator.get_steps_for_substage(substage['id'])
-    step = next((s for s in steps if s['name'] == step_name), None)
+    
+    # Validate the path and get step
+    step = navigator.validate_path(stage_name, substage_name, step_name)
     if not step:
-        abort(404, f"Step '{step_name}' not found in substage '{substage_name}'.")
+        abort(404, f"Invalid path: {stage_name}/{substage_name}/{step_name}")
+    
+    # Get stage and substage
+    stage = navigator.get_stage_by_name(stage_name)
+    substage = navigator.get_substage_by_name(stage_name, substage_name)
+    steps = navigator.get_steps_for_substage(substage['id'])
+    
+    # Get post data
     post = get_post_and_idea_seed(post_id)
     if not post:
         abort(404, f"Post {post_id} not found.")
     all_posts = get_all_posts()
 
-    # Load step configuration
-    step_config = load_step_config(stage_name, substage_name, step_name)
-    
-    # Load input and output values from database
-    input_values = {}
-    output_values = {}
-    if step_config:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                # Load input values
-                if 'inputs' in step_config:
-                    for input_id, input_config in step_config['inputs'].items():
-                        cur.execute(f"SELECT {input_config['db_field']} FROM {input_config['db_table']} WHERE post_id = %s", (post_id,))
-                        result = cur.fetchone()
-                        if result is not None and input_config['db_field'] in result and result[input_config['db_field']] is not None:
-                            input_values[input_id] = result[input_config['db_field']]
-                
-                # Load output values
-                if 'outputs' in step_config:
-                    for output_id, output_config in step_config['outputs'].items():
-                        cur.execute(f"SELECT {output_config['db_field']} FROM {output_config['db_table']} WHERE post_id = %s", (post_id,))
-                        result = cur.fetchone()
-                        if result is not None and output_config['db_field'] in result and result[output_config['db_field']] is not None:
-                            output_values[output_id] = result[output_config['db_field']]
-
-    # Debug print statements
-    print(f"DEBUG: step_config for {stage_name}/{substage_name}/{step_name}: {step_config}")
-    print(f"DEBUG: input_values for post_id={post_id}: {input_values}")
-    print(f"DEBUG: output_values for post_id={post_id}: {output_values}")
-
-    # Parse output as JSON array if possible (for outputs like provisional_title)
-    output_titles = None
-    if 'outputs' in step_config:
-        for output_id in step_config['outputs']:
-            val = output_values.get(output_id)
-            if val and isinstance(val, str) and val.strip().startswith('[') and val.strip().endswith(']'):
-                try:
-                    output_titles = json.loads(val)
-                except Exception:
-                    output_titles = None
+    # Get navigation context
+    nav_context = navigator.get_navigation_context(
+        current_stage_id=stage['id'],
+        current_substage_id=substage['id'],
+        current_step_id=step['id']
+    )
 
     return render_template(
         f'workflow/steps/{step_name}.html',
         stage=stage,
         substage=substage,
         step=step,
+        steps=steps,
         post=post,
         post_id=post_id,
         all_posts=all_posts,
+        nav_context=nav_context,
+        substage_icons=SUBSTAGE_ICONS,
         current_stage=stage_name,
         current_substage=substage_name,
-        current_step=step_name,
-        step_config=step_config,
-        input_values=input_values,
-        output_values=output_values,
-        output_titles=output_titles
+        current_step=step_name
     )
 
 # Redirect old URLs to new format with post_id
-def _redirect_to_new(post_id, *args):
-    return redirect(url_for(request.endpoint, post_id=post_id, **request.view_args))
-
 @workflow.route('/<stage_name>/<substage_name>/<step_name>/')
 def legacy_step(stage_name, substage_name, step_name):
     latest = get_latest_post()
     if not latest:
         abort(404, "No posts found.")
-    return redirect(url_for('workflow.step', post_id=latest['id'], stage_name=stage_name, substage_name=substage_name, step_name=step_name))
+    return redirect(url_for('workflow.step', 
+                          post_id=latest['id'], 
+                          stage_name=stage_name, 
+                          substage_name=substage_name, 
+                          step_name=step_name))
 
 @workflow.route('/api/run_llm/', methods=['POST'])
 def api_run_llm():
