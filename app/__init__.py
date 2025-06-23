@@ -37,6 +37,10 @@ def create_app(config_class=Config):
     swagger.init_app(app)
     migrate.init_app(app, get_db_conn)
 
+    # Initialize workflow module first to ensure nav module is registered
+    from app.workflow import init_workflow
+    init_workflow(app)
+
     # Make config available to all templates
     @app.context_processor
     def inject_config():

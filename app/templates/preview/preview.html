@@ -11,14 +11,16 @@
         <div class="border-b pb-4 mb-4">
             <div class="flex justify-between items-center">
                 <strong>Intro</strong>
-                <a href="/workflow/stub/" class="text-xs text-blue-500 hover:underline">Edit</a>
+                <a href="{{ url_for('workflow_nav.stage', stage='planning', substage='idea', post_id=post.id) }}"
+                    class="text-xs text-blue-500 hover:underline">Edit</a>
             </div>
             <div class="mt-2">[Full intro content]</div>
         </div>
         <div class="border-b pb-4 mb-4">
             <div class="flex justify-between items-center">
                 <strong>Section 1: [Heading]</strong>
-                <a href="/workflow/stub/" class="text-xs text-blue-500 hover:underline">Edit</a>
+                <a href="{{ url_for('workflow_nav.stage', stage='planning', substage='idea', post_id=post.id) }}"
+                    class="text-xs text-blue-500 hover:underline">Edit</a>
             </div>
             <div class="italic text-gray-500 mb-1">[Theme]</div>
             <div class="mt-2">[Full section 1 content]</div>
@@ -26,7 +28,8 @@
         <div class="border-b pb-4 mb-4">
             <div class="flex justify-between items-center">
                 <strong>Section 2: [Heading]</strong>
-                <a href="/workflow/stub/" class="text-xs text-blue-500 hover:underline">Edit</a>
+                <a href="{{ url_for('workflow_nav.stage', stage='planning', substage='idea', post_id=post.id) }}"
+                    class="text-xs text-blue-500 hover:underline">Edit</a>
             </div>
             <div class="italic text-gray-500 mb-1">[Theme]</div>
             <div class="mt-2">[Full section 2 content]</div>
@@ -34,14 +37,16 @@
         <div class="border-b pb-4 mb-4">
             <div class="flex justify-between items-center">
                 <strong>Conclusion</strong>
-                <a href="/workflow/stub/" class="text-xs text-blue-500 hover:underline">Edit</a>
+                <a href="{{ url_for('workflow_nav.stage', stage='planning', substage='idea', post_id=post.id) }}"
+                    class="text-xs text-blue-500 hover:underline">Edit</a>
             </div>
             <div class="mt-2">[Full conclusion content]</div>
         </div>
         <div class="border-b pb-4 mb-4">
             <div class="flex justify-between items-center">
                 <strong>Metadata</strong>
-                <a href="/workflow/stub/" class="text-xs text-blue-500 hover:underline">Edit</a>
+                <a href="{{ url_for('workflow_nav.stage', stage='planning', substage='idea', post_id=post.id) }}"
+                    class="text-xs text-blue-500 hover:underline">Edit</a>
             </div>
             <div class="mt-2">[Rendered metadata fields]</div>
         </div>

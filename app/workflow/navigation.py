@@ -1,3 +1,41 @@
+"""
+!!! TOXIC CODE - DO NOT USE !!!
+This is a duplicate implementation that violates the hermetic seal of the proper modules/nav module.
+ALL navigation code should be in modules/nav ONLY.
+This file is kept only for archaeological purposes and should NEVER be used.
+DO NOT COPY, DO NOT ENABLE, DO NOT USE AS REFERENCE.
+Use modules/nav instead.
+"""
+
+# DISABLED - DO NOT USE
+class DISABLED_DUPLICATE_WorkflowNavigator:
+    """
+    !!! DISABLED - DO NOT USE !!!
+    This is a toxic duplicate of the proper navigation module.
+    All navigation code should be in modules/nav only.
+    """
+    def __init__(self):
+        raise RuntimeError("DISABLED: This is a toxic duplicate. Use modules/nav instead.")
+
+# DISABLED - DO NOT USE
+def init_app(app):
+    """
+    !!! DISABLED - DO NOT USE !!!
+    This initialization is disabled. Use modules/nav instead.
+    """
+    raise RuntimeError("DISABLED: This is a toxic duplicate. Use modules/nav instead.")
+
+# DISABLED - DO NOT USE
+def seed_default_steps():
+    """
+    !!! DISABLED - DO NOT USE !!!
+    This function is disabled. Use modules/nav instead.
+    """
+    raise RuntimeError("DISABLED: This is a toxic duplicate. Use modules/nav instead.")
+
+# DISABLED - DO NOT USE
+navigator = None  # Explicitly set to None to prevent accidental use
+
 from flask import current_app, abort
 from app.database import get_db_conn
 
@@ -141,26 +179,6 @@ class WorkflowNavigator:
             'current_substage_id': current_substage_id,
             'current_step_id': current_step_id
         }
-
-def seed_default_steps():
-    """Seed each substage with a default 'Main' step."""
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            # Get all substages
-            cur.execute("SELECT id FROM workflow_sub_stage_entity")
-            substages = cur.fetchall()
-            
-            # Add 'Main' step to each substage if it doesn't exist
-            for substage in substages:
-                cur.execute("""
-                    INSERT INTO workflow_step_entity (sub_stage_id, name, description, step_order)
-                    SELECT %s, 'Main', 'Main step for this substage', 1
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM workflow_step_entity 
-                        WHERE sub_stage_id = %s AND name = 'Main'
-                    )
-                """, (substage['id'], substage['id']))
-            conn.commit()
 
 # Initialize the navigator
 navigator = WorkflowNavigator()
