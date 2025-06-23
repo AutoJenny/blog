@@ -2,114 +2,166 @@
 
 {% block title %}Welcome{% endblock %}
 
+{% block styles %}
+<style>
+    .gradient-header {
+        background: linear-gradient(90deg, #23273a 0%, #181c2a 100%);
+        border: 1px solid #31364a;
+        box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+    }
+
+    .icon-circle {
+        background: #23273a;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .card-dark {
+        background: #181c2a;
+        border: 1px solid #31364a;
+        color: #e0e0e0;
+        box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .card-dark:hover {
+        background: #23273a;
+        border-color: #6366f1;
+    }
+
+    .section-title {
+        color: #a5b4fc;
+        font-weight: 700;
+    }
+
+    .input-dark {
+        background: #23273a;
+        color: #e0e0e0;
+        border: 1px solid #31364a;
+    }
+
+    .input-dark:focus {
+        border-color: #6366f1;
+        outline: none;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="max-w-6xl mx-auto">
-    <div class="bg-white bg-opacity-90 rounded-lg shadow-lg p-8 mb-8">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <div>
-                <h1 class="text-3xl font-bold text-indigo-900 mb-2">Welcome to Blog CMS</h1>
-                <p class="text-gray-700 text-lg">A modern content management system for creating and managing blog posts
-                    with AI assistance.</p>
-            </div>
-            <div class="mt-4 md:mt-0">
-                <input type="text" placeholder="Search posts, actions, images..."
-                    class="rounded-md border border-indigo-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Posts Card -->
-            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-                <div class="flex items-center mb-4">
-                    <i class="fas fa-file-alt text-2xl text-indigo-600 mr-3"></i>
-                    <h2 class="text-xl font-semibold text-gray-800">Posts</h2>
+<div class="min-h-screen bg-dark-bg text-dark-text">
+    <div class="max-w-7xl mx-auto px-4 py-10">
+        <!-- Workflow (now at the top) -->
+        <section class="mb-12">
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-sitemap"></i> Workflow
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Planning -->
+                <div class="card-dark rounded-xl p-6">
+                    <div class="flex flex-col items-center gap-2 mb-4">
+                        <span class="icon-circle"><i class="fa-solid fa-lightbulb text-yellow-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Planning</span>
+                        <p class="text-dark-accent text-sm text-center">Outline your post structure and key points</p>
+                    </div>
+                    <div class="flex flex-col gap-2 mt-4">
+                        <a href="/workflow/posts/{{ latest_post.id if latest_post else 1 }}/planning/idea"
+                            class="text-dark-accent hover:text-white text-sm text-center transition">Idea</a>
+                        <a href="/workflow/posts/{{ latest_post.id if latest_post else 1 }}/planning/research"
+                            class="text-dark-accent hover:text-white text-sm text-center transition">Research</a>
+                        <a href="/workflow/posts/{{ latest_post.id if latest_post else 1 }}/planning/structure"
+                            class="text-dark-accent hover:text-white text-sm text-center transition">Structure</a>
+                    </div>
                 </div>
-                <p class="text-gray-600 mb-4">Create, edit, and manage your blog posts with our intuitive interface.</p>
-                <a href="/blog/posts"
-                    class="inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">View
-                    Posts</a>
-            </div>
-
-            <!-- Ideas Card -->
-            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-                <div class="flex items-center mb-4">
-                    <i class="fas fa-lightbulb text-2xl text-yellow-500 mr-3"></i>
-                    <h2 class="text-xl font-semibold text-gray-800">Ideas</h2>
+                <!-- Authoring -->
+                <div class="card-dark rounded-xl p-6">
+                    <div class="flex flex-col items-center gap-2 mb-4">
+                        <span class="icon-circle"><i class="fa-solid fa-pen-nib text-green-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Authoring</span>
+                        <p class="text-dark-accent text-sm text-center">Write and enhance your content with AI</p>
+                    </div>
+                    <div class="flex flex-col gap-2 mt-4">
+                        <a href="/workflow/posts/{{ latest_post.id if latest_post else 1 }}/writing/content"
+                            class="text-dark-accent hover:text-white text-sm text-center transition">Content</a>
+                        <a href="/workflow/posts/{{ latest_post.id if latest_post else 1 }}/writing/meta_info"
+                            class="text-dark-accent hover:text-white text-sm text-center transition">Meta Info</a>
+                        <a href="/workflow/posts/{{ latest_post.id if latest_post else 1 }}/writing/images"
+                            class="text-dark-accent hover:text-white text-sm text-center transition">Images</a>
+                    </div>
                 </div>
-                <p class="text-gray-600 mb-4">Brainstorm and develop your blog post ideas with AI assistance.</p>
-                <a href="/blog/create_post_and_redirect_to_workflow"
-                    class="inline-block bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition">Start
-                    Ideation</a>
-            </div>
-
-            <!-- Images Card -->
-            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-                <div class="flex items-center mb-4">
-                    <i class="fas fa-image text-2xl text-green-600 mr-3"></i>
-                    <h2 class="text-xl font-semibold text-gray-800">Images</h2>
+                <!-- Publishing -->
+                <div class="card-dark rounded-xl p-6">
+                    <div class="flex flex-col items-center gap-2 mb-4">
+                        <span class="icon-circle"><i class="fa-solid fa-paper-plane text-blue-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Publishing</span>
+                        <p class="text-dark-accent text-sm text-center">Prepare and publish your post</p>
+                    </div>
+                    <div class="flex flex-col gap-2 mt-4">
+                        <a href="/workflow/posts/{{ latest_post.id if latest_post else 1 }}/publishing/preflight"
+                            class="text-dark-accent hover:text-white text-sm text-center transition">Preflight</a>
+                        <a href="/workflow/posts/{{ latest_post.id if latest_post else 1 }}/publishing/launch"
+                            class="text-dark-accent hover:text-white text-sm text-center transition">Launch</a>
+                        <a href="/workflow/posts/{{ latest_post.id if latest_post else 1 }}/publishing/syndication"
+                            class="text-dark-accent hover:text-white text-sm text-center transition">Syndication</a>
+                    </div>
                 </div>
-                <p class="text-gray-600 mb-4">Generate and manage images for your blog posts using AI.</p>
-                <a href="/llm/images"
-                    class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Manage
-                    Images</a>
             </div>
-
-            <!-- Database Card -->
-            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-                <div class="flex items-center mb-4">
-                    <i class="fas fa-database text-2xl text-purple-600 mr-3"></i>
-                    <h2 class="text-xl font-semibold text-gray-800">Database</h2>
+        </section>
+        <!-- Technical Modules -->
+        <section class="mb-12">
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Technical
+                Modules</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="/db/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-database text-purple-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Database</span>
+                        <p class="text-dark-accent text-sm text-center">Manage schemas, data, and migrations</p>
+                    </div>
+                </a>
+                <a href="/llm/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-brain text-pink-400 text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">AI</span>
+                        <p class="text-dark-accent text-sm text-center">Configure models, prompts, and assistance</p>
+                    </div>
+                </a>
+                <a href="/llm/images/" class="block group">
+                    <div
+                        class="card-dark rounded-xl p-6 transition flex flex-col items-center gap-2 group-hover:border-dark-accent">
+                        <span class="icon-circle"><i class="fa-solid fa-image text-dark-accent text-xl"></i></span>
+                        <span class="text-lg font-semibold text-white">Images</span>
+                        <p class="text-dark-accent text-sm text-center">Generate and manage blog images</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+        <!-- Documentation -->
+        <section class="mb-12">
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-book"></i>
+                Documentation</h2>
+            <div class="card-dark rounded-xl p-8 flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center gap-3 mb-4 md:mb-0">
+                    <span class="icon-circle"><i class="fa-solid fa-book-open text-dark-accent text-xl"></i></span>
+                    <span class="text-lg font-semibold text-white">Project Documentation</span>
                 </div>
-                <p class="text-gray-600 mb-4">Manage your blog's database with our visual interface.</p>
-                <a href="/db"
-                    class="inline-block bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">Open
-                    Database</a>
+                <a href="/docs/"
+                    class="bg-dark-accent hover:bg-dark-bg text-white font-semibold px-5 py-2 rounded-lg border border-dark-accent transition">View
+                    Docs</a>
             </div>
-
-            <!-- AI Assistant Card -->
-            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-                <div class="flex items-center mb-4">
-                    <i class="fas fa-brain text-2xl text-pink-600 mr-3"></i>
-                    <h2 class="text-xl font-semibold text-gray-800">AI Assistant</h2>
-                </div>
-                <p class="text-gray-600 mb-4">Get help with content creation and optimization using our AI tools.</p>
-                <a href="/llm"
-                    class="inline-block bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition">Open
-                    AI
-                    Tools</a>
+        </section>
+        <!-- Recent Posts -->
+        <section>
+            <h2 class="text-2xl section-title mb-6 flex items-center gap-2"><i class="fa-solid fa-clock"></i> Recent
+                Posts</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-dark-accent text-center text-lg col-span-3">No posts yet</div>
             </div>
-
-            <!-- Settings Card -->
-            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-                <div class="flex items-center mb-4">
-                    <i class="fas fa-cog text-2xl text-gray-600 mr-3"></i>
-                    <h2 class="text-xl font-semibold text-gray-800">Settings</h2>
-                </div>
-                <p class="text-gray-600 mb-4">Configure your blog settings and preferences.</p>
-                <a href="/settings"
-                    class="inline-block bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">Open
-                    Settings</a>
-            </div>
-        </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Recent Activity -->
-        <div class="bg-indigo-50 rounded-lg shadow p-6">
-            <h2 class="text-xl font-semibold text-indigo-900 mb-4">Recent Activity</h2>
-            <ul class="text-indigo-800 text-sm space-y-2">
-                <li>No recent activity to display.</li>
-            </ul>
-        </div>
-        <!-- Help Section -->
-        <div class="bg-gray-50 rounded-lg shadow p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Help & Resources</h2>
-            <ul class="text-blue-800 text-sm space-y-2">
-                <li><a href="/docs/" class="hover:underline">Documentation</a></li>
-                <li><a href="/CHANGES.log" class="hover:underline">Changelog</a></li>
-                <li><a href="https://github.com/nickfiddes/blog" class="hover:underline" target="_blank">Project
-                        GitHub</a></li>
-            </ul>
-        </div>
+        </section>
     </div>
 </div>
 {% endblock %}

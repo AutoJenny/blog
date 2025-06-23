@@ -28,23 +28,21 @@ def get_db_conn():
 
 @bp.route("/")
 def index():
-    # Only show published or in-process posts (not deleted/draft)
-    posts = []
-    try:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT * FROM post
-                    WHERE (published = TRUE OR status = 'in_process')
-                    AND deleted = FALSE
-                    ORDER BY created_at DESC
-                """)
-                posts = cur.fetchall()
-    except Exception as e:
-        posts = []
-    # Get the first post's ID for the workflow links
-    post_id = posts[0]['id'] if posts else None
-    return render_template("blog/index.html", posts=posts, post_id=post_id)
+    """Homepage with workflow stages."""
+    # Get the latest post
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT p.id, pd.idea_seed
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.status != 'deleted'
+                ORDER BY p.updated_at DESC, p.id DESC
+                LIMIT 1
+            """)
+            latest_post = cur.fetchone()
+    
+    return render_template("main/index.html", latest_post=latest_post)
 
 
 @bp.route("/health")
