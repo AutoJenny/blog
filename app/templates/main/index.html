@@ -16,68 +16,79 @@
                     class="rounded-md border border-indigo-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
             </div>
         </div>
-        <div class="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-12 my-8">
-            <!-- Create -->
-            <div class="bg-blue-50 rounded-lg p-4 flex flex-col items-center shadow">
-                <svg class="w-5 h-5 text-blue-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                <a href="{{ url_for('blog.index') }}"
-                    class="text-lg font-semibold text-blue-900 hover:text-blue-700 mt-1">New Post</a>
-                <span class="text-xs text-blue-700">Create a new blog post or draft</span>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Posts Card -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-file-alt text-2xl text-indigo-600 mr-3"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Posts</h2>
+                </div>
+                <p class="text-gray-600 mb-4">Create, edit, and manage your blog posts with our intuitive interface.</p>
+                <a href="/blog/posts"
+                    class="inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">View
+                    Posts</a>
             </div>
-            <!-- Ideas -->
-            <div class="bg-indigo-50 rounded-lg p-4 flex flex-col items-center shadow">
-                <svg class="w-5 h-5 text-indigo-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                <a href="{{ url_for('workflow.legacy_step', stage_name='planning', substage_name='idea', step_name='basic_idea') }}"
-                    class="text-lg font-semibold text-indigo-900 hover:text-indigo-700 mt-1">Ideas</a>
-                <span class="text-xs text-indigo-700">Brainstorm and develop ideas</span>
+
+            <!-- Ideas Card -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-lightbulb text-2xl text-yellow-500 mr-3"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Ideas</h2>
+                </div>
+                <p class="text-gray-600 mb-4">Brainstorm and develop your blog post ideas with AI assistance.</p>
+                <a href="/blog/create_post_and_redirect_to_workflow"
+                    class="inline-block bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition">Start
+                    Ideation</a>
             </div>
-            <!-- Develop -->
-            <div class="bg-green-50 rounded-lg p-4 flex flex-col items-center shadow">
-                <svg class="w-5 h-5 text-green-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M15.232 5.232l3.536 3.536M9 11l6 6M3 21h18" />
-                </svg>
-                <a href="{{ url_for('llm.index') }}"
-                    class="text-lg font-semibold text-green-900 hover:text-green-700 mt-1">LLM Assistance</a>
-                <span class="text-xs text-green-700">AI-powered content development</span>
+
+            <!-- Images Card -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-image text-2xl text-green-600 mr-3"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Images</h2>
+                </div>
+                <p class="text-gray-600 mb-4">Generate and manage images for your blog posts using AI.</p>
+                <a href="/llm/images"
+                    class="inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Manage
+                    Images</a>
             </div>
-            <!-- Preview -->
-            <div class="bg-yellow-50 rounded-lg p-4 flex flex-col items-center shadow">
-                <svg class="w-5 h-5 text-yellow-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M15 10l4.553-2.276A2 2 0 0021 6.382V5a2 2 0 00-2-2H5a2 2 0 00-2 2v1.382a2 2 0 001.447 1.342L9 10m6 0v10a2 2 0 01-2 2H7a2 2 0 01-2-2V10m6 0l-6 3" />
-                </svg>
-                <a href="{{ url_for('preview.listing') }}"
-                    class="text-lg font-semibold text-yellow-900 hover:text-yellow-700 mt-1">Preview</a>
-                <span class="text-xs text-yellow-700">Preview and review your posts</span>
+
+            <!-- Database Card -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-database text-2xl text-purple-600 mr-3"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Database</h2>
+                </div>
+                <p class="text-gray-600 mb-4">Manage your blog's database with our visual interface.</p>
+                <a href="/db"
+                    class="inline-block bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">Open
+                    Database</a>
             </div>
-            <!-- Publish -->
-            <div class="bg-purple-50 rounded-lg p-4 flex flex-col items-center shadow">
-                <svg class="w-5 h-5 text-purple-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                <a href="#" class="text-lg font-semibold text-purple-900 hover:text-purple-700 mt-1">Publish</a>
-                <span class="text-xs text-purple-700">Publish and syndicate posts</span>
+
+            <!-- AI Assistant Card -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-brain text-2xl text-pink-600 mr-3"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">AI Assistant</h2>
+                </div>
+                <p class="text-gray-600 mb-4">Get help with content creation and optimization using our AI tools.</p>
+                <a href="/llm"
+                    class="inline-block bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition">Open
+                    AI
+                    Tools</a>
             </div>
-            <!-- Admin -->
-            <div class="bg-red-50 rounded-lg p-4 flex flex-col items-center shadow">
-                <svg class="w-5 h-5 text-red-600 mb-2" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M3 7v4a1 1 0 001 1h3m10-5h3a1 1 0 011 1v4a1 1 0 01-1 1h-3m-10 0v6a2 2 0 002 2h8a2 2 0 002-2v-6m-10 0h10" />
-                </svg>
-                <a href="{{ url_for('db.index') }}"
-                    class="text-lg font-semibold text-red-900 hover:text-red-700 mt-1">Database</a>
-                <span class="text-xs text-red-700">Manage your content database</span>
+
+            <!-- Settings Card -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-cog text-2xl text-gray-600 mr-3"></i>
+                    <h2 class="text-xl font-semibold text-gray-800">Settings</h2>
+                </div>
+                <p class="text-gray-600 mb-4">Configure your blog settings and preferences.</p>
+                <a href="/settings"
+                    class="inline-block bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">Open
+                    Settings</a>
             </div>
         </div>
     </div>

@@ -3,32 +3,6 @@
 > **SAFETY WARNING:**
 > Always make a full backup using `pg_dump` before running `create_tables.sql`. Never run this script on production or important data without a backup and a tested restore plan. Restore data as needed after schema changes.
 
-## Canonical Database Connection
-
-The project uses a single, canonical implementation of database connections in `app/database/routes.py`. This is the ONLY implementation that should be used throughout the codebase.
-
-### Usage
-```python
-from app.database.routes import get_db_conn
-
-with get_db_conn() as conn:
-    with conn.cursor() as cur:
-        cur.execute("SELECT * FROM your_table")
-        results = cur.fetchall()
-```
-
-### Features
-- Loads configuration from `assistant_config.env` on every call
-- Uses `psycopg2.extras.RealDictCursor` for dictionary-like row access
-- Includes proper error handling and logging
-- Automatically closes connections using context manager
-
-### Important Notes
-- NEVER create new implementations of `get_db_conn()`
-- ALWAYS import from `app.database.routes`
-- The function reloads `assistant_config.env` on every call for reliability
-- Uses connection pooling for efficiency
-
 ## Database Ownership and Permissions
 - The owner of the main `blog` database is usually `nickfiddes` (see output of `psql -U postgres -c "\l"`).
 - All destructive or schema-changing operations (e.g., `dropdb`, `createdb`, `psql -f ...`) **must be run as the database owner** (typically `nickfiddes`).

@@ -3,18 +3,8 @@ import os
 import sys
 import requests
 from typing import Dict, Any, Optional
-import psycopg2
 from psycopg2.extras import RealDictCursor
-
-def get_db_conn():
-    """Get database connection using environment variables."""
-    return psycopg2.connect(
-        dbname=os.getenv('POSTGRES_DB', 'blog'),
-        user=os.getenv('POSTGRES_USER', 'nickfiddes'),
-        password=os.getenv('POSTGRES_PASSWORD', ''),
-        host=os.getenv('POSTGRES_HOST', 'localhost'),
-        port=os.getenv('POSTGRES_PORT', '5432')
-    )
+from app.database.routes import get_db_conn
 
 def get_llm_model(conn, model_id: int = 14) -> str:
     """Get LLM model name from database."""
@@ -27,11 +17,31 @@ def get_llm_model(conn, model_id: int = 14) -> str:
         return result[0]
 
 def load_step_config(post_id: int, stage: str, substage: str, step: str) -> Dict[str, Any]:
-    """Load step configuration from planning_steps.json."""
-    config_path = os.path.join(os.path.dirname(__file__), '..', 'config', 'planning_steps.json')
-    with open(config_path, 'r') as f:
-        config = json.load(f)
-    return config[stage][substage][step]
+    """Load step configuration from workflow_step_entity table."""
+    conn = get_db_conn()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # First get the substage_id
+            cur.execute("""
+                SELECT id FROM workflow_sub_stage_entity 
+                WHERE name = %s
+            """, (substage,))
+            result = cur.fetchone()
+            if not result:
+                raise Exception(f"Substage {substage} not found")
+            substage_id = result['id']
+
+            # Then get the step configuration
+            cur.execute("""
+                SELECT config FROM workflow_step_entity 
+                WHERE sub_stage_id = %s AND name = %s
+            """, (substage_id, step))
+            result = cur.fetchone()
+            if not result or not result['config']:
+                raise Exception(f"Step {step} not found in substage {substage} or has no configuration")
+            return result['config']
+    finally:
+        conn.close()
 
 def get_input_values(conn, post_id: int, input_mapping: Dict[str, Any]) -> Dict[str, str]:
     """Fetch input values from database based on input mapping."""
@@ -76,8 +86,10 @@ def save_output(conn, post_id: int, output: str, mapping: dict):
 def process_step(post_id: int, stage: str, substage: str, step: str):
     """Main function to process a workflow step."""
     try:
-        # Load configuration
+        # Load configuration from database
         config = load_step_config(post_id, stage, substage, step)
+        if 'settings' not in config or 'llm' not in config['settings']:
+            raise Exception(f"Step {step} does not have LLM configuration")
         llm_config = config['settings']['llm']
         
         # Get database connection
