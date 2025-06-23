@@ -2,15 +2,34 @@
 
 # Import shared services from MAIN_HUB
 try:
-    from app.services.shared import get_all_posts_from_db, get_workflow_stages_from_db
+    from app.services.shared import get_all_posts_from_db
 except ImportError as e:
     # If shared services are not available, this is a critical error
     raise ImportError(f"Shared services not available: {e}. This indicates a configuration problem.")
 
+from app.database import get_db_conn
+
 def get_workflow_stages():
-    """Get all workflow stages and their substages from the database."""
-    # Use shared service from MAIN_HUB
-    return get_workflow_stages_from_db()
+    """Get all workflow stages from the database."""
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, name, description, stage_order 
+                FROM workflow_stage_entity 
+                ORDER BY stage_order
+            """)
+            return [dict(row) for row in cur.fetchall()]
+
+def get_workflow_substages():
+    """Get all workflow substages from the database."""
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, stage_id, name, description, sub_stage_order 
+                FROM workflow_sub_stage_entity 
+                ORDER BY stage_id, sub_stage_order
+            """)
+            return [dict(row) for row in cur.fetchall()]
 
 def get_workflow_stages_fallback():
     """Return fallback workflow stages data."""
@@ -50,8 +69,9 @@ def get_workflow_context(stage=None, substage=None, step=None):
     all_posts = get_all_posts()
     default_post_id = all_posts[0]['id'] if all_posts else None
     
-    # Get stages data
+    # Get stages and substages data
     stages = get_workflow_stages()
+    substages = get_workflow_substages()
     
     # Return context with default post_id and stages data
     return {
@@ -59,6 +79,7 @@ def get_workflow_context(stage=None, substage=None, step=None):
         'current_substage': substage or 'idea',
         'current_step': step or 'basic_idea',
         'stages': stages,
+        'substages': substages,
         'all_posts': all_posts,
         'post_id': default_post_id
     } 

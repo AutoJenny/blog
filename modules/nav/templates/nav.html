@@ -131,9 +131,9 @@
 
         // Use the proper URL structure based on the current blueprint
         {% if request.blueprint == 'workflow_nav' %}
-        window.location.href = `{{ url_for('workflow_nav.stage', stage=current_stage, substage=current_substage, post_id=0) }}`.replace('/0/', `/${postId}/`);
+        window.location.href = `{{ url_for('workflow_nav.stage', post_id=0) }}`.replace('/0/', `/${postId}/`);
         {% else %}
-        window.location.href = `{{ url_for('workflow.workflow_index', stage=current_stage, substage=current_substage, post_id=0) }}`.replace('/0/', `/${postId}/`);
+        window.location.href = `/workflow/posts/0`.replace('/0/', `/${postId}/`);
         {% endif %}
     });
 </script>
