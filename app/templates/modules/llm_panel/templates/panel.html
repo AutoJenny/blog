@@ -60,7 +60,7 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const step = urlParams.get('step') || 'initial';
 
-                const response = await fetch('/api/v1/workflow/run_llm/', {
+                const response = await fetch('/workflow/api/v1/workflow/run_llm/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

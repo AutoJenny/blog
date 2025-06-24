@@ -6,6 +6,9 @@ from flask import Blueprint
 
 workflow = Blueprint('workflow', __name__, url_prefix='/workflow')
 
+# Import routes at the blueprint level
+from . import routes
+
 # DISABLED - DO NOT USE TOXIC DUPLICATE
 # from . import routes
 # from app.workflow.navigation import init_app

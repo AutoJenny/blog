@@ -52,8 +52,8 @@
                         {% if input_config.type == 'textarea' %}
                         <pre id="{{ input_id }}" name="{{ input_id }}"
                             class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4 whitespace-pre-wrap break-words"
-                            data-db-field="{{ input_config.db_field }}"
-                            data-db-table="{{ input_config.db_table }}">{{ input_values[input_id] if input_values and input_id in input_values else '' }}</pre>
+                            data-db-field="{{ input_config.db_field }}" data-db-table="{{ input_config.db_table }}"
+                            data-section="inputs">{{ input_values[input_id] if input_values and input_id in input_values else '' }}</pre>
                         {% endif %}
                     </div>
                     {% endfor %}
@@ -264,8 +264,8 @@
                         else '' %}
                         <pre id="{{ output_id }}" name="{{ output_id }}"
                             class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4 whitespace-pre-wrap break-words"
-                            data-db-field="{{ output_config.db_field }}"
-                            data-db-table="{{ output_config.db_table }}">{{ output_val }}</pre>
+                            data-db-field="{{ output_config.db_field }}" data-db-table="{{ output_config.db_table }}"
+                            data-section="outputs">{{ output_val }}</pre>
                         {% endif %}
                         {% endif %}
                     </div>
@@ -282,8 +282,9 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-blue-500 mb-2">Content</label>
                         <div class="flex space-x-4 mb-4">
-                            <button onclick="runLLM()"
-                                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            <button
+                                onclick="runLLM({{ post_id }}, '{{ current_stage }}', '{{ current_substage }}', '{{ current_step }}')"
+                                class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
                                 Run LLM
                             </button>
                         </div>
@@ -341,40 +342,59 @@
         });
     });
 
-    function runLLM() {
-        const postId = {{ post_id| tojson
-    }};
-    const stageName = {{ current_stage| tojson }};
-    const substageName = {{ current_substage| tojson }};
-    const stepName = {{ current_step| tojson }};
-    const btn = event.target;
-    btn.disabled = true;
-    btn.textContent = 'Running...';
-    fetch('/api/v1/workflow/llm/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            post_id: postId,
-            stage_name: stageName,
-            substage_name: substageName,
-            step_name: stepName
+    function runLLM(postId, stageName, substageName, stepName) {
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = 'Running...';
+        fetch('/workflow/api/v1/workflow/run_llm/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                post_id: postId,
+                stage: stageName,
+                substage: substageName,
+                step: stepName
+            })
         })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                location.reload();
-            } else {
-                alert('LLM error: ' + (data.error || 'Unknown error'));
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update output fields
+                    const outputs = document.querySelectorAll('[data-section="outputs"]');
+                    outputs.forEach(output => {
+                        output.textContent = data.result;
+                        // Trigger change event to ensure any listeners are notified
+                        output.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+
+                    // Update the outputs summary in the accordion header
+                    const outputsSummary = document.getElementById('outputs-summary');
+                    if (outputsSummary) {
+                        const firstLine = data.result.split('\n')[0];
+                        outputsSummary.innerHTML = `<span class="text-blue-500">[basic_idea]:</span> ${firstLine.length > 100 ?
+                            firstLine.substring(0, 97) + '...' :
+                            firstLine}`;
+                    }
+                } else {
+                    alert('LLM error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                alert('Request failed: ' + err);
+            })
+            .finally(() => {
                 btn.disabled = false;
                 btn.textContent = 'Run LLM';
-            }
-        })
-        .catch(err => {
-            alert('Request failed: ' + err);
-            btn.disabled = false;
-            btn.textContent = 'Run LLM';
-        });
+            });
     }
+
+    // Add console logging to help debug
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('Planning step loaded');
+        const outputs = document.querySelectorAll('[data-section="outputs"]');
+        console.log('Found output elements on load:', outputs);
+        console.log('Step config:', {{ step_config| tojson }});
+    console.log('Output values:', {{ output_values| tojson }});
+    });
 </script>
 {% endblock %}

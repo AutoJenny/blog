@@ -70,9 +70,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
                 if (result.success) {
                     // Update output fields
-                    const outputs = document.querySelectorAll('[data-section="outputs"] textarea');
+                    const outputs = document.querySelectorAll('[data-section="outputs"]');
                     outputs.forEach(output => {
-                        output.value = result.result;
+                        output.textContent = result.result;
                         // Trigger change event to ensure any listeners are notified
                         output.dispatchEvent(new Event('change', { bubbles: true }));
                     });
@@ -81,9 +81,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const outputsSummary = document.getElementById('outputs-summary');
                     if (outputsSummary) {
                         const firstLine = result.result.split('\n')[0];
-                        outputsSummary.textContent = firstLine.length > 100 ? 
+                        outputsSummary.innerHTML = `<span class="text-blue-500">[basic_idea]:</span> ${firstLine.length > 100 ? 
                             firstLine.substring(0, 97) + '...' : 
-                            firstLine;
+                            firstLine}`;
                     }
                 } else {
                     throw new Error(result.error || 'Unknown error occurred');
@@ -97,4 +97,60 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-}); 
+});
+
+function runLLM(postId, stage, substage, step) {
+    const btn = document.querySelector('[data-action="run-llm"]');
+    if (!btn) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+
+    fetch('/workflow/api/v1/workflow/run_llm/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            post_id: postId,
+            stage: stage,
+            substage: substage,
+            step: step
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('LLM Response:', data);
+        
+        if (data.success && data.result) {
+            // Update all output fields
+            const outputs = document.querySelectorAll('[data-section="outputs"]');
+            console.log('Found output elements:', outputs);
+            
+            outputs.forEach(output => {
+                console.log('Updating output:', output);
+                output.textContent = data.result;
+                // Trigger change event
+                output.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            
+            // Update the outputs summary in the accordion header
+            const outputsSummary = document.getElementById('outputs-summary');
+            if (outputsSummary) {
+                const firstLine = data.result.split('\n')[0] || '';
+                outputsSummary.innerHTML = `<span class="text-blue-500">[basic_idea]:</span> ${firstLine.substring(0, 100)}${firstLine.length > 100 ? '...' : ''}`;
+            }
+        } else {
+            console.error('LLM Error:', data.error);
+            alert('Error running LLM: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('LLM Error:', error);
+        alert('Error running LLM: ' + error.message);
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = 'Run LLM';
+    });
+} 

@@ -12,6 +12,8 @@ import sys
 import json
 import os
 from app.llm.services import execute_llm_request
+import psycopg2.extras
+from flask import current_app
 
 # Mapping of substage names to Font Awesome icons
 SUBSTAGE_ICONS = {
@@ -434,6 +436,15 @@ def update_field_mapping():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@workflow.route('/posts/<int:post_id>/<stage>/<substage>/<step>')
+def workflow_step(post_id, stage, substage, step):
+    """Render a workflow step."""
+    context = get_step_context(post_id, stage, substage, step)
+    if not context:
+        abort(404)
+    
+    return render_template('workflow/steps/planning_step.html', **context)
+
 @workflow.route('/api/v1/workflow/run_llm/', methods=['POST'])
 def run_workflow_llm():
     """Execute LLM processing for the current workflow step."""
@@ -443,81 +454,83 @@ def run_workflow_llm():
     substage = data.get('substage')
     step = data.get('step')
     
-    # Get step configuration
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT wse.config
-                FROM workflow_step_entity wse
-                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
-                JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
-                WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
-                AND wse.name ILIKE %s
-            """, (stage, substage, step))
-            result = cur.fetchone()
-            if not result or not result['config']:
-                return jsonify({'error': 'Step configuration not found'}), 404
-            
-            config = result['config']
-            
-            # Get input values
-            input_values = {}
-            if config.get('inputs'):
-                for input_id, input_config in config['inputs'].items():
-                    if isinstance(input_config, dict) and 'db_field' in input_config:
-                        cur.execute(f"""
-                            SELECT {input_config['db_field']}
-                            FROM {input_config['db_table']}
-                            WHERE post_id = %s
-                        """, (post_id,))
-                        row = cur.fetchone()
-                        if row:
-                            input_values[input_id] = row[input_config['db_field']]
+    current_app.logger.info(f"[Workflow LLM] Processing request for post {post_id}, stage {stage}, substage {substage}, step {step}")
     
-            # Get LLM settings
-            llm_settings = config.get('settings', {}).get('llm', {})
-            provider = llm_settings.get('provider', 'ollama')
-            model = llm_settings.get('model', 'mistral')
-            parameters = llm_settings.get('parameters', {})
-            
-            # Assemble prompt
-            prompt_parts = []
-            if config.get('prompt', {}).get('template'):
-                prompt_parts.append(config['prompt']['template'])
-            
-            # Add input data to prompt
-            for input_id, value in input_values.items():
-                prompt_parts.append(f"Input {input_id}: {value}")
-            
-            final_prompt = "\n\n".join(prompt_parts)
-            
-            try:
+    try:
+        # Get step configuration
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT wse.config
+                    FROM workflow_step_entity wse
+                    JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                    JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                    WHERE wst.name ILIKE %s
+                    AND wsse.name ILIKE %s
+                    AND wse.name ILIKE %s
+                """, (stage, substage, step))
+                
+                step_config = cur.fetchone()
+                current_app.logger.info(f"[Workflow LLM] Step config: {step_config}")
+                
+                if not step_config:
+                    current_app.logger.error("[Workflow LLM] No step configuration found")
+                    return jsonify({"success": False, "error": "No step configuration found"})
+                
+                config = step_config[0]
+                current_app.logger.info(f"[Workflow LLM] Config: {config}")
+                
+                # Get input values
+                cur.execute("""
+                    SELECT idea_seed
+                    FROM post_development
+                    WHERE post_id = %s
+                """, (post_id,))
+                
+                input_values = cur.fetchone()
+                current_app.logger.info(f"[Workflow LLM] Input values: {input_values}")
+                
+                if not input_values:
+                    current_app.logger.error("[Workflow LLM] No input values found")
+                    return jsonify({"success": False, "error": "No input values found"})
+                
+                # Get LLM settings from config
+                llm_settings = config.get('settings', {}).get('llm', {})
+                prompt = llm_settings.get('task_prompt', '').replace('[data:idea_seed]', input_values['idea_seed'])
+                
                 # Execute LLM request
                 llm_response = execute_llm_request(
-                    provider=provider,
-                    model=model,
-                    prompt=final_prompt,
-                    temperature=parameters.get('temperature', 0.7),
-                    max_tokens=parameters.get('max_tokens', 1000)
+                    provider=llm_settings.get('provider', 'ollama'),
+                    model=llm_settings.get('model', 'llama3.1:70b'),
+                    prompt=prompt,
+                    temperature=llm_settings.get('parameters', {}).get('temperature', 0.7),
+                    max_tokens=llm_settings.get('parameters', {}).get('max_tokens', 1000),
+                    api_endpoint='http://localhost:11434/api/generate'
                 )
+                current_app.logger.info(f"[Workflow LLM] LLM response: {llm_response}")
                 
-                # Update output fields
-                if config.get('outputs'):
-                    for output_id, output_config in config['outputs'].items():
-                        if isinstance(output_config, dict) and 'db_field' in output_config:
-                            cur.execute(f"""
-                                UPDATE {output_config['db_table']}
-                                SET {output_config['db_field']} = %s
-                                WHERE post_id = %s
-                            """, (llm_response['result'], post_id))
-                    conn.commit()
+                if not llm_response:
+                    current_app.logger.error("[Workflow LLM] No response from LLM")
+                    return jsonify({"success": False, "error": "No response from LLM"})
+                
+                # Update output field
+                cur.execute("""
+                    UPDATE post_development
+                    SET basic_idea = %s
+                    WHERE post_id = %s
+                    RETURNING basic_idea
+                """, (llm_response, post_id))
+                
+                updated = cur.fetchone()
+                current_app.logger.info(f"[Workflow LLM] Updated value: {updated}")
+                
+                conn.commit()
                 
                 return jsonify({
-                    'success': True,
-                    'result': llm_response['result']
+                    "success": True,
+                    "result": llm_response
                 })
                 
-            except Exception as e:
-                return jsonify({
-                    'error': str(e)
-                }), 500 
+    except Exception as e:
+        current_app.logger.error(f"[Workflow LLM] Error: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}) 

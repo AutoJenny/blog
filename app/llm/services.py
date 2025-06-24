@@ -9,6 +9,7 @@ from jinja2 import Template
 import psycopg2
 import psycopg2.extras
 import requests
+import json
 
 logger = logging.getLogger(__name__)
 # All ORM model imports removed. Use direct SQL via psycopg2 for any DB access.
@@ -24,7 +25,9 @@ def execute_llm_request(provider, model, prompt, temperature=0.7, max_tokens=100
     """Execute an LLM request with the given parameters."""
     try:
         # Log the request
-        logger.info(f"Executing LLM request with provider {provider}, model {model}")
+        logger.info(f"[LLM Request] Provider: {provider}, Model: {model}")
+        logger.info(f"[LLM Request] API Endpoint: {api_endpoint}")
+        logger.info(f"[LLM Request] Prompt: {prompt}")
         
         # Format the request based on provider
         if provider == 'ollama':
@@ -32,9 +35,31 @@ def execute_llm_request(provider, model, prompt, temperature=0.7, max_tokens=100
                 'model': model,
                 'prompt': prompt,
                 'temperature': temperature,
-                'max_tokens': max_tokens
+                'max_tokens': max_tokens,
+                'stream': False  # Important: disable streaming for now
             }
+            logger.info(f"[LLM Request] Ollama Request Data: {data}")
             response = requests.post(api_endpoint, json=data)
+            
+            if response.status_code != 200:
+                logger.error(f"[LLM Request] Ollama API error: {response.status_code} - {response.text}")
+                return None
+            
+            try:
+                result = response.json()
+                logger.info(f"[LLM Request] Ollama Raw Response: {result}")
+                
+                # Extract the response text from Ollama's new response format
+                if 'response' in result:
+                    return result['response'].strip()
+                else:
+                    logger.error("[LLM Request] Unexpected Ollama response format")
+                    return None
+                    
+            except json.JSONDecodeError as e:
+                logger.error(f"[LLM Request] Failed to parse Ollama response: {str(e)}")
+                return None
+                
         elif provider == 'openai':
             data = {
                 'model': model,
@@ -44,22 +69,19 @@ def execute_llm_request(provider, model, prompt, temperature=0.7, max_tokens=100
             }
             headers = {'Authorization': f'Bearer {api_key}'}
             response = requests.post(api_endpoint, json=data, headers=headers)
-        else:
-            raise ValueError(f"Unsupported provider: {provider}")
-        
-        # Parse the response
-        if response.ok:
-            result = response.json()
-            if provider == 'ollama':
-                return {'result': result['response']}
-            elif provider == 'openai':
+            
+            if response.ok:
+                result = response.json()
                 return {'result': result['choices'][0]['message']['content']}
+            else:
+                raise Exception(f"LLM request failed: {response.text}")
         else:
-            raise Exception(f"LLM request failed: {response.text}")
+            logger.error(f"[LLM Request] Unsupported provider: {provider}")
+            return None
     
     except Exception as e:
-        logger.exception(f"Error executing LLM request: {str(e)}")
-        raise
+        logger.error(f"[LLM Request] Error executing request: {str(e)}")
+        return None
 
 def assemble_prompt_from_parts(action, fields: dict):
     """
