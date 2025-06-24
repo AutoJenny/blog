@@ -48,7 +48,7 @@ def get_post_and_idea_seed(post_id):
 def get_all_posts():
     with get_db_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT p.id, COALESCE(pd.idea_seed, p.title, 'Untitled') AS title FROM post p LEFT JOIN post_development pd ON p.id = pd.post_id WHERE p.status != 'deleted' ORDER BY p.updated_at DESC, p.id DESC")
+            cur.execute("SELECT id, title FROM post WHERE status != 'deleted' ORDER BY updated_at DESC, id DESC")
             return cur.fetchall()
 
 def load_step_config(stage_name: str, substage_name: str, step_name: str):
