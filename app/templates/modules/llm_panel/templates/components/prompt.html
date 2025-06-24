@@ -2,7 +2,7 @@
 <div class="accordion-item">
     <button
         class="accordion-header w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
-        data-accordion-toggle="prompt">
+        onclick="toggleAccordion('prompt-content', 'prompt-icon')">
         <span class="font-medium text-dark-text">Prompt</span>
         <span class="text-gray-400 flex-grow text-left ml-4">
             {% if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt %}
@@ -16,12 +16,12 @@
             No prompt configured
             {% endif %}
         </span>
-        <svg class="w-5 h-5 transform transition-transform accordion-icon" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24">
+        <svg class="w-5 h-5 transform transition-transform accordion-icon" id="prompt-icon" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
     </button>
-    <div class="accordion-content p-4 bg-dark-bg text-dark-text border-t border-dark-border">
+    <div id="prompt-content" class="hidden p-4 bg-dark-bg text-dark-text border-t border-dark-border">
         <!-- Run LLM Button -->
         <div class="mb-4">
             <button id="run-llm-btn"

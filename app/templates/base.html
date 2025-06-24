@@ -110,6 +110,8 @@
     </footer>
 
     {% block scripts %}
+    <!-- LLM Utilities -->
+    <script src="{{ url_for('static', filename='js/llm_utils.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var newPostBtn = document.getElementById('newPostBtn');
