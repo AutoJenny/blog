@@ -105,9 +105,24 @@ export class FieldSelector {
         selector.addEventListener('change', async (event) => {
             await this.handleFieldSelection(event, target, section);
         });
+
+        // Set initial field value if there's a selected option
+        const selectedOption = selector.querySelector('option:checked');
+        if (selectedOption && selectedOption.value) {
+            const textarea = document.getElementById(target);
+            if (textarea && textarea.dataset.dbField) {
+                this.setTextareaValue(textarea, textarea.dataset.dbField);
+            }
+        }
     }
 
     initializeTextarea(textarea) {
+        // Set initial value from fieldValues if available
+        const fieldName = textarea.dataset.dbField;
+        if (fieldName) {
+            this.setTextareaValue(textarea, fieldName);
+        }
+
         let timeout;
         textarea.addEventListener('input', (event) => {
             // Clear any existing timeout
@@ -118,6 +133,15 @@ export class FieldSelector {
                 this.saveFieldValue(textarea);
             }, 500);
         });
+    }
+
+    async setTextareaValue(textarea, fieldName) {
+        if (this.fieldValues && fieldName in this.fieldValues) {
+            textarea.value = this.fieldValues[fieldName] || '';
+        } else {
+            const value = await this.getFieldValue(fieldName);
+            textarea.value = value;
+        }
     }
 
     async handleFieldSelection(event, target, section) {
@@ -146,9 +170,7 @@ export class FieldSelector {
             textarea.dataset.dbTable = mapping.table_name;
 
             // Update textarea value with current field value
-            if (this.fieldValues && mapping.field_name in this.fieldValues) {
-                textarea.value = this.fieldValues[mapping.field_name] || '';
-            }
+            await this.setTextareaValue(textarea, mapping.field_name);
 
             // Show success indicator
             this.showSuccess(event.target);
@@ -206,6 +228,7 @@ export class FieldSelector {
     }
 }
 
+// Initialize field dropdowns when the module is loaded
 export function initializeFieldDropdowns() {
-    new FieldSelector();
+    window.fieldSelector = new FieldSelector();
 } 
