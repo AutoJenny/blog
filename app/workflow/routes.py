@@ -60,6 +60,32 @@ def load_step_config(stage_name: str, substage_name: str, step_name: str):
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
+def get_post_development_fields(post_id):
+    """Get all field values from post_development for a given post."""
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Get column names from post_development table
+            cur.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'post_development' 
+                AND column_name NOT IN ('id', 'post_id')
+            """)
+            columns = [row['column_name'] for row in cur.fetchall()]
+            
+            # Get field values for the post
+            if columns:
+                column_list = ', '.join(columns)
+                cur.execute(f"""
+                    SELECT {column_list}
+                    FROM post_development
+                    WHERE post_id = %s
+                """, (post_id,))
+                row = cur.fetchone()
+                if row:
+                    return {col: row[col] for col in columns}
+    return {}
+
 @workflow.route('/')
 def index():
     """Workflow index page."""
@@ -76,7 +102,68 @@ def workflow_index(post_id, stage=None, substage=None):
     if not post:
         abort(404, f"Post {post_id} not found.")
     
-    context = get_workflow_context(stage, substage)
+    # Get step from query parameters, keeping original format for database lookup
+    step = request.args.get('step', 'initial')
+    # Convert URL format (lowercase with underscores) to DB format (title case with spaces)
+    display_step = step.replace('_', ' ').title()
+    
+    context = get_workflow_context(stage, substage, display_step)
+    
+    # Get step configuration and field values
+    step_config = {
+        'inputs': {},
+        'outputs': {},
+        'settings': {
+            'llm': {
+                'provider': 'ollama',
+                'model': 'mistral',
+                'parameters': {
+                    'temperature': 0.7,
+                    'max_tokens': 1000
+                }
+            }
+        }
+    }
+    
+    result = None
+    if stage and substage:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Get step configuration using ILIKE for case-insensitive match
+                cur.execute("""
+                    SELECT wse.config, wse.name as step_name
+                    FROM workflow_step_entity wse
+                    JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                    JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                    WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
+                    AND wse.name ILIKE %s
+                """, (stage, substage, display_step))
+                result = cur.fetchone()
+                if result:
+                    config_json, step_name = result['config'], result['step_name']
+                    # Convert DB step name to URL format for consistency
+                    url_step_name = step_name.lower().replace(' ', '_')
+                    if config_json:
+                        # Update step configuration with stored config
+                        step_config.update(config_json)
+    
+    # Get field values from post_development
+    field_values = get_post_development_fields(post_id)
+    
+    # Prepare input and output values based on step configuration
+    input_values = {}
+    output_values = {}
+    
+    if step_config.get('inputs'):
+        for input_id, input_config in step_config['inputs'].items():
+            if isinstance(input_config, dict) and 'db_field' in input_config:
+                input_values[input_id] = field_values.get(input_config['db_field'], '')
+            
+    if step_config.get('outputs'):
+        for output_id, output_config in step_config['outputs'].items():
+            if isinstance(output_config, dict) and 'db_field' in output_config:
+                output_values[output_id] = field_values.get(output_config['db_field'], '')
+    
     context.update({
         'post': post,
         'post_id': post_id,
@@ -85,10 +172,10 @@ def workflow_index(post_id, stage=None, substage=None):
         'substage_icons': SUBSTAGE_ICONS,
         'current_stage': stage,
         'current_substage': substage,
-        'current_step': None,
-        'step_config': {'inputs': {}, 'outputs': {}, 'settings': {'llm': {'model': 'gpt-4', 'parameters': {'temperature': 0.7, 'max_tokens': 1000, 'top_p': 1, 'frequency_penalty': 0, 'presence_penalty': 0}}}},  # Empty config for now
-        'input_values': {},  # Empty values for now
-        'output_values': {}  # Empty values for now
+        'current_step': url_step_name if result else step,  # Use URL format for step name
+        'step_config': step_config,
+        'input_values': input_values,
+        'output_values': output_values
     })
     return render_template('workflow/index.html', **context)
 

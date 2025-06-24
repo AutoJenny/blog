@@ -37,7 +37,8 @@
             {% set val = output_values[output_id] if output_values and output_id in output_values else '' %}
             <textarea id="{{ output_id }}_output" name="{{ output_id }}"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
-                data-db-field="{{ output_id }}" data-db-table="post_development" rows="4">{{ val }}</textarea>
+                data-db-field="{{ output_config.db_field }}" data-db-table="{{ output_config.db_table }}"
+                rows="4">{{ val }}</textarea>
         </div>
         {% endfor %}
         {% endif %}
