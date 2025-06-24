@@ -15,10 +15,12 @@
             100 else '') %}
             {% endfor %}
             {{ ns.summary }}
+            {% else %}
+            No outputs configured
             {% endif %}
         </span>
-        <svg class="w-5 h-5 transform transition-transform" id="outputs-icon" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24">
+        <svg class="w-5 h-5 transform transition-transform accordion-icon" id="outputs-icon" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
     </button>
@@ -37,9 +39,12 @@
             {% set val = output_values[output_id] if output_values and output_id in output_values else '' %}
             <textarea id="{{ output_id }}_output" name="{{ output_id }}"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
-                data-db-field="{{ output_id }}" data-db-table="post_development" rows="4">{{ val }}</textarea>
+                data-db-field="{{ output_config.db_field }}" data-db-table="{{ output_config.db_table }}" rows="4"
+                placeholder="{{ output_config.placeholder|default('Enter text...') }}">{{ val }}</textarea>
         </div>
         {% endfor %}
+        {% else %}
+        <p class="text-gray-400">No outputs configured for this step.</p>
         {% endif %}
     </div>
 </div>
