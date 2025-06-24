@@ -1,0 +1,59 @@
+<!-- LLM Panel Content -->
+<div class="space-y-4" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
+    data-current-step="{{ current_step }}">
+    <!-- Inputs Accordion -->
+    <div class="accordion-item">
+        {% include 'modules/llm_panel/templates/components/inputs.html' %}
+    </div>
+
+    <!-- Prompt Accordion -->
+    <div class="accordion-item">
+        {% include 'modules/llm_panel/templates/components/prompt.html' %}
+    </div>
+
+    <!-- Settings Accordion -->
+    <div class="accordion-item">
+        {% include 'modules/llm_panel/templates/components/settings.html' %}
+    </div>
+
+    <!-- Outputs Accordion -->
+    <div class="accordion-item">
+        {% include 'modules/llm_panel/templates/components/outputs.html' %}
+    </div>
+</div>
+
+<!-- Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='modules/llm_panel/css/panels.css') }}">
+
+<!-- Scripts -->
+<script type="module">
+    import { FieldSelector } from "{{ url_for('static', filename='modules/llm_panel/js/field_selector.js') }}";
+    import { Accordion } from "{{ url_for('static', filename='modules/llm_panel/js/accordion.js') }}";
+
+    window.addEventListener('DOMContentLoaded', () => {
+        // Initialize field selector
+        window.fieldSelector = new FieldSelector();
+
+        // Initialize accordions
+        new Accordion();
+    });
+</script>
+
+<!-- Styles -->
+<style>
+    .accordion-item {
+        @apply border border-dark-border rounded-lg overflow-hidden mb-4;
+    }
+
+    .accordion-header {
+        @apply w-full text-left;
+    }
+
+    .accordion-content {
+        @apply border-t border-dark-border;
+    }
+
+    .accordion-icon {
+        @apply transition-transform duration-200;
+    }
+</style>
