@@ -29,7 +29,7 @@ export class FieldSelector {
                 this.initializeSelector(selector);
             });
 
-            // Add change listeners to textareas
+            // Initialize all textareas
             document.querySelectorAll('textarea[data-db-field]').forEach(textarea => {
                 this.initializeTextarea(textarea);
             });
@@ -55,6 +55,7 @@ export class FieldSelector {
             const response = await fetch(`/blog/api/v1/post/${this.postId}/development`);
             if (!response.ok) throw new Error('Failed to fetch field values');
             this.fieldValues = await response.json();
+            console.log('Fetched field values:', this.fieldValues);
         } catch (error) {
             console.error('Error fetching field values:', error);
             throw error;
@@ -120,6 +121,7 @@ export class FieldSelector {
         // Set initial value from fieldValues if available
         const fieldName = textarea.dataset.dbField;
         if (fieldName) {
+            console.log('Initializing textarea with field:', fieldName);
             this.setTextareaValue(textarea, fieldName);
         }
 
@@ -136,10 +138,14 @@ export class FieldSelector {
     }
 
     async setTextareaValue(textarea, fieldName) {
+        console.log('Setting textarea value for field:', fieldName);
         if (this.fieldValues && fieldName in this.fieldValues) {
-            textarea.value = this.fieldValues[fieldName] || '';
+            const value = this.fieldValues[fieldName] || '';
+            console.log('Using cached value:', value);
+            textarea.value = value;
         } else {
             const value = await this.getFieldValue(fieldName);
+            console.log('Fetched new value:', value);
             textarea.value = value;
         }
     }
@@ -149,6 +155,7 @@ export class FieldSelector {
         const textarea = document.getElementById(target);
 
         try {
+            console.log('Updating field mapping:', { target, selectedField, section });
             // Update database mapping
             const response = await fetch('/workflow/api/update_field_mapping/', {
                 method: 'POST',
@@ -166,6 +173,7 @@ export class FieldSelector {
 
             // Update textarea attributes
             const mapping = await response.json();
+            console.log('Field mapping updated:', mapping);
             textarea.dataset.dbField = mapping.field_name;
             textarea.dataset.dbTable = mapping.table_name;
 
@@ -187,6 +195,7 @@ export class FieldSelector {
         if (!fieldName) return;
 
         try {
+            console.log('Saving field value:', { fieldName, value: textarea.value });
             const response = await fetch(`/blog/api/v1/post/${this.postId}/development`, {
                 method: 'POST',
                 headers: {
@@ -207,6 +216,7 @@ export class FieldSelector {
 
             // Show success indicator
             this.showSuccess(textarea);
+            console.log('Field value saved successfully');
         } catch (error) {
             console.error('Error saving field value:', error);
             this.showError(textarea);

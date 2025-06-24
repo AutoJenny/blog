@@ -35,11 +35,10 @@
                 data-target="{{ input_id }}" data-section="inputs" data-current-substage="{{ current_substage }}">
                 <!-- Options will be populated by JavaScript -->
             </select>
-            {% set val = input_values[input_id] if input_values and input_id in input_values else '' %}
             <textarea id="{{ input_id }}" name="{{ input_id }}"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
                 data-db-field="{{ input_config.db_field }}" data-db-table="{{ input_config.db_table }}" rows="4"
-                placeholder="{{ input_config.placeholder|default('Enter text...') }}">{{ val }}</textarea>
+                placeholder="{{ input_config.placeholder|default('Enter text...') }}"></textarea>
         </div>
         {% endfor %}
         {% else %}
