@@ -1,0 +1,52 @@
+<!-- LLM Panel Content -->
+<div class="space-y-4" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
+    data-current-step="{{ current_step }}">
+    <!-- Inputs Accordion -->
+    {% include 'components/inputs.html' %}
+
+    <!-- Prompt Accordion -->
+    {% include 'components/prompt.html' %}
+
+    <!-- Settings Accordion -->
+    {% include 'components/settings.html' %}
+
+    <!-- Outputs Accordion -->
+    {% include 'components/outputs.html' %}
+</div>
+
+<!-- Scripts -->
+<script src="{{ url_for('llm_panel.static', filename='js/accordion.js') }}"></script>
+<script type="module" src="{{ url_for('llm_panel.static', filename='js/field_selector.js') }}"></script>
+
+<!-- Field Selection Initialization -->
+<script type="module">
+    import { initializeFieldDropdowns } from '{{ url_for("llm_panel.static", filename="js/field_selector.js") }}';
+
+    // Initialize once everything is loaded
+    if (document.readyState === 'complete') {
+        initializeFieldDropdowns();
+    } else {
+        window.addEventListener('load', () => {
+            initializeFieldDropdowns();
+        });
+    }
+</script>
+
+<!-- Styles -->
+<style>
+    .accordion-item {
+        @apply border border-dark-border rounded-lg overflow-hidden mb-4;
+    }
+
+    .accordion-header {
+        @apply w-full text-left;
+    }
+
+    .accordion-content {
+        @apply border-t border-dark-border;
+    }
+
+    .accordion-icon {
+        @apply transition-transform duration-200;
+    }
+</style>

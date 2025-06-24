@@ -302,4 +302,67 @@ def api_update_title_order():
                 conn.commit()
         return jsonify({'status': 'success'})
     except Exception as e:
-        return jsonify({'status': 'error', 'error': str(e)}), 500 
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+@workflow.route('/api/field_mappings/', methods=['GET'])
+def get_field_mappings():
+    """Get all field mappings."""
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT wfm.field_name, wst.name as stage, wsse.name as substage
+                FROM workflow_field_mapping wfm
+                JOIN workflow_sub_stage_entity wsse ON wfm.substage_id = wsse.id
+                JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                ORDER BY wst.name, wsse.name, wfm.field_name
+            """)
+            mappings = cur.fetchall()
+            
+            # Group by stage and substage
+            result = {}
+            for mapping in mappings:
+                stage = mapping['stage']
+                substage = mapping['substage']
+                if stage not in result:
+                    result[stage] = {}
+                if substage not in result[stage]:
+                    result[stage][substage] = []
+                result[stage][substage].append({
+                    'field_name': mapping['field_name'],
+                    'display_name': mapping['field_name']  # Use field_name as display_name
+                })
+            
+            return jsonify(result)
+
+@workflow.route('/api/update_field_mapping/', methods=['POST'])
+def update_field_mapping():
+    """Update a field mapping."""
+    data = request.get_json()
+    target_id = data.get('target_id')
+    field_name = data.get('field_name')
+    section = data.get('section')
+    
+    if not all([target_id, field_name, section]):
+        return jsonify({'error': 'Missing required parameters'}), 400
+    
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Get the field mapping details
+                cur.execute("""
+                    SELECT wfm.field_name
+                    FROM workflow_field_mapping wfm
+                    WHERE wfm.field_name = %s
+                """, (field_name,))
+                mapping = cur.fetchone()
+                
+                if not mapping:
+                    return jsonify({'error': 'Field mapping not found'}), 404
+                
+                return jsonify({
+                    'field_name': mapping['field_name'],
+                    'table_name': 'post_development'  # Hardcode since all fields are in post_development
+                })
+                
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500 
