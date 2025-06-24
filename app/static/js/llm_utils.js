@@ -35,4 +35,66 @@ export function showStartOllamaButton(container, onStarted) {
             this.innerHTML = '<i class="fa-solid fa-play"></i> Start Ollama';
         }, 2000);
     };
-} 
+}
+
+// LLM Panel Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const runLLMBtn = document.getElementById('run-llm-btn');
+    if (runLLMBtn) {
+        runLLMBtn.addEventListener('click', async function() {
+            try {
+                runLLMBtn.disabled = true;
+                runLLMBtn.textContent = 'Processing...';
+                
+                // Get current workflow context from URL
+                const pathParts = window.location.pathname.split('/');
+                const postId = pathParts[3];
+                const stage = pathParts[4];
+                const substage = pathParts[5];
+                const urlParams = new URLSearchParams(window.location.search);
+                const step = urlParams.get('step') || 'initial';
+                
+                const response = await fetch('/api/v1/workflow/run_llm/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: postId,
+                        stage: stage,
+                        substage: substage,
+                        step: step
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    // Update output fields
+                    const outputs = document.querySelectorAll('[data-section="outputs"] textarea');
+                    outputs.forEach(output => {
+                        output.value = result.result;
+                        // Trigger change event to ensure any listeners are notified
+                        output.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+                    
+                    // Update the outputs summary in the accordion header
+                    const outputsSummary = document.getElementById('outputs-summary');
+                    if (outputsSummary) {
+                        const firstLine = result.result.split('\n')[0];
+                        outputsSummary.textContent = firstLine.length > 100 ? 
+                            firstLine.substring(0, 97) + '...' : 
+                            firstLine;
+                    }
+                } else {
+                    throw new Error(result.error || 'Unknown error occurred');
+                }
+            } catch (error) {
+                console.error('Error running LLM:', error);
+                alert('Error running LLM: ' + error.message);
+            } finally {
+                runLLMBtn.disabled = false;
+                runLLMBtn.textContent = 'Run LLM';
+            }
+        });
+    }
+}); 

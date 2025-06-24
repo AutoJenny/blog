@@ -431,4 +431,93 @@ def update_field_mapping():
                 })
                 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500 
+        return jsonify({'error': str(e)}), 500
+
+@workflow.route('/api/v1/workflow/run_llm/', methods=['POST'])
+def run_workflow_llm():
+    """Execute LLM processing for the current workflow step."""
+    data = request.get_json()
+    post_id = data.get('post_id')
+    stage = data.get('stage')
+    substage = data.get('substage')
+    step = data.get('step')
+    
+    # Get step configuration
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT wse.config
+                FROM workflow_step_entity wse
+                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
+                AND wse.name ILIKE %s
+            """, (stage, substage, step))
+            result = cur.fetchone()
+            if not result or not result['config']:
+                return jsonify({'error': 'Step configuration not found'}), 404
+            
+            config = result['config']
+            
+            # Get input values
+            input_values = {}
+            if config.get('inputs'):
+                for input_id, input_config in config['inputs'].items():
+                    if isinstance(input_config, dict) and 'db_field' in input_config:
+                        cur.execute(f"""
+                            SELECT {input_config['db_field']}
+                            FROM {input_config['db_table']}
+                            WHERE post_id = %s
+                        """, (post_id,))
+                        row = cur.fetchone()
+                        if row:
+                            input_values[input_id] = row[input_config['db_field']]
+    
+            # Get LLM settings
+            llm_settings = config.get('settings', {}).get('llm', {})
+            provider = llm_settings.get('provider', 'ollama')
+            model = llm_settings.get('model', 'mistral')
+            parameters = llm_settings.get('parameters', {})
+            
+            # Assemble prompt
+            prompt_parts = []
+            if config.get('prompt', {}).get('template'):
+                prompt_parts.append(config['prompt']['template'])
+            
+            # Add input data to prompt
+            for input_id, value in input_values.items():
+                prompt_parts.append(f"Input {input_id}: {value}")
+            
+            final_prompt = "\n\n".join(prompt_parts)
+            
+            try:
+                # Execute LLM request
+                from app.llm.services import execute_llm_request
+                llm_response = execute_llm_request(
+                    provider=provider,
+                    model=model,
+                    prompt=final_prompt,
+                    temperature=parameters.get('temperature', 0.7),
+                    max_tokens=parameters.get('max_tokens', 1000)
+                )
+                
+                # Update output fields
+                if config.get('outputs'):
+                    for output_id, output_config in config['outputs'].items():
+                        if isinstance(output_config, dict) and 'db_field' in output_config:
+                            cur.execute(f"""
+                                UPDATE {output_config['db_table']}
+                                SET {output_config['db_field']} = %s
+                                WHERE post_id = %s
+                            """, (llm_response['result'], post_id))
+                    conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'result': llm_response['result']
+                })
+                
+            except Exception as e:
+                return jsonify({
+                    'error': str(e)
+                }), 500 
