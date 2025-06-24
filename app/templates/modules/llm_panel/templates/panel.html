@@ -2,9 +2,9 @@
 <div class="space-y-4" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
     data-current-step="{{ current_step }}">
     <!-- Run LLM Button -->
-    <div class="mb-4">
+    <div class="mb-4 flex justify-center">
         <button id="run-llm-btn"
-            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded shadow-lg transition-colors duration-200">
+            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-colors duration-200 min-w-[200px]">
             Run LLM
         </button>
     </div>
@@ -34,18 +34,75 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='modules/llm_panel/css/panels.css') }}">
 
 <!-- Scripts -->
-<script src="{{ url_for('static', filename='js/llm_utils.js') }}"></script>
 <script type="module">
     import { FieldSelector } from "{{ url_for('static', filename='modules/llm_panel/js/field_selector.js') }}";
     import { Accordion } from "{{ url_for('static', filename='modules/llm_panel/js/accordion.js') }}";
 
+    // Initialize field selector and accordion
     window.addEventListener('DOMContentLoaded', () => {
-        // Initialize field selector
         window.fieldSelector = new FieldSelector();
-
-        // Initialize accordions
         new Accordion();
     });
+
+    // Initialize LLM button
+    const runLLMBtn = document.getElementById('run-llm-btn');
+    if (runLLMBtn) {
+        runLLMBtn.addEventListener('click', async function () {
+            try {
+                runLLMBtn.disabled = true;
+                runLLMBtn.textContent = 'Processing...';
+
+                // Get current workflow context from URL
+                const pathParts = window.location.pathname.split('/');
+                const postId = pathParts[3];
+                const stage = pathParts[4];
+                const substage = pathParts[5];
+                const urlParams = new URLSearchParams(window.location.search);
+                const step = urlParams.get('step') || 'initial';
+
+                const response = await fetch('/api/v1/workflow/run_llm/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: postId,
+                        stage: stage,
+                        substage: substage,
+                        step: step
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // Update output fields
+                    const outputs = document.querySelectorAll('[data-section="outputs"] textarea');
+                    outputs.forEach(output => {
+                        output.value = result.result;
+                        // Trigger change event to ensure any listeners are notified
+                        output.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+
+                    // Update the outputs summary in the accordion header
+                    const outputsSummary = document.getElementById('outputs-summary');
+                    if (outputsSummary) {
+                        const firstLine = result.result.split('\n')[0];
+                        outputsSummary.textContent = firstLine.length > 100 ?
+                            firstLine.substring(0, 97) + '...' :
+                            firstLine;
+                    }
+                } else {
+                    throw new Error(result.error || 'Unknown error occurred');
+                }
+            } catch (error) {
+                console.error('Error running LLM:', error);
+                alert('Error running LLM: ' + error.message);
+            } finally {
+                runLLMBtn.disabled = false;
+                runLLMBtn.textContent = 'Run LLM';
+            }
+        });
+    }
 </script>
 
 <!-- Styles -->
