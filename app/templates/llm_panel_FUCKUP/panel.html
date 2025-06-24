@@ -2,20 +2,20 @@
 <div class="space-y-4" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
     data-current-step="{{ current_step }}">
     <!-- Inputs Accordion -->
-    {% include 'components/inputs.html' %}
+    {% include 'llm_panel/components/inputs.html' %}
 
     <!-- Prompt Accordion -->
-    {% include 'components/prompt.html' %}
+    {% include 'llm_panel/components/prompt.html' %}
 
     <!-- Settings Accordion -->
-    {% include 'components/settings.html' %}
+    {% include 'llm_panel/components/settings.html' %}
 
     <!-- Outputs Accordion -->
-    {% include 'components/outputs.html' %}
+    {% include 'llm_panel/components/outputs.html' %}
 </div>
 
 <!-- Scripts -->
-<script src="{{ url_for('llm_panel.static', filename='js/accordion.js') }}"></script>
+<script src="{{ url_for('static', filename='modules/llm_panel/js/accordion.js') }}"></script>
 
 <!-- Field Selection Initialization -->
 <script type="module">

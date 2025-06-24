@@ -1,12 +1,16 @@
-function toggleAccordion(id) {
-    const content = document.getElementById(`${id}-content`);
-    const icon = document.getElementById(`${id}-icon`);
+function toggleAccordion(sectionId) {
+    const content = document.getElementById(`${sectionId}-content`);
+    const icon = document.getElementById(`${sectionId}-icon`);
     
+    if (!content || !icon) return;
+
+    // Toggle visibility
+    content.classList.toggle('hidden');
+    
+    // Rotate icon
     if (content.classList.contains('hidden')) {
-        content.classList.remove('hidden');
-        icon.classList.add('rotate-180');
+        icon.style.transform = 'rotate(0deg)';
     } else {
-        content.classList.add('hidden');
-        icon.classList.remove('rotate-180');
+        icon.style.transform = 'rotate(180deg)';
     }
 } 

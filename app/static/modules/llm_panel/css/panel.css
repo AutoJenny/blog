@@ -15,8 +15,40 @@
     overflow: hidden;
 }
 
-.accordion-panel {
-    border: 1px solid rgba(255, 255, 255, 0.1);
+.accordion-item {
+    border: 1px solid var(--dark-border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.accordion-header {
+    width: 100%;
+    text-align: left;
+    background: var(--dark-bg);
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.accordion-header:hover {
+    background: var(--dark-hover);
+}
+
+.accordion-content {
+    background: var(--dark-bg);
+    border-top: 1px solid var(--dark-border);
+    padding: 1rem;
+}
+
+.accordion-icon {
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Hidden state */
+.hidden {
+    display: none;
 }
 
 .panel-header {

@@ -11,8 +11,7 @@
             {% set val = output_values[output_id] if output_values and output_id in output_values else '—' %}
             {% if not loop.first %}{% set ns.summary = ns.summary + ', ' %}{% endif %}
             {% set first_line = val.split('\n')[0] if val else '' %}
-            {% set ns.summary = ns.summary + '[' + output_id + ']: ' + first_line[:100] + ('...' if first_line|length >
-            100 else '') %}
+            {% set ns.summary = ns.summary + first_line[:100] + ('...' if first_line|length > 100 else '') %}
             {% endfor %}
             {{ ns.summary }}
             {% else %}
@@ -29,7 +28,7 @@
         {% for output_id, output_config in step_config.outputs.items() %}
         <div class="mb-4">
             <label for="{{ output_id }}_output" class="block text-sm font-medium text-blue-500 mb-2">
-                [{{ output_id }}]
+                {{ output_config.label|default('Output Field') }}
             </label>
             <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
                 data-target="{{ output_id }}_output" data-section="outputs"
