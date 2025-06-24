@@ -1,6 +1,14 @@
 <!-- LLM Panel Content -->
 <div class="space-y-4" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
     data-current-step="{{ current_step }}">
+    <!-- Run LLM Button -->
+    <div class="mb-4">
+        <button id="run-llm-btn"
+            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded">
+            Run LLM
+        </button>
+    </div>
+
     <!-- Inputs Accordion -->
     <div class="accordion-item">
         {% include 'modules/llm_panel/templates/components/inputs.html' %}

@@ -37,16 +37,6 @@ export function showStartOllamaButton(container, onStarted) {
     };
 }
 
-// Accordion functionality
-function toggleAccordion(contentId, iconId) {
-    const content = document.getElementById(contentId);
-    const icon = document.getElementById(iconId);
-    if (content && icon) {
-        content.classList.toggle('hidden');
-        icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
-    }
-}
-
 // LLM Panel Functionality
 document.addEventListener('DOMContentLoaded', function() {
     const runLLMBtn = document.getElementById('run-llm-btn');
