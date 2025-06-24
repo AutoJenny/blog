@@ -4,7 +4,7 @@
     <!-- Run LLM Button -->
     <div class="mb-4">
         <button id="run-llm-btn"
-            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded">
+            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded shadow-lg transition-colors duration-200">
             Run LLM
         </button>
     </div>
@@ -34,6 +34,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='modules/llm_panel/css/panels.css') }}">
 
 <!-- Scripts -->
+<script src="{{ url_for('static', filename='js/llm_utils.js') }}"></script>
 <script type="module">
     import { FieldSelector } from "{{ url_for('static', filename='modules/llm_panel/js/field_selector.js') }}";
     import { Accordion } from "{{ url_for('static', filename='modules/llm_panel/js/accordion.js') }}";
@@ -63,5 +64,19 @@
 
     .accordion-icon {
         @apply transition-transform duration-200;
+    }
+
+    #run-llm-btn {
+        background-color: #6B46C1;
+        border: 1px solid #805AD5;
+    }
+
+    #run-llm-btn:hover {
+        background-color: #553C9A;
+    }
+
+    #run-llm-btn:disabled {
+        background-color: #4A5568;
+        cursor: not-allowed;
     }
 </style>
