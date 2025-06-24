@@ -11,6 +11,7 @@ import subprocess
 import sys
 import json
 import os
+from app.llm.services import execute_llm_request
 
 # Mapping of substage names to Font Awesome icons
 SUBSTAGE_ICONS = {
@@ -492,7 +493,6 @@ def run_workflow_llm():
             
             try:
                 # Execute LLM request
-                from app.llm.services import execute_llm_request
                 llm_response = execute_llm_request(
                     provider=provider,
                     model=model,
