@@ -25,7 +25,7 @@ class FieldSelector {
 
     async fetchFields() {
         try {
-            const response = await fetch('/api/v1/workflow/fields');
+            const response = await fetch('/workflow/api/field_mappings/');
             if (!response.ok) throw new Error('Failed to fetch fields');
             this.fields = await response.json();
         } catch (error) {
@@ -57,9 +57,9 @@ class FieldSelector {
 
                 fields.forEach(field => {
                     const option = document.createElement('option');
-                    option.value = field.id;
-                    option.textContent = field.name;
-                    if (field.id === target) option.selected = true;
+                    option.value = field.field_name;
+                    option.textContent = field.display_name || field.field_name;
+                    if (field.field_name === target) option.selected = true;
                     group.appendChild(option);
                 });
 
@@ -79,15 +79,15 @@ class FieldSelector {
 
         try {
             // Update database mapping
-            const response = await fetch('/api/v1/workflow/field-mapping', {
+            const response = await fetch('/workflow/api/update_field_mapping/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    target,
-                    section,
-                    field_id: selectedField
+                    target_id: target,
+                    field_name: selectedField,
+                    section: section
                 })
             });
 
@@ -95,8 +95,8 @@ class FieldSelector {
 
             // Update textarea attributes
             const mapping = await response.json();
-            textarea.dataset.dbField = mapping.db_field;
-            textarea.dataset.dbTable = mapping.db_table;
+            textarea.dataset.dbField = mapping.field_name;
+            textarea.dataset.dbTable = mapping.table_name;
 
             // Show success indicator
             this.showSuccess(event.target);
@@ -121,7 +121,7 @@ class FieldSelector {
     }
 }
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    new FieldSelector();
-}); 
+// Export the initialization function
+export function initializeFieldDropdowns() {
+    return new FieldSelector();
+} 
