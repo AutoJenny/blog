@@ -4,12 +4,13 @@ from app.workflow import workflow
 # from .navigation import navigator
 
 # Use proper nav module instead
-from modules.nav.services import get_workflow_context, get_all_posts, get_workflow_stages
-from app.services.shared import get_all_posts_from_db
+from modules.nav.services import get_workflow_context
+from app.services.shared import get_workflow_stages_from_db, get_all_posts_from_db
 from app.database import get_db_conn
 import subprocess
 import sys
 import json
+import os
 
 # Mapping of substage names to Font Awesome icons
 SUBSTAGE_ICONS = {

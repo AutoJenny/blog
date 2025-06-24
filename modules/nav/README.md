@@ -12,6 +12,24 @@ This module provides the navigation interface for the workflow system. It handle
 - Error handling for missing context
 - **Context-aware template rendering** (works in standalone and integrated modes)
 
+## Database Access Pattern
+
+The navigation module follows strict separation of concerns:
+- Uses shared services (`app.services.shared`) for all database operations
+- Focuses purely on navigation state and context management
+- No direct database queries in the navigation module
+- Clear dependency on core database services
+
+Example:
+```python
+# Navigation module ONLY manages navigation state
+from app.services.shared import get_workflow_stages_from_db
+
+# Use shared service for data, build navigation-specific context
+stages = get_workflow_stages_from_db()
+nav_context = build_navigation_context(stages)
+```
+
 ## Structure
 
 ```
