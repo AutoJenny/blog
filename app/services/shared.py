@@ -18,44 +18,56 @@ def get_all_posts_from_db():
             return [dict(row) for row in cur.fetchall()]
 
 def get_workflow_stages_from_db():
-    """Get the complete workflow structure from the database."""
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            # Get stages
-            cur.execute("""
-                SELECT id, name, description, stage_order 
-                FROM workflow_stage_entity 
-                ORDER BY stage_order
-            """)
-            stages = [dict(row) for row in cur.fetchall()]
-
-            # Get substages
-            cur.execute("""
-                SELECT id, stage_id, name, description, sub_stage_order 
-                FROM workflow_sub_stage_entity 
-                ORDER BY stage_id, sub_stage_order
-            """)
-            substages = [dict(row) for row in cur.fetchall()]
-
-            # Get steps
-            cur.execute("""
-                SELECT id, sub_stage_id, name, description, step_order 
-                FROM workflow_step_entity 
-                ORDER BY sub_stage_id, step_order
-            """)
-            steps = [dict(row) for row in cur.fetchall()]
-
-            # Build the hierarchical structure
-            workflow_structure = {}
-            for stage in stages:
-                stage_substages = [s for s in substages if s['stage_id'] == stage['id']]
-                workflow_structure[stage['name']] = {}
+    """Get all workflow stages and their substages from the database."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Query workflow steps using the normalized schema with a single JOIN
+                cur.execute("""
+                    SELECT 
+                        s.name as stage_name,
+                        ss.name as substage_name,
+                        ws.name as step_name
+                    FROM workflow_stage_entity s
+                    JOIN workflow_sub_stage_entity ss ON ss.stage_id = s.id
+                    JOIN workflow_step_entity ws ON ws.sub_stage_id = ss.id
+                    ORDER BY s.stage_order, ss.sub_stage_order, ws.step_order
+                """)
                 
-                for substage in stage_substages:
-                    substage_steps = [s['name'] for s in steps if s['sub_stage_id'] == substage['id']]
-                    workflow_structure[stage['name']][substage['name']] = substage_steps
+                stages = {}
+                for row in cur.fetchall():
+                    stage, substage, step = row['stage_name'], row['substage_name'], row['step_name']
+                    if stage not in stages:
+                        stages[stage] = {}
+                    if substage not in stages[stage]:
+                        stages[stage][substage] = []
+                    if step not in stages[stage][substage]:
+                        stages[stage][substage].append(step)
+                
+                return stages
+                
+    except Exception as e:
+        return get_workflow_stages_fallback()
 
-            return workflow_structure
+def get_workflow_stages_fallback():
+    """Return fallback workflow stages data if database is unavailable."""
+    return {
+        "Planning": {
+            "Idea": ["Basic Idea", "Provisional Title"],
+            "Research": ["Concepts", "Facts"],
+            "Structure": ["Outline", "Allocate Facts"]
+        },
+        "Writing": {
+            "Content": ["Sections"],
+            "Meta Info": ["Meta Info"],
+            "Images": ["Images"]
+        },
+        "Publishing": {
+            "Preflight": ["Preflight"],
+            "Launch": ["Launch"],
+            "Syndication": ["Syndication"]
+        }
+    }
 
 def get_post_and_idea_seed(post_id):
     """Get a post and its idea seed."""
