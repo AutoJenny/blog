@@ -341,6 +341,8 @@ def update_field_mapping():
     target_id = data.get('target_id')
     field_name = data.get('field_name')
     section = data.get('section')
+    stage = data.get('stage')
+    substage = data.get('substage')
     
     if not all([target_id, field_name, section]):
         return jsonify({'error': 'Missing required parameters'}), 400
@@ -348,16 +350,58 @@ def update_field_mapping():
     try:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
-                # Get the field mapping details
+                # If stage/substage not provided in request, try to get from referrer
+                if not stage or not substage:
+                    if request.referrer:
+                        path_parts = request.referrer.split('/')
+                        try:
+                            post_id = path_parts[path_parts.index('posts') + 1]
+                            stage = path_parts[path_parts.index('posts') + 2]
+                            substage = path_parts[path_parts.index('posts') + 3] if len(path_parts) > path_parts.index('posts') + 3 else None
+                        except (ValueError, IndexError):
+                            return jsonify({'error': 'Could not determine stage/substage from URL'}), 400
+                    else:
+                        # Default to 'planning/idea' if no stage/substage provided
+                        stage = 'planning'
+                        substage = 'idea'
+
+                # Get stage_id and substage_id
                 cur.execute("""
-                    SELECT wfm.field_name
-                    FROM workflow_field_mapping wfm
-                    WHERE wfm.field_name = %s
-                """, (field_name,))
-                mapping = cur.fetchone()
+                    SELECT wst.id as stage_id, wsse.id as substage_id
+                    FROM workflow_stage_entity wst
+                    JOIN workflow_sub_stage_entity wsse ON wsse.stage_id = wst.id
+                    WHERE wst.name = %s AND wsse.name = %s
+                """, (stage, substage))
+                ids = cur.fetchone()
+                if not ids:
+                    return jsonify({'error': 'Stage or substage not found'}), 404
                 
+                stage_id = ids['stage_id']
+                substage_id = ids['substage_id']
+
+                # Get next order_index for this substage
+                cur.execute("""
+                    SELECT MAX(order_index) as max_order
+                    FROM workflow_field_mapping 
+                    WHERE substage_id = %s
+                """, (substage_id,))
+                result = cur.fetchone()
+                order_index = (result['max_order'] or 0) + 1
+
+                # Upsert the field mapping
+                cur.execute("""
+                    INSERT INTO workflow_field_mapping 
+                        (field_name, stage_id, substage_id, order_index)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (field_name, substage_id)
+                    DO UPDATE SET stage_id = EXCLUDED.stage_id
+                    RETURNING field_name
+                """, (field_name, stage_id, substage_id, order_index))
+                conn.commit()
+                
+                mapping = cur.fetchone()
                 if not mapping:
-                    return jsonify({'error': 'Field mapping not found'}), 404
+                    return jsonify({'error': 'Failed to update field mapping'}), 500
                 
                 return jsonify({
                     'field_name': mapping['field_name'],

@@ -8,12 +8,26 @@ export class FieldSelector {
         this.fields = {};
         this.fieldValues = {};
         this.postId = this.getPostIdFromUrl();
+        this.stage = this.getStageFromUrl();
+        this.substage = this.getSubstageFromUrl();
         this.init();
     }
 
     getPostIdFromUrl() {
         const match = window.location.pathname.match(/\/posts\/(\d+)/);
         return match ? match[1] : null;
+    }
+
+    getStageFromUrl() {
+        const parts = window.location.pathname.split('/');
+        const postsIndex = parts.indexOf('posts');
+        return postsIndex >= 0 && parts.length > postsIndex + 2 ? parts[postsIndex + 2] : 'planning';
+    }
+
+    getSubstageFromUrl() {
+        const parts = window.location.pathname.split('/');
+        const postsIndex = parts.indexOf('posts');
+        return postsIndex >= 0 && parts.length > postsIndex + 3 ? parts[postsIndex + 3] : 'idea';
     }
 
     async init() {
@@ -43,9 +57,9 @@ export class FieldSelector {
             const response = await fetch('/workflow/api/field_mappings/');
             if (!response.ok) throw new Error('Failed to fetch fields');
             this.fields = await response.json();
+            console.log('Fields fetched:', this.fields);
         } catch (error) {
             console.error('Error fetching fields:', error);
-            throw error;
         }
     }
 
@@ -55,98 +69,41 @@ export class FieldSelector {
             const response = await fetch(`/blog/api/v1/post/${this.postId}/development`);
             if (!response.ok) throw new Error('Failed to fetch field values');
             this.fieldValues = await response.json();
-            console.log('Fetched field values:', this.fieldValues);
+            console.log('Field values fetched:', this.fieldValues);
         } catch (error) {
             console.error('Error fetching field values:', error);
-            throw error;
         }
-    }
-
-    async getFieldValue(fieldName) {
-        if (!this.fieldValues[fieldName]) {
-            await this.fetchFieldValues();
-        }
-        return this.fieldValues[fieldName] || '';
     }
 
     initializeSelector(selector) {
-        // Get data attributes
         const target = selector.dataset.target;
         const section = selector.dataset.section;
-        const currentSubstage = selector.dataset.currentSubstage;
+        const textarea = document.getElementById(target);
 
-        // Clear existing options
-        selector.innerHTML = '';
-
-        // Add default option
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = '-- Select Field --';
-        selector.appendChild(defaultOption);
-
-        // Group fields by stage/substage
-        Object.entries(this.fields).forEach(([stage, substages]) => {
-            Object.entries(substages).forEach(([substage, fields]) => {
-                const group = document.createElement('optgroup');
-                group.label = `${stage} > ${substage}`;
-
-                fields.forEach(field => {
-                    const option = document.createElement('option');
-                    option.value = field.field_name;
-                    option.textContent = field.display_name || field.field_name;
-                    if (field.field_name === target) option.selected = true;
-                    group.appendChild(option);
-                });
-
-                selector.appendChild(group);
-            });
-        });
-
-        // Add change event listener
-        selector.addEventListener('change', async (event) => {
-            await this.handleFieldSelection(event, target, section);
-        });
-
-        // Set initial field value if there's a selected option
-        const selectedOption = selector.querySelector('option:checked');
-        if (selectedOption && selectedOption.value) {
-            const textarea = document.getElementById(target);
-            if (textarea && textarea.dataset.dbField) {
-                this.setTextareaValue(textarea, textarea.dataset.dbField);
-            }
+        if (textarea && textarea.dataset.dbField) {
+            selector.value = textarea.dataset.dbField;
+            this.setTextareaValue(textarea, textarea.dataset.dbField);
         }
+
+        selector.addEventListener('change', (event) => {
+            this.handleFieldSelection(event, target, section);
+        });
     }
 
     initializeTextarea(textarea) {
-        // Set initial value from fieldValues if available
         const fieldName = textarea.dataset.dbField;
         if (fieldName) {
-            console.log('Initializing textarea with field:', fieldName);
             this.setTextareaValue(textarea, fieldName);
         }
 
-        let timeout;
-        textarea.addEventListener('input', (event) => {
-            // Clear any existing timeout
-            if (timeout) clearTimeout(timeout);
-            
-            // Set a new timeout to save after 500ms of no typing
-            timeout = setTimeout(() => {
-                this.saveFieldValue(textarea);
-            }, 500);
+        textarea.addEventListener('change', () => {
+            this.handleTextareaChange(textarea);
         });
     }
 
     async setTextareaValue(textarea, fieldName) {
-        console.log('Setting textarea value for field:', fieldName);
         if (this.fieldValues && fieldName in this.fieldValues) {
-            const value = this.fieldValues[fieldName] || '';
-            console.log('Using cached value:', value);
-            textarea.value = value;
-        } else {
-            const value = await this.getFieldValue(fieldName);
-            console.log('Fetched new value:', value);
-            textarea.value = value;
+            textarea.value = this.fieldValues[fieldName] || '';
         }
     }
 
@@ -155,7 +112,7 @@ export class FieldSelector {
         const textarea = document.getElementById(target);
 
         try {
-            console.log('Updating field mapping:', { target, selectedField, section });
+            console.log('Updating field mapping:', { target, selectedField, section, stage: this.stage, substage: this.substage });
             // Update database mapping
             const response = await fetch('/workflow/api/update_field_mapping/', {
                 method: 'POST',
@@ -165,7 +122,9 @@ export class FieldSelector {
                 body: JSON.stringify({
                     target_id: target,
                     field_name: selectedField,
-                    section: section
+                    section: section,
+                    stage: this.stage,
+                    substage: this.substage
                 })
             });
 
@@ -188,14 +147,13 @@ export class FieldSelector {
         }
     }
 
-    async saveFieldValue(textarea) {
+    async handleTextareaChange(textarea) {
         if (!this.postId) return;
-        
+
         const fieldName = textarea.dataset.dbField;
         if (!fieldName) return;
 
         try {
-            console.log('Saving field value:', { fieldName, value: textarea.value });
             const response = await fetch(`/blog/api/v1/post/${this.postId}/development`, {
                 method: 'POST',
                 headers: {
@@ -206,39 +164,29 @@ export class FieldSelector {
                 })
             });
 
-            if (!response.ok) throw new Error('Failed to save field value');
+            if (!response.ok) throw new Error('Failed to update field value');
 
-            // Update local field values
-            this.fieldValues = {
-                ...this.fieldValues,
-                [fieldName]: textarea.value
-            };
+            // Update local state
+            this.fieldValues[fieldName] = textarea.value;
 
             // Show success indicator
             this.showSuccess(textarea);
-            console.log('Field value saved successfully');
         } catch (error) {
-            console.error('Error saving field value:', error);
+            console.error('Error updating field value:', error);
             this.showError(textarea);
         }
     }
 
     showSuccess(element) {
-        element.classList.add('border-green-500');
-        setTimeout(() => {
-            element.classList.remove('border-green-500');
-        }, 2000);
+        element.classList.add('success');
+        setTimeout(() => element.classList.remove('success'), 2000);
     }
 
     showError(element) {
-        element.classList.add('border-red-500');
-        setTimeout(() => {
-            element.classList.remove('border-red-500');
-        }, 2000);
+        element.classList.add('error');
+        setTimeout(() => element.classList.remove('error'), 2000);
     }
 }
 
-// Initialize field dropdowns when the module is loaded
-export function initializeFieldDropdowns() {
-    window.fieldSelector = new FieldSelector();
-} 
+// Initialize the field selector when the module is loaded
+window.fieldSelector = new FieldSelector(); 
