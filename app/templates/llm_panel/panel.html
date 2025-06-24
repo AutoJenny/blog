@@ -16,18 +16,17 @@
 
 <!-- Scripts -->
 <script src="{{ url_for('llm_panel.static', filename='js/accordion.js') }}"></script>
-<script type="module" src="{{ url_for('llm_panel.static', filename='js/field_selector.js') }}"></script>
 
 <!-- Field Selection Initialization -->
 <script type="module">
-    import { initializeFieldDropdowns } from '{{ url_for("llm_panel.static", filename="js/field_selector.js") }}';
+    import { FieldSelector } from "{{ url_for('static', filename='modules/llm_panel/js/field_selector.js') }}";
 
     // Initialize once everything is loaded
     if (document.readyState === 'complete') {
-        initializeFieldDropdowns();
+        new FieldSelector();
     } else {
         window.addEventListener('load', () => {
-            initializeFieldDropdowns();
+            new FieldSelector();
         });
     }
 </script>

@@ -1,12 +1,18 @@
 /**
  * Field Selector JavaScript
- * Handles field mapping dropdowns in LLM panels
+ * Handles field mapping dropdowns and field value persistence in LLM panels
  */
 
 class FieldSelector {
     constructor() {
         this.fields = {};
+        this.postId = this.getPostIdFromUrl();
         this.init();
+    }
+
+    getPostIdFromUrl() {
+        const match = window.location.pathname.match(/\/posts\/(\d+)/);
+        return match ? match[1] : null;
     }
 
     async init() {
@@ -14,9 +20,17 @@ class FieldSelector {
             // Fetch available fields
             await this.fetchFields();
             
+            // Fetch current field values
+            await this.fetchFieldValues();
+            
             // Initialize all field selectors
             document.querySelectorAll('.field-selector').forEach(selector => {
                 this.initializeSelector(selector);
+            });
+
+            // Add change listeners to textareas
+            document.querySelectorAll('textarea[data-db-field]').forEach(textarea => {
+                this.initializeTextarea(textarea);
             });
         } catch (error) {
             console.error('Error initializing field selector:', error);
@@ -30,6 +44,18 @@ class FieldSelector {
             this.fields = await response.json();
         } catch (error) {
             console.error('Error fetching fields:', error);
+            throw error;
+        }
+    }
+
+    async fetchFieldValues() {
+        if (!this.postId) return;
+        try {
+            const response = await fetch(`/blog/api/v1/post/${this.postId}/development`);
+            if (!response.ok) throw new Error('Failed to fetch field values');
+            this.fieldValues = await response.json();
+        } catch (error) {
+            console.error('Error fetching field values:', error);
             throw error;
         }
     }
@@ -73,6 +99,19 @@ class FieldSelector {
         });
     }
 
+    initializeTextarea(textarea) {
+        let timeout;
+        textarea.addEventListener('input', (event) => {
+            // Clear any existing timeout
+            if (timeout) clearTimeout(timeout);
+            
+            // Set a new timeout to save after 500ms of no typing
+            timeout = setTimeout(() => {
+                this.saveFieldValue(textarea);
+            }, 500);
+        });
+    }
+
     async handleFieldSelection(event, target, section) {
         const selectedField = event.target.value;
         const textarea = document.getElementById(target);
@@ -98,11 +137,49 @@ class FieldSelector {
             textarea.dataset.dbField = mapping.field_name;
             textarea.dataset.dbTable = mapping.table_name;
 
+            // Update textarea value with current field value
+            if (this.fieldValues && mapping.field_name in this.fieldValues) {
+                textarea.value = this.fieldValues[mapping.field_name] || '';
+            }
+
             // Show success indicator
             this.showSuccess(event.target);
         } catch (error) {
             console.error('Error updating field mapping:', error);
             this.showError(event.target);
+        }
+    }
+
+    async saveFieldValue(textarea) {
+        if (!this.postId) return;
+        
+        const fieldName = textarea.dataset.dbField;
+        if (!fieldName) return;
+
+        try {
+            const response = await fetch(`/blog/api/v1/post/${this.postId}/development`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    [fieldName]: textarea.value
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to save field value');
+
+            // Update local field values
+            this.fieldValues = {
+                ...this.fieldValues,
+                [fieldName]: textarea.value
+            };
+
+            // Show success indicator
+            this.showSuccess(textarea);
+        } catch (error) {
+            console.error('Error saving field value:', error);
+            this.showError(textarea);
         }
     }
 

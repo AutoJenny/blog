@@ -4,13 +4,162 @@
  */
 
 export class FieldSelector {
+    static instance = null;
+
     constructor() {
+        // Prevent multiple instances
+        if (FieldSelector.instance) {
+            console.log('[DEBUG] Returning existing FieldSelector instance');
+            return FieldSelector.instance;
+        }
+
+        console.log('[DEBUG] Creating new FieldSelector instance');
         this.fields = {};
         this.fieldValues = {};
         this.postId = this.getPostIdFromUrl();
         this.stage = this.getStageFromUrl();
         this.substage = this.getSubstageFromUrl();
-        this.init();
+        this.isInitializing = true;
+        this.initialized = false;
+        this.eventHandlers = new WeakMap();
+        
+        this.initialize();
+        FieldSelector.instance = this;
+    }
+
+    async initialize() {
+        console.log('[DEBUG] Initializing FieldSelector');
+        await this.fetchFields();
+        await this.fetchFieldValues();
+        this.initializeSelectors();
+        this.isInitializing = false;
+        this.initialized = true;
+    }
+
+    async fetchFields() {
+        console.log('[DEBUG] Fetching fields');
+        try {
+            const response = await fetch(`/workflow/api/field_mappings/?stage=${this.stage}&substage=${this.substage}`);
+            const data = await response.json();
+            this.fields = data;
+            console.log('[DEBUG] Fields fetched:', this.fields);
+        } catch (error) {
+            console.error('Error fetching fields:', error);
+        }
+    }
+
+    async fetchFieldValues() {
+        console.log('[DEBUG] Fetching field values');
+        try {
+            const response = await fetch(`/blog/api/v1/post/${this.postId}/development`);
+            const data = await response.json();
+            this.fieldValues = data;
+            console.log('[DEBUG] Field values fetched:', this.fieldValues);
+        } catch (error) {
+            console.error('Error fetching field values:', error);
+        }
+    }
+
+    initializeSelectors() {
+        console.log('[DEBUG] Initializing selectors');
+        const selectors = document.querySelectorAll('.field-selector');
+        selectors.forEach(selector => {
+            if (this.eventHandlers.has(selector)) {
+                console.log('[DEBUG] Selector already initialized, skipping');
+                return;
+            }
+
+            const section = selector.dataset.section;
+            const substage = selector.dataset.currentSubstage;
+            const targetId = selector.dataset.target;
+
+            console.log(`[DEBUG] Initializing selector for ${section}/${substage}/${targetId}`);
+
+            // Clear existing options
+            selector.innerHTML = '';
+
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Select a field...';
+            selector.appendChild(defaultOption);
+
+            // Add field options
+            if (this.fields[this.stage]?.[substage]?.[section]) {
+                this.fields[this.stage][substage][section].forEach(field => {
+                    const option = document.createElement('option');
+                    option.value = field.field_name;
+                    option.textContent = field.display_name;
+                    selector.appendChild(option);
+                });
+            }
+
+            // Set initial value and update textarea
+            const textarea = document.getElementById(targetId);
+            if (textarea) {
+                // Get the current value from the step config
+                const currentField = textarea.dataset.dbField;
+                
+                if (currentField) {
+                    console.log(`[DEBUG] Setting initial value for ${targetId} to ${currentField}`);
+                    selector.value = currentField;
+                    textarea.value = this.fieldValues[currentField] || '';
+                }
+            }
+
+            // Add change event handler
+            const handler = this.handleFieldSelection.bind(this);
+            this.eventHandlers.set(selector, handler);
+            selector.addEventListener('change', handler);
+        });
+    }
+
+    async handleFieldSelection(event) {
+        if (this.isInitializing) {
+            console.log('[DEBUG] Still initializing, skipping field selection handler');
+            return;
+        }
+
+        const selector = event.target;
+        const targetId = selector.dataset.target;
+        const section = selector.dataset.section;
+        const fieldName = selector.value;
+
+        console.log(`[DEBUG] Handling field selection: ${targetId} -> ${fieldName}`);
+
+        const textarea = document.getElementById(targetId);
+        if (textarea) {
+            // Update the textarea value with the selected field's value
+            textarea.value = this.fieldValues[fieldName] || '';
+            // Update the data attribute to maintain state
+            textarea.dataset.dbField = fieldName;
+
+            // Update the field mapping in the step config
+            try {
+                const response = await fetch('/workflow/api/update_field_mapping/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        target_id: targetId,
+                        field_name: fieldName,
+                        accordion_type: section,
+                        stage: this.stage,
+                        substage: this.substage
+                    })
+                });
+
+                const result = await response.json();
+                if (result.error) {
+                    console.error('[DEBUG] Error updating field mapping:', result.error);
+                } else {
+                    console.log('[DEBUG] Field mapping updated:', result);
+                }
+            } catch (error) {
+                console.error('Error updating field mapping:', error);
+            }
+        }
     }
 
     getPostIdFromUrl() {
@@ -19,174 +168,20 @@ export class FieldSelector {
     }
 
     getStageFromUrl() {
-        const parts = window.location.pathname.split('/');
-        const postsIndex = parts.indexOf('posts');
-        return postsIndex >= 0 && parts.length > postsIndex + 2 ? parts[postsIndex + 2] : 'planning';
+        const match = window.location.pathname.match(/\/posts\/\d+\/([^/]+)/);
+        return match ? match[1] : null;
     }
 
     getSubstageFromUrl() {
-        const parts = window.location.pathname.split('/');
-        const postsIndex = parts.indexOf('posts');
-        return postsIndex >= 0 && parts.length > postsIndex + 3 ? parts[postsIndex + 3] : 'idea';
-    }
-
-    async init() {
-        try {
-            // Fetch available fields
-            await this.fetchFields();
-            
-            // Fetch current field values
-            await this.fetchFieldValues();
-            
-            // Initialize all field selectors
-            document.querySelectorAll('.field-selector').forEach(selector => {
-                this.initializeSelector(selector);
-            });
-
-            // Initialize all textareas
-            document.querySelectorAll('textarea[data-db-field]').forEach(textarea => {
-                this.initializeTextarea(textarea);
-            });
-        } catch (error) {
-            console.error('Error initializing field selector:', error);
-        }
-    }
-
-    async fetchFields() {
-        try {
-            const response = await fetch('/workflow/api/field_mappings/');
-            if (!response.ok) throw new Error('Failed to fetch fields');
-            this.fields = await response.json();
-            console.log('Fields fetched:', this.fields);
-        } catch (error) {
-            console.error('Error fetching fields:', error);
-        }
-    }
-
-    async fetchFieldValues() {
-        if (!this.postId) return;
-        try {
-            const response = await fetch(`/blog/api/v1/post/${this.postId}/development`);
-            if (!response.ok) throw new Error('Failed to fetch field values');
-            this.fieldValues = await response.json();
-            console.log('Field values fetched:', this.fieldValues);
-        } catch (error) {
-            console.error('Error fetching field values:', error);
-        }
-    }
-
-    initializeSelector(selector) {
-        const target = selector.dataset.target;
-        const section = selector.dataset.section;
-        const textarea = document.getElementById(target);
-
-        if (textarea && textarea.dataset.dbField) {
-            selector.value = textarea.dataset.dbField;
-            this.setTextareaValue(textarea, textarea.dataset.dbField);
-        }
-
-        selector.addEventListener('change', (event) => {
-            this.handleFieldSelection(event, target, section);
-        });
-    }
-
-    initializeTextarea(textarea) {
-        const fieldName = textarea.dataset.dbField;
-        if (fieldName) {
-            this.setTextareaValue(textarea, fieldName);
-        }
-
-        textarea.addEventListener('change', () => {
-            this.handleTextareaChange(textarea);
-        });
-    }
-
-    async setTextareaValue(textarea, fieldName) {
-        if (this.fieldValues && fieldName in this.fieldValues) {
-            textarea.value = this.fieldValues[fieldName] || '';
-        }
-    }
-
-    async handleFieldSelection(event, target, section) {
-        const selectedField = event.target.value;
-        const textarea = document.getElementById(target);
-
-        try {
-            console.log('Updating field mapping:', { target, selectedField, section, stage: this.stage, substage: this.substage });
-            // Update database mapping
-            const response = await fetch('/workflow/api/update_field_mapping/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    target_id: target,
-                    field_name: selectedField,
-                    section: section,
-                    stage: this.stage,
-                    substage: this.substage
-                })
-            });
-
-            if (!response.ok) throw new Error('Failed to update field mapping');
-
-            // Update textarea attributes
-            const mapping = await response.json();
-            console.log('Field mapping updated:', mapping);
-            textarea.dataset.dbField = mapping.field_name;
-            textarea.dataset.dbTable = mapping.table_name;
-
-            // Update textarea value with current field value
-            await this.setTextareaValue(textarea, mapping.field_name);
-
-            // Show success indicator
-            this.showSuccess(event.target);
-        } catch (error) {
-            console.error('Error updating field mapping:', error);
-            this.showError(event.target);
-        }
-    }
-
-    async handleTextareaChange(textarea) {
-        if (!this.postId) return;
-
-        const fieldName = textarea.dataset.dbField;
-        if (!fieldName) return;
-
-        try {
-            const response = await fetch(`/blog/api/v1/post/${this.postId}/development`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    [fieldName]: textarea.value
-                })
-            });
-
-            if (!response.ok) throw new Error('Failed to update field value');
-
-            // Update local state
-            this.fieldValues[fieldName] = textarea.value;
-
-            // Show success indicator
-            this.showSuccess(textarea);
-        } catch (error) {
-            console.error('Error updating field value:', error);
-            this.showError(textarea);
-        }
-    }
-
-    showSuccess(element) {
-        element.classList.add('success');
-        setTimeout(() => element.classList.remove('success'), 2000);
-    }
-
-    showError(element) {
-        element.classList.add('error');
-        setTimeout(() => element.classList.remove('error'), 2000);
+        const match = window.location.pathname.match(/\/posts\/\d+\/[^/]+\/([^/]+)/);
+        return match ? match[1] : null;
     }
 }
 
 // Initialize the field selector when the module is loaded
-window.fieldSelector = new FieldSelector(); 
+if (!window.fieldSelector) {
+    console.log('Creating global fieldSelector instance');
+    window.fieldSelector = new FieldSelector();
+} else {
+    console.log('Global fieldSelector already exists');
+} 

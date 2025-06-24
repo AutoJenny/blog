@@ -309,42 +309,63 @@ def get_field_mappings():
     """Get all field mappings."""
     with get_db_conn() as conn:
         with conn.cursor() as cur:
+            # Get all available fields from post_development
             cur.execute("""
-                SELECT wfm.field_name, wst.name as stage, wsse.name as substage
-                FROM workflow_field_mapping wfm
-                JOIN workflow_sub_stage_entity wsse ON wfm.substage_id = wsse.id
-                JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
-                ORDER BY wst.name, wsse.name, wfm.field_name
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = 'post_development'
+                AND column_name NOT IN ('id', 'post_id', 'updated_at')
+                ORDER BY ordinal_position
             """)
-            mappings = cur.fetchall()
+            all_fields = [row['column_name'] for row in cur.fetchall()]
             
-            # Group by stage and substage
-            result = {}
-            for mapping in mappings:
-                stage = mapping['stage']
-                substage = mapping['substage']
-                if stage not in result:
-                    result[stage] = {}
-                if substage not in result[stage]:
-                    result[stage][substage] = []
-                result[stage][substage].append({
-                    'field_name': mapping['field_name'],
-                    'display_name': mapping['field_name']  # Use field_name as display_name
-                })
+            # Get current step's config
+            cur.execute("""
+                SELECT wse.config
+                FROM workflow_step_entity wse
+                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
+                AND wse.name ILIKE %s
+            """, (request.args.get('stage', 'planning'), 
+                  request.args.get('substage', 'idea'),
+                  request.args.get('step', 'Initial')))
+            
+            step_config = cur.fetchone()
+            config = step_config['config'] if step_config else {}
+            
+            # Initialize result structure
+            result = {
+                'planning': {
+                    'idea': {
+                        'inputs': [],
+                        'outputs': []
+                    }
+                }
+            }
+            
+            # Add ALL fields to both inputs and outputs
+            for field in all_fields:
+                field_info = {
+                    'field_name': field,
+                    'display_name': field
+                }
+                result['planning']['idea']['inputs'].append(field_info)
+                result['planning']['idea']['outputs'].append(field_info)
             
             return jsonify(result)
 
 @workflow.route('/api/update_field_mapping/', methods=['POST'])
 def update_field_mapping():
-    """Update a field mapping."""
+    """Update a field mapping in the step config."""
     data = request.get_json()
     target_id = data.get('target_id')
     field_name = data.get('field_name')
-    section = data.get('section')
+    accordion_type = data.get('accordion_type')
     stage = data.get('stage')
     substage = data.get('substage')
     
-    if not all([target_id, field_name, section]):
+    if not all([target_id, field_name, accordion_type]):
         return jsonify({'error': 'Missing required parameters'}), 400
     
     try:
@@ -355,57 +376,58 @@ def update_field_mapping():
                     if request.referrer:
                         path_parts = request.referrer.split('/')
                         try:
-                            post_id = path_parts[path_parts.index('posts') + 1]
                             stage = path_parts[path_parts.index('posts') + 2]
-                            substage = path_parts[path_parts.index('posts') + 3] if len(path_parts) > path_parts.index('posts') + 3 else None
+                            substage = path_parts[path_parts.index('posts') + 3]
                         except (ValueError, IndexError):
                             return jsonify({'error': 'Could not determine stage/substage from URL'}), 400
                     else:
-                        # Default to 'planning/idea' if no stage/substage provided
                         stage = 'planning'
                         substage = 'idea'
 
-                # Get stage_id and substage_id
+                # Get the current step config
                 cur.execute("""
-                    SELECT wst.id as stage_id, wsse.id as substage_id
-                    FROM workflow_stage_entity wst
-                    JOIN workflow_sub_stage_entity wsse ON wsse.stage_id = wst.id
-                    WHERE wst.name = %s AND wsse.name = %s
+                    SELECT wse.id, wse.config
+                    FROM workflow_step_entity wse
+                    JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                    JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                    WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
+                    AND wse.name ILIKE 'Initial'
                 """, (stage, substage))
-                ids = cur.fetchone()
-                if not ids:
-                    return jsonify({'error': 'Stage or substage not found'}), 404
                 
-                stage_id = ids['stage_id']
-                substage_id = ids['substage_id']
-
-                # Get next order_index for this substage
-                cur.execute("""
-                    SELECT MAX(order_index) as max_order
-                    FROM workflow_field_mapping 
-                    WHERE substage_id = %s
-                """, (substage_id,))
                 result = cur.fetchone()
-                order_index = (result['max_order'] or 0) + 1
-
-                # Upsert the field mapping
+                if not result:
+                    return jsonify({'error': 'Step not found'}), 404
+                
+                step_id = result['id']
+                config = result['config'] or {}
+                
+                # Ensure the accordion type exists in config
+                if accordion_type not in config:
+                    config[accordion_type] = {}
+                
+                # Update or add the field mapping
+                if target_id in config[accordion_type]:
+                    config[accordion_type][target_id]['db_field'] = field_name
+                else:
+                    config[accordion_type][target_id] = {
+                        'db_field': field_name,
+                        'db_table': 'post_development'
+                    }
+                
+                # Update the step config
                 cur.execute("""
-                    INSERT INTO workflow_field_mapping 
-                        (field_name, stage_id, substage_id, order_index)
-                    VALUES (%s, %s, %s, %s)
-                    ON CONFLICT (field_name, substage_id)
-                    DO UPDATE SET stage_id = EXCLUDED.stage_id
-                    RETURNING field_name
-                """, (field_name, stage_id, substage_id, order_index))
+                    UPDATE workflow_step_entity 
+                    SET config = %s
+                    WHERE id = %s
+                    RETURNING id
+                """, (json.dumps(config), step_id))
+                
                 conn.commit()
                 
-                mapping = cur.fetchone()
-                if not mapping:
-                    return jsonify({'error': 'Failed to update field mapping'}), 500
-                
                 return jsonify({
-                    'field_name': mapping['field_name'],
-                    'table_name': 'post_development'  # Hardcode since all fields are in post_development
+                    'field_name': field_name,
+                    'accordion_type': accordion_type,
+                    'table_name': 'post_development'
                 })
                 
     except Exception as e:
