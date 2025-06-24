@@ -1,10 +1,10 @@
 {#
 Modular LLM Workflow Panels Include
 This file is included by all workflow substages. It expects:
-- substage: the current substage name (e.g. 'idea', 'research')
+- current_substage: the current substage name (e.g. 'idea', 'research')
 - post: the current post object (must have .id)
 #}
-<div id="llm-workflow-root" data-substage="{{ substage }}" data-post-id="{{ post.id }}"
+<div id="llm-workflow-root" data-substage="{{ current_substage }}" data-post-id="{{ post.id }}"
     class="max-w-5xl mx-auto py-10 flex flex-col gap-8">
-    {% include 'llm_panel/panel.html' %}
+    {% include 'modules/llm_panel/templates/panel.html' %}
 </div>

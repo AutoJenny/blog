@@ -85,7 +85,10 @@ def workflow_index(post_id, stage=None, substage=None):
         'substage_icons': SUBSTAGE_ICONS,
         'current_stage': stage,
         'current_substage': substage,
-        'current_step': None
+        'current_step': None,
+        'step_config': {'inputs': {}, 'outputs': {}, 'settings': {'llm': {'model': 'gpt-4', 'parameters': {'temperature': 0.7, 'max_tokens': 1000, 'top_p': 1, 'frequency_penalty': 0, 'presence_penalty': 0}}}},  # Empty config for now
+        'input_values': {},  # Empty values for now
+        'output_values': {}  # Empty values for now
     })
     return render_template('workflow/index.html', **context)
 

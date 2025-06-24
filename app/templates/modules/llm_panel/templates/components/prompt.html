@@ -1,0 +1,39 @@
+<!-- Prompt Accordion -->
+<div class="border border-dark-border rounded-lg overflow-hidden">
+    <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+        onclick="toggleAccordion('prompt')">
+        <span class="font-medium text-dark-text">Prompt</span>
+        <span class="text-gray-400" id="prompt-summary">
+            {% if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt %}
+            {{ step_config.settings.llm.task_prompt.split('\n')[0]|truncate(50) }}
+            {% if step_config.settings.llm.input_mapping %}
+            (inputs: {{ step_config.settings.llm.input_mapping.keys()|join(', ') }})
+            {% endif %}
+            {% elif step_config.prompt and step_config.prompt.template %}
+            {{ step_config.prompt.template.split('\n')[0]|truncate(50) }}
+            {% else %}
+            No prompt configured
+            {% endif %}
+        </span>
+        <svg class="w-5 h-5 transform transition-transform" id="prompt-icon" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+    <div id="prompt-content" class="hidden p-4 bg-dark-bg text-dark-text">
+        {% if step_config.settings and step_config.settings.llm and step_config.settings.llm.task_prompt %}
+        <div class="mb-4">
+            <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
+            <pre
+                class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.settings.llm.task_prompt }}</pre>
+        </div>
+        {% elif step_config.prompt and step_config.prompt.template %}
+        <div class="mb-4">
+            <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
+            <pre class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.prompt.template }}</pre>
+        </div>
+        {% else %}
+        <p class="text-gray-400">No prompt configured for this step.</p>
+        {% endif %}
+    </div>
+</div>
