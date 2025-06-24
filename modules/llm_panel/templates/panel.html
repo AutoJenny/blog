@@ -1,0 +1,59 @@
+<!-- LLM Panel Content -->
+<div class="space-y-4" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
+    data-current-step="{{ current_step }}">
+    <!-- Inputs Accordion -->
+    {% include 'llm_panel/components/inputs.html' %}
+
+    <!-- Prompt Accordion -->
+    {% include 'llm_panel/components/prompt.html' %}
+
+    <!-- Settings Accordion -->
+    {% include 'llm_panel/components/settings.html' %}
+
+    <!-- Outputs Accordion -->
+    {% include 'llm_panel/components/outputs.html' %}
+</div>
+
+<!-- Scripts -->
+<script src="{{ url_for('llm_panel.static', filename='js/accordion.js') }}"></script>
+
+<!-- Field Selection Script -->
+<script type="module">
+    // Wait for both DOM and field selector script to be ready
+    const initializeApp = async () => {
+        try {
+            const { initializeFieldDropdowns } = await import('{{ url_for("llm_panel.static", filename="js/field_selector.js") }}');
+            console.log('Field selector script loaded');
+            await initializeFieldDropdowns();
+            console.log('Field dropdowns initialized');
+        } catch (error) {
+            console.error('Error loading field selector script:', error);
+        }
+    };
+
+    // Initialize once everything is loaded
+    if (document.readyState === 'complete') {
+        initializeApp();
+    } else {
+        window.addEventListener('load', initializeApp);
+    }
+</script>
+
+<!-- Styles -->
+<style>
+    .accordion-item {
+        @apply border border-dark-border rounded-lg overflow-hidden mb-4;
+    }
+
+    .accordion-header {
+        @apply w-full text-left;
+    }
+
+    .accordion-content {
+        @apply border-t border-dark-border;
+    }
+
+    .accordion-icon {
+        @apply transition-transform duration-200;
+    }
+</style>

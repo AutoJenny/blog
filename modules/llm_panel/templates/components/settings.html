@@ -1,0 +1,70 @@
+<!-- Settings Accordion -->
+<div class="border border-dark-border rounded-lg overflow-hidden">
+    <button class="w-full flex justify-between items-center p-4 bg-dark-bg hover:bg-dark-hover focus:outline-none"
+        onclick="toggleAccordion('settings')">
+        <span class="font-medium text-dark-text">Settings</span>
+        <span class="text-gray-400" id="settings-summary">
+            {% if step_config.settings and step_config.settings.llm %}
+            <span class="text-blue-500">Model:</span> {{ step_config.settings.llm.model }}, <span
+                class="text-blue-500">Temp:</span> {{ step_config.settings.llm.parameters.temperature }},
+            <span class="text-blue-500">Max tokens:</span> {{ step_config.settings.llm.parameters.max_tokens }}
+            {% elif step_config.settings %}
+            {{ step_config.settings|length }} setting{{ 's' if step_config.settings|length != 1 else 's' }} configured
+            {% else %}
+            No settings configured
+            {% endif %}
+        </span>
+        <svg class="w-5 h-5 transform transition-transform" id="settings-icon" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+    <div id="settings-content" class="hidden p-4 bg-dark-bg text-dark-text">
+        {% if step_config.settings and step_config.settings.llm %}
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Model</label>
+                <input type="text" value="{{ step_config.settings.llm.model }}"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Temperature</label>
+                <input type="text" value="{{ step_config.settings.llm.parameters.temperature }}"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Max tokens</label>
+                <input type="text" value="{{ step_config.settings.llm.parameters.max_tokens }}"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Top P</label>
+                <input type="text" value="{{ step_config.settings.llm.parameters.top_p }}"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Frequency Penalty</label>
+                <input type="text" value="{{ step_config.settings.llm.parameters.frequency_penalty }}"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Presence Penalty</label>
+                <input type="text" value="{{ step_config.settings.llm.parameters.presence_penalty }}"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+            </div>
+        </div>
+        {% elif step_config.settings %}
+        <div class="grid grid-cols-2 gap-4">
+            {% for setting, value in step_config.settings.items() %}
+            <div>
+                <label class="block text-sm font-medium text-blue-500">{{ setting }}</label>
+                <input type="text" value="{{ value }}"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-400">No settings configured for this step.</p>
+        {% endif %}
+    </div>
+</div>

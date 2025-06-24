@@ -141,6 +141,10 @@ def create_app(config_class=Config):
     from app.workflow import workflow
     app.register_blueprint(workflow, url_prefix='/workflow')
 
+    # Register LLM Panel module
+    from modules.llm_panel import llm_panel_bp
+    app.register_blueprint(llm_panel_bp)
+
     # Add debug route listing
     @app.route('/debug/routes')
     def list_routes():
