@@ -149,6 +149,24 @@ def workflow_index(post_id, stage=None, substage=None):
                     if config_json:
                         # Update step configuration with stored config
                         step_config.update(config_json)
+                        
+                        # Ensure field_mapping is properly structured for all steps
+                        if 'field_mapping' not in step_config:
+                            step_config['field_mapping'] = []
+                            if 'inputs' in step_config:
+                                for input_id, input_config in step_config['inputs'].items():
+                                    if isinstance(input_config, dict) and 'db_field' in input_config:
+                                        step_config['field_mapping'].append({
+                                            'field_name': input_config['db_field'],
+                                            'order_index': len(step_config['field_mapping'])
+                                        })
+                            if 'outputs' in step_config:
+                                for output_id, output_config in step_config['outputs'].items():
+                                    if isinstance(output_config, dict) and 'db_field' in output_config:
+                                        step_config['field_mapping'].append({
+                                            'field_name': output_config['db_field'],
+                                            'order_index': len(step_config['field_mapping'])
+                                        })
     
     # Get field values from post_development
     field_values = get_post_development_fields(post_id)

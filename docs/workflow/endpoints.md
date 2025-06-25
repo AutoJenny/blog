@@ -10,16 +10,29 @@ GET /workflow/api/field_mappings/
 
 Returns all available fields mapped to their respective stages and substages. Used to populate the field selector dropdowns.
 
+**Query Parameters:**
+- `stage` (optional): Current workflow stage (defaults to 'planning')
+- `substage` (optional): Current workflow substage (defaults to 'idea')
+- `step` (optional): Current workflow step (defaults to 'Initial')
+
 **Response Format:**
 ```json
 {
   "stage_name": {
-    "substage_name": [
-      {
-        "field_name": "string",
-        "display_name": "string"
-      }
-    ]
+    "substage_name": {
+      "inputs": [
+        {
+          "field_name": "string",
+          "display_name": "string"
+        }
+      ],
+      "outputs": [
+        {
+          "field_name": "string",
+          "display_name": "string"
+        }
+      ]
+    }
   }
 }
 ```
@@ -28,16 +41,20 @@ Returns all available fields mapped to their respective stages and substages. Us
 ```json
 {
   "planning": {
-    "idea": [
-      {
-        "display_name": "idea_seed",
-        "field_name": "idea_seed"
-      },
-      {
-        "display_name": "basic_idea",
-        "field_name": "basic_idea"
-      }
-    ]
+    "idea": {
+      "inputs": [
+        {
+          "field_name": "idea_seed",
+          "display_name": "Idea Seed"
+        }
+      ],
+      "outputs": [
+        {
+          "field_name": "basic_idea",
+          "display_name": "Basic Idea"
+        }
+      ]
+    }
   }
 }
 ```
@@ -53,9 +70,12 @@ Updates the mapping between a field selector and a database field.
 **Request Body:**
 ```json
 {
-  "target_id": "string",  // The ID of the input/output target
-  "field_name": "string", // The selected field name
-  "section": "string"     // Either "inputs" or "outputs"
+  "target_id": "string",    // The ID of the input/output target
+  "field_name": "string",   // The selected field name
+  "section": "string",      // Either "inputs" or "outputs"
+  "stage": "string",        // Optional: workflow stage
+  "substage": "string",     // Optional: workflow substage
+  "step": "string"         // Optional: workflow step (defaults to "initial")
 }
 ```
 
@@ -64,7 +84,9 @@ Updates the mapping between a field selector and a database field.
 {
   "target_id": "input1",
   "field_name": "idea_seed",
-  "section": "inputs"
+  "section": "inputs",
+  "stage": "planning",
+  "substage": "idea"
 }
 ```
 
@@ -72,7 +94,8 @@ Updates the mapping between a field selector and a database field.
 ```json
 {
   "field_name": "string",
-  "table_name": "post_development"
+  "section": "string",
+  "table_name": "string"
 }
 ```
 
@@ -80,6 +103,7 @@ Updates the mapping between a field selector and a database field.
 ```json
 {
   "field_name": "idea_seed",
+  "section": "inputs",
   "table_name": "post_development"
 }
 ```
@@ -112,7 +136,7 @@ Gets all field values for a post's development data.
 ## 4. Update Post Development Endpoint
 
 ```http
-POST /blog/api/v1/post/{post_id}/development
+PATCH /blog/api/v1/post/{post_id}/development
 ```
 
 Updates specific fields in the post_development table.
@@ -144,7 +168,7 @@ Updates specific fields in the post_development table.
 1. When the panel loads, it fetches available fields from `/workflow/api/field_mappings/`
 2. When a field is selected in a dropdown, it calls `/workflow/api/update_field_mapping/` to get the database field mapping
 3. The panel loads current field values from `/blog/api/v1/post/{post_id}/development`
-4. When field values change, they are persisted using `/blog/api/v1/post/{post_id}/development` (POST)
+4. When field values change, they are persisted using `/blog/api/v1/post/{post_id}/development` (PATCH)
 
 ## Testing the Endpoints
 
@@ -152,19 +176,19 @@ You can test these endpoints using curl:
 
 ```bash
 # Get field mappings
-curl -s "http://localhost:5000/workflow/api/field_mappings/" | python3 -m json.tool
+curl -s "http://localhost:5000/workflow/api/field_mappings/?stage=planning&substage=idea" | python3 -m json.tool
 
 # Update field mapping
 curl -s -X POST "http://localhost:5000/workflow/api/update_field_mapping/" \
   -H "Content-Type: application/json" \
-  -d '{"target_id":"input1", "field_name":"idea_seed", "section":"inputs"}' \
+  -d '{"target_id":"input1", "field_name":"idea_seed", "section":"inputs", "stage":"planning", "substage":"idea"}' \
   | python3 -m json.tool
 
 # Get post development fields
 curl -s "http://localhost:5000/blog/api/v1/post/22/development" | python3 -m json.tool
 
 # Update post development field
-curl -s -X POST "http://localhost:5000/blog/api/v1/post/22/development" \
+curl -s -X PATCH "http://localhost:5000/blog/api/v1/post/22/development" \
   -H "Content-Type: application/json" \
   -d '{"idea_seed": "new value"}' \
   | python3 -m json.tool

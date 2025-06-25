@@ -237,8 +237,8 @@ def test_insert():
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    INSERT INTO post (title, slug, published, deleted, content, created_at, updated_at)
-                    VALUES (%s, %s, FALSE, FALSE, '', NOW(), NOW()) RETURNING id
+                    INSERT INTO post (title, slug, status, created_at, updated_at)
+                    VALUES (%s, %s, 'draft', NOW(), NOW()) RETURNING id
                 """, ("Test Post", "test-post"))
                 post_id = cur.fetchone()["id"]
                 # Insert post development

@@ -153,4 +153,18 @@ function runLLM(postId, stage, substage, step) {
         btn.disabled = false;
         btn.textContent = 'Run LLM';
     });
+}
+
+export async function fetchPostDevelopment(postId) {
+  const resp = await fetch(`/api/v1/post/${postId}/development`);
+  return resp.ok ? await resp.json() : {};
+}
+
+export async function updatePostDevelopmentField(postId, field, value) {
+  const resp = await fetch(`/api/v1/post/${postId}/development`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ [field]: value })
+  });
+  return resp.ok ? await resp.json() : { status: 'error' };
 } 

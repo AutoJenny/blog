@@ -51,7 +51,7 @@ export class FieldSelector {
     async fetchFieldValues() {
         console.log('[DEBUG] Fetching field values');
         try {
-            const response = await fetch(`/blog/api/v1/post/${this.postId}/development`);
+            const response = await fetch(`/api/v1/post/${this.postId}/development`);
             const data = await response.json();
             this.fieldValues = data;
             console.log('[DEBUG] Field values fetched:', this.fieldValues);

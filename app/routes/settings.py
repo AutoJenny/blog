@@ -11,23 +11,49 @@ def index():
     """Settings index page."""
     return render_template('settings/index.html')
 
-@bp.route('/workflow_prompts', methods=['GET', 'POST'])
+@bp.route('/workflow_prompts', methods=['GET', 'POST', 'DELETE'])
 def workflow_prompts():
     """View and edit workflow prompts."""
     with get_db_conn() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             if request.method == 'POST':
-                prompt_id = request.form.get('prompt_id')
-                if prompt_id:
-                    name = request.form.get('name')
-                    prompt_text = request.form.get('prompt_text')
+                if 'delete' in request.form:
+                    # Handle prompt deletion
+                    prompt_id = request.form.get('prompt_id')
+                    if prompt_id:
+                        cur.execute("DELETE FROM llm_prompt WHERE id = %s", (prompt_id,))
+                        conn.commit()
+                        return jsonify({'success': True})
+                elif 'new' in request.form:
+                    # Handle new prompt creation
+                    prompt_type = request.form.get('prompt_type')
+                    stage = request.form.get('stage')
+                    substage = request.form.get('substage')
                     
                     cur.execute("""
-                        UPDATE llm_prompt 
-                        SET name = %s, prompt_text = %s, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = %s
-                    """, (name, prompt_text, prompt_id))
+                        INSERT INTO llm_prompt (
+                            name, prompt_text, prompt_type, stage, substage, step
+                        ) VALUES (
+                            'New Prompt', '', %s, %s, %s, 'new_step'
+                        ) RETURNING id
+                    """, (prompt_type, stage if prompt_type == 'task' else None, 
+                         substage if prompt_type == 'task' else None))
+                    new_id = cur.fetchone()['id']
                     conn.commit()
+                    return jsonify({'success': True, 'id': new_id})
+                else:
+                    # Handle prompt update
+                    prompt_id = request.form.get('prompt_id')
+                    if prompt_id:
+                        name = request.form.get('name')
+                        prompt_text = request.form.get('prompt_text')
+                        
+                        cur.execute("""
+                            UPDATE llm_prompt 
+                            SET name = %s, prompt_text = %s, updated_at = CURRENT_TIMESTAMP
+                            WHERE id = %s
+                        """, (name, prompt_text, prompt_id))
+                        conn.commit()
             
             # Get system prompts
             cur.execute("""
