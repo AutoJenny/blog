@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Field Mapping{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 bg-dark-bg border border-dark-border rounded-xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-gear text-indigo-400"></i> Settings: Workflow Field Mapping
+    </h1>
+    <p class="text-dark-text mb-4">
+        Map post development fields to workflow stages and substages. Changes are saved to the database and reflected in
+        the workflow UI and <a href="/docs/view/database/schema.md"
+            class="text-indigo-300 underline hover:text-indigo-100">docs live view</a>.
+    </p>
+
+    <div class="space-y-6">
+        {% for stage in stages %}
+        <div class="bg-[#23273a] rounded-lg border border-dark-border p-6">
+            <div class="flex items-center justify-between mb-4 cursor-pointer hover:bg-[#2a2f45] p-2 rounded-lg transition"
+                onclick="toggleStage('{{ stage.id }}')">
+                <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-indigo-400"></i>
+                    {{ stage.name|capitalize }}
+                </h2>
+                <i class="fa-solid fa-chevron-down text-indigo-400" id="stage-icon-{{ stage.id }}"></i>
+            </div>
+            <div id="stage-content-{{ stage.id }}" class="hidden space-y-4">
+                {% for substage in substages if substage.stage_id == stage.id %}
+                <div class="bg-[#1e2235] rounded-lg border border-dark-border p-4">
+                    <div class="flex items-center justify-between mb-4 cursor-pointer hover:bg-[#262b42] p-2 rounded-lg transition"
+                        onclick="toggleSubstage('{{ substage.id }}')">
+                        <h3 class="text-lg font-semibold text-indigo-200 flex items-center gap-2">
+                            <i class="fa-solid fa-folder text-indigo-400"></i>
+                            {{ substage.name|capitalize }}
+                        </h3>
+                        <i class="fa-solid fa-chevron-down text-indigo-400" id="substage-icon-{{ substage.id }}"></i>
+                    </div>
+                    <div id="substage-content-{{ substage.id }}" class="hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-[#181c2a] text-indigo-200">
+                                    <tr>
+                                        <th class="px-4 py-2 font-semibold">Field Name</th>
+                                        <th class="px-4 py-2 font-semibold">Type</th>
+                                        <th class="px-4 py-2 font-semibold">Order</th>
+                                        <th class="px-4 py-2 font-semibold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mapping in field_mappings if mapping.substage_id == substage.id %}
+                                    <tr class="border-b border-dark-border" data-mapping-id="{{ mapping.id }}">
+                                        <td class="px-4 py-2 text-white">{{ mapping.field_name }}</td>
+                                        <td class="px-4 py-2 text-indigo-200">{{ mapping.accordion_type }}</td>
+                                        <td class="px-4 py-2">
+                                            <input type="number" name="order_index" value="{{ mapping.order_index }}"
+                                                class="bg-[#23273a] text-indigo-100 border border-dark-border rounded-md px-2 py-1 focus:ring-2 focus:ring-indigo-400 focus:outline-none w-20">
+                                        </td>
+                                        <td class="px-4 py-2">
+                                            <button type="button" onclick="saveMapping('{{ mapping.id }}')"
+                                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md transition">
+                                                Save
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function toggleStage(stageId) {
+        const content = document.getElementById(`stage-content-${stageId}`);
+        const icon = document.getElementById(`stage-icon-${stageId}`);
+        if (content && icon) {
+            content.classList.toggle('hidden');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+        }
+    }
+
+    function toggleSubstage(substageId) {
+        const content = document.getElementById(`substage-content-${substageId}`);
+        const icon = document.getElementById(`substage-icon-${substageId}`);
+        if (content && icon) {
+            content.classList.toggle('hidden');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+        }
+    }
+
+    async function saveMapping(mappingId) {
+        const row = document.querySelector(`tr[data-mapping-id="${mappingId}"]`);
+        const orderIndex = row.querySelector('input[name="order_index"]').value;
+
+        try {
+            const response = await fetch('/settings/api/field-mapping', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    mapping_id: mappingId,
+                    order_index: parseInt(orderIndex)
+                })
+            });
+
+            if (response.ok) {
+                alert('Mapping updated successfully!');
+            } else {
+                throw new Error('Failed to update mapping');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error updating mapping: ' + error.message);
+        }
+    }
+</script>
+{% endblock %}

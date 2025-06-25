@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Workflow Prompts{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 bg-dark-bg border border-dark-border rounded-xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-gear text-indigo-400"></i> Settings: Workflow Prompts
+    </h1>
+    <p class="text-dark-text mb-4">
+        View and edit workflow prompt templates. Changes are saved to individual JSON files in the prompts directory.
+    </p>
+
+    <div class="space-y-6">
+        {% for prompt_name, prompt_data in prompts.items() %}
+        <div class="bg-[#23273a] rounded-lg border border-dark-border p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-file-code text-indigo-400"></i>
+                    {{ prompt_name|replace('_', ' ')|title }}
+                </h2>
+                <button type="button" onclick="togglePrompt('{{ prompt_name }}')"
+                    class="text-indigo-400 hover:text-indigo-300 transition">
+                    <i class="fa-solid fa-chevron-down" id="prompt-icon-{{ prompt_name }}"></i>
+                </button>
+            </div>
+            <div id="prompt-content-{{ prompt_name }}" class="hidden">
+                <form method="POST" class="space-y-4">
+                    <input type="hidden" name="prompt_name" value="{{ prompt_name }}">
+                    {% for field_name, field_value in prompt_data.items() %}
+                    <div class="space-y-2">
+                        <label class="block text-indigo-200 font-medium">
+                            {{ field_name|replace('_', ' ')|title }}
+                        </label>
+                        <textarea name="{{ prompt_name }}__{{ field_name }}"
+                            class="w-full h-32 bg-[#1e2235] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none">{{ field_value }}</textarea>
+                    </div>
+                    {% endfor %}
+                    <div class="flex justify-end">
+                        <button type="submit"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
+                            <i class="fa-solid fa-save"></i>
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function togglePrompt(promptName) {
+        const content = document.getElementById(`prompt-content-${promptName}`);
+        const icon = document.getElementById(`prompt-icon-${promptName}`);
+        if (content && icon) {
+            content.classList.toggle('hidden');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+        }
+    }
+
+    // Show flash messages
+    {% with messages = get_flashed_messages(with_categories = true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    alert('{{ message }}');
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+</script>
+{% endblock %}
