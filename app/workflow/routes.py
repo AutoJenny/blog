@@ -580,4 +580,30 @@ def run_workflow_llm():
                 
     except Exception as e:
         current_app.logger.error(f"[Workflow LLM] Error: {str(e)}")
-        return jsonify({"success": False, "error": str(e)}) 
+        return jsonify({"success": False, "error": str(e)})
+
+@workflow.route('/api/prompts/', methods=['GET'])
+def get_prompts():
+    """Get prompts by type."""
+    prompt_type = request.args.get('prompt_type')
+    if not prompt_type:
+        return jsonify({'error': 'Missing prompt_type parameter'}), 400
+    
+    with get_db_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            if prompt_type == 'system':
+                cur.execute("""
+                    SELECT id, name, prompt_text
+                    FROM llm_prompt
+                    WHERE prompt_type = 'system'
+                    ORDER BY name
+                """)
+            else:
+                cur.execute("""
+                    SELECT id, name, prompt_text, stage, substage, step
+                    FROM llm_prompt
+                    WHERE prompt_type = 'task'
+                    ORDER BY stage, substage, step, name
+                """)
+            prompts = cur.fetchall()
+            return jsonify(prompts) 

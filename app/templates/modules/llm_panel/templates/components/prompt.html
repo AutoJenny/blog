@@ -6,11 +6,9 @@
     <div class="bg-dark-hover rounded-lg p-3 mb-3">
         <h3 class="text-sm font-medium text-blue-500 mb-2">System</h3>
         <div class="flex flex-col space-y-2">
-            <select id="system_model"
+            <select id="system_prompt_select"
                 class="w-full bg-dark-bg text-dark-text border border-dark-border rounded p-1 text-sm">
-                <option value="gpt-4">GPT-4</option>
-                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                <option value="mistral">Mistral</option>
+                <option value="">Select system prompt...</option>
             </select>
             <textarea id="system_prompt"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-2 text-sm" rows="2"
@@ -22,11 +20,9 @@
     <div class="bg-dark-hover rounded-lg p-3 mb-3">
         <h3 class="text-sm font-medium text-blue-500 mb-2">Task</h3>
         <div class="flex flex-col space-y-2">
-            <select id="task_type"
+            <select id="task_prompt_select"
                 class="w-full bg-dark-bg text-dark-text border border-dark-border rounded p-1 text-sm">
-                <option value="generate">Generate</option>
-                <option value="refine">Refine</option>
-                <option value="analyze">Analyze</option>
+                <option value="">Select task prompt...</option>
             </select>
             <textarea id="task_prompt"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-2 text-sm" rows="2"
@@ -43,3 +39,11 @@
     <p class="text-gray-400">No prompt configured for this step.</p>
     {% endif %}
 </div>
+
+<!-- Initialize Prompt Selector -->
+<script type="module">
+    import { PromptSelector } from "/static/modules/llm_panel/js/prompt_selector.js";
+    window.addEventListener('DOMContentLoaded', () => {
+        new PromptSelector();
+    });
+</script>

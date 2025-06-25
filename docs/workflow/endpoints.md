@@ -2,7 +2,52 @@
 
 This document describes the key endpoints used by the LLM Panel module for field selection, persistence, and workflow operations.
 
-## 1. Field Mappings Endpoint
+## 1. Prompts Endpoint
+
+```http
+GET /workflow/api/prompts/
+```
+
+Returns prompts by type. Used to populate the prompt selector dropdowns.
+
+**Query Parameters:**
+- `prompt_type` (required): Type of prompts to return ('system' or 'task')
+
+**Response Format for System Prompts:**
+```json
+[
+  {
+    "id": 1,
+    "name": "Base Context",
+    "prompt_text": "You are a helpful assistant..."
+  }
+]
+```
+
+**Response Format for Task Prompts:**
+```json
+[
+  {
+    "id": 1,
+    "name": "Generate Basic Idea",
+    "prompt_text": "Given the idea seed...",
+    "stage": "planning",
+    "substage": "idea",
+    "step": "Initial Concept"
+  }
+]
+```
+
+**Example Request:**
+```bash
+# Get system prompts
+curl -s "http://localhost:5000/workflow/api/prompts/?prompt_type=system" | python3 -m json.tool
+
+# Get task prompts
+curl -s "http://localhost:5000/workflow/api/prompts/?prompt_type=task" | python3 -m json.tool
+```
+
+## 2. Field Mappings Endpoint
 
 ```http
 GET /workflow/api/field_mappings/
@@ -59,7 +104,7 @@ Returns all available fields mapped to their respective stages and substages. Us
 }
 ```
 
-## 2. Update Field Mapping Endpoint
+## 3. Update Field Mapping Endpoint
 
 ```http
 POST /workflow/api/update_field_mapping/
@@ -108,7 +153,7 @@ Updates the mapping between a field selector and a database field.
 }
 ```
 
-## 3. Post Development Fields Endpoint
+## 4. Post Development Fields Endpoint
 
 ```http
 GET /blog/api/v1/post/{post_id}/development
@@ -133,7 +178,7 @@ Gets all field values for a post's development data.
 }
 ```
 
-## 4. Update Post Development Endpoint
+## 5. Update Post Development Endpoint
 
 ```http
 PATCH /blog/api/v1/post/{post_id}/development
