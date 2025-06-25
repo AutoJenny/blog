@@ -238,18 +238,31 @@ def substage(post_id, stage: str, substage: str):
     if not context:
         abort(404, f"Invalid path: {stage}/{substage}")
     
-    context.update({
-        'post': post,
-        'post_id': post_id,
-        'current_post_id': post_id,
-        'all_posts': get_all_posts(),
-        'substage_icons': SUBSTAGE_ICONS,
-        'current_stage': stage,
-        'current_substage': substage,
-        'current_step': None
-    })
+    # Get the first available step for this substage
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT wse.name as step_name
+                FROM workflow_step_entity wse
+                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
+                ORDER BY wse.id
+                LIMIT 1
+            """, (stage, substage))
+            result = cur.fetchone()
+            if not result:
+                abort(404, f"No steps found for {stage}/{substage}")
+            
+            first_step = result['step_name']
     
-    return render_template('workflow/index.html', **context)
+    # Redirect to the workflow index with the first step
+    return redirect(url_for('workflow.workflow_index', 
+        post_id=post_id, 
+        stage=stage, 
+        substage=substage,
+        step=first_step.lower().replace(' ', '_')
+    ))
 
 @workflow.route('/posts/<int:post_id>/<stage>/<substage>/<step>/')
 def step(post_id, stage: str, substage: str, step: str):
@@ -354,56 +367,22 @@ def get_field_mappings():
             current_substage = request.args.get('substage', 'idea')
             current_step = request.args.get('step', 'Initial')
             
-            cur.execute("""
-                SELECT wse.config
-                FROM workflow_step_entity wse
-                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
-                JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
-                WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
-                AND wse.name ILIKE %s
-            """, (current_stage, current_substage, current_step))
+            # Add all available fields to the current stage/substage
+            result[current_stage][current_substage]['inputs'] = [
+                {
+                    'field_name': field,
+                    'display_name': field.replace('_', ' ').title()
+                }
+                for field in all_fields
+            ]
             
-            step_config = cur.fetchone()
-            config = step_config['config'] if step_config else {}
-            
-            # Add configured fields to their specific locations
-            if config:
-                if 'inputs' in config:
-                    for input_id, input_config in config['inputs'].items():
-                        if isinstance(input_config, dict) and 'db_field' in input_config:
-                            field_info = {
-                                'field_name': input_config['db_field'],
-                                'display_name': input_config['db_field'].replace('_', ' ').title()
-                            }
-                            result[current_stage][current_substage]['inputs'].append(field_info)
-                
-                if 'outputs' in config:
-                    for output_id, output_config in config['outputs'].items():
-                        if isinstance(output_config, dict) and 'db_field' in output_config:
-                            field_info = {
-                                'field_name': output_config['db_field'],
-                                'display_name': output_config['db_field'].replace('_', ' ').title()
-                            }
-                            result[current_stage][current_substage]['outputs'].append(field_info)
-            
-            # Add all available fields to the current stage/substage if no config exists
-            if not config or not result[current_stage][current_substage]['inputs']:
-                result[current_stage][current_substage]['inputs'] = [
-                    {
-                        'field_name': field,
-                        'display_name': field.replace('_', ' ').title()
-                    }
-                    for field in all_fields
-                ]
-            
-            if not config or not result[current_stage][current_substage]['outputs']:
-                result[current_stage][current_substage]['outputs'] = [
-                    {
-                        'field_name': field,
-                        'display_name': field.replace('_', ' ').title()
-                    }
-                    for field in all_fields
-                ]
+            result[current_stage][current_substage]['outputs'] = [
+                {
+                    'field_name': field,
+                    'display_name': field.replace('_', ' ').title()
+                }
+                for field in all_fields
+            ]
             
             return jsonify(result)
 
@@ -416,6 +395,7 @@ def update_field_mapping():
     section = data.get('section')  # 'inputs' or 'outputs'
     stage = data.get('stage')
     substage = data.get('substage')
+    step = data.get('step', 'initial')  # Default to 'initial' if not provided
     
     if not all([target_id, field_name, section]):
         return jsonify({'error': 'Missing required parameters'}), 400
@@ -443,8 +423,8 @@ def update_field_mapping():
                     JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
                     JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
                     WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
-                    AND wse.name ILIKE 'Initial'
-                """, (stage, substage))
+                    AND wse.name ILIKE %s
+                """, (stage, substage, step))
                 
                 result = cur.fetchone()
                 if not result:

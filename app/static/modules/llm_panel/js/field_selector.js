@@ -114,6 +114,24 @@ export class FieldSelector {
         });
     }
 
+    getCurrentStep() {
+        // First try to get from URL query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const step = urlParams.get('step');
+        console.log('[DEBUG] Step from URL params:', step);
+
+        // Then try to get from data attribute on the panel
+        const panel = document.querySelector('[data-current-step]');
+        console.log('[DEBUG] Panel data-current-step:', panel?.dataset?.currentStep);
+
+        if (step) return step;
+        if (panel && panel.dataset.currentStep) return panel.dataset.currentStep;
+
+        // Default to 'initial'
+        console.log('[DEBUG] Using default step: initial');
+        return 'initial';
+    }
+
     async handleFieldSelection(event) {
         if (this.isInitializing) {
             console.log('[DEBUG] Still initializing, skipping field selection handler');
@@ -124,8 +142,16 @@ export class FieldSelector {
         const targetId = selector.dataset.target;
         const section = selector.dataset.section;
         const fieldName = selector.value;
+        const step = this.getCurrentStep();
 
-        console.log(`[DEBUG] Handling field selection: ${targetId} -> ${fieldName}`);
+        console.log(`[DEBUG] Handling field selection:`, {
+            targetId,
+            fieldName,
+            section,
+            stage: this.stage,
+            substage: this.substage,
+            step
+        });
 
         const textarea = document.getElementById(targetId);
         if (textarea) {
@@ -144,9 +170,10 @@ export class FieldSelector {
                     body: JSON.stringify({
                         target_id: targetId,
                         field_name: fieldName,
-                        accordion_type: section,
+                        section: section,
                         stage: this.stage,
-                        substage: this.substage
+                        substage: this.substage,
+                        step: step
                     })
                 });
 
