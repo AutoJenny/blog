@@ -18,6 +18,17 @@
     </div>
     {% endfor %}
     {% else %}
-    <p class="text-gray-400">No inputs configured for this step.</p>
+    <div class="mb-4">
+        <label for="input1" class="block text-sm font-medium text-blue-500 mb-2">
+            [input1]
+        </label>
+        <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+            data-target="input1" data-section="inputs" data-current-substage="{{ current_substage }}">
+            <!-- Options will be populated by JavaScript -->
+        </select>
+        <textarea id="input1" name="input1"
+            class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4" data-db-field=""
+            data-db-table="post_development" rows="4" placeholder="Enter text..."></textarea>
+    </div>
     {% endif %}
 </div>

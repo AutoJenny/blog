@@ -322,7 +322,38 @@ def get_field_mappings():
             """)
             all_fields = [row['column_name'] for row in cur.fetchall()]
             
+            # Get workflow structure for grouping
+            cur.execute("""
+                SELECT 
+                    wst.name as stage_name,
+                    wsse.name as substage_name,
+                    wse.name as step_name,
+                    wse.config
+                FROM workflow_stage_entity wst
+                JOIN workflow_sub_stage_entity wsse ON wsse.stage_id = wst.id
+                JOIN workflow_step_entity wse ON wse.sub_stage_id = wsse.id
+                ORDER BY wst.id, wsse.id, wse.id
+            """)
+            workflow_structure = cur.fetchall()
+            
+            # Initialize result structure with all stages/substages
+            result = {}
+            for row in workflow_structure:
+                stage = row['stage_name'].lower()
+                substage = row['substage_name'].lower()
+                if stage not in result:
+                    result[stage] = {}
+                if substage not in result[stage]:
+                    result[stage][substage] = {
+                        'inputs': [],
+                        'outputs': []
+                    }
+            
             # Get current step's config
+            current_stage = request.args.get('stage', 'planning')
+            current_substage = request.args.get('substage', 'idea')
+            current_step = request.args.get('step', 'Initial')
+            
             cur.execute("""
                 SELECT wse.config
                 FROM workflow_step_entity wse
@@ -330,26 +361,13 @@ def get_field_mappings():
                 JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
                 WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
                 AND wse.name ILIKE %s
-            """, (request.args.get('stage', 'planning'), 
-                  request.args.get('substage', 'idea'),
-                  request.args.get('step', 'Initial')))
+            """, (current_stage, current_substage, current_step))
             
             step_config = cur.fetchone()
             config = step_config['config'] if step_config else {}
             
-            # Initialize result structure
-            result = {
-                'planning': {
-                    'idea': {
-                        'inputs': [],
-                        'outputs': []
-                    }
-                }
-            }
-            
-            # Add fields based on step configuration
+            # Add configured fields to their specific locations
             if config:
-                # Add input fields
                 if 'inputs' in config:
                     for input_id, input_config in config['inputs'].items():
                         if isinstance(input_config, dict) and 'db_field' in input_config:
@@ -357,9 +375,8 @@ def get_field_mappings():
                                 'field_name': input_config['db_field'],
                                 'display_name': input_config['db_field'].replace('_', ' ').title()
                             }
-                            result['planning']['idea']['inputs'].append(field_info)
+                            result[current_stage][current_substage]['inputs'].append(field_info)
                 
-                # Add output fields
                 if 'outputs' in config:
                     for output_id, output_config in config['outputs'].items():
                         if isinstance(output_config, dict) and 'db_field' in output_config:
@@ -367,7 +384,26 @@ def get_field_mappings():
                                 'field_name': output_config['db_field'],
                                 'display_name': output_config['db_field'].replace('_', ' ').title()
                             }
-                            result['planning']['idea']['outputs'].append(field_info)
+                            result[current_stage][current_substage]['outputs'].append(field_info)
+            
+            # Add all available fields to the current stage/substage if no config exists
+            if not config or not result[current_stage][current_substage]['inputs']:
+                result[current_stage][current_substage]['inputs'] = [
+                    {
+                        'field_name': field,
+                        'display_name': field.replace('_', ' ').title()
+                    }
+                    for field in all_fields
+                ]
+            
+            if not config or not result[current_stage][current_substage]['outputs']:
+                result[current_stage][current_substage]['outputs'] = [
+                    {
+                        'field_name': field,
+                        'display_name': field.replace('_', ' ').title()
+                    }
+                    for field in all_fields
+                ]
             
             return jsonify(result)
 
