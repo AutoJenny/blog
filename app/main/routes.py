@@ -290,48 +290,6 @@ def db_restore():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/settings')
-def settings_index():
-    """Main settings index page."""
-    return render_template('main/settings_index.html')
-
-@bp.route('/settings/workflow')
-def workflow_settings():
-    """Workflow field mapping settings page."""
-    field_mappings = []
-    stages = []
-    substages = []
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            # Get workflow step configurations
-            cur.execute('''
-                SELECT wse.id, wse.name as step_name, wse.config,
-                       wsse.name as substage_name, wst.name as stage_name
-                FROM workflow_step_entity wse
-                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
-                JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
-                ORDER BY wst.id, wsse.id, wse.id
-            ''')
-            field_mappings = cur.fetchall()
-            
-            # Get stages
-            cur.execute('SELECT id, name FROM workflow_stage_entity ORDER BY id')
-            stages = cur.fetchall()
-            
-            # Get substages
-            cur.execute('SELECT id, stage_id, name FROM workflow_sub_stage_entity ORDER BY id')
-            substages = cur.fetchall()
-            
-    return render_template('main/settings.html', 
-                         field_mappings=field_mappings, 
-                         stages=stages, 
-                         substages=substages)
-
-@bp.route('/settings/images')
-def image_settings():
-    """Image generation settings page."""
-    return render_template('main/image_settings.html')
-
 @bp.route('/api/settings/field-mapping', methods=['GET'])
 def api_get_field_mapping():
     with get_db_conn() as conn:

@@ -12,6 +12,13 @@ from datetime import timedelta, datetime
 from flask_cors import CORS
 from flask_migrate import Migrate
 from app.database import get_db_conn
+from app.errors import bp as errors_bp
+from app.main import bp as main_bp
+from app.blog import bp as blog_bp
+from app.preview import bp as preview_bp
+from app.database.routes import bp as database_bp
+from app.llm import bp as llm_bp
+from app.routes.settings import bp as settings_bp
 
 # DEPRECATED: SQLAlchemy ORM is being removed. Use direct SQL (psycopg2) for all DB access.
 
@@ -27,10 +34,15 @@ migrate = Migrate()
 
 print('=== FLASK APP __init__.py LOADED (AUDIT TEST) ===')
 
-def create_app(config_class=Config):
+def create_app(config_object=None):
     app = Flask(__name__)
     CORS(app)
-    app.config.from_object(config_class)
+
+    # Load configuration
+    if config_object is None:
+        app.config.from_object('config.Config')
+    else:
+        app.config.from_object(config_object)
 
     cache.init_app(app)
     mail.init_app(app)
@@ -132,14 +144,13 @@ def create_app(config_class=Config):
         return {"year": datetime.utcnow().year}
 
     # Register blueprints
-    from app.main import bp as main_bp
+    app.register_blueprint(errors_bp)
     app.register_blueprint(main_bp)
-
-    from app.blog import bp as blog_bp
-    app.register_blueprint(blog_bp, url_prefix='/blog')
-
-    from app.llm import bp as llm_bp
-    app.register_blueprint(llm_bp, url_prefix='/llm')
+    app.register_blueprint(blog_bp)
+    app.register_blueprint(preview_bp)
+    app.register_blueprint(database_bp)
+    app.register_blueprint(llm_bp)
+    app.register_blueprint(settings_bp)
 
     print('[AUDIT] About to import llm_api_bp from app.api.llm')
     from app.api.llm import bp as llm_api_bp
@@ -176,13 +187,10 @@ def create_app(config_class=Config):
         print(f"{rule.endpoint}: {rule.methods} {rule}")
     print("=======================\n")
 
-    from app.errors import bp as errors_bp
-    app.register_blueprint(errors_bp)
-
-    from app.database.routes import bp as db_bp
-    print("[DEBUG] Registering db Blueprint...")
-    app.register_blueprint(db_bp)
-    print("[DEBUG] db Blueprint registered.")
+    # Register error handlers
+    from app.errors import handlers
+    app.register_error_handler(404, handlers.not_found_error)
+    app.register_error_handler(500, handlers.internal_error)
 
     return app
 
