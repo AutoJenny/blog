@@ -1,6 +1,39 @@
 <!-- Prompt Section -->
 <div class="border border-dark-border rounded-lg p-4 mb-4">
     <h2 class="text-xl font-medium text-dark-text mb-4">Prompt</h2>
+
+    <!-- System Mini-Panel -->
+    <div class="bg-dark-hover rounded-lg p-3 mb-3">
+        <h3 class="text-sm font-medium text-blue-500 mb-2">System</h3>
+        <div class="flex flex-col space-y-2">
+            <select id="system_model"
+                class="w-full bg-dark-bg text-dark-text border border-dark-border rounded p-1 text-sm">
+                <option value="gpt-4">GPT-4</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="mistral">Mistral</option>
+            </select>
+            <textarea id="system_prompt"
+                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-2 text-sm" rows="2"
+                placeholder="Enter system prompt..."></textarea>
+        </div>
+    </div>
+
+    <!-- Task Mini-Panel -->
+    <div class="bg-dark-hover rounded-lg p-3 mb-3">
+        <h3 class="text-sm font-medium text-blue-500 mb-2">Task</h3>
+        <div class="flex flex-col space-y-2">
+            <select id="task_type"
+                class="w-full bg-dark-bg text-dark-text border border-dark-border rounded p-1 text-sm">
+                <option value="generate">Generate</option>
+                <option value="refine">Refine</option>
+                <option value="analyze">Analyze</option>
+            </select>
+            <textarea id="task_prompt"
+                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-2 text-sm" rows="2"
+                placeholder="Enter task prompt..."></textarea>
+        </div>
+    </div>
+
     {% if step_config.prompt %}
     <div class="mb-4">
         <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
