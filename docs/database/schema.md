@@ -39,16 +39,56 @@ The Blog CMS uses PostgreSQL (or SQLite in dev) for all persistent storage. Belo
 
 - **workflow_stage_entity**: Canonical list of main workflow stages (planning, authoring, publishing), each with a unique order.
 - **workflow_sub_stage_entity**: Ordered sub-stages for each main stage, referencing workflow_stage_entity by FK.
+- **workflow_step_entity**: Individual steps within each sub-stage, with field mappings stored in the config JSON field.
 
 ### Example Structure
 
-| Stage      | Sub-Stages                        |
-|------------|-----------------------------------|
-| planning   | idea, research, structure         |
-| authoring  | content, meta_info, images        |
-| publishing | preflight, launch, syndication    |
+```sql
+-- workflow_stage_entity
+id          SERIAL PRIMARY KEY
+name        VARCHAR(100) NOT NULL
+description TEXT
+stage_order INTEGER NOT NULL
 
-All workflow logic should reference these tables for stage and sub-stage lists, not hard-coded values.
+-- workflow_sub_stage_entity
+id             SERIAL PRIMARY KEY
+stage_id       INTEGER REFERENCES workflow_stage_entity(id)
+name           VARCHAR(100) NOT NULL
+description    TEXT
+sub_stage_order INTEGER NOT NULL
+
+-- workflow_step_entity
+id             SERIAL PRIMARY KEY
+sub_stage_id   INTEGER REFERENCES workflow_sub_stage_entity(id)
+name           VARCHAR(100) NOT NULL
+description    TEXT
+step_order     INTEGER NOT NULL
+config         JSONB -- Contains input/output field mappings
+```
+
+### Field Mapping Configuration
+
+The `config` field in `workflow_step_entity` uses this JSON structure:
+```json
+{
+  "inputs": {
+    "input1": {
+      "label": "Input Field Label",
+      "db_field": "database_field_name",
+      "type": "text|textarea"
+    }
+  },
+  "outputs": {
+    "output1": {
+      "label": "Output Field Label",
+      "db_field": "database_field_name",
+      "type": "text|textarea"
+    }
+  }
+}
+```
+
+This configuration drives the workflow UI, determining which database fields are used for inputs and outputs at each step.
 
 ## Table: post_workflow_step_action
 
