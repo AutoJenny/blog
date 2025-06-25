@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from flask_caching import Cache
 from flask_mail import Mail
 from celery import Celery
@@ -36,6 +36,20 @@ def create_app(config_class=Config):
     mail.init_app(app)
     swagger.init_app(app)
     migrate.init_app(app, get_db_conn)
+
+    # Add template debugging
+    @app.before_request
+    def log_template_dir():
+        print("\n=== FLASK TEMPLATE FOLDERS ===")
+        print(f"Default: {app.jinja_loader.searchpath}")
+        print(f"Blueprint paths: {[bp.jinja_loader.searchpath for bp in app.blueprints.values() if bp.jinja_loader]}")
+        print("============================\n")
+
+    @app.context_processor
+    def debug_templates():
+        def get_template_attribute(template_name, attribute):
+            return app.jinja_env.get_template(template_name).filename
+        return dict(get_template_attribute=get_template_attribute)
 
     # Initialize workflow module first to ensure nav module is registered
     from app.workflow import init_workflow

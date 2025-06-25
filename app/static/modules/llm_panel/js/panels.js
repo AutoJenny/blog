@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const targetId = e.target.dataset.targetId;
             const section = e.target.dataset.section;
             const fieldName = e.target.value;
+            
+            // Determine accordion type based on section
+            const accordion_type = section === 'inputs' ? 'inputs' : 'outputs';
 
             try {
                 const response = await fetch('/workflow/api/update_field_mapping/', {
@@ -36,7 +39,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({
                         target_id: targetId,
                         field_name: fieldName,
-                        section: section
+                        section: section,
+                        accordion_type: accordion_type
                     })
                 });
 

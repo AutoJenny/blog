@@ -1,3 +1,4 @@
+<!-- TEST MARKER 3: PANEL TEMPLATE VERIFICATION -->
 <!-- LLM Panel Content -->
 <div class="space-y-4" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
     data-current-step="{{ current_step }}">
@@ -9,25 +10,17 @@
         </button>
     </div>
 
-    <!-- Inputs Accordion -->
-    <div class="accordion-item">
-        {% include 'modules/llm_panel/templates/components/inputs.html' %}
-    </div>
+    <!-- Inputs -->
+    {% include 'modules/llm_panel/templates/components/inputs.html' %}
 
-    <!-- Prompt Accordion -->
-    <div class="accordion-item">
-        {% include 'modules/llm_panel/templates/components/prompt.html' %}
-    </div>
+    <!-- Prompt -->
+    {% include 'modules/llm_panel/templates/components/prompt.html' %}
 
-    <!-- Settings Accordion -->
-    <div class="accordion-item">
-        {% include 'modules/llm_panel/templates/components/settings.html' %}
-    </div>
+    <!-- Settings -->
+    {% include 'modules/llm_panel/templates/components/settings.html' %}
 
-    <!-- Outputs Accordion -->
-    <div class="accordion-item">
-        {% include 'modules/llm_panel/templates/components/outputs.html' %}
-    </div>
+    <!-- Outputs -->
+    {% include 'modules/llm_panel/templates/components/outputs.html' %}
 </div>
 
 <!-- Styles -->
@@ -35,13 +28,11 @@
 
 <!-- Scripts -->
 <script type="module">
-    import { FieldSelector } from "{{ url_for('static', filename='modules/llm_panel/js/field_selector.js') }}";
-    import { Accordion } from "{{ url_for('static', filename='modules/llm_panel/js/accordion.js') }}";
+    import { FieldSelector } from "/static/modules/llm_panel/js/field_selector.js";
 
-    // Initialize field selector and accordion
+    // Initialize field selector
     window.addEventListener('DOMContentLoaded', () => {
         window.fieldSelector = new FieldSelector();
-        new Accordion();
     });
 
     // Initialize LLM button
@@ -82,15 +73,6 @@
                         // Trigger change event to ensure any listeners are notified
                         output.dispatchEvent(new Event('change', { bubbles: true }));
                     });
-
-                    // Update the outputs summary in the accordion header
-                    const outputsSummary = document.getElementById('outputs-summary');
-                    if (outputsSummary) {
-                        const firstLine = result.result.split('\n')[0];
-                        outputsSummary.textContent = firstLine.length > 100 ?
-                            firstLine.substring(0, 97) + '...' :
-                            firstLine;
-                    }
                 } else {
                     throw new Error(result.error || 'Unknown error occurred');
                 }
@@ -107,22 +89,6 @@
 
 <!-- Styles -->
 <style>
-    .accordion-item {
-        @apply border border-dark-border rounded-lg overflow-hidden mb-4;
-    }
-
-    .accordion-header {
-        @apply w-full text-left;
-    }
-
-    .accordion-content {
-        @apply border-t border-dark-border;
-    }
-
-    .accordion-icon {
-        @apply transition-transform duration-200;
-    }
-
     #run-llm-btn {
         background-color: #6B46C1;
         border: 1px solid #805AD5;

@@ -347,14 +347,27 @@ def get_field_mappings():
                 }
             }
             
-            # Add ALL fields to both inputs and outputs
-            for field in all_fields:
-                field_info = {
-                    'field_name': field,
-                    'display_name': field
-                }
-                result['planning']['idea']['inputs'].append(field_info)
-                result['planning']['idea']['outputs'].append(field_info)
+            # Add fields based on step configuration
+            if config:
+                # Add input fields
+                if 'inputs' in config:
+                    for input_id, input_config in config['inputs'].items():
+                        if isinstance(input_config, dict) and 'db_field' in input_config:
+                            field_info = {
+                                'field_name': input_config['db_field'],
+                                'display_name': input_config['db_field'].replace('_', ' ').title()
+                            }
+                            result['planning']['idea']['inputs'].append(field_info)
+                
+                # Add output fields
+                if 'outputs' in config:
+                    for output_id, output_config in config['outputs'].items():
+                        if isinstance(output_config, dict) and 'db_field' in output_config:
+                            field_info = {
+                                'field_name': output_config['db_field'],
+                                'display_name': output_config['db_field'].replace('_', ' ').title()
+                            }
+                            result['planning']['idea']['outputs'].append(field_info)
             
             return jsonify(result)
 
@@ -364,11 +377,11 @@ def update_field_mapping():
     data = request.get_json()
     target_id = data.get('target_id')
     field_name = data.get('field_name')
-    accordion_type = data.get('accordion_type')
+    section = data.get('section')  # 'inputs' or 'outputs'
     stage = data.get('stage')
     substage = data.get('substage')
     
-    if not all([target_id, field_name, accordion_type]):
+    if not all([target_id, field_name, section]):
         return jsonify({'error': 'Missing required parameters'}), 400
     
     try:
@@ -404,15 +417,15 @@ def update_field_mapping():
                 step_id = result['id']
                 config = result['config'] or {}
                 
-                # Ensure the accordion type exists in config
-                if accordion_type not in config:
-                    config[accordion_type] = {}
+                # Ensure the section exists in config
+                if section not in config:
+                    config[section] = {}
                 
                 # Update or add the field mapping
-                if target_id in config[accordion_type]:
-                    config[accordion_type][target_id]['db_field'] = field_name
+                if target_id in config[section]:
+                    config[section][target_id]['db_field'] = field_name
                 else:
-                    config[accordion_type][target_id] = {
+                    config[section][target_id] = {
                         'db_field': field_name,
                         'db_table': 'post_development'
                     }
@@ -429,7 +442,7 @@ def update_field_mapping():
                 
                 return jsonify({
                     'field_name': field_name,
-                    'accordion_type': accordion_type,
+                    'section': section,
                     'table_name': 'post_development'
                 })
                 
