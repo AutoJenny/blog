@@ -192,6 +192,10 @@ def create_app(config_object=None):
     app.register_error_handler(404, handlers.not_found_error)
     app.register_error_handler(500, handlers.internal_error)
 
+    # Register workflow steps blueprint
+    from .api.workflow import steps
+    app.register_blueprint(steps.bp, url_prefix='/api/workflow')
+
     return app
 
 # from app import models
