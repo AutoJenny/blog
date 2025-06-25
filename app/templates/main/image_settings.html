@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Image Settings{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 bg-dark-bg border border-dark-border rounded-xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-image text-indigo-400"></i> Image Settings
+    </h1>
+    <p class="text-dark-text mb-8">
+        Configure image generation settings and presets.
+    </p>
+
+    <div class="space-y-8">
+        <!-- Image Generation Settings -->
+        <div class="bg-[#23273a] rounded-lg border border-dark-border p-6">
+            <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-sliders-h"></i> Generation Settings
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-dark-accent mb-1">Default Width</label>
+                    <input type="number"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="512" />
+                </div>
+                <div>
+                    <label class="block text-dark-accent mb-1">Default Height</label>
+                    <input type="number"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="512" />
+                </div>
+                <div>
+                    <label class="block text-dark-accent mb-1">Steps</label>
+                    <input type="number"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="20" />
+                </div>
+                <div>
+                    <label class="block text-dark-accent mb-1">Guidance Scale</label>
+                    <input type="number"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="7.5" step="0.1" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Styles -->
+        <div class="bg-[#23273a] rounded-lg border border-dark-border p-6">
+            <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-palette"></i> Image Styles
+            </h2>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-dark-bg rounded border border-dark-border">
+                    <div>
+                        <h3 class="font-medium text-white">Watercolor</h3>
+                        <p class="text-sm text-dark-text">Soft, artistic watercolor style</p>
+                    </div>
+                    <button class="text-indigo-400 hover:text-indigo-300">
+                        <i class="fa-solid fa-edit"></i>
+                    </button>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-dark-bg rounded border border-dark-border">
+                    <div>
+                        <h3 class="font-medium text-white">Photorealistic</h3>
+                        <p class="text-sm text-dark-text">High-quality realistic images</p>
+                    </div>
+                    <button class="text-indigo-400 hover:text-indigo-300">
+                        <i class="fa-solid fa-edit"></i>
+                    </button>
+                </div>
+            </div>
+            <button class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+                <i class="fa-solid fa-plus mr-1"></i> Add Style
+            </button>
+        </div>
+
+        <!-- Image Formats -->
+        <div class="bg-[#23273a] rounded-lg border border-dark-border p-6">
+            <h2 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-crop"></i> Image Formats
+            </h2>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-dark-bg rounded border border-dark-border">
+                    <div>
+                        <h3 class="font-medium text-white">Blog Header</h3>
+                        <p class="text-sm text-dark-text">1200x630, optimized for blog headers</p>
+                    </div>
+                    <button class="text-indigo-400 hover:text-indigo-300">
+                        <i class="fa-solid fa-edit"></i>
+                    </button>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-dark-bg rounded border border-dark-border">
+                    <div>
+                        <h3 class="font-medium text-white">Square Social</h3>
+                        <p class="text-sm text-dark-text">1080x1080, perfect for social media</p>
+                    </div>
+                    <button class="text-indigo-400 hover:text-indigo-300">
+                        <i class="fa-solid fa-edit"></i>
+                    </button>
+                </div>
+            </div>
+            <button class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+                <i class="fa-solid fa-plus mr-1"></i> Add Format
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
