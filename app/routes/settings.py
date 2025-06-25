@@ -14,34 +14,60 @@ def index():
 @bp.route('/workflow_prompts', methods=['GET', 'POST'])
 def workflow_prompts():
     """View and edit workflow prompts."""
-    prompts_dir = os.path.join('app', 'data', 'prompts')
-    prompts = {}
-    
-    # Load all JSON files from prompts directory
-    for filename in os.listdir(prompts_dir):
-        if filename.endswith('.json'):
-            with open(os.path.join(prompts_dir, filename)) as f:
-                prompts[filename[:-5]] = json.load(f)
-    
-    if request.method == 'POST':
-        prompt_name = request.form.get('prompt_name')
-        if prompt_name:
-            # Extract fields for this prompt
-            prompt_data = {}
-            for key, value in request.form.items():
-                if key.startswith(f"{prompt_name}__"):
-                    field_name = key.split('__')[1]
-                    prompt_data[field_name] = value
+    with get_db_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            if request.method == 'POST':
+                prompt_id = request.form.get('prompt_id')
+                if prompt_id:
+                    name = request.form.get('name')
+                    prompt_text = request.form.get('prompt_text')
+                    
+                    cur.execute("""
+                        UPDATE llm_prompt 
+                        SET name = %s, prompt_text = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (name, prompt_text, prompt_id))
+                    conn.commit()
             
-            # Save to file
-            with open(os.path.join(prompts_dir, f"{prompt_name}.json"), 'w') as f:
-                json.dump(prompt_data, f, indent=2)
-            
-            # Reload prompts
-            with open(os.path.join(prompts_dir, f"{prompt_name}.json")) as f:
-                prompts[prompt_name] = json.load(f)
+            # Get system prompts
+            cur.execute("""
+                SELECT id, name, prompt_text, prompt_type
+                FROM llm_prompt
+                WHERE prompt_type = 'system'
+                ORDER BY name
+            """)
+            system_prompts = cur.fetchall()
+
+            # Get task prompts organized by workflow
+            cur.execute("""
+                SELECT id, name, prompt_text, prompt_type, stage, substage, step
+                FROM llm_prompt
+                WHERE prompt_type = 'task' AND stage IS NOT NULL
+                ORDER BY 
+                    stage,
+                    substage,
+                    step,
+                    name
+            """)
+            task_prompts = cur.fetchall()
+
+            # Organize task prompts into a hierarchical structure
+            tasks_by_stage = {}
+            for prompt in task_prompts:
+                stage = prompt['stage']
+                substage = prompt['substage']
+                
+                if stage not in tasks_by_stage:
+                    tasks_by_stage[stage] = {'substages': {}}
+                
+                if substage not in tasks_by_stage[stage]['substages']:
+                    tasks_by_stage[stage]['substages'][substage] = {'prompts': []}
+                
+                tasks_by_stage[stage]['substages'][substage]['prompts'].append(prompt)
     
-    return render_template('settings/workflow_prompts.html', prompts=prompts)
+    return render_template('settings/workflow_prompts.html', 
+                         system_prompts=system_prompts,
+                         tasks_by_stage=tasks_by_stage)
 
 @bp.route('/workflow_field_mapping')
 def workflow_field_mapping():
