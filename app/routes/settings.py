@@ -45,43 +45,50 @@ def workflow_prompts():
 
 @bp.route('/workflow_field_mapping')
 def workflow_field_mapping():
-    """View and edit workflow field mappings."""
+    """View and edit workflow field mappings from step configurations."""
     with get_db_conn() as conn:
         # Use DictCursor to get results as dictionaries
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
         # Get stages ordered by stage_order
         cur.execute("""
-            SELECT id, name 
+            SELECT id, name, description 
             FROM workflow_stage_entity 
             ORDER BY stage_order
         """)
         stages = [dict(row) for row in cur.fetchall()]
         
-        # Get substages ordered by stage_order and sub_stage_order
+        # Get substages with their steps and configs
         cur.execute("""
-            SELECT wse.id, wse.name, wse.stage_id 
-            FROM workflow_sub_stage_entity wse
-            JOIN workflow_stage_entity ws ON ws.id = wse.stage_id
-            ORDER BY ws.stage_order, wse.sub_stage_order
+            SELECT DISTINCT ON (wsse.id)
+                wsse.id as substage_id,
+                wsse.stage_id,
+                wsse.name as substage_name,
+                wsse.description as substage_description,
+                wse.name as step_name,
+                wse.config
+            FROM workflow_sub_stage_entity wsse
+            LEFT JOIN workflow_step_entity wse ON wse.sub_stage_id = wsse.id
+            ORDER BY wsse.id, wsse.sub_stage_order
         """)
         substages = [dict(row) for row in cur.fetchall()]
         
-        # Get field mappings ordered by stage_order, sub_stage_order, and order_index
+        # Get all steps with their configs
         cur.execute("""
-            SELECT wfm.id, wfm.field_name, wfm.stage_id, wfm.substage_id, 
-                   wfm.order_index, wfm.accordion_type, wfm.target_id
-            FROM workflow_field_mapping wfm
-            JOIN workflow_stage_entity ws ON ws.id = wfm.stage_id
-            JOIN workflow_sub_stage_entity wss ON wss.id = wfm.substage_id
-            ORDER BY ws.stage_order, wss.sub_stage_order, wfm.order_index
+            SELECT 
+                id,
+                sub_stage_id as substage_id,
+                name,
+                config
+            FROM workflow_step_entity
+            ORDER BY step_order
         """)
-        field_mappings = [dict(row) for row in cur.fetchall()]
-    
-    return render_template('settings/workflow_field_mapping.html',
-                         stages=stages,
-                         substages=substages,
-                         field_mappings=field_mappings)
+        steps = [dict(row) for row in cur.fetchall()]
+        
+        return render_template('settings/workflow_field_mapping.html',
+                             stages=stages,
+                             substages=substages,
+                             steps=steps)
 
 @bp.route('/planning_steps')
 def planning_steps():
