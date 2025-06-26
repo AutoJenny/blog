@@ -44,6 +44,18 @@
 <script type="module">
     import { PromptSelector } from "/static/modules/llm_panel/js/prompt_selector.js";
     window.addEventListener('DOMContentLoaded', () => {
-        new PromptSelector();
+        // Get current workflow context from URL
+        const pathParts = window.location.pathname.split('/');
+        const postId = pathParts[3];
+        const stage = pathParts[4];
+        const substage = pathParts[5];
+        const urlParams = new URLSearchParams(window.location.search);
+        const step = urlParams.get('step') || 'initial';
+
+        // Get step_id from the parent element's data attributes
+        const panel = document.querySelector('[data-current-stage]');
+        const stepId = panel.dataset.stepId;
+
+        new PromptSelector(postId, stepId);
     });
 </script>

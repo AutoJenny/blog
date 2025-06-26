@@ -262,3 +262,38 @@ Canonical list of steps for each workflow sub-stage. Each step belongs to a sub-
 ### Example Usage
 - Each sub-stage is seeded with a default 'Main' step.
 - Additional steps can be added for more granular workflow processes. 
+
+## Table: post_workflow_step_prompt
+
+Stores the selected system and task prompts for each workflow step of a post. This enables persistence of prompt selections across the workflow process.
+
+| Column           | Type         | Description                                      |
+|-----------------|--------------|--------------------------------------------------|
+| id              | SERIAL (PK)  | Unique row ID                                    |
+| post_id         | INTEGER      | FK to post(id), the post this selection is for   |
+| step_id         | INTEGER      | FK to workflow_step_entity(id), the step this is for |
+| system_prompt_id| INTEGER      | FK to llm_prompt(id), the selected system prompt |
+| task_prompt_id  | INTEGER      | FK to llm_prompt(id), the selected task prompt   |
+| created_at      | TIMESTAMP    | Created timestamp                                |
+| updated_at      | TIMESTAMP    | Updated timestamp                                |
+
+- **UNIQUE(post_id, step_id)**: Ensures only one prompt selection per step per post
+- Both prompt IDs are nullable to allow selecting either or both types
+- ON DELETE CASCADE for post/step ensures cleanup when parent records are deleted
+- ON DELETE SET NULL for prompts allows prompt deletion without breaking workflow history
+
+### Example Usage
+```sql
+-- Get prompts for a specific post's workflow step
+SELECT 
+    p.name as post_name,
+    wse.name as step_name,
+    sp.name as system_prompt,
+    tp.name as task_prompt
+FROM post_workflow_step_prompt pwsp
+JOIN post p ON p.id = pwsp.post_id
+JOIN workflow_step_entity wse ON wse.id = pwsp.step_id
+LEFT JOIN llm_prompt sp ON sp.id = pwsp.system_prompt_id
+LEFT JOIN llm_prompt tp ON tp.id = pwsp.task_prompt_id
+WHERE pwsp.post_id = 123;
+``` 

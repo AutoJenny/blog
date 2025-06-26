@@ -129,12 +129,13 @@ def workflow_index(post_id, stage=None, substage=None):
     }
     
     result = None
+    step_id = None
     if stage and substage:
         with get_db_conn() as conn:
             with conn.cursor() as cur:
                 # Get step configuration using ILIKE for case-insensitive match
                 cur.execute("""
-                    SELECT wse.config, wse.name as step_name
+                    SELECT wse.config, wse.name as step_name, wse.id as step_id
                     FROM workflow_step_entity wse
                     JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
                     JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
@@ -143,7 +144,7 @@ def workflow_index(post_id, stage=None, substage=None):
                 """, (stage, substage, display_step))
                 result = cur.fetchone()
                 if result:
-                    config_json, step_name = result['config'], result['step_name']
+                    config_json, step_name, step_id = result['config'], result['step_name'], result['step_id']
                     # Convert DB step name to URL format for consistency
                     url_step_name = step_name.lower().replace(' ', '_')
                     if config_json:
@@ -196,7 +197,8 @@ def workflow_index(post_id, stage=None, substage=None):
         'current_step': url_step_name if result else step,  # Use URL format for step name
         'step_config': step_config,
         'input_values': input_values,
-        'output_values': output_values
+        'output_values': output_values,
+        'step_id': step_id  # Add step_id to the context
     })
     return render_template('workflow/index.html', **context)
 
@@ -584,10 +586,8 @@ def run_workflow_llm():
 
 @workflow.route('/api/prompts/', methods=['GET'])
 def get_prompts():
-    """Get prompts by type."""
-    prompt_type = request.args.get('prompt_type')
-    if not prompt_type:
-        return jsonify({'error': 'Missing prompt_type parameter'}), 400
+    """Get available prompts filtered by type."""
+    prompt_type = request.args.get('prompt_type', 'system')
     
     with get_db_conn() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -606,4 +606,47 @@ def get_prompts():
                     ORDER BY stage, substage, step, name
                 """)
             prompts = cur.fetchall()
-            return jsonify(prompts) 
+            return jsonify(prompts)
+
+@workflow.route('/api/step_prompts/<int:post_id>/<int:step_id>', methods=['GET'])
+def get_step_prompts(post_id, step_id):
+    """Get the currently selected prompts for a specific workflow step."""
+    with get_db_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT 
+                    pwsp.system_prompt_id,
+                    pwsp.task_prompt_id,
+                    sp.name as system_prompt_name,
+                    sp.prompt_text as system_prompt_text,
+                    tp.name as task_prompt_name,
+                    tp.prompt_text as task_prompt_text
+                FROM post_workflow_step_prompt pwsp
+                LEFT JOIN llm_prompt sp ON pwsp.system_prompt_id = sp.id
+                LEFT JOIN llm_prompt tp ON pwsp.task_prompt_id = tp.id
+                WHERE pwsp.post_id = %s AND pwsp.step_id = %s
+            """, (post_id, step_id))
+            result = cur.fetchone()
+            return jsonify(result if result else {})
+
+@workflow.route('/api/step_prompts/<int:post_id>/<int:step_id>', methods=['POST'])
+def save_step_prompts(post_id, step_id):
+    """Save or update prompt selections for a specific workflow step."""
+    data = request.get_json()
+    system_prompt_id = data.get('system_prompt_id')
+    task_prompt_id = data.get('task_prompt_id')
+    
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            # Use upsert (INSERT ... ON CONFLICT) to handle both new and existing selections
+            cur.execute("""
+                INSERT INTO post_workflow_step_prompt 
+                    (post_id, step_id, system_prompt_id, task_prompt_id)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (post_id, step_id) DO UPDATE SET
+                    system_prompt_id = EXCLUDED.system_prompt_id,
+                    task_prompt_id = EXCLUDED.task_prompt_id,
+                    updated_at = CURRENT_TIMESTAMP
+            """, (post_id, step_id, system_prompt_id, task_prompt_id))
+            conn.commit()
+            return jsonify({'status': 'success'}) 
