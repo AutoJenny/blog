@@ -3,6 +3,7 @@ import os
 import json
 from app.db import get_db_conn
 import psycopg2.extras
+from psycopg2.extras import RealDictCursor
 
 bp = Blueprint('settings', __name__, url_prefix='/settings')
 
@@ -190,4 +191,69 @@ def update_field_mapping():
         
         conn.commit()
     
-    return jsonify({'message': 'Mapping updated successfully'}) 
+    return jsonify({'message': 'Mapping updated successfully'})
+
+@bp.route('/format_templates')
+def format_templates():
+    """Format templates management page"""
+    return render_template('settings/format_templates.html')
+
+@bp.route('/workflow_step_formats')
+def workflow_step_formats():
+    """Workflow step format configuration page"""
+    with get_db_conn() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Get stages ordered by stage_order
+            cur.execute("""
+                SELECT id, name, description 
+                FROM workflow_stage_entity 
+                ORDER BY stage_order
+            """)
+            stages = cur.fetchall()
+            
+            # Get substages with their steps and configs
+            cur.execute("""
+                SELECT DISTINCT ON (wsse.id)
+                    wsse.id as substage_id,
+                    wsse.stage_id,
+                    wsse.name as substage_name,
+                    wsse.description as substage_description
+                FROM workflow_sub_stage_entity wsse
+                ORDER BY wsse.id, wsse.sub_stage_order
+            """)
+            substages = cur.fetchall()
+            
+            # Get all steps with their format configurations
+            cur.execute("""
+                SELECT 
+                    wse.id,
+                    wse.sub_stage_id as substage_id,
+                    wse.name,
+                    wsf.input_format_id,
+                    wsf.output_format_id,
+                    input_fmt.name as input_format_name,
+                    output_fmt.name as output_format_name
+                FROM workflow_step_entity wse
+                LEFT JOIN workflow_step_format wsf ON wsf.step_id = wse.id
+                LEFT JOIN llm_format_template input_fmt ON wsf.input_format_id = input_fmt.id
+                LEFT JOIN llm_format_template output_fmt ON wsf.output_format_id = output_fmt.id
+                ORDER BY wse.step_order
+            """)
+            steps = cur.fetchall()
+            
+            # Add format information to steps
+            for step in steps:
+                step['input_format'] = {
+                    'id': step['input_format_id'],
+                    'name': step['input_format_name']
+                } if step['input_format_id'] else None
+                
+                step['output_format'] = {
+                    'id': step['output_format_id'],
+                    'name': step['output_format_name']
+                } if step['output_format_id'] else None
+            
+            return render_template('settings/workflow_step_formats.html',
+                                stages=stages,
+                                substages=substages,
+                                steps=steps) 

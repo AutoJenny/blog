@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}Workflow Step Formats{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 bg-dark-bg border border-dark-border rounded-xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-code text-indigo-400"></i> Workflow Step Formats
+    </h1>
+    <p class="text-dark-text mb-8">
+        Configure input and output formats for workflow steps.
+    </p>
+
+    <div class="space-y-8">
+        {% for stage in stages %}
+        <div class="bg-[#1a1d2d] rounded-lg border border-dark-border overflow-hidden">
+            <!-- Stage Header -->
+            <div class="bg-[#23273a] p-4 flex items-center gap-3">
+                <i class="fa-solid fa-layer-group text-indigo-400 text-lg"></i>
+                <h2 class="text-xl font-semibold text-white">{{ stage.name }}</h2>
+            </div>
+
+            <!-- Stage Content -->
+            <div class="p-6 space-y-6">
+                {% for substage in substages if substage.stage_id == stage.id %}
+                <div class="bg-[#23273a] rounded-lg border border-dark-border overflow-hidden">
+                    <!-- Substage Header -->
+                    <div class="bg-[#2a2f47] p-3 flex items-center gap-2">
+                        <i class="fa-solid fa-folder text-indigo-300"></i>
+                        <h3 class="text-lg font-medium text-white">{{ substage.substage_name }}</h3>
+                    </div>
+
+                    <!-- Substage Content -->
+                    <div class="divide-y divide-dark-border">
+                        {% for step in steps if step.substage_id == substage.substage_id %}
+                        <div class="p-4 step-container" data-step-id="{{ step.id }}">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-file-lines text-indigo-200"></i>
+                                    <h4 class="text-md font-medium text-white">{{ step.name }}</h4>
+                                </div>
+                                <button onclick="configureStepFormats({{ step.id }})"
+                                    class="text-indigo-300 hover:text-indigo-100 px-2 py-1 rounded">
+                                    <i class="fa-solid fa-cog"></i> Configure Formats
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- Input Format -->
+                                <div class="bg-[#1a1d2d] rounded p-3">
+                                    <h5 class="text-sm font-medium text-indigo-300 mb-2 flex items-center gap-1">
+                                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Input Format
+                                    </h5>
+                                    <div id="input-format-{{ step.id }}">
+                                        {% if step.input_format %}
+                                        <div class="text-dark-text">
+                                            <span class="text-indigo-200">{{ step.input_format.name }}</span>
+                                        </div>
+                                        {% else %}
+                                        <p class="text-dark-text text-sm italic">No input format configured</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Output Format -->
+                                <div class="bg-[#1a1d2d] rounded p-3">
+                                    <h5 class="text-sm font-medium text-indigo-300 mb-2 flex items-center gap-1">
+                                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Output Format
+                                    </h5>
+                                    <div id="output-format-{{ step.id }}">
+                                        {% if step.output_format %}
+                                        <div class="text-dark-text">
+                                            <span class="text-indigo-200">{{ step.output_format.name }}</span>
+                                        </div>
+                                        {% else %}
+                                        <p class="text-dark-text text-sm italic">No output format configured</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Format Configuration Modal -->
+<div id="formatModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-[#1a1d2d] rounded-xl border border-dark-border p-6 max-w-2xl w-full mx-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-semibold text-white">Configure Step Formats</h3>
+            <button onclick="closeModal()" class="text-dark-text hover:text-white">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+
+        <form id="formatForm" class="space-y-6">
+            <input type="hidden" id="stepId" name="stepId">
+
+            <!-- Input Format Selection -->
+            <div>
+                <label for="inputFormat" class="block text-sm font-medium text-dark-text mb-2">Input Format</label>
+                <select id="inputFormat" name="inputFormatId"
+                    class="w-full bg-[#23273a] border border-dark-border rounded px-3 py-2 text-white">
+                    <option value="">Select Input Format...</option>
+                </select>
+                <div id="inputFormatPreview" class="mt-2 text-sm text-dark-text"></div>
+                <div id="inputFormatValidation" class="mt-2"></div>
+            </div>
+
+            <!-- Output Format Selection -->
+            <div>
+                <label for="outputFormat" class="block text-sm font-medium text-dark-text mb-2">Output Format</label>
+                <select id="outputFormat" name="outputFormatId"
+                    class="w-full bg-[#23273a] border border-dark-border rounded px-3 py-2 text-white">
+                    <option value="">Select Output Format...</option>
+                </select>
+                <div id="outputFormatPreview" class="mt-2 text-sm text-dark-text"></div>
+                <div id="outputFormatValidation" class="mt-2"></div>
+            </div>
+
+            <!-- Test Data -->
+            <div>
+                <label for="testData" class="block text-sm font-medium text-dark-text mb-2">Test Data</label>
+                <textarea id="testData" name="testData"
+                    class="w-full bg-[#23273a] border border-dark-border rounded px-3 py-2 text-white h-32"
+                    placeholder="Enter test data in JSON format..."></textarea>
+                <div class="flex justify-end mt-2">
+                    <button type="button" onclick="validateFormats()"
+                        class="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm">
+                        Test Formats
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeModal()"
+                    class="px-4 py-2 bg-dark-bg text-dark-text hover:text-white rounded">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">
+                    Save Configuration
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let formatTemplates = [];
+
+    // Load format templates
+    async function loadFormatTemplates() {
+        try {
+            const response = await fetch('/api/formats/templates');
+            formatTemplates = await response.json();
+            populateFormatSelects();
+        } catch (error) {
+            console.error('Error loading format templates:', error);
+        }
+    }
+
+    // Populate format select elements
+    function populateFormatSelects() {
+        const inputSelect = document.getElementById('inputFormat');
+        const outputSelect = document.getElementById('outputFormat');
+
+        // Clear existing options
+        inputSelect.innerHTML = '<option value="">Select Input Format...</option>';
+        outputSelect.innerHTML = '<option value="">Select Output Format...</option>';
+
+        // Add format options
+        formatTemplates.forEach(format => {
+            const option = document.createElement('option');
+            option.value = format.id;
+            option.textContent = format.name;
+
+            if (format.format_type === 'input') {
+                inputSelect.appendChild(option.cloneNode(true));
+            } else if (format.format_type === 'output') {
+                outputSelect.appendChild(option.cloneNode(true));
+            }
+        });
+    }
+
+    // Show format preview
+    function showFormatPreview(formatId, previewElement) {
+        const format = formatTemplates.find(f => f.id === parseInt(formatId));
+        if (format) {
+            try {
+                const spec = JSON.parse(format.format_spec);
+                previewElement.innerHTML = `<pre class="bg-[#23273a] p-2 rounded mt-2 overflow-x-auto">${JSON.stringify(spec, null, 2)}</pre>`;
+            } catch (error) {
+                previewElement.innerHTML = '<span class="text-red-400">Invalid format specification</span>';
+            }
+        } else {
+            previewElement.innerHTML = '';
+        }
+    }
+
+    // Configure step formats
+    async function configureStepFormats(stepId) {
+        document.getElementById('stepId').value = stepId;
+
+        try {
+            const response = await fetch(`/api/workflow/steps/${stepId}/formats`);
+            const formats = await response.json();
+
+            document.getElementById('inputFormat').value = formats.input_format_id || '';
+            document.getElementById('outputFormat').value = formats.output_format_id || '';
+
+            showFormatPreview(formats.input_format_id, document.getElementById('inputFormatPreview'));
+            showFormatPreview(formats.output_format_id, document.getElementById('outputFormatPreview'));
+
+            document.getElementById('formatModal').classList.remove('hidden');
+        } catch (error) {
+            console.error('Error loading step formats:', error);
+        }
+    }
+
+    // Close modal
+    function closeModal() {
+        document.getElementById('formatModal').classList.add('hidden');
+    }
+
+    // Handle format selection change
+    document.getElementById('inputFormat').addEventListener('change', function (e) {
+        showFormatPreview(e.target.value, document.getElementById('inputFormatPreview'));
+    });
+
+    document.getElementById('outputFormat').addEventListener('change', function (e) {
+        showFormatPreview(e.target.value, document.getElementById('outputFormatPreview'));
+    });
+
+    // Handle form submission
+    document.getElementById('formatForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const stepId = document.getElementById('stepId').value;
+        const inputFormatId = document.getElementById('inputFormat').value;
+        const outputFormatId = document.getElementById('outputFormat').value;
+
+        try {
+            const response = await fetch(`/api/workflow/steps/${stepId}/formats`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    input_format_id: inputFormatId || null,
+                    output_format_id: outputFormatId || null
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save format configuration');
+            }
+
+            // Update the UI
+            const formats = await response.json();
+            updateStepFormats(stepId, formats);
+
+            closeModal();
+        } catch (error) {
+            console.error('Error saving format configuration:', error);
+            alert('Failed to save format configuration');
+        }
+    });
+
+    // Update step formats in the UI
+    function updateStepFormats(stepId, formats) {
+        const inputContainer = document.getElementById(`input-format-${stepId}`);
+        const outputContainer = document.getElementById(`output-format-${stepId}`);
+
+        if (formats.input_format) {
+            inputContainer.innerHTML = `
+                <div class="text-dark-text">
+                    <span class="text-indigo-200">${formats.input_format.name}</span>
+                </div>
+            `;
+        } else {
+            inputContainer.innerHTML = '<p class="text-dark-text text-sm italic">No input format configured</p>';
+        }
+
+        if (formats.output_format) {
+            outputContainer.innerHTML = `
+                <div class="text-dark-text">
+                    <span class="text-indigo-200">${formats.output_format.name}</span>
+                </div>
+            `;
+        } else {
+            outputContainer.innerHTML = '<p class="text-dark-text text-sm italic">No output format configured</p>';
+        }
+    }
+
+    // Validate formats
+    async function validateFormats() {
+        const testData = document.getElementById('testData').value;
+        const inputFormatId = document.getElementById('inputFormat').value;
+        const outputFormatId = document.getElementById('outputFormat').value;
+
+        try {
+            const data = JSON.parse(testData);
+
+            // Validate input format
+            if (inputFormatId) {
+                const inputFormat = formatTemplates.find(f => f.id === parseInt(inputFormatId));
+                if (inputFormat) {
+                    const inputResponse = await fetch('/api/formats/validate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            format_spec: inputFormat.format_spec,
+                            test_data: data
+                        })
+                    });
+                    const inputValidation = await inputResponse.json();
+                    showValidationResult('inputFormatValidation', inputValidation);
+                }
+            }
+
+            // Validate output format
+            if (outputFormatId) {
+                const outputFormat = formatTemplates.find(f => f.id === parseInt(outputFormatId));
+                if (outputFormat) {
+                    const outputResponse = await fetch('/api/formats/validate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            format_spec: outputFormat.format_spec,
+                            test_data: data
+                        })
+                    });
+                    const outputValidation = await outputResponse.json();
+                    showValidationResult('outputFormatValidation', outputValidation);
+                }
+            }
+        } catch (error) {
+            alert('Invalid JSON data');
+        }
+    }
+
+    // Show validation result
+    function showValidationResult(elementId, validation) {
+        const element = document.getElementById(elementId);
+        if (validation.valid) {
+            element.innerHTML = `
+                <div class="flex items-center gap-2 text-green-400">
+                    <i class="fas fa-check"></i>
+                    <span>Format validation passed</span>
+                </div>
+            `;
+        } else {
+            element.innerHTML = `
+                <div class="text-red-400">
+                    <div class="flex items-center gap-2 mb-1">
+                        <i class="fas fa-times"></i>
+                        <span>Format validation failed</span>
+                    </div>
+                    <ul class="list-disc list-inside pl-2 text-sm">
+                        ${validation.errors.map(error => `<li>${error}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+    }
+
+    // Initial load
+    loadFormatTemplates();
+</script>
+{% endblock %}

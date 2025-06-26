@@ -47,6 +47,30 @@
                 View planning steps configuration.
             </p>
         </a>
+
+        <!-- Format Templates -->
+        <a href="{{ url_for('settings.format_templates') }}"
+            class="bg-[#23273a] rounded-lg border border-dark-border p-6 hover:bg-[#2a2f45] transition group">
+            <div class="flex items-center gap-3 mb-3">
+                <i class="fa-solid fa-code text-2xl text-indigo-400 group-hover:text-indigo-300"></i>
+                <h2 class="text-lg font-semibold text-white">Format Templates</h2>
+            </div>
+            <p class="text-dark-text text-sm">
+                Manage format templates for workflow steps.
+            </p>
+        </a>
+
+        <!-- Workflow Step Formats -->
+        <a href="{{ url_for('settings.workflow_step_formats') }}"
+            class="bg-[#23273a] rounded-lg border border-dark-border p-6 hover:bg-[#2a2f45] transition group">
+            <div class="flex items-center gap-3 mb-3">
+                <i class="fa-solid fa-sitemap text-2xl text-indigo-400 group-hover:text-indigo-300"></i>
+                <h2 class="text-lg font-semibold text-white">Step Formats</h2>
+            </div>
+            <p class="text-dark-text text-sm">
+                Configure input and output formats for workflow steps.
+            </p>
+        </a>
     </div>
 </div>
 {% endblock %}

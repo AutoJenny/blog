@@ -19,6 +19,8 @@ from app.preview import bp as preview_bp
 from app.database.routes import bp as database_bp
 from app.llm import bp as llm_bp
 from app.routes.settings import bp as settings_bp
+from app.api.formats import formats_bp
+from app.api.workflow import workflow_bp
 
 # DEPRECATED: SQLAlchemy ORM is being removed. Use direct SQL (psycopg2) for all DB access.
 
@@ -151,6 +153,8 @@ def create_app(config_object=None):
     app.register_blueprint(database_bp)
     app.register_blueprint(llm_bp)
     app.register_blueprint(settings_bp)
+    app.register_blueprint(formats_bp)
+    app.register_blueprint(workflow_bp)
 
     print('[AUDIT] About to import llm_api_bp from app.api.llm')
     from app.api.llm import bp as llm_api_bp
@@ -164,7 +168,7 @@ def create_app(config_object=None):
     print('[AUDIT] api_bp registered.')
 
     from app.workflow import workflow
-    app.register_blueprint(workflow, url_prefix='/workflow')
+    app.register_blueprint(workflow, url_prefix='/workflow', name='workflow_main')
 
     # Register LLM Panel module
     from modules.llm_panel import llm_panel_bp
@@ -190,11 +194,6 @@ def create_app(config_object=None):
     # Register error handlers
     from app.errors import handlers
     app.register_error_handler(404, handlers.not_found_error)
-    app.register_error_handler(500, handlers.internal_error)
-
-    # Register workflow steps blueprint
-    from .api.workflow import steps
-    app.register_blueprint(steps.bp, url_prefix='/api/workflow')
 
     return app
 
