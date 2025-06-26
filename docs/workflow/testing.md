@@ -235,3 +235,138 @@ WHERE step_id = 41
 - Step ID: 41 (Initial Concept)
 - System Prompt ID: 71 (Scottish Culture Expert)
 - Task Prompt ID: 86 (Basic Idea Expander) 
+
+## Testing Format Integration
+
+### 1. Format Templates
+
+Test format template management:
+
+```bash
+# Create format template
+curl -s -X POST "http://localhost:5000/workflow/api/formats/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Blog Section Format",
+    "format_type": "output",
+    "format_spec": "{
+      \"type\": \"object\",
+      \"properties\": {
+        \"title\": {\"type\": \"string\"},
+        \"content\": {\"type\": \"string\"},
+        \"key_points\": {
+          \"type\": \"array\",
+          \"items\": {\"type\": \"string\"}
+        }
+      },
+      \"required\": [\"title\", \"content\"]
+    }"
+  }' | python3 -m json.tool
+
+# Get format template
+curl -s "http://localhost:5000/workflow/api/formats/1" | python3 -m json.tool
+
+# Update format template
+curl -s -X PATCH "http://localhost:5000/workflow/api/formats/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Format Name"
+  }' | python3 -m json.tool
+```
+
+### 2. Step Format Configuration
+
+Test format configuration for workflow steps:
+
+```bash
+# Configure step formats
+curl -s -X POST "http://localhost:5000/workflow/api/step_formats/22/41" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input_format_id": 1,
+    "output_format_id": 2
+  }' | python3 -m json.tool
+
+# Get step format configuration
+curl -s "http://localhost:5000/workflow/api/step_formats/22/41" | python3 -m json.tool
+```
+
+### 3. Format Validation
+
+Test format validation with workflow processing:
+
+```bash
+# Test with valid input
+curl -s -X POST "http://localhost:5000/api/v1/workflow/run_llm/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "post_id": 38,
+    "stage": "planning",
+    "substage": "idea",
+    "step": "Initial Concept",
+    "input_data": {
+      "title": "Test Title",
+      "content": "Test content..."
+    }
+  }' | python3 -m json.tool
+
+# Test with invalid input
+curl -s -X POST "http://localhost:5000/api/v1/workflow/run_llm/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "post_id": 38,
+    "stage": "planning",
+    "substage": "idea",
+    "step": "Initial Concept",
+    "input_data": {
+      "title": "Test Title"
+      // Missing required content field
+    }
+  }' | python3 -m json.tool
+```
+
+### Format-Related Issues
+
+1. Format Template Issues
+   - Check format specification JSON is valid
+   - Verify format type is 'input' or 'output'
+   - Ensure required fields are properly specified
+   - Test with various data structures
+
+2. Step Configuration Issues
+   - Verify format template IDs exist
+   - Check format compatibility with step
+   - Test format references in prompts
+   - Validate format combinations
+
+3. Validation Issues
+   - Test with valid and invalid input
+   - Check error messages are helpful
+   - Verify format transformations work
+   - Test edge cases and special characters
+
+### Database Verification
+
+Check format-related tables:
+
+```sql
+-- Check format templates
+SELECT * FROM llm_format_template 
+WHERE id = 1;
+
+-- Check step format configuration
+SELECT * FROM workflow_step_format 
+WHERE step_id = 41 
+  AND post_id = 22;
+
+-- Check format relationships
+SELECT 
+  wse.name as step_name,
+  lft_in.name as input_format,
+  lft_out.name as output_format
+FROM workflow_step_format wsf
+JOIN workflow_step_entity wse ON wse.id = wsf.step_id
+LEFT JOIN llm_format_template lft_in ON lft_in.id = wsf.input_format_id
+LEFT JOIN llm_format_template lft_out ON lft_out.id = wsf.output_format_id
+WHERE wsf.post_id = 22;
+``` 

@@ -243,6 +243,53 @@ CREATE TABLE post_development (
 );
 ```
 
+## Format Integration
+
+### Overview
+The prompt system works in conjunction with the format system (see formats.md) to ensure consistent data structures throughout the workflow. Each prompt can reference both input and output formats.
+
+### Using Formats in Prompts
+
+1. Input Format References
+   ```
+   Given the input in the following format:
+   [format:input]
+
+   Process the data: [data:field_name]
+   ```
+
+2. Output Format Requirements
+   ```
+   Generate output that strictly follows this format:
+   [format:output]
+
+   Ensure all required fields are included and properly formatted.
+   ```
+
+### Format Validation
+- Input data is validated against the input format before processing
+- LLM output is validated against the output format
+- Failed validations trigger reprocessing with format correction
+
+### Example Prompt with Formats
+```
+You are a blog post section creator.
+
+Input Format:
+[format:input]
+
+Output Format:
+[format:output]
+
+Given the section topic: [data:section_topic]
+Generate a well-structured section that:
+1. Follows the output format exactly
+2. Maintains consistent style
+3. Integrates smoothly with surrounding content
+
+Ensure all required fields in the output format are included.
+```
+
 ## Workflow Step Prompt Configuration
 
 ### Overview
@@ -284,3 +331,12 @@ curl -X POST "http://localhost:5000/workflow/api/step_prompts/{post_id}/{step_id
 2. Test prompt saving with curl before implementing UI changes
 3. Include both system and task prompts in configuration
 4. Verify prompt IDs exist in `llm_prompt` table before saving 
+
+### Format Configuration
+Each workflow step's prompt configuration should include:
+1. System prompt
+2. Task prompt
+3. Input format (optional)
+4. Output format (optional)
+
+See formats.md for detailed format configuration instructions. 
