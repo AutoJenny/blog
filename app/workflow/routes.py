@@ -105,6 +105,27 @@ def workflow_index(post_id, stage=None, substage=None):
     if not post:
         abort(404, f"Post {post_id} not found.")
     
+    # If stage and substage are provided but no step, redirect to first step
+    if stage and substage and not request.args.get('step'):
+        # Get all stages data
+        stages = get_workflow_stages_from_db()
+        
+        # Convert names to lowercase for URL matching
+        stage_lower = stage.lower()
+        substage_lower = substage.lower()
+        
+        # Find matching stage/substage (case-insensitive)
+        for db_stage, substages in stages.items():
+            if db_stage.lower() == stage_lower:
+                for db_substage, steps in substages.items():
+                    if db_substage.lower() == substage_lower:
+                        # Get first step (they're ordered by step_order)
+                        first_step = steps[0]
+                        # Convert step name to URL format (lowercase with underscores)
+                        step_url = first_step.lower().replace(' ', '_')
+                        # Redirect to the first step using query parameter format
+                        return redirect(f"/workflow/posts/{post_id}/{stage}/{substage}?step={step_url}")
+    
     # Get step from query parameters, keeping original format for database lookup
     step = request.args.get('step', 'initial')
     # Convert URL format (lowercase with underscores) to DB format (title case with spaces)
@@ -226,63 +247,51 @@ def stages(post_id):
 
 @workflow.route('/posts/<int:post_id>/<stage>/')
 def stage(post_id, stage: str):
-    """Stage view page."""
-    post = get_post_and_idea_seed(post_id)
-    if not post:
-        abort(404, f"Post {post_id} not found.")
+    """Redirect to first substage of the stage."""
+    # Get all stages data
+    stages = get_workflow_stages_from_db()
     
-    # Get workflow context from the nav module
-    context = get_workflow_context(stage)
-    context.update({
-        'post': post,
-        'post_id': post_id,
-        'current_post_id': post_id,
-        'all_posts': get_all_posts(),
-        'substage_icons': SUBSTAGE_ICONS,
-        'current_stage': stage,
-        'current_substage': None,
-        'current_step': None
-    })
+    # Convert stage name to lowercase for URL matching
+    stage_lower = stage.lower()
     
-    return render_template('workflow/index.html', **context)
+    # Find matching stage (case-insensitive)
+    for db_stage, substages in stages.items():
+        if db_stage.lower() == stage_lower:
+            # Get first substage (they're ordered by sub_stage_order)
+            first_substage = next(iter(substages))
+            # Redirect to the first substage
+            return redirect(url_for('workflow.substage', 
+                post_id=post_id,
+                stage=stage,
+                substage=first_substage))
+    
+    # If stage not found, 404
+    abort(404, f"Stage {stage} not found")
 
 @workflow.route('/posts/<int:post_id>/<stage>/<substage>/')
 def substage(post_id, stage: str, substage: str):
-    """Substage view page."""
-    post = get_post_and_idea_seed(post_id)
-    if not post:
-        abort(404, f"Post {post_id} not found.")
+    """Redirect to first step of the substage."""
+    # Get all stages data
+    stages = get_workflow_stages_from_db()
     
-    # Get workflow context from the nav module
-    context = get_workflow_context(stage, substage)
-    if not context:
-        abort(404, f"Invalid path: {stage}/{substage}")
+    # Convert names to lowercase for URL matching
+    stage_lower = stage.lower()
+    substage_lower = substage.lower()
     
-    # Get the first available step for this substage
-    with get_db_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT wse.name as step_name
-                FROM workflow_step_entity wse
-                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
-                JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
-                WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
-                ORDER BY wse.id
-                LIMIT 1
-            """, (stage, substage))
-            result = cur.fetchone()
-            if not result:
-                abort(404, f"No steps found for {stage}/{substage}")
-            
-            first_step = result['step_name']
+    # Find matching stage/substage (case-insensitive)
+    for db_stage, substages in stages.items():
+        if db_stage.lower() == stage_lower:
+            for db_substage, steps in substages.items():
+                if db_substage.lower() == substage_lower:
+                    # Get first step (they're ordered by step_order)
+                    first_step = steps[0]
+                    # Convert step name to URL format (lowercase with underscores)
+                    step_url = first_step.lower().replace(' ', '_')
+                    # Redirect to the first step using query parameter format
+                    return redirect(f"/workflow/posts/{post_id}/{stage}/{substage}?step={step_url}")
     
-    # Redirect to the workflow index with the first step
-    return redirect(url_for('workflow.workflow_index', 
-        post_id=post_id, 
-        stage=stage, 
-        substage=substage,
-        step=first_step.lower().replace(' ', '_')
-    ))
+    # If stage/substage not found, 404
+    abort(404, f"Stage {stage} or substage {substage} not found")
 
 @workflow.route('/posts/<int:post_id>/<stage>/<substage>/<step>/')
 def step(post_id, stage: str, substage: str, step: str):
