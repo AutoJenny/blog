@@ -1,5 +1,5 @@
 # Direct SQL Management
-
+ 
 > **SAFETY WARNING:**
 > Always make a full backup using `pg_dump` before running `create_tables.sql`. Never run this script on production or important data without a backup and a tested restore plan. Restore data as needed after schema changes.
 
@@ -214,4 +214,32 @@ psql $DATABASE_URL -U nickfiddes -c "REASSIGN OWNED BY nickfiddes TO postgres;"
 
 - The canonical workflow tables are: workflow_stage_entity, workflow_sub_stage_entity, workflow_step_entity, and workflow_field_mapping.
 - When seeding workflow tables, always ensure workflow_step_entity is included and seeded with at least a 'Main' step for each sub-stage.
-- All schema changes to workflow_step_entity must be documented in /docs/database/schema.md and backed up before applying. 
+- All schema changes to workflow_step_entity must be documented in /docs/database/schema.md and backed up before applying.
+
+## 2025-06-XX: Workflow Table Ownership Alignment
+
+- All workflow-related tables must be owned by the same database user (typically `nickfiddes`) to avoid permission errors
+- Critical workflow tables that must share ownership:
+  * `workflow_step_prompt`
+  * `workflow_step_entity`
+  * `llm_prompt`
+- To verify table ownership:
+  ```sql
+  SELECT tablename, tableowner 
+  FROM pg_tables 
+  WHERE tablename IN ('workflow_step_prompt', 'workflow_step_entity', 'llm_prompt');
+  ```
+- To fix ownership mismatches:
+  ```sql
+  ALTER TABLE workflow_step_entity OWNER TO nickfiddes;
+  ```
+- After ownership changes, verify functionality with:
+  ```bash
+  curl -X POST "http://localhost:5000/workflow/api/step_prompts/22/41" \
+    -H "Content-Type: application/json" \
+    -d '{"system_prompt_id": 71, "task_prompt_id": 86}'
+  ```
+- Always make a backup before changing table ownership:
+  ```bash
+  pg_dump -U nickfiddes -d blog > blog_backup_YYYYMMDD_HHMMSS_pre_ownership_fix.sql
+  ``` 

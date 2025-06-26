@@ -1,14 +1,21 @@
 export class PromptSelector {
-    constructor() {
+    constructor(postId, stepId) {
+        this.postId = postId;
+        this.stepId = stepId;
         this.systemPromptSelect = document.getElementById('system_prompt_select');
         this.taskPromptSelect = document.getElementById('task_prompt_select');
-        this.systemPromptText = document.getElementById('system_prompt');
-        this.taskPromptText = document.getElementById('task_prompt');
+        this.systemPromptTextarea = document.getElementById('system_prompt');
+        this.taskPromptTextarea = document.getElementById('task_prompt');
 
-        if (this.systemPromptSelect && this.taskPromptSelect) {
-            this.loadPrompts();
-            this.attachEventListeners();
-        }
+        // Initialize
+        this.loadPrompts();
+        this.loadSavedPrompts();
+
+        // Add event listeners
+        this.systemPromptSelect.addEventListener('change', () => this.handleSystemPromptChange());
+        this.taskPromptSelect.addEventListener('change', () => this.handleTaskPromptChange());
+        this.systemPromptTextarea.addEventListener('change', () => this.savePrompts());
+        this.taskPromptTextarea.addEventListener('change', () => this.savePrompts());
     }
 
     async loadPrompts() {
@@ -51,17 +58,62 @@ export class PromptSelector {
         }
     }
 
-    attachEventListeners() {
-        // Handle system prompt selection
-        this.systemPromptSelect.addEventListener('change', () => {
-            const selectedOption = this.systemPromptSelect.selectedOptions[0];
-            this.systemPromptText.value = selectedOption?.dataset?.text || '';
-        });
+    async loadSavedPrompts() {
+        try {
+            const response = await fetch(`/workflow/api/step_prompts/${this.postId}/${this.stepId}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            if (data.system_prompt_id) {
+                this.systemPromptSelect.value = data.system_prompt_id;
+                this.systemPromptTextarea.value = data.system_prompt_text || '';
+            }
+            
+            if (data.task_prompt_id) {
+                this.taskPromptSelect.value = data.task_prompt_id;
+                this.taskPromptTextarea.value = data.task_prompt_text || '';
+            }
+        } catch (error) {
+            console.error('Error loading saved prompts:', error);
+        }
+    }
 
-        // Handle task prompt selection
-        this.taskPromptSelect.addEventListener('change', () => {
-            const selectedOption = this.taskPromptSelect.selectedOptions[0];
-            this.taskPromptText.value = selectedOption?.dataset?.text || '';
-        });
+    async savePrompts() {
+        try {
+            const response = await fetch(`/workflow/api/step_prompts/${this.postId}/${this.stepId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    system_prompt_id: this.systemPromptSelect.value || null,
+                    task_prompt_id: this.taskPromptSelect.value || null
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Error saving prompts:', error);
+        }
+    }
+
+    handleSystemPromptChange() {
+        const selectedOption = this.systemPromptSelect.selectedOptions[0];
+        if (selectedOption) {
+            this.systemPromptTextarea.value = selectedOption.dataset.text || '';
+        }
+        this.savePrompts();
+    }
+
+    handleTaskPromptChange() {
+        const selectedOption = this.taskPromptSelect.selectedOptions[0];
+        if (selectedOption) {
+            this.taskPromptTextarea.value = selectedOption.dataset.text || '';
+        }
+        this.savePrompts();
     }
 } 

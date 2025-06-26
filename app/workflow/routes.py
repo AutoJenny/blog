@@ -624,17 +624,17 @@ def get_step_prompts(post_id, step_id):
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute("""
                 SELECT 
-                    pwsp.system_prompt_id,
-                    pwsp.task_prompt_id,
+                    wsp.system_prompt_id,
+                    wsp.task_prompt_id,
                     sp.name as system_prompt_name,
                     sp.prompt_text as system_prompt_text,
                     tp.name as task_prompt_name,
                     tp.prompt_text as task_prompt_text
-                FROM post_workflow_step_prompt pwsp
-                LEFT JOIN llm_prompt sp ON pwsp.system_prompt_id = sp.id
-                LEFT JOIN llm_prompt tp ON pwsp.task_prompt_id = tp.id
-                WHERE pwsp.post_id = %s AND pwsp.step_id = %s
-            """, (post_id, step_id))
+                FROM workflow_step_prompt wsp
+                LEFT JOIN llm_prompt sp ON wsp.system_prompt_id = sp.id
+                LEFT JOIN llm_prompt tp ON wsp.task_prompt_id = tp.id
+                WHERE wsp.step_id = %s
+            """, (step_id,))
             result = cur.fetchone()
             return jsonify(result if result else {})
 
@@ -649,13 +649,13 @@ def save_step_prompts(post_id, step_id):
         with conn.cursor() as cur:
             # Use upsert (INSERT ... ON CONFLICT) to handle both new and existing selections
             cur.execute("""
-                INSERT INTO post_workflow_step_prompt 
-                    (post_id, step_id, system_prompt_id, task_prompt_id)
-                VALUES (%s, %s, %s, %s)
-                ON CONFLICT (post_id, step_id) DO UPDATE SET
+                INSERT INTO workflow_step_prompt 
+                    (step_id, system_prompt_id, task_prompt_id)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (step_id) DO UPDATE SET
                     system_prompt_id = EXCLUDED.system_prompt_id,
                     task_prompt_id = EXCLUDED.task_prompt_id,
                     updated_at = CURRENT_TIMESTAMP
-            """, (post_id, step_id, system_prompt_id, task_prompt_id))
+            """, (step_id, system_prompt_id, task_prompt_id))
             conn.commit()
             return jsonify({'status': 'success'}) 

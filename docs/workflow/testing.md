@@ -2,7 +2,7 @@
 
 ## Overview
 This guide provides instructions for testing workflow endpoints, including field mappings, prompts, and LLM processing.
-
+ 
 ## Prerequisites
 - Running Flask server on port 5000
 - PostgreSQL database with required tables
@@ -191,3 +191,47 @@ Steps are organized hierarchically:
    - Check Ollama is running (default: http://localhost:11434)
    - Verify input fields have values
    - Check step configuration exists in database 
+
+## Testing Workflow Step Prompt Configuration
+
+### Prerequisites
+- Ensure all required tables (`workflow_step_prompt`, `workflow_step_entity`, `llm_prompt`) exist and have correct ownership
+- Have a valid post ID and step ID ready for testing
+- Have valid system and task prompt IDs from the `llm_prompt` table
+
+### Test Cases
+
+1. Save Step Prompts
+```bash
+# Save prompts for step
+curl -X POST "http://localhost:5000/workflow/api/step_prompts/22/41" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "system_prompt_id": 71,
+    "task_prompt_id": 86
+  }'
+
+# Expected response: {"success": true}
+```
+
+2. Verify Database State
+```sql
+-- Check prompt configuration was saved
+SELECT * FROM workflow_step_prompt 
+WHERE step_id = 41 
+  AND post_id = 22;
+
+-- Expected: Row with system_prompt_id = 71 and task_prompt_id = 86
+```
+
+3. Common Issues
+- Permission errors: Check table ownership (all tables must be owned by same user)
+- Invalid prompt IDs: Verify IDs exist in `llm_prompt` table
+- Missing step ID: Confirm step exists in `workflow_step_entity`
+- Missing post ID: Verify post exists in database
+
+### Test Data Reference
+- Post ID: 22 (Scottish Culture article)
+- Step ID: 41 (Initial Concept)
+- System Prompt ID: 71 (Scottish Culture Expert)
+- Task Prompt ID: 86 (Basic Idea Expander) 

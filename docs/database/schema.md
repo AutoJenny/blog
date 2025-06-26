@@ -1,5 +1,5 @@
 # Database Schema Reference
-
+ 
 > **SAFETY WARNING:**
 > Always make a full backup using `pg_dump` before running `create_tables.sql`. Never run this script on production or important data without a backup and a tested restore plan. Restore data as needed after schema changes.
 
@@ -263,37 +263,37 @@ Canonical list of steps for each workflow sub-stage. Each step belongs to a sub-
 - Each sub-stage is seeded with a default 'Main' step.
 - Additional steps can be added for more granular workflow processes. 
 
-## Table: post_workflow_step_prompt
+## Table: workflow_step_prompt
 
-Stores the selected system and task prompts for each workflow step of a post. This enables persistence of prompt selections across the workflow process.
+Stores system and task prompts for each workflow step. This table enables separate management of system and task prompts, allowing for more flexible and maintainable prompt engineering.
 
-| Column           | Type         | Description                                      |
-|-----------------|--------------|--------------------------------------------------|
-| id              | SERIAL (PK)  | Unique row ID                                    |
-| post_id         | INTEGER      | FK to post(id), the post this selection is for   |
-| step_id         | INTEGER      | FK to workflow_step_entity(id), the step this is for |
-| system_prompt_id| INTEGER      | FK to llm_prompt(id), the selected system prompt |
-| task_prompt_id  | INTEGER      | FK to llm_prompt(id), the selected task prompt   |
-| created_at      | TIMESTAMP    | Created timestamp                                |
-| updated_at      | TIMESTAMP    | Updated timestamp                                |
+| Column           | Type         | Description                                           |
+|-----------------|--------------|-------------------------------------------------------|
+| id              | SERIAL       | Primary key                                           |
+| step_id         | INTEGER      | References workflow_step_entity(id)                   |
+| system_prompt_id| INTEGER      | References llm_prompt(id) for the system prompt       |
+| task_prompt_id  | INTEGER      | References llm_prompt(id) for the task prompt         |
+| created_at      | TIMESTAMP    | Creation timestamp                                    |
+| updated_at      | TIMESTAMP    | Last update timestamp                                 |
 
-- **UNIQUE(post_id, step_id)**: Ensures only one prompt selection per step per post
-- Both prompt IDs are nullable to allow selecting either or both types
-- ON DELETE CASCADE for post/step ensures cleanup when parent records are deleted
-- ON DELETE SET NULL for prompts allows prompt deletion without breaking workflow history
+**2024-06-07:** Added workflow_step_prompt table with separate system_prompt_id and task_prompt_id fields to support independent management of system and task prompts in the workflow UI. This change enables:
+- Independent selection and persistence of system and task prompts
+- Better prompt reusability across different workflow steps
+- Clearer separation of prompt components in the UI
+- More flexible prompt engineering capabilities
+
+The table includes appropriate indexes on foreign keys and an updated_at trigger for change tracking. Both system_prompt_id and task_prompt_id reference the llm_prompt table, which supports both legacy flat string templates and structured prompt parts via its prompt_json field.
 
 ### Example Usage
 ```sql
 -- Get prompts for a specific post's workflow step
 SELECT 
-    p.name as post_name,
     wse.name as step_name,
     sp.name as system_prompt,
     tp.name as task_prompt
-FROM post_workflow_step_prompt pwsp
-JOIN post p ON p.id = pwsp.post_id
-JOIN workflow_step_entity wse ON wse.id = pwsp.step_id
-LEFT JOIN llm_prompt sp ON sp.id = pwsp.system_prompt_id
-LEFT JOIN llm_prompt tp ON tp.id = pwsp.task_prompt_id
-WHERE pwsp.post_id = 123;
+FROM workflow_step_prompt wsp
+JOIN workflow_step_entity wse ON wse.id = wsp.step_id
+LEFT JOIN llm_prompt sp ON sp.id = wsp.system_prompt_id
+LEFT JOIN llm_prompt tp ON tp.id = wsp.task_prompt_id
+WHERE wsp.step_id = 123;
 ``` 

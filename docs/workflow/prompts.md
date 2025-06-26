@@ -2,7 +2,7 @@
 
 ## Overview
 This guide documents the workflow prompt system, including system prompts and task prompts for each workflow stage.
-
+ 
 ## Prompt Types
 
 ### 1. System Prompts
@@ -241,4 +241,46 @@ CREATE TABLE post_development (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-``` 
+```
+
+## Workflow Step Prompt Configuration
+
+### Overview
+Each workflow step can have associated system and task prompts that are persisted in the `workflow_step_prompt` table. This configuration determines which prompts are used when the step is processed by the LLM.
+
+### Database Structure
+The workflow step prompts are stored in the following tables:
+- `workflow_step_prompt`: Links workflow steps to their system and task prompts
+- `workflow_step_entity`: Contains the step definitions
+- `llm_prompt`: Stores the actual prompt content
+
+### Saving Step Prompts
+To save prompt configuration for a workflow step:
+
+```bash
+curl -X POST "http://localhost:5000/workflow/api/step_prompts/{post_id}/{step_id}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "system_prompt_id": 71,  # Example: Scottish Culture Expert
+    "task_prompt_id": 86     # Example: Basic Idea Expander
+  }'
+```
+
+### Table Ownership Requirements
+- The `workflow_step_prompt` table must be owned by the same user as the `workflow_step_entity` and `llm_prompt` tables (typically `nickfiddes`)
+- If you encounter permission errors, verify table ownership with:
+  ```sql
+  SELECT tablename, tableowner 
+  FROM pg_tables 
+  WHERE tablename IN ('workflow_step_prompt', 'workflow_step_entity', 'llm_prompt');
+  ```
+- To fix ownership issues:
+  ```sql
+  ALTER TABLE workflow_step_entity OWNER TO nickfiddes;
+  ```
+
+### Best Practices
+1. Always verify table ownership before making schema changes
+2. Test prompt saving with curl before implementing UI changes
+3. Include both system and task prompts in configuration
+4. Verify prompt IDs exist in `llm_prompt` table before saving 

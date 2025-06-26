@@ -491,28 +491,6 @@ CREATE TABLE workflow_field_mapping (
     order_index INTEGER DEFAULT 0
 );
 
--- Store prompt selections for each workflow step
-CREATE TABLE post_workflow_step_prompt (
-    id SERIAL PRIMARY KEY,
-    post_id INTEGER REFERENCES post(id) ON DELETE CASCADE,
-    step_id INTEGER REFERENCES workflow_step_entity(id) ON DELETE CASCADE,
-    system_prompt_id INTEGER REFERENCES llm_prompt(id) ON DELETE SET NULL,
-    task_prompt_id INTEGER REFERENCES llm_prompt(id) ON DELETE SET NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(post_id, step_id)
-);
-
--- Add indexes for performance
-CREATE INDEX IF NOT EXISTS idx_post_workflow_step_prompt_post_id ON post_workflow_step_prompt(post_id);
-CREATE INDEX IF NOT EXISTS idx_post_workflow_step_prompt_step_id ON post_workflow_step_prompt(step_id);
-
--- Add trigger for updated_at
-CREATE TRIGGER update_post_workflow_step_prompt_updated_at
-    BEFORE UPDATE ON post_workflow_step_prompt
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TABLE post_section_elements (
     id SERIAL PRIMARY KEY,
     post_id INTEGER REFERENCES post(id) NOT NULL,
