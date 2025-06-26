@@ -647,15 +647,51 @@ def save_step_prompts(post_id, step_id):
     
     with get_db_conn() as conn:
         with conn.cursor() as cur:
-            # Use upsert (INSERT ... ON CONFLICT) to handle both new and existing selections
+            # First check if a record exists
             cur.execute("""
-                INSERT INTO workflow_step_prompt 
-                    (step_id, system_prompt_id, task_prompt_id)
-                VALUES (%s, %s, %s)
-                ON CONFLICT (step_id) DO UPDATE SET
-                    system_prompt_id = EXCLUDED.system_prompt_id,
-                    task_prompt_id = EXCLUDED.task_prompt_id,
-                    updated_at = CURRENT_TIMESTAMP
-            """, (step_id, system_prompt_id, task_prompt_id))
+                SELECT 1 FROM workflow_step_prompt 
+                WHERE step_id = %s
+            """, (step_id,))
+            exists = cur.fetchone() is not None
+
+            if exists:
+                # Update only the fields that were provided
+                update_fields = []
+                params = []
+                if system_prompt_id is not None:
+                    update_fields.append("system_prompt_id = %s")
+                    params.append(system_prompt_id)
+                if task_prompt_id is not None:
+                    update_fields.append("task_prompt_id = %s")
+                    params.append(task_prompt_id)
+                
+                if update_fields:
+                    update_fields.append("updated_at = CURRENT_TIMESTAMP")
+                    sql = f"""
+                        UPDATE workflow_step_prompt 
+                        SET {', '.join(update_fields)}
+                        WHERE step_id = %s
+                    """
+                    params.append(step_id)
+                    cur.execute(sql, params)
+            else:
+                # Insert new record with only the provided fields
+                fields = ['step_id']
+                values = [step_id]
+                if system_prompt_id is not None:
+                    fields.append('system_prompt_id')
+                    values.append(system_prompt_id)
+                if task_prompt_id is not None:
+                    fields.append('task_prompt_id')
+                    values.append(task_prompt_id)
+                
+                placeholders = ', '.join(['%s'] * len(values))
+                sql = f"""
+                    INSERT INTO workflow_step_prompt 
+                        ({', '.join(fields)})
+                    VALUES ({placeholders})
+                """
+                cur.execute(sql, values)
+            
             conn.commit()
             return jsonify({'status': 'success'}) 
