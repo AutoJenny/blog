@@ -96,15 +96,15 @@ ALWAYS READ AND CAREFULLY FOLLOW THE CRITICAL INSTRUCTIONS BEFORE STARTING. THEN
 - [x] Next Step: Will request permission to integrate with workflow processing
 
 ### Step 6: Workflow Integration
-- [x] Actions:
+- [ ] Actions:
   1. Update workflow processor to use formats
   2. Add format validation to processing pipeline
   3. Implement format reference resolution
-- [x] Testing:
+- [ ] Testing:
   1. Test complete workflow with formats
   2. Verify format validation in process
   3. Test error handling and recovery
-- [x] Next Step: Will request permission to implement UI components
+- [ ] Next Step: Will request permission to implement UI components
 
 ## Phase 4: User Interface
 
