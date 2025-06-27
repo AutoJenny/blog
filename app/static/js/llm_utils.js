@@ -1,5 +1,5 @@
 // LLM utility functions
-import { API_CONFIG, buildApiUrl, handleApiResponse } from './config/api.js';
+import API_CONFIG, { buildApiUrl, handleApiResponse } from './config/api.js';
 
 /**
  * Run an LLM operation
