@@ -4,8 +4,9 @@ Workflow module for managing the blog post creation workflow.
 
 from flask import Blueprint
 
-# Create the workflow blueprint
+# Create the workflow blueprints
 bp = Blueprint('workflow', __name__, url_prefix='/workflow')
+api_workflow_bp = Blueprint('api_workflow', __name__, url_prefix='/api/workflow')
 
 # Import routes after blueprint creation
 from . import routes
@@ -22,10 +23,8 @@ def init_workflow(app):
     # Register the proper nav module
     app.register_blueprint(nav_bp, url_prefix='/workflow_nav')
     
-    # Register the workflow blueprint
+    # Register the workflow blueprints
     app.register_blueprint(bp)
-    
-    # Import routes after nav module is registered to ensure proper template resolution
-    from . import routes
+    app.register_blueprint(api_workflow_bp)
 
-__all__ = ['bp'] 
+__all__ = ['bp', 'api_workflow_bp'] 

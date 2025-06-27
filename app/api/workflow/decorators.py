@@ -5,59 +5,44 @@ import warnings
 from flask import request, current_app, redirect, url_for, jsonify
 import psycopg2
 from app.db import get_db_conn
+import logging
 
-def deprecated_endpoint(redirect_endpoint=None, message=None):
+def deprecated_endpoint(new_endpoint=None, message=None):
     """
     Decorator to mark an endpoint as deprecated.
+    Logs a warning and redirects to the new endpoint.
     
     Args:
-        redirect_endpoint (str, optional): The endpoint to redirect to. If provided,
-            will redirect instead of executing the decorated function.
-        message (str, optional): Custom deprecation message. If not provided,
-            a default message will be used.
+        new_endpoint (str, optional): The new endpoint to redirect to
+        message (str, optional): Custom deprecation message
     """
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            warning_message = message or (
-                f"Endpoint {request.path} is deprecated. "
-                f"Use /api/v1/workflow/run_llm/ instead."
-            )
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            warning_msg = message or f"Deprecated endpoint {request.path} accessed. Please use {new_endpoint} instead."
+            current_app.logger.warning(warning_msg)
             
-            # Log the deprecation
-            current_app.logger.warning(
-                f"Deprecated endpoint {request.path} called from {request.remote_addr}"
-            )
-            warnings.warn(warning_message, DeprecationWarning, stacklevel=2)
-            
-            # If redirect endpoint is provided, redirect instead of executing
-            if redirect_endpoint:
-                return redirect(url_for(redirect_endpoint))
-            
-            # Add deprecation notice to response headers
-            response = func(*args, **kwargs)
-            if hasattr(response, 'headers'):
-                response.headers['Warning'] = '299 - "This endpoint is deprecated"'
-            
-            return response
-        return wrapper
-    return decorator 
+            if request.method == 'GET' and new_endpoint:
+                return redirect(new_endpoint)
+            else:
+                # For POST/PUT/etc, return a deprecation notice
+                return jsonify({
+                    'status': 'error',
+                    'message': warning_msg,
+                    'new_endpoint': new_endpoint
+                }), 410  # 410 Gone
+        return decorated_function
+    return decorator
 
 def handle_workflow_errors(f):
+    """Decorator to handle common workflow errors."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         try:
             return f(*args, **kwargs)
-        except psycopg2.Error as e:
-            return jsonify({
-                'error': 'Database error',
-                'message': str(e)
-            }), 500
         except Exception as e:
-            return jsonify({
-                'error': 'Internal server error',
-                'message': str(e)
-            }), 500
+            current_app.logger.error(f"Workflow error: {str(e)}")
+            return jsonify({'error': str(e)}), 500
     return decorated_function
 
 def validate_post_id(f):

@@ -7,8 +7,7 @@ import psycopg2.extras
 from flask import render_template, request, jsonify, abort, redirect, url_for, Blueprint, current_app
 from app.db import get_db_conn
 from app.api.workflow.decorators import deprecated_endpoint
-from . import bp
-from app.api.workflow import bp as api_workflow_bp
+from . import bp, api_workflow_bp
 
 # Use proper nav module instead
 from modules.nav.services import get_workflow_context
@@ -333,7 +332,4 @@ def get_step_prompts(post_id, step_id):
 @deprecated_endpoint(message="This endpoint is deprecated. Use /api/workflow/steps/<step_id>/prompts/<post_id> instead.")
 def save_step_prompts(post_id, step_id):
     """Deprecated step prompts save endpoint."""
-    return jsonify({'error': 'This endpoint is deprecated'}), 410
-
-bp = Blueprint('workflow', __name__, url_prefix='/workflow')
-api_workflow_bp = Blueprint('api_workflow', __name__, url_prefix='/api/workflow') 
+    return jsonify({'error': 'This endpoint is deprecated'}), 410 

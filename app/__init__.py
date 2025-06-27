@@ -16,7 +16,7 @@ from app.api import api_bp
 from app.blog import bp as blog_bp
 from app.main import bp as main_bp
 from app.preview import bp as preview_bp
-from app.workflow import bp as workflow_bp
+from app.workflow import bp as workflow_bp, api_workflow_bp
 from modules.nav import bp as nav_bp
 
 def create_app(config=None):
@@ -42,6 +42,7 @@ def create_app(config=None):
     app.register_blueprint(main_bp)
     app.register_blueprint(preview_bp, url_prefix='/preview')
     app.register_blueprint(workflow_bp)
+    app.register_blueprint(api_workflow_bp)
     app.register_blueprint(nav_bp, url_prefix='/modules/nav')
     
     # Register error handlers
