@@ -4,7 +4,7 @@ Routes for the workflow module.
 
 import json
 import psycopg2.extras
-from flask import render_template, request, jsonify, abort, redirect, url_for
+from flask import render_template, request, jsonify, abort, redirect, url_for, Blueprint, current_app
 from app.db import get_db_conn
 from app.api.workflow.decorators import deprecated_endpoint
 from . import bp
@@ -17,7 +17,6 @@ import subprocess
 import sys
 import os
 from app.llm.services import execute_llm_request
-from flask import current_app
 
 # Mapping of substage names to Font Awesome icons
 SUBSTAGE_ICONS = {
@@ -48,7 +47,7 @@ def get_latest_post():
 
 def get_post_and_idea_seed(post_id):
     with get_db_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             cur.execute("SELECT p.id, pd.idea_seed FROM post p LEFT JOIN post_development pd ON p.id = pd.post_id WHERE p.id = %s", (post_id,))
             return cur.fetchone()
 
@@ -114,32 +113,21 @@ def workflow_index(post_id, stage=None, substage=None):
     if not post:
         abort(404, f"Post {post_id} not found.")
     
+    # If no stage/substage provided, redirect to planning/idea
+    if not stage or not substage:
+        return redirect(url_for('workflow.workflow_index', 
+            post_id=post_id, 
+            stage='planning',
+            substage='idea',
+            step='initial_concept'
+        ))
+    
     # Get step from query parameters, keeping original format for database lookup
     step = request.args.get('step', 'initial')
     # Convert URL format (lowercase with underscores) to DB format (title case with spaces)
     display_step = step.replace('_', ' ').title()
     
-    # If stage and substage are provided but no step, redirect to first step
-    if stage and substage and not request.args.get('step'):
-        # Get all stages data
-        stages = get_workflow_stages_from_db()
-        
-        # Convert names to lowercase for URL matching
-        stage_lower = stage.lower()
-        substage_lower = substage.lower()
-        
-        # Find matching stage/substage (case-insensitive)
-        for db_stage, substages in stages.items():
-            if db_stage.lower() == stage_lower:
-                for db_substage, steps in substages.items():
-                    if db_substage.lower() == substage_lower:
-                        # Get first step (they're ordered by step_order)
-                        first_step = steps[0]
-                        # Convert step name to URL format (lowercase with underscores)
-                        step_url = first_step.lower().replace(' ', '_')
-                        # Redirect to the first step using query parameter format
-                        return redirect(f"/workflow/posts/{post_id}/{stage}/{substage}?step={step_url}")
-    
+    # Get workflow context from the nav module
     context = get_workflow_context(stage, substage, display_step)
     if not context:
         # If no context found, redirect to the first stage/substage
@@ -190,8 +178,14 @@ def workflow_index(post_id, stage=None, substage=None):
                     # Convert DB step name to URL format for consistency
                     url_step_name = step_name.lower().replace(' ', '_')
                     if config_json:
-                        # Update step configuration with stored config
-                        step_config.update(config_json)
+                        try:
+                            # Parse config_json if it's a string
+                            if isinstance(config_json, str):
+                                config_json = json.loads(config_json)
+                            # Update step configuration with stored config
+                            step_config = config_json
+                        except json.JSONDecodeError:
+                            current_app.logger.error(f"Failed to parse step configuration: {config_json}")
                         
                         # Ensure field_mapping is properly structured for all steps
                         if 'field_mapping' not in step_config:
@@ -216,7 +210,6 @@ def workflow_index(post_id, stage=None, substage=None):
     
     # Add step configuration and field values to context
     context.update({
-        'post': post,
         'step_config': step_config,
         'field_values': field_values,
         'step_id': step_id,
@@ -225,13 +218,15 @@ def workflow_index(post_id, stage=None, substage=None):
         'current_step': display_step,
         'current_post_id': post_id,
         'all_posts': get_all_posts(),
+        'post': post,
         'step': {
             'name': step_name or display_step,
             'description': step_description
         }
     })
     
-    return render_template('workflow/steps/planning_step.html', **context)
+    template = 'workflow/index.html'
+    return render_template(template, **context)
 
 @bp.route('/posts/<int:post_id>/')
 def stages(post_id):
@@ -338,4 +333,7 @@ def get_step_prompts(post_id, step_id):
 @deprecated_endpoint(message="This endpoint is deprecated. Use /api/workflow/steps/<step_id>/prompts/<post_id> instead.")
 def save_step_prompts(post_id, step_id):
     """Deprecated step prompts save endpoint."""
-    return jsonify({'error': 'This endpoint is deprecated'}), 410 
+    return jsonify({'error': 'This endpoint is deprecated'}), 410
+
+bp = Blueprint('workflow', __name__, url_prefix='/workflow')
+api_workflow_bp = Blueprint('api_workflow', __name__, url_prefix='/api/workflow') 
