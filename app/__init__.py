@@ -19,6 +19,7 @@ from app.preview import bp as preview_bp
 from app.workflow import bp as workflow_bp, api_workflow_bp
 from modules.nav import bp as nav_bp
 from app.database.routes import bp as db_bp
+from app.routes.settings import bp as settings_bp
 
 def create_app(config=None):
     app = Flask(__name__)
@@ -46,6 +47,7 @@ def create_app(config=None):
     app.register_blueprint(api_workflow_bp)
     app.register_blueprint(nav_bp, url_prefix='/modules/nav')
     app.register_blueprint(db_bp)
+    app.register_blueprint(settings_bp)
     
     # Register error handlers
     from app.errors import handlers
