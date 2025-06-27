@@ -1,7 +1,7 @@
 <!-- TEST MARKER 3: PANEL TEMPLATE VERIFICATION -->
 <!-- LLM Panel Content -->
-<div class="space-y-4" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
-    data-current-step="{{ current_step }}" data-step-id="{{ step_id }}">
+<div class="space-y-4 bg-purple-100 p-4 rounded-lg shadow-md" data-current-stage="{{ current_stage }}"
+    data-current-substage="{{ current_substage }}" data-current-step="{{ current_step }}" data-step-id="{{ step_id }}">
     <!-- Run LLM Button -->
     <div class="mb-4 flex justify-center">
         <button id="run-llm-btn"
@@ -29,6 +29,7 @@
 <!-- Scripts -->
 <script type="module">
     import { FieldSelector } from "/static/modules/llm_panel/js/field_selector.js";
+    import { runLLM } from "/static/js/llm_utils.js";
 
     // Initialize field selector
     window.addEventListener('DOMContentLoaded', () => {
@@ -40,9 +41,6 @@
     if (runLLMBtn) {
         runLLMBtn.addEventListener('click', async function () {
             try {
-                runLLMBtn.disabled = true;
-                runLLMBtn.textContent = 'Processing...';
-
                 // Get current workflow context from URL
                 const pathParts = window.location.pathname.split('/');
                 const postId = pathParts[3];
@@ -51,20 +49,8 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const step = urlParams.get('step') || 'initial';
 
-                const response = await fetch('/workflow/api/v1/workflow/run_llm/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        post_id: postId,
-                        stage: stage,
-                        substage: substage,
-                        step: step
-                    })
-                });
+                const result = await runLLM({ postId, stage, substage, step });
 
-                const result = await response.json();
                 if (result.success) {
                     // Update output fields
                     const outputs = document.querySelectorAll('[data-section="outputs"] textarea');
@@ -79,9 +65,6 @@
             } catch (error) {
                 console.error('Error running LLM:', error);
                 alert('Error running LLM: ' + error.message);
-            } finally {
-                runLLMBtn.disabled = false;
-                runLLMBtn.textContent = 'Run LLM';
             }
         });
     }

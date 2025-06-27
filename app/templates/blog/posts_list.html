@@ -113,7 +113,7 @@
             </thead>
             <tbody>
                 {% for post in posts %}
-                <tr class="clickable-row"
+                <tr data-post-id="{{ post.id }}"
                     data-edit-url="{{ url_for('workflow.workflow_index', post_id=post.id, stage='planning', substage='idea') }}">
                     <td>{{ post.title }}</td>
                     <td><span class="status">{{ post.status }}</span></td>
@@ -121,9 +121,7 @@
                     <td>{{ post.updated_ago }}</td>
                     <td class="actions">
                         <a href="{{ url_for('workflow.workflow_index', post_id=post.id, stage='planning', substage='idea') }}"
-                            class="icon-btn edit-btn" title="Edit">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </a>
+                            class="btn btn-primary">Edit in Workflow</a>
                         <a href="/blog/public/{{ post.id }}/" class="icon-btn preview-btn" title="Preview"
                             onclick="event.stopPropagation();">
                             <i class="fa-solid fa-eye"></i>

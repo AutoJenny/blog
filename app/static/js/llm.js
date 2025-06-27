@@ -1,18 +1,23 @@
 // DEPRECATED: All test-related code is deprecated and must not be used. Test UI and endpoints are disabled for safety.
 
+// LLM Configuration and Management
+import { API_CONFIG, buildApiUrl, handleApiResponse } from './config/api.js';
+import { buildPostApiUrl, navigateToWorkflow } from './workflow_nav.js';
+
 // Configuration
-document.getElementById('config-form').addEventListener('submit', async (e) => {
+document.getElementById('config-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     try {
-        const response = await fetch('/api/v1/llm/config', {
+        const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.LLM}/config`);
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(Object.fromEntries(formData)),
         });
-        const result = await response.json();
+        const result = await handleApiResponse(response);
         if (result.success) {
             // Update displayed values
             document.getElementById('current-provider').textContent = formData.get('provider_type');
@@ -31,6 +36,8 @@ document.getElementById('config-form').addEventListener('submit', async (e) => {
 document.addEventListener('DOMContentLoaded', function () {
     function renderModelList(models, loaded, selectedModel) {
         const listDiv = document.getElementById('llm-model-list');
+        if (!listDiv) return;
+        
         listDiv.innerHTML = '';
         if (!models.length) {
             listDiv.innerHTML = '<div style="color:#fbbf24;">No models found</div>';
@@ -58,7 +65,8 @@ document.addEventListener('DOMContentLoaded', function () {
             // Add change event listener to save configuration when model is selected
             radio.addEventListener('change', function() {
                 if (this.checked) {
-                    fetch('/api/v1/llm/config', {
+                    const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.LLM}/config`);
+                    fetch(url, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -69,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             api_base: document.querySelector('input[name="api_base"]').value
                         })
                     })
-                    .then(r => r.json())
+                    .then(r => handleApiResponse(r))
                     .then(data => {
                         if (data.success) {
                             document.getElementById('current-model').textContent = m;
@@ -97,12 +105,13 @@ document.addEventListener('DOMContentLoaded', function () {
             preloadBtn.addEventListener('click', function () {
                 preloadBtn.textContent = 'Loading...';
                 preloadBtn.disabled = true;
-                fetch('/api/v1/llm/preload', {
+                const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.LLM}/preload`);
+                fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ model: m })
                 })
-                    .then(r => r.json())
+                    .then(r => handleApiResponse(r))
                     .then(() => {
                         setTimeout(() => loadOllamaModels(selectedModel), 1000);
                     });
@@ -114,8 +123,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function loadOllamaModels(selectedModel) {
         const note = document.getElementById('llm-model-note');
-        fetch('/api/v1/llm/models/ollama')
-            .then(r => r.json())
+        if (!note) return;
+        
+        const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.LLM}/models/ollama`);
+        fetch(url)
+            .then(r => handleApiResponse(r))
             .then(data => {
                 renderModelList(data.models || [], data.loaded || [], selectedModel);
                 note.textContent = 'Green = loaded in memory. Amber = downloaded and ready to use.';
@@ -127,12 +139,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function loadProviderModels() {
-        const provider = document.getElementById('llm-provider-select').value;
+        const providerSelect = document.getElementById('llm-provider-select');
+        if (!providerSelect) return;
+        
+        const provider = providerSelect.value;
         if (provider === 'ollama') {
             loadOllamaModels();
         } else {
             // Placeholder for OpenAI or other providers
             const listDiv = document.getElementById('llm-model-list');
+            if (!listDiv) return;
+            
             listDiv.innerHTML = '';
             ['gpt-3.5-turbo', 'gpt-4'].forEach(m => {
                 const wrapper = document.createElement('label');
@@ -156,15 +173,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    document.getElementById('llm-provider-select').addEventListener('change', loadProviderModels);
-    loadProviderModels();
+    const providerSelect = document.getElementById('llm-provider-select');
+    if (providerSelect) {
+        providerSelect.addEventListener('change', loadProviderModels);
+        loadProviderModels();
+    }
 
     // When a model is selected, update the test field below
-    document.getElementById('llm-model-list').addEventListener('change', function (e) {
-        if (e.target && e.target.name === 'llm_model') {
-            document.getElementById('current-model').textContent = e.target.value;
-        }
-    });
+    const modelList = document.getElementById('llm-model-list');
+    if (modelList) {
+        modelList.addEventListener('change', function (e) {
+            if (e.target && e.target.name === 'llm_model') {
+                document.getElementById('current-model').textContent = e.target.value;
+            }
+        });
+    }
 });
 
 // Prompt Templates
@@ -706,4 +729,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Initial load
   await init();
-})(); 
+})();
+
+// Update navigation functions to use the new utilities
+function goToPost(postId) {
+    navigateToWorkflow(postId);
+}
+
+function goToStage(postId, stage) {
+    navigateToWorkflow(postId, stage);
+}
+
+function goToSubstage(postId, stage, substage) {
+    navigateToWorkflow(postId, stage, substage);
+}
+
+// Update API calls to use the new configuration
+async function fetchPostData(postId) {
+    const response = await fetch(buildPostApiUrl(postId));
+    return response.json();
+}
+
+async function fetchStageData(postId, stage) {
+    const response = await fetch(buildPostApiUrl(postId, stage));
+    return response.json();
+}
+
+async function fetchFieldMappings(stepId) {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.FIELDS, 'mappings', stepId));
+    return response.json();
+}
+
+async function updateFieldMapping(stepId, mapping) {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.FIELDS, 'mappings', stepId), {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(mapping)
+    });
+    return response.json();
+} 

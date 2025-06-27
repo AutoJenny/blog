@@ -582,4 +582,264 @@ If issues occur during deployment:
 - Format template management
 - Workflow configuration
 - API access control
-- UI restrictions 
+- UI restrictions
+
+# Format System API Documentation
+
+The format system provides a way to define, manage, and validate input/output formats for LLM interactions in the workflow system. This document describes the available API endpoints for working with formats.
+
+## Format Templates
+
+### GET /api/workflow/formats
+Get all format templates.
+
+**Response**
+```json
+[
+  {
+    "id": 1,
+    "name": "uk_english_prose",
+    "description": "Standard UK English prose format",
+    "version": "1.0",
+    "type": "output_only",
+    "input_format": "text",
+    "output_format": "text",
+    "input_schema": {"type": "string"},
+    "output_schema": {"type": "string"},
+    "output_rules": ["Use UK English spelling", "..."],
+    "examples": {"input": "...", "output": "..."},
+    "notes": null
+  }
+]
+```
+
+### GET /api/workflow/formats/{format_id}
+Get a specific format template.
+
+**Parameters**
+- `format_id`: ID of the format template
+
+**Response**
+```json
+{
+  "id": 1,
+  "name": "uk_english_prose",
+  "description": "Standard UK English prose format",
+  "version": "1.0",
+  "type": "output_only",
+  "input_format": "text",
+  "output_format": "text",
+  "input_schema": {"type": "string"},
+  "output_schema": {"type": "string"},
+  "output_rules": ["Use UK English spelling", "..."],
+  "examples": {"input": "...", "output": "..."},
+  "notes": null
+}
+```
+
+### POST /api/workflow/formats
+Create a new format template.
+
+**Request Body**
+```json
+{
+  "name": "blog_section_structure",
+  "description": "Format for blog post section structuring",
+  "version": "1.0",
+  "type": "bidirectional",
+  "input_format": "json",
+  "output_format": "json",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "facts": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "topic": {"type": "string"},
+            "content": {"type": "string"}
+          }
+        }
+      },
+      "themes": {
+        "type": "array",
+        "items": {"type": "string"}
+      },
+      "target_length": {"type": "number"}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "sections": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "title": {"type": "string"},
+            "word_count": {"type": "number"},
+            "key_facts": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "main_theme": {"type": "string"}
+          }
+        }
+      },
+      "total_words": {"type": "number"}
+    }
+  },
+  "output_rules": [
+    "Use UK English spelling",
+    "Section titles in title case",
+    "Facts distributed evenly"
+  ],
+  "examples": {
+    "input": {
+      "facts": [
+        {
+          "topic": "history",
+          "content": "The quaich dates back to 16th century Scotland"
+        }
+      ],
+      "themes": ["hospitality"],
+      "target_length": 1500
+    },
+    "output": {
+      "sections": [
+        {
+          "title": "The Ancient Origins of the Quaich",
+          "word_count": 300,
+          "key_facts": ["16th century origin"],
+          "main_theme": "history"
+        }
+      ],
+      "total_words": 300
+    }
+  }
+}
+```
+
+**Response**
+```json
+{
+  "id": 2
+}
+```
+
+### PUT /api/workflow/formats/{format_id}
+Update a format template.
+
+**Parameters**
+- `format_id`: ID of the format template to update
+
+**Request Body**
+Same as POST, but all fields are optional. Only provided fields will be updated.
+
+**Response**
+```json
+{
+  "message": "Format template updated"
+}
+```
+
+## Step Format Mapping
+
+### GET /api/workflow/steps/{step_id}/format
+Get the format template for a workflow step.
+
+**Parameters**
+- `step_id`: ID of the workflow step
+
+**Response**
+Same as GET /api/workflow/formats/{format_id}
+
+### PUT /api/workflow/steps/{step_id}/format
+Set or update the format template for a workflow step.
+
+**Parameters**
+- `step_id`: ID of the workflow step
+
+**Request Body**
+```json
+{
+  "format_template_id": 1
+}
+```
+
+**Response**
+```json
+{
+  "message": "Step format updated"
+}
+```
+
+### DELETE /api/workflow/steps/{step_id}/format
+Remove the format template from a workflow step.
+
+**Parameters**
+- `step_id`: ID of the workflow step
+
+**Response**
+```json
+{
+  "message": "Step format removed"
+}
+```
+
+## Format Validation
+
+### POST /api/workflow/formats/validate
+Validate content against a format template.
+
+**Request Body**
+```json
+{
+  "format_id": 1,
+  "content": "Content to validate",
+  "direction": "input"  // or "output"
+}
+```
+
+**Response**
+```json
+{
+  "valid": true,
+  "format": "text",
+  "schema": {"type": "string"}
+}
+```
+
+Or if validation fails:
+```json
+{
+  "valid": false,
+  "error": "Invalid JSON content"
+}
+```
+
+## Format Types
+
+The format system supports three types of formats:
+
+1. **bidirectional**: Format has both input and output specifications
+2. **input_only**: Format only specifies input requirements
+3. **output_only**: Format only specifies output requirements
+
+## Format Formats
+
+Supported format types:
+
+1. **json**: Content must be valid JSON matching the schema
+2. **text**: Content must be a string
+3. **structured**: (Future) Support for custom structured formats
+
+## Schema Validation
+
+The format system uses JSON Schema for validation. Each format template can specify:
+
+1. **input_schema**: JSON Schema for input validation
+2. **output_schema**: JSON Schema for output validation
+
+These schemas are used by the validation endpoint to ensure content matches the required format. 

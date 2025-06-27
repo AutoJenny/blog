@@ -45,7 +45,7 @@ def main():
     with app.app_context():
         # Process quaich-traditions post
         post = db.session.execute(
-            "SELECT * FROM posts WHERE slug = :slug",
+            "SELECT * FROM post WHERE slug = :slug",
             {"slug": "quaich-traditions"}
         ).fetchone()
         if post:
@@ -98,7 +98,7 @@ def main():
 
         # Process kilt-evolution post
         post = db.session.execute(
-            "SELECT * FROM posts WHERE slug = :slug",
+            "SELECT * FROM post WHERE slug = :slug",
             {"slug": "kilt-evolution"}
         ).fetchone()
         if post:

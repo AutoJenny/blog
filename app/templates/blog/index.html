@@ -61,10 +61,8 @@
             <div class="p-6">
                 <h2 class="text-xl font-semibold mb-4">{{ post.title }}</h2>
                 <div class="flex justify-between items-center">
-                    <a href="{{ url_for('workflow_nav.stage', stage='planning', substage='idea', post_id=post.id) }}"
-                        class="text-dark-accent hover:text-dark-text transition">
-                        View Workflow
-                    </a>
+                    <a href="{{ url_for('workflow.workflow_index', post_id=post.id, stage='planning', substage='idea') }}"
+                        class="btn btn-primary">Edit in Workflow</a>
                     <a href="{{ url_for('blog.post', post_id=post.id) }}"
                         class="text-dark-accent hover:text-dark-text transition">
                         View Post
@@ -94,7 +92,7 @@
                 });
                 const data = await response.json();
                 if (data && data.id) {
-                    window.location.href = `{{ url_for('workflow_nav.stage', stage='planning', substage='idea') }}?post_id=${data.id}`;
+                    onPostCreated(data);
                 } else {
                     alert('Failed to create post');
                 }
@@ -102,6 +100,10 @@
                 alert('Error creating post');
             }
         });
+    }
+
+    function onPostCreated(data) {
+        window.location.href = `{{ url_for('workflow.workflow_index', stage='planning', substage='idea') }}?post_id=${data.id}`;
     }
 </script>
 {% endblock %}

@@ -1,10 +1,12 @@
-from flask import Blueprint, jsonify, request
+"""Format-related routes for workflow steps."""
+
+from flask import jsonify, request
 from app.db import get_db_conn
 from psycopg2.extras import RealDictCursor
 import json
-from . import workflow_bp as bp
+from . import bp
 
-@bp.route('/api/workflow/steps/<int:step_id>/formats', methods=['GET'])
+@bp.route('/steps/<int:step_id>/formats', methods=['GET'])
 def get_step_formats(step_id):
     """Get format configuration for a workflow step."""
     with get_db_conn() as conn:
@@ -23,7 +25,7 @@ def get_step_formats(step_id):
             formats = cur.fetchall()
             return jsonify([dict(f) for f in formats])
 
-@bp.route('/api/workflow/steps/<int:step_id>/formats/<int:post_id>', methods=['GET'])
+@bp.route('/steps/<int:step_id>/formats/<int:post_id>', methods=['GET'])
 def get_step_post_format(step_id, post_id):
     """Get format configuration for a specific post's workflow step."""
     with get_db_conn() as conn:
@@ -44,7 +46,7 @@ def get_step_post_format(step_id, post_id):
                 return jsonify({'error': 'Format configuration not found'}), 404
             return jsonify(dict(format))
 
-@bp.route('/api/workflow/steps/<int:step_id>/formats/<int:post_id>', methods=['PUT'])
+@bp.route('/steps/<int:step_id>/formats/<int:post_id>', methods=['PUT'])
 def set_step_post_format(step_id, post_id):
     """Set format configuration for a specific post's workflow step."""
     data = request.get_json()
@@ -104,7 +106,7 @@ def set_step_post_format(step_id, post_id):
             format = cur.fetchone()
             return jsonify(dict(format))
 
-@bp.route('/api/workflow/steps/<int:step_id>/formats/<int:post_id>', methods=['DELETE'])
+@bp.route('/steps/<int:step_id>/formats/<int:post_id>', methods=['DELETE'])
 def delete_step_post_format(step_id, post_id):
     """Delete format configuration for a specific post's workflow step."""
     with get_db_conn() as conn:
@@ -121,7 +123,7 @@ def delete_step_post_format(step_id, post_id):
             conn.commit()
             return '', 204
 
-@bp.route('/api/workflow/steps/<int:step_id>/formats', methods=['PUT'])
+@bp.route('/steps/<int:step_id>/formats', methods=['PUT'])
 def set_step_default_format(step_id):
     """Set default format configuration for a workflow step."""
     data = request.get_json()
