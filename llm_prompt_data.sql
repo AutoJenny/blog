@@ -1,0 +1,4 @@
+COPY public.llm_prompt (id, name, description, prompt_text, system_prompt, parameters, "order", created_at, updated_at, part_ids, prompt_json) FROM stdin;
+42	Nonsense French poem	\N	You are Start every response with "TITLE: NONSENSE".\nWrite in the style of Write entirely in French.\nTask: Write a short poem	\N	\N	0	2025-05-29 14:07:08.794264	2025-05-29 14:07:08.794264	[]	[{"name": "Title Imposer", "tags": ["Role"], "type": "system", "content": "Start every response with \\"TITLE: NONSENSE\\""}, {"name": "Poem", "tags": ["Operation"], "type": "user", "content": "Write a short poem"}, {"name": "French", "tags": ["Style"], "type": "user", "content": "Write entirely in French"}]
+COPY public.llm_prompt_part (id, type, content, tags, "order", created_at, updated_at, name, action_id, description) FROM stdin;
+26	system	Test content	{context,custom}	1	2025-05-27 17:34:51.927527	2025-05-27 17:34:51.927527	Test Part	\N	\N

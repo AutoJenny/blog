@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Field Mapping{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8 bg-dark-bg border border-dark-border rounded-xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-gear text-indigo-400"></i> Settings: Workflow Field Mapping
+    </h1>
+    <p class="text-dark-text mb-6">
+        View and edit field mappings for each workflow step. These mappings determine which database fields are used for
+        inputs and outputs.
+    </p>
+
+    <div class="space-y-8">
+        {% for stage in stages %}
+        <div class="bg-[#1a1d2d] rounded-lg border border-dark-border overflow-hidden">
+            <!-- Stage Header -->
+            <div class="bg-[#23273a] p-4 flex items-center gap-3">
+                <i class="fa-solid fa-layer-group text-indigo-400 text-lg"></i>
+                <h2 class="text-xl font-semibold text-white">{{ stage.name }}</h2>
+            </div>
+
+            <!-- Stage Content -->
+            <div class="p-6 space-y-6">
+                {% for substage in substages if substage.stage_id == stage.id %}
+                <div class="bg-[#23273a] rounded-lg border border-dark-border overflow-hidden">
+                    <!-- Substage Header -->
+                    <div class="bg-[#2a2f47] p-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-folder text-indigo-300"></i>
+                            <h3 class="text-lg font-medium text-white">{{ substage.substage_name }}</h3>
+                        </div>
+                        <button onclick="addStep({{ substage.substage_id }})"
+                            class="text-indigo-300 hover:text-indigo-100 px-2 py-1 rounded">
+                            <i class="fa-solid fa-plus"></i> Add Step
+                        </button>
+                    </div>
+
+                    <!-- Substage Content -->
+                    <div class="divide-y divide-dark-border" id="substage-{{ substage.substage_id }}-steps">
+                        {% for step in steps if step.substage_id == substage.substage_id %}
+                        <div class="p-4 step-container" data-step-id="{{ step.id }}" draggable="true">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-grip-vertical text-dark-text cursor-move"></i>
+                                    <i class="fa-solid fa-file-lines text-indigo-200"></i>
+                                    <h4 class="text-md font-medium text-white">{{ step.name }}</h4>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="editStep({{ step.id }})"
+                                        class="text-indigo-300 hover:text-indigo-100 px-2 py-1 rounded">
+                                        <i class="fa-solid fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteStep({{ step.id }})"
+                                        class="text-red-400 hover:text-red-300 px-2 py-1 rounded">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {% if step.config %}
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- Input Fields -->
+                                <div class="bg-[#1a1d2d] rounded p-3">
+                                    <h5 class="text-sm font-medium text-indigo-300 mb-2 flex items-center gap-1">
+                                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Input Fields
+                                    </h5>
+                                    {% if step.config.inputs %}
+                                    <ul class="space-y-2">
+                                        {% for field_name, field_config in step.config.inputs.items() %}
+                                        <li class="text-dark-text">
+                                            <span class="text-indigo-200">{{ field_name }}:</span> {{
+                                            field_config.db_field }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    <p class="text-dark-text text-sm italic">No input fields configured</p>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Output Fields -->
+                                <div class="bg-[#1a1d2d] rounded p-3">
+                                    <h5 class="text-sm font-medium text-indigo-300 mb-2 flex items-center gap-1">
+                                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Output Fields
+                                    </h5>
+                                    {% if step.config.outputs %}
+                                    <ul class="space-y-2">
+                                        {% for field_name, field_config in step.config.outputs.items() %}
+                                        <li class="text-dark-text">
+                                            <span class="text-indigo-200">{{ field_name }}:</span> {{
+                                            field_config.db_field }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    <p class="text-dark-text text-sm italic">No output fields configured</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <p class="text-dark-text text-sm italic">No field mappings configured</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Step Edit Modal -->
+<div id="stepModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-[#1a1d2d] rounded-xl border border-dark-border p-6 max-w-2xl w-full mx-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-semibold text-white">Edit Step</h3>
+            <button onclick="closeModal()" class="text-dark-text hover:text-white">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+
+        <form id="stepForm" class="space-y-6">
+            <input type="hidden" id="stepId" name="stepId">
+
+            <div>
+                <label for="stepName" class="block text-sm font-medium text-dark-text mb-2">Step Name</label>
+                <input type="text" id="stepName" name="name"
+                    class="w-full bg-[#23273a] border border-dark-border rounded px-3 py-2 text-white">
+            </div>
+
+            <!-- Input Fields Section -->
+            <div>
+                <h4 class="text-md font-medium text-indigo-300 mb-2">Input Fields</h4>
+                <div id="inputFields" class="space-y-4">
+                    <!-- Input fields will be added here dynamically -->
+                </div>
+                <button type="button" onclick="addInputField()" class="mt-2 text-indigo-300 hover:text-indigo-100">
+                    <i class="fa-solid fa-plus"></i> Add Input Field
+                </button>
+            </div>
+
+            <!-- Output Fields Section -->
+            <div>
+                <h4 class="text-md font-medium text-indigo-300 mb-2">Output Fields</h4>
+                <div id="outputFields" class="space-y-4">
+                    <!-- Output fields will be added here dynamically -->
+                </div>
+                <button type="button" onclick="addOutputField()" class="mt-2 text-indigo-300 hover:text-indigo-100">
+                    <i class="fa-solid fa-plus"></i> Add Output Field
+                </button>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="closeModal()"
+                    class="px-4 py-2 bg-dark-bg text-dark-text hover:text-white rounded">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Drag and drop functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const stepContainers = document.querySelectorAll('.step-container');
+
+        stepContainers.forEach(container => {
+            container.addEventListener('dragstart', handleDragStart);
+            container.addEventListener('dragover', handleDragOver);
+            container.addEventListener('drop', handleDrop);
+        });
+    });
+
+    let draggedElement = null;
+
+    function handleDragStart(e) {
+        draggedElement = e.target;
+        e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    async function handleDrop(e) {
+        e.preventDefault();
+        const container = e.target.closest('.step-container');
+        if (!container || container === draggedElement) return;
+
+        const substageSteps = container.parentElement;
+        const steps = Array.from(substageSteps.children);
+        const fromIndex = steps.indexOf(draggedElement);
+        const toIndex = steps.indexOf(container);
+
+        if (fromIndex < toIndex) {
+            container.parentNode.insertBefore(draggedElement, container.nextSibling);
+        } else {
+            container.parentNode.insertBefore(draggedElement, container);
+        }
+
+        // Update step order in database
+        try {
+            const response = await fetch('/api/workflow/reorder-steps', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    stepId: draggedElement.dataset.stepId,
+                    newIndex: toIndex
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update step order');
+            }
+        } catch (error) {
+            console.error('Error updating step order:', error);
+            // Revert the DOM change on error
+            if (fromIndex < toIndex) {
+                container.parentNode.insertBefore(container, draggedElement);
+            } else {
+                container.parentNode.insertBefore(container, draggedElement.nextSibling);
+            }
+        }
+    }
+
+    // Step management functions
+    async function addStep(substageId) {
+        document.getElementById('stepId').value = '';
+        document.getElementById('stepName').value = '';
+        document.getElementById('inputFields').innerHTML = '';
+        document.getElementById('outputFields').innerHTML = '';
+        document.getElementById('stepModal').classList.remove('hidden');
+    }
+
+    async function editStep(stepId) {
+        try {
+            const response = await fetch(`/api/workflow/steps/${stepId}`);
+            const step = await response.json();
+
+            document.getElementById('stepId').value = stepId;
+            document.getElementById('stepName').value = step.name;
+
+            // Populate input fields
+            const inputFields = document.getElementById('inputFields');
+            inputFields.innerHTML = '';
+            if (step.config && step.config.inputs) {
+                Object.entries(step.config.inputs).forEach(([name, config]) => {
+                    addFieldToForm('input', name, config.db_field);
+                });
+            }
+
+            // Populate output fields
+            const outputFields = document.getElementById('outputFields');
+            outputFields.innerHTML = '';
+            if (step.config && step.config.outputs) {
+                Object.entries(step.config.outputs).forEach(([name, config]) => {
+                    addFieldToForm('output', name, config.db_field);
+                });
+            }
+
+            document.getElementById('stepModal').classList.remove('hidden');
+        } catch (error) {
+            console.error('Error fetching step details:', error);
+        }
+    }
+
+    async function deleteStep(stepId) {
+        if (!confirm('Are you sure you want to delete this step?')) return;
+
+        try {
+            const response = await fetch(`/api/workflow/steps/${stepId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete step');
+            }
+
+            // Remove the step from the DOM
+            const stepElement = document.querySelector(`[data-step-id="${stepId}"]`);
+            stepElement.remove();
+        } catch (error) {
+            console.error('Error deleting step:', error);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('stepModal').classList.add('hidden');
+    }
+
+    function addInputField() {
+        addFieldToForm('input');
+    }
+
+    function addOutputField() {
+        addFieldToForm('output');
+    }
+
+    function addFieldToForm(type, name = '', dbField = '') {
+        const container = document.getElementById(`${type}Fields`);
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'grid grid-cols-2 gap-4';
+        fieldDiv.innerHTML = `
+        <input type="text" name="${type}Names[]" placeholder="Field Name" value="${name}"
+               class="bg-[#23273a] border border-dark-border rounded px-3 py-2 text-white">
+        <div class="flex gap-2">
+            <input type="text" name="${type}DbFields[]" placeholder="DB Field" value="${dbField}"
+                   class="flex-1 bg-[#23273a] border border-dark-border rounded px-3 py-2 text-white">
+            <button type="button" onclick="this.closest('div').parentElement.remove()"
+                    class="text-red-400 hover:text-red-300 px-2">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+    `;
+        container.appendChild(fieldDiv);
+    }
+
+    // Form submission
+    document.getElementById('stepForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const stepId = document.getElementById('stepId').value;
+        const formData = new FormData(this);
+
+        // Build the step configuration
+        const config = {
+            inputs: {},
+            outputs: {}
+        };
+
+        // Process input fields
+        const inputNames = formData.getAll('inputNames[]');
+        const inputDbFields = formData.getAll('inputDbFields[]');
+        inputNames.forEach((name, i) => {
+            if (name && inputDbFields[i]) {
+                config.inputs[name] = {
+                    db_field: inputDbFields[i]
+                };
+            }
+        });
+
+        // Process output fields
+        const outputNames = formData.getAll('outputNames[]');
+        const outputDbFields = formData.getAll('outputDbFields[]');
+        outputNames.forEach((name, i) => {
+            if (name && outputDbFields[i]) {
+                config.outputs[name] = {
+                    db_field: outputDbFields[i]
+                };
+            }
+        });
+
+        try {
+            const response = await fetch(`/api/workflow/steps${stepId ? `/${stepId}` : ''}`, {
+                method: stepId ? 'PUT' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: formData.get('name'),
+                    config: config,
+                    substageId: stepId ? null : formData.get('substageId')
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save step');
+            }
+
+            // Reload the page to show the updated step
+            window.location.reload();
+        } catch (error) {
+            console.error('Error saving step:', error);
+        }
+    });
+</script>
+{% endblock %}

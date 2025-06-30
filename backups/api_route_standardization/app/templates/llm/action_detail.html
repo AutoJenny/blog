@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}LLM Action Details{% endblock %}
+
+{% block area_nav %}
+{% include 'llm/_llm_nav.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-10">
+    <div class="admin-card">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="admin-title">
+                <i class="fas fa-bolt mr-2"></i>
+                Action Details: {{ action.field_name }}
+            </h1>
+            <div class="flex gap-2">
+                <a href="/llm/actions" class="btn btn-secondary">Back to Actions</a>
+                <a href="/llm/actions?edit={{ action.id }}" class="btn btn-primary">Edit Action</a>
+            </div>
+        </div>
+        <!-- Step 1: Basic Info -->
+        <div class="bg-dark-card rounded-xl p-6 mb-8">
+            <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-info-circle"></i> 1. Basic
+                Info</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label class="form-label">Field Name</label>
+                    <input type="text" class="form-input" value="{{ action.field_name }}" readonly>
+                </div>
+            </div>
+        </div>
+        <!-- Step 2: Model Settings -->
+        <div class="bg-dark-card rounded-xl p-6 mb-8">
+            <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-robot"></i> 2. Model
+                Settings</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label class="form-label">Provider</label>
+                    <select class="form-input" disabled>
+                        {% for p in providers %}
+                        <option value="{{ p.id }}" {% if provider and provider.id==p.id %}selected{% endif %}>{{ p.name
+                            }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Model</label>
+                    <select class="form-input" disabled>
+                        {% for m in models if m.provider_id == provider.id %}
+                        <option value="{{ m.name }}" {% if action.llm_model==m.name %}selected{% endif %}>{{ m.name }}
+                            ({{ m.description or '' }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prompt Template</label>
+                    <select class="form-input" disabled>
+                        {% for t in prompt_templates %}
+                        <option value="{{ t.id }}" {% if prompt_template and prompt_template.id==t.id %}selected{% endif
+                            %}>{{ t.name }} ({{ t.description or '' }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Temperature</label>
+                    <input type="number" class="form-input" value="{{ action.temperature }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max Tokens</label>
+                    <input type="number" class="form-input" value="{{ action.max_tokens }}" readonly>
+                </div>
+            </div>
+        </div>
+        <!-- Step 3: Prompt Parts -->
+        <div class="bg-dark-card rounded-xl p-6 mb-8">
+            <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> 3. Prompt
+                Parts</h2>
+            <div class="mb-2 text-indigo-200 text-sm">Prompt parts are sent to the AI in order. Variables like
+                <code>{{'{{input}}'}}</code> or <code>{{'{{idea_seed}}'}}</code> (from post_development) will be
+                replaced at runtime.
+            </div>
+            <ol class="list-decimal ml-6">
+                {% for part in action_prompt_parts %}
+                <li class="bg-dark-card rounded p-3 mb-2">
+                    <div class="font-bold text-indigo-300">{{ part.type|capitalize }}</div>
+                    <div class="text-sm text-gray-200" style="white-space: pre-wrap;">
+                        {{ part.content }}
+                    </div>
+                    {% if part.tags %}<div class="text-xs text-indigo-400 mt-1">Tags: {{ part.tags|join(', ') }}</div>{%
+                    endif %}
+                </li>
+                {% endfor %}
+            </ol>
+        </div>
+        <!-- Step 4: Test Action -->
+        <div class="bg-dark-card rounded-xl p-6 mb-8">
+            <h2 class="font-bold text-lg mb-2 flex items-center gap-2"><i class="fa-solid fa-vial"></i> 4. Test Action
+            </h2>
+            <div class="mb-2 text-indigo-200 text-sm">Try out this action with sample input and see what the AI
+                generates.</div>
+            <div class="mb-4">
+                <label class="form-label">Test Input</label>
+                <textarea class="form-input" id="testActionInput" rows="2"></textarea>
+            </div>
+            <div class="flex gap-4 mb-4">
+                <button class="btn btn-primary" id="testActionBtn">Run Test</button>
+                <div id="testActionOutput" class="bg-dark-card rounded p-3 text-green-300"
+                    style="white-space: pre-wrap; min-height: 2em;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const actionId = {{ action.id }};
+    function testAction() {
+        const input = document.getElementById('testActionInput').value;
+        const out = document.getElementById('testActionOutput');
+        out.textContent = 'Running...';
+        fetch(`/api/v1/llm/actions/${actionId}/execute`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input_text: input })
+        })
+            .then(r => r.json())
+            .then(data => {
+                out.textContent = data.output || data.result || JSON.stringify(data);
+            })
+            .catch(err => {
+                out.textContent = 'Error: ' + err;
+            });
+    }
+    document.getElementById('testActionBtn').onclick = testAction;
+</script>
+{% endblock %}

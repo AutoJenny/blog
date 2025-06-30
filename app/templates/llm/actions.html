@@ -1,0 +1,690 @@
+{% extends "base.html" %}
+
+{% block title %}LLM Actions{% endblock %}
+
+{% block styles %}
+<link href="/static/css/dist/main.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    body {
+        background: #18181b;
+    }
+
+    .admin-card {
+        background: #23272F;
+        border-radius: 1rem;
+        box-shadow: 0 6px 32px rgba(0, 0, 0, 0.18);
+        padding: 2.5rem 2rem 2rem 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .action-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .action-accordion-item {
+        background: #23273a;
+        border: 1.5px solid #35395a;
+        border-radius: 0.75rem;
+        padding: 1.25rem 1.5rem;
+        transition: box-shadow 0.2s, border 0.2s, background 0.2s;
+        box-shadow: 0 2px 8px rgba(56, 189, 248, 0.06);
+        cursor: pointer;
+    }
+
+    .action-accordion-item:hover {
+        border-color: #38bdf8;
+        background: #23273aee;
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.13);
+    }
+
+    .action-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .action-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #e0e0e0;
+        letter-spacing: 0.01em;
+    }
+
+    .action-model {
+        color: #a5b4fc;
+        font-size: 1em;
+        margin-left: 1.5rem;
+        font-weight: 500;
+    }
+
+    .action-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.4rem;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+        cursor: pointer;
+        font-size: 0.95em;
+    }
+
+    .btn-primary {
+        background: linear-gradient(90deg, #6366f1 0%, #38bdf8 100%);
+        color: #fff;
+        border: none;
+        font-weight: 700;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(90deg, #38bdf8 0%, #6366f1 100%);
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.18);
+        color: #fff;
+    }
+
+    .btn-secondary {
+        background: #23273a;
+        border: 1.5px solid #35395a;
+        color: #a5b4fc;
+    }
+
+    .btn-secondary:hover {
+        background: #3730a3;
+        border-color: #38bdf8;
+        color: #fff;
+    }
+
+    .btn-danger {
+        background: #DC2626;
+        color: white;
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background: #B91C1C;
+        color: #fff;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        display: block;
+        color: #a5b4fc;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.97em;
+    }
+
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        background: #18181b;
+        border: 1.5px solid #35395a;
+        color: #e0e0e0;
+        padding: 0.7rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 1em;
+        margin-bottom: 0.1rem;
+        transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+        border-color: #38bdf8;
+        outline: none;
+        box-shadow: 0 0 0 2px #38bdf8aa;
+    }
+
+    .form-textarea {
+        min-height: 110px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        line-height: 1.5;
+        resize: vertical;
+    }
+
+    .flex.justify-end.gap-4 {
+        margin-top: 2rem;
+    }
+
+    @media (max-width: 600px) {
+        .admin-card {
+            padding: 1.2rem;
+        }
+
+        .action-card {
+            padding: 1rem;
+        }
+    }
+
+    .highlighted-action {
+        outline: 3px solid #38bdf8;
+        box-shadow: 0 0 0 4px #38bdf8aa;
+        transition: outline 0.3s, box-shadow 0.3s;
+    }
+</style>
+{% endblock %}
+
+{% block area_nav %}
+{% include 'llm/_llm_nav.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-10">
+    <div class="admin-content">
+        <div class="admin-card">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="admin-title"><i class="fas fa-bolt mr-2"></i>LLM Actions</h1>
+                <button class="btn btn-primary" id="newActionBtn"><i class="fas fa-plus"></i> New Action</button>
+            </div>
+            <div class="action-list" id="actionAccordionList">
+                {% for action in actions %}
+                <div class="action-accordion-item" data-id="{{ action.id }}">
+                    <div class="action-header">
+                        <span class="action-name">{{ action.field_name }}</span>
+                        <span class="action-model">Model: {{ action.llm_model }}</span>
+                        <div class="action-actions">
+                            <a href="#nonModalActionBuilder" class="btn btn-primary ml-2 edit-action-link"
+                                data-id="{{ action.id }}" title="Edit Action"><i class="fas fa-edit"></i> Edit</a>
+                            <button class="btn btn-danger delete-action-btn ml-2" data-id="{{ action.id }}"><i
+                                    class="fas fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Non-Modal Action Builder: Four Stages Always Visible -->
+    <div class="admin-card mt-10" id="nonModalActionBuilder">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2" id="builderHeading"><i class="fa-solid fa-plus"></i>
+            Create New Action (Builder)</h2>
+        <form id="actionBuilderForm" autocomplete="off">
+            <!-- Stage 1: Basic Info -->
+            <div class="mb-8">
+                <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-info-circle"></i> 1.
+                    Basic Info</h3>
+                <div class="form-group">
+                    <label class="form-label" for="builderFieldName">Field Name</label>
+                    <input type="text" id="builderFieldName" name="field_name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="builderDescription">Description</label>
+                    <input type="text" id="builderDescription" name="description" class="form-input">
+                </div>
+            </div>
+            <!-- Stage 2: Model Settings -->
+            <div class="mb-8">
+                <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-robot"></i> 2. Model
+                    Settings</h3>
+                <div class="form-group">
+                    <label class="form-label" for="builderProvider">LLM Provider</label>
+                    <select id="builderProvider" name="provider_id" class="form-input" required></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="builderModel">LLM Model</label>
+                    <select id="builderModel" name="llm_model" class="form-input" required></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="builderTemperature">Temperature</label>
+                    <input type="number" id="builderTemperature" name="temperature" class="form-input" min="0" max="2"
+                        step="0.1" value="0.7">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="builderMaxTokens">Max Tokens</label>
+                    <input type="number" id="builderMaxTokens" name="max_tokens" class="form-input" min="1" max="4096"
+                        value="1000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="builderTimeout">Timeout (seconds)</label>
+                    <input type="number" id="builderTimeout" name="timeout" class="form-input" min="10" max="600"
+                        value="60">
+                </div>
+            </div>
+            <!-- Stage 3: Prompt Template -->
+            <div class="mb-8">
+                <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> 3.
+                    Prompt Template</h3>
+                <div class="form-group mb-4">
+                    <label class="form-label" for="builderPromptTemplate">Prompt Template</label>
+                    <select id="builderPromptTemplate" name="prompt_template_id" class="form-input" required></select>
+                </div>
+                <div class="bg-dark-card rounded p-4 mt-4 mb-2">
+                    <h4 class="font-bold mb-1 flex items-center gap-2"><i class="fa-solid fa-eye"></i> Prompt Preview
+                    </h4>
+                    <div id="builderPromptPreview" class="whitespace-pre-line text-indigo-100 text-sm">{ ... select a
+                        template ... }</div>
+                    <div class="text-xs text-indigo-200 mt-1">This is how your full prompt will look to the AI, with
+                        variables replaced at runtime.</div>
+                </div>
+            </div>
+            <!-- Stage 4: Save -->
+            <div class="mb-8">
+                <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-vial"></i> 4. Save</h3>
+                <div class="flex justify-end gap-4 mt-6">
+                    <button type="submit" class="btn btn-primary">Save Action</button>
+                </div>
+                <div id="builderTestArea" style="display:none; margin-top:2.5rem;">
+                    <h3 class="font-bold text-md mb-2 flex items-center gap-2"><i class="fa-solid fa-vial"></i> Test
+                        Action</h3>
+                    <div class="form-group">
+                        <label class="form-label">Test Input</label>
+                        <textarea id="builderTestInput" class="form-textarea" rows="2"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary mb-2" id="builderRunTestBtn">Run Test</button>
+                    <div id="builderTestOutput" class="bg-dark-card rounded p-4 mt-2 text-indigo-100 text-sm"
+                        style="white-space: pre-wrap; min-height: 2em;"></div>
+                </div>
+            </div>
+        </form>
+        <div id="actionBuilderMsg" class="mt-2 text-sm"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let allModels = [];
+    async function fetchProviders() {
+        const resp = await fetch('/api/llm/providers');
+        return resp.json();
+    }
+
+    async function fetchModels() {
+        const resp = await fetch('/api/llm/models');
+        return resp.json();
+    }
+
+    async function fetchPrompts() {
+        const resp = await fetch('/api/llm/prompts');
+        return resp.json();
+    }
+
+    async function fetchPromptTemplate(id) {
+        return fetch(`/api/llm/prompts/${id}`).then(r => r.json());
+    }
+
+    async function deleteAction(actionId) {
+        const resp = await fetch(`/api/llm/actions/${actionId}`, { method: 'DELETE' });
+        return resp.json();
+    }
+
+    async function fetchActionDetails(actionId) {
+        const resp = await fetch(`/api/llm/actions/${actionId}`);
+        return resp.json();
+    }
+
+    async function testAction(actionId, input) {
+        const resp = await fetch(`/api/llm/actions/${actionId}/test`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(input)
+        });
+        return resp.json();
+    }
+
+    async function updateAction(actionId, data) {
+        const resp = await fetch(`/api/llm/actions/${actionId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        return resp.json();
+    }
+
+    async function createAction(data) {
+        const resp = await fetch('/api/llm/actions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        return resp.json();
+    }
+
+    async function loadProviders(selectedProviderId) {
+        const providerSelect = document.getElementById('builderProvider');
+        providerSelect.innerHTML = '<option value="">Select...</option>';
+        try {
+            const providers = await fetchProviders();
+            providerSelect.innerHTML = '<option value="">Select...</option>' +
+                providers.map(p => `<option value="${p.id}" ${selectedProviderId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+            // Auto-load models for first provider if none selected
+            if (!selectedProviderId && providers.length > 0) {
+                loadModels(providers[0].id);
+            }
+        } catch (e) {
+            providerSelect.innerHTML = '<option value="">Failed to load providers</option>';
+        }
+    }
+    async function loadModels(providerId, selectedModelId) {
+        const modelSelect = document.getElementById('builderModel');
+        modelSelect.innerHTML = '<option value="">Loading...</option>';
+        try {
+            const models = await fetchModels();
+            allModels = models; // Save for provider inference
+            const filtered = models.filter(m => String(m.provider_id) === String(providerId));
+            modelSelect.innerHTML = filtered.map(m => `<option value="${m.name}" data-model-id="${m.id}" ${selectedModelId == m.name ? 'selected' : ''}>${m.name} (${m.description || ''})</option>`).join('');
+        } catch (e) {
+            modelSelect.innerHTML = '<option value="">Failed to load models</option>';
+        }
+    }
+    async function loadPromptTemplates(selectedId) {
+        const select = document.getElementById('builderPromptTemplate');
+        select.innerHTML = '<option value="">Select...</option>';
+        try {
+            const prompts = await fetchPrompts();
+            select.innerHTML = '<option value="">Select...</option>' +
+                prompts.map(p => `<option value="${p.id}" ${selectedId == p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+            // Set preview if selected
+            if (selectedId) {
+                const selected = prompts.find(p => p.id == selectedId);
+                if (selected && selected.prompt_json && Array.isArray(selected.prompt_json)) {
+                    const formatted = selected.prompt_json.map(part => {
+                        let tags = part.tags && part.tags.length ? ': ' + part.tags.map(t => t.toUpperCase()).join(',') : '';
+                        let content = part.content || '';
+                        if (part.type === 'data' && part.field) content = `[data:${part.field}]`;
+                        return `[${part.type || ''}${tags}] ${content}`;
+                    }).join('\n');
+                    document.getElementById('builderPromptPreview').textContent = formatted;
+                } else if (selected && selected.prompt_text) {
+                    document.getElementById('builderPromptPreview').textContent = selected.prompt_text;
+                } else {
+                    document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
+                }
+            } else {
+                document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
+            }
+        } catch (e) {
+            select.innerHTML = '<option value="">Failed to load templates</option>';
+            document.getElementById('builderPromptPreview').textContent = '{ ... error ... }';
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        // Always scroll to top on first load
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        loadProviders();
+        loadPromptTemplates();
+        document.getElementById('builderProvider').addEventListener('change', function () {
+            loadModels(this.value);
+        });
+        document.getElementById('builderPromptTemplate').addEventListener('change', function () {
+            const selected = this.options[this.selectedIndex];
+            if (selected && selected.value) {
+                fetch(`/api/llm/prompts/${selected.value}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.prompt_json && Array.isArray(data.prompt_json)) {
+                            const formatted = data.prompt_json.map(part => {
+                                let tags = part.tags && part.tags.length ? ': ' + part.tags.map(t => t.toUpperCase()).join(',') : '';
+                                let content = part.content || '';
+                                if (part.type === 'data' && part.field) content = `[data:${part.field}]`;
+                                return `[${part.type || ''}${tags}] ${content}`;
+                            }).join('\n');
+                            document.getElementById('builderPromptPreview').textContent = formatted;
+                        } else if (data.prompt_text) {
+                            document.getElementById('builderPromptPreview').textContent = data.prompt_text;
+                        } else {
+                            document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
+                        }
+                    });
+            } else {
+                document.getElementById('builderPromptPreview').textContent = '{ ... select a template ... }';
+            }
+        });
+
+        // --- DELETE ACTION LOGIC (event delegation) ---
+        document.getElementById('actionAccordionList').addEventListener('click', async function (e) {
+            const btn = e.target.closest('.delete-action-btn');
+            if (!btn) return;
+            const actionId = btn.dataset.id;
+            if (!actionId) return;
+            if (!confirm('Are you sure you want to delete this action? This cannot be undone.')) return;
+            btn.disabled = true;
+            btn.textContent = 'Deleting...';
+            try {
+                const data = await deleteAction(actionId);
+                if (data.status === 'success') {
+                    btn.closest('.action-accordion-item').remove();
+                } else {
+                    alert(data.error || 'Failed to delete action.');
+                }
+            } catch (e) {
+                alert('Error deleting action: ' + e);
+            }
+            btn.disabled = false;
+            btn.textContent = 'Delete';
+        });
+
+        // --- EDIT/NEW ACTION LOGIC ---
+        function scrollToBuilder() {
+            document.getElementById('nonModalActionBuilder').scrollIntoView({ behavior: 'smooth' });
+        }
+        function setBuilderMode(isEdit) {
+            const submitBtn = document.querySelector('#actionBuilderForm button[type="submit"]');
+            submitBtn.textContent = isEdit ? 'Update Action' : 'Save Action';
+            const heading = document.getElementById('builderHeading');
+            if (heading) {
+                heading.innerHTML = isEdit ? '<i class="fa-solid fa-edit"></i> Edit Action' : '<i class="fa-solid fa-plus"></i> Create New Action (Builder)';
+            }
+            const testArea = document.getElementById('builderTestArea');
+            if (testArea) testArea.style.display = isEdit ? '' : 'none';
+        }
+        function clearBuilder() {
+            document.getElementById('actionBuilderForm').reset();
+            setBuilderMode(false);
+            document.getElementById('actionBuilderForm').removeAttribute('data-edit-id');
+            document.getElementById('actionBuilderMsg').textContent = '';
+        }
+        document.getElementById('newActionBtn').addEventListener('click', function (e) {
+            e.preventDefault();
+            clearBuilder();
+            scrollToBuilder();
+        });
+        document.querySelectorAll('.edit-action-link').forEach(link => {
+            link.addEventListener('click', async function (e) {
+                e.preventDefault();
+                const actionId = this.dataset.id;
+                if (!actionId) return;
+                try {
+                    const resp = await fetch(`/api/llm/actions/${actionId}`);
+                    if (!resp.ok) throw new Error('Failed to fetch action');
+                    const result = await resp.json();
+                    const action = result.action || result; // support both {action: ...} and flat
+                    document.getElementById('builderFieldName').value = action.field_name || '';
+                    document.getElementById('builderDescription').value = action.description || '';
+                    // Infer provider from model
+                    let providerId = '';
+                    if (action.llm_model && allModels.length) {
+                        const modelObj = allModels.find(m => m.name === action.llm_model);
+                        if (modelObj) providerId = modelObj.provider_id;
+                    }
+                    await loadProviders(providerId);
+                    await loadModels(providerId, action.llm_model);
+                    await loadPromptTemplates(action.prompt_template_id);
+                    document.getElementById('builderTemperature').value = action.temperature || 0.7;
+                    document.getElementById('builderMaxTokens').value = action.max_tokens || 1000;
+                    document.getElementById('builderTimeout').value = action.timeout || 60;
+                    document.getElementById('actionBuilderForm').setAttribute('data-edit-id', actionId);
+                    setBuilderMode(true);
+                    scrollToBuilder();
+                } catch (err) {
+                    alert('Failed to load action details: ' + err);
+                }
+            });
+        });
+
+        // --- TEST ACTION LOGIC ---
+        document.getElementById('builderRunTestBtn').addEventListener('click', async function () {
+            const form = document.getElementById('actionBuilderForm');
+            const actionId = form.getAttribute('data-edit-id');
+            if (!actionId) {
+                alert('Test is only available in edit mode.');
+                return;
+            }
+            const testInput = document.getElementById('builderTestInput').value;
+            const outputDiv = document.getElementById('builderTestOutput');
+            const btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Running...';
+            outputDiv.textContent = 'Running...';
+            // Gather settings
+            const provider_id = document.getElementById('builderProvider').value;
+            const llm_model = document.getElementById('builderModel').value;
+            const prompt_template_id = document.getElementById('builderPromptTemplate').value;
+            const temperature = parseFloat(document.getElementById('builderTemperature').value) || 0.7;
+            const max_tokens = parseInt(document.getElementById('builderMaxTokens').value) || 1000;
+            const timeout = parseInt(document.getElementById('builderTimeout').value) || 60;
+            // Auto-detect FIELDNAME from prompt preview
+            let promptPreview = document.getElementById('builderPromptPreview').textContent;
+            let match = promptPreview.match(/\[data:([a-zA-Z0-9_]+)\]/);
+            let testInputObj = {};
+            if (match && match[1]) {
+                testInputObj[match[1]] = testInput;
+            } else {
+                testInputObj['input'] = testInput;
+            }
+            // POST to /api/v1/llm/actions/<id>/test
+            try {
+                const resp = await fetch(`/api/llm/actions/${actionId}/test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input: testInputObj,
+                        provider_id,
+                        llm_model,
+                        prompt_template_id,
+                        temperature,
+                        max_tokens,
+                        timeout
+                    })
+                });
+                const data = await resp.json();
+                if (resp.ok && (data.output || data.response || data.result)) {
+                    outputDiv.textContent = data.output || data.response || data.result;
+                    if (data.rendered_prompt) {
+                        outputDiv.textContent += '\n\n---\nPrompt Sent:\n' + data.rendered_prompt;
+                    }
+                } else if (data.error) {
+                    outputDiv.textContent = 'Error: ' + data.error;
+                } else {
+                    outputDiv.textContent = 'Unknown error or no output.';
+                }
+            } catch (e) {
+                outputDiv.textContent = 'Error: ' + e;
+            }
+            btn.disabled = false;
+            btn.textContent = 'Run Test';
+        });
+    });
+    // --- Test & Save/Update Logic ---
+    document.getElementById('actionBuilderForm').onsubmit = async function (e) {
+        e.preventDefault();
+        const msg = document.getElementById('actionBuilderMsg');
+        msg.textContent = '';
+        const field_name = document.getElementById('builderFieldName').value;
+        const description = document.getElementById('builderDescription').value;
+        const provider_id = parseInt(document.getElementById('builderProvider').value);
+        const llm_model = document.getElementById('builderModel').value;
+        const prompt_template_id = parseInt(document.getElementById('builderPromptTemplate').value);
+        const temperature = parseFloat(document.getElementById('builderTemperature').value) || 0.7;
+        const max_tokens = parseInt(document.getElementById('builderMaxTokens').value) || 1000;
+        const timeout = parseInt(document.getElementById('builderTimeout').value) || 60;
+        if (!field_name || isNaN(provider_id) || provider_id < 1 || !llm_model || isNaN(prompt_template_id) || prompt_template_id < 1) {
+            msg.textContent = 'Please fill in all required fields.';
+            msg.style.color = 'red';
+            return;
+        }
+        const btn = this.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = this.hasAttribute('data-edit-id') ? 'Updating...' : 'Saving...';
+        try {
+            let resp, data;
+            let updatedActionId = null;
+            if (this.hasAttribute('data-edit-id')) {
+                // Update existing action
+                const actionId = this.getAttribute('data-edit-id');
+                updatedActionId = actionId;
+                resp = await fetch(`/api/llm/actions/${actionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        field_name,
+                        description,
+                        provider_id,
+                        llm_model,
+                        prompt_template_id,
+                        temperature,
+                        max_tokens,
+                        timeout
+                    })
+                });
+            } else {
+                // Create new action
+                resp = await fetch('/api/llm/actions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        field_name,
+                        description,
+                        provider_id,
+                        llm_model,
+                        prompt_template_id,
+                        temperature,
+                        max_tokens,
+                        timeout
+                    })
+                });
+            }
+            data = await resp.json();
+            if (resp.ok && (data.status === 'success' || data.success === true)) {
+                msg.textContent = this.hasAttribute('data-edit-id') ? 'Action updated!' : 'Action created!';
+                msg.style.color = 'green';
+                // After update, reload and anchor to the updated action
+                if (updatedActionId) {
+                    localStorage.setItem('llmActionScrollTo', updatedActionId);
+                }
+                setTimeout(() => { location.reload(); }, 800);
+            } else {
+                msg.textContent = data.error || 'Error saving action.';
+                msg.style.color = 'red';
+            }
+        } catch (e) {
+            msg.textContent = 'Error: ' + e;
+            msg.style.color = 'red';
+        }
+        btn.disabled = false;
+        btn.textContent = this.hasAttribute('data-edit-id') ? 'Update Action' : 'Save Action';
+    };
+    // After reload, scroll to and highlight the updated action if needed
+    document.addEventListener('DOMContentLoaded', function () {
+        const scrollToId = localStorage.getItem('llmActionScrollTo');
+        if (scrollToId) {
+            const el = document.querySelector(`.action-accordion-item[data-id="${scrollToId}"]`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('highlighted-action');
+                setTimeout(() => { el.classList.remove('highlighted-action'); }, 2000);
+            }
+            localStorage.removeItem('llmActionScrollTo');
+        }
+    });
+</script>
+{% endblock %}

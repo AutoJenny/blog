@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% set fullwidth_mode = True %}
+{% block title %}Documentation Browser{% endblock %}
+{% block fullwidth %}
+<style>
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background: #181c2a;
+        color: #e0e0e0;
+    }
+
+    .docs-frame-container {
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+    }
+
+    .docs-nav-frame {
+        width: 360px;
+        min-width: 280px;
+        max-width: 440px;
+        height: 100vh;
+        border: none;
+        background: #23273a;
+        box-shadow: 2px 0 8px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .docs-content-frame {
+        flex: 1 1 0%;
+        min-width: 0;
+        height: 100vh;
+        border: none;
+        background: #181c2a;
+        padding: 0 1vw;
+    }
+</style>
+<div class="docs-frame-container">
+    <iframe class="docs-nav-frame" src="/docs/nav/" name="docs-nav"></iframe>
+    <iframe class="docs-content-frame" src="/docs/view/README.md" name="docs-content"></iframe>
+</div>
+{% endblock %}
+
+{% set parent_path = '' %}

@@ -1,0 +1,15 @@
+/* Dark backgrounds for prompt editor fields */
+.prompt-editor input[type="text"],
+.prompt-editor input[type="text"]:focus,
+.prompt-editor textarea,
+.prompt-editor textarea:focus {
+    background-color: #0a0c12 !important;
+    color: #ffffff !important;
+    border: 1px solid #2d3748;
+}
+
+.prompt-editor input[type="text"]:focus,
+.prompt-editor textarea:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+} 

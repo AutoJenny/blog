@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Format Selector Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .format-selector {
+            margin: 10px 0;
+            padding: 5px;
+        }
+
+        #format_preview {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Format Selector Test</h1>
+
+    <div data-step-id="22">
+        <h2>Input Format</h2>
+        <select id="input_format_select" class="format-selector" data-section="input">
+            <option value="">Select input format...</option>
+        </select>
+
+        <h2>Output Format</h2>
+        <select id="output_format_select" class="format-selector" data-section="output">
+            <option value="">Select output format...</option>
+        </select>
+
+        <div id="format_preview" class="hidden">
+            <h3>Format Preview</h3>
+            <div id="format_preview_content"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { FormatSelector } from "/static/js/format_selector.js";
+
+        console.log('[TEST] Starting format selector test...');
+
+        // Initialize format selector
+        const formatSelector = new FormatSelector();
+        window.formatSelector = formatSelector;
+
+        console.log('[TEST] Format selector test initialized');
+    </script>
+</body>
+
+</html>

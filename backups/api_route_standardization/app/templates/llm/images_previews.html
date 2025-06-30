@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}LLM Image Previews{% endblock %}
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .nav-links {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--admin-border);
+        padding-bottom: 0.5rem;
+    }
+
+    .nav-link {
+        color: var(--admin-text-secondary);
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .nav-link:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    .nav-link.active {
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.1);
+        border-bottom: 2px solid var(--admin-accent);
+        margin-bottom: -1px;
+    }
+
+    .images-submenu {
+        margin-top: -0.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1.5rem;
+        border-bottom: 1px solid var(--admin-border);
+        padding-bottom: 0.5rem;
+    }
+
+    .images-tab {
+        padding: 0.75rem 1.5rem;
+        color: var(--admin-text-secondary);
+        border: none;
+        background: transparent;
+        font-weight: 500;
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .images-tab:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.08);
+    }
+
+    .images-tab-active {
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.10);
+        border-bottom: 2px solid var(--admin-accent);
+    }
+
+    .images-level2-tabs {
+        display: flex;
+        gap: 1.5rem;
+        border-bottom: 2px solid var(--admin-border);
+        margin-bottom: 2rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .images-level2-tab {
+        padding: 0.75rem 1.5rem;
+        color: var(--admin-text-secondary);
+        border: none;
+        background: transparent;
+        font-weight: 600;
+        border-radius: 0.5rem 0.5rem 0 0;
+        font-size: 1.1rem;
+        transition: all 0.2s;
+        text-decoration: none;
+        position: relative;
+    }
+
+    .images-level2-tab:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.08);
+    }
+
+    .images-level2-tab.active {
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.10);
+        border-bottom: 2.5px solid var(--admin-accent);
+    }
+</style>
+{% endblock %}
+{% block area_nav %}
+{% include 'llm/_llm_nav.html' %}
+{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto py-10">
+    <div class="admin-card">
+        <h1 class="admin-title mb-6">
+            <i class="fas fa-robot mr-2"></i>
+            LLM Image Tools
+        </h1>
+        <div class="images-level2-tabs">
+            <a href="/llm/images/configs"
+                class="images-level2-tab{% if active_tab == 'configs' %} active{% endif %}">Image Configs</a>
+            <a href="/llm/images/prompts"
+                class="images-level2-tab{% if active_tab == 'prompts' %} active{% endif %}">Image Prompts</a>
+            <a href="/llm/images/previews"
+                class="images-level2-tab{% if active_tab == 'previews' %} active{% endif %}">Image Previews</a>
+        </div>
+        <div class="text-center text-lg text-gray-400 mt-12">
+            <p>Image Previews management coming soon.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

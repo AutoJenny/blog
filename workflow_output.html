@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog CMS</title>
+    <!-- Tailwind CSS -->
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+    </style>
+
+    <link rel="stylesheet" href="/static/modules/llm_panel/css/panels.css">
+
+    <script type="module">
+        import { runLLM } from '/static/js/llm_utils.js';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const postId = urlParams.get('post_id');
+                const stage = urlParams.get('stage');
+                const substage = urlParams.get('substage');
+                const step = urlParams.get('step');
+
+                if (!postId || !stage || !substage || !step) {
+                    throw new Error('Missing required parameters');
+                }
+
+                const result = await runLLM({ postId, stage, substage, step });
+
+                if (result.success) {
+                    document.getElementById('output').textContent = result.result;
+                } else {
+                    throw new Error(result.error || 'Unknown error occurred');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('output').textContent = 'Error: ' + error.message;
+            }
+        });
+    </script>
+
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    <!-- Header -->
+    <header class="header-gradient shadow-lg border-b border-dark-border py-4">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+                <div class="flex items-center space-x-8 flex-1 min-w-0">
+                    <!-- Logo and Title -->
+                    <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+                        <img src="/static/images/site/brand-logo.png" alt="BlogForge Logo"
+                            class="w-10 h-10 rounded-full shadow"
+                            style="background:#23273a; width: 40px; height: 40px;" />
+                        <span class="font-bold text-white">BlogForge</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4 ml-8">
+                    <!-- Modules Dropdown -->
+                    <div class="relative group nav-group" tabindex="0">
+                        <button
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
+                            aria-haspopup="true" aria-expanded="false">
+                            <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down text-xs"></i>
+                        </button>
+                        <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                            <a href="/db/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-database text-purple-400"></i> Database</a>
+                            <a href="/llm/"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-brain text-pink-400"></i> AI</a>
+                            <a href="/llm/images"
+                                class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                    class="fa-solid fa-image text-dark-accent"></i> Images</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+                    <a href="/blog/posts"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
+                    <button
+                        class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition"
+                        id="newPostBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        New Post
+                    </button>
+                    <a href="/docs/"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Docs</a>
+                    <a href="/settings"
+                        class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Settings</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+
+
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <div class="flex flex-col min-h-screen">
+
+            <div id="workflow-nav" class="mb-0">
+                <!-- TEST MARKER 5: NAV TEMPLATE VERIFICATION -->
+                <!-- Workflow Navigation -->
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+
+
+
+
+                <link rel="stylesheet" href="/static/workflow_nav/css/nav.dist.css">
+
+
+                <div class="bg-dark-bg py-6">
+                    <div class="container mx-auto px-6">
+                        <!-- Line 1: Breadcrumbs and Post Selector -->
+                        <div class="flex justify-between items-center mb-8">
+                            <nav class="text-base">
+                                <h2 class="text-2xl font-bold text-dark-text">Idea : </h2>
+                            </nav>
+                            <div class="relative">
+                                <select id="post-selector"
+                                    class="bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text min-w-[200px]">
+
+                                    <option value="22">story-telling...
+                                    </option>
+
+                                    <option value="21">kilts for weddings...
+                                    </option>
+
+                                    <option value="6">The Tradition of the Scottish Quaich
+                                    </option>
+
+                                    <option value="5">English tartans
+                                    </option>
+
+                                    <option value="4">The Evolution of the Modern Scottish Kilt
+                                    </option>
+
+                                    <option value="2">hand-fasting...
+                                    </option>
+
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Second line: All sub-stages as named icons in three groups of three -->
+                        <div class="flex justify-center gap-12 mb-8">
+                            <!-- Planning Group -->
+                            <div class="flex flex-col items-center">
+                                <span class="text-sm text-gray-400 mb-3 font-medium">Planning</span>
+                                <div class="flex gap-6">
+
+
+
+                                    <a href="/workflow/posts/1/planning/idea"
+                                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 border-blue-500 bg-dark-hover">
+                                        <i class="fas fa-lightbulb text-2xl mb-3 text-blue-500"></i>
+                                        <div class="text-sm text-blue-500 font-medium">
+                                            Idea</div>
+                                    </a>
+
+
+
+                                    <a href="/workflow/posts/1/planning/research"
+                                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 border-dark-border">
+                                        <i class="fas fa-search text-2xl mb-3 text-dark-text"></i>
+                                        <div class="text-sm text-dark-text">
+                                            Research</div>
+                                    </a>
+
+
+
+                                    <a href="/workflow/posts/1/planning/structure"
+                                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 border-dark-border">
+                                        <i class="fas fa-sitemap text-2xl mb-3 text-dark-text"></i>
+                                        <div class="text-sm text-dark-text">
+                                            Structure</div>
+                                    </a>
+
+                                </div>
+                            </div>
+                            <!-- Writing Group -->
+                            <div class="flex flex-col items-center">
+                                <span class="text-sm text-gray-400 mb-3 font-medium">Writing</span>
+                                <div class="flex gap-6">
+
+
+
+                                    <a href="/workflow/posts/1/writing/content"
+                                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 border-dark-border">
+                                        <i class="fas fa-pen text-2xl mb-3 text-dark-text"></i>
+                                        <div class="text-sm text-dark-text">
+                                            Content</div>
+                                    </a>
+
+
+
+                                    <a href="/workflow/posts/1/writing/meta_info"
+                                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 border-dark-border">
+                                        <i class="fas fa-tags text-2xl mb-3 text-dark-text"></i>
+                                        <div class="text-sm text-dark-text">
+                                            Meta info</div>
+                                    </a>
+
+
+
+                                    <a href="/workflow/posts/1/writing/images"
+                                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 border-dark-border">
+                                        <i class="fas fa-image text-2xl mb-3 text-dark-text"></i>
+                                        <div class="text-sm text-dark-text">
+                                            Images</div>
+                                    </a>
+
+                                </div>
+                            </div>
+                            <!-- Publishing Group -->
+                            <div class="flex flex-col items-center">
+                                <span class="text-sm text-gray-400 mb-3 font-medium">Publishing</span>
+                                <div class="flex gap-6">
+
+
+
+                                    <a href="/workflow/posts/1/publishing/preflight"
+                                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 border-dark-border">
+                                        <i class="fas fa-check-circle text-2xl mb-3 text-dark-text"></i>
+                                        <div class="text-sm text-dark-text">
+                                            Preflight</div>
+                                    </a>
+
+
+
+                                    <a href="/workflow/posts/1/publishing/launch"
+                                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 border-dark-border">
+                                        <i class="fas fa-rocket text-2xl mb-3 text-dark-text"></i>
+                                        <div class="text-sm text-dark-text">
+                                            Launch</div>
+                                    </a>
+
+
+
+                                    <a href="/workflow/posts/1/publishing/syndication"
+                                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 border-dark-border">
+                                        <i class="fas fa-share-alt text-2xl mb-3 text-dark-text"></i>
+                                        <div class="text-sm text-dark-text">
+                                            Syndication</div>
+                                    </a>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Line 3: Tabs for steps in the current sub-stage -->
+                        <div class="bg-dark-bg border border-dark-border rounded-lg p-4 mb-6">
+                            <div class="flex space-x-4">
+
+
+                                <a href="/workflow/posts/1/planning/idea?step=idea_scope"
+                                    class="px-6 py-3 rounded-lg font-medium transition-all duration-200 text-gray-400 hover:bg-dark-hover hover:text-dark-text">
+                                    Idea Scope
+                                </a>
+
+                                <a href="/workflow/posts/1/planning/idea?step=idea_seed"
+                                    class="px-6 py-3 rounded-lg font-medium transition-all duration-200 text-gray-400 hover:bg-dark-hover hover:text-dark-text">
+                                    Idea Seed
+                                </a>
+
+                                <a href="/workflow/posts/1/planning/idea?step=initial"
+                                    class="px-6 py-3 rounded-lg font-medium transition-all duration-200 bg-blue-500 text-white shadow-lg">
+                                    Initial
+                                </a>
+
+                                <a href="/workflow/posts/1/planning/idea?step=provisional_title"
+                                    class="px-6 py-3 rounded-lg font-medium transition-all duration-200 text-gray-400 hover:bg-dark-hover hover:text-dark-text">
+                                    Provisional Title
+                                </a>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <script>
+                    document.getElementById('post-selector').addEventListener('change', function () {
+                        const postId = this.value;
+                        const currentStage = 'planning';
+                        const currentSubstage = 'idea';
+
+                        // Use the proper URL structure based on the current blueprint
+
+                        window.location.href = `/workflow/posts/0`.replace('/0/', `/${postId}/`);
+
+                    });
+                </script>
+            </div>
+
+
+            <div class="flex-grow">
+
+
+                <div class="px-6 -mt-20">
+                    <div id="workflow-llm-actions" style="background-color: #2D0A50; width: 100%; min-height: 400px;"
+                        class="rounded-lg p-6 shadow-lg">
+
+                        <!-- DEBUG: Template path for panel: /Users/nickfiddes/Code/projects/blog/app/templates/modules/llm_panel/templates/panel.html -->
+                        <div id="llm-workflow-root" data-substage="idea" data-post-id="1"
+                            class="max-w-5xl mx-auto py-10 flex flex-col gap-8">
+                            <!-- TEST MARKER 3: PANEL TEMPLATE VERIFICATION -->
+                            <!-- LLM Panel Content -->
+                            <div class="space-y-4" data-current-stage="planning" data-current-substage="idea"
+                                data-current-step="initial">
+                                <!-- Run LLM Button -->
+                                <div class="mb-4 flex justify-center">
+                                    <button id="run-llm-btn"
+                                        class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-colors duration-200 min-w-[200px]">
+                                        Run LLM
+                                    </button>
+                                </div>
+
+                                <!-- Inputs -->
+                                <!-- Inputs Section -->
+                                <div class="border border-dark-border rounded-lg p-4 mb-4">
+                                    <h2 class="text-xl font-medium text-dark-text mb-4">Inputs</h2>
+
+
+                                    <div class="mb-4">
+                                        <label for="input1" class="block text-sm font-medium text-blue-500 mb-2">
+                                            [input1]
+                                        </label>
+                                        <select
+                                            class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                                            data-target="input1" data-section="inputs" data-current-substage="idea">
+                                            <!-- Options will be populated by JavaScript -->
+                                        </select>
+                                        <textarea id="input1" name="input1"
+                                            class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                                            data-db-field="idea_seed" data-db-table="" rows="4"
+                                            placeholder="Enter text..."></textarea>
+                                    </div>
+
+
+                                </div>
+
+                                <!-- Prompt -->
+                                <!-- Prompt Section -->
+                                <div class="border border-dark-border rounded-lg p-4 mb-4">
+                                    <h2 class="text-xl font-medium text-dark-text mb-4">Prompt</h2>
+
+                                    <div class="mb-4">
+                                        <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
+                                        <pre class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.
+
+[system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.
+
+Short Idea:
+[data:idea_seed]
+
+Your response should:
+1. Focus specifically on Scottish cultural and historical aspects
+2. Maintain academic accuracy while being accessible
+3. Suggest clear angles and themes for development
+4. Use UK-British spellings and idioms
+5. Return only the expanded brief, with no additional commentary or formatting</pre>
+                                    </div>
+
+                                </div>
+
+                                <!-- Settings -->
+                                <!-- Settings Section -->
+                                <div class="border border-dark-border rounded-lg p-4 mb-4">
+                                    <h2 class="text-xl font-medium text-dark-text mb-4">Settings</h2>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-blue-500">Model</label>
+                                            <input type="text" value="llama3.1:70b"
+                                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                                readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-blue-500">Temperature</label>
+                                            <input type="text" value="0.7"
+                                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                                readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-blue-500">Max tokens</label>
+                                            <input type="text" value="1000"
+                                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                                readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-blue-500">Top P</label>
+                                            <input type="text" value="0.9"
+                                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                                readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-blue-500">Frequency
+                                                Penalty</label>
+                                            <input type="text" value="0.0"
+                                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                                readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-blue-500">Presence
+                                                Penalty</label>
+                                            <input type="text" value="0.0"
+                                                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                                                readonly>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- Outputs -->
+                                <!-- Outputs Section -->
+                                <div class="border border-dark-border rounded-lg p-4 mb-4">
+                                    <h2 class="text-xl font-medium text-dark-text mb-4">Outputs</h2>
+
+
+                                    <div class="mb-4">
+                                        <label for="expanded_idea" class="block text-sm font-medium text-blue-500 mb-2">
+                                            Output
+                                        </label>
+                                        <select
+                                            class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                                            data-target="expanded_idea" data-section="outputs"
+                                            data-current-substage="idea">
+                                            <!-- Options will be populated by JavaScript -->
+                                        </select>
+
+                                        <textarea id="expanded_idea" name="expanded_idea"
+                                            class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                                            data-db-field="basic_idea" data-db-table="post_development" rows="4"
+                                            placeholder="Enter text...">Idea seed: The impact of Jacobite Risings on Scotland&#39;s language and culture.
+
+The Jacobite Risings of 1715 and 1745 were pivotal moments in Scottish history, but their cultural significance extends far beyond the battles fought on Culloden Moor or the intrigues within the Palace of Holyrood. This article will delve into how these rebellions influenced the evolution of Scotland&#39;s language and culture, often in unexpected ways. One angle to explore is how the Jacobite leaders&#39; French connections shaped Scottish art and architecture, particularly in the realm of decorative arts and interior design. For example, the lavish furnishings and ornate details found in some Scottish castles reflect the Gallic tastes imposed by their former rulers. Another theme could be the linguistic impact of Jacobitism on modern-day Scotland, where Gaelic and Scots remain important cultural touchstones. The influence of Gaelic poetry and storytelling on Scottish literature is also worth examining, particularly in relation to famous Jacobite-era writers such as James Macpherson and Alexander Pope. By investigating these interconnected threads, this article aims to uncover a more nuanced understanding of how the Jacobite Risings have left an enduring legacy in Scotland&#39;s cultural landscape.</textarea>
+
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            <!-- Styles -->
+                            <link rel="stylesheet" href="/static/modules/llm_panel/css/panels.css">
+
+                            <!-- Scripts -->
+                            <script type="module">
+                                import { FieldSelector } from "/static/modules/llm_panel/js/field_selector.js";
+
+                                // Initialize field selector
+                                window.addEventListener('DOMContentLoaded', () => {
+                                    window.fieldSelector = new FieldSelector();
+                                });
+
+                                // Initialize LLM button
+                                const runLLMBtn = document.getElementById('run-llm-btn');
+                                if (runLLMBtn) {
+                                    runLLMBtn.addEventListener('click', async () => {
+                                        try {
+                                            runLLMBtn.disabled = true;
+                                            runLLMBtn.textContent = 'Processing...';
+
+                                            // Get current workflow context from URL
+                                            const pathParts = window.location.pathname.split('/');
+                                            const postId = pathParts[3];
+                                            const stage = pathParts[4];
+                                            const substage = pathParts[5];
+                                            const urlParams = new URLSearchParams(window.location.search);
+                                            const step = urlParams.get('step') || 'initial';
+
+                                            const result = await runLLM({ postId, stage, substage, step });
+                                            if (result.success) {
+                                                document.getElementById('output').value = result.result;
+                                            } else {
+                                                throw new Error(result.error || 'Unknown error occurred');
+                                            }
+                                        } catch (error) {
+                                            console.error('Error:', error);
+                                            alert('Error running LLM: ' + error.message);
+                                        } finally {
+                                            runLLMBtn.disabled = false;
+                                            runLLMBtn.textContent = 'Run LLM';
+                                        }
+                                    });
+                                }
+                            </script>
+
+                            <!-- Styles -->
+                            <style>
+                                #run-llm-btn {
+                                    background-color: #6B46C1;
+                                    border: 1px solid #805AD5;
+                                }
+
+                                #run-llm-btn:hover {
+                                    background-color: #553C9A;
+                                }
+
+                                #run-llm-btn:disabled {
+                                    background-color: #4A5568;
+                                    cursor: not-allowed;
+                                }
+                            </style>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">
+                &copy; 2025 Blog CMS. All rights reserved. |
+                <a href="/docs" class="text-indigo-300 hover:text-indigo-100 underline ml-2">Docs</a>
+            </p>
+        </div>
+    </footer>
+
+
+    <!-- No additional scripts needed here - they are included in _modular_llm_panels.html -->
+
+    <!-- Mermaid.js for diagrams in markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.mermaid) {
+                setTimeout(function () {
+                    mermaid.initialize({ startOnLoad: false });
+                    document.querySelectorAll('pre > code.language-mermaid').forEach(function (block, i) {
+                        var parent = block.parentElement;
+                        var code = block.innerText;
+                        var d = document.createElement('div');
+                        d.className = 'mermaid';
+                        d.innerText = code;
+                        parent.replaceWith(d);
+                    });
+                    try {
+                        mermaid.run();
+                    } catch (e) {
+                        console.error('Mermaid render error:', e);
+                        document.querySelectorAll('.mermaid').forEach(function (el) {
+                            el.innerHTML = '<div style="color:#f87171;background:#23273a;padding:1em;border-radius:.5em;">Mermaid render error:<br>' + e.message + '</div>';
+                        });
+                    }
+                }, 100);
+            }
+        });
+    </script>
+</body>
+
+</html>

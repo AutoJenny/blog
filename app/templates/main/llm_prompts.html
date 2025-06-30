@@ -1,0 +1,1166 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .prompt-type {
+        display: inline-block;
+        padding: 0.25em 0.75em;
+        border-radius: 9999px;
+        font-size: 0.95em;
+        font-weight: 600;
+        background: #6366f1;
+        color: #fff;
+    }
+
+    .action-btn {
+        @apply text-indigo-400 hover:text-indigo-200 px-2;
+    }
+
+    .action-btn[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .modal-bg {
+        background: rgba(24, 28, 42, 0.85);
+    }
+
+    .tab-bar {
+        display: flex;
+        border-bottom: 2px solid #373a4d;
+        margin-bottom: 0;
+        background: none;
+    }
+
+    .tab-btn {
+        @apply font-semibold focus:outline-none transition-colors duration-150;
+        background: #23263a;
+        color: #a5b4fc;
+        border: none;
+        border-radius: 0.75rem 0.75rem 0 0;
+        margin-right: 0.25rem;
+        margin-bottom: -2px;
+        position: relative;
+        top: 2px;
+        z-index: 1;
+        box-shadow: none;
+        font-size: 1.15rem;
+        letter-spacing: 0.01em;
+        padding: 0.85rem 2.5rem;
+        /* fallback for extra padding */
+        min-width: 180px;
+        text-align: center;
+    }
+
+    .tab-btn.active {
+        background: #fff;
+        color: #373a4d;
+        border-bottom: 2px solid #fff;
+        box-shadow: 0 -2px 8px 0 rgba(99, 102, 241, 0.08);
+        z-index: 2;
+    }
+
+    .tab-btn:not(.active):hover,
+    .tab-btn:not(.active):focus {
+        background: #373a4d;
+        color: #fff;
+    }
+
+    .draggable-seq-item {
+        background: #064e3b;
+        /* deep green */
+        color: #d1fae5;
+        border: 1px solid #065f46;
+        box-shadow: 0 2px 8px 0 rgba(6, 78, 59, 0.08);
+        transition: box-shadow 0.2s;
+    }
+
+    .draggable-seq-item .drag-handle {
+        font-size: 1.3em;
+        color: #34d399;
+        cursor: grab;
+    }
+
+    .sortable-ghost {
+        opacity: 0.5;
+        background: #065f46 !important;
+    }
+
+    .sortable-chosen {
+        box-shadow: 0 0 0 2px #34d399;
+    }
+
+    /* Darker blue background for available prompt parts in assembler */
+    .assembler-part {
+        background: #172554;
+        /* blue-900 */
+        color: #dbeafe;
+        border: 1px solid #1e40af;
+        transition: box-shadow 0.2s;
+    }
+
+    .assembler-part:hover {
+        background: #1e40af;
+        color: #fff;
+    }
+
+    /* Green for the draggable data field entity */
+    #assemblerDataDraggable {
+        background: #064e3b !important;
+        color: #d1fae5 !important;
+        border: 1px solid #065f46;
+    }
+
+    .tag-role {
+        background: #1e3a8a;
+        color: #fff;
+        border-radius: 0.5em;
+        padding: 0.2em 0.9em;
+        font-weight: 700;
+    }
+
+    .tag-operation {
+        background: #991b1b;
+        color: #fff;
+        border-radius: 0.5em;
+        padding: 0.2em 0.9em;
+        font-weight: 700;
+    }
+
+    .tag-format {
+        background: #b45309;
+        color: #fff;
+        border-radius: 0.5em;
+        padding: 0.2em 0.9em;
+        font-weight: 700;
+    }
+
+    .tag-style {
+        background: #065f46;
+        color: #fff;
+        border-radius: 0.5em;
+        padding: 0.2em 0.9em;
+        font-weight: 700;
+    }
+
+    .tag-specimen {
+        background: #374151;
+        color: #fff;
+        border-radius: 0.5em;
+        padding: 0.2em 0.9em;
+        font-weight: 700;
+    }
+
+    /* Add system/user part backgrounds for Prompt Parts and Assembler */
+    .part-bg-system {
+        background: #172554;
+        /* blue-900 */
+        color: #dbeafe;
+    }
+
+    .part-bg-user {
+        background: #064e3b;
+        /* deep green */
+        color: #d1fae5;
+    }
+
+    .part-bg-assistant {
+        background: #3b0764;
+        /* deep purple for assistant, if needed */
+        color: #f3e8ff;
+    }
+</style>
+<div class="container mx-auto py-10 px-4">
+    <div class="tab-bar mb-0">
+        <button class="tab-btn active" id="tabPartsBtn" type="button" tabindex="0">Prompt Parts</button>
+        <button class="tab-btn" id="tabAssemblerBtn" type="button" tabindex="0">Prompt Assembler</button>
+        <button class="tab-btn" id="tabPromptsBtn" type="button" tabindex="0">Prompt Templates</button>
+    </div>
+    <div id="tabParts" class="tab-content">
+        <div class="flex justify-between items-center mb-8 mt-0">
+            <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+                <i class="fa-solid fa-layer-group"></i> LLM Prompt Parts
+            </div>
+            <button id="addPromptPartBtn"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> New Prompt Part
+            </button>
+        </div>
+        <!-- Filter by Type Radio Group -->
+        <div class="mb-4 flex items-center gap-6">
+            <span class="text-dark-accent font-semibold mr-2">Type:</span>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="promptPartType" value="all" class="accent-indigo-500 mr-2" checked>
+                <span class="text-indigo-200">All</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="promptPartType" value="system" class="accent-indigo-500 mr-2">
+                <span class="text-indigo-200">System</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="promptPartType" value="user" class="accent-indigo-500 mr-2">
+                <span class="text-indigo-200">User</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="promptPartType" value="assistant" class="accent-indigo-500 mr-2">
+                <span class="text-indigo-200">Assistant</span>
+            </label>
+            <span class="text-dark-accent font-semibold ml-8 mr-2">Tags:</span>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="promptPartTag" value="role" class="accent-indigo-500 mr-2" checked>
+                <span class="text-indigo-200">Role</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="promptPartTag" value="operation" class="accent-indigo-500 mr-2" checked>
+                <span class="text-indigo-200">Operation</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="promptPartTag" value="format" class="accent-indigo-500 mr-2" checked>
+                <span class="text-indigo-200">Format</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="promptPartTag" value="style" class="accent-indigo-500 mr-2" checked>
+                <span class="text-indigo-200">Style</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" name="promptPartTag" value="specimen" class="accent-indigo-500 mr-2" checked>
+                <span class="text-indigo-200">Specimen</span>
+            </label>
+        </div>
+        <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+            <table class="min-w-full text-left" id="promptPartsTable">
+                <thead>
+                    <tr class="text-indigo-200 border-b border-dark-border">
+                        <th class="py-2 px-3">ID</th>
+                        <th class="py-2 px-3">Name</th>
+                        <th class="py-2 px-3">Type</th>
+                        <th class="py-2 px-3">Tags</th>
+                        <th class="py-2 px-3">Content</th>
+                        <th class="py-2 px-3">Order</th>
+                        <th class="py-2 px-3">Action ID</th>
+                        <th class="py-2 px-3">Created</th>
+                        <th class="py-2 px-3">Updated</th>
+                        <th class="py-2 px-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for part in prompt_parts %}
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <td class="py-2 px-3">{{ part.id }}</td>
+                        <td class="py-2 px-3">{{ part.name }}</td>
+                        <td class="py-2 px-3">{{ part.type }}</td>
+                        <td class="py-2 px-3">
+                            {% if part.tags %}
+                            {% for tag in part.tags %}
+                            <span
+                                class="
+                                        {% if tag == 'role' %}tag-role{% elif tag == 'operation' %}tag-operation{% elif tag == 'format' %}tag-format{% elif tag == 'style' %}tag-style{% elif tag == 'specimen' %}tag-specimen{% endif %}">
+                                {{ tag|capitalize }}
+                            </span>{% if not loop.last %} {% endif %}
+                            {% endfor %}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td class="py-2 px-3 text-xs">{{ part.content }}</td>
+                        <td class="py-2 px-3">{{ part.order }}</td>
+                        <td class="py-2 px-3">{{ part.action_id }}</td>
+                        <td class="py-2 px-3">{{ part.created_at }}</td>
+                        <td class="py-2 px-3">{{ part.updated_at }}</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn edit-part-btn" title="Edit" data-id="{{ part.id }}"><i
+                                    class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn delete-part-btn" title="Delete" data-id="{{ part.id }}"><i
+                                    class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="tabAssembler" class="tab-content" style="display:none;">
+        <div class="flex justify-between items-center mb-8 mt-0">
+            <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Prompt Assembler
+            </div>
+        </div>
+        <div class="mb-4 text-indigo-200">Build a new prompt by assembling prompt parts in sequence. Drag to reorder.
+            Click a part to add it to the sequence below.</div>
+        <div class="flex gap-8">
+            <div class="w-1/2">
+                <h4 class="font-bold mb-2 text-indigo-200">Available Prompt Parts</h4>
+                <!-- Filter by Type Radio Group (copied from Prompt Parts tab) -->
+                <div class="mb-4 flex items-center gap-6">
+                    <span class="text-dark-accent font-semibold mr-2">Type:</span>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="assemblerPartType" value="all" class="accent-indigo-500 mr-2" checked>
+                        <span class="text-indigo-200">All</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="assemblerPartType" value="system" class="accent-indigo-500 mr-2">
+                        <span class="text-indigo-200">System</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="assemblerPartType" value="user" class="accent-indigo-500 mr-2">
+                        <span class="text-indigo-200">User</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="assemblerPartType" value="assistant" class="accent-indigo-500 mr-2">
+                        <span class="text-indigo-200">Assistant</span>
+                    </label>
+                </div>
+                <div class="mb-4 flex items-center gap-6">
+                    <span class="text-dark-accent font-semibold mr-2">Tags:</span>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="assemblerPartTag" value="role" class="accent-indigo-500 mr-2"
+                            checked>
+                        <span class="text-indigo-200">Role</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="assemblerPartTag" value="operation" class="accent-indigo-500 mr-2"
+                            checked>
+                        <span class="text-indigo-200">Operation</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="assemblerPartTag" value="format" class="accent-indigo-500 mr-2"
+                            checked>
+                        <span class="text-indigo-200">Format</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="assemblerPartTag" value="style" class="accent-indigo-500 mr-2"
+                            checked>
+                        <span class="text-indigo-200">Style</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="assemblerPartTag" value="specimen" class="accent-indigo-500 mr-2"
+                            checked>
+                        <span class="text-indigo-200">Specimen</span>
+                    </label>
+                </div>
+                <div id="assemblerPartsList" class="bg-dark-card rounded p-4 mb-4 max-h-80 overflow-y-auto">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            <div class="w-1/2">
+                <h4 class="font-bold mb-2 text-indigo-200">Assembled Sequence</h4>
+                <div class="mb-4 flex items-center gap-4">
+                    <label for="assemblerDataField" class="text-dark-accent font-semibold">Insert Post Data:</label>
+                    <select id="assemblerDataField"
+                        class="form-input bg-dark-bg border border-dark-border text-indigo-200 rounded">
+                        <option value="">-- Select Field --</option>
+                        <option value="id">id</option>
+                        <option value="title">title</option>
+                        <option value="slug">slug</option>
+                        <option value="summary">summary</option>
+                        <option value="created_at">created_at</option>
+                        <option value="updated_at">updated_at</option>
+                        <option value="header_image_id">header_image_id</option>
+                        <option value="status">status</option>
+                        <option value="idea_seed">idea_seed (from post_development)</option>
+                        <option value="substage_id">substage_id</option>
+                    </select>
+                    <!-- External source list for SortableJS clone -->
+                    <ul id="assemblerDataSource" class="inline-block align-middle"
+                        style="min-width:120px;display:inline-block;vertical-align:middle;padding:0;margin:0;background:none;border:none;">
+                    </ul>
+                </div>
+                <ul id="assemblerSequenceList" class="bg-dark-card rounded p-4 mb-2 min-h-24"></ul>
+                <div class="flex justify-end mt-2">
+                    <button id="assemblerClearBtn" class="btn btn-secondary mr-2">Clear</button>
+                    <button id="assemblerSaveBtn" class="btn btn-primary">Save as Template</button>
+                </div>
+                <div class="bg-dark-card rounded p-4 mt-4">
+                    <h5 class="font-bold mb-1 flex items-center gap-2 text-indigo-200"><i class="fa-solid fa-eye"></i>
+                        Prompt Preview</h5>
+                    <div id="assemblerPromptPreview" class="whitespace-pre-line text-indigo-100 text-sm">{ ... assembled
+                        prompt ... }</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tabPrompts" class="tab-content" style="display:none;">
+        <div class="flex justify-between items-center mb-8 mt-0">
+            <div class="text-2xl font-bold text-indigo-300 flex items-center gap-3">
+                <i class="fa-solid fa-scroll"></i> LLM Prompt Templates
+            </div>
+            <button id="addPromptBtn"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded shadow flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> New Prompt
+            </button>
+        </div>
+        <div class="bg-dark-card rounded-xl p-6 shadow mb-8 overflow-x-auto">
+            <table class="min-w-full text-left">
+                <thead>
+                    <tr class="text-indigo-200 border-b border-dark-border">
+                        <th class="py-2 px-3">Name</th>
+                        <th class="py-2 px-3">Type</th>
+                        <th class="py-2 px-3">Content</th>
+                        <th class="py-2 px-3">Last Updated</th>
+                        <th class="py-2 px-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prompt in prompts %}
+                    <tr class="border-b border-dark-border hover:bg-indigo-950/30">
+                        <script type="application/json"
+                            class="prompt-json">{{ prompt.prompt_json|default([])|tojson|safe }}</script>
+                        <td class="py-2 px-3 font-semibold text-white">{{ prompt.name }}</td>
+                        <td class="py-2 px-3">{{ prompt.type if prompt.type else 'None' }}</td>
+                        <td class="py-2 px-3"></td>
+                        <td class="py-2 px-3">2025-05-21</td>
+                        <td class="py-2 px-3 flex gap-2">
+                            <button class="action-btn edit-template-assembler-btn" title="Edit"
+                                data-id="{{ prompt.id }}"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn" title="Assign"><i class="fa-solid fa-link"></i></button>
+                            <button class="action-btn prompt-delete-btn" title="Delete" data-id="{{ prompt.id }}"><i
+                                    class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Add Prompt Modal (placeholder) -->
+    <div id="addPromptModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+            <button id="closeAddPrompt" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-plus"></i>
+                New Prompt Template</div>
+            <form>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Prompt Name</label>
+                    <input type="text" class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. Summarize Post" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Type</label>
+                    <select class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white">
+                        <option>Summary</option>
+                        <option>SEO</option>
+                        <option>Tags</option>
+                        <option>Custom</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Prompt Template</label>
+                    <textarea class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white" rows="4"
+                        placeholder="Enter prompt template..."></textarea>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="submit"
+                        class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Prompt Preview Modal (placeholder) -->
+    <div id="promptPreviewModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <button id="closePromptPreview" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-eye"></i>
+                Prompt Preview</div>
+            <div class="mb-4 text-dark-accent">(Prompt preview will appear here)</div>
+            <div class="flex justify-end">
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded shadow">Close</button>
+            </div>
+        </div>
+    </div>
+    <!-- Add Prompt Part Modal -->
+    <div id="addPromptPartModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-bg">
+        <div class="bg-dark-card rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+            <button id="closeAddPromptPart" class="absolute top-3 right-3 text-indigo-400 hover:text-indigo-200"><i
+                    class="fa-solid fa-xmark fa-lg"></i></button>
+            <div class="text-xl font-bold text-indigo-300 mb-4 flex items-center gap-2"><i class="fa-solid fa-plus"></i>
+                <span id="promptPartModalTitle">New Prompt Part</span>
+            </div>
+            <form id="addPromptPartForm">
+                <input type="hidden" id="promptPartId" value="" />
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Name</label>
+                    <input type="text" id="promptPartName"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="e.g. System Instruction" required />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Type</label>
+                    <select id="promptPartType"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white" required>
+                        <option value="system">System</option>
+                        <option value="user">User</option>
+                        <option value="assistant">Assistant</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Tags</label>
+                    <div class="flex flex-wrap gap-4">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="promptPartTags" value="role" class="accent-indigo-500 mr-2">
+                            <span class="text-indigo-200">Role</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="promptPartTags" value="operation"
+                                class="accent-indigo-500 mr-2">
+                            <span class="text-indigo-200">Operation</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="promptPartTags" value="format" class="accent-indigo-500 mr-2">
+                            <span class="text-indigo-200">Format</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="promptPartTags" value="style" class="accent-indigo-500 mr-2">
+                            <span class="text-indigo-200">Style</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="promptPartTags" value="specimen"
+                                class="accent-indigo-500 mr-2">
+                            <span class="text-indigo-200">Specimen</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Content</label>
+                    <textarea id="promptPartContent"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white" rows="4"
+                        placeholder="Enter prompt part content..." required></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-dark-accent mb-1">Order</label>
+                    <input type="number" id="promptPartOrder"
+                        class="w-full rounded bg-dark-bg border border-dark-border px-3 py-2 text-white"
+                        placeholder="Order (0 = first)" value="0" min="0" />
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="submit"
+                        class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Add SortableJS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Tab logic: Prompt Parts is default
+        const tabPromptsBtn = document.getElementById('tabPromptsBtn');
+        const tabPartsBtn = document.getElementById('tabPartsBtn');
+        const tabAssemblerBtn = document.getElementById('tabAssemblerBtn');
+        const tabPrompts = document.getElementById('tabPrompts');
+        const tabParts = document.getElementById('tabParts');
+        const tabAssembler = document.getElementById('tabAssembler');
+        function showTab(tab) {
+            tabPartsBtn.classList.remove('active');
+            tabAssemblerBtn.classList.remove('active');
+            tabPromptsBtn.classList.remove('active');
+            tabParts.style.display = 'none';
+            tabAssembler.style.display = 'none';
+            tabPrompts.style.display = 'none';
+            if (tab === 'parts') {
+                tabPartsBtn.classList.add('active');
+                tabParts.style.display = '';
+            } else if (tab === 'assembler') {
+                tabAssemblerBtn.classList.add('active');
+                tabAssembler.style.display = '';
+            } else {
+                tabPromptsBtn.classList.add('active');
+                tabPrompts.style.display = '';
+            }
+        }
+        // Set tab button handlers only once, with correct logic for each tab
+        tabPartsBtn.onclick = function () {
+            showTab('parts');
+            filterPromptParts();
+        };
+        tabAssemblerBtn.onclick = function () {
+            showTab('assembler');
+            renderAssemblerParts();
+            renderAssemblerSequence();
+        };
+        tabPromptsBtn.onclick = function () {
+            showTab('prompts');
+            renderPromptJsonTable();
+        };
+        // On load, show Prompt Parts tab by default
+        showTab('parts');
+        // Prompt Parts filter logic
+        const typeRadios = document.querySelectorAll('input[name="promptPartType"]');
+        const tagCheckboxes = document.querySelectorAll('input[name="promptPartTag"]');
+        const table = document.getElementById('promptPartsTable');
+        let selectedType = localStorage.getItem('promptPartType') || 'all';
+        // Set radio from storage
+        typeRadios.forEach(radio => {
+            radio.checked = (radio.value === selectedType);
+        });
+        // --- Persist tag filter selections ---
+        const TAGS_KEY = 'promptPartTags';
+        function saveTagSelection() {
+            const selectedTags = Array.from(tagCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            localStorage.setItem(TAGS_KEY, JSON.stringify(selectedTags));
+        }
+        function restoreTagSelection() {
+            let selectedTags = [];
+            try {
+                selectedTags = JSON.parse(localStorage.getItem(TAGS_KEY));
+            } catch (e) { }
+            if (!Array.isArray(selectedTags) || selectedTags.length === 0) {
+                // Default: all checked
+                tagCheckboxes.forEach(cb => { cb.checked = true; });
+            } else {
+                tagCheckboxes.forEach(cb => { cb.checked = selectedTags.includes(cb.value); });
+            }
+        }
+        restoreTagSelection();
+        function filterPromptParts() {
+            const selectedTags = Array.from(tagCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const typeCell = row.querySelector('td:nth-child(3)');
+                const tagsCell = row.querySelector('td:nth-child(4)');
+                if (!typeCell || !tagsCell) return;
+                const type = typeCell.textContent.trim().toLowerCase();
+                const tags = tagsCell.textContent.split(',').map(t => t.trim().toLowerCase());
+                // Type filter
+                let typeMatch = (selectedType === 'all' || type === selectedType);
+                // Tag filter: if no tags selected, show all; else at least one must match
+                let tagMatch = (selectedTags.length === 0) || tags.some(t => selectedTags.includes(t));
+                row.style.display = (typeMatch && tagMatch) ? '' : 'none';
+            });
+        }
+        typeRadios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.checked) {
+                    selectedType = this.value;
+                    localStorage.setItem('promptPartType', selectedType);
+                    filterPromptParts();
+                }
+            });
+        });
+        tagCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function () {
+                saveTagSelection();
+                filterPromptParts();
+            });
+        });
+        filterPromptParts();
+        // Add Prompt Part Modal logic
+        const addPromptPartBtn = document.getElementById('addPromptPartBtn');
+        const addPromptPartModal = document.getElementById('addPromptPartModal');
+        const closeAddPromptPart = document.getElementById('closeAddPromptPart');
+        const addPromptPartForm = document.getElementById('addPromptPartForm');
+        const promptPartModalTitle = document.getElementById('promptPartModalTitle');
+        const promptPartIdInput = document.getElementById('promptPartId');
+        addPromptPartBtn.onclick = function () {
+            promptPartModalTitle.textContent = 'New Prompt Part';
+            promptPartIdInput.value = '';
+            addPromptPartForm.reset();
+            addPromptPartModal.classList.remove('hidden');
+        };
+        closeAddPromptPart.onclick = function () {
+            addPromptPartModal.classList.add('hidden');
+        };
+        // Edit button logic
+        document.querySelectorAll('.edit-part-btn').forEach(btn => {
+            btn.onclick = function () {
+                const partId = this.dataset.id;
+                fetchPromptPart(partId)
+                    .then(part => {
+                        promptPartModalTitle.textContent = 'Edit Prompt Part';
+                        promptPartIdInput.value = part.id;
+                        document.getElementById('promptPartName').value = part.name || '';
+                        document.getElementById('promptPartType').value = part.type || 'system';
+                        document.getElementById('promptPartContent').value = part.content || '';
+                        document.getElementById('promptPartOrder').value = part.order || 0;
+                        // Set tags checkboxes
+                        const tagChecks = addPromptPartForm.querySelectorAll('input[name="promptPartTags"]');
+                        tagChecks.forEach(cb => { cb.checked = (part.tags && part.tags.includes(cb.value)); });
+                        addPromptPartModal.classList.remove('hidden');
+                    });
+            };
+        });
+        // Delete button logic
+        function attachDeletePartListeners() {
+            document.querySelectorAll('.delete-part-btn').forEach(btn => {
+                btn.onclick = function () {
+                    const partId = this.dataset.id;
+                    if (!confirm('Delete this prompt part?')) return;
+                    deletePromptPart(partId)
+                        .then(data => {
+                            if (data.status === 'success') {
+                                window.location.reload();
+                            } else {
+                                alert('Failed to delete prompt part: ' + (data.error || 'Unknown error'));
+                            }
+                        });
+                };
+            });
+        }
+        attachDeletePartListeners();
+        // Add/Edit form submit logic
+        addPromptPartForm.onsubmit = function (e) {
+            e.preventDefault();
+            const id = promptPartIdInput.value;
+            const name = document.getElementById('promptPartName').value;
+            const type = document.getElementById('promptPartType').value;
+            const content = document.getElementById('promptPartContent').value;
+            const order = parseInt(document.getElementById('promptPartOrder').value, 10) || 0;
+            // Gather tags from checkboxes
+            const tags = Array.from(addPromptPartForm.querySelectorAll('input[name="promptPartTags"]:checked')).map(cb => cb.value);
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/llm/prompt_parts/${id}` : '/api/llm/prompt_parts';
+            const body = JSON.stringify({ name, type, content, order, tags });
+            createOrUpdatePromptPart(id, body)
+                .then(data => {
+                    if (data.status === 'success' || data.part) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to save prompt part: ' + (data.error || 'Unknown error'));
+                    }
+                });
+        };
+        // --- Prompt Assembler Logic ---
+        // Gather prompt parts from the table (reuse rendered data)
+        const assemblerPartsList = document.getElementById('assemblerPartsList');
+        const assemblerSequenceList = document.getElementById('assemblerSequenceList');
+        const assemblerPromptPreview = document.getElementById('assemblerPromptPreview');
+        const assemblerClearBtn = document.getElementById('assemblerClearBtn');
+        const assemblerSaveBtn = document.getElementById('assemblerSaveBtn');
+        // Build available parts list from the Prompt Parts table
+        function getPromptPartsData() {
+            const rows = document.querySelectorAll('#promptPartsTable tbody tr');
+            return Array.from(rows).map(row => ({
+                id: row.children[0].textContent.trim(),
+                name: row.children[1].textContent.trim(),
+                type: row.children[2].textContent.trim(),
+                tags: row.children[3].textContent.trim(),
+                content: row.children[4].textContent.trim()
+            }));
+        }
+        // Restore renderAssemblerParts function
+        function renderAssemblerParts() {
+            assemblerPartsList.innerHTML = '';
+            const selectedTags = Array.from(assemblerTagCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            getPromptPartsData().forEach(part => {
+                if (assemblerSelectedType !== 'all' && part.type.toLowerCase() !== assemblerSelectedType) return;
+                const tags = (part.tags || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+                let tagMatch = (selectedTags.length === 0) || tags.some(t => selectedTags.includes(t));
+                if (!tagMatch) return;
+                const div = document.createElement('div');
+                let bgClass = 'part-bg-system';
+                if (part.type.toLowerCase() === 'user') bgClass = 'part-bg-user';
+                if (part.type.toLowerCase() === 'assistant') bgClass = 'part-bg-assistant';
+                div.className = `assembler-part rounded p-2 mb-2 cursor-pointer flex items-center gap-3 ${bgClass}`;
+                // Render all tags as colored spans
+                const tagsHtml = tags.map(tag => {
+                    if (tag === 'role') return '<span class="tag-role">Role</span>';
+                    if (tag === 'operation') return '<span class="tag-operation">Operation</span>';
+                    if (tag === 'format') return '<span class="tag-format">Format</span>';
+                    if (tag === 'style') return '<span class="tag-style">Style</span>';
+                    if (tag === 'specimen') return '<span class="tag-specimen">Specimen</span>';
+                    return '';
+                }).join(' ');
+                div.innerHTML = `
+                    <div class="flex flex-wrap gap-2 mr-3">${tagsHtml}</div>
+                    <div>
+                        <b>${part.name}</b><br>
+                        <span class="text-xs text-indigo-300">${part.content}</span>
+                    </div>
+                `;
+                div.onclick = function () {
+                    if (part.type !== 'data' && assemblerSequence.some(p => p.id === part.id && p.type === part.type)) {
+                        alert('This part is already in the sequence.');
+                        return;
+                    }
+                    assemblerSequence.push(part);
+                    renderAssemblerSequence();
+                };
+                assemblerPartsList.appendChild(div);
+            });
+        }
+        // Assembler filter logic
+        const assemblerTypeRadios = document.querySelectorAll('input[name="assemblerPartType"]');
+        const assemblerTagCheckboxes = document.querySelectorAll('input[name="assemblerPartTag"]');
+        let assemblerSelectedType = 'all';
+        // --- Persist assembler tag filter selections ---
+        const ASSEMBLER_TAGS_KEY = 'assemblerPartTags';
+        function saveAssemblerTagSelection() {
+            const selectedTags = Array.from(assemblerTagCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            localStorage.setItem(ASSEMBLER_TAGS_KEY, JSON.stringify(selectedTags));
+        }
+        function restoreAssemblerTagSelection() {
+            let selectedTags = [];
+            try {
+                selectedTags = JSON.parse(localStorage.getItem(ASSEMBLER_TAGS_KEY));
+            } catch (e) { }
+            if (!Array.isArray(selectedTags) || selectedTags.length === 0) {
+                assemblerTagCheckboxes.forEach(cb => { cb.checked = true; });
+            } else {
+                assemblerTagCheckboxes.forEach(cb => { cb.checked = selectedTags.includes(cb.value); });
+            }
+        }
+        restoreAssemblerTagSelection();
+        assemblerTypeRadios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.checked) {
+                    assemblerSelectedType = this.value;
+                    renderAssemblerParts();
+                }
+            });
+        });
+        assemblerTagCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function () {
+                saveAssemblerTagSelection();
+                renderAssemblerParts();
+            });
+        });
+        let assemblerSequence = [];
+        function renderAssemblerSequence() {
+            assemblerSequenceList.innerHTML = '';
+            assemblerSequence.forEach((part, idx) => {
+                const li = document.createElement('li');
+                li.setAttribute('data-idx', idx);
+                let bgClass = '';
+                if (part.type === 'data') {
+                    bgClass = 'draggable-seq-item'; // green (already styled)
+                } else if (part.type === 'system') {
+                    bgClass = 'assembler-part part-bg-system';
+                } else if (part.type === 'user') {
+                    bgClass = 'assembler-part part-bg-user';
+                } else if (part.type === 'assistant') {
+                    bgClass = 'assembler-part part-bg-assistant';
+                }
+                li.className = `flex items-center justify-between mb-2 rounded p-2 ${bgClass}`;
+                if (part.type === 'data') {
+                    li.innerHTML = `
+                        <span class="drag-handle mr-3 cursor-grab text-green-300">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                        </span>
+                        <span><b class="text-green-200">[data:${part.field}]</b></span>
+                        <button type="button" class="btn btn-danger btn-xs ml-2" data-idx="${idx}">Remove</button>
+                    `;
+                } else {
+                    // Render tags as colored spans
+                    const tags = (part.tags || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+                    const tagsHtml = tags.map(tag => {
+                        if (tag === 'role') return '<span class="tag-role">Role</span>';
+                        if (tag === 'operation') return '<span class="tag-operation">Operation</span>';
+                        if (tag === 'format') return '<span class="tag-format">Format</span>';
+                        if (tag === 'style') return '<span class="tag-style">Style</span>';
+                        if (tag === 'specimen') return '<span class="tag-specimen">Specimen</span>';
+                        return '';
+                    }).join(' ');
+                    li.innerHTML = `
+                        <span class="drag-handle mr-3 cursor-grab text-green-300">
+                            <i class="fa-solid fa-grip-vertical"></i>
+                        </span>
+                        <span>
+                            <div class="flex flex-wrap gap-2 mb-1">${tagsHtml}</div>
+                            <b class="text-indigo-100">${part.name}</b><br>
+                            <span class="text-xs text-indigo-300">${part.content}</span>
+                        </span>
+                        <button type="button" class="btn btn-danger btn-xs ml-2" data-idx="${idx}">Remove</button>
+                    `;
+                }
+                li.querySelector('button').onclick = function () {
+                    assemblerSequence.splice(idx, 1);
+                    renderAssemblerSequence();
+                };
+                assemblerSequenceList.appendChild(li);
+            });
+            renderAssemblerPreview();
+        }
+        // Initialize SortableJS for the sequence list
+        Sortable.create(assemblerSequenceList, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            group: {
+                name: 'assembler',
+                pull: true,
+                put: true
+            },
+            onEnd: function (evt) {
+                // Reorder assemblerSequence array to match new DOM order
+                const newOrder = [];
+                assemblerSequenceList.querySelectorAll('li').forEach(li => {
+                    const idx = parseInt(li.getAttribute('data-idx'), 10);
+                    newOrder.push(assemblerSequence[idx]);
+                });
+                assemblerSequence = newOrder;
+                renderAssemblerSequence();
+            },
+            onAdd: function (evt) {
+                // Handle external drop (e.g., data field)
+                if (evt.item && evt.item.id === 'assemblerDataDraggable') {
+                    const field = evt.item.getAttribute('data-field');
+                    if (field) {
+                        assemblerSequence.splice(evt.newIndex, 0, { type: 'data', field });
+                        renderAssemblerSequence();
+                    }
+                    // Remove the external draggable from the list (it shouldn't stay in the sequence)
+                    evt.item.parentNode && evt.item.parentNode.removeChild(evt.item);
+                }
+            }
+        });
+        // --- Prompt Assembler Data Field Logic ---
+        const assemblerDataField = document.getElementById('assemblerDataField');
+        const assemblerDataSource = document.getElementById('assemblerDataSource');
+        const assemblerDataDraggable = document.createElement('li');
+        assemblerDataDraggable.id = 'assemblerDataDraggable';
+        assemblerDataDraggable.className = 'bg-indigo-700 text-white rounded px-3 py-1 cursor-move ml-2';
+        assemblerDataDraggable.style.listStyle = 'none';
+        assemblerDataDraggable.style.margin = '0';
+        assemblerDataDraggable.style.display = 'none';
+        assemblerDataSource.appendChild(assemblerDataDraggable);
+        // Update the draggable entity when the dropdown changes
+        assemblerDataField.onchange = function () {
+            const val = assemblerDataField.value;
+            if (val) {
+                assemblerDataDraggable.textContent = `[data:${val}]`;
+                assemblerDataDraggable.classList.remove('hidden');
+                assemblerDataDraggable.setAttribute('data-field', val);
+                assemblerDataDraggable.style.display = '';
+            } else {
+                assemblerDataDraggable.classList.add('hidden');
+                assemblerDataDraggable.textContent = '';
+                assemblerDataDraggable.removeAttribute('data-field');
+                assemblerDataDraggable.style.display = 'none';
+            }
+        };
+        // Make the data source list Sortable (external, clone only)
+        Sortable.create(assemblerDataSource, {
+            group: {
+                name: 'assembler',
+                pull: 'clone',
+                put: false
+            },
+            sort: false,
+            animation: 150,
+            draggable: '#assemblerDataDraggable',
+            onStart: function (evt) {
+                // Optionally style the clone
+            }
+        });
+        // Update preview and save logic to output [data:fieldname]
+        function renderAssemblerPreview() {
+            assemblerPromptPreview.textContent = assemblerSequence.map(p => {
+                if (p.type === 'data') {
+                    return `[data:${p.field}]`;
+                }
+                let tags = [];
+                if (p.tags) {
+                    tags = Array.isArray(p.tags) ? p.tags : (typeof p.tags === 'string' ? p.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+                }
+                const tagStr = tags.length ? `: ${tags.map(t => t.toUpperCase()).join(',')}` : '';
+                return `[${p.type}${tagStr}] ${p.content}`;
+            }).join('\n');
+        }
+        assemblerClearBtn.onclick = function () {
+            assemblerSequence = [];
+            renderAssemblerSequence();
+        };
+        assemblerSaveBtn.onclick = function () {
+            if (!assemblerSequence.length) {
+                alert('Add at least one prompt part to assemble a prompt.');
+                return;
+            }
+            const name = prompt('Enter a name for the new prompt template:');
+            if (!name) return;
+            // Build prompt_json: structured array of parts
+            const prompt_json = assemblerSequence.map(p => {
+                if (p.type === 'data') {
+                    return { type: 'data', field: p.field };
+                }
+                // Try to preserve tags if present (from available parts), else empty array
+                let tags = [];
+                if (p.tags) {
+                    tags = Array.isArray(p.tags) ? p.tags : (typeof p.tags === 'string' ? p.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+                }
+                return { type: p.type, tags, content: p.content, name: p.name };
+            });
+            // Diagnostics
+            console.log('[DIAG] About to save prompt template:', { name, prompt_json, prompt_json_type: typeof prompt_json, prompt_json_is_array: Array.isArray(prompt_json) });
+            const payload = { name, prompt_json };
+            console.log('[DIAG] Payload to be sent:', payload, 'JSON:', JSON.stringify(payload));
+            createPrompt(payload)
+                .then(data => {
+                    console.log('[DIAG] Response from backend:', data);
+                    if (data.success || data.prompt) {
+                        alert('Prompt template saved!');
+                        window.location.reload();
+                    } else {
+                        alert('Failed to save prompt template: ' + (data.error || 'Unknown error'));
+                    }
+                });
+        };
+        // Render on tab open
+        tabAssemblerBtn.onclick = function () {
+            showTab('assembler');
+            renderAssemblerParts();
+            renderAssemblerSequence();
+        };
+        // Initial render for assembler (in case user switches immediately)
+        renderAssemblerParts();
+        renderAssemblerSequence();
+        // Prompt Template delete button logic
+        function attachPromptDeleteListeners() {
+            document.querySelectorAll('.prompt-delete-btn').forEach(btn => {
+                btn.onclick = function () {
+                    const promptId = this.dataset.id;
+                    if (!promptId) return;
+                    if (!confirm('Delete this prompt template?')) return;
+                    deletePrompt(promptId)
+                        .then(data => {
+                            if (data.success === true) {
+                                window.location.reload();
+                            } else {
+                                alert('Failed to delete prompt template: ' + (data.error || 'Unknown error'));
+                            }
+                        });
+                };
+            });
+        }
+        attachPromptDeleteListeners();
+        // Prompt Template edit button logic (Assembler tab integration)
+        document.querySelectorAll('.edit-template-assembler-btn').forEach(btn => {
+            btn.onclick = function (e) {
+                e.preventDefault();
+                const templateId = this.getAttribute('data-id');
+                if (!templateId) return;
+                // Switch to assembler tab
+                showTab('assembler');
+                // Fetch template data
+                fetchPromptTemplate(templateId)
+                    .then(data => {
+                        if (!data.prompt_text) return;
+                        // Parse prompt_text into assemblerSequence
+                        // Assume format: [TYPE] content or [data:field]
+                        assemblerSequence = [];
+                        data.prompt_text.split(/\r?\n/).forEach(line => {
+                            line = line.trim();
+                            if (!line) return;
+                            const dataMatch = line.match(/^\[data:([a-zA-Z0-9_]+)\]$/);
+                            if (dataMatch) {
+                                assemblerSequence.push({ type: 'data', field: dataMatch[1] });
+                                return;
+                            }
+                            const partMatch = line.match(/^\[([a-zA-Z]+)\]\s*(.*)$/);
+                            if (partMatch) {
+                                assemblerSequence.push({ type: partMatch[1].toLowerCase(), content: partMatch[2] });
+                                return;
+                            }
+                        });
+                        renderAssemblerSequence();
+                        setTimeout(() => {
+                            document.getElementById('tabAssembler').scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                    });
+            };
+        });
+        // In Prompt Parts tab table, color each row background by part.type
+        function colorPromptPartsTableRows() {
+            const rows = document.querySelectorAll('#promptPartsTable tbody tr');
+            rows.forEach(row => {
+                const typeCell = row.querySelector('td:nth-child(3)');
+                if (!typeCell) return;
+                const type = typeCell.textContent.trim().toLowerCase();
+                row.classList.remove('part-bg-system', 'part-bg-user', 'part-bg-assistant');
+                if (type === 'system') row.classList.add('part-bg-system');
+                else if (type === 'user') row.classList.add('part-bg-user');
+                else if (type === 'assistant') row.classList.add('part-bg-assistant');
+            });
+        }
+        colorPromptPartsTableRows();
+        // --- Prompt Templates Tab: Render prompt_json content in Usage column ---
+        function renderPromptJsonTable() {
+            // Find the table and rows
+            const table = document.querySelector('#tabPrompts table');
+            if (!table) return;
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                // Find the Usage/content cell (3rd td)
+                const usageCell = row.querySelector('td:nth-child(3)');
+                if (!usageCell) return;
+                // Get prompt_json from <script> tag
+                let promptJson = null;
+                const script = row.querySelector('script.prompt-json');
+                if (script) {
+                    try {
+                        promptJson = JSON.parse(script.textContent);
+                    } catch (e) {
+                        console.error('[DIAG] Failed to parse prompt-json <script>:', e, script.textContent);
+                    }
+                }
+                // Render prompt_json as formatted string
+                if (promptJson && Array.isArray(promptJson) && promptJson.length) {
+                    usageCell.innerHTML = '<pre class="whitespace-pre-line text-indigo-100 text-xs" style="background:none;border:none;padding:0;margin:0;">' +
+                        promptJson.map(part => {
+                            let tags = part.tags && part.tags.length ? ': ' + part.tags.map(t => t.toUpperCase()).join(',') : '';
+                            let content = part.content || '';
+                            if (part.type === 'data' && part.field) content = `[data:${part.field}]`;
+                            return `[${part.type || ''}${tags}] ${content}`;
+                        }).join('\n') + '</pre>';
+                } else {
+                    usageCell.innerHTML = '<span class="text-gray-400 italic">No content</span>';
+                }
+            });
+        }
+        // Run on tab open
+        tabPromptsBtn.onclick = function () {
+            showTab('prompts');
+            renderPromptJsonTable();
+        };
+        // Also run after save (window reload will re-run)
+        // Optionally, run on DOMContentLoaded if tab is default
+        if (tabPrompts.style.display !== 'none') {
+            renderPromptJsonTable();
+        }
+    });
+
+    async function fetchPromptPart(partId) {
+        const response = await fetch(`/api/llm/prompt_parts/${partId}`);
+        return response.json();
+    }
+
+    async function deletePromptPart(partId) {
+        const response = await fetch(`/api/llm/prompt_parts/${partId}`, { method: 'DELETE' });
+        return response.json();
+    }
+
+    async function createOrUpdatePromptPart(id, data) {
+        const url = id ? `/api/llm/prompt_parts/${id}` : '/api/llm/prompt_parts';
+        const method = id ? 'PUT' : 'POST';
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        return response.json();
+    }
+
+    async function createPrompt(data) {
+        const response = await fetch('/api/llm/prompts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        return response.json();
+    }
+
+    async function deletePrompt(promptId) {
+        const response = await fetch(`/api/llm/prompts/${promptId}`, { method: 'DELETE' });
+        return response.json();
+    }
+
+    async function fetchPromptTemplate(templateId) {
+        const response = await fetch(`/api/llm/prompts/${templateId}`);
+        return response.json();
+    }
+</script>
+{% endblock %}

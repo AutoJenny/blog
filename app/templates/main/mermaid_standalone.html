@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mermaid Standalone Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            background: #181c2a;
+            color: #e0e0e0;
+            font-family: sans-serif;
+            padding: 2rem;
+        }
+
+        .mermaid {
+            background: #23273a;
+            border-radius: 0.75rem;
+            padding: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Standalone Mermaid Subgraph Test</h1>
+    <div class="mermaid">
+        graph TD
+        subgraph Test
+        A
+        B
+        end
+    </div>
+    <script>
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+
+</html>

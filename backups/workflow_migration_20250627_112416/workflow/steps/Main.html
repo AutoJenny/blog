@@ -1,0 +1,26 @@
+{% extends "workflow/base.html" %}
+
+{% block workflow_content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">{{ substage.name }}</h1>
+
+        <div class="bg-dark-bg shadow rounded-lg p-6 border border-dark-border">
+            <div class="prose max-w-none text-dark-text">
+                <p class="text-gray-400 mb-4">{{ substage.description }}</p>
+
+                <!-- Main content area -->
+                <div class="mt-8">
+                    <h2 class="text-2xl font-semibold mb-4">Main Content</h2>
+                    <div class="bg-dark-bg p-4 rounded-lg border border-dark-border">
+                        <p class="text-gray-300">
+                            This is the main content area for {{ substage.name }}.
+                            Specific content and functionality will be added here based on the substage requirements.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

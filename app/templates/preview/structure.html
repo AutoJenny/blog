@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Article Structure Overview{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">[Post Title]</h1>
+        <div>
+            <span class="inline-block px-3 py-1 rounded bg-yellow-200 text-yellow-900 font-semibold mr-4">Status: In
+                Progress</span>
+            <a href="/preview/" class="btn btn-primary">Preview</a>
+        </div>
+    </div>
+    <nav class="mb-4 text-sm text-gray-500">
+        Home &gt; Posts &gt; [Post Title]
+    </nav>
+    <div class="space-y-4">
+        <div class="border rounded p-4 flex justify-between items-center">
+            <div>
+                <strong>Intro:</strong> <span class="text-gray-600">[content snippet]</span>
+            </div>
+            <div>
+                <a href="{{ url_for('workflow.workflow_index', post_id=post.id, stage='planning', substage='idea') }}"
+                    class="btn btn-primary">Edit in Workflow</a>
+                <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
+            </div>
+        </div>
+        <div class="border rounded p-4 flex justify-between items-center">
+            <div>
+                <strong>Section 1:</strong> <span class="font-semibold">[Heading]</span> <span
+                    class="italic text-gray-500">[Theme]</span>
+                <div class="text-gray-600 mt-1">[Content snippet...]</div>
+            </div>
+            <div>
+                <a href="{{ url_for('workflow.workflow_index', post_id=post.id, stage='planning', substage='idea') }}"
+                    class="btn btn-primary">Edit in Workflow</a>
+                <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
+            </div>
+        </div>
+        <div class="border rounded p-4 flex justify-between items-center">
+            <div>
+                <strong>Section 2:</strong> <span class="font-semibold">[Heading]</span> <span
+                    class="italic text-gray-500">[Theme]</span>
+                <div class="text-gray-600 mt-1">[Content snippet...]</div>
+            </div>
+            <div>
+                <a href="{{ url_for('workflow.workflow_index', post_id=post.id, stage='planning', substage='idea') }}"
+                    class="btn btn-primary">Edit in Workflow</a>
+                <span class="ml-2 px-2 py-1 rounded bg-yellow-100 text-yellow-800 text-xs">Draft</span>
+            </div>
+        </div>
+        <div class="border rounded p-4 flex justify-between items-center">
+            <div>
+                <strong>Conclusion:</strong> <span class="text-gray-600">[content snippet]</span>
+            </div>
+            <div>
+                <a href="{{ url_for('workflow.workflow_index', post_id=post.id, stage='planning', substage='idea') }}"
+                    class="btn btn-primary">Edit in Workflow</a>
+                <span class="ml-2 px-2 py-1 rounded bg-red-100 text-red-800 text-xs">Needs Work</span>
+            </div>
+        </div>
+        <div class="border rounded p-4 flex justify-between items-center">
+            <div>
+                <strong>Metadata:</strong> <span class="text-gray-600">[fields...]</span>
+            </div>
+            <div>
+                <a href="{{ url_for('workflow.workflow_index', post_id=post.id, stage='planning', substage='idea') }}"
+                    class="btn btn-primary">Edit in Workflow</a>
+                <span class="ml-2 px-2 py-1 rounded bg-green-100 text-green-800 text-xs">Complete</span>
+            </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+            <button class="btn btn-success">Add Section</button>
+            <button class="btn btn-outline">Reorder Sections</button>
+        </div>
+        <div class="flex gap-2 mt-4">
+            <a href="{{ url_for('workflow.workflow_index', post_id=post.id, stage='planning', substage='idea') }}"
+                class="btn btn-primary">Continue in Workflow</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

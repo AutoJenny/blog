@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+
+{% block title %}Test Prompts{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    /* Navigation */
+    .nav-links {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--admin-border);
+        padding-bottom: 0.5rem;
+    }
+
+    .nav-link {
+        color: var(--admin-text-secondary);
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .nav-link:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    .nav-link.active {
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.1);
+        border-bottom: 2px solid var(--admin-accent);
+        margin-bottom: -1px;
+    }
+
+    /* Test Interface */
+    .test-card {
+        background: var(--admin-bg-card);
+        border: 1px solid var(--admin-border);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        color: var(--admin-text);
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-select,
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        background: var(--admin-bg-card);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-select:focus,
+    .form-input:focus,
+    .form-textarea:focus {
+        border-color: var(--admin-accent);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+    }
+
+    .form-textarea {
+        min-height: 100px;
+        font-family: 'Monaco', 'Menlo', monospace;
+        resize: vertical;
+        line-height: 1.6;
+    }
+
+    /* Preview and Results */
+    .preview-section,
+    .result-section {
+        background: var(--admin-bg-row-odd);
+        border: 1px solid var(--admin-border);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .preview-section:hover,
+    .result-section:hover {
+        border-color: var(--admin-accent);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-label,
+    .result-title {
+        font-size: 0.875rem;
+        color: var(--admin-text-secondary);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .preview-text,
+    .result-text {
+        font-family: 'Monaco', 'Menlo', monospace;
+        white-space: pre-wrap;
+        color: var(--admin-text);
+        background: var(--admin-bg-card);
+        padding: 1.25rem;
+        border-radius: 0.5rem;
+        margin: 0;
+        line-height: 1.6;
+        font-size: 0.875rem;
+        border: 1px solid var(--admin-border);
+    }
+
+    .result-section {
+        display: none;
+    }
+
+    .result-section.active {
+        display: block;
+    }
+
+    .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--admin-border);
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-size: 0.875rem;
+    }
+
+    .btn-primary {
+        background: var(--admin-accent);
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: var(--admin-accent-hover);
+        transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-secondary {
+        background: var(--admin-bg-row-even);
+        border: 1px solid var(--admin-border);
+        color: var(--admin-text);
+    }
+
+    .btn-secondary:hover {
+        background: var(--admin-bg-row-odd);
+        border-color: var(--admin-accent);
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
+
+{% block area_nav %}
+{% include 'llm/_llm_nav.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="admin-content">
+    <div class="admin-card">
+        <h1 class="admin-title mb-6">
+            <i class="fas fa-robot mr-2"></i>
+            LLM Management
+        </h1>
+
+        <!-- Navigation -->
+        <div class="nav-links">
+            <a href="{{ url_for('llm.config_page') }}" class="nav-link">
+                <i class="fas fa-cog"></i>
+                Configuration
+            </a>
+            <a href="{{ url_for('llm.templates') }}" class="nav-link">
+                <i class="fas fa-file-alt"></i>
+                Prompt Templates
+            </a>
+            <a href="{{ url_for('llm.test_page') }}" class="nav-link active">
+                <i class="fas fa-vial"></i>
+                Test Interface
+            </a>
+        </div>
+
+        <!-- Test Interface -->
+        <div class="test-card">
+            <form id="test-form">
+                <div class="form-group">
+                    <label class="form-label" for="prompt-select">Select Prompt Template</label>
+                    <select id="prompt-select" class="form-select" required>
+                        <option value="">Choose a template...</option>
+                        {% for prompt in prompts %}
+                        <option value="{{ prompt.id }}" data-template="{{ prompt.prompt_text }}">{{ prompt.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="test-input">Input Text</label>
+                    <textarea id="test-input" class="form-textarea" required
+                        placeholder="Enter the text to test with..."></textarea>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">Final Prompt Preview:</div>
+                    <pre class="preview-text"
+                        id="prompt-preview">Select a template and enter input text to see the preview...</pre>
+                </div>
+
+                <div class="text-right mt-4">
+                    <button type="submit" class="btn btn-primary" id="test-button">
+                        <i class="fas fa-play"></i>
+                        Run Test
+                    </button>
+                </div>
+            </form>
+
+            <div class="result-section" id="result-section">
+                <div class="result-header">
+                    <span class="result-title">
+                        <i class="fas fa-comment-dots mr-2"></i>
+                        LLM Response
+                    </span>
+                </div>
+                <pre class="result-text" id="result-text"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('test-form');
+        const promptSelect = document.getElementById('prompt-select');
+        const inputText = document.getElementById('test-input');
+        const previewText = document.getElementById('prompt-preview');
+        const resultSection = document.getElementById('result-section');
+        const resultText = document.getElementById('result-text');
+        const testButton = document.getElementById('test-button');
+
+        function updatePreview() {
+            const selectedOption = promptSelect.selectedOptions[0];
+            if (selectedOption && selectedOption.value) {
+                const template = selectedOption.dataset.template;
+                const input = inputText.value.trim();
+                if (input) {
+                    previewText.textContent = template.replace('{{input}}', input);
+                } else {
+                    previewText.textContent = template;
+                }
+            } else {
+                previewText.textContent = 'Select a template and enter input text to see the preview...';
+            }
+        }
+
+        promptSelect.addEventListener('change', updatePreview);
+        inputText.addEventListener('input', updatePreview);
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            testButton.disabled = true;
+            testButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+            resultSection.classList.remove('active');
+
+            try {
+                const response = await fetch('/api/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt_id: promptSelect.value,
+                        input: inputText.value.trim()
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    resultText.textContent = data.response;
+                    resultSection.classList.add('active');
+                } else {
+                    throw new Error(data.error || 'Error testing prompt');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message);
+            } finally {
+                testButton.disabled = false;
+                testButton.innerHTML = '<i class="fas fa-play"></i> Run Test';
+            }
+        });
+    });
+</script>
+{% endblock %}

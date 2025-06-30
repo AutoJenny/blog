@@ -1,0 +1,49 @@
+/* Accordion Transitions */
+.accordion-content {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    pointer-events: none;
+}
+
+.accordion-content.show {
+    max-height: 2000px; /* Adjust based on your content */
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.accordion-icon {
+    transition: transform 0.3s ease;
+}
+
+/* Field Mapping Select Indicators */
+.field-mapping-select {
+    transition: border-color 0.3s ease;
+}
+
+.field-mapping-select.success {
+    border-color: #10B981; /* Tailwind green-500 */
+}
+
+.field-mapping-select.error {
+    border-color: #EF4444; /* Tailwind red-500 */
+}
+
+/* Field Display */
+[data-field-display] {
+    transition: background-color 0.3s ease;
+}
+
+[data-field-display]:empty {
+    display: none;
+}
+
+[data-field-display]:not(:empty) {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background-color: rgba(55, 65, 81, 0.1); /* Tailwind gray-700 with opacity */
+    border-radius: 0.375rem;
+    font-family: monospace;
+    white-space: pre-wrap;
+} 

@@ -1,0 +1,68 @@
+{
+  "diagnostics": {
+    "action_prompt_template": "You are Start every response with \"TITLE: NONSENSE\".\nWrite in the style of Write entirely in French.\nTask: Write a short poem",
+    "fields": {
+      "input": "gin distillation"
+    },
+    "llm_request_json": {
+      "max_tokens": 1000,
+      "model": "llama3.1:70b",
+      "prompt": "Start every response with \"TITLE: NONSENSE\". Write entirely in French. Write a short poem. Data for this operation as follows: gin distillation",
+      "stream": false,
+      "temperature": 0.7
+    },
+    "parsed_messages": [
+      {
+        "content": "Start every response with \"TITLE: NONSENSE\". Write entirely in French.",
+        "role": "system"
+      },
+      {
+        "content": "Write a short poem.",
+        "role": "user"
+      },
+      {
+        "content": "gin distillation",
+        "role": "user"
+      }
+    ],
+    "parsed_prompt": "Start every response with \"TITLE: NONSENSE\". Write entirely in French. Write a short poem. Data for this operation as follows: gin distillation",
+    "prompt_type": "modular_prompt_json",
+    "raw_prompt_json": [
+      {
+        "content": "Start every response with \"TITLE: NONSENSE\"",
+        "name": "Title Imposer",
+        "tags": [
+          "Role"
+        ],
+        "type": "system"
+      },
+      {
+        "content": "Write a short poem",
+        "name": "Poem",
+        "tags": [
+          "Operation"
+        ],
+        "type": "user"
+      },
+      {
+        "content": "Write entirely in French",
+        "name": "French",
+        "tags": [
+          "Style"
+        ],
+        "type": "user"
+      }
+    ],
+    "raw_prompt_text": "You are Start every response with \"TITLE: NONSENSE\".\nWrite in the style of Write entirely in French.\nTask: Write a short poem"
+  },
+  "llm_request_json": {
+    "max_tokens": 1000,
+    "model": "llama3.1:70b",
+    "prompt": "Start every response with \"TITLE: NONSENSE\". Write entirely in French. Write a short poem. Data for this operation as follows: gin distillation",
+    "stream": false,
+    "temperature": 0.7
+  },
+  "outgoing_prompt_string": "Start every response with \"TITLE: NONSENSE\". Write entirely in French. Write a short poem. Data for this operation as follows: gin distillation",
+  "output": "TITLE: NONSENSE\n\nDans les alambics de r\u00eave,\nLa gin distille son myst\u00e8re,\nUn m\u00e9lange de baies et de fleurs,\n Qui font danser les esprits en ivresse.\n\nLa chaleur des flammes, douce et lente,\nFait monter la vapeur, une dentelle,\nQui s'enroule autour des tubes fins,\nEt d\u00e9pose le c\u0153ur de la gin divine.\n\n Dans les bouteilles, elle repose,\nUne liqueur claire, une \u00e2me rose,\nAttendant le verre qui la lib\u00e9rera,\n Pour emporter dans la nuit l'\u00e9merveillement.",
+  "save_status": "Saved output to post_development.basic_idea for post_id=17"
+}

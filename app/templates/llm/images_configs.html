@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block title %}LLM Image Generation & Management{% endblock %}
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .images-level2-tabs {
+        display: flex;
+        gap: 1.5rem;
+        border-bottom: 2px solid var(--admin-border);
+        margin-bottom: 2rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .images-level2-tab {
+        padding: 0.75rem 1.5rem;
+        color: var(--admin-text-secondary);
+        border: none;
+        background: transparent;
+        font-weight: 600;
+        border-radius: 0.5rem 0.5rem 0 0;
+        font-size: 1.1rem;
+        transition: all 0.2s;
+        text-decoration: none;
+        position: relative;
+    }
+
+    .images-level2-tab:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.08);
+    }
+
+    .images-level2-tab.active {
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.10);
+        border-bottom: 2.5px solid var(--admin-accent);
+    }
+
+    /* Level 3 tabs */
+    .images-level3-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1.5px solid var(--admin-border);
+        padding-bottom: 0.5rem;
+        justify-content: center;
+    }
+
+    .images-level3-tab {
+        padding: 0.6rem 1.5rem;
+        color: var(--admin-text-secondary);
+        border: none;
+        background: transparent;
+        font-weight: 500;
+        border-radius: 0.5rem 0.5rem 0 0;
+        font-size: 1rem;
+        transition: all 0.2s;
+        text-decoration: none;
+        position: relative;
+    }
+
+    .images-level3-tab:hover {
+        color: var(--admin-text);
+        background: rgba(99, 102, 241, 0.08);
+    }
+
+    .images-level3-tab.active {
+        color: var(--admin-accent);
+        background: rgba(99, 102, 241, 0.10);
+        border-bottom: 2px solid var(--admin-accent);
+    }
+</style>
+{% endblock %}
+{% block area_nav %}
+{% include 'llm/_llm_nav.html' %}
+{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto py-10">
+    <div class="admin-card">
+        <h1 class="admin-title mb-6">
+            <i class="fas fa-robot mr-2"></i>
+            LLM Image Tools
+        </h1>
+        {% set active_tab = 'configs' %}
+        <div class="images-level2-tabs">
+            <a href="/llm/images/configs"
+                class="images-level2-tab{% if active_tab == 'configs' %} active{% endif %}">Image Configs</a>
+            <a href="/llm/images/prompts"
+                class="images-level2-tab{% if active_tab == 'prompts' %} active{% endif %}">Image Prompts</a>
+            <a href="/llm/images/previews"
+                class="images-level2-tab{% if active_tab == 'previews' %} active{% endif %}">Image Previews</a>
+        </div>
+        <div class="images-level3-tabs">
+            <button id="tab-simple" class="images-level3-tab active">Simple</button>
+            <button id="tab-advanced" class="images-level3-tab">Advanced (ComfyUI)</button>
+        </div>
+        <div id="simple-ui" class="">
+            <form id="simple-generate-form" class="mb-6">
+                <label class="block mb-2 font-semibold" for="simple-prompt">Prompt</label>
+                <input id="simple-prompt" name="prompt" class="admin-textarea w-full mb-2"
+                    placeholder="Describe your image..." />
+                <button type="submit" class="admin-button">Generate</button>
+            </form>
+            <div id="simple-image-result" class="mt-4 text-center"></div>
+        </div>
+        <div id="advanced-ui" class="hidden">
+            <div id="comfyui-status-area" class="mb-4 text-center">
+                <button id="start-comfyui-btn" class="admin-button">Start ComfyUI</button>
+                <span id="comfyui-running-msg" class="hidden text-green-400">ComfyUI is running!</span>
+            </div>
+            <div id="comfyui-iframe-area" class="hidden">
+                <iframe id="comfyui-iframe" src="http://localhost:8188" width="100%" height="900"
+                    style="border:none;"></iframe>
+            </div>
+        </div>
+        <div class="flex justify-center mt-8">
+            <a href="/llm/" class="admin-button">&larr; Back to LLM Landing</a>
+        </div>
+    </div>
+</div>
+<script>
+    // Tab switching for level 3
+    const tabSimple = document.getElementById('tab-simple');
+    const tabAdvanced = document.getElementById('tab-advanced');
+    const simpleUI = document.getElementById('simple-ui');
+    const advancedUI = document.getElementById('advanced-ui');
+    tabSimple.onclick = function () {
+        tabSimple.classList.add('active');
+        tabAdvanced.classList.remove('active');
+        simpleUI.classList.remove('hidden');
+        advancedUI.classList.add('hidden');
+    };
+    tabAdvanced.onclick = function () {
+        tabAdvanced.classList.add('active');
+        tabSimple.classList.remove('active');
+        simpleUI.classList.add('hidden');
+        advancedUI.classList.remove('hidden');
+        checkComfyUIStatus();
+    };
+    // Simple image generation
+    document.getElementById('simple-generate-form').onsubmit = async function (e) {
+        e.preventDefault();
+        const prompt = document.getElementById('simple-prompt').value;
+        const resultDiv = document.getElementById('simple-image-result');
+        resultDiv.innerHTML = 'Generating...';
+        try {
+            const res = await fetch('/api/images/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt })
+            });
+            const data = await res.json();
+            if (data.image_url) {
+                resultDiv.innerHTML = `<img src="${data.image_url}" class="mx-auto rounded shadow" style="max-width:400px;" />`;
+            } else {
+                resultDiv.innerHTML = `<span class="text-red-400">Error: ${data.error || 'Unknown error'}</span>`;
+            }
+        } catch (err) {
+            resultDiv.innerHTML = `<span class="text-red-400">Error: ${err.message}</span>`;
+        }
+    };
+    // ComfyUI status and start logic
+    async function checkComfyUIStatus() {
+        const statusArea = document.getElementById('comfyui-status-area');
+        const startBtn = document.getElementById('start-comfyui-btn');
+        const runningMsg = document.getElementById('comfyui-running-msg');
+        const iframeArea = document.getElementById('comfyui-iframe-area');
+        startBtn.disabled = true;
+        runningMsg.classList.add('hidden');
+        iframeArea.classList.add('hidden');
+        try {
+            const res = await fetch('/api/comfyui/status');
+            const data = await res.json();
+            if (data.running) {
+                startBtn.classList.add('hidden');
+                runningMsg.classList.remove('hidden');
+                iframeArea.classList.remove('hidden');
+            } else {
+                startBtn.classList.remove('hidden');
+                runningMsg.classList.add('hidden');
+                iframeArea.classList.add('hidden');
+            }
+        } catch (e) {
+            startBtn.classList.remove('hidden');
+            runningMsg.classList.add('hidden');
+            iframeArea.classList.add('hidden');
+        } finally {
+            startBtn.disabled = false;
+        }
+    }
+    document.getElementById('start-comfyui-btn').onclick = async function () {
+        this.disabled = true;
+        this.textContent = 'Starting...';
+        try {
+            const res = await fetch('/api/comfyui/start', { method: 'POST' });
+            const data = await res.json();
+            if (data.running) {
+                setTimeout(checkComfyUIStatus, 2000);
+            } else {
+                alert('Failed to start ComfyUI.');
+            }
+        } catch (e) {
+            alert('Failed to start ComfyUI: ' + e.message);
+        } finally {
+            this.disabled = false;
+            this.textContent = 'Start ComfyUI';
+        }
+    };
+    // On load, default to Simple tab
+    tabSimple.click();
+</script>
+{% endblock %}

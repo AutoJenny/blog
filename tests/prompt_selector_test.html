@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Prompt Selector Test</title>
+</head>
+
+<body>
+    <h2>System Prompt</h2>
+    <select id="system_prompt_select"></select>
+
+    <h2>Task Prompt</h2>
+    <select id="task_prompt_select"></select>
+
+    <button onclick="savePrompts()">Save Prompts</button>
+
+    <pre id="result"></pre>
+
+    <script>
+        // Test configuration
+        const postId = 22;
+        const stepId = 41;
+
+        // Load prompts on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadPrompts('system');
+            await loadPrompts('task');
+        });
+
+        async function loadPrompts(promptType) {
+            try {
+                const response = await fetch(`http://localhost:5000/api/workflow/prompts/${promptType}`);
+                const prompts = await response.json();
+
+                const select = document.getElementById(`${promptType}_prompt_select`);
+                prompts.forEach(prompt => {
+                    const option = document.createElement('option');
+                    option.value = prompt.id;
+                    option.text = prompt.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                document.getElementById('result').textContent = `Error loading ${promptType} prompts: ${error.message}`;
+            }
+        }
+
+        async function savePrompts() {
+            const systemPromptId = document.getElementById('system_prompt_select').value;
+            const taskPromptId = document.getElementById('task_prompt_select').value;
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/workflow/steps/${stepId}/prompts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        system_prompt_id: parseInt(systemPromptId),
+                        task_prompt_id: parseInt(taskPromptId)
+                    })
+                });
+
+                const result = await response.text();
+                document.getElementById('result').textContent = `Save result: ${result}`;
+            } catch (error) {
+                document.getElementById('result').textContent = `Error saving prompts: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+
+</html>

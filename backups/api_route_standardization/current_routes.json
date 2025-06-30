@@ -1,0 +1,574 @@
+[
+  {
+    "endpoint": "api.generate_images_for_post",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/api/v1/posts/<int:post_id>/generate_images"
+  },
+  {
+    "endpoint": "api.plan_structure_llm",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/blog/structure/plan"
+  },
+  {
+    "endpoint": "api.plan_and_save_structure",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/blog/structure/plan_and_save"
+  },
+  {
+    "endpoint": "api.save_structure",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/blog/structure/save/<int:post_id>"
+  },
+  {
+    "endpoint": "api.test_structure_plan",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/blog/structure/test_plan"
+  },
+  {
+    "endpoint": "api.comfyui_start",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/comfyui/start"
+  },
+  {
+    "endpoint": "api.comfyui_status",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/comfyui/status"
+  },
+  {
+    "endpoint": "api.debug_list_routes",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/debug/routes"
+  },
+  {
+    "endpoint": "api.health_check",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/health"
+  },
+  {
+    "endpoint": "api.check_openai",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/health/openai"
+  },
+  {
+    "endpoint": "api.list_image_formats",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/images/formats"
+  },
+  {
+    "endpoint": "api.create_image_format",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/images/formats"
+  },
+  {
+    "endpoint": "api.get_image_format",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/images/formats/<int:format_id>"
+  },
+  {
+    "endpoint": "api.update_image_format",
+    "methods": [
+      "PUT"
+    ],
+    "rule": "/api/v1/images/formats/<int:format_id>"
+  },
+  {
+    "endpoint": "api.delete_image_format",
+    "methods": [
+      "DELETE"
+    ],
+    "rule": "/api/v1/images/formats/<int:format_id>"
+  },
+  {
+    "endpoint": "api.generate_image",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/images/generate"
+  },
+  {
+    "endpoint": "api.list_prompt_examples",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/images/prompt_examples"
+  },
+  {
+    "endpoint": "api.create_prompt_example",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/images/prompt_examples"
+  },
+  {
+    "endpoint": "api.get_prompt_example",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/images/prompt_examples/<int:example_id>"
+  },
+  {
+    "endpoint": "api.update_prompt_example",
+    "methods": [
+      "PUT"
+    ],
+    "rule": "/api/v1/images/prompt_examples/<int:example_id>"
+  },
+  {
+    "endpoint": "api.delete_prompt_example",
+    "methods": [
+      "DELETE"
+    ],
+    "rule": "/api/v1/images/prompt_examples/<int:example_id>"
+  },
+  {
+    "endpoint": "api.list_image_settings",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/images/settings"
+  },
+  {
+    "endpoint": "api.create_image_setting",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/images/settings"
+  },
+  {
+    "endpoint": "api.get_image_setting",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/images/settings/<int:setting_id>"
+  },
+  {
+    "endpoint": "api.update_image_setting",
+    "methods": [
+      "PUT"
+    ],
+    "rule": "/api/v1/images/settings/<int:setting_id>"
+  },
+  {
+    "endpoint": "api.delete_image_setting",
+    "methods": [
+      "DELETE"
+    ],
+    "rule": "/api/v1/images/settings/<int:setting_id>"
+  },
+  {
+    "endpoint": "api.list_image_styles",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/images/styles"
+  },
+  {
+    "endpoint": "api.create_image_style",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/images/styles"
+  },
+  {
+    "endpoint": "api.get_image_style",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/images/styles/<int:style_id>"
+  },
+  {
+    "endpoint": "api.update_image_style",
+    "methods": [
+      "PUT"
+    ],
+    "rule": "/api/v1/images/styles/<int:style_id>"
+  },
+  {
+    "endpoint": "api.delete_image_style",
+    "methods": [
+      "DELETE"
+    ],
+    "rule": "/api/v1/images/styles/<int:style_id>"
+  },
+  {
+    "endpoint": "llm_api.create_action",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/actions"
+  },
+  {
+    "endpoint": "llm_api.list_actions",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/actions"
+  },
+  {
+    "endpoint": "llm_api.handle_action",
+    "methods": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "rule": "/api/v1/llm/actions/<int:action_id>"
+  },
+  {
+    "endpoint": "llm_api.execute_action",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/actions/<int:action_id>/execute"
+  },
+  {
+    "endpoint": "llm_api.action_history",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/actions/<int:action_id>/history"
+  },
+  {
+    "endpoint": "llm_api.test_action",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/actions/<int:action_id>/test"
+  },
+  {
+    "endpoint": "llm_api.debug_list_llm_templates",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/actions/debug/list_templates"
+  },
+  {
+    "endpoint": "llm_api.update_action_order",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/actions/order"
+  },
+  {
+    "endpoint": "llm_api.get_config",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/config"
+  },
+  {
+    "endpoint": "llm_api.update_config",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/config"
+  },
+  {
+    "endpoint": "llm_api.debug_db_url",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/debug/db_url"
+  },
+  {
+    "endpoint": "llm_api.expand_section",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/expand-section/<int:section_id>"
+  },
+  {
+    "endpoint": "llm_api.generate_idea",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/generate-idea"
+  },
+  {
+    "endpoint": "llm_api.generate_social",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/generate-social/<int:section_id>"
+  },
+  {
+    "endpoint": "llm_api.models",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/api/v1/llm/models"
+  },
+  {
+    "endpoint": "llm_api.start_ollama",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/ollama/start"
+  },
+  {
+    "endpoint": "llm_api.ollama_status",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/ollama/status"
+  },
+  {
+    "endpoint": "llm_api.optimize_seo",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/optimize-seo/<int:post_id>"
+  },
+  {
+    "endpoint": "llm_api.post_substage_actions",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/api/v1/llm/post_substage_actions"
+  },
+  {
+    "endpoint": "llm_api.post_substage_action_detail",
+    "methods": [
+      "DELETE",
+      "PUT"
+    ],
+    "rule": "/api/v1/llm/post_substage_actions/<int:psa_id>"
+  },
+  {
+    "endpoint": "llm_api.list_post_substage_actions",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/post_substage_actions/list"
+  },
+  {
+    "endpoint": "llm_api.preload_model",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/preload"
+  },
+  {
+    "endpoint": "llm_api.handle_prompt_parts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/api/v1/llm/prompt_parts"
+  },
+  {
+    "endpoint": "llm_api.handle_prompt_part",
+    "methods": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "rule": "/api/v1/llm/prompt_parts/<int:part_id>"
+  },
+  {
+    "endpoint": "llm_api.get_prompts",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/prompts"
+  },
+  {
+    "endpoint": "llm_api.create_prompt",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/prompts"
+  },
+  {
+    "endpoint": "llm_api.update_prompt",
+    "methods": [
+      "PUT"
+    ],
+    "rule": "/api/v1/llm/prompts/<int:prompt_id>"
+  },
+  {
+    "endpoint": "llm_api.delete_prompt",
+    "methods": [
+      "DELETE"
+    ],
+    "rule": "/api/v1/llm/prompts/<int:prompt_id>"
+  },
+  {
+    "endpoint": "llm_api.get_prompt",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/prompts/<int:prompt_id>"
+  },
+  {
+    "endpoint": "llm_api.update_prompt_order",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/prompts/order"
+  },
+  {
+    "endpoint": "llm_api.providers",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/api/v1/llm/providers"
+  },
+  {
+    "endpoint": "llm_api.provider_detail",
+    "methods": [
+      "DELETE",
+      "GET",
+      "PUT"
+    ],
+    "rule": "/api/v1/llm/providers/<int:id>"
+  },
+  {
+    "endpoint": "llm_api.available_models",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/providers/<int:provider_id>/models/available"
+  },
+  {
+    "endpoint": "main.api_test_provider",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/providers/<int:provider_id>/test"
+  },
+  {
+    "endpoint": "main.api_start_ollama",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/providers/start"
+  },
+  {
+    "endpoint": "llm_api.substage_action_default",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "rule": "/api/v1/llm/substage_action_default"
+  },
+  {
+    "endpoint": "llm_api.get_templates",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/templates"
+  },
+  {
+    "endpoint": "llm_api.update_template",
+    "methods": [
+      "PUT"
+    ],
+    "rule": "/api/v1/llm/templates/<int:template_id>"
+  },
+  {
+    "endpoint": "llm_api.test_llm",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/llm/test"
+  },
+  {
+    "endpoint": "llm_api.test_direct",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/llm/test-direct"
+  },
+  {
+    "endpoint": "api.get_post_development",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/post/<int:post_id>/development"
+  },
+  {
+    "endpoint": "api.get_sections",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/post/<int:post_id>/sections"
+  },
+  {
+    "endpoint": "api.add_section",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/post/<int:post_id>/sections"
+  },
+  {
+    "endpoint": "api.get_post_development_fields",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/post_development/fields"
+  },
+  {
+    "endpoint": "api.list_posts",
+    "methods": [
+      "GET"
+    ],
+    "rule": "/api/v1/posts"
+  },
+  {
+    "endpoint": "api.create_post",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/posts"
+  },
+  {
+    "endpoint": "api.update_section",
+    "methods": [
+      "PUT"
+    ],
+    "rule": "/api/v1/section/<int:section_id>"
+  },
+  {
+    "endpoint": "api.delete_section",
+    "methods": [
+      "DELETE"
+    ],
+    "rule": "/api/v1/section/<int:section_id>"
+  },
+  {
+    "endpoint": "api.workflow_transition",
+    "methods": [
+      "POST"
+    ],
+    "rule": "/api/v1/workflow/<slug>/transition"
+  }
+]

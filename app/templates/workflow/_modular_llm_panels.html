@@ -1,0 +1,18 @@
+{#
+Modular LLM Workflow Panels Include
+This file is included by all workflow substages. It expects:
+- current_substage: the current substage name (e.g. 'idea', 'research')
+- post: the current post object (must have .id)
+- step_config: the step configuration object
+- field_values: the field values for the current post
+- step_id: the current step ID
+- current_stage: the current stage name
+- current_step: the current step name
+#}
+<div id="llm-workflow-root" data-substage="{{ current_substage }}" data-post-id="{{ post.id }}"
+    class="max-w-5xl mx-auto py-10 flex flex-col gap-8">
+    {% with step_config=step_config, field_values=field_values, step_id=step_id, current_stage=current_stage,
+    current_step=current_step %}
+    {% include 'modules/llm_panel/templates/panel.html' %}
+    {% endwith %}
+</div>

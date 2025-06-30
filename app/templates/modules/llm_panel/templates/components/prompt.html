@@ -1,0 +1,148 @@
+<!-- Prompt Section -->
+<div class="border border-dark-border rounded-lg p-4 mb-4">
+    <h2 class="text-xl font-medium text-dark-text mb-4">Prompt</h2>
+
+    <!-- System Mini-Panel -->
+    <div class="bg-dark-hover rounded-lg p-3 mb-3">
+        <h3 class="text-sm font-medium text-blue-500 mb-2">System</h3>
+        <div class="flex flex-col space-y-2">
+            <select id="system_prompt_select"
+                class="w-full bg-dark-bg text-dark-text border border-dark-border rounded p-1 text-sm">
+                <option value="">Select system prompt...</option>
+            </select>
+            <textarea id="system_prompt"
+                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-2 text-sm" rows="2"
+                placeholder="Enter system prompt..."></textarea>
+        </div>
+    </div>
+
+    <!-- Task Mini-Panel -->
+    <div class="bg-dark-hover rounded-lg p-3 mb-3">
+        <h3 class="text-sm font-medium text-blue-500 mb-2">Task</h3>
+        <div class="flex flex-col space-y-2">
+            <select id="task_prompt_select"
+                class="w-full bg-dark-bg text-dark-text border border-dark-border rounded p-1 text-sm">
+                <option value="">Select task prompt...</option>
+            </select>
+            <textarea id="task_prompt"
+                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-2 text-sm" rows="2"
+                placeholder="Enter task prompt..."></textarea>
+        </div>
+    </div>
+
+    <!-- Format Mapping Mini-Panel -->
+    <div class="bg-dark-hover rounded-lg p-3 mb-3">
+        <h3 class="text-sm font-medium text-blue-500 mb-2">Prompt Format Mapping</h3>
+        <div class="format-mapping">
+            <div class="input-formats">
+                <label for="prompt_input_format_select">Input Format:</label>
+                <select id="prompt_input_format_select" data-section="input">
+                    <option value="">Select input format...</option>
+                </select>
+            </div>
+            <div class="output-formats">
+                <label for="prompt_output_format_select">Output Format:</label>
+                <select id="prompt_output_format_select" data-section="output">
+                    <option value="">Select output format...</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    {% if step_config.prompt %}
+    <div class="mb-4">
+        <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
+        <pre class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.prompt }}</pre>
+    </div>
+    {% else %}
+    <p class="text-gray-400">No prompt configured for this step.</p>
+    {% endif %}
+</div>
+
+<!-- Initialize Prompt Selector and Format Dropdowns -->
+<script type="module">
+    import { PromptSelector } from "/static/modules/llm_panel/js/prompt_selector.js";
+
+    window.addEventListener('DOMContentLoaded', () => {
+        // Get current workflow context from URL
+        const pathParts = window.location.pathname.split('/');
+        const postId = pathParts[3];
+        const stage = pathParts[4];
+        const substage = pathParts[5];
+        const step = new URLSearchParams(window.location.search).get('step') || 'initial';
+
+        // Get step_id from the parent element's data attributes
+        const panel = document.querySelector('[data-current-stage]');
+        const stepId = panel ? panel.dataset.stepId : null;
+
+        // Initialize prompt selector with stepId
+        if (stepId) {
+            const promptSelector = new PromptSelector(postId, stepId);
+        } else {
+            console.warn('Step ID not found, cannot initialize prompt selector');
+        }
+
+        // Format dropdowns for prompt panel
+        import('/static/js/format_selector.js').then(({ FormatSelector }) => {
+            // Only target the prompt panel's format dropdowns
+            fetch('/api/workflow/formats/templates').then(r => r.json()).then(formats => {
+                // Populate input format dropdown
+                const inputSelect = document.getElementById('prompt_input_format_select');
+                inputSelect.innerHTML = '<option value="">Select input format...</option>';
+                formats.filter(f => f.format_type === 'input' || f.format_type === 'bidirectional').forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.id;
+                    opt.textContent = f.name;
+                    inputSelect.appendChild(opt);
+                });
+
+                // Populate output format dropdown
+                const outputSelect = document.getElementById('prompt_output_format_select');
+                outputSelect.innerHTML = '<option value="">Select output format...</option>';
+                formats.filter(f => f.format_type === 'output' || f.format_type === 'bidirectional').forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.id;
+                    opt.textContent = f.name;
+                    outputSelect.appendChild(opt);
+                });
+
+                // --- Persist selection logic ---
+                if (stepId) {
+                    // Fetch saved formats and set dropdowns
+                    fetch(`/api/workflow/steps/${stepId}/formats`).then(r => r.json()).then(cfg => {
+                        if (cfg.input_format_id) inputSelect.value = cfg.input_format_id;
+                        if (cfg.output_format_id) outputSelect.value = cfg.output_format_id;
+                    });
+
+                    // Save on change
+                    function saveFormats() {
+                        fetch(`/api/workflow/steps/${stepId}/formats`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                input_format_id: inputSelect.value || null,
+                                output_format_id: outputSelect.value || null
+                            })
+                        });
+                    }
+                    inputSelect.addEventListener('change', saveFormats);
+                    outputSelect.addEventListener('change', saveFormats);
+                }
+                // --- End persist logic ---
+            });
+        });
+    });
+</script>
+
+<style>
+    .format-mapping {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .input-formats,
+    .output-formats {
+        flex: 1;
+    }
+</style>

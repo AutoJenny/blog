@@ -1,0 +1,110 @@
+<!-- TEST MARKER 3: PANEL TEMPLATE VERIFICATION -->
+<!-- LLM Panel Content -->
+<div class="space-y-4 p-4 rounded-lg shadow-md" style="background-color: #2D0A50;"
+    data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
+    data-current-step="{{ current_step }}" data-step-id="{{ step_id }}" data-post-id="{{ current_post_id }}">
+    <!-- Run LLM Button -->
+    <div class="mb-4 flex justify-center">
+        <button id="run-llm-btn" data-action="run-llm"
+            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-colors duration-200 min-w-[200px]">
+            Run LLM
+        </button>
+    </div>
+
+    <!-- Inputs -->
+    {% include 'modules/llm_panel/templates/components/inputs.html' %}
+
+    <!-- Prompt -->
+    {% include 'modules/llm_panel/templates/components/prompt.html' %}
+
+    <!-- Settings -->
+    {% include 'modules/llm_panel/templates/components/settings.html' %}
+
+    <!-- Outputs -->
+    {% include 'modules/llm_panel/templates/components/outputs.html' %}
+</div>
+
+<!-- Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='modules/llm_panel/css/panels.css') }}">
+
+<!-- Scripts -->
+<script type="module">
+    import { FieldSelector } from "/static/modules/llm_panel/js/field_selector.js";
+    import { runLLM } from "/static/js/llm_utils.js";
+    import { FormatSelector } from "/static/js/format_selector.js";
+
+    // Initialize field selector
+    window.addEventListener('DOMContentLoaded', () => {
+        console.log('[PANEL] DOM loaded, initializing components...');
+
+        // Get current workflow context from URL
+        const pathParts = window.location.pathname.split('/');
+        const postId = pathParts[3];
+        const stage = pathParts[4];
+        const substage = pathParts[5];
+
+        if (postId) {
+            console.log('[PANEL] Initializing FieldSelector...');
+            const fieldSelector = new FieldSelector(postId, stage, substage);
+        } else {
+            console.warn('[PANEL] Post ID not found, cannot initialize field selector');
+        }
+
+        // Initialize FormatSelector
+        console.log('[PANEL] Initializing FormatSelector...');
+        const formatSelector = new FormatSelector();
+        window.formatSelector = formatSelector;
+
+        // Initialize LLM button
+        const runLLMBtn = document.getElementById('run-llm-btn');
+        if (runLLMBtn) {
+            runLLMBtn.addEventListener('click', async function () {
+                try {
+                    // Get current workflow context from URL
+                    const pathParts = window.location.pathname.split('/');
+                    const postId = pathParts[3];
+                    const stage = pathParts[4];
+                    const substage = pathParts[5];
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const urlStep = urlParams.get('step') || 'initial';
+                    
+                    console.log('[PANEL] urlStep from URL:', urlStep);
+                    
+                    // Convert URL format (lowercase with underscores) to database format (title case with spaces)
+                    const step = urlStep.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    console.log('[PANEL] step after conversion:', step);
+                    console.log('[PANEL] Running LLM with params:', { postId, stage, substage, step });
+
+                    const result = await runLLM({ postId, stage, substage, step });
+
+                    console.log('[PANEL] LLM result:', result);
+
+                    if (!result.success) {
+                        throw new Error(result.error || 'Unknown error occurred');
+                    }
+                } catch (error) {
+                    console.error('Error running LLM:', error);
+                    alert('Error running LLM: ' + error.message);
+                }
+            });
+        }
+    });
+</script>
+
+<!-- Styles -->
+<style>
+    #run-llm-btn {
+        background-color: #6B46C1;
+        border: 1px solid #805AD5;
+    }
+
+    #run-llm-btn:hover {
+        background-color: #553C9A;
+    }
+
+    #run-llm-btn:disabled {
+        background-color: #4A5568;
+        cursor: not-allowed;
+    }
+</style>
