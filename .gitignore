@@ -129,3 +129,4 @@ app/static/cache/*
 # New file to exclude
 sd3.5_large_turbo_all_files/
 *.tar.gz
+node_modules/
