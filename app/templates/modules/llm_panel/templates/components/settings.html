@@ -2,49 +2,142 @@
 <div class="border border-dark-border rounded-lg p-4 mb-4">
     <h2 class="text-xl font-medium text-dark-text mb-4">Settings</h2>
     {% if step_config.settings and step_config.settings.llm %}
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <label class="block text-sm font-medium text-blue-500">Model</label>
-            <input type="text" value="{{ step_config.settings.llm.model }}"
-                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+    <form id="llm-settings-form" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Model</label>
+                <input type="text" name="model" value="{{ step_config.settings.llm.model }}"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Temperature</label>
+                <input type="number" name="temperature" value="{{ step_config.settings.llm.parameters.temperature }}"
+                    min="0.0" max="1.0" step="0.1"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Max tokens</label>
+                <input type="number" name="max_tokens" value="{{ step_config.settings.llm.parameters.max_tokens }}"
+                    min="1" max="32768"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Top P</label>
+                <input type="number" name="top_p" value="{{ step_config.settings.llm.parameters.top_p }}" min="0.0"
+                    max="1.0" step="0.1"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Frequency Penalty</label>
+                <input type="number" name="frequency_penalty"
+                    value="{{ step_config.settings.llm.parameters.frequency_penalty }}" min="0.0" max="1.0" step="0.1"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Presence Penalty</label>
+                <input type="number" name="presence_penalty"
+                    value="{{ step_config.settings.llm.parameters.presence_penalty }}" min="0.0" max="1.0" step="0.1"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
         </div>
-        <div>
-            <label class="block text-sm font-medium text-blue-500">Temperature</label>
-            <input type="text" value="{{ step_config.settings.llm.parameters.temperature }}"
-                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+        <div class="flex justify-end">
+            <button type="submit"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition-colors">
+                Save Settings
+            </button>
         </div>
-        <div>
-            <label class="block text-sm font-medium text-blue-500">Max tokens</label>
-            <input type="text" value="{{ step_config.settings.llm.parameters.max_tokens }}"
-                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-blue-500">Top P</label>
-            <input type="text" value="{{ step_config.settings.llm.parameters.top_p }}"
-                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-blue-500">Frequency Penalty</label>
-            <input type="text" value="{{ step_config.settings.llm.parameters.frequency_penalty }}"
-                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-blue-500">Presence Penalty</label>
-            <input type="text" value="{{ step_config.settings.llm.parameters.presence_penalty }}"
-                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
-        </div>
-    </div>
+    </form>
     {% elif step_config.settings %}
-    <div class="grid grid-cols-2 gap-4">
-        {% for setting, value in step_config.settings.items() %}
-        <div>
-            <label class="block text-sm font-medium text-blue-500">{{ setting }}</label>
-            <input type="text" value="{{ value }}"
-                class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text" readonly>
+    <form id="llm-settings-form" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            {% for setting, value in step_config.settings.items() %}
+            <div>
+                <label class="block text-sm font-medium text-blue-500">{{ setting }}</label>
+                <input type="text" name="{{ setting }}" value="{{ value }}"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
+        <div class="flex justify-end">
+            <button type="submit"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition-colors">
+                Save Settings
+            </button>
+        </div>
+    </form>
     {% else %}
     <p class="text-gray-400">No settings configured for this step.</p>
     {% endif %}
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('llm-settings-form');
+        if (!form) return;
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Get step ID from the panel data attribute
+            const panel = document.querySelector('[data-step-id]');
+            const stepId = panel ? panel.dataset.stepId : null;
+
+            if (!stepId) {
+                alert('Error: Step ID not found');
+                return;
+            }
+
+            // Collect form data
+            const formData = new FormData(this);
+            const settings = {};
+
+            // Handle nested LLM settings structure
+            if (formData.get('model')) {
+                settings.model = formData.get('model');
+                settings.temperature = parseFloat(formData.get('temperature'));
+                settings.max_tokens = parseInt(formData.get('max_tokens'));
+                settings.top_p = parseFloat(formData.get('top_p'));
+                settings.frequency_penalty = parseFloat(formData.get('frequency_penalty'));
+                settings.presence_penalty = parseFloat(formData.get('presence_penalty'));
+            } else {
+                // Handle flat settings structure
+                for (const [key, value] of formData.entries()) {
+                    settings[key] = value;
+                }
+            }
+
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Saving...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/workflow/steps/${stepId}/llm_settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    // Show success feedback
+                    submitBtn.textContent = 'Saved!';
+                    submitBtn.style.backgroundColor = '#10b981'; // green
+                    setTimeout(() => {
+                        submitBtn.textContent = originalText;
+                        submitBtn.style.backgroundColor = '';
+                        submitBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to save settings');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Error saving settings: ' + error.message);
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    });
+</script>

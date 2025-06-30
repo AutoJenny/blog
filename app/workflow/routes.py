@@ -767,3 +767,71 @@ def get_available_fields():
                 })
             
             return jsonify(result) 
+
+@api_workflow_bp.route('/steps/<int:step_id>/llm_settings', methods=['POST'])
+def update_llm_settings(step_id):
+    """Update LLM settings for a workflow step (isolated)."""
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+    # Validate fields
+    model = data.get('model')
+    temperature = data.get('temperature')
+    max_tokens = data.get('max_tokens')
+    top_p = data.get('top_p')
+    frequency_penalty = data.get('frequency_penalty')
+    presence_penalty = data.get('presence_penalty')
+
+    errors = {}
+    if not isinstance(model, str) or not model.strip():
+        errors['model'] = 'Model must be a non-empty string.'
+    for field, value, minv, maxv, typ in [
+        ('temperature', temperature, 0.0, 1.0, float),
+        ('top_p', top_p, 0.0, 1.0, float),
+        ('frequency_penalty', frequency_penalty, 0.0, 1.0, float),
+        ('presence_penalty', presence_penalty, 0.0, 1.0, float)
+    ]:
+        try:
+            v = typ(value)
+            if not (minv <= v <= maxv):
+                errors[field] = f'{field} must be between {minv} and {maxv}.'
+        except Exception:
+            errors[field] = f'{field} must be a {typ.__name__}.'
+    try:
+        max_tokens = int(max_tokens)
+        if not (1 <= max_tokens <= 32768):
+            errors['max_tokens'] = 'max_tokens must be between 1 and 32768.'
+    except Exception:
+        errors['max_tokens'] = 'max_tokens must be an integer.'
+    if errors:
+        return jsonify({'success': False, 'errors': errors}), 400
+
+    # Update DB (only LLM settings)
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute('SELECT config FROM workflow_step_entity WHERE id = %s', (step_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({'success': False, 'error': 'Step not found'}), 404
+            import json
+            config = row['config'] or {}
+            if isinstance(config, str):
+                config = json.loads(config)
+            if 'settings' not in config:
+                config['settings'] = {}
+            if 'llm' not in config['settings']:
+                config['settings']['llm'] = {}
+            config['settings']['llm'].update({
+                'model': model,
+                'parameters': {
+                    'temperature': float(temperature),
+                    'max_tokens': int(max_tokens),
+                    'top_p': float(top_p),
+                    'frequency_penalty': float(frequency_penalty),
+                    'presence_penalty': float(presence_penalty)
+                }
+            })
+            cur.execute('UPDATE workflow_step_entity SET config = %s WHERE id = %s', (json.dumps(config), step_id))
+            conn.commit()
+    return jsonify({'success': True}) 
