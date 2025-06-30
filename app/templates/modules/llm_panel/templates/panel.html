@@ -4,11 +4,13 @@
     data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
     data-current-step="{{ current_step }}" data-step-id="{{ step_id }}" data-post-id="{{ current_post_id }}">
     <!-- Run LLM Button -->
-    <div class="mb-4 flex justify-center">
+    <div class="mb-4 flex justify-center items-center gap-4">
         <button id="run-llm-btn" data-action="run-llm"
             class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-colors duration-200 min-w-[200px]">
             Run LLM
         </button>
+        <a href="#" onclick="startOllama(event)" class="text-blue-400 hover:text-blue-300 text-sm underline">Start
+            Ollama</a>
     </div>
 
     <!-- Inputs -->
@@ -67,12 +69,12 @@
                     const substage = pathParts[5];
                     const urlParams = new URLSearchParams(window.location.search);
                     const urlStep = urlParams.get('step') || 'initial';
-                    
+
                     console.log('[PANEL] urlStep from URL:', urlStep);
-                    
+
                     // Convert URL format (lowercase with underscores) to database format (title case with spaces)
                     const step = urlStep.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    
+
                     console.log('[PANEL] step after conversion:', step);
                     console.log('[PANEL] Running LLM with params:', { postId, stage, substage, step });
 
@@ -90,6 +92,46 @@
             });
         }
     });
+
+    // Make startOllama available globally
+    window.startOllama = async function (event) {
+        event.preventDefault();
+        const link = event.target;
+        const originalText = link.textContent;
+
+        link.textContent = 'Starting...';
+        link.style.pointerEvents = 'none';
+
+        try {
+            const response = await fetch('/api/v1/llm/providers/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                link.textContent = 'Started!';
+                link.style.color = '#10b981'; // emerald-500
+                setTimeout(() => {
+                    link.textContent = originalText;
+                    link.style.color = '';
+                    link.style.pointerEvents = '';
+                }, 2000);
+            } else {
+                throw new Error(data.error || 'Failed to start Ollama');
+            }
+        } catch (error) {
+            link.textContent = 'Failed';
+            link.style.color = '#ef4444'; // red-500
+            alert('Error starting Ollama: ' + error.message);
+            setTimeout(() => {
+                link.textContent = originalText;
+                link.style.color = '';
+                link.style.pointerEvents = '';
+            }, 3000);
+        }
+    };
 </script>
 
 <!-- Styles -->

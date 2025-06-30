@@ -21,6 +21,9 @@ export class FormatSelector {
             // Initialize format selectors
             this.initializeFormatSelectors();
             
+            // Load current format selections
+            await this.loadCurrentFormats();
+            
             console.log('[DEBUG] Format selector initialization complete');
         } catch (error) {
             console.error('Error initializing format selector:', error);
@@ -40,6 +43,55 @@ export class FormatSelector {
             console.error('Error loading format templates:', error);
             this.formatTemplates = [];
         }
+    }
+
+    async loadCurrentFormats() {
+        try {
+            const stepId = this.getStepId();
+            if (!stepId) {
+                console.warn('Step ID not found, cannot load current formats');
+                return;
+            }
+
+            console.log('[DEBUG] Loading current formats for step:', stepId);
+            const response = await fetch(`/api/workflow/steps/${stepId}/formats`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const currentFormats = await response.json();
+            console.log('[DEBUG] Current formats loaded:', currentFormats);
+            
+            // Set current selections in dropdowns
+            this.setCurrentSelections(currentFormats);
+        } catch (error) {
+            console.error('Error loading current formats:', error);
+        }
+    }
+
+    setCurrentSelections(currentFormats) {
+        const inputSelector = document.querySelector('.format-selector[data-section="input"]');
+        const outputSelector = document.querySelector('.format-selector[data-section="output"]');
+        
+        if (inputSelector && currentFormats.input_format_id) {
+            inputSelector.value = currentFormats.input_format_id;
+            console.log('[DEBUG] Set input format selection:', currentFormats.input_format_id);
+        }
+        
+        if (outputSelector && currentFormats.output_format_id) {
+            outputSelector.value = currentFormats.output_format_id;
+            console.log('[DEBUG] Set output format selection:', currentFormats.output_format_id);
+        }
+    }
+
+    getStepId() {
+        // Try multiple ways to get step ID
+        const stepId = document.querySelector('[data-step-id]')?.dataset.stepId ||
+                      document.querySelector('[data-current-step]')?.dataset.stepId ||
+                      document.querySelector('[data-current-stage]')?.dataset.stepId;
+        
+        console.log('[DEBUG] Retrieved step ID:', stepId);
+        return stepId;
     }
 
     initializeFormatSelectors() {
@@ -67,7 +119,7 @@ export class FormatSelector {
             
             // Add format options based on section
             this.formatTemplates.forEach(format => {
-                if (format.format_type === section) {
+                if (format.format_type === section || format.format_type === 'bidirectional') {
                     const option = document.createElement('option');
                     option.value = format.id;
                     option.textContent = format.name;
@@ -132,29 +184,29 @@ export class FormatSelector {
 
     async saveFormatSelection(formatId, section) {
         try {
-            // Get step ID and post ID from the page context (already available from the server)
-            const stepId = document.querySelector('[data-step-id]')?.dataset.stepId;
-            const postId = document.querySelector('[data-post-id]')?.dataset.postId;
+            const stepId = this.getStepId();
             
             if (!stepId) {
                 console.warn('Step ID not found in page context, cannot save format selection');
                 return;
             }
-            
-            if (!postId) {
-                console.warn('Post ID not found in page context, cannot save format selection');
-                return;
-            }
 
-            // Save format selection to post-specific format
-            const response = await fetch(`/api/workflow/steps/${stepId}/formats/${postId}`, {
+            // Get current selections from both dropdowns
+            const inputSelector = document.querySelector('.format-selector[data-section="input"]');
+            const outputSelector = document.querySelector('.format-selector[data-section="output"]');
+            
+            const inputFormatId = inputSelector ? inputSelector.value || null : null;
+            const outputFormatId = outputSelector ? outputSelector.value || null : null;
+
+            // Save format selection to step-level endpoint
+            const response = await fetch(`/api/workflow/steps/${stepId}/formats`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    input_format_id: section === 'input' ? formatId : null,
-                    output_format_id: section === 'output' ? formatId : null
+                    input_format_id: inputFormatId,
+                    output_format_id: outputFormatId
                 })
             });
 
@@ -162,7 +214,7 @@ export class FormatSelector {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            console.log(`[DEBUG] Format selection saved for ${section}:`, formatId);
+            console.log(`[DEBUG] Format selection saved for step ${stepId}:`, { inputFormatId, outputFormatId });
         } catch (error) {
             console.error('Error saving format selection:', error);
         }
@@ -172,5 +224,6 @@ export class FormatSelector {
     async refresh() {
         await this.loadFormatTemplates();
         this.initializeFormatSelectors();
+        await this.loadCurrentFormats();
     }
 } 

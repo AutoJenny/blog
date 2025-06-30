@@ -68,7 +68,9 @@ def collect_all_database_fields(conn, post_id: int, stage: str, substage: str, s
         "workflow_config": {},
         "step_config": config,
         "input_mappings": {},
-        "output_mappings": {}
+        "output_mappings": {},
+        "format_config": {},
+        "format_templates": {}
     }
     
     try:
@@ -121,6 +123,61 @@ def collect_all_database_fields(conn, post_id: int, stage: str, substage: str, s
                 llm_config = config['settings']['llm']
                 fields["input_mappings"] = llm_config.get('input_mapping', {})
                 fields["output_mappings"] = llm_config.get('output_mapping', {})
+            
+            # Get format configuration from workflow_step_format
+            step_id = fields["workflow_config"].get('id') if fields["workflow_config"] else None
+            if step_id:
+                cur.execute("""
+                    SELECT 
+                        wsf.id,
+                        wsf.step_id,
+                        wsf.post_id,
+                        wsf.input_format_id,
+                        wsf.output_format_id,
+                        wsf.created_at,
+                        wsf.updated_at
+                    FROM workflow_step_format wsf
+                    WHERE wsf.step_id = %s AND wsf.post_id = %s
+                """, (step_id, post_id))
+                format_result = cur.fetchone()
+                if format_result:
+                    fields["format_config"] = dict(format_result)
+                    
+                    # Get input format template if it exists
+                    if format_result['input_format_id']:
+                        cur.execute("""
+                            SELECT 
+                                id,
+                                name,
+                                description,
+                                fields,
+                                created_at,
+                                updated_at,
+                                llm_instructions
+                            FROM workflow_format_template
+                            WHERE id = %s
+                        """, (format_result['input_format_id'],))
+                        input_template = cur.fetchone()
+                        if input_template:
+                            fields["format_templates"]["input"] = dict(input_template)
+                    
+                    # Get output format template if it exists
+                    if format_result['output_format_id']:
+                        cur.execute("""
+                            SELECT 
+                                id,
+                                name,
+                                description,
+                                fields,
+                                created_at,
+                                updated_at,
+                                llm_instructions
+                            FROM workflow_format_template
+                            WHERE id = %s
+                        """, (format_result['output_format_id'],))
+                        output_template = cur.fetchone()
+                        if output_template:
+                            fields["format_templates"]["output"] = dict(output_template)
                 
     except Exception as e:
         fields["error"] = f"Error collecting database fields: {str(e)}"

@@ -36,15 +36,17 @@
         <div class="format-mapping">
             <div class="input-formats">
                 <label for="prompt_input_format_select">Input Format:</label>
-                <select id="prompt_input_format_select" data-section="input">
+                <select id="prompt_input_format_select" class="format-selector" data-section="input">
                     <option value="">Select input format...</option>
                 </select>
+                <div id="input_format_preview" class="hidden"></div>
             </div>
             <div class="output-formats">
                 <label for="prompt_output_format_select">Output Format:</label>
-                <select id="prompt_output_format_select" data-section="output">
+                <select id="prompt_output_format_select" class="format-selector" data-section="output">
                     <option value="">Select output format...</option>
                 </select>
+                <div id="output_format_preview" class="hidden"></div>
             </div>
         </div>
     </div>
@@ -59,7 +61,7 @@
     {% endif %}
 </div>
 
-<!-- Initialize Prompt Selector and Format Dropdowns -->
+<!-- Initialize Prompt Selector -->
 <script type="module">
     import { PromptSelector } from "/static/modules/llm_panel/js/prompt_selector.js";
 
@@ -81,56 +83,6 @@
         } else {
             console.warn('Step ID not found, cannot initialize prompt selector');
         }
-
-        // Format dropdowns for prompt panel
-        import('/static/js/format_selector.js').then(({ FormatSelector }) => {
-            // Only target the prompt panel's format dropdowns
-            fetch('/api/workflow/formats/templates').then(r => r.json()).then(formats => {
-                // Populate input format dropdown
-                const inputSelect = document.getElementById('prompt_input_format_select');
-                inputSelect.innerHTML = '<option value="">Select input format...</option>';
-                formats.filter(f => f.format_type === 'input' || f.format_type === 'bidirectional').forEach(f => {
-                    const opt = document.createElement('option');
-                    opt.value = f.id;
-                    opt.textContent = f.name;
-                    inputSelect.appendChild(opt);
-                });
-
-                // Populate output format dropdown
-                const outputSelect = document.getElementById('prompt_output_format_select');
-                outputSelect.innerHTML = '<option value="">Select output format...</option>';
-                formats.filter(f => f.format_type === 'output' || f.format_type === 'bidirectional').forEach(f => {
-                    const opt = document.createElement('option');
-                    opt.value = f.id;
-                    opt.textContent = f.name;
-                    outputSelect.appendChild(opt);
-                });
-
-                // --- Persist selection logic ---
-                if (stepId) {
-                    // Fetch saved formats and set dropdowns
-                    fetch(`/api/workflow/steps/${stepId}/formats`).then(r => r.json()).then(cfg => {
-                        if (cfg.input_format_id) inputSelect.value = cfg.input_format_id;
-                        if (cfg.output_format_id) outputSelect.value = cfg.output_format_id;
-                    });
-
-                    // Save on change
-                    function saveFormats() {
-                        fetch(`/api/workflow/steps/${stepId}/formats`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                input_format_id: inputSelect.value || null,
-                                output_format_id: outputSelect.value || null
-                            })
-                        });
-                    }
-                    inputSelect.addEventListener('change', saveFormats);
-                    outputSelect.addEventListener('change', saveFormats);
-                }
-                // --- End persist logic ---
-            });
-        });
     });
 </script>
 
