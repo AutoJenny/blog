@@ -263,7 +263,23 @@ class FieldSelector {
             console.log(`[DEBUG] Selector ${index} now has ${selector.options.length} options`);
             
             // Set initial value based on saved mappings
-            if (this.savedMappings && this.savedMappings.length > 0) {
+            if (section === 'outputs' && this.savedOutputFieldSelection) {
+                // For output fields, prioritize saved output field selection
+                console.log(`[DEBUG] Using saved output field selection for selector ${index}:`, this.savedOutputFieldSelection);
+                selector.value = this.savedOutputFieldSelection.field;
+                
+                // Update target element if it exists
+                if (target) {
+                    const targetElement = document.getElementById(target);
+                    if (targetElement) {
+                        targetElement.dataset.dbField = this.savedOutputFieldSelection.field;
+                        if (this.fieldValues[this.savedOutputFieldSelection.field]) {
+                            targetElement.value = this.fieldValues[this.savedOutputFieldSelection.field];
+                        }
+                    }
+                }
+            }
+            else if (this.savedMappings && this.savedMappings.length > 0) {
                 console.log(`[DEBUG] Checking saved mappings for selector ${index}:`, this.savedMappings);
                 
                 // Try to find a mapping that matches this selector's target
@@ -297,22 +313,6 @@ class FieldSelector {
                             if (this.fieldValues[savedMapping.field_name]) {
                                 targetElement.value = this.fieldValues[savedMapping.field_name];
                             }
-                        }
-                    }
-                }
-            }
-            // Check for saved output field selection for output fields
-            else if (section === 'outputs' && this.savedOutputFieldSelection) {
-                console.log(`[DEBUG] Using saved output field selection for selector ${index}:`, this.savedOutputFieldSelection);
-                selector.value = this.savedOutputFieldSelection.field;
-                
-                // Update target element if it exists
-                if (target) {
-                    const targetElement = document.getElementById(target);
-                    if (targetElement) {
-                        targetElement.dataset.dbField = this.savedOutputFieldSelection.field;
-                        if (this.fieldValues[this.savedOutputFieldSelection.field]) {
-                            targetElement.value = this.fieldValues[this.savedOutputFieldSelection.field];
                         }
                     }
                 }
