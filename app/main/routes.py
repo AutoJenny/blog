@@ -331,10 +331,49 @@ def docs_live_field_mapping():
     return render_template('docs/live_field_mapping.html', mappings=mappings)
 
 @bp.route('/api/v1/llm/providers/start', methods=['POST'])
-@deprecated_endpoint(message="This endpoint is deprecated. Use /api/llm/providers/start instead.")
 def api_start_ollama():
-    """Deprecated LLM provider start endpoint."""
-    return jsonify({'error': 'This endpoint is deprecated'}), 410
+    """Start Ollama LLM provider."""
+    try:
+        # Check if Ollama is already running
+        import subprocess
+        import socket
+        
+        # Try to connect to Ollama's default port
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = sock.connect_ex(('localhost', 11434))
+        sock.close()
+        
+        if result == 0:
+            return jsonify({'status': 'already_running', 'message': 'Ollama is already running'})
+        
+        # Try to start Ollama
+        try:
+            # Start Ollama in the background
+            subprocess.Popen(['ollama', 'serve'], 
+                           stdout=subprocess.DEVNULL, 
+                           stderr=subprocess.DEVNULL)
+            
+            # Wait a moment for it to start
+            import time
+            time.sleep(2)
+            
+            # Check if it started successfully
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            result = sock.connect_ex(('localhost', 11434))
+            sock.close()
+            
+            if result == 0:
+                return jsonify({'status': 'started', 'message': 'Ollama started successfully'})
+            else:
+                return jsonify({'status': 'error', 'message': 'Failed to start Ollama - service not responding'}), 500
+                
+        except FileNotFoundError:
+            return jsonify({'status': 'error', 'message': 'Ollama not found - please install Ollama first'}), 404
+        except Exception as e:
+            return jsonify({'status': 'error', 'message': f'Failed to start Ollama: {str(e)}'}), 500
+            
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'Unexpected error: {str(e)}'}), 500
 
 @bp.route('/api/v1/llm/providers/<int:provider_id>/test', methods=['POST'])
 @deprecated_endpoint(message="This endpoint is deprecated. Use /api/llm/providers/{provider_id}/test instead.")

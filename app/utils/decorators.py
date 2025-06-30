@@ -1,7 +1,7 @@
 """Decorators for the application."""
 
 from functools import wraps
-from flask import jsonify
+from flask import jsonify, Response
 
 
 def deprecated_endpoint(message=None):
@@ -16,7 +16,7 @@ def deprecated_endpoint(message=None):
         def decorated_function(*args, **kwargs):
             # Add deprecation warning to response headers
             response = f(*args, **kwargs)
-            if not hasattr(response, 'headers'):
+            if not isinstance(response, Response):
                 response = jsonify(response)
             
             response.headers['Warning'] = (

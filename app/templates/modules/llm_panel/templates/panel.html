@@ -110,8 +110,8 @@
 
             const data = await response.json();
 
-            if (response.ok && data.success) {
-                link.textContent = 'Started!';
+            if (response.ok && (data.status === 'started' || data.status === 'already_running')) {
+                link.textContent = data.status === 'already_running' ? 'Already Running' : 'Started!';
                 link.style.color = '#10b981'; // emerald-500
                 setTimeout(() => {
                     link.textContent = originalText;
@@ -119,7 +119,7 @@
                     link.style.pointerEvents = '';
                 }, 2000);
             } else {
-                throw new Error(data.error || 'Failed to start Ollama');
+                throw new Error(data.message || 'Failed to start Ollama');
             }
         } catch (error) {
             link.textContent = 'Failed';

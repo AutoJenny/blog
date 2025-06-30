@@ -48,72 +48,82 @@
                 </div>
                 <div class="format-column-content">
                     {% if input_templates %}
-                        {% for template in input_templates|sort(attribute='name') %}
-                        <div class="format-card" data-id="{{ template.id }}">
-                            <div class="format-card-header">
-                                <div>
-                                    <h4 class="format-card-title">{{ template.name }}</h4>
-                                    {% if template.description %}
-                                    <p class="text-sm text-gray-400 mt-1">{{ template.description }}</p>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <!-- Format Fields Preview -->
-                            <div class="format-fields-preview mt-3" style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 1.25rem;">
-                                <h5 class="text-sm font-medium text-gray-300 mb-4" style="font-size: 1.1rem;">Fields ({{ template.fields|length }}):</h5>
-                                <table class="fields-table" style="width: 100%; border-collapse: separate; border-spacing: 0 0.5rem;">
-                                    <thead>
-                                        <tr style="border-bottom: 1px solid var(--admin-border);">
-                                            <th style="text-align: left; color: var(--admin-accent); font-weight: 600;">Name</th>
-                                            <th style="text-align: left; color: var(--admin-text-secondary);">Type</th>
-                                            <th style="text-align: left; color: var(--admin-text-secondary);">Required</th>
-                                            <th style="text-align: left; color: var(--admin-text-secondary);">Description</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for field in template.fields %}
-                                        <tr style="background: rgba(255,255,255,0.02); border-radius: 0.25rem;">
-                                            <td style="font-weight: bold; font-size: 1.08rem; color: #fff; padding: 0.3rem 0.5rem;">{{ field.name }}</td>
-                                            <td style="color: var(--admin-accent); padding: 0.3rem 0.5rem;">{{ field.type }}</td>
-                                            <td style="padding: 0.3rem 0.5rem;">
-                                                {% if field.required %}
-                                                    <span style="color: #ef4444; font-weight: 600;">&#9733; Required</span>
-                                                {% else %}
-                                                    <span style="color: #64748b;">Optional</span>
-                                                {% endif %}
-                                            </td>
-                                            <td style="color: var(--admin-text-secondary); padding: 0.3rem 0.5rem;">{{ field.description }}</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {% if template.llm_instructions %}
-                            <div class="llm-instructions-preview mt-3">
-                                <h5 class="text-sm font-medium text-gray-300 mb-2">LLM Instructions:</h5>
-                                <p class="text-sm text-gray-400">{{ template.llm_instructions[:100] }}{% if template.llm_instructions|length > 100 %}...{% endif %}</p>
-                            </div>
-                            {% endif %}
-
-                            <div class="format-card-actions mt-4">
-                                <button class="btn btn-secondary btn-sm view-details" data-id="{{ template.id }}">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <button class="btn btn-secondary btn-sm edit-format" data-id="{{ template.id }}">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-                                <button class="btn btn-danger btn-sm delete-format" data-id="{{ template.id }}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                    {% for template in input_templates|sort(attribute='name') %}
+                    <div class="format-card" data-id="{{ template.id }}">
+                        <div class="format-card-header">
+                            <div>
+                                <h4 class="format-card-title">{{ template.name }}</h4>
+                                {% if template.description %}
+                                <p class="text-sm text-gray-400 mt-1">{{ template.description }}</p>
+                                {% endif %}
                             </div>
                         </div>
-                        {% endfor %}
+
+                        <!-- Format Fields Preview -->
+                        <div class="format-fields-preview mt-3"
+                            style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 1.25rem;">
+                            <h5 class="text-sm font-medium text-gray-300 mb-4" style="font-size: 1.1rem;">Fields ({{
+                                template.fields|length }}):</h5>
+                            <table class="fields-table"
+                                style="width: 100%; border-collapse: separate; border-spacing: 0 0.5rem;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--admin-border);">
+                                        <th style="text-align: left; color: var(--admin-accent); font-weight: 600;">Name
+                                        </th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Type</th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Required</th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Description
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for field in template.fields %}
+                                    <tr style="background: rgba(255,255,255,0.02); border-radius: 0.25rem;">
+                                        <td
+                                            style="font-weight: bold; font-size: 1.08rem; color: #fff; padding: 0.3rem 0.5rem;">
+                                            {{ field.name }}</td>
+                                        <td style="color: var(--admin-accent); padding: 0.3rem 0.5rem;">{{ field.type }}
+                                        </td>
+                                        <td style="padding: 0.3rem 0.5rem;">
+                                            {% if field.required %}
+                                            <span style="color: #ef4444; font-weight: 600;">&#9733; Required</span>
+                                            {% else %}
+                                            <span style="color: #64748b;">Optional</span>
+                                            {% endif %}
+                                        </td>
+                                        <td style="color: var(--admin-text-secondary); padding: 0.3rem 0.5rem;">{{
+                                            field.description }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if template.llm_instructions %}
+                        <div class="llm-instructions-preview mt-3">
+                            <h5 class="text-sm font-medium text-gray-300 mb-2">LLM Instructions:</h5>
+                            <p class="text-sm text-gray-400">{{ template.llm_instructions[:100] }}{% if
+                                template.llm_instructions|length > 100 %}...{% endif %}</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="format-card-actions mt-4">
+                            <button class="btn btn-secondary btn-sm view-details" data-id="{{ template.id }}">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-secondary btn-sm edit-format" data-id="{{ template.id }}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-format" data-id="{{ template.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <div class="empty-state">
-                            <p class="text-gray-400 text-center">No input formats defined</p>
-                        </div>
+                    <div class="empty-state">
+                        <p class="text-gray-400 text-center">No input formats defined</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -129,72 +139,82 @@
                 </div>
                 <div class="format-column-content">
                     {% if output_templates %}
-                        {% for template in output_templates|sort(attribute='name') %}
-                        <div class="format-card" data-id="{{ template.id }}">
-                            <div class="format-card-header">
-                                <div>
-                                    <h4 class="format-card-title">{{ template.name }}</h4>
-                                    {% if template.description %}
-                                    <p class="text-sm text-gray-400 mt-1">{{ template.description }}</p>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <!-- Format Fields Preview -->
-                            <div class="format-fields-preview mt-3" style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 1.25rem;">
-                                <h5 class="text-sm font-medium text-gray-300 mb-4" style="font-size: 1.1rem;">Fields ({{ template.fields|length }}):</h5>
-                                <table class="fields-table" style="width: 100%; border-collapse: separate; border-spacing: 0 0.5rem;">
-                                    <thead>
-                                        <tr style="border-bottom: 1px solid var(--admin-border);">
-                                            <th style="text-align: left; color: var(--admin-accent); font-weight: 600;">Name</th>
-                                            <th style="text-align: left; color: var(--admin-text-secondary);">Type</th>
-                                            <th style="text-align: left; color: var(--admin-text-secondary);">Required</th>
-                                            <th style="text-align: left; color: var(--admin-text-secondary);">Description</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for field in template.fields %}
-                                        <tr style="background: rgba(255,255,255,0.02); border-radius: 0.25rem;">
-                                            <td style="font-weight: bold; font-size: 1.08rem; color: #fff; padding: 0.3rem 0.5rem;">{{ field.name }}</td>
-                                            <td style="color: var(--admin-accent); padding: 0.3rem 0.5rem;">{{ field.type }}</td>
-                                            <td style="padding: 0.3rem 0.5rem;">
-                                                {% if field.required %}
-                                                    <span style="color: #ef4444; font-weight: 600;">&#9733; Required</span>
-                                                {% else %}
-                                                    <span style="color: #64748b;">Optional</span>
-                                                {% endif %}
-                                            </td>
-                                            <td style="color: var(--admin-text-secondary); padding: 0.3rem 0.5rem;">{{ field.description }}</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {% if template.llm_instructions %}
-                            <div class="llm-instructions-preview mt-3">
-                                <h5 class="text-sm font-medium text-gray-300 mb-2">LLM Instructions:</h5>
-                                <p class="text-sm text-gray-400">{{ template.llm_instructions[:100] }}{% if template.llm_instructions|length > 100 %}...{% endif %}</p>
-                            </div>
-                            {% endif %}
-
-                            <div class="format-card-actions mt-4">
-                                <button class="btn btn-secondary btn-sm view-details" data-id="{{ template.id }}">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <button class="btn btn-secondary btn-sm edit-format" data-id="{{ template.id }}">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-                                <button class="btn btn-danger btn-sm delete-format" data-id="{{ template.id }}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                    {% for template in output_templates|sort(attribute='name') %}
+                    <div class="format-card" data-id="{{ template.id }}">
+                        <div class="format-card-header">
+                            <div>
+                                <h4 class="format-card-title">{{ template.name }}</h4>
+                                {% if template.description %}
+                                <p class="text-sm text-gray-400 mt-1">{{ template.description }}</p>
+                                {% endif %}
                             </div>
                         </div>
-                        {% endfor %}
+
+                        <!-- Format Fields Preview -->
+                        <div class="format-fields-preview mt-3"
+                            style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 1.25rem;">
+                            <h5 class="text-sm font-medium text-gray-300 mb-4" style="font-size: 1.1rem;">Fields ({{
+                                template.fields|length }}):</h5>
+                            <table class="fields-table"
+                                style="width: 100%; border-collapse: separate; border-spacing: 0 0.5rem;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--admin-border);">
+                                        <th style="text-align: left; color: var(--admin-accent); font-weight: 600;">Name
+                                        </th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Type</th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Required</th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Description
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for field in template.fields %}
+                                    <tr style="background: rgba(255,255,255,0.02); border-radius: 0.25rem;">
+                                        <td
+                                            style="font-weight: bold; font-size: 1.08rem; color: #fff; padding: 0.3rem 0.5rem;">
+                                            {{ field.name }}</td>
+                                        <td style="color: var(--admin-accent); padding: 0.3rem 0.5rem;">{{ field.type }}
+                                        </td>
+                                        <td style="padding: 0.3rem 0.5rem;">
+                                            {% if field.required %}
+                                            <span style="color: #ef4444; font-weight: 600;">&#9733; Required</span>
+                                            {% else %}
+                                            <span style="color: #64748b;">Optional</span>
+                                            {% endif %}
+                                        </td>
+                                        <td style="color: var(--admin-text-secondary); padding: 0.3rem 0.5rem;">{{
+                                            field.description }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {% if template.llm_instructions %}
+                        <div class="llm-instructions-preview mt-3">
+                            <h5 class="text-sm font-medium text-gray-300 mb-2">LLM Instructions:</h5>
+                            <p class="text-sm text-gray-400">{{ template.llm_instructions[:100] }}{% if
+                                template.llm_instructions|length > 100 %}...{% endif %}</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="format-card-actions mt-4">
+                            <button class="btn btn-secondary btn-sm view-details" data-id="{{ template.id }}">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-secondary btn-sm edit-format" data-id="{{ template.id }}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-format" data-id="{{ template.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <div class="empty-state">
-                            <p class="text-gray-400 text-center">No output formats defined</p>
-                        </div>
+                    <div class="empty-state">
+                        <p class="text-gray-400 text-center">No output formats defined</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -222,30 +242,39 @@
                         </div>
 
                         <!-- Format Fields Preview -->
-                        <div class="format-fields-preview mt-3" style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 1.25rem;">
-                            <h5 class="text-sm font-medium text-gray-300 mb-4" style="font-size: 1.1rem;">Fields ({{ template.fields|length }}):</h5>
-                            <table class="fields-table" style="width: 100%; border-collapse: separate; border-spacing: 0 0.5rem;">
+                        <div class="format-fields-preview mt-3"
+                            style="background: rgba(255,255,255,0.03); border-radius: 0.5rem; padding: 1.25rem;">
+                            <h5 class="text-sm font-medium text-gray-300 mb-4" style="font-size: 1.1rem;">Fields ({{
+                                template.fields|length }}):</h5>
+                            <table class="fields-table"
+                                style="width: 100%; border-collapse: separate; border-spacing: 0 0.5rem;">
                                 <thead>
                                     <tr style="border-bottom: 1px solid var(--admin-border);">
-                                        <th style="text-align: left; color: var(--admin-accent); font-weight: 600;">Name</th>
+                                        <th style="text-align: left; color: var(--admin-accent); font-weight: 600;">Name
+                                        </th>
                                         <th style="text-align: left; color: var(--admin-text-secondary);">Type</th>
                                         <th style="text-align: left; color: var(--admin-text-secondary);">Required</th>
-                                        <th style="text-align: left; color: var(--admin-text-secondary);">Description</th>
+                                        <th style="text-align: left; color: var(--admin-text-secondary);">Description
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for field in template.fields %}
                                     <tr style="background: rgba(255,255,255,0.02); border-radius: 0.25rem;">
-                                        <td style="font-weight: bold; font-size: 1.08rem; color: #fff; padding: 0.3rem 0.5rem;">{{ field.name }}</td>
-                                        <td style="color: var(--admin-accent); padding: 0.3rem 0.5rem;">{{ field.type }}</td>
+                                        <td
+                                            style="font-weight: bold; font-size: 1.08rem; color: #fff; padding: 0.3rem 0.5rem;">
+                                            {{ field.name }}</td>
+                                        <td style="color: var(--admin-accent); padding: 0.3rem 0.5rem;">{{ field.type }}
+                                        </td>
                                         <td style="padding: 0.3rem 0.5rem;">
                                             {% if field.required %}
-                                                <span style="color: #ef4444; font-weight: 600;">&#9733; Required</span>
+                                            <span style="color: #ef4444; font-weight: 600;">&#9733; Required</span>
                                             {% else %}
-                                                <span style="color: #64748b;">Optional</span>
+                                            <span style="color: #64748b;">Optional</span>
                                             {% endif %}
                                         </td>
-                                        <td style="color: var(--admin-text-secondary); padding: 0.3rem 0.5rem;">{{ field.description }}</td>
+                                        <td style="color: var(--admin-text-secondary); padding: 0.3rem 0.5rem;">{{
+                                            field.description }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -255,7 +284,8 @@
                         {% if template.llm_instructions %}
                         <div class="llm-instructions-preview mt-3">
                             <h5 class="text-sm font-medium text-gray-300 mb-2">LLM Instructions:</h5>
-                            <p class="text-sm text-gray-400">{{ template.llm_instructions[:100] }}{% if template.llm_instructions|length > 100 %}...{% endif %}</p>
+                            <p class="text-sm text-gray-400">{{ template.llm_instructions[:100] }}{% if
+                                template.llm_instructions|length > 100 %}...{% endif %}</p>
                         </div>
                         {% endif %}
 
@@ -311,11 +341,12 @@
 
             <div class="form-group">
                 <label class="form-label" for="llmInstructions">LLM Instructions</label>
-                <textarea id="llmInstructions" name="llm_instructions" class="form-textarea" rows="3" 
+                <textarea id="llmInstructions" name="llm_instructions" class="form-textarea" rows="3"
                     placeholder="Provide clear instructions for the LLM on how to interpret input data or structure output responses..."></textarea>
                 <p class="admin-help-text">
                     For input formats: Explain how to interpret the input data structure.<br>
-                    For output formats: Explain how to structure the response (e.g., "Return only the JSON object with no commentary").
+                    For output formats: Explain how to structure the response (e.g., "Return only the JSON object with
+                    no commentary").
                 </p>
             </div>
 
@@ -480,13 +511,13 @@
         border: 2px solid #3b82f6;
         border-radius: 0.75rem;
         padding: 2rem;
-        box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
         transition: all 0.2s ease;
     }
 
     .format-column-content .format-card:hover {
         border-color: #10b981;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
         transform: translateY(-2px) scale(1.01);
     }
 
@@ -605,12 +636,13 @@
         justify-content: flex-end;
     }
 
-    .fields-table th, .fields-table td {
+    .fields-table th,
+    .fields-table td {
         border: none;
         vertical-align: top;
     }
 
-    .fields-table tr + tr {
+    .fields-table tr+tr {
         border-top: 1px solid var(--admin-border);
     }
 
@@ -846,6 +878,7 @@
             document.getElementById('formatDescription').value = format.description || '';
             document.getElementById('formatType').value = format.format_type;
             document.getElementById('formatFields').value = JSON.stringify(format.fields, null, 2);
+            document.getElementById('llmInstructions').value = format.llm_instructions || '';
 
             currentFormatId = id;
             showFormatModal(false);

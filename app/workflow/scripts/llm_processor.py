@@ -11,25 +11,29 @@ from app.llm.services import LLMService, parse_tagged_prompt_to_messages, modula
 from datetime import datetime
 
 def create_diagnostic_logs(post_id: int, stage: str, substage: str, step: str, 
-                          db_fields: Dict[str, Any], llm_message: str, llm_response: str):
+                          db_fields: Dict[str, Any], llm_message: str, llm_response: str,
+                          input_format_template: dict = None, output_format_template: dict = None):
     """Create three diagnostic log files for troubleshooting - overwrites existing files."""
     logs_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'logs')
     os.makedirs(logs_dir, exist_ok=True)
     
     # 1. Database fields log - always overwrites
     db_log_path = os.path.join(logs_dir, "workflow_diagnostic_db_fields.json")
+    log_obj = {
+        "metadata": {
+            "post_id": post_id,
+            "stage": stage,
+            "substage": substage,
+            "step": step,
+            "timestamp": datetime.now().isoformat(),
+            "log_type": "database_fields"
+        },
+        "input_format_template": input_format_template or {},
+        "output_format_template": output_format_template or {},
+        "database_fields": db_fields
+    }
     with open(db_log_path, 'w') as f:
-        json.dump({
-            "metadata": {
-                "post_id": post_id,
-                "stage": stage,
-                "substage": substage,
-                "step": step,
-                "timestamp": datetime.now().isoformat(),
-                "log_type": "database_fields"
-            },
-            "database_fields": db_fields
-        }, f, indent=2, default=str)
+        json.dump(log_obj, f, indent=2, default=str)
     
     # 2. LLM message log - always overwrites
     message_log_path = os.path.join(logs_dir, "workflow_diagnostic_llm_message.txt")
@@ -66,11 +70,7 @@ def collect_all_database_fields(conn, post_id: int, stage: str, substage: str, s
         "post_info": {},
         "post_development": {},
         "workflow_config": {},
-        "step_config": config,
-        "input_mappings": {},
-        "output_mappings": {},
-        "format_config": {},
-        "format_templates": {}
+        "format_config": {}
     }
     
     try:
@@ -105,7 +105,7 @@ def collect_all_database_fields(conn, post_id: int, stage: str, substage: str, s
                 if dev_result:
                     fields["post_development"] = dict(dev_result)
             
-            # Get workflow step configuration
+            # Get workflow step configuration (only once)
             cur.execute("""
                 SELECT wse.id, wse.name, wse.config, wse.description,
                        wsse.name as substage_name, wst.name as stage_name
@@ -118,66 +118,23 @@ def collect_all_database_fields(conn, post_id: int, stage: str, substage: str, s
             if step_result:
                 fields["workflow_config"] = dict(step_result)
             
-            # Get input and output mappings if they exist in config
-            if 'settings' in config and 'llm' in config['settings']:
-                llm_config = config['settings']['llm']
-                fields["input_mappings"] = llm_config.get('input_mapping', {})
-                fields["output_mappings"] = llm_config.get('output_mapping', {})
-            
-            # Get format configuration from workflow_step_format
+            # Get format configuration from workflow_step_entity (step-level only)
             step_id = fields["workflow_config"].get('id') if fields["workflow_config"] else None
             if step_id:
                 cur.execute("""
                     SELECT 
-                        wsf.id,
-                        wsf.step_id,
-                        wsf.post_id,
-                        wsf.input_format_id,
-                        wsf.output_format_id,
-                        wsf.created_at,
-                        wsf.updated_at
-                    FROM workflow_step_format wsf
-                    WHERE wsf.step_id = %s AND wsf.post_id = %s
-                """, (step_id, post_id))
-                format_result = cur.fetchone()
-                if format_result:
-                    fields["format_config"] = dict(format_result)
-                    
-                    # Get input format template if it exists
-                    if format_result['input_format_id']:
-                        cur.execute("""
-                            SELECT 
-                                id,
-                                name,
-                                description,
-                                fields,
-                                created_at,
-                                updated_at,
-                                llm_instructions
-                            FROM workflow_format_template
-                            WHERE id = %s
-                        """, (format_result['input_format_id'],))
-                        input_template = cur.fetchone()
-                        if input_template:
-                            fields["format_templates"]["input"] = dict(input_template)
-                    
-                    # Get output format template if it exists
-                    if format_result['output_format_id']:
-                        cur.execute("""
-                            SELECT 
-                                id,
-                                name,
-                                description,
-                                fields,
-                                created_at,
-                                updated_at,
-                                llm_instructions
-                            FROM workflow_format_template
-                            WHERE id = %s
-                        """, (format_result['output_format_id'],))
-                        output_template = cur.fetchone()
-                        if output_template:
-                            fields["format_templates"]["output"] = dict(output_template)
+                        wse.default_input_format_id,
+                        wse.default_output_format_id
+                    FROM workflow_step_entity wse
+                    WHERE wse.id = %s
+                """, (step_id,))
+                step_format_result = cur.fetchone()
+                if step_format_result:
+                    fields["format_config"] = {
+                        "step_id": step_id,
+                        "default_input_format_id": step_format_result['default_input_format_id'],
+                        "default_output_format_id": step_format_result['default_output_format_id']
+                    }
                 
     except Exception as e:
         fields["error"] = f"Error collecting database fields: {str(e)}"
@@ -244,11 +201,11 @@ def resolve_format_references(text: str, data: Dict[str, Any]) -> str:
     
     return re.sub(r'\[data:([a-zA-Z0-9_]+)\]', replace_data_ref, text)
 
-def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str]) -> str:
+def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str], all_db_fields: Dict[str, Any]) -> str:
     """Construct the full prompt for the LLM with format reference resolution."""
     # Resolve any [data:field_name] references in prompts
-    system_prompt = resolve_format_references(system_prompt, inputs)
-    task_prompt = resolve_format_references(task_prompt, inputs)
+    system_prompt = resolve_format_references(system_prompt, all_db_fields)
+    task_prompt = resolve_format_references(task_prompt, all_db_fields)
     
     input_text = "\n".join([f"{k}: {v}" for k, v in inputs.items()])
     return f"{system_prompt}\n\n{task_prompt}\n\n{input_text}"
@@ -390,120 +347,135 @@ def get_user_output_mapping(conn, step_id: int, post_id: int) -> Optional[Dict[s
         default_mapping = config.get('settings', {}).get('llm', {}).get('output_mapping')
         return default_mapping
 
+def get_step_prompt_templates(conn, step_id: int) -> Dict[str, str]:
+    """Get prompt templates from workflow_step_prompt table."""
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("""
+            SELECT 
+                sys_prompt.prompt_text as system_prompt,
+                task_prompt.prompt_text as task_prompt
+            FROM workflow_step_prompt wsp
+            LEFT JOIN llm_prompt sys_prompt ON wsp.system_prompt_id = sys_prompt.id
+            LEFT JOIN llm_prompt task_prompt ON wsp.task_prompt_id = task_prompt.id
+            WHERE wsp.step_id = %s
+        """, (step_id,))
+        result = cur.fetchone()
+        if result:
+            return {
+                'system_prompt': result['system_prompt'] or '',
+                'task_prompt': result['task_prompt'] or ''
+            }
+        return {'system_prompt': '', 'task_prompt': ''}
+
 def process_step(post_id: int, stage: str, substage: str, step: str):
     """Main function to process a workflow step with format validation."""
-    # Initialize diagnostic data collection
     diagnostic_data = {
         "db_fields": {},
         "llm_message": "",
         "llm_response": ""
     }
-    
     try:
-        # Load configuration from database
         config = load_step_config(post_id, stage, substage, step)
         if 'settings' not in config or 'llm' not in config['settings']:
             raise Exception(f"Step {step} does not have LLM configuration")
         llm_config = config['settings']['llm']
-        
-        # Get database connection
         conn = get_db_conn()
-        
-        # Get step ID
         step_id = get_step_id(conn, stage, substage, step)
-        
-        # Get format configuration
-        format_config = get_step_format_config(conn, step_id, post_id)
-        if not format_config:
-            print(f"Warning: No format configuration found for step {step_id}, post {post_id}")
-        
+        prompt_templates = get_step_prompt_templates(conn, step_id)
+        system_prompt = prompt_templates['system_prompt'] or llm_config.get('system_prompt', '')
+        task_prompt = prompt_templates['task_prompt'] or llm_config.get('task_prompt', '')
+
         # Get input values and collect ALL database fields for diagnostic purposes
         inputs = get_input_values(conn, post_id, llm_config['input_mapping'])
-        
-        # Collect comprehensive database fields for diagnostics
         diagnostic_data["db_fields"] = collect_all_database_fields(conn, post_id, stage, substage, step, config)
-        
-        # Validate input format if configuration exists
-        if format_config:
-            validator = FormatValidator()
-            is_valid, error = validator.validate_step_input(step_id, post_id, inputs)
-            if not is_valid:
-                raise Exception(f"Input validation failed: {error}")
-            print(f"Input validation passed for step {step}")
-        
-        # Validate prompt references if configuration exists
-        if format_config:
-            validator = FormatValidator()
-            is_valid, errors = validator.validate_step_prompts(
-                step_id, post_id, 
-                llm_config['system_prompt'], 
-                llm_config['task_prompt'], 
-                inputs
-            )
-            if not is_valid:
-                error_msg = "Reference validation failed:\n" + "\n".join(errors)
-                raise Exception(error_msg)
-            print(f"Reference validation passed for step {step}")
-        
+
+        # Collect format templates separately to avoid duplication
+        input_format_template = None
+        output_format_template = None
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Get step-level format configuration from workflow_step_entity
+            cur.execute("""
+                SELECT 
+                    wse.default_input_format_id,
+                    wse.default_output_format_id
+                FROM workflow_step_entity wse
+                WHERE wse.id = %s
+            """, (step_id,))
+            step_format_result = cur.fetchone()
+            
+            if step_format_result:
+                # Input format template
+                if step_format_result['default_input_format_id']:
+                    cur.execute("""
+                        SELECT 
+                            id,
+                            name,
+                            description,
+                            fields,
+                            llm_instructions,
+                            created_at,
+                            updated_at
+                        FROM workflow_format_template 
+                        WHERE id = %s
+                    """, (step_format_result['default_input_format_id'],))
+                    input_template = cur.fetchone()
+                    if input_template:
+                        input_format_template = dict(input_template)
+                
+                # Output format template
+                if step_format_result['default_output_format_id']:
+                    cur.execute("""
+                        SELECT 
+                            id,
+                            name,
+                            description,
+                            fields,
+                            llm_instructions,
+                            created_at,
+                            updated_at
+                        FROM workflow_format_template 
+                        WHERE id = %s
+                    """, (step_format_result['default_output_format_id'],))
+                    output_template = cur.fetchone()
+                    if output_template:
+                        output_format_template = dict(output_template)
+
         # Construct and send prompt
-        prompt = construct_prompt(
-            llm_config['system_prompt'],
-            llm_config['task_prompt'],
-            inputs
-        )
-        
-        # Store the exact message sent to LLM
+        all_db_fields = diagnostic_data["db_fields"].get("post_development", {})
+        prompt = construct_prompt(system_prompt, task_prompt, inputs, all_db_fields)
         diagnostic_data["llm_message"] = prompt
-        
+
         # Call LLM
         llm_response = call_llm(prompt, llm_config['parameters'], conn)
         output = llm_response['result']
-        
-        # Store the exact response from LLM
         diagnostic_data["llm_response"] = output
-        
-        # Transform output to match format if configuration exists
-        if format_config:
-            transformed_output = transform_output_to_format(output, format_config['output'])
-            
-            # Validate transformed output
-            validator = FormatValidator()
-            is_valid, error = validator.validate_step_output(step_id, post_id, transformed_output)
-            if not is_valid:
-                raise Exception(f"Output validation failed: {error}")
-            print(f"Output validation passed for step {step}")
-            
-            # Convert back to string for storage
-            if isinstance(transformed_output, dict):
-                output = json.dumps(transformed_output, indent=2)
-            else:
-                output = str(transformed_output)
-        
+
         # Save output
         output_mapping = get_user_output_mapping(conn, step_id, post_id)
         if not output_mapping:
-            output_mapping = llm_config['output_mapping']  # Fallback to default
+            output_mapping = llm_config['output_mapping']
         save_output(conn, post_id, output, output_mapping)
-        
-        # Create diagnostic logs
+
+        # Create diagnostic logs with unified, non-duplicated structure
         create_diagnostic_logs(
             post_id, stage, substage, step,
             diagnostic_data["db_fields"],
             diagnostic_data["llm_message"],
-            diagnostic_data["llm_response"]
+            diagnostic_data["llm_response"],
+            input_format_template,
+            output_format_template
         )
-        
         print(f"Successfully processed step {step} for post {post_id}")
         return output
-        
     except Exception as e:
-        # Create diagnostic logs even on error
         if diagnostic_data["llm_message"] or diagnostic_data["db_fields"]:
             create_diagnostic_logs(
                 post_id, stage, substage, step,
                 diagnostic_data["db_fields"],
                 diagnostic_data["llm_message"],
-                f"ERROR: {str(e)}"
+                f"ERROR: {str(e)}",
+                input_format_template,
+                output_format_template
             )
         print(f"Error processing step: {str(e)}", file=sys.stderr)
         raise
