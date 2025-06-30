@@ -30,6 +30,7 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
    - [LLM Service Architecture](llm/architecture.md)
    - [Prompt Templates & Actions](llm/prompts.md)
    - [LLM API Reference](api/llm_api.md)
+   - **Format Template System:** Step-level format configuration with complete schema and LLM instruction integration. All format configuration is now unified and post-specific overrides have been removed.
    - **If a workflow LLM action fails because Ollama is not running, a Start Ollama button will appear in the error panel, allowing you to start Ollama directly from the workflow UI. This is now handled by a shared utility and works for all workflow LLM actions, regardless of which button or script is used.**
 
 5. **API Documentation**
@@ -96,7 +97,17 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
 
 - As of 2025-05-23, all database access is performed using direct SQL via psycopg2. SQLAlchemy and ORM models are no longer used anywhere in the codebase. All data access, migrations, and queries are handled with raw SQL and psycopg2 connections.
 
-## Recent Changes (2025-05-25)
+## Recent Changes (2025-06-30)
+
+### Format Template System Cleanup & Unification
+- **Step-level format configuration only:** All format configuration is now stored in `workflow_step_entity.default_input_format_id` and `default_output_format_id`
+- **Removed post-specific overrides:** All post-specific `workflow_step_format` rows have been deleted
+- **Unified diagnostic logs:** Format templates appear once at top level with complete schema and LLM instruction data
+- **Clean integration:** Format template data is properly integrated into LLM prompts with no duplication
+- **Updated backend:** `llm_processor.py` now fetches format configuration from step-level only
+- **Next steps:** Externalizing prompt construction to dedicated script for better maintainability
+
+### Previous Changes (2025-05-25)
 - The LLM Actions dropdown on `/workflow/idea` now dynamically fetches and displays all available actions from the backend (`/api/v1/llm/actions`).
 - The green JSON debug text has been removed from the `/llm/actions` admin page for a cleaner UI.
 - Modal CSS and Action creation bugs have been fixed for a better user experience.

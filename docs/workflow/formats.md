@@ -3,6 +3,8 @@
 ## Overview 
 This guide documents the format specification system that works alongside the workflow prompt system. The format system ensures consistent data structures for both input and output across workflow stages.
 
+**Current Status (June 30, 2025):** The format system has been fully cleaned up and unified. All format configuration is now step-level only, with no post-specific overrides. Format templates are properly integrated into LLM prompts with complete schema and instruction data.
+
 ---
 
 ## Format Template Structure
@@ -10,19 +12,51 @@ This guide documents the format specification system that works alongside the wo
 ### Core Fields
 - **name**: Unique identifier for the format template
 - **description**: Human-readable description of the format's purpose
-- **fields**: Array of field definitions with name, type, required status, and description
-- **format_type**: Either "input", "output", or "bidirectional"
+- **fields**: JSON schema defining the data structure with type, required status, and description
 - **llm_instructions**: Clear instructions for the LLM on how to interpret input data or structure output responses
+- **created_at/updated_at**: Timestamps for tracking changes
 
 ### LLM Instructions Field
 The `llm_instructions` field provides explicit guidance to the LLM when processing data according to this format:
 
 - **For Input Formats**: Instructions on how to interpret the input data structure
-  - Example: "The input data will be provided in the following format."
+  - Example: "The input will be provided as plain text, using only UK English spellings and idioms."
 - **For Output Formats**: Instructions on how to structure the response
-  - Example: "You must return your response in the following format, with no commentary or introduction—just the JSON object."
+  - Example: "Return your response as a JSON object with title and description fields. Ensure both fields are present and contain appropriate content."
 
 These instructions are compiled into the final LLM prompt along with the system message and task prompt to ensure consistent data handling.
+
+---
+
+## Step-Level Format Configuration
+
+### Current System (June 2025)
+- **Step-level only**: All format configuration is stored in `workflow_step_entity.default_input_format_id` and `default_output_format_id`
+- **No post-specific overrides**: All posts use the same step-level format configuration
+- **Unified structure**: Format templates appear once in diagnostic logs with complete data
+- **Clean integration**: Format template data is properly integrated into LLM prompts
+
+### Database Schema
+```sql
+-- Step-level format configuration
+workflow_step_entity:
+  - default_input_format_id (references workflow_format_template.id)
+  - default_output_format_id (references workflow_format_template.id)
+
+-- Format template data
+workflow_format_template:
+  - id, name, description
+  - fields (JSON schema)
+  - llm_instructions
+  - created_at, updated_at
+```
+
+### Current Format Templates
+- **ID 26:** Plain text (GB) - Input
+- **ID 27:** Title-description JSON (Input)  
+- **ID 28:** Title-description JSON (Output)
+- **ID 38:** Plain text (GB) - Output
+- **ID 39:** Plain text (GB) - Input
 
 ---
 
@@ -35,39 +69,55 @@ These instructions are compiled into the final LLM prompt along with the system 
 - `PUT /api/workflow/formats/templates/<id>` — Update a format template
 - `DELETE /api/workflow/formats/templates/<id>` — Delete a format template
 
+### Step Format Configuration (Step-Level Only)
+- `GET /api/workflow/steps/<step_id>/formats` — Get step-level format configuration
+- `PUT /api/workflow/steps/<step_id>/formats` — Set step-level format configuration
+
+**Note:** Post-specific format configuration has been removed. All format configuration is now step-level only.
+
 ### Format Validation Endpoint
 - `POST /api/workflow/formats/validate` — Validate data against a format specification
   - Request: `{ "fields": [...], "test_data": {...} }`
   - Response: `{ "valid": true/false, "errors": [...] }`
 
-### Step/Post/Stage Format Configuration
-- `GET /api/workflow/steps/<step_id>/formats` — Get format config for a workflow step
-- `PUT /api/workflow/steps/<step_id>/formats` — Set format config for a workflow step
-- `GET /api/workflow/stages/<stage_id>/format` — Get format config for a stage
-- `POST /api/workflow/stages/<stage_id>/format` — Set format config for a stage
-- `GET /api/workflow/posts/<post_id>/format` — Get format config for a post
-- `POST /api/workflow/posts/<post_id>/format` — Set format config for a post
-
-### Field Mapping
-- `GET /api/workflow/fields/available` — List all available fields for mapping
-- `POST /api/workflow/fields/mappings` — Set a field mapping
-
 ---
 
-## Format Reference System
+## Diagnostic Log Structure
 
-### Reference Syntax
-- Use `[data:field_name]` in prompts or format fields to reference data from previous steps or context.
-- Example: `"The previous result was: [data:previous_step_output]"`
+### Current Log Format (June 2025)
+The `workflow_diagnostic_db_fields.json` log now shows a clean, unified structure:
 
-### Reference Validation
-- All `[data:field_name]` references are validated at runtime.
-- If a reference is missing from the available data, a validation error is returned.
-- Example error: `Reference 'missing_field' not found in available data.`
+```json
+{
+  "metadata": { ... },
+  "input_format_template": {
+    "id": 39,
+    "name": "Plain text (GB) - Input",
+    "description": "A plain text input using UK English spellings and idioms.",
+    "fields": { "type": "input", "schema": { ... } },
+    "llm_instructions": "The input will be provided as plain text...",
+    "created_at": "...",
+    "updated_at": "..."
+  },
+  "output_format_template": { ... },
+  "database_fields": {
+    "post_info": { ... },
+    "post_development": { ... },
+    "workflow_config": { ... },
+    "format_config": {
+      "step_id": 41,
+      "default_input_format_id": 39,
+      "default_output_format_id": 28
+    }
+  }
+}
+```
 
-### Reference Resolution
-- During workflow processing, references are replaced with the actual value from the data context.
-- If a reference cannot be resolved, processing fails with a clear error message.
+**Key Features:**
+- Format templates appear once at top level with complete data
+- No duplication or redundant sections
+- Complete schema and LLM instruction data included
+- Clean, unified JSON structure
 
 ---
 
@@ -81,18 +131,44 @@ These instructions are compiled into the final LLM prompt along with the system 
   - Error and success feedback for all actions
   - Edit LLM instructions for each format template
 
-### Format Configuration UI
+### Step Format Configuration UI
 - Located at `/settings/workflow_step_formats`
 - Features:
-  - Assign input/output formats to workflow steps
+  - Assign input/output formats to workflow steps (step-level only)
   - Preview format structure for each step
   - Test data validation for step formats
   - Visual feedback for format compliance
 
-### Field Mapping UI
-- Field selector dropdowns are format-aware
-- Format compliance indicators (✓/⚠) shown in dropdowns
-- Validation feedback shown when selecting or mapping fields
+**Note:** All format configuration is now step-level only. No post-specific overrides are available.
+
+---
+
+## LLM Prompt Integration
+
+### Current Prompt Structure (June 2025)
+The format template system is being enhanced to integrate format instructions directly into LLM prompts:
+
+**Desired Structure:**
+```
+CONTEXT:
+[System prompt]
+
+[Input format instructions from format template]
+
+TASK:
+[Task prompt]
+
+[Input data]
+
+RESPONSE:
+[Output format instructions from format template]
+```
+
+### Next Steps
+- Externalize prompt construction to dedicated script
+- Integrate format template instructions into prompt sections
+- Ensure proper input field mapping
+- Validate prompt structure and format integration
 
 ---
 
@@ -106,10 +182,10 @@ These instructions are compiled into the final LLM prompt along with the system 
 ### Example Test Cases
 - Format template CRUD (create, read, update, delete)
 - Format validation (valid/invalid data, error handling)
-- Reference resolution and error reporting
-- Step/post/stage format configuration
+- Step-level format configuration
 - UI feedback and accessibility
 - LLM instructions field validation and persistence
+- Diagnostic log structure validation
 
 ---
 
@@ -119,9 +195,6 @@ These instructions are compiled into the final LLM prompt along with the system 
 - **Validation fails for correct data:**
   - Check that the format template fields match the data structure exactly.
   - Ensure all required fields are present and types are correct.
-- **Reference not found error:**
-  - Make sure all `[data:field_name]` references exist in the available data context.
-  - Use the format validator to test references before running workflow steps.
 - **UI not updating after format changes:**
   - Refresh the page or clear browser cache.
   - Check for JavaScript errors in the browser console.
@@ -134,11 +207,15 @@ These instructions are compiled into the final LLM prompt along with the system 
 - **LLM instructions not being saved:**
   - Ensure the `llm_instructions` field is included in the request payload.
   - Check that the field is not empty or null.
+- **Format templates not appearing in logs:**
+  - Verify step-level format configuration is set
+  - Check that format templates exist in the database
+  - Ensure diagnostic script is using step-level configuration
 
 ### Where to Get Help
-- Review this guide and the `/docs/temp/format_system_implementation_plan.md` for implementation details.
-- Check `/tests/` for working test cases and usage examples.
-- If issues persist, consult the engineering rules in the project root or ask for support.
+- Review this guide and the `/docs/temp/format_template_system_status.md` for current status
+- Check `/tests/` for working test cases and usage examples
+- If issues persist, consult the engineering rules in the project root or ask for support
 
 ---
 
@@ -147,20 +224,40 @@ These instructions are compiled into the final LLM prompt along with the system 
 ### Example Format Template (JSON)
 ```json
 {
-  "name": "Title-description JSON",
+  "id": 27,
+  "name": "Title-description JSON (Input)",
   "description": "Structured JSON with two elements: title (string) and description (string).",
-  "fields": [
-    { "name": "title", "type": "string", "required": true, "description": "The main title" },
-    { "name": "description", "type": "string", "required": true, "description": "A description of the title" }
-  ],
-  "format_type": "output",
-  "llm_instructions": "You must return your response in the following format, with no commentary or introduction—just the JSON object."
+  "fields": {
+    "type": "input",
+    "schema": {
+      "type": "object",
+      "required": ["title", "description"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The main title"
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the title"
+        }
+      }
+    }
+  },
+  "llm_instructions": "The input will be provided as a JSON object with title and description fields. Process this input according to the specified schema requirements.",
+  "created_at": "2025-06-29 10:23:51.020087",
+  "updated_at": "2025-06-30 11:31:07.802536"
 }
 ```
 
-### Example Reference in Prompt
-```
-"Summarize the previous section: [data:previous_section]"
+### Example Step Configuration
+```json
+{
+  "step_id": 41,
+  "name": "Initial Concept",
+  "default_input_format_id": 27,
+  "default_output_format_id": 38
+}
 ```
 
 ---
@@ -177,168 +274,30 @@ These instructions are compiled into the final LLM prompt along with the system 
 - Monitor validation and reference errors in logs
 - Write clear, specific LLM instructions for each format
 - Ensure LLM instructions are unambiguous about input/output expectations
+- Use step-level configuration only (no post-specific overrides)
+- Maintain clean, unified log structures
+- Include complete format template data in diagnostic logs
 
-## Format Components
+## Recent Changes (June 2025)
 
-### 1. Format Templates
-Format templates define the structure and validation rules for data at each workflow step. They can be either input formats (defining expected input structure) or output formats (defining required output structure).
+### Database Cleanup
+- Removed all post-specific `workflow_step_format` rows
+- Confirmed step-level format configuration is working correctly
+- Verified format templates are properly stored in `workflow_step_entity`
 
-Example format template for blog section structure:
-```json
-{
-  "name": "Blog Section Format",
-  "description": "Format for structured blog section content",
-  "fields": [
-    { "name": "title", "type": "string", "required": true, "description": "Section title" },
-    { "name": "content", "type": "string", "required": true, "description": "Main section content" },
-    { "name": "key_points", "type": "array", "required": false, "description": "List of key points" }
-  ],
-  "format_type": "output",
-  "llm_instructions": "Return a structured blog section with title, content, and optional key points. Use clear, engaging language suitable for the target audience."
-}
-```
+### Backend Updates
+- Updated `llm_processor.py` to fetch format configuration from step-level only
+- Modified format template fetching to use `workflow_step_entity` table
+- Confirmed frontend only calls step-level endpoint
 
-## Format Structure
+### Log Structure Cleanup
+- Eliminated all duplication in `workflow_diagnostic_db_fields.json`
+- Format templates appear once at top level with complete data
+- Clean, unified JSON structure with no redundant sections
+- Complete format template data including schema, LLM instructions, descriptions
 
-### Input Formats
-Input formats define the expected structure of data before processing:
-
-- **Type Information**: Clear specification of data types (string, number, boolean, object, array)
-- **Field Requirements**: Which fields are required vs optional
-- **Validation Rules**: Length limits, numeric ranges, pattern matching
-- **Field References**: Support for [data:field_name] dynamic references
-- **Documentation**: Clear descriptions of each field's purpose
-- **LLM Instructions**: Guidance on how to interpret the input data structure
-
-Example input format:
-```json
-{
-  "name": "Blog Post Input",
-  "description": "Input format for blog post creation",
-  "fields": [
-    { "name": "title", "type": "string", "required": true, "description": "The main title for this section" },
-    { "name": "themes", "type": "array", "required": true, "description": "Key themes to cover" },
-    { "name": "facts", "type": "array", "required": false, "description": "Supporting facts and data" }
-  ],
-  "format_type": "input",
-  "llm_instructions": "The input data will be provided in the following format. Use this structure to guide your processing of the content."
-}
-```
-
-### Output Formats
-Output formats define the required structure for processed results:
-
-- **Strict Structure**: Exact specification of expected output fields
-- **Type Enforcement**: Strong typing for consistent output
-- **Nested Objects**: Support for complex data structures
-- **Array Handling**: Clear specification of list structures
-- **Format Instructions**: Additional formatting requirements
-
-Example output format:
-```json
-{
-  "type": "object",
-  "properties": {
-    "sections": {
-      "type": "array",
-      "description": "Generated content sections",
-      "items": {
-        "type": "object",
-        "properties": {
-          "heading": {
-            "type": "string",
-            "description": "Section heading"
-          },
-          "content": {
-            "type": "string",
-            "description": "Main content",
-            "minLength": 100
-          },
-          "key_points": {
-            "type": "array",
-            "description": "Key takeaways",
-            "items": {
-              "type": "string"
-            },
-            "minItems": 2
-          }
-        },
-        "required": ["heading", "content", "key_points"]
-      },
-      "minItems": 1
-    },
-    "summary": {
-      "type": "string",
-      "description": "Brief overview of all sections",
-      "maxLength": 500
-    }
-  },
-  "required": ["sections", "summary"]
-}
-```
-
-### Format Validation
-The format system uses JSON Schema Draft 7 for validation:
-
-1. **Type Validation**
-   - Ensures correct data types
-   - Validates nested structures
-   - Checks array contents
-
-2. **Constraint Validation**
-   - String lengths (minLength, maxLength)
-   - Numeric ranges (minimum, maximum)
-   - Array sizes (minItems, maxItems)
-   - Pattern matching (regex patterns)
-
-3. **Structural Validation**
-   - Required fields presence
-   - Object property names
-   - Array item formats
-
-4. **Error Reporting**
-   - Clear error messages
-   - Field path identification
-   - Validation suggestions
-
-## Integration with Workflow Steps
-
-### Format Configuration
-Each workflow step can have associated input and output formats. This configuration determines how data is structured and validated during step processing.
-
-### Applying Formats
-1. Input Validation
-   - Before processing, input data is validated against the input format
-   - Field references are resolved
-   - Data is transformed if needed
-
-2. Output Validation
-   - LLM output is validated against the output format
-   - Output is transformed to match required structure
-   - Validation errors trigger reprocessing
-
-## Best Practices
-
-1. **Format Design**
-   - Keep formats simple and focused
-   - Use clear field names and descriptions
-   - Include validation rules where needed
-   - Document format requirements clearly
-
-2. **Field References**
-   - Use consistent naming patterns
-   - Document reference sources
-   - Validate reference existence
-   - Handle missing references gracefully
-
-3. **Validation**
-   - Implement comprehensive validation
-   - Provide clear error messages
-   - Include validation suggestions
-   - Handle edge cases appropriately
-
-4. **Integration**
-   - Test format compatibility
-   - Validate data transformations
-   - Monitor validation performance
-   - Log validation failures 
+### Next Steps
+- Externalize prompt construction to dedicated script
+- Integrate format template instructions into LLM prompts
+- Update all documentation to reflect current system
+- Complete format template system integration 

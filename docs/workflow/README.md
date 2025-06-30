@@ -4,6 +4,8 @@
 
 The workflow system provides a structured approach to content creation and management through defined stages, substages, and associated field mappings. This document provides a comprehensive guide to understanding and working with the workflow system.
 
+**Current Status (June 30, 2025):** The workflow system has been enhanced with a unified format template system. All format configuration is now step-level only, with complete schema and LLM instruction integration. Post-specific format overrides have been removed for consistency.
+
 ## Core Concepts
 
 ### 1. Workflow Structure
@@ -15,7 +17,14 @@ The workflow system provides a structured approach to content creation and manag
 - **Navigation Module**: Handles workflow navigation and stage transitions
 - **LLM Panel**: Universal modular panel for AI-assisted content generation
 - **Field Selector**: Dynamic field selection based on workflow context
+- **Format Template System**: Step-level format configuration with complete schema and LLM instruction integration
 - **API Layer**: RESTful endpoints for workflow operations
+
+### 3. Format Template System
+- **Step-level configuration**: All format configuration stored in `workflow_step_entity.default_input_format_id` and `default_output_format_id`
+- **No post-specific overrides**: All posts use the same step-level format configuration
+- **Complete integration**: Format template data includes schema, LLM instructions, and descriptions
+- **Unified logs**: Format templates appear once in diagnostic logs with complete data
 
 ## Architecture
 
@@ -37,11 +46,14 @@ app/
 │   └── workflow/               # API endpoints
 │       ├── fields.py          # Field mapping operations
 │       ├── posts.py           # Post development endpoints
-│       └── llm.py            # LLM integration endpoints
+│       ├── llm.py            # LLM integration endpoints
+│       └── step_formats.py   # Step-level format configuration
 └── workflow/
     ├── context.py            # Workflow context management
     ├── routes.py            # UI routes
     └── scripts/             # Background processing
+        ├── llm_processor.py # LLM processing with format integration
+        └── prompt_constructor.py # External prompt construction (planned)
 ```
 
 ## Database Schema
@@ -49,8 +61,25 @@ app/
 ### Core Tables
 - `workflow_stage_entity`: Defines workflow stages
 - `workflow_sub_stage_entity`: Defines substages within stages
+- `workflow_step_entity`: Defines workflow steps with format configuration
 - `workflow_field_mapping`: Maps post fields to stages/substages
+- `workflow_format_template`: Format templates with schema and LLM instructions
 - `post_development`: Stores field values for posts
+
+### Format Configuration Schema
+```sql
+-- Step-level format configuration
+workflow_step_entity:
+  - default_input_format_id (references workflow_format_template.id)
+  - default_output_format_id (references workflow_format_template.id)
+
+-- Format template data
+workflow_format_template:
+  - id, name, description
+  - fields (JSON schema)
+  - llm_instructions
+  - created_at, updated_at
+```
 
 ## Integration Points
 
@@ -58,6 +87,7 @@ app/
 - Universal modular LLM panel for all workflow stages
 - Dynamic field selection based on stage/substage
 - Configurable LLM actions per stage
+- Format template integration with complete schema and LLM instructions
 
 ### 2. Navigation System
 - Hierarchical navigation through stages and substages
@@ -69,6 +99,12 @@ app/
 - Automatic field population based on context
 - Field validation and persistence
 
+### 4. Format Template System
+- Step-level format configuration only
+- Complete schema and LLM instruction integration
+- Unified diagnostic logging
+- Clean, non-duplicated data structures
+
 ## Usage Guidelines
 
 ### 1. Adding New Stages
@@ -76,6 +112,7 @@ app/
 2. Create corresponding templates in `workflow/steps/`
 3. Update field mappings as needed
 4. Add any required LLM actions
+5. Configure step-level format templates
 
 ### 2. Field Mapping
 1. Use the settings interface at `/workflow/fields/mappings`
@@ -86,6 +123,13 @@ app/
 1. Configure LLM actions in the database
 2. Map actions to specific stages/substages
 3. Use the universal modular panel for consistency
+4. Configure step-level format templates for input/output
+
+### 4. Format Template Configuration
+1. Create format templates with complete schema and LLM instructions
+2. Assign input/output formats to workflow steps via `/settings/workflow_step_formats`
+3. Ensure format templates include proper LLM instructions for input/output handling
+4. Test format integration with diagnostic logs
 
 ## Best Practices
 
@@ -109,6 +153,12 @@ app/
    - Follow the schema documentation
    - Maintain proper foreign key relationships
 
+5. **Format Template Management**
+   - Use step-level configuration only (no post-specific overrides)
+   - Include complete schema and LLM instructions in format templates
+   - Maintain clean, unified log structures
+   - Test format integration thoroughly
+
 ## Deprecated Components
 
 The following components are deprecated and should not be used:
@@ -129,6 +179,11 @@ The following components are deprecated and should not be used:
    - Inconsistent parameter styles
    - Duplicate functionality across routes
 
+4. **Post-Specific Format Configuration**
+   - All post-specific `workflow_step_format` rows have been removed
+   - Use step-level format configuration only
+   - No post-specific overrides are supported
+
 ## Migration Guide
 
 When working with the workflow system:
@@ -148,6 +203,12 @@ When working with the workflow system:
    - Follow navigation utility functions
    - Use proper error handling
 
+4. **Format Template Updates**
+   - Use step-level configuration only
+   - Include complete schema and LLM instructions
+   - Test format integration with diagnostic logs
+   - Ensure no duplication in log structures
+
 ## Testing
 
 1. **API Testing**
@@ -159,11 +220,20 @@ When working with the workflow system:
    - Verify navigation flow
    - Test field mapping interface
    - Check LLM panel functionality
+   - Test format template configuration
 
 3. **Integration Testing**
    - Test complete workflow cycles
    - Verify data persistence
    - Check stage transitions
+   - Validate format template integration
+   - Test diagnostic log generation
+
+4. **Format Template Testing**
+   - Test step-level format configuration
+   - Verify format template data in logs
+   - Check LLM instruction integration
+   - Validate schema compliance
 
 ## Support
 
@@ -171,6 +241,26 @@ For technical issues:
 1. Check the documentation in `/docs/workflow/`
 2. Review the API reference
 3. Consult the database schema
-4. Contact the project maintainers
+4. Check format template configuration
+5. Review diagnostic logs for format integration
+6. Contact the project maintainers
 
 Remember: This project does not use logins or registration. Never add authentication-related code.
+
+## Recent Changes (June 2025)
+
+### Format Template System Cleanup
+- **Step-level configuration only:** All format configuration now uses `workflow_step_entity.default_input_format_id` and `default_output_format_id`
+- **Removed post-specific overrides:** All post-specific `workflow_step_format` rows deleted
+- **Unified diagnostic logs:** Format templates appear once at top level with complete data
+- **Clean integration:** No duplication in log structures
+
+### Backend Updates
+- Updated `llm_processor.py` to use step-level format configuration
+- Modified format template fetching to use `workflow_step_entity` table
+- Confirmed frontend only calls step-level endpoint
+
+### Next Steps
+- Externalize prompt construction to dedicated script
+- Integrate format template instructions into LLM prompts
+- Complete format template system integration

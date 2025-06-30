@@ -152,3 +152,40 @@
 - Identified blueprint mismatches, inconsistent resource naming, and missing canonical endpoints
 - Created phased implementation plan with immediate fixes, standardization, and testing phases
 - Updated API documentation to reflect canonical endpoint schema and standards 
+
+2025-06-30: Format Template System Cleanup & Unification
+
+### Major Changes
+- **Step-level format configuration only:** All format configuration is now stored in `workflow_step_entity.default_input_format_id` and `default_output_format_id`
+- **Removed post-specific overrides:** All post-specific `workflow_step_format` rows have been deleted from the database
+- **Unified diagnostic logs:** Format templates appear once at top level with complete schema and LLM instruction data
+- **Clean integration:** Format template data is properly integrated into LLM prompts with no duplication
+
+### Backend Updates
+- Updated `llm_processor.py` to fetch format configuration from step-level only
+- Modified format template fetching to use `workflow_step_entity` table instead of post-specific table
+- Confirmed frontend only calls step-level endpoint (`/api/workflow/steps/{stepId}/formats`)
+- Eliminated all duplication in `workflow_diagnostic_db_fields.json` log structure
+
+### Database Changes
+- Removed all post-specific `workflow_step_format` rows via SQL cleanup
+- Confirmed step-level format configuration is working correctly
+- Verified format templates are properly stored in `workflow_step_entity`
+
+### Current Format Templates
+- **ID 26:** Plain text (GB) - Input
+- **ID 27:** Title-description JSON (Input)  
+- **ID 28:** Title-description JSON (Output)
+- **ID 38:** Plain text (GB) - Output
+- **ID 39:** Plain text (GB) - Input
+
+### Next Steps
+- Externalize prompt construction to dedicated script for better maintainability
+- Integrate format template instructions into LLM prompts with structured sections
+- Update all documentation to reflect current system
+
+### Files Modified
+- `app/workflow/scripts/llm_processor.py` - Updated to use step-level format configuration
+- `docs/workflow/formats.md` - Updated to reflect current system
+- `docs/README.md` - Added format template system status
+- `docs/temp/format_template_system_status.md` - Created comprehensive status document 
