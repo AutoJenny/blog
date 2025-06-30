@@ -503,7 +503,7 @@ def get_step_prompts(step_id):
                     wsp.system_prompt_id,
                     wsp.task_prompt_id,
                     sys_prompt.name as system_prompt_name,
-                    sys_prompt.prompt_text as system_prompt_content,
+                    sys_prompt.system_prompt as system_prompt_content,
                     task_prompt.name as task_prompt_name,
                     task_prompt.prompt_text as task_prompt_content
                 FROM workflow_step_prompt wsp
@@ -560,13 +560,10 @@ def get_all_prompts():
     with get_db_conn() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             cur.execute("""
-                SELECT id, name, prompt_text, 
+                SELECT id, name, 
+                       COALESCE(system_prompt, prompt_text) as prompt_text,
                        CASE 
-                           WHEN prompt_text LIKE 'You are%' OR 
-                                prompt_text LIKE '[system]%' OR
-                                name LIKE '%Expert%' OR
-                                name LIKE '%Creator%' OR
-                                name LIKE '%Allocator%'
+                           WHEN system_prompt IS NOT NULL AND system_prompt != ''
                            THEN 'system' 
                            ELSE 'task' 
                        END as type
@@ -614,7 +611,7 @@ def get_step_prompts(step_id):
                     wsp.system_prompt_id,
                     wsp.task_prompt_id,
                     sys_prompt.name as system_prompt_name,
-                    sys_prompt.prompt_text as system_prompt_content,
+                    sys_prompt.system_prompt as system_prompt_content,
                     task_prompt.name as task_prompt_name,
                     task_prompt.prompt_text as task_prompt_content
                 FROM workflow_step_prompt wsp

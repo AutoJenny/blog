@@ -56,41 +56,30 @@ def workflow_prompts():
                         """, (name, prompt_text, prompt_id))
                         conn.commit()
             
-            # Get system prompts
+            # Get system prompts - those with system_prompt column populated
             cur.execute("""
-                SELECT id, name, prompt_text, prompt_type
+                SELECT id, name, description, 
+                       COALESCE(system_prompt, '') as system_prompt,
+                       COALESCE(prompt_text, '') as prompt_text
                 FROM llm_prompt
-                WHERE prompt_type = 'system'
+                WHERE system_prompt IS NOT NULL AND system_prompt != ''
                 ORDER BY name
             """)
             system_prompts = cur.fetchall()
 
-            # Get task prompts organized by workflow
+            # Get task prompts - those without system_prompt column
             cur.execute("""
-                SELECT id, name, prompt_text, prompt_type, stage, substage, step
+                SELECT id, name, description, 
+                       COALESCE(system_prompt, '') as system_prompt,
+                       COALESCE(prompt_text, '') as prompt_text
                 FROM llm_prompt
-                WHERE prompt_type = 'task' AND stage IS NOT NULL
-                ORDER BY 
-                    stage,
-                    substage,
-                    step,
-                    name
+                WHERE system_prompt IS NULL OR system_prompt = ''
+                ORDER BY name
             """)
             task_prompts = cur.fetchall()
 
-            # Organize task prompts into a hierarchical structure
-            tasks_by_stage = {}
-            for prompt in task_prompts:
-                stage = prompt['stage']
-                substage = prompt['substage']
-                
-                if stage not in tasks_by_stage:
-                    tasks_by_stage[stage] = {'substages': {}}
-                
-                if substage not in tasks_by_stage[stage]['substages']:
-                    tasks_by_stage[stage]['substages'][substage] = {'prompts': []}
-                
-                tasks_by_stage[stage]['substages'][substage]['prompts'].append(prompt)
+            # Organize task prompts into a flat list (since we can't group by stage/substage)
+            tasks_by_stage = {'all': {'substages': {'all': {'prompts': task_prompts}}}}
     
     return render_template('settings/workflow_prompts.html', 
                          system_prompts=system_prompts,
