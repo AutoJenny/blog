@@ -212,44 +212,44 @@ def delete_step(step_id):
     with get_db_conn() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
-        # Get the step's current order and substage
-        cur.execute("""
-            SELECT step_order, sub_stage_id
-            FROM workflow_step_entity
-            WHERE id = %s
-        """, (step_id,))
-        step = cur.fetchone()
-        
-        if not step:
-            return jsonify({'error': 'Step not found'}), 404
+        try:
+            # Get the step's current order and substage
+            cur.execute("""
+                SELECT step_order, sub_stage_id
+                FROM workflow_step_entity
+                WHERE id = %s
+            """, (step_id,))
+            step = cur.fetchone()
             
-        # Delete related records first
-        cur.execute("""
-            DELETE FROM post_workflow_step_action
-            WHERE step_id = %s
-        """, (step_id,))
-        
-        cur.execute("""
-            DELETE FROM workflow_step_input
-            WHERE step_id = %s
-        """, (step_id,))
+            if not step:
+                return jsonify({'error': 'Step not found'}), 404
             
-        # Delete the step
-        cur.execute("""
-            DELETE FROM workflow_step_entity
-            WHERE id = %s
-        """, (step_id,))
-        
-        # Update the order of remaining steps
-        cur.execute("""
-            UPDATE workflow_step_entity
-            SET step_order = step_order - 1
-            WHERE sub_stage_id = %s
-            AND step_order > %s
-        """, (step['sub_stage_id'], step['step_order']))
-        
-        conn.commit()
-        return '', 204
+            # Delete from post_workflow_step_action (this table doesn't have CASCADE)
+            cur.execute("""
+                DELETE FROM post_workflow_step_action
+                WHERE step_id = %s
+            """, (step_id,))
+            
+            # Delete the step itself - let PostgreSQL handle other foreign key constraints
+            cur.execute("""
+                DELETE FROM workflow_step_entity
+                WHERE id = %s
+            """, (step_id,))
+            
+            # Update the order of remaining steps
+            cur.execute("""
+                UPDATE workflow_step_entity
+                SET step_order = step_order - 1
+                WHERE sub_stage_id = %s
+                AND step_order > %s
+            """, (step['sub_stage_id'], step['step_order']))
+            
+            conn.commit()
+            return '', 204
+            
+        except Exception as e:
+            conn.rollback()
+            return jsonify({'error': f'Failed to delete step: {str(e)}'}), 500
 
 @bp.route('/reorder-steps', methods=['POST'])
 def reorder_steps():
