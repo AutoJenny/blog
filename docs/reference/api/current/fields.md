@@ -180,6 +180,59 @@ All field-related endpoints are now under the `/api/workflow/fields/` base path.
   - `200`: Success
   - `404`: Stage or substage not found
 
+## Field Selection Endpoints
+
+**CANONICAL POLICY: Field selection mappings are per-step only, never per-post.**
+
+Field selection mappings determine which database field the output of a workflow step should be saved to. These mappings are global for all posts and stored in the step's configuration.
+
+### Get Field Selection
+- **URL**: `/api/workflow/steps/<step_id>/field_selection`
+- **Method**: `GET`
+- **Description**: Retrieves the field selection mapping for a workflow step
+- **URL Parameters**:
+  - `step_id`: ID of the workflow step
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "field": "string",
+      "table": "string"
+    }
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `404`: Step not found or no field selection mapping exists
+
+### Save Field Selection
+- **URL**: `/api/workflow/steps/<step_id>/field_selection`
+- **Method**: `POST`
+- **Description**: Saves the field selection mapping for a workflow step
+- **URL Parameters**:
+  - `step_id`: ID of the workflow step
+- **Request Body**:
+  ```json
+  {
+    "output_field": "string",
+    "output_table": "string"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "message": "Field selection saved successfully"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `400`: Missing required fields
+  - `404`: Step not found
+
+**Note:** Field selection mappings are stored in `workflow_step_entity.config.settings.llm.user_output_mapping` and apply globally to all posts using this step.
+
 ## Error Handling
 
 All endpoints follow standard HTTP status codes and return error responses in the following format:

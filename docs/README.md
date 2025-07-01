@@ -134,4 +134,19 @@ All links are accessible from the top navigation bar for quick access to major f
 - All workflow substages (Planning, Authoring, Publishing) now use a single modular LLM panel include and JS for input, output, and action selection.
 - Dropdowns show all post_development fields, but default to the first field mapped to the current substage for robust cross-stage workflows.
 - The modular panel is fully plug-and-play for new substages and fields; no manual DB or template changes are needed.
-- All documentation is up to date as of 2024-06-14 and reflects the new universal modular framework and persistence logic. 
+- All documentation is up to date as of 2024-06-14 and reflects the new universal modular framework and persistence logic.
+
+## Core Policies
+
+### Field Selection Mapping Policy
+
+**CANONICAL POLICY: Field selection mappings are per-step only, never per-post.**
+
+- Field selection mappings determine which database field the output of a workflow step should be saved to
+- These mappings are stored in `workflow_step_entity.config` and apply globally to all posts
+- API endpoints use only step ID, not post ID, for field selection operations
+- This ensures consistency across all posts and prevents per-post configuration complexity
+
+**Related Documentation:**
+- [Database Schema - Field Selection Policy](reference/database/schema.md#field-selection-mapping-policy)
+- [API Reference - Field Selection Endpoints](reference/api/current/fields.md#field-selection-endpoints) 

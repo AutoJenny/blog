@@ -822,12 +822,11 @@ def save_field_selection(step_id):
         if not data:
             return jsonify({'error': 'No JSON data provided'}), 400
 
-        post_id = data.get('post_id')
         output_field = data.get('output_field')
         output_table = data.get('output_table')
         
-        if not all([post_id, output_field, output_table]):
-            return jsonify({'error': 'post_id, output_field, and output_table are required'}), 400
+        if not all([output_field, output_table]):
+            return jsonify({'error': 'output_field and output_table are required'}), 400
 
         with get_db_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
@@ -875,9 +874,9 @@ def save_field_selection(step_id):
             'error': {'message': str(e)}
         }), 500
 
-@bp.route('/steps/<int:step_id>/field_selection/<int:post_id>', methods=['GET'])
+@bp.route('/steps/<int:step_id>/field_selection', methods=['GET'])
 @handle_workflow_errors
-def get_field_selection(step_id, post_id):
+def get_field_selection(step_id):
     """Get the user's field selection for a workflow step."""
     try:
         with get_db_conn() as conn:

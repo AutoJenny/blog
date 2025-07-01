@@ -41,6 +41,25 @@ The Blog CMS uses PostgreSQL (or SQLite in dev) for all persistent storage. Belo
 - **workflow_sub_stage_entity**: Ordered sub-stages for each main stage, referencing workflow_stage_entity by FK.
 - **workflow_step_entity**: Individual steps within each sub-stage, with field mappings stored in the config JSON field.
 
+### Field Selection Mapping Policy
+
+**CANONICAL POLICY: Field selection mappings are per-step only, never per-post.**
+
+- Field selection mappings determine which database field (and table) the output of a workflow step should be saved to.
+- These mappings are stored in the `workflow_step_entity.config` JSON field for each step.
+- Field selection mappings are **global for all posts** - the same step will always use the same output field mapping regardless of which post is being processed.
+- This ensures consistency across all posts and prevents per-post configuration complexity.
+
+**Implementation:**
+- Field selection mappings are stored in `workflow_step_entity.config.settings.llm.user_output_mapping`
+- The mapping contains `field` (database field name) and `table` (database table name)
+- API endpoints use only the step ID, not post ID, for field selection operations
+
+**Related but Different:**
+- **Per-post field mappings** exist in `post_workflow_step_action` table for LLM action button settings (input_field, output_field, button_label, button_order)
+- **Per-post field mappings** exist in `post_workflow_stage` table for stage-level field persistence
+- These are separate from field selection mappings and remain post-specific as intended.
+
 ### Example Structure
 
 ```sql

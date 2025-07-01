@@ -184,7 +184,7 @@ class FieldSelector {
                 return;
             }
             
-            const response = await fetch(`/api/workflow/steps/${stepId}/field_selection/${this.postId}`);
+            const response = await fetch(`/api/workflow/steps/${stepId}/field_selection`);
             if (!response.ok) {
                 if (response.status === 404) {
                     console.log('[DEBUG] No saved output field selection found, using defaults');
@@ -440,7 +440,6 @@ class FieldSelector {
             }
             
             const payload = {
-                post_id: this.postId,
                 output_field: fieldName,
                 output_table: 'post_development'  // Default table for post fields
             };
