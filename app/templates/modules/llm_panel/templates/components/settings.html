@@ -6,8 +6,10 @@
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-blue-500">Model</label>
-                <input type="text" name="model" value="{{ step_config.settings.llm.model }}"
+                <select name="model" id="llm-model-select"
                     class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+                    <option value="">Loading models...</option>
+                </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-blue-500">Temperature</label>
@@ -75,6 +77,12 @@
         const form = document.getElementById('llm-settings-form');
         if (!form) return;
 
+        // Load LLM models for dropdown
+        const modelSelect = document.getElementById('llm-model-select');
+        if (modelSelect) {
+            loadLLMModels();
+        }
+
         form.addEventListener('submit', async function (e) {
             e.preventDefault();
 
@@ -139,5 +147,34 @@
                 submitBtn.disabled = false;
             }
         });
+
+        async function loadLLMModels() {
+            try {
+                const response = await fetch('/api/workflow/llm/models');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch models');
+                }
+
+                const models = await response.json();
+                const currentModel = '{{ step_config.settings.llm.model if step_config.settings and step_config.settings.llm else "" }}';
+
+                // Clear loading option
+                modelSelect.innerHTML = '<option value="">Select a model...</option>';
+
+                // Add model options
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.name;
+                    option.textContent = `${model.name} (${model.description || 'No description'})`;
+                    if (model.name === currentModel) {
+                        option.selected = true;
+                    }
+                    modelSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading LLM models:', error);
+                modelSelect.innerHTML = '<option value="">Error loading models</option>';
+            }
+        }
     });
 </script>

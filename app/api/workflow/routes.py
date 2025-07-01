@@ -952,4 +952,39 @@ def run_workflow_llm(post_id, stage, substage):
             'success': False,
             'data': None,
             'error': {'message': str(e)}
-        }), 500 
+        }), 500
+
+@bp.route('/llm/models', methods=['GET'])
+@handle_workflow_errors
+def get_llm_models():
+    """Get all available LLM models from the database."""
+    with get_db_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        # Get all models with provider information
+        cur.execute("""
+            SELECT 
+                m.id,
+                m.name,
+                m.provider_id,
+                m.description,
+                m.strengths,
+                p.name as provider_name,
+                p.type as provider_type
+            FROM llm_model m
+            JOIN llm_provider p ON p.id = m.provider_id
+            ORDER BY m.name
+        """)
+        
+        models = cur.fetchall()
+        
+        return jsonify([
+            {
+                'id': str(m['id']),
+                'name': m['name'],
+                'provider': m['provider_name'],
+                'capabilities': [m['strengths']] if m['strengths'] else [],
+                'description': m['description'],
+                'provider_type': m['provider_type']
+            } for m in models
+        ]) 

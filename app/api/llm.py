@@ -24,13 +24,13 @@ from app.llm.services import modular_prompt_to_canonical
 logger = logging.getLogger(__name__)
 
 # Create blueprint with deprecated prefix
-bp = Blueprint('llm_api', __name__, url_prefix='/api/v1/llm')
+bp = Blueprint('llm_api_deprecated', __name__, url_prefix='/api/v1/llm')
 
 # Add deprecation warning to all routes
-@bp.before_request
-def deprecate_all_routes():
-    """Add deprecation warning to all routes."""
-    return jsonify({'error': 'This API version is deprecated. Please use /api/llm instead.'}), 410
+# @bp.before_request
+# def deprecate_all_routes():
+#     """Add deprecation warning to all routes."""
+#     return jsonify({'error': 'This API version is deprecated. Please use /api/llm instead.'}), 410
 
 
 @bp.route("/config", methods=["GET"])
