@@ -248,17 +248,13 @@ def stages(post_id):
     post = get_post_and_idea_seed(post_id)
     if not post:
         abort(404, f"Post {post_id} not found.")
-    
-    # Get workflow context from the nav module
-    context = get_workflow_context()
-    context.update({
-        'post': post,
-        'post_id': post_id,
-        'current_post_id': post_id,
-        'all_posts': get_all_posts()
-    })
-    
-    return render_template('workflow/index.html', **context)
+    # Always redirect to the default stage/substage/step
+    return redirect(url_for('workflow.workflow_index', 
+        post_id=post_id, 
+        stage='planning',
+        substage='idea',
+        step='initial_concept'
+    ))
 
 @bp.route('/posts/<int:post_id>/<stage>/')
 def stage(post_id, stage: str):
