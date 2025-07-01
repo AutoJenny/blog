@@ -31,14 +31,25 @@ def workflow_prompts():
                     stage = request.form.get('stage')
                     substage = request.form.get('substage')
                     
-                    cur.execute("""
-                        INSERT INTO llm_prompt (
-                            name, prompt_text, prompt_type, stage, substage, step
-                        ) VALUES (
-                            'New Prompt', '', %s, %s, %s, 'new_step'
-                        ) RETURNING id
-                    """, (prompt_type, stage if prompt_type == 'task' else None, 
-                         substage if prompt_type == 'task' else None))
+                    if prompt_type == 'system':
+                        # Create system prompt - populate system_prompt, leave prompt_text empty
+                        cur.execute("""
+                            INSERT INTO llm_prompt (
+                                name, system_prompt, prompt_text
+                            ) VALUES (
+                                'New System Prompt', 'You are a helpful assistant.', ''
+                            ) RETURNING id
+                        """)
+                    else:
+                        # Create task prompt - populate prompt_text, leave system_prompt empty
+                        cur.execute("""
+                            INSERT INTO llm_prompt (
+                                name, prompt_text, system_prompt
+                            ) VALUES (
+                                'New Task Prompt', 'Enter your task prompt here.', ''
+                            ) RETURNING id
+                        """)
+                    
                     new_id = cur.fetchone()['id']
                     conn.commit()
                     return jsonify({'success': True, 'id': new_id})
@@ -49,11 +60,27 @@ def workflow_prompts():
                         name = request.form.get('name')
                         prompt_text = request.form.get('prompt_text')
                         
+                        # Check if this is a system prompt (has system_prompt content)
                         cur.execute("""
-                            UPDATE llm_prompt 
-                            SET name = %s, prompt_text = %s, updated_at = CURRENT_TIMESTAMP
-                            WHERE id = %s
-                        """, (name, prompt_text, prompt_id))
+                            SELECT system_prompt FROM llm_prompt WHERE id = %s
+                        """, (prompt_id,))
+                        result = cur.fetchone()
+                        
+                        if result and result['system_prompt']:
+                            # Update system prompt
+                            cur.execute("""
+                                UPDATE llm_prompt 
+                                SET name = %s, system_prompt = %s, updated_at = CURRENT_TIMESTAMP
+                                WHERE id = %s
+                            """, (name, prompt_text, prompt_id))
+                        else:
+                            # Update task prompt
+                            cur.execute("""
+                                UPDATE llm_prompt 
+                                SET name = %s, prompt_text = %s, updated_at = CURRENT_TIMESTAMP
+                                WHERE id = %s
+                            """, (name, prompt_text, prompt_id))
+                        
                         conn.commit()
             
             # Get system prompts - those with system_prompt column populated
@@ -78,12 +105,29 @@ def workflow_prompts():
             """)
             task_prompts = cur.fetchall()
 
-            # Organize task prompts into a flat list (since we can't group by stage/substage)
+            # Get workflow stages and substages for the modal dropdowns
+            cur.execute("""
+                SELECT id, name, description, stage_order
+                FROM workflow_stage_entity
+                ORDER BY stage_order
+            """)
+            stages = cur.fetchall()
+
+            cur.execute("""
+                SELECT id, stage_id, name, description, sub_stage_order
+                FROM workflow_sub_stage_entity
+                ORDER BY stage_id, sub_stage_order
+            """)
+            substages = cur.fetchall()
+
+            # Organize task prompts by stage/substage (for now, put them all under 'all' since we don't have stage/substage data in llm_prompt)
             tasks_by_stage = {'all': {'substages': {'all': {'prompts': task_prompts}}}}
     
     return render_template('settings/workflow_prompts.html', 
                          system_prompts=system_prompts,
-                         tasks_by_stage=tasks_by_stage)
+                         tasks_by_stage=tasks_by_stage,
+                         stages=stages,
+                         substages=substages)
 
 @bp.route('/workflow_field_mapping')
 def workflow_field_mapping():

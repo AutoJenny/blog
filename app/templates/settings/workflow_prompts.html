@@ -70,7 +70,7 @@
                             <textarea name="prompt_text" rows="1"
                                 oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
                                 class="prompt-field w-full min-h-[8rem] bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none overflow-hidden"
-                                style="background-color: #0a0c12 !important;">{{ prompt.prompt_text }}</textarea>
+                                style="background-color: #0a0c12 !important;">{{ prompt.system_prompt }}</textarea>
                         </div>
 
                         <div class="flex justify-end">
@@ -182,8 +182,8 @@
                 <label class="block text-indigo-200 font-medium">Stage</label>
                 <select name="stage"
                     class="w-full bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none">
-                    {% for stage in tasks_by_stage.keys() %}
-                    <option value="{{ stage }}">{{ stage|title }}</option>
+                    {% for stage in stages %}
+                    <option value="{{ stage.name }}" data-stage-id="{{ stage.id }}">{{ stage.name|title }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -191,10 +191,9 @@
                 <label class="block text-indigo-200 font-medium">Substage</label>
                 <select name="substage"
                     class="w-full bg-[#0a0c12] text-white border border-dark-border rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none">
-                    {% for stage, data in tasks_by_stage.items() %}
-                    {% for substage in data.substages.keys() %}
-                    <option value="{{ substage }}" data-stage="{{ stage }}">{{ substage|title }}</option>
-                    {% endfor %}
+                    {% for substage in substages %}
+                    <option value="{{ substage.name }}" data-stage="{{ substage.stage_id }}">{{ substage.name|title }}
+                    </option>
                     {% endfor %}
                 </select>
             </div>
@@ -284,8 +283,14 @@
         const substageSelect = document.querySelector('select[name="substage"]');
         const selectedStage = stageSelect.value;
 
+        // Get the stage ID for the selected stage
+        const stageOptions = Array.from(stageSelect.options);
+        const selectedStageOption = stageOptions.find(option => option.value === selectedStage);
+        const selectedStageId = selectedStageOption ? selectedStageOption.dataset.stageId : null;
+
         Array.from(substageSelect.options).forEach(option => {
-            option.style.display = option.dataset.stage === selectedStage ? '' : 'none';
+            const optionStageId = option.dataset.stage;
+            option.style.display = optionStageId === selectedStageId ? '' : 'none';
         });
 
         // Select first visible option
