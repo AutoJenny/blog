@@ -465,22 +465,56 @@ class FieldSelector {
     }
 
     getCurrentStepId() {
-        // Try to get step ID from the panel data attributes
-        const panel = document.querySelector('[data-step-id]');
+        console.log('[DEBUG] getCurrentStepId() called');
+        console.log('[DEBUG] Current stage/substage:', this.stage, this.substage);
+        
+        // Method 1: Try to get step ID from the panel data attributes with more specific selector
+        const panel = document.querySelector('.space-y-4[data-step-id]');
         if (panel) {
-            return panel.dataset.stepId;
+            const stepId = panel.dataset.stepId;
+            console.log('[DEBUG] Found step ID from panel data attribute:', stepId);
+            return stepId;
         }
         
-        // Try to get from URL parameters or other page context
+        // Method 2: Try broader selector as fallback
+        const anyPanel = document.querySelector('[data-step-id]');
+        if (anyPanel) {
+            const stepId = anyPanel.dataset.stepId;
+            console.log('[DEBUG] Found step ID from any data-step-id element:', stepId);
+            return stepId;
+        }
+        
+        // Method 3: Try to get from URL parameters and map to known step IDs
         const urlParams = new URLSearchParams(window.location.search);
         const step = urlParams.get('step');
+        console.log('[DEBUG] Step from URL params:', step);
         
-        // For now, return a default step ID for the Initial Concept step
-        // This should be enhanced to dynamically determine the step ID
-        if (this.stage === 'planning' && this.substage === 'idea' && step === 'initial_concept') {
-            return '41'; // Hard-coded for Initial Concept step
+        if (step) {
+            // Map known step names to their IDs
+            const stepIdMap = {
+                'initial_concept': '41',
+                'allocate_facts': '15',
+                'structure': '14',
+                'interesting_facts': '13',
+                'provisional_title': '21',
+                'idea_scope': '22'
+            };
+            
+            const mappedStepId = stepIdMap[step];
+            if (mappedStepId) {
+                console.log('[DEBUG] Mapped step ID from URL:', mappedStepId);
+                return mappedStepId;
+            }
         }
         
+        // Method 4: Fallback to hardcoded logic for known combinations
+        if (this.stage === 'planning' && this.substage === 'idea' && step === 'initial_concept') {
+            console.log('[DEBUG] Using hardcoded step ID for initial_concept: 41');
+            return '41';
+        }
+        
+        console.warn('[DEBUG] Could not determine step ID. Stage:', this.stage, 'Substage:', this.substage, 'Step:', step);
+        console.warn('[DEBUG] Available data-step-id elements:', document.querySelectorAll('[data-step-id]').length);
         return null;
     }
 }
