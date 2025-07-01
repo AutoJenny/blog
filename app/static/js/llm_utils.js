@@ -8,10 +8,11 @@ import { API_CONFIG, buildApiUrl, handleApiResponse } from './config/api.js';
  * @param {string} params.stage - The workflow stage
  * @param {string} params.substage - The workflow substage
  * @param {string} params.step - The workflow step
+ * @param {Object} params.inputs - Multiple input values from MultiInputManager
  * @returns {Promise<Object>} The LLM response
  */
-async function runLLM({ postId, stage, substage, step }) {
-    console.log('[LLM_UTILS] runLLM function called with params:', { postId, stage, substage, step });
+async function runLLM({ postId, stage, substage, step, inputs = {} }) {
+    console.log('[LLM_UTILS] runLLM function called with params:', { postId, stage, substage, step, inputs });
     
     const btn = document.querySelector('[data-action="run-llm"]');
     if (btn) {
@@ -22,7 +23,10 @@ async function runLLM({ postId, stage, substage, step }) {
     try {
         // Use the correct endpoint path that matches the backend route
         const url = `/api/workflow/posts/${postId}/${stage}/${substage}/llm`;
-        const requestBody = { step: step };
+        const requestBody = { 
+            step: step,
+            inputs: inputs  // Include multiple inputs in request
+        };
         
         console.log('[LLM_UTILS] Sending request to:', url);
         console.log('[LLM_UTILS] Request body:', requestBody);

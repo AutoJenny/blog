@@ -920,7 +920,7 @@ def get_field_selection(step_id):
 @bp.route('/posts/<int:post_id>/<stage>/<substage>/llm', methods=['POST'])
 @handle_workflow_errors
 def run_workflow_llm(post_id, stage, substage):
-    """Execute an LLM request for a specific workflow step."""
+    """Execute an LLM request for a specific workflow step with multiple inputs."""
     try:
         data = request.get_json()
         if not data:
@@ -930,14 +930,18 @@ def run_workflow_llm(post_id, stage, substage):
         if not step:
             return jsonify({'error': 'Step is required'}), 400
 
+        # Get multiple inputs from request
+        inputs = data.get('inputs', {})
+        current_app.logger.info(f"LLM request with inputs: {inputs}")
+
         # Import the process_step function from the workflow scripts
         import sys
         import os
         sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'workflow', 'scripts'))
         from llm_processor import process_step
 
-        # Execute the LLM step
-        result = process_step(post_id, stage, substage, step)
+        # Execute the LLM step with multiple inputs
+        result = process_step(post_id, stage, substage, step, frontend_inputs=inputs)
 
         return jsonify({
             'success': True,

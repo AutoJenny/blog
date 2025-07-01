@@ -34,6 +34,7 @@
     import { FieldSelector } from "/static/modules/llm_panel/js/field_selector.js";
     import { runLLM } from "/static/js/llm_utils.js";
     import { FormatSelector } from "/static/js/format_selector.js";
+    import { MultiInputManager } from "/static/modules/llm_panel/js/multi_input_manager.js";
 
     // Initialize field selector
     window.addEventListener('DOMContentLoaded', () => {
@@ -51,6 +52,11 @@
         } else {
             console.warn('[PANEL] Post ID not found, cannot initialize field selector');
         }
+
+        // Initialize MultiInputManager
+        console.log('[PANEL] Initializing MultiInputManager...');
+        const multiInputManager = new MultiInputManager('inputs-container');
+        window.multiInputManager = multiInputManager;
 
         // Initialize FormatSelector
         console.log('[PANEL] Initializing FormatSelector...');
@@ -78,7 +84,11 @@
                     console.log('[PANEL] step after conversion:', step);
                     console.log('[PANEL] Running LLM with params:', { postId, stage, substage, step });
 
-                    const result = await runLLM({ postId, stage, substage, step });
+                    // Get all input values from MultiInputManager
+                    const allInputs = window.multiInputManager?.getAllInputs() || {};
+                    console.log('[PANEL] All inputs:', allInputs);
+
+                    const result = await runLLM({ postId, stage, substage, step, inputs: allInputs });
 
                     console.log('[PANEL] LLM result:', result);
 

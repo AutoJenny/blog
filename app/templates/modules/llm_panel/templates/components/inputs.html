@@ -2,34 +2,53 @@
 <div class="border border-dark-border rounded-lg p-4 mb-4">
     <h2 class="text-xl font-medium text-dark-text mb-4">Inputs</h2>
 
-    {% if step_config and step_config.inputs %}
-    {% for input_id, input_config in step_config.inputs.items() %}
-    <div class="mb-4">
-        <label for="{{ input_id }}" class="block text-sm font-medium text-blue-500 mb-2">
-            [{{ input_id }}]
-        </label>
-        <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
-            data-target="{{ input_id }}" data-section="inputs" data-current-substage="{{ current_substage }}">
-            <!-- Options will be populated by JavaScript -->
-        </select>
-        <textarea id="{{ input_id }}" name="{{ input_id }}"
-            class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
-            data-db-field="{{ input_config.db_field }}" data-db-table="{{ input_config.db_table }}" rows="4"
-            placeholder="{{ input_config.placeholder|default('Enter text...') }}"></textarea>
+    <div id="inputs-container">
+        {% if step_config and step_config.inputs %}
+        {% for input_id, input_config in step_config.inputs.items() %}
+        <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="{{ input_id }}">
+            <div class="flex justify-between items-center mb-2">
+                <label for="{{ input_id }}" class="block text-sm font-medium text-blue-500">
+                    [{{ input_id }}]
+                </label>
+                {% if loop.index > 1 %}
+                <button type="button" class="remove-input-btn text-red-500 hover:text-red-400 text-sm">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+                {% endif %}
+            </div>
+            <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                data-target="{{ input_id }}" data-section="inputs" data-current-substage="{{ current_substage }}">
+                <!-- Options will be populated by JavaScript -->
+            </select>
+            <textarea id="{{ input_id }}" name="{{ input_id }}"
+                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                data-db-field="{{ input_config.db_field }}" data-db-table="{{ input_config.db_table }}" rows="4"
+                placeholder="{{ input_config.placeholder|default('Enter text...') }}"></textarea>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="input1">
+            <div class="flex justify-between items-center mb-2">
+                <label for="input1" class="block text-sm font-medium text-blue-500">
+                    [input1]
+                </label>
+            </div>
+            <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                data-target="input1" data-section="inputs" data-current-substage="{{ current_substage }}">
+                <!-- Options will be populated by JavaScript -->
+            </select>
+            <textarea id="input1" name="input1"
+                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4" data-db-field=""
+                data-db-table="post_development" rows="4" placeholder="Enter text..."></textarea>
+        </div>
+        {% endif %}
     </div>
-    {% endfor %}
-    {% else %}
-    <div class="mb-4">
-        <label for="input1" class="block text-sm font-medium text-blue-500 mb-2">
-            [input1]
-        </label>
-        <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
-            data-target="input1" data-section="inputs" data-current-substage="{{ current_substage }}">
-            <!-- Options will be populated by JavaScript -->
-        </select>
-        <textarea id="input1" name="input1"
-            class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4" data-db-field=""
-            data-db-table="post_development" rows="4" placeholder="Enter text..."></textarea>
+
+    <!-- Add Input Button -->
+    <div class="mt-4">
+        <button type="button" id="add-input-btn"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors duration-200">
+            <i class="fas fa-plus mr-2"></i>Add Input Field
+        </button>
     </div>
-    {% endif %}
 </div>

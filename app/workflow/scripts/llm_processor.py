@@ -30,7 +30,8 @@ except ImportError:
 
 def create_diagnostic_logs(post_id: int, stage: str, substage: str, step: str, 
                           db_fields: Dict[str, Any], llm_message: str, llm_response: str,
-                          input_format_template: dict = None, output_format_template: dict = None):
+                          input_format_template: dict = None, output_format_template: dict = None,
+                          frontend_inputs: Dict[str, Any] = None):
     """Create three diagnostic log files for troubleshooting - overwrites existing files."""
     logs_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'logs')
     os.makedirs(logs_dir, exist_ok=True)
@@ -48,6 +49,7 @@ def create_diagnostic_logs(post_id: int, stage: str, substage: str, step: str,
         },
         "input_format_template": input_format_template or {},
         "output_format_template": output_format_template or {},
+        "frontend_inputs": frontend_inputs or {},
         "database_fields": db_fields
     }
     with open(db_log_path, 'w') as f:
@@ -62,7 +64,8 @@ def create_diagnostic_logs(post_id: int, stage: str, substage: str, step: str,
         f.write(f"# Substage: {substage}\n")
         f.write(f"# Step: {step}\n")
         f.write(f"# Timestamp: {datetime.now().isoformat()}\n")
-        f.write(f"# Log Type: llm_message\n\n")
+        f.write(f"# Log Type: llm_message\n")
+        f.write(f"# Frontend Inputs: {json.dumps(frontend_inputs or {}, indent=2)}\n\n")
         f.write(llm_message)
     
     # 3. LLM response log - always overwrites
@@ -74,7 +77,8 @@ def create_diagnostic_logs(post_id: int, stage: str, substage: str, step: str,
         f.write(f"# Substage: {substage}\n")
         f.write(f"# Step: {step}\n")
         f.write(f"# Timestamp: {datetime.now().isoformat()}\n")
-        f.write(f"# Log Type: llm_response\n\n")
+        f.write(f"# Log Type: llm_response\n")
+        f.write(f"# Frontend Inputs: {json.dumps(frontend_inputs or {}, indent=2)}\n\n")
         f.write(llm_response)
     
     print(f"Diagnostic logs created (overwriting previous files):")
@@ -199,16 +203,42 @@ def load_step_config(post_id: int, stage: str, substage: str, step: str) -> Dict
     finally:
         conn.close()
 
-def get_input_values(conn, post_id: int, input_mapping: Dict[str, Any]) -> Dict[str, str]:
-    """Fetch input values from database based on input mapping."""
+def get_input_values(conn, post_id: int, input_mapping: Dict[str, Any], frontend_inputs: Dict[str, Any] = None) -> Dict[str, str]:
+    """Fetch input values from database based on input mapping, with support for frontend-provided inputs."""
     inputs = {}
+    
+    # If frontend inputs are provided, use them as the primary source
+    if frontend_inputs:
+        for input_name, input_data in frontend_inputs.items():
+            if isinstance(input_data, dict) and 'value' in input_data:
+                # Frontend provided structured input data
+                inputs[input_name] = input_data['value']
+            elif isinstance(input_data, str):
+                # Frontend provided direct string value
+                inputs[input_name] = input_data
+            else:
+                # Fallback to empty string
+                inputs[input_name] = ''
+    
+    # Fallback to database lookup for any missing inputs
     for input_name, mapping in input_mapping.items():
-        query = f"SELECT {mapping['field']} FROM {mapping['table']} WHERE post_id = %s"
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(query, (post_id,))
-            result = cur.fetchone()
-            if result:
-                inputs[input_name] = result[mapping['field']]
+        if input_name not in inputs or not inputs[input_name]:
+            # Handle both old format (field/table) and new format (db_field/db_table)
+            field_name = mapping.get('db_field') or mapping.get('field')
+            table_name = mapping.get('db_table') or mapping.get('table')
+            
+            if field_name and table_name:
+                query = f"SELECT {field_name} FROM {table_name} WHERE post_id = %s"
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute(query, (post_id,))
+                    result = cur.fetchone()
+                    if result:
+                        inputs[input_name] = result[field_name] or ''
+                    else:
+                        inputs[input_name] = ''
+            else:
+                inputs[input_name] = ''
+    
     return inputs
 
 def resolve_format_references(text: str, data: Dict[str, Any]) -> str:
@@ -428,12 +458,13 @@ def get_step_prompt_templates(conn, step_id: int) -> Dict[str, str]:
             }
         return {'system_prompt': '', 'task_prompt': ''}
 
-def process_step(post_id: int, stage: str, substage: str, step: str):
-    """Main function to process a workflow step with format validation."""
+def process_step(post_id: int, stage: str, substage: str, step: str, frontend_inputs: Dict[str, Any] = None):
+    """Main function to process a workflow step with format validation and multiple inputs."""
     diagnostic_data = {
         "db_fields": {},
         "llm_message": "",
-        "llm_response": ""
+        "llm_response": "",
+        "frontend_inputs": frontend_inputs or {}
     }
     try:
         config = load_step_config(post_id, stage, substage, step)
@@ -447,7 +478,12 @@ def process_step(post_id: int, stage: str, substage: str, step: str):
         task_prompt = prompt_templates['task_prompt'] or llm_config.get('task_prompt', '')
 
         # Get input values and collect ALL database fields for diagnostic purposes
-        inputs = get_input_values(conn, post_id, llm_config['input_mapping'])
+        # Use inputs from config, fallback to llm_config.input_mapping if available
+        input_mapping = config.get('inputs', {})
+        if not input_mapping and 'input_mapping' in llm_config:
+            input_mapping = llm_config['input_mapping']
+        
+        inputs = get_input_values(conn, post_id, input_mapping, frontend_inputs)
         diagnostic_data["db_fields"] = collect_all_database_fields(conn, post_id, stage, substage, step, config)
 
         # Collect format templates separately to avoid duplication
@@ -524,7 +560,8 @@ def process_step(post_id: int, stage: str, substage: str, step: str):
             diagnostic_data["llm_message"],
             diagnostic_data["llm_response"],
             input_format_template,
-            output_format_template
+            output_format_template,
+            diagnostic_data["frontend_inputs"]
         )
         print(f"Successfully processed step {step} for post {post_id}")
         return output
@@ -536,7 +573,8 @@ def process_step(post_id: int, stage: str, substage: str, step: str):
                 diagnostic_data["llm_message"],
                 f"ERROR: {str(e)}",
                 input_format_template,
-                output_format_template
+                output_format_template,
+                diagnostic_data["frontend_inputs"]
             )
         print(f"Error processing step: {str(e)}", file=sys.stderr)
         raise
