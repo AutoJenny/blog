@@ -289,7 +289,8 @@
                 // Update dropdown to highlight available models
                 const options = modelSelect.querySelectorAll('option');
                 options.forEach(option => {
-                    if (option.value && option.dataset.providerType === 'ollama') {
+                    // Normalize provider_type to lowercase and check if it contains 'ollama'
+                    if (option.value && option.dataset.providerType && option.dataset.providerType.toLowerCase().includes('ollama')) {
                         const originalValue = option.value; // Preserve the original value
                         if (availableModels.has(option.value)) {
                             option.textContent = `✅ ${option.value} (${option.dataset.description || 'Available in Ollama'})`;
