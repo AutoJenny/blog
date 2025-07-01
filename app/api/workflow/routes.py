@@ -957,34 +957,55 @@ def run_workflow_llm(post_id, stage, substage):
 @bp.route('/llm/models', methods=['GET'])
 @handle_workflow_errors
 def get_llm_models():
-    """Get all available LLM models from the database."""
+    """Get available LLM models from the database."""
     with get_db_conn() as conn:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        
-        # Get all models with provider information
-        cur.execute("""
-            SELECT 
-                m.id,
-                m.name,
-                m.provider_id,
-                m.description,
-                m.strengths,
-                p.name as provider_name,
-                p.type as provider_type
-            FROM llm_model m
-            JOIN llm_provider p ON p.id = m.provider_id
-            ORDER BY m.name
-        """)
-        
-        models = cur.fetchall()
-        
-        return jsonify([
-            {
-                'id': str(m['id']),
-                'name': m['name'],
-                'provider': m['provider_name'],
-                'capabilities': [m['strengths']] if m['strengths'] else [],
-                'description': m['description'],
-                'provider_type': m['provider_type']
-            } for m in models
-        ]) 
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            cur.execute("""
+                SELECT DISTINCT model_name, provider_name
+                FROM llm_action
+                WHERE model_name IS NOT NULL AND model_name != ''
+                ORDER BY provider_name, model_name
+            """)
+            models = cur.fetchall()
+            
+            return jsonify([{
+                'name': model['model_name'],
+                'provider': model['provider_name']
+            } for model in models])
+
+@bp.route('/substages/<stage>/<substage>/first-step', methods=['GET'])
+@handle_workflow_errors
+def get_first_step_for_substage(stage, substage):
+    """Get the first step for a given stage and substage."""
+    with get_db_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            # Get the first step (lowest step_order) for the given stage/substage
+            cur.execute("""
+                SELECT 
+                    wse.id,
+                    wse.name as step_name,
+                    wse.description,
+                    wse.step_order,
+                    wsse.name as substage_name,
+                    wst.name as stage_name
+                FROM workflow_step_entity wse
+                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
+                ORDER BY wse.step_order
+                LIMIT 1
+            """, (stage, substage))
+            
+            step = cur.fetchone()
+            if not step:
+                return jsonify({'error': 'No steps found for this substage'}), 404
+                
+            return jsonify({
+                'id': step['id'],
+                'name': step['step_name'],
+                'description': step['description'],
+                'step_order': step['step_order'],
+                'substage_name': step['substage_name'],
+                'stage_name': step['stage_name'],
+                'url_name': step['step_name'].lower().replace(' ', '_')
+            }) 

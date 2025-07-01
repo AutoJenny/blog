@@ -136,4 +136,64 @@
         window.location.href = `/workflow/posts/0`.replace('/0/', `/${postId}/`);
         {% endif %}
     });
+
+    // Handle stage icon clicks to redirect to first step
+    document.addEventListener('DOMContentLoaded', function () {
+        const stageIcons = document.querySelectorAll('a[href*="workflow"]');
+
+        stageIcons.forEach(icon => {
+            icon.addEventListener('click', async function (e) {
+                // Only handle clicks on stage icons (not step tabs)
+                if (this.closest('.flex.gap-6')) {
+                    e.preventDefault();
+
+                    const postId = '{{ current_post_id }}';
+                    const href = this.getAttribute('href');
+
+                    // Extract stage and substage from the href
+                    const urlParts = href.split('/');
+                    const stageIndex = urlParts.findIndex(part => part === 'planning' || part === 'writing' || part === 'publishing');
+                    const substageIndex = stageIndex + 1;
+
+                    if (stageIndex !== -1 && urlParts[substageIndex]) {
+                        const stage = urlParts[stageIndex];
+                        const substage = urlParts[substageIndex];
+
+                        try {
+                            // Fetch the first step for this substage
+                            const response = await fetch(`/api/workflow/substages/${stage}/${substage}/first-step`);
+
+                            if (response.ok) {
+                                const stepData = await response.json();
+
+                                // Build the URL to the first step
+                                let targetUrl;
+                                {% if request.blueprint == 'workflow_nav' %}
+                                targetUrl = `{{ url_for('workflow_nav.stage', stage='STAGE', substage='SUBSTAGE', post_id=0) }}`
+                                    .replace('STAGE', stage)
+                                    .replace('SUBSTAGE', substage)
+                                    .replace('/0/', `/${postId}/`);
+                                {% else %}
+                                targetUrl = `/workflow/posts/${postId}/${stage}/${substage}?step=${stepData.url_name}`;
+                                {% endif %}
+
+                                // Redirect to the first step
+                                window.location.href = targetUrl;
+                            } else {
+                                // If no first step found, use the original href
+                                window.location.href = href;
+                            }
+                        } catch (error) {
+                            console.error('Error fetching first step:', error);
+                            // Fallback to original href
+                            window.location.href = href;
+                        }
+                    } else {
+                        // If we can't parse the URL, use the original href
+                        window.location.href = href;
+                    }
+                }
+            });
+        });
+    });
 </script>

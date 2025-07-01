@@ -229,7 +229,7 @@ def workflow_index(post_id, stage=None, substage=None):
         'step_id': step_id,
         'current_stage': stage,
         'current_substage': substage,
-        'current_step': display_step,
+        'current_step': step,
         'current_post_id': post_id,
         'all_posts': get_all_posts(),
         'post': post,
