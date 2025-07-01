@@ -236,6 +236,9 @@ class FieldSelector {
         const section = selector.dataset.section;
         
         console.log('[DEBUG] Initializing selector for target:', target, 'section:', section);
+        console.log('[DEBUG] Available fields:', Object.keys(this.fields));
+        console.log('[DEBUG] Saved mappings:', this.savedMappings);
+        console.log('[DEBUG] Saved output field selection:', this.savedOutputFieldSelection);
         
         // Clear existing options
         selector.innerHTML = '<option value="">Select field...</option>';
@@ -248,15 +251,45 @@ class FieldSelector {
             selector.appendChild(option);
         });
         
-        // Set saved value if available
-        if (this.savedMappings.length > 0) {
+        // Determine the field to select based on priority:
+        // 1. Check if target element has existing data-db-field
+        // 2. Check saved mappings
+        // 3. Check saved output field selection for outputs section
+        let selectedField = null;
+        
+        // First, check if the target element has an existing data-db-field
+        if (target) {
+            const targetElement = document.getElementById(target);
+            console.log('[DEBUG] Target element for', target, ':', targetElement);
+            if (targetElement && targetElement.dataset.dbField) {
+                selectedField = targetElement.dataset.dbField;
+                console.log('[DEBUG] Found existing data-db-field for', target, ':', selectedField);
+            }
+        }
+        
+        // If no existing field found, check saved mappings
+        if (!selectedField && this.savedMappings.length > 0) {
             const savedMapping = this.savedMappings.find(m => 
                 m.field_name === target || m.field_name === selector.dataset.dbField
             );
             if (savedMapping) {
-                selector.value = savedMapping.field_name;
-                console.log('[DEBUG] Set saved value for', target, ':', savedMapping.field_name);
+                selectedField = savedMapping.field_name;
+                console.log('[DEBUG] Found saved mapping for', target, ':', selectedField);
             }
+        }
+        
+        // For outputs section, also check saved output field selection
+        if (!selectedField && section === 'outputs' && this.savedOutputFieldSelection) {
+            selectedField = this.savedOutputFieldSelection.field;
+            console.log('[DEBUG] Found saved output field selection:', selectedField);
+        }
+        
+        // Set the selected value if found
+        if (selectedField) {
+            selector.value = selectedField;
+            console.log('[DEBUG] Set selected value for', target, ':', selectedField);
+        } else {
+            console.log('[DEBUG] No field selected for', target);
         }
         
         // Add event listener

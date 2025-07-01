@@ -7,7 +7,7 @@
         {% for input_id, input_config in step_config.inputs.items() %}
         <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="{{ input_id }}">
             <div class="flex justify-between items-center mb-2">
-                <label for="{{ input_id }}" class="block text-sm font-medium text-blue-500">
+                <label for="input_{{ input_id }}" class="block text-sm font-medium text-blue-500">
                     [{{ input_id }}]
                 </label>
                 {% if loop.index > 1 %}
@@ -17,10 +17,10 @@
                 {% endif %}
             </div>
             <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
-                data-target="{{ input_id }}" data-section="inputs" data-current-substage="{{ current_substage }}">
+                data-target="input_{{ input_id }}" data-section="inputs" data-current-substage="{{ current_substage }}">
                 <!-- Options will be populated by JavaScript -->
             </select>
-            <textarea id="{{ input_id }}" name="{{ input_id }}"
+            <textarea id="input_{{ input_id }}" name="{{ input_id }}"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
                 data-db-field="{{ input_config.db_field }}" data-db-table="{{ input_config.db_table }}" rows="4"
                 placeholder="{{ input_config.placeholder|default('Enter text...') }}"></textarea>
@@ -29,15 +29,15 @@
         {% else %}
         <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="input1">
             <div class="flex justify-between items-center mb-2">
-                <label for="input1" class="block text-sm font-medium text-blue-500">
+                <label for="input_input1" class="block text-sm font-medium text-blue-500">
                     [input1]
                 </label>
             </div>
             <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
-                data-target="input1" data-section="inputs" data-current-substage="{{ current_substage }}">
+                data-target="input_input1" data-section="inputs" data-current-substage="{{ current_substage }}">
                 <!-- Options will be populated by JavaScript -->
             </select>
-            <textarea id="input1" name="input1"
+            <textarea id="input_input1" name="input1"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4" data-db-field=""
                 data-db-table="post_development" rows="4" placeholder="Enter text..."></textarea>
         </div>

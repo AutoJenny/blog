@@ -52,7 +52,7 @@ export class MultiInputManager {
         const inputHtml = `
             <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="${inputId}">
                 <div class="flex justify-between items-center mb-2">
-                    <label for="${inputId}" class="block text-sm font-medium text-blue-500">
+                    <label for="input_${inputId}" class="block text-sm font-medium text-blue-500">
                         [${inputId}]
                     </label>
                     <button type="button" class="remove-input-btn text-red-500 hover:text-red-400 text-sm">
@@ -60,10 +60,10 @@ export class MultiInputManager {
                     </button>
                 </div>
                 <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
-                    data-target="${inputId}" data-section="inputs" data-current-substage="${this.currentSubstage}">
+                    data-target="input_${inputId}" data-section="inputs" data-current-substage="${this.currentSubstage}">
                     <option value="">Select field...</option>
                 </select>
-                <textarea id="${inputId}" name="${inputId}"
+                <textarea id="input_${inputId}" name="${inputId}"
                     class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
                     data-db-field="" data-db-table="post_development" rows="4" 
                     placeholder="Enter text..."></textarea>
@@ -95,7 +95,7 @@ export class MultiInputManager {
     
     initializeFieldSelector(inputId) {
         // Trigger field selector initialization for the new input
-        const fieldSelector = document.querySelector(`[data-target="${inputId}"]`);
+        const fieldSelector = document.querySelector(`[data-target="input_${inputId}"]`);
         if (fieldSelector) {
             // Dispatch custom event to trigger field selector population
             const event = new CustomEvent('fieldSelectorInit', {
@@ -162,7 +162,7 @@ export class MultiInputManager {
         const inputHtml = `
             <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="${inputId}">
                 <div class="flex justify-between items-center mb-2">
-                    <label for="${inputId}" class="block text-sm font-medium text-blue-500">
+                    <label for="input_${inputId}" class="block text-sm font-medium text-blue-500">
                         [${inputId}]
                     </label>
                     ${inputId !== 'input1' ? `
@@ -172,10 +172,10 @@ export class MultiInputManager {
                     ` : ''}
                 </div>
                 <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
-                    data-target="${inputId}" data-section="inputs" data-current-substage="${this.currentSubstage}">
+                    data-target="input_${inputId}" data-section="inputs" data-current-substage="${this.currentSubstage}">
                     <option value="">Select field...</option>
                 </select>
-                <textarea id="${inputId}" name="${inputId}"
+                <textarea id="input_${inputId}" name="${inputId}"
                     class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
                     data-db-field="${config.db_field || ''}" data-db-table="${config.db_table || 'post_development'}" 
                     rows="4" placeholder="${config.placeholder || 'Enter text...'}">${config.value || ''}</textarea>
