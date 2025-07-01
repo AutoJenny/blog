@@ -1,0 +1,163 @@
+{
+  "metadata": {
+    "post_id": 22,
+    "stage": "planning",
+    "substage": "research",
+    "step": "Interesting Facts",
+    "timestamp": "2025-07-01T09:38:09.646359",
+    "log_type": "database_fields"
+  },
+  "input_format_template": {
+    "id": 39,
+    "name": "Plain text (GB) - Input",
+    "description": "A plain text input using UK English spellings and idioms.",
+    "fields": {
+      "type": "input",
+      "schema": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The plain text input in UK English"
+          }
+        }
+      }
+    },
+    "llm_instructions": "The input will be provided as plain text, using only UK English spellings and idioms. Do not expect any JSON structure other than a single string field named text.",
+    "created_at": "2025-06-29 11:45:11.155902",
+    "updated_at": "2025-06-30 11:31:22.879797"
+  },
+  "output_format_template": {
+    "id": 28,
+    "name": "Title-description JSON (Output)",
+    "description": "Structured JSON with two elements: title (string) and description (string).",
+    "fields": {
+      "type": "output",
+      "schema": {
+        "type": "object",
+        "required": [
+          "title",
+          "description"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The main title"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the title"
+          }
+        }
+      }
+    },
+    "llm_instructions": "Return your response as a JSON object with title and description fields. Ensure both fields are present and contain appropriate content.",
+    "created_at": "2025-06-29 10:23:56.745897",
+    "updated_at": "2025-06-30 11:31:11.654640"
+  },
+  "database_fields": {
+    "post_info": {
+      "id": 22,
+      "title": "story-telling...",
+      "status": "draft",
+      "created_at": "2025-06-01 10:10:53.766198",
+      "updated_at": "2025-06-24 17:21:55.752166"
+    },
+    "post_development": {
+      "basic_idea": "The art of storytelling has long been a cornerstone of Scottish culture, weaving together threads of history, myth, and tradition to create a rich tapestry that continues to captivate audiences to this day. From the ancient Celtic bards who regaled royal courts with tales of battles won and lost, to the modern-day writers and artists who draw inspiration from Scotland's stunning landscapes and complex heritage, storytelling has played a vital role in shaping the nation's identity. In this article, we'll delve into the world of Scottish storytelling, exploring its evolution over time, its connections to folklore and mythology, and its ongoing influence on literature, music, and art. We'll examine how stories have been used to pass down historical events, cultural values, and social norms, as well as to entertain, educate, and even subvert. By examining the angles of oral tradition, literary heritage, and contemporary creative practices, we'll uncover the ways in which storytelling continues to be a powerful force in Scottish culture, reflecting and shaping the nation's sense of self and its place in the world.",
+      "provisional_title": "[\n  \"Weaving the Tartan Tapestry: The Enduring Power of Storytelling in Scottish Culture\",\n  \"The Highland Hearth: How Scotland's Rich Storytelling Heritage Keeps Embers of Memory Alive\",\n  \"Kilts, Clans, and Chronicles: Unravelling the Cultural Significance of Scottish Storytelling\",\n  \"From Caledonia to the World: The Global Impact of Scotland's Compelling Narrative Tradition\",\n  \"Thistle and Thematics: Exploring the Emotional Resonance of Storytelling in Scottish Identity\"\n]",
+      "idea_scope": "Scottish cultural heritage \nStorytelling in Scotland \nCeltic myths \nOral tradition \nLiterature in Scotland \nMusic in Scottish culture \nArt in Scottish storytelling \nJacobite risings \nThe Clearances \nCollective memory \nNational identity \nAuthenticity in historical narrative \nHistorical accuracy in storytelling \nCeilidh gatherings \nHighland culture \nGlasgow's urban heritage \nScottish folklore",
+      "topics_to_cover": "[\n  {\n    \"title\": \"The Significance of Oral Tradition in Preserving Scottish Cultural Heritage\",\n    \"description\": \"Exploring how Scotland's rich storytelling heritage has been passed down through generations via oral retellings.\"\n  },\n  {\n    \"title\": \"Tales from the Trossachs: Examining the Role of Nature in Scottish Folklore\",\n    \"description\": \"Investigating how the natural world has influenced Scottish stories and legends, such as the Kelpie legends.\"\n  },\n  {\n    \"title\": \"The Impact of Christianity on Scottish Mythology\",\n    \"description\": \"Analyzing how Christianity's influence on Scotland affected the country's folklore and mythology.\"\n  },\n  {\n    \"title\": \"Scotland's Literary Legacy: The Influence of Robert Burns' Poetry on Modern Storytelling\",\n    \"description\": \"Exploring how one of Scotland's most famous poets has shaped modern storytelling techniques.\"\n  },\n  {\n    \"title\": \"Uncovering the Secrets of the Selkies: A Dive into Scottish Folklore\",\n    \"description\": \"Delving into the history and significance of the Selkie legends in Scottish folklore.\"\n  },\n  {\n    \"title\": \"Ceilidhs, Festivals, and Fun: Celebrating Scotland's Storytelling Traditions Today\",\n    \"description\": \"Highlighting how ceilidhs and folk festivals continue to promote and preserve Scotland's cultural heritage.\"\n  },\n  {\n    \"title\": \"The Role of Women in Scottish Folklore: Examining the Portrayal of Female Characters\",\n    \"description\": \"Analyzing the depiction of women in traditional Scottish stories, exploring their significance and impact on modern culture.\"\n  },\n  {\n    \"title\": \"Storytelling as a Means of Social Commentary: Using Folklore to Address Contemporary Issues\",\n    \"description\": \"Examining how Scotland's folklore has been used to comment on social issues, such as poverty and inequality.\"\n  },\n  {\n    \"title\": \"Scotland's Place in the Broader British Context: Examining Shared Cultural Heritage\",\n    \"description\": \"Comparing and contrasting Scottish storytelling traditions with those of other cultures within the UK.\"\n  },\n  {\n    \"title\": \"From Myth to Reality: The Evolution of Scottish Folklore into Modern Storytelling\",\n    \"description\": \"Investigating how traditional stories have been adapted for modern audiences, including film and television adaptations.\"\n  },\n  {\n    \"title\": \"The Impact of Technology on Scotland's Oral Tradition\",\n    \"description\": \"Exploring the effects of digital media on the way Scottish stories are told and passed down to new generations.\"\n  },\n  {\n    \"title\": \"Scotland's Storytelling Traditions: A Window into its Unique Cultural Character\",\n    \"description\": \"Highlighting how Scotland's cultural strengths, such as its rich folklore and literary heritage, have contributed to its unique identity.\"\n  },\n  {\n    \"title\": \"The Role of Music in Scottish Storytelling: Examining the Connection Between Song and Story\",\n    \"description\": \"Investigating the significance of music within traditional Scottish stories and its ongoing influence on modern culture.\"\n  },\n  {\n    \"title\": \"Uncovering Scotland's Hidden History: The Significance of Folklore in Preserving Unrecorded Events\",\n    \"description\": \"Analyzing how folklore has preserved historical events that may have otherwise gone unrecorded.\"\n  },\n  {\n    \"title\": \"From Fables to Fairy Tales: Examining the Influence of Scottish Folklore on Children's Literature\",\n    \"description\": \"Exploring how Scotland's rich storytelling heritage has shaped children's literature and its ongoing influence on modern culture.\"\n  },\n  {\n    \"title\": \"Scotland's Storytelling Traditions in Modern Times: Challenges and Opportunities\",\n    \"description\": \"Examining the challenges facing Scotland's oral tradition, including technology and cultural homogenization, as well as opportunities for innovation and preservation.\"\n  },\n  {\n    \"title\": \"The Power of Folklore: Using Traditional Stories to Address Contemporary Issues in Education\",\n    \"description\": \"Exploring how Scottish folklore can be used in educational settings to address social issues and promote cultural understanding.\"\n  },\n  {\n    \"title\": \"Scotland's Cultural Renaissance: The Revival of Interest in Folklore and Storytelling\",\n    \"description\": \"Highlighting the resurgence of interest in Scotland's cultural heritage, including its rich storytelling traditions.\"\n  },\n  {\n    \"title\": \"Uncovering Scotland's Lost Legends: Exploring Forgotten Folk Tales\",\n    \"description\": \"Delving into Scotland's lesser-known folklore stories, exploring their significance and impact on modern culture.\"\n  },\n  {\n    \"title\": \"Scotland's Storytelling Traditions in the Digital Age: Opportunities for Preservation and Innovation\",\n    \"description\": \"Examining how technology can be used to preserve Scotland's oral tradition while promoting innovation and new storytelling techniques.\"\n  }\n]",
+      "interesting_facts": "The iconic Scottish tartan! Here are some fascinating facts about the rich history and cultural significance of Scottish tartans, both past and present:\n\n**Origins and History**\n\n1. **Ancient roots**: Tartan patterns have been found on ancient textiles from the 3rd century BC in Scotland, suggesting a long-standing tradition.\n2. **Clan associations**: In the 16th century, specific tartans became associated with Scottish clans, symbolizing their identity, kinship, and loyalty.\n3. **Jacobite Risings**: During the Jacobite Risings (1689-1746), tartans played a significant role in identifying friend from foe on the battlefield.\n\n**Modern Significance**\n\n1. **Heritage and identity**: Tartans continue to be an important part of Scottish cultural heritage, with many Scots proudly wearing their clan or family tartan as a symbol of connection to their roots.\n2. **Fashion and design**: Modern designers incorporate traditional tartans into fashion, textiles, and interior design, blending tradition with contemporary style.\n3. **Symbolism and unity**: Tartans are often used in Scottish cultural events, such as Highland games, festivals, and weddings, promoting unity and community spirit.\n\n**Interesting Facts**\n\n1. **Tartan Registry**: The Scottish Register of Tartans was established in 2009 to record and preserve tartan designs, with over 7,000 registered tartans.\n2. **Clan Chief's authority**: Only the Clan Chief or a designated representative can officially sanction a new tartan for their clan.\n3. **Tartan etiquette**: There are rules governing the wearing of tartans, such as not wearing another clan's tartan without permission, and always wearing the kilt with dignity and respect.\n\n**Modern Uses**\n\n1. **Corporate branding**: Companies like Burberry and Hunter have incorporated traditional Scottish tartans into their branding, highlighting the cultural significance and global appeal of these designs.\n2. **Fashion collaborations**: Designers such as Alexander McQueen and Vivienne Westwood have collaborated on tartan-inspired collections, showcasing the versatility of this iconic pattern.\n3. **Tartan in music and arts**: Tartans have been featured in music videos, films, and artworks, demonstrating their enduring cultural influence.\n\n**Cultural Exchange and Revival**\n\n1. **International appreciation**: Scottish tartans are admired worldwide for their beauty and historical significance, with many non-Scottish individuals adopting them as a symbol of cultural appreciation.\n2. **Tartan revival**: The resurgence of interest in traditional crafts and textiles has led to a modern tartan revival, with designers experimenting with new colors, patterns, and materials.\n3. **Intergenerational connections**: Tartans serve as a tangible link between generations, with families passing down stories, traditions, and heirlooms related to their clan or family tartan.\n\nIn summary, Scottish tartans continue to play a vital role in modern times, representing cultural heritage, community spirit, and artistic inspiration. Whether worn on the kilt, incorporated into fashion designs, or used as a symbol of corporate identity, the iconic Scottish tartan remains an enduring emblem of Scotland's rich history and traditions.",
+      "tartans_products": null,
+      "section_planning": null,
+      "section_headings": null,
+      "section_order": null,
+      "main_title": null,
+      "subtitle": null,
+      "intro_blurb": null,
+      "conclusion": null,
+      "basic_metadata": null,
+      "tags": null,
+      "categories": null,
+      "image_captions": null,
+      "seo_optimization": null,
+      "self_review": null,
+      "peer_review": null,
+      "final_check": null,
+      "scheduling": null,
+      "deployment": null,
+      "verification": null,
+      "feedback_collection": null,
+      "content_updates": null,
+      "version_control": null,
+      "platform_selection": null,
+      "content_adaptation": null,
+      "distribution": null,
+      "engagement_tracking": null,
+      "summary": null,
+      "idea_seed": "Story-telling",
+      "provisional_title_primary": "Weaving Words: Uncovering the Hidden History of Gaelic Storytelling",
+      "concepts": "[\"Scottish Oral Tradition\", \"Medieval Scottish Epic Tales\", \"Folk Songs and Ballads\", \"Highland Clans\", \"Scottish Immigration\", \"Sir Walter Scott\", \"Traveling Storytellers\", \"Folklore Studies\", \"Literary Theory\", \"Cultural Anthropology\", \"Scottish Identity\", \"Cultural Memory\", \"Community Cohesion\"]",
+      "facts": null,
+      "outline": "[\n  {\n    \"title\": \"The Gaelic Roots of Scottish Storytelling\",\n    \"description\": \"Explore the historical context of Scotland's oral tradition, tracing its roots to the Gaelic-speaking communities of the Highlands and Islands.\",\n    \"contents\": [\n      \"Poetry and storytelling in ancient Celtic culture\",\n      \"Gaelic oral traditions: myth, legend, and history\",\n      \"The role of bards in preserving cultural heritage\"\n    ]\n  },\n  {\n    \"title\": \"Tam o' Shanter and the Evolution of Scottish Folk Tales\",\n    \"description\": \"Examine the significance of tales like Tam o' Shanter in shaping Scotland's unique cultural heritage.\",\n    \"contents\": [\n      \"The story of Tam o' Shanter: origins, themes, and interpretations\",\n      \"Other notable folk tales in Scottish literature (e.g. The Three Sisters)\",\n      \"Folk tale archetypes and motifs in Scottish storytelling\"\n    ]\n  },\n  {\n    \"title\": \"Oral Tradition and Social Commentary\",\n    \"description\": \"Analyze the role of oral narrative in preserving history, myth, and social commentary.\",\n    \"contents\": [\n      \"The use of folklore to critique societal norms\",\n      \"Social issues addressed through folk tales (e.g. poverty, inequality)\",\n      \"Folkloric examples of resistance and rebellion\"\n    ]\n  },\n  {\n    \"title\": \"The Industrial Revolution's Impact on Storytelling\",\n    \"description\": \"Examine how the rise of urbanization and industrialization transformed the way stories were told and consumed in Scotland.\",\n    \"contents\": [\n      \"Folk festivals and storytelling in urban settings (e.g. ceilidhs)\",\n      \"Literary movements: Scottish Renaissance, Romanticism, etc.\",\n      \"The role of print culture and literacy in disseminating folk tales\"\n    ]\n  },\n  {\n    \"title\": \"Modern-Day Scottish Storytelling\",\n    \"description\": \"Explore the ongoing significance of oral narrative in modern Scotland, highlighting contemporary examples and innovations.\",\n    \"contents\": [\n      \"Ceilidh hosting: contemporary practices and traditions\",\n      \"Folk music, dance, and storytelling festivals (e.g. Celtic Connections)\",\n      \"Digital platforms for sharing Scottish folk tales and stories\"\n    ]\n  },\n  {\n    \"title\": \"The Enduring Power of Oral Narrative\",\n    \"description\": \"Discuss the ways in which oral storytelling continues to unite, educate, and inspire communities in Scotland.\",\n    \"contents\": [\n      \"Community engagement through folk music and dance\",\n      \"Storytelling as a tool for preserving cultural heritage\",\n      \"Oral tradition's role in contemporary Scottish education\"\n    ]\n  }\n]",
+      "allocated_facts": null,
+      "sections": null,
+      "title_order": "[]",
+      "expanded_idea": "The art of story-telling and its cultural significance in human communication, memory, and emotional connection",
+      "updated_at": "2025-07-01 09:33:12.241928"
+    },
+    "workflow_config": {
+      "id": 13,
+      "name": "Interesting Facts",
+      "config": {
+        "title": "Interesting Facts",
+        "outputs": {
+          "interesting_facts": {
+            "type": "textarea",
+            "label": "Interesting Facts",
+            "db_field": "interesting_facts",
+            "db_table": "post_development"
+          }
+        },
+        "settings": {
+          "llm": {
+            "model": "llama3.1:8b",
+            "timeout": 360,
+            "provider": "ollama",
+            "parameters": {
+              "top_p": 0.9,
+              "max_tokens": 500,
+              "temperature": 0.7,
+              "presence_penalty": 0.0,
+              "frequency_penalty": 0.0
+            },
+            "task_prompt": "Generate interesting facts about: [data:expanded_idea]",
+            "input_mapping": {
+              "expanded_idea": {
+                "field": "expanded_idea",
+                "table": "post_development"
+              }
+            },
+            "system_prompt": "You are an expert in Scottish history and culture.",
+            "output_mapping": {
+              "field": "interesting_facts",
+              "table": "post_development"
+            }
+          }
+        }
+      },
+      "description": "Research Useful Facts step",
+      "substage_name": "research",
+      "stage_name": "planning"
+    },
+    "format_config": {
+      "step_id": 13,
+      "default_input_format_id": 39,
+      "default_output_format_id": 28
+    }
+  }
+}

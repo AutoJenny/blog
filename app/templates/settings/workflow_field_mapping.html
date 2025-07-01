@@ -210,16 +210,16 @@
             container.parentNode.insertBefore(draggedElement, container);
         }
 
-        // Update step order in database
+        // Update step order using canonical PUT endpoint
         try {
-            const response = await fetch('/api/workflow/reorder-steps', {
-                method: 'POST',
+            const stepId = draggedElement.dataset.stepId;
+            const response = await fetch(`/api/workflow/steps/${stepId}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    stepId: draggedElement.dataset.stepId,
-                    newIndex: toIndex
+                    step_order: toIndex + 1  // Convert 0-based index to 1-based step_order
                 })
             });
 

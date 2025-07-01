@@ -13,5 +13,6 @@ bp = Blueprint('api_workflow', __name__, url_prefix='/api/workflow')
 from . import routes  # Basic workflow routes
 from . import step_formats  # Format-related routes
 from . import format_routes  # Format system routes
+from . import steps  # Step management routes (GET, PUT, DELETE, reorder)
 
 __all__ = ['bp'] 

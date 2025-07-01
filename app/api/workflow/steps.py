@@ -3,7 +3,7 @@ from app.db import get_db_conn
 import psycopg2.extras
 import json
 
-bp = Blueprint('workflow_steps', __name__)
+from . import bp
 
 @bp.route('/steps', methods=['GET'])
 def get_all_steps():
