@@ -782,6 +782,7 @@ def update_llm_settings(step_id):
     top_p = data.get('top_p')
     frequency_penalty = data.get('frequency_penalty')
     presence_penalty = data.get('presence_penalty')
+    timeout = data.get('timeout')
 
     errors = {}
     if not isinstance(model, str) or not model.strip():
@@ -804,6 +805,12 @@ def update_llm_settings(step_id):
             errors['max_tokens'] = 'max_tokens must be between 1 and 32768.'
     except Exception:
         errors['max_tokens'] = 'max_tokens must be an integer.'
+    try:
+        timeout = int(timeout)
+        if not (1 <= timeout <= 600):
+            errors['timeout'] = 'timeout must be between 1 and 600 seconds.'
+    except Exception:
+        errors['timeout'] = 'timeout must be an integer.'
     if errors:
         return jsonify({'success': False, 'errors': errors}), 400
 
@@ -824,6 +831,7 @@ def update_llm_settings(step_id):
                 config['settings']['llm'] = {}
             config['settings']['llm'].update({
                 'model': model,
+                'timeout': timeout,
                 'parameters': {
                     'temperature': float(temperature),
                     'max_tokens': int(max_tokens),

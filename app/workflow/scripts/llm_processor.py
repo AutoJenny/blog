@@ -270,7 +270,7 @@ def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str
         input_text = "\n".join([f"{k}: {v}" for k, v in inputs.items()])
         return f"{system_prompt}\n\n{task_prompt}\n\n{input_text}"
 
-def call_llm(prompt: str, parameters: Dict[str, Any], conn) -> Dict[str, Any]:
+def call_llm(prompt: str, parameters: Dict[str, Any], conn, timeout: int = 60) -> Dict[str, Any]:
     """Call LLM with prompt and parameters using the LLM service."""
     # Initialize LLM service
     llm_service = LLMService()
@@ -290,12 +290,13 @@ def call_llm(prompt: str, parameters: Dict[str, Any], conn) -> Dict[str, Any]:
             # If not valid JSON, treat as plain text
             pass
     
-    # Generate response
+    # Generate response with timeout
     response = llm_service.generate(
         prompt=prompt,
         model_name=model,
         temperature=temperature,
-        max_tokens=max_tokens
+        max_tokens=max_tokens,
+        timeout=timeout
     )
     
     return {"result": response}
@@ -506,7 +507,7 @@ def process_step(post_id: int, stage: str, substage: str, step: str):
         diagnostic_data["llm_message"] = prompt
 
         # Call LLM
-        llm_response = call_llm(prompt, llm_config['parameters'], conn)
+        llm_response = call_llm(prompt, llm_config['parameters'], conn, llm_config.get('timeout', 60))
         output = llm_response['result']
         diagnostic_data["llm_response"] = output
 
