@@ -30,12 +30,32 @@
                 <div id="workflow-sections" style="background-color: #013828; width: 50%;"
                     class="rounded-lg p-6 shadow-lg">
                     <h2 class="text-2xl font-bold text-white mb-4">Sections Panel</h2>
-                    <div class="text-gray-200">
-                        <p>Sections module interface placeholder for Writing stage.</p>
+                    <div id="sections-panel-content" class="text-gray-200">
+                        <p>Loading sections...</p>
                     </div>
                 </div>
             </div>
         </div>
+        <script type="module">
+            import sectionPanel from '/static/js/workflow/template_view.js';
+            document.addEventListener('DOMContentLoaded', async () => {
+                // Get postId from URL
+                const pathParts = window.location.pathname.split('/');
+                const postId = pathParts[3];
+                const apiUrl = `/api/workflow/posts/${postId}/sections`;
+                const panel = document.getElementById('sections-panel-content');
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error('Failed to fetch sections');
+                    const data = await response.json();
+                    // Structure expected by renderStructure: { post: {id}, sections: [...] }
+                    const structure = { post: { id: postId }, sections: data.sections || [] };
+                    panel.innerHTML = sectionPanel.renderStructure(structure);
+                } catch (e) {
+                    panel.innerHTML = `<div class='text-red-400'>Error loading sections: ${e.message}</div>`;
+                }
+            });
+        </script>
         {% else %}
         <div class="px-6 -mt-20 text-white">
             <p>Current stage: {{ current_stage }}</p>
