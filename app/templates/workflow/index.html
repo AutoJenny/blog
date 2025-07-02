@@ -53,7 +53,7 @@
                     // Dynamically import SectionDragDrop after rendering
                     const { default: SectionDragDrop } = await import('/static/js/workflow/section_drag_drop.js');
                     const dragDrop = new SectionDragDrop();
-                    dragDrop.init('sections-sortable-container', postId);
+                    dragDrop.init('sections-sortable-container', postId, structure.sections);
                 } catch (e) {
                     panel.innerHTML = `<div class='text-red-400'>Error loading sections: ${e.message}</div>`;
                 }

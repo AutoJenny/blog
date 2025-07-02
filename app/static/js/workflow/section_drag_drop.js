@@ -9,14 +9,16 @@ class SectionDragDrop {
         this.container = null;
         this.postId = null;
         this.isInitialized = false;
+        this.sectionsById = {};
     }
 
     /**
      * Initialize drag-and-drop for sections
      * @param {string} containerId - ID of the sections container
      * @param {number} postId - Post ID for API calls
+     * @param {Array} sections - Array of section objects (full data)
      */
-    init(containerId, postId) {
+    init(containerId, postId, sections = []) {
         if (this.isInitialized) {
             console.log('SectionDragDrop already initialized');
             return;
@@ -24,6 +26,11 @@ class SectionDragDrop {
 
         this.postId = postId;
         this.container = document.getElementById(containerId);
+        // Build a map of section data by ID
+        this.sectionsById = {};
+        for (const s of sections) {
+            this.sectionsById[s.id] = { ...s };
+        }
         
         if (!this.container) {
             console.warn('Sections container not found:', containerId);
@@ -118,15 +125,29 @@ class SectionDragDrop {
 
             console.log('New section order:', newOrder);
 
-            // Update each section's orderIndex
+            // Update each section's orderIndex and send full data
             for (let i = 0; i < newOrder.length; i++) {
                 const sectionId = newOrder[i];
+                const section = this.sectionsById[sectionId];
+                if (!section) {
+                    console.warn(`No section data found for id ${sectionId}`);
+                    continue;
+                }
+                // Update orderIndex
+                section.orderIndex = i;
+                // Prepare payload
+                const payload = {
+                    title: section.title,
+                    description: section.description,
+                    orderIndex: section.orderIndex,
+                    elements: section.elements || {}
+                };
                 const response = await fetch(`/api/workflow/posts/${this.postId}/sections/${sectionId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ orderIndex: i })
+                    body: JSON.stringify(payload)
                 });
 
                 if (!response.ok) {
@@ -135,7 +156,6 @@ class SectionDragDrop {
             }
 
             console.log('Section order updated successfully');
-            
             // Reload the page to reflect new order
             window.location.reload();
         } catch (error) {
