@@ -15,6 +15,7 @@ This workflow documentation is organized into the following sections:
 - **[llm_panel.md](./llm_panel.md)** - LLM Panel module architecture and integration
 - **[endpoints.md](./endpoints.md)** - Complete API endpoint reference
 - **[sections.md](./sections.md)** - Section-based workflow and per-section editing
+- **[section_synchronization.md](./section_synchronization.md)** - Section data synchronization system
 
 ## Core Concepts
 
@@ -86,6 +87,7 @@ app/
 - Per-section content editing and reordering
 - Section-specific LLM processing and format templates
 - Integration with workflow stages and field mapping
+- **Section Synchronization**: Automatic data consistency between planning and individual section management
 
 ## Usage Guidelines
 
@@ -110,6 +112,7 @@ app/
 2. Configure section-specific LLM actions and format templates
 3. Use section elements for facts, ideas, and themes
 4. Test section-based workflow with provided curl examples
+5. **Section Synchronization**: Ensure data consistency between `post_development.section_headings` and `post_section` records
 
 ## Best Practices
 
@@ -196,6 +199,7 @@ For technical issues:
 2. Review the API reference in `endpoints.md`
 3. Consult the LLM panel documentation in `llm_panel.md`
 4. For section-based workflow issues, see `sections.md`
-5. Contact the project maintainers
+5. For section synchronization issues, see `section_synchronization.md`
+6. Contact the project maintainers
 
 Remember: This project does not use logins or registration. Never add authentication-related code.

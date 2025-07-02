@@ -18,6 +18,118 @@ The Blog CMS uses PostgreSQL (or SQLite in dev) for all persistent storage. Belo
 - Posts may reference media (images) and LLM actions
 - Foreign keys are used for referential integrity
 
+## Section Synchronization System
+
+The system uses a dual-field architecture to manage section data with automatic synchronization:
+
+### Dual-Field Architecture
+
+#### 1. post_development.section_headings (Master Field)
+- **Purpose**: Master list of all section headings for a post
+- **Usage**: LLM actions, workflow planning, and overall post structure
+- **Format**: JSON array containing structured section data
+- **Authority**: Primary source of truth for section structure
+
+#### 2. post_section.section_heading (Individual Field)
+- **Purpose**: Individual section heading for UI display and management
+- **Usage**: Green sections module, accordion display, drag-and-drop reordering
+- **Format**: Simple text string for each section
+- **Authority**: Derived from master field, used for UI interactions
+
+### Synchronization Strategy
+
+#### Primary Direction: post_development → post_section
+- **Trigger**: Any update to `post_development.section_headings`
+- **Action**: Automatically sync to individual `post_section` records
+- **Purpose**: Ensure UI sections reflect the master planning data
+
+#### Secondary Direction: post_section → post_development (Optional)
+- **Trigger**: When individual sections are created/updated/deleted
+- **Action**: Update the master list to reflect actual section data
+- **Purpose**: Keep planning data in sync with actual implementation
+
+### Data Format Standards
+
+#### Recommended JSON Format for section_headings
+```json
+[
+  {
+    "order": 1,
+    "heading": "Introduction",
+    "description": "Overview of the topic",
+    "status": "draft"
+  },
+  {
+    "order": 2,
+    "heading": "Main Content",
+    "description": "Core discussion points",
+    "status": "in_progress"
+  },
+  {
+    "order": 3,
+    "heading": "Conclusion",
+    "description": "Summary and takeaways",
+    "status": "complete"
+  }
+]
+```
+
+#### Legacy Format Support
+The system supports multiple formats during transition:
+- **Simple Array**: `["Section 1", "Section 2", "Section 3"]`
+- **Delimited String**: `"Section 1\nSection 2\nSection 3"`
+- **Numbered Format**: `"1. Section 1\n2. Section 2"`
+
+### Database Triggers
+
+The synchronization is implemented using PostgreSQL triggers:
+
+#### Primary Sync Trigger (post_development → post_section)
+```sql
+-- Trigger function for post_development.section_headings changes
+CREATE OR REPLACE FUNCTION sync_section_headings_to_sections()
+RETURNS TRIGGER AS $$
+-- ... trigger implementation ...
+$$ LANGUAGE plpgsql;
+
+-- Trigger on post_development updates
+CREATE TRIGGER trigger_sync_section_headings
+    AFTER UPDATE OF section_headings ON post_development
+    FOR EACH ROW
+    EXECUTE FUNCTION sync_section_headings_to_sections();
+```
+
+#### Secondary Sync Trigger (post_section → post_development) - Optional
+```sql
+-- Trigger function for post_section changes
+CREATE OR REPLACE FUNCTION sync_sections_to_section_headings()
+RETURNS TRIGGER AS $$
+-- ... trigger implementation ...
+$$ LANGUAGE plpgsql;
+
+-- Triggers for post_section changes
+CREATE TRIGGER trigger_sync_sections_to_headings_insert
+    AFTER INSERT ON post_section
+    FOR EACH ROW
+    EXECUTE FUNCTION sync_sections_to_section_headings();
+```
+
+### Manual Synchronization API
+
+The system provides a manual sync endpoint for troubleshooting and bulk operations:
+
+```http
+POST /api/workflow/posts/{post_id}/sync-sections
+```
+
+**Parameters**:
+- `direction` (string, optional): Sync direction
+  - `"to_sections"`: Sync from post_development to post_section only
+  - `"to_development"`: Sync from post_section to post_development only
+  - `"both"`: Sync both directions (default)
+
+For complete documentation, see [Section Synchronization System](../reference/workflow/section_synchronization.md).
+
 ## Workflow Table
 - **workflow**: Tracks the current stage and status for each post's development
   - `id`: Primary key
@@ -34,6 +146,7 @@ The Blog CMS uses PostgreSQL (or SQLite in dev) for all persistent storage. Belo
 ## See Also
 - [Direct SQL Management](sql_management.md)
 - [Database Models](README.md)
+- [Section Synchronization System](../reference/workflow/section_synchronization.md)
 
 ## Workflow Stages (Normalized)
 

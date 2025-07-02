@@ -1,50 +1,68 @@
-# Section-Based Workflow Documentation
+# Section Synchronization System
 
 ## Overview
 
-The section-based workflow system enables modular content creation by breaking blog posts into discrete, manageable sections. Each section can be independently edited, reordered, and processed through LLM actions. This approach supports content repurposing across different platforms and formats while maintaining a structured workflow.
+The Section Synchronization System maintains data consistency between two complementary fields that manage section data in the blog workflow system:
 
-### Key Concepts
+- **`post_development.section_headings`** (Master Field): JSON array containing the complete list of section data
+- **`post_section.section_heading`** (Individual Field): Simple text strings for each individual section
 
-- **Sections**: Discrete content blocks within a blog post, each with a title, content, and metadata
-- **Section Elements**: Individual facts, ideas, or themes associated with specific sections
-- **Per-Section Editing**: Independent editing and LLM processing of individual sections
-- **Section Workflow**: Integration with the main workflow system for stage/substage/step management
-- **Section Synchronization**: Automatic data consistency between planning and individual section management
+This dual-field architecture supports both LLM workflow planning (via the master field) and UI section management (via individual fields) while ensuring automatic data synchronization.
 
-## Section Data Architecture
+## Architecture
 
-### Dual-Field System
+### Dual-Field Design
 
-The system uses two complementary fields to manage section data:
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    post_development                         │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ section_headings: JSON array                        │   │
+│  │ [                                                   │   │
+│  │   {"order": 1, "heading": "Intro", ...},           │   │
+│  │   {"order": 2, "heading": "Main", ...},            │   │
+│  │   {"order": 3, "heading": "Conclusion", ...}       │   │
+│  │ ]                                                   │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              │ Automatic Sync
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    post_section                             │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+│  │ id: 1       │  │ id: 2       │  │ id: 3       │        │
+│  │ section_    │  │ section_    │  │ section_    │        │
+│  │ heading:    │  │ heading:    │  │ heading:    │        │
+│  │ "Intro"     │  │ "Main"      │  │ "Conclusion"│        │
+│  │ section_    │  │ section_    │  │ section_    │        │
+│  │ order: 1    │  │ order: 2    │  │ order: 3    │        │
+│  └─────────────┘  └─────────────┘  └─────────────┘        │
+└─────────────────────────────────────────────────────────────┘
+```
 
-#### 1. post_development.section_headings (Master Field)
+### Field Purposes
+
+#### post_development.section_headings (Master Field)
 - **Purpose**: Master list of all section headings for a post
 - **Usage**: LLM actions, workflow planning, and overall post structure
 - **Format**: JSON array containing structured section data
 - **Authority**: Primary source of truth for section structure
+- **Access**: Used in workflow dropdowns and LLM action inputs/outputs
 
-#### 2. post_section.section_heading (Individual Field)
+#### post_section.section_heading (Individual Field)
 - **Purpose**: Individual section heading for UI display and management
 - **Usage**: Green sections module, accordion display, drag-and-drop reordering
 - **Format**: Simple text string for each section
 - **Authority**: Derived from master field, used for UI interactions
+- **Access**: Used in section management UI and individual section editing
 
-### Data Synchronization Strategy
+## Data Formats
 
-#### Primary Direction: post_development → post_section
-- **Trigger**: Any update to `post_development.section_headings`
-- **Action**: Automatically sync to individual `post_section` records
-- **Purpose**: Ensure UI sections reflect the master planning data
+### Recommended JSON Format
 
-#### Secondary Direction: post_section → post_development (Optional)
-- **Trigger**: When individual sections are created/updated/deleted
-- **Action**: Update the master list to reflect actual section data
-- **Purpose**: Keep planning data in sync with actual implementation
+The `section_headings` field uses a structured JSON array format:
 
-### Data Format Standards
-
-#### Recommended JSON Format for section_headings
 ```json
 [
   {
@@ -68,107 +86,57 @@ The system uses two complementary fields to manage section data:
 ]
 ```
 
-#### Legacy Format Support
+### Legacy Format Support
+
 The system supports multiple formats during transition:
-- **Simple Array**: `["Section 1", "Section 2", "Section 3"]`
-- **Delimited String**: `"Section 1\nSection 2\nSection 3"`
-- **Numbered Format**: `"1. Section 1\n2. Section 2"`
 
-## Database Schema
-
-### Table: post_section
-
-The `post_section` table stores section metadata and content for each blog post.
-
-| Column              | Type         | Description                                      |
-|---------------------|--------------|--------------------------------------------------|
-| id                  | SERIAL (PK)  | Unique section identifier                        |
-| post_id             | INTEGER      | Foreign key to post(id)                          |
-| section_order       | INTEGER      | Order within the post (1-based)                  |
-| section_heading     | TEXT         | Section heading/title (synced from master)       |
-| section_description | TEXT         | Section description or summary                   |
-| ideas_to_include    | TEXT         | Ideas to include in this section                 |
-| facts_to_include    | TEXT         | Facts to include in this section                 |
-| first_draft         | TEXT         | Initial draft content                            |
-| uk_british          | TEXT         | UK/British version of content                    |
-| highlighting        | TEXT         | Key points to highlight                          |
-| image_concepts      | TEXT         | Image concepts for this section                  |
-| image_prompts       | TEXT         | Image generation prompts                         |
-| generation          | TEXT         | Content generation notes                         |
-| optimization        | TEXT         | SEO optimization notes                           |
-| watermarking        | TEXT         | Image watermarking settings                      |
-| image_meta_descriptions | TEXT     | Image metadata descriptions                      |
-| image_captions      | TEXT         | Image captions                                   |
-| image_prompt_example_id | INTEGER  | Reference to image prompt example                |
-| generated_image_url | VARCHAR(512) | URL of generated image                           |
-| image_generation_metadata | JSONB   | Metadata from image generation                   |
-| image_id            | INTEGER      | Reference to image(id)                           |
-| status              | TEXT         | Section status (draft, in_progress, complete)    |
-
-**Indexes:**
-- `idx_post_section_post_order`: (post_id, section_order) - Unique ordering
-- `idx_post_section_status`: status - Status filtering
-- `idx_post_section_created`: created_at - Chronological queries
-
-**Constraints:**
-- `UNIQUE(post_id, section_order)` - Ensures no duplicate positions within a post
-- `FOREIGN KEY(post_id) REFERENCES post(id)` - Referential integrity
-
-### Table: post_development
-
-The `post_development` table includes the master section headings field:
-
-| Column           | Type         | Description                                      |
-|------------------|--------------|--------------------------------------------------|
-| id               | SERIAL (PK)  | Unique identifier                                |
-| post_id          | INTEGER      | Foreign key to post(id)                          |
-| section_headings | TEXT         | **MASTER FIELD**: JSON array of section data     |
-| ...              | ...          | Other development fields                         |
-
-**Note**: The `section_headings` field is the authoritative source for section structure and is used by LLM actions and workflow planning.
-
-### Table: post_section_elements
-
-The `post_section_elements` table stores individual elements (facts, ideas, themes) associated with specific sections.
-
-| Column        | Type         | Description                                      |
-|---------------|--------------|--------------------------------------------------|
-| id            | SERIAL (PK)  | Unique element identifier                        |
-| post_id       | INTEGER      | Foreign key to post(id)                          |
-| section_id    | INTEGER      | Foreign key to post_section(id)                  |
-| element_type  | VARCHAR(50)  | Type of element ('fact', 'idea', 'theme')       |
-| element_text  | TEXT         | The actual element content                       |
-| element_order | INTEGER      | Order within the section (1-based)               |
-| created_at    | TIMESTAMP    | Creation timestamp                               |
-| updated_at    | TIMESTAMP    | Last update timestamp                            |
-
-**Indexes:**
-- `idx_post_section_elements_post_id`: post_id - Post filtering
-- `idx_post_section_elements_section_id`: section_id - Section filtering
-- `idx_post_section_elements_type`: element_type - Type filtering
-- `idx_post_section_elements_order`: (section_id, element_order) - Ordering
-
-**Constraints:**
-- `FOREIGN KEY(section_id) REFERENCES post_section(id)` - Referential integrity
-- `UNIQUE(section_id, element_order)` - Ensures no duplicate positions within a section
-
-### Relationships
-
-```
-post (1) ←→ (1) post_development (1) ←→ (many) post_section (1) ←→ (many) post_section_elements
+#### Simple Array Format
+```json
+["Section 1", "Section 2", "Section 3"]
 ```
 
-- Each post has one development record with the master section list
-- Each post can have multiple sections (synced from master list)
-- Each section can have multiple elements (facts, ideas, themes)
-- Sections are ordered by section_order within the post
-- Elements are ordered by element_order within the section
+#### Delimited String Format
+```
+"Section 1\nSection 2\nSection 3"
+```
 
-## Synchronization Implementation
+#### Numbered Format
+```
+"1. Section 1\n2. Section 2\n3. Section 3"
+```
+
+## Synchronization Strategy
+
+### Primary Direction: post_development → post_section
+
+**Trigger**: Any update to `post_development.section_headings`
+**Action**: Automatically sync to individual `post_section` records
+**Purpose**: Ensure UI sections reflect the master planning data
+
+**Process**:
+1. Parse JSON array from `section_headings`
+2. Create/update `post_section` records for each item
+3. Remove sections no longer in the master list
+4. Maintain proper ordering
+
+### Secondary Direction: post_section → post_development (Optional)
+
+**Trigger**: When individual sections are created/updated/deleted
+**Action**: Update the master list to reflect actual section data
+**Purpose**: Keep planning data in sync with actual implementation
+
+**Process**:
+1. Query all `post_section` records for the post
+2. Build JSON array from section data
+3. Update `post_development.section_headings`
+4. Maintain data consistency
+
+## Implementation
 
 ### Database Triggers
 
-#### Primary Sync Trigger (post_development → post_section)
+#### Primary Sync Trigger
+
 ```sql
 -- Trigger function for post_development.section_headings changes
 CREATE OR REPLACE FUNCTION sync_section_headings_to_sections()
@@ -261,7 +229,8 @@ CREATE TRIGGER trigger_sync_section_headings
     EXECUTE FUNCTION sync_section_headings_to_sections();
 ```
 
-#### Secondary Sync Trigger (post_section → post_development) - Optional
+#### Secondary Sync Trigger (Optional)
+
 ```sql
 -- Trigger function for post_section changes
 CREATE OR REPLACE FUNCTION sync_sections_to_section_headings()
@@ -308,7 +277,7 @@ CREATE TRIGGER trigger_sync_sections_to_headings_update
     FOR EACH ROW
     EXECUTE FUNCTION sync_sections_to_section_headings();
 
-CREATE TRIGGER trigger_sync_sections_to_headings_delete
+CREATE TRIGGER trigger_sections_to_headings_delete
     AFTER DELETE ON post_section
     FOR EACH ROW
     EXECUTE FUNCTION sync_sections_to_section_headings();
@@ -317,6 +286,7 @@ CREATE TRIGGER trigger_sync_sections_to_headings_delete
 ### Application-Level Synchronization
 
 #### Manual Sync API Endpoint
+
 ```python
 @bp.route('/posts/<int:post_id>/sync-sections', methods=['POST'])
 def sync_sections(post_id):
@@ -348,6 +318,7 @@ def sync_sections(post_id):
 ```
 
 #### Synchronization Functions
+
 ```python
 def sync_section_headings_to_sections(post_id: int, section_headings_json: str):
     """
@@ -429,132 +400,38 @@ def sync_sections_to_section_headings(post_id: int):
 
 ## API Endpoints
 
-### Section Management
+### Manual Synchronization
 
-#### Get All Sections for a Post
-```http
-GET /api/workflow/posts/{post_id}/sections
-```
-
-**Example:**
-```bash
-curl -s "http://localhost:5000/api/workflow/posts/22/sections" | python3 -m json.tool
-```
-
-**Response:**
-```json
-{
-  "sections": [
-    {
-      "id": 1,
-      "post_id": 22,
-      "section_order": 1,
-      "section_heading": "Introduction",
-      "section_description": "Overview of the topic",
-      "status": "draft",
-      "ideas_to_include": "Key concepts to cover",
-      "facts_to_include": "Important facts to mention",
-      "first_draft": "Initial content...",
-      "created_at": "2024-01-15T10:30:00Z",
-      "updated_at": "2024-01-15T10:30:00Z"
-    }
-  ]
-}
-```
-
-#### Create a New Section
-```http
-POST /api/workflow/posts/{post_id}/sections
-```
-
-**Example:**
-```bash
-curl -s -X POST "http://localhost:5000/api/workflow/posts/22/sections" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "section_heading": "New Section",
-    "section_description": "Section description",
-    "section_order": 2,
-    "status": "draft"
-  }' | python3 -m json.tool
-```
-
-#### Get a Specific Section
-```http
-GET /api/workflow/posts/{post_id}/sections/{section_id}
-```
-
-**Example:**
-```bash
-curl -s "http://localhost:5000/api/workflow/posts/22/sections/1" | python3 -m json.tool
-```
-
-#### Update a Section
-```http
-PUT /api/workflow/posts/{post_id}/sections/{section_id}
-```
-
-**Example:**
-```bash
-curl -s -X PUT "http://localhost:5000/api/workflow/posts/22/sections/1" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "section_heading": "Updated Section Title",
-    "section_description": "Updated description",
-    "status": "in_progress"
-  }' | python3 -m json.tool
-```
-
-#### Delete a Section
-```http
-DELETE /api/workflow/posts/{post_id}/sections/{section_id}
-```
-
-**Example:**
-```bash
-curl -s -X DELETE "http://localhost:5000/api/workflow/posts/22/sections/1" | python3 -m json.tool
-```
-
-#### Reorder Sections
-```http
-PUT /api/workflow/posts/{post_id}/sections/reorder
-```
-
-**Example:**
-```bash
-curl -s -X PUT "http://localhost:5000/api/workflow/posts/22/sections/reorder" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "section_ids": [3, 1, 4, 2]
-  }' | python3 -m json.tool
-```
-
-### Section Synchronization
-
-#### Manual Sync
+#### Sync Sections
 ```http
 POST /api/workflow/posts/{post_id}/sync-sections
 ```
 
-**Example:**
+**Parameters**:
+- `direction` (string, optional): Sync direction
+  - `"to_sections"`: Sync from post_development to post_section only
+  - `"to_development"`: Sync from post_section to post_development only
+  - `"both"`: Sync both directions (default)
+
+**Example Requests**:
 ```bash
 # Sync both directions
-curl -s -X POST "http://localhost:5000/api/workflow/posts/22/sync-sections" \
+curl -X POST "http://localhost:5000/api/workflow/posts/22/sync-sections" \
   -H "Content-Type: application/json" \
-  -d '{"direction": "both"}' | python3 -m json.tool
+  -d '{"direction": "both"}'
 
 # Sync only to sections
-curl -s -X POST "http://localhost:5000/api/workflow/posts/22/sync-sections" \
+curl -X POST "http://localhost:5000/api/workflow/posts/22/sync-sections" \
   -H "Content-Type: application/json" \
-  -d '{"direction": "to_sections"}' | python3 -m json.tool
+  -d '{"direction": "to_sections"}'
 
 # Sync only to development
-curl -s -X POST "http://localhost:5000/api/workflow/posts/22/sync-sections" \
+curl -X POST "http://localhost:5000/api/workflow/posts/22/sync-sections" \
   -H "Content-Type: application/json" \
-  -d '{"direction": "to_development"}' | python3 -m json.tool
+  -d '{"direction": "to_development"}'
 ```
 
-**Response:**
+**Response**:
 ```json
 {
   "status": "success",
@@ -563,277 +440,11 @@ curl -s -X POST "http://localhost:5000/api/workflow/posts/22/sync-sections" \
 }
 ```
 
-### Section Elements Management
-
-#### Get Elements for a Section
-```http
-GET /api/workflow/posts/{post_id}/sections/{section_id}/elements
-```
-
-**Example:**
-```bash
-curl -s "http://localhost:5000/api/workflow/posts/22/sections/1/elements" | python3 -m json.tool
-```
-
-**Response:**
+**Error Response**:
 ```json
 {
-  "elements": [
-    {
-      "id": 1,
-      "section_id": 1,
-      "element_type": "fact",
-      "element_text": "Key fact about the topic",
-      "element_order": 1,
-      "created_at": "2024-01-15T10:30:00Z"
-    },
-    {
-      "id": 2,
-      "section_id": 1,
-      "element_type": "idea",
-      "element_text": "Main idea to explore",
-      "element_order": 2,
-      "created_at": "2024-01-15T10:30:00Z"
-    }
-  ]
-}
-```
-
-#### Add Element to Section
-```http
-POST /api/workflow/posts/{post_id}/sections/{section_id}/elements
-```
-
-**Example:**
-```bash
-curl -s -X POST "http://localhost:5000/api/workflow/posts/22/sections/1/elements" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "element_type": "fact",
-    "element_text": "New fact to add",
-    "element_order": 3
-  }' | python3 -m json.tool
-```
-
-#### Update Section Element
-```http
-PUT /api/workflow/posts/{post_id}/sections/{section_id}/elements/{element_id}
-```
-
-**Example:**
-```bash
-curl -s -X PUT "http://localhost:5000/api/workflow/posts/22/sections/1/elements/1" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "element_text": "Updated fact content"
-  }' | python3 -m json.tool
-```
-
-#### Delete Section Element
-```http
-DELETE /api/workflow/posts/{post_id}/sections/{section_id}/elements/{element_id}
-```
-
-**Example:**
-```bash
-curl -s -X DELETE "http://localhost:5000/api/workflow/posts/22/sections/1/elements/1" | python3 -m json.tool
-```
-
-### Section Fields (for Workflow Integration)
-
-#### Get Section Fields
-```http
-GET /api/workflow/posts/{post_id}/sections/{section_id}/fields
-```
-
-**Example:**
-```bash
-curl -s "http://localhost:5000/api/workflow/posts/22/sections/1/fields" | python3 -m json.tool
-```
-
-**Response:**
-```json
-{
-  "fields": {
-    "section_heading": "Introduction",
-    "section_description": "Overview of the topic",
-    "section_content": "This section introduces...",
-    "section_elements": [
-      {
-        "type": "fact",
-        "text": "Key fact about the topic"
-      },
-      {
-        "type": "idea", 
-        "text": "Main idea to explore"
-      }
-    ]
-  }
-}
-```
-
-## UI Integration
-
-### Writing Stage Layout
-
-The writing stage uses a two-column layout with the LLM panel on the left and sections panel on the right:
-
-```html
-<!-- In app/templates/workflow/index.html -->
-{% elif current_stage == 'writing' %}
-<div class="px-6 -mt-20">
-  <div class="flex gap-6" style="min-height: 400px;">
-    <!-- LLM Actions Panel -->
-    <div id="workflow-llm-actions" style="background-color: #2D0A50; width: 50%;">
-      {% include 'workflow/_modular_llm_panels.html' %}
-    </div>
-    <!-- Sections Panel -->
-    <div id="workflow-sections" style="background-color: #013828; width: 50%;">
-      <!-- Sections content loaded via JavaScript -->
-    </div>
-  </div>
-</div>
-```
-
-### JavaScript Module: template_view.js
-
-The sections panel is rendered using the `template_view.js` module:
-
-```javascript
-// app/static/js/workflow/template_view.js
-export function renderStructure(data) {
-  const { post, sections } = data;
-  
-  if (!sections || sections.length === 0) {
-    return '<div class="p-4 text-gray-400">No sections found. Create your first section to get started.</div>';
-  }
-  
-  return sections.map(section => `
-    <div class="section-item mb-4 p-4 bg-gray-800 rounded-lg">
-      <h3 class="text-lg font-semibold text-white mb-2">${section.section_heading}</h3>
-      <p class="text-gray-300 mb-2">${section.section_description || ''}</p>
-      <div class="text-sm text-gray-400">
-        <strong>Position:</strong> ${section.section_order} | 
-        <strong>Status:</strong> ${section.status || 'draft'}
-      </div>
-      <div class="mt-2 text-gray-300">
-        ${section.first_draft ? section.first_draft.substring(0, 200) + '...' : 'No content yet'}
-      </div>
-    </div>
-  `).join('');
-}
-```
-
-### Section Panel Initialization
-
-```javascript
-// In workflow template
-<script type="module">
-  import sectionPanel from '/static/js/workflow/template_view.js';
-  
-  document.addEventListener('DOMContentLoaded', async () => {
-    const postId = {{ post.id }};
-    const panel = document.getElementById('workflow-sections');
-    
-    try {
-      // Fetch sections data
-      const response = await fetch(`/api/workflow/posts/${postId}/sections`);
-      const data = await response.json();
-      
-      // Render sections
-      const structure = { 
-        post: { id: postId }, 
-        sections: data.sections || [] 
-      };
-      panel.innerHTML = sectionPanel.renderStructure(structure);
-    } catch (error) {
-      console.error('Error loading sections:', error);
-      panel.innerHTML = '<div class="p-4 text-red-400">Error loading sections</div>';
-    }
-  });
-</script>
-```
-
-## Workflow Integration
-
-### Stage/Substage/Step Mapping
-
-Sections are primarily used in the **Writing** stage, specifically:
-
-- **Stage**: Writing
-- **Substage**: Content  
-- **Steps**: 
-  - Create Sections
-  - Edit Section Content
-  - Review Sections
-  - Allocate Facts to Sections
-
-### LLM Integration
-
-Sections can be processed through LLM actions in several ways:
-
-#### 1. Section-Specific LLM Actions
-
-```json
-{
-  "action_name": "Expand Section",
-  "input_field": "section_content",
-  "output_field": "section_content",
-  "prompt_template": "Expand the following section content with more detail and examples: [data:section_content]"
-}
-```
-
-#### 2. Section Allocation Actions
-
-```json
-{
-  "action_name": "Allocate Facts to Sections",
-  "input_field": "research_facts",
-  "output_field": "section_elements",
-  "prompt_template": "Given these facts: [data:research_facts] and these sections: [data:sections], allocate each fact to the most appropriate section."
-}
-```
-
-#### 3. Section Generation Actions
-
-```json
-{
-  "action_name": "Generate Section Content",
-  "input_field": "section_outline",
-  "output_field": "section_content", 
-  "prompt_template": "Based on this outline: [data:section_outline], write detailed content for the section."
-}
-```
-
-### Format Templates for Sections
-
-#### Input Format Template
-```json
-{
-  "name": "Section Input Format",
-  "description": "Format for section data input to LLM actions",
-  "fields": [
-    { "name": "section_heading", "type": "string", "required": true, "description": "Section title" },
-    { "name": "section_content", "type": "string", "required": true, "description": "Current section content" },
-    { "name": "section_elements", "type": "array", "required": false, "description": "Associated facts/ideas" }
-  ],
-  "format_type": "input",
-  "llm_instructions": "The input data contains section information including title, content, and associated elements."
-}
-```
-
-#### Output Format Template
-```json
-{
-  "name": "Section Output Format",
-  "description": "Format for section data output from LLM actions",
-  "fields": [
-    { "name": "section_heading", "type": "string", "required": true, "description": "Updated section title" },
-    { "name": "section_content", "type": "string", "required": true, "description": "Generated section content" },
-    { "name": "section_elements", "type": "array", "required": false, "description": "Generated facts/ideas for the section" }
-  ],
-  "format_type": "output",
-  "llm_instructions": "Provide updated section information including title, content, and associated elements."
+  "status": "error",
+  "message": "Sync failed: Invalid JSON in section_headings"
 }
 ```
 
@@ -900,9 +511,10 @@ GROUP BY pd.post_id, pd.section_headings
 HAVING COUNT(ps.id) > 0 OR pd.section_headings IS NOT NULL;
 ```
 
-### Testing Strategy
+## Testing Strategy
 
-#### Unit Tests
+### Unit Tests
+
 ```python
 def test_sync_section_headings_to_sections():
     """Test synchronization from post_development to post_section"""
@@ -938,7 +550,8 @@ def test_sync_sections_to_section_headings():
     assert section_headings[0]["heading"] == "Test Section 1"
 ```
 
-#### Integration Tests
+### Integration Tests
+
 ```python
 def test_sync_api_endpoint():
     """Test the manual sync API endpoint"""
@@ -1100,4 +713,36 @@ def sync_section_headings_to_sections(post_id: int, section_headings_json: str):
 3. **Test sync with large datasets**
 4. **Test sync error conditions**
 
-This comprehensive documentation provides a complete guide to the section synchronization system, including implementation details, API endpoints, troubleshooting, and best practices. 
+## Integration with Workflow System
+
+### LLM Actions Integration
+The `post_development.section_headings` field is available as an input/output option in LLM actions, allowing for:
+- Section generation from prompts
+- Section restructuring and reordering
+- Section content enhancement
+- Section allocation of facts and ideas
+
+### Workflow Field Mapping
+The field is mapped in the workflow system under the "Outlining Stage" and can be used in:
+- Input field dropdowns for LLM actions
+- Output field dropdowns for LLM results
+- Workflow step configuration
+- Field mapping settings
+
+### UI Integration
+The `post_section.section_heading` fields are used in:
+- Green sections module display
+- Section accordion functionality
+- Drag-and-drop reordering
+- Individual section editing
+
+## References
+
+- [Section-Based Workflow Documentation](sections.md)
+- [Database Schema Documentation](../database/schema.md)
+- [Workflow System Overview](README.md)
+- [API Endpoints Reference](endpoints.md)
+
+---
+
+This documentation provides a complete guide to the section synchronization system, ensuring data consistency between planning and implementation phases of the blog workflow. 
