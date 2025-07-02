@@ -14,6 +14,7 @@ This workflow documentation is organized into the following sections:
 - **[testing.md](./testing.md)** - Testing procedures and step naming conventions
 - **[llm_panel.md](./llm_panel.md)** - LLM Panel module architecture and integration
 - **[endpoints.md](./endpoints.md)** - Complete API endpoint reference
+- **[sections.md](./sections.md)** - Section-based workflow and per-section editing
 
 ## Core Concepts
 
@@ -27,6 +28,7 @@ This workflow documentation is organized into the following sections:
 - **LLM Panel**: Universal modular panel for AI-assisted content generation
 - **Field Selector**: Dynamic field selection based on workflow context
 - **API Layer**: RESTful endpoints for workflow operations
+- **Section System**: Modular content management with per-section editing and LLM processing
 
 ## Architecture
 
@@ -80,6 +82,11 @@ app/
 - Automatic field population based on context
 - Field validation and persistence
 
+### 4. Section Management
+- Per-section content editing and reordering
+- Section-specific LLM processing and format templates
+- Integration with workflow stages and field mapping
+
 ## Usage Guidelines
 
 ### 1. Adding New Stages
@@ -97,6 +104,12 @@ app/
 1. Configure LLM actions in the database
 2. Map actions to specific stages/substages
 3. Use the universal modular panel for consistency
+
+### 4. Section Integration
+1. Create and manage sections through the writing stage
+2. Configure section-specific LLM actions and format templates
+3. Use section elements for facts, ideas, and themes
+4. Test section-based workflow with provided curl examples
 
 ## Best Practices
 
@@ -182,6 +195,7 @@ For technical issues:
 1. Check the documentation in `/docs/reference/workflow/`
 2. Review the API reference in `endpoints.md`
 3. Consult the LLM panel documentation in `llm_panel.md`
-4. Contact the project maintainers
+4. For section-based workflow issues, see `sections.md`
+5. Contact the project maintainers
 
 Remember: This project does not use logins or registration. Never add authentication-related code.
