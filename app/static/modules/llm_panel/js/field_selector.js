@@ -71,15 +71,12 @@ class FieldSelector {
     async initialize() {
         console.log('[DEBUG] FieldSelector.initialize() called');
         console.log('[DEBUG] isInitializing:', this.isInitializing, 'initialized:', this.initialized);
-        
         if (this.isInitializing || this.initialized) {
             console.log('[DEBUG] Already initializing or initialized, returning');
             return;
         }
-        
         this.isInitializing = true;
         console.log('[DEBUG] Starting initialization...');
-        
         try {
             // Fetch current field values
             console.log('[DEBUG] Fetching field values for post:', this.postId);
@@ -90,7 +87,6 @@ class FieldSelector {
             const data = await response.json();
             this.fieldValues = data;
             console.log('[DEBUG] Field values loaded:', Object.keys(this.fieldValues));
-            
             // Get all available fields with their groupings
             console.log('[DEBUG] Fetching available fields...');
             const fieldsResponse = await fetch('/api/workflow/fields/available');
@@ -99,7 +95,6 @@ class FieldSelector {
             }
             const fieldsData = await fieldsResponse.json();
             console.log('[DEBUG] Available fields loaded:', fieldsData.fields.length, 'fields');
-            
             // Process fields and groups
             this.fields = {};
             fieldsData.fields.forEach(field => {
@@ -121,24 +116,21 @@ class FieldSelector {
                     mappings: field.mappings
                 };
             });
-            
             // Store groups for organizing dropdowns
             this.groups = fieldsData.groups;
             console.log('[DEBUG] Groups loaded:', this.groups.length, 'groups');
-            
             // Load saved field mappings
             console.log('[DEBUG] Loading saved field mappings...');
             await this.loadFieldMappings();
-            
             // Initialize field selectors
             console.log('[DEBUG] Initializing field selectors...');
             this.initializeFieldSelectors();
-            
             // Mark initialization as complete
             this.isInitializing = false;
             this.initialized = true;
-            
             console.log('[DEBUG] Field selector initialization complete');
+            // Dispatch custom event to signal ready
+            document.dispatchEvent(new CustomEvent('fieldSelectorReady'));
         } catch (error) {
             console.error('Error fetching field values:', error);
             this.isInitializing = false;
@@ -205,130 +197,83 @@ class FieldSelector {
 
     initializeFieldSelectors() {
         console.log('[DEBUG] initializeFieldSelectors() called');
-        
         // Get all field selectors
         const selectors = document.querySelectorAll('.field-selector, #input_field_select, #output_field_select');
         console.log('[DEBUG] Found', selectors.length, 'field selectors');
-        
-        selectors.forEach((selector, index) => {
-            console.log(`[DEBUG] Processing selector ${index}:`, selector.id || selector.className);
-            
-            if (!selector) {
-                console.warn('Field selector element not found');
-                return;
+        selectors.forEach((selector) => {
+            this.initializeSingleFieldSelector(selector);
+        });
+        // Listen for dynamic field selector initialization
+        document.addEventListener('fieldSelectorInit', (event) => {
+            console.log('[DEBUG] fieldSelectorInit event received:', event.detail);
+            const { element } = event.detail;
+            if (element) {
+                this.initializeSingleFieldSelector(element);
             }
+        });
+    }
 
-            // Clear existing options
-            selector.innerHTML = '<option value="">Select field...</option>';
-            
-            // Get section (inputs/outputs) and target field
-            const section = selector.dataset.section;
-            const target = selector.dataset.target;
-            const currentSubstage = selector.dataset.currentSubstage;
-            
-            console.log(`[DEBUG] Selector ${index} data:`, { section, target, currentSubstage });
-            
-            // Group fields by stage/substage/step
-            let lastGroup = null;
-            let optgroup = null;
-            
-            console.log(`[DEBUG] Adding ${Object.keys(this.fields).length} fields to selector ${index}`);
-            
-            // Add all fields, organized by their primary location
-            Object.values(this.fields)
-                .sort((a, b) => {
-                    // Sort by stage order, substage order, step order, then field order
-                    if (a.stage_order !== b.stage_order) return a.stage_order - b.stage_order;
-                    if (a.substage_order !== b.substage_order) return a.substage_order - b.substage_order;
-                    if (a.step_order !== b.step_order) return a.step_order - b.step_order;
-                    return a.order - b.order;
-                })
-                .forEach(field => {
-                    // Create new optgroup if needed
-                    const groupLabel = `${field.stage}: ${field.substage} - ${field.step}`;
-                    if (groupLabel !== lastGroup) {
-                        optgroup = document.createElement('optgroup');
-                        optgroup.label = groupLabel;
-                        selector.appendChild(optgroup);
-                        lastGroup = groupLabel;
-                    }
-                    
-                    // Add option to current group
-                    const option = document.createElement('option');
-                    option.value = field.name;
-                    option.textContent = field.name;
-                    optgroup.appendChild(option);
-                });
-            
-            console.log(`[DEBUG] Selector ${index} now has ${selector.options.length} options`);
-            
-            // Set initial value based on saved mappings
-            if (section === 'outputs' && this.savedOutputFieldSelection) {
-                // For output fields, prioritize saved output field selection
-                console.log(`[DEBUG] Using saved output field selection for selector ${index}:`, this.savedOutputFieldSelection);
-                selector.value = this.savedOutputFieldSelection.field;
-                
-                // Update target element if it exists
-                if (target) {
-                    const targetElement = document.getElementById(target);
-                    if (targetElement) {
-                        targetElement.dataset.dbField = this.savedOutputFieldSelection.field;
-                        if (this.fieldValues[this.savedOutputFieldSelection.field]) {
-                            targetElement.value = this.fieldValues[this.savedOutputFieldSelection.field];
-                        }
-                    }
+    initializeSingleFieldSelector(selector) {
+        if (!selector) return;
+        // Clear existing options
+        selector.innerHTML = '<option value="">Select field...</option>';
+        // Get section (inputs/outputs) and target field
+        const section = selector.dataset.section;
+        const target = selector.dataset.target;
+        // Group fields by stage/substage/step
+        let lastGroup = null;
+        let optgroup = null;
+        // Add all fields, organized by their primary location
+        Object.values(this.fields)
+            .sort((a, b) => {
+                if (a.stage_order !== b.stage_order) return a.stage_order - b.stage_order;
+                if (a.substage_order !== b.substage_order) return a.substage_order - b.substage_order;
+                if (a.step_order !== b.step_order) return a.step_order - b.step_order;
+                return a.order - b.order;
+            })
+            .forEach(field => {
+                const groupLabel = `${field.stage}: ${field.substage} - ${field.step}`;
+                if (groupLabel !== lastGroup) {
+                    optgroup = document.createElement('optgroup');
+                    optgroup.label = groupLabel;
+                    selector.appendChild(optgroup);
+                    lastGroup = groupLabel;
                 }
-            }
-            else if (this.savedMappings && this.savedMappings.length > 0) {
-                console.log(`[DEBUG] Checking saved mappings for selector ${index}:`, this.savedMappings);
-                
-                // Try to find a mapping that matches this selector's target
-                let savedMapping = null;
-                
-                // First, try to match by target element's current db_field
-                if (target) {
-                    const targetElement = document.getElementById(target);
-                    if (targetElement && targetElement.dataset.dbField) {
-                        savedMapping = this.savedMappings.find(m => m.field_name === targetElement.dataset.dbField);
-                        console.log(`[DEBUG] Found mapping by target db_field:`, savedMapping);
-                    }
-                }
-                
-                // If no match found, try to match by selector position (for field mapping panel)
-                if (!savedMapping) {
-                    const selectorIndex = Array.from(selectors).indexOf(selector);
-                    savedMapping = this.savedMappings.find(m => m.order_index === selectorIndex);
-                    console.log(`[DEBUG] Found mapping by selector index ${selectorIndex}:`, savedMapping);
-                }
-                
-                if (savedMapping) {
-                    selector.value = savedMapping.field_name;
-                    console.log(`[DEBUG] Set selector ${index} for target "${target}" to field: ${savedMapping.field_name}`);
-                    
-                    // Update target element if it exists
-                    if (target) {
-                        const targetElement = document.getElementById(target);
-                        if (targetElement) {
-                            targetElement.dataset.dbField = savedMapping.field_name;
-                            if (this.fieldValues[savedMapping.field_name]) {
-                                targetElement.value = this.fieldValues[savedMapping.field_name];
-                            }
-                        }
-                    }
-                }
-            }
-            // Fallback to target element's dataset if no saved mapping
-            else if (target) {
+                const option = document.createElement('option');
+                option.value = field.name;
+                option.textContent = field.name;
+                optgroup.appendChild(option);
+            });
+        // Set initial value based on saved mappings
+        let selectedField = null;
+        if (section === 'outputs' && this.savedOutputFieldSelection) {
+            selectedField = this.savedOutputFieldSelection.field;
+        } else if (this.savedMappings && this.savedMappings.length > 0) {
+            let savedMapping = null;
+            if (target) {
                 const targetElement = document.getElementById(target);
                 if (targetElement && targetElement.dataset.dbField) {
-                    selector.value = targetElement.dataset.dbField;
-                    console.log(`[DEBUG] Set selector ${index} to fallback value: ${targetElement.dataset.dbField}`);
+                    savedMapping = this.savedMappings.find(m => m.field_name === targetElement.dataset.dbField);
                 }
             }
-            
-            // Add change event listener
-            this.addFieldSelectorEventListener(selector);
-        });
+            if (!savedMapping) {
+                const allSelectors = document.querySelectorAll('.field-selector, #input_field_select, #output_field_select');
+                const selectorIndex = Array.from(allSelectors).indexOf(selector);
+                savedMapping = this.savedMappings.find(m => m.order_index === selectorIndex);
+            }
+            if (savedMapping) {
+                selectedField = savedMapping.field_name;
+            }
+        } else if (target) {
+            const targetElement = document.getElementById(target);
+            if (targetElement && targetElement.dataset.dbField) {
+                selectedField = targetElement.dataset.dbField;
+            }
+        }
+        if (selectedField) {
+            selector.value = selectedField;
+        }
+        this.addFieldSelectorEventListener(selector);
     }
 
     addFieldSelectorEventListener(selector) {
@@ -344,35 +289,37 @@ class FieldSelector {
         }
 
         const handler = (event) => {
+            console.log('[DEBUG][HANDLER] Change event fired for selector:', event.target, 'section:', event.target.dataset.section, 'value:', event.target.value);
             const selectedField = event.target.value;
             const targetId = event.target.dataset.target;
             const section = event.target.dataset.section;
-            
+            if (section === 'outputs') {
+                console.log('[DEBUG][OUTPUTS] fieldValues:', this.fieldValues);
+                console.log('[DEBUG][OUTPUTS] selectedField:', selectedField);
+                if (this.fieldValues && selectedField && this.fieldValues[selectedField]) {
+                    console.log('[DEBUG][OUTPUTS] Value found for selectedField:', this.fieldValues[selectedField]);
+                } else {
+                    console.log('[DEBUG][OUTPUTS] Value NOT found for selectedField');
+                }
+            }
             if (targetId) {
                 const targetElement = document.getElementById(targetId);
                 if (targetElement) {
-                    // If the target is a textarea, update its value and dataset
+                    // Always update textarea value and data-db-field for both inputs and outputs
                     if (targetElement.tagName === 'TEXTAREA') {
                         targetElement.dataset.dbField = selectedField;
-                        if (this.fieldValues[selectedField]) {
-                            targetElement.value = this.fieldValues[selectedField];
-                        }
-                    }
-                    // If the target is the same as the selector, just update the dataset for mapping
-                    else if (targetElement === selector) {
+                        targetElement.value = this.fieldValues[selectedField] || '';
+                    } else if (targetElement === event.target) {
                         targetElement.dataset.dbField = selectedField;
                     }
                 }
             }
-            
             // Save field mapping based on section
             if (selectedField) {
                 if (section === 'outputs') {
-                    // Use new API for output field selections
-                    this.saveOutputFieldSelection(selectedField, selector);
+                    this.saveOutputFieldSelection(selectedField, event.target);
                 } else {
-                    // Use existing API for input field mappings
-                    this.saveFieldMapping(selectedField, selector);
+                    this.saveFieldMapping(selectedField, event.target);
                 }
             }
         };

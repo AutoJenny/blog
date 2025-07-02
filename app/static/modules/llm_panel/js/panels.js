@@ -58,4 +58,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // After FieldSelector is ready, update all output dropdowns
+    document.addEventListener('fieldSelectorReady', function() {
+        document.querySelectorAll('.field-selector[data-section="outputs"]').forEach(select => {
+            if (window.fieldSelector && typeof window.fieldSelector.addFieldSelectorEventListener === 'function') {
+                window.fieldSelector.addFieldSelectorEventListener(select);
+            }
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    }, { once: true });
 }); 

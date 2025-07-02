@@ -49,6 +49,7 @@
         if (postId) {
             console.log('[PANEL] Initializing FieldSelector...');
             const fieldSelector = new FieldSelector(postId, stage, substage);
+            window.fieldSelector = fieldSelector;
         } else {
             console.warn('[PANEL] Post ID not found, cannot initialize field selector');
         }

@@ -6,6 +6,7 @@ export class MultiInputManager {
         this.container = document.getElementById(containerId);
         this.inputCounter = this.getInitialInputCounter();
         this.currentSubstage = this.container?.dataset?.currentSubstage || '';
+        this.localStorageKey = 'multiInputConfig';
         this.init();
     }
     
@@ -14,7 +15,7 @@ export class MultiInputManager {
             console.warn('[MultiInputManager] Container not found:', containerId);
             return;
         }
-        
+        this.restoreInputsFromStorage();
         this.bindEvents();
         console.log('[MultiInputManager] Initialized with', this.inputCounter, 'inputs');
     }
@@ -43,6 +44,50 @@ export class MultiInputManager {
                 this.removeInputField(removeBtn.closest('.input-field-group'));
             }
         });
+    }
+    
+    persistInputsToStorage() {
+        const config = [];
+        this.container.querySelectorAll('.input-field-group').forEach(group => {
+            const inputId = group.dataset.inputId;
+            const select = group.querySelector('select.field-selector');
+            config.push({ inputId, selectedField: select ? select.value : '' });
+        });
+        localStorage.setItem(this.localStorageKey, JSON.stringify(config));
+    }
+    
+    restoreInputsFromStorage() {
+        const config = JSON.parse(localStorage.getItem(this.localStorageKey) || '[]');
+        if (config.length > 1) {
+            // Remove all but the first input
+            this.container.querySelectorAll('.input-field-group').forEach((group, idx) => {
+                if (idx > 0) group.remove();
+            });
+            // Add inputs as per config
+            for (let i = 1; i < config.length; i++) {
+                this.addInputField();
+            }
+            // Set dropdown values and trigger fieldSelectorInit
+            this.container.querySelectorAll('.input-field-group').forEach((group, idx) => {
+                const select = group.querySelector('select.field-selector');
+                if (select && config[idx]) {
+                    select.value = config[idx].selectedField;
+                    const event = new CustomEvent('fieldSelectorInit', {
+                        detail: { target: group.dataset.inputId, element: select }
+                    });
+                    document.dispatchEvent(event);
+                }
+            });
+            // Wait for FieldSelector to finish loading, then dispatch change events
+            document.addEventListener('fieldSelectorReady', () => {
+                this.container.querySelectorAll('.input-field-group').forEach((group, idx) => {
+                    const select = group.querySelector('select.field-selector');
+                    if (select && config[idx]) {
+                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }, { once: true });
+        }
     }
     
     addInputField() {
@@ -75,6 +120,7 @@ export class MultiInputManager {
         // Initialize field selector for the new input
         this.initializeFieldSelector(inputId);
         
+        this.persistInputsToStorage();
         console.log('[MultiInputManager] Added input field:', inputId);
     }
     
@@ -90,6 +136,7 @@ export class MultiInputManager {
         }
         
         element.remove();
+        this.persistInputsToStorage();
         console.log('[MultiInputManager] Removed input field:', inputId);
     }
     
