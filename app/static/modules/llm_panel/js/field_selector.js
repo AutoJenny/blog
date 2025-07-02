@@ -272,6 +272,16 @@ class FieldSelector {
         }
         if (selectedField) {
             selector.value = selectedField;
+            
+            // Update target textarea with the selected field's content
+            const targetId = selector.dataset.target;
+            if (targetId) {
+                const targetElement = document.getElementById(targetId);
+                if (targetElement && targetElement.tagName === 'TEXTAREA') {
+                    targetElement.dataset.dbField = selectedField;
+                    targetElement.value = this.fieldValues[selectedField] || '';
+                }
+            }
         }
         this.addFieldSelectorEventListener(selector);
     }
@@ -387,7 +397,6 @@ class FieldSelector {
             }
             
             const payload = {
-                post_id: this.postId,
                 output_field: fieldName,
                 output_table: 'post_development'  // Default table for post fields
             };
