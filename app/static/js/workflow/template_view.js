@@ -30,16 +30,19 @@ function renderSectionFields(section) {
 function renderStructure(structure) {
     // Generate a unique ID for each accordion to avoid conflicts
     function sectionId(i) { return `section-accordion-${i}`; }
+    // Add container ID for drag-and-drop
+    const containerId = 'sections-sortable-container';
     return `
-        <div class="sections" style="display:flex;flex-direction:column;gap:2rem;">
+        <div id="${containerId}" class="sections" style="display:flex;flex-direction:column;gap:2rem;">
             ${structure.sections.map((s, i) => {
                 const number = (typeof s.orderIndex === 'number' ? s.orderIndex : i) + 1;
                 const heading = s.title || '(No heading)';
                 const desc = s.description || '';
                 const accId = sectionId(i);
                 return `
-                    <div class="section" style="background:#14342b;border-radius:1rem;box-shadow:0 2px 12px #0004;">
+                    <div class="section" data-section-id="${s.id}" style="background:#14342b;border-radius:1rem;box-shadow:0 2px 12px #0004;">
                         <div style="display:flex;align-items:center;cursor:pointer;padding:1.5rem 2rem;" onclick="const c=document.getElementById('${accId}');c.style.display=c.style.display==='none'?'block':'none';">
+                            <span class="section-drag-handle" style="cursor:grab;margin-right:1rem;color:#b9e0ff;font-size:1.5rem;user-select:none;">&#x2630;</span>
                             <h2 style="color:#7dd3fc;font-size:1.5rem;font-weight:bold;flex:1;">${number}. ${heading}</h2>
                             <span style="color:#b9e0ff;font-size:1.5rem;user-select:none;">&#x25BC;</span>
                         </div>
