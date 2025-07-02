@@ -264,3 +264,132 @@ Remember: This project does not use logins or registration. Never add authentica
 - Externalize prompt construction to dedicated script
 - Integrate format template instructions into LLM prompts
 - Complete format template system integration
+
+## Workflow Stages
+
+### Planning Stage
+- **Purpose**: Initial research, idea development, and structure planning
+- **Key Features**: LLM-powered idea generation, fact gathering, section planning
+- **Templates**: Uses modular LLM panels for dynamic content generation
+
+### Writing Stage
+- **Purpose**: Content creation and section-based editing
+- **Key Features**: Two-column layout with LLM actions and sections panel
+- **Templates**: 
+  - **Primary Template**: `app/templates/workflow/index.html` (handles stage routing)
+  - **Sections Panel**: Integrated directly in `workflow/index.html` for writing stage
+  - **JS Module**: `app/static/js/workflow/template_view.js` (renders section data)
+
+#### Writing Stage Template Structure
+```html
+<!-- In app/templates/workflow/index.html -->
+{% elif current_stage == 'writing' %}
+<div class="flex gap-6">
+  <!-- Left: LLM Actions Panel -->
+  <div id="workflow-llm-actions" style="background-color: #2D0A50; width: 50%;">
+    {% include 'workflow/_modular_llm_panels.html' %}
+  </div>
+  <!-- Right: Sections Panel -->
+  <div id="workflow-sections" style="background-color: #013828; width: 50%;">
+    <h2>Sections Panel</h2>
+    <div id="sections-panel-content">
+      <p>Loading sections...</p>
+    </div>
+  </div>
+</div>
+<script type="module">
+  // Fetches sections from API and renders them
+  import sectionPanel from '/static/js/workflow/template_view.js';
+  // ... JS logic to populate sections panel
+</script>
+```
+
+#### Sections Panel Functionality
+- **Data Source**: `/api/workflow/posts/{post_id}/sections`
+- **Rendering**: Uses `template_view.js` module with `renderStructure()` function
+- **Styling**: Dark theme with green background (`#013828`)
+- **Features**: Displays all section fields with proper formatting and JSON pretty-printing
+
+#### Key Files for Writing Stage
+1. **`app/templates/workflow/index.html`** - Main template with stage routing
+2. **`app/static/js/workflow/template_view.js`** - JS module for section rendering
+3. **`app/static/js/workflow_nav.js`** - Navigation utilities (imported by template_view.js)
+4. **`app/templates/workflow/_modular_llm_panels.html`** - LLM actions panel
+
+#### API Endpoints
+- **GET** `/api/workflow/posts/{post_id}/sections` - Returns all sections for a post
+- **Response Format**: `{ "sections": [{ "id", "title", "description", "elements", ... }] }`
+
+### Publishing Stage
+- **Purpose**: Final review, metadata management, and publication
+- **Key Features**: Preflight checks, launch management, syndication
+
+## Template Hierarchy
+
+### Main Workflow Template
+- **File**: `app/templates/workflow/index.html`
+- **Purpose**: Handles stage-based routing and layout
+- **Structure**: 
+  - Navigation area
+  - Stage-specific content areas
+  - Conditional rendering based on `current_stage`
+
+### Stage-Specific Templates
+- **Planning**: Uses modular LLM panels
+- **Writing**: Two-column layout with sections panel
+- **Publishing**: Full-width layout for final stages
+
+### Modular Components
+- **LLM Panels**: `app/templates/workflow/_modular_llm_panels.html`
+- **Navigation**: `app/templates/nav/workflow_nav.html`
+- **Section Rendering**: `app/static/js/workflow/template_view.js`
+
+## JavaScript Architecture
+
+### Module System
+- **ES6 Modules**: Used for all workflow JS
+- **Import/Export**: Clean separation of concerns
+- **Static Files**: Served from `/static/js/workflow/`
+
+### Key Modules
+1. **`template_view.js`**: Section rendering and navigation
+2. **`workflow_nav.js`**: Navigation utilities
+3. **`_modular_llm_panels.html`**: LLM action integration
+
+### Data Flow
+1. **Template Loads**: `workflow/index.html` renders with stage-specific layout
+2. **JS Initializes**: Module imports and DOM ready handlers
+3. **API Calls**: Fetch section data from backend
+4. **Rendering**: Update DOM with fetched data using render functions
+
+## Development Notes
+
+### Template Changes
+- **Writing Stage**: Always modify `app/templates/workflow/index.html` for the writing stage
+- **Sections Panel**: Integrated directly in the main template, not a separate file
+- **JS Integration**: Script blocks included inline for immediate execution
+
+### Debugging
+- **Check Template**: Ensure `workflow/index.html` is being used (not `writing/content.html`)
+- **API Testing**: Use curl to test `/api/workflow/posts/{id}/sections`
+- **JS Console**: Check browser console for module import errors
+- **Static Files**: Verify `/static/js/workflow/template_view.js` is accessible
+
+### Common Issues
+1. **Placeholder Text**: If you see "Sections module interface placeholder", the wrong template is being used
+2. **Loading Forever**: Check API endpoint and JS console for errors
+3. **Module Errors**: Verify static file paths and ES6 module syntax
+
+## Future Development
+
+### Planned Enhancements
+- **Per-Section Editing**: Individual section editing interface
+- **Fact Allocation**: Drag-and-drop fact assignment to sections
+- **Content Generation**: LLM-powered content generation per section
+- **Image Integration**: Section-specific image generation and management
+
+### Architecture Considerations
+- **Modular Design**: Keep stage-specific code in appropriate templates
+- **JS Separation**: Maintain clean module boundaries
+- **API Consistency**: Use consistent endpoint patterns
+- **Error Handling**: Robust error handling in both frontend and backend
