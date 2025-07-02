@@ -2,6 +2,70 @@
 
 {% block title %}Settings - Field Mapping{% endblock %}
 
+{% block styles %}
+<style>
+    /* Modal overlay covers the entire viewport */
+    #stepModal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(20, 22, 34, 0.85);
+        /* semi-opaque dark overlay */
+        display: none;
+        /* hidden by default, toggled by JS */
+        align-items: center;
+        justify-content: center;
+        z-index: 99999 !important;
+    }
+
+    #stepModal.active {
+        display: flex !important;
+    }
+
+    /* Modal content is centered and visually distinct */
+    #stepModal .modal-content {
+        background: #23273a;
+        border-radius: 1rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+        border: 1px solid #31364a;
+        padding: 2rem;
+        max-width: 600px;
+        width: 100%;
+        color: #fff;
+        position: relative;
+    }
+
+    #stepModal input[type="text"] {
+        background-color: #23273a !important;
+        border: 1px solid #31364a !important;
+        color: #ffffff !important;
+        border-radius: 0.25rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    #stepModal input[type="text"]:focus {
+        border-color: #6366f1 !important;
+        outline: none !important;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+    }
+
+    #stepModal .close-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        color: #fff;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-4xl mx-auto mt-8 bg-dark-bg border border-dark-border rounded-xl shadow-lg p-8">
     <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
@@ -114,54 +178,21 @@
 </div>
 
 <!-- Step Edit Modal -->
-<div id="stepModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-    <div class="bg-[#1a1d2d] rounded-xl border border-dark-border p-6 max-w-2xl w-full mx-4">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-semibold text-white">Edit Step</h3>
-            <button onclick="closeModal()" class="text-dark-text hover:text-white">
-                <i class="fa-solid fa-times"></i>
-            </button>
-        </div>
-
+<div id="stepModal">
+    <div class="modal-content">
+        <button onclick="closeModal()" class="close-btn" aria-label="Close">&times;</button>
+        <h3 class="text-xl font-semibold mb-4">Edit Step</h3>
         <form id="stepForm" class="space-y-6">
             <input type="hidden" id="stepId" name="stepId">
-
             <div>
-                <label for="stepName" class="block text-sm font-medium text-dark-text mb-2">Step Name</label>
-                <input type="text" id="stepName" name="name"
-                    class="w-full bg-[#23273a] border border-dark-border rounded px-3 py-2 text-white">
+                <label for="stepName" class="block text-sm font-medium mb-2">Step Name</label>
+                <input type="text" id="stepName" name="name">
             </div>
-
-            <!-- Input Fields Section -->
-            <div>
-                <h4 class="text-md font-medium text-indigo-300 mb-2">Input Fields</h4>
-                <div id="inputFields" class="space-y-4">
-                    <!-- Input fields will be added here dynamically -->
-                </div>
-                <button type="button" onclick="addInputField()" class="mt-2 text-indigo-300 hover:text-indigo-100">
-                    <i class="fa-solid fa-plus"></i> Add Input Field
-                </button>
-            </div>
-
-            <!-- Output Fields Section -->
-            <div>
-                <h4 class="text-md font-medium text-indigo-300 mb-2">Output Fields</h4>
-                <div id="outputFields" class="space-y-4">
-                    <!-- Output fields will be added here dynamically -->
-                </div>
-                <button type="button" onclick="addOutputField()" class="mt-2 text-indigo-300 hover:text-indigo-100">
-                    <i class="fa-solid fa-plus"></i> Add Output Field
-                </button>
-            </div>
-
-            <div class="flex justify-end gap-3 mt-6">
+            <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeModal()"
-                    class="px-4 py-2 bg-dark-bg text-dark-text hover:text-white rounded">
-                    Cancel
-                </button>
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">
-                    Save Changes
-                </button>
+                    class="bg-gray-700 text-white px-4 py-2 rounded">Cancel</button>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">Save
+                    Changes</button>
             </div>
         </form>
     </div>
@@ -241,38 +272,16 @@
     async function addStep(substageId) {
         document.getElementById('stepId').value = '';
         document.getElementById('stepName').value = '';
-        document.getElementById('inputFields').innerHTML = '';
-        document.getElementById('outputFields').innerHTML = '';
-        document.getElementById('stepModal').classList.remove('hidden');
+        document.getElementById('stepModal').style.display = 'flex';
     }
 
     async function editStep(stepId) {
         try {
             const response = await fetch(`/api/workflow/steps/${stepId}`);
             const step = await response.json();
-
             document.getElementById('stepId').value = stepId;
-            document.getElementById('stepName').value = step.name;
-
-            // Populate input fields
-            const inputFields = document.getElementById('inputFields');
-            inputFields.innerHTML = '';
-            if (step.config && step.config.inputs) {
-                Object.entries(step.config.inputs).forEach(([name, config]) => {
-                    addFieldToForm('input', name, config.db_field);
-                });
-            }
-
-            // Populate output fields
-            const outputFields = document.getElementById('outputFields');
-            outputFields.innerHTML = '';
-            if (step.config && step.config.outputs) {
-                Object.entries(step.config.outputs).forEach(([name, config]) => {
-                    addFieldToForm('output', name, config.db_field);
-                });
-            }
-
-            document.getElementById('stepModal').classList.remove('hidden');
+            document.getElementById('stepName').value = step.name || '';
+            document.getElementById('stepModal').style.display = 'flex';
         } catch (error) {
             console.error('Error fetching step details:', error);
         }
@@ -299,35 +308,15 @@
     }
 
     function closeModal() {
-        document.getElementById('stepModal').classList.add('hidden');
+        document.getElementById('stepModal').classList.remove('active');
+        document.getElementById('stepModal').style.display = 'none';
     }
 
-    function addInputField() {
-        addFieldToForm('input');
-    }
-
-    function addOutputField() {
-        addFieldToForm('output');
-    }
-
-    function addFieldToForm(type, name = '', dbField = '') {
-        const container = document.getElementById(`${type}Fields`);
-        const fieldDiv = document.createElement('div');
-        fieldDiv.className = 'grid grid-cols-2 gap-4';
-        fieldDiv.innerHTML = `
-        <input type="text" name="${type}Names[]" placeholder="Field Name" value="${name}"
-               class="bg-[#23273a] border border-dark-border rounded px-3 py-2 text-white">
-        <div class="flex gap-2">
-            <input type="text" name="${type}DbFields[]" placeholder="DB Field" value="${dbField}"
-                   class="flex-1 bg-[#23273a] border border-dark-border rounded px-3 py-2 text-white">
-            <button type="button" onclick="this.closest('div').parentElement.remove()"
-                    class="text-red-400 hover:text-red-300 px-2">
-                <i class="fa-solid fa-times"></i>
-            </button>
-        </div>
-    `;
-        container.appendChild(fieldDiv);
-    }
+    // Ensure modal is hidden on page load
+    window.onload = function () {
+        document.getElementById('stepModal').classList.remove('active');
+        document.getElementById('stepModal').style.display = 'none';
+    };
 
     // Form submission
     document.getElementById('stepForm').addEventListener('submit', async function (e) {
