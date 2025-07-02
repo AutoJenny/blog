@@ -64,8 +64,7 @@ def create_diagnostic_logs(post_id: int, stage: str, substage: str, step: str,
         f.write(f"# Substage: {substage}\n")
         f.write(f"# Step: {step}\n")
         f.write(f"# Timestamp: {datetime.now().isoformat()}\n")
-        f.write(f"# Log Type: llm_message\n")
-        f.write(f"# Frontend Inputs: {json.dumps(frontend_inputs or {}, indent=2)}\n\n")
+        f.write(f"# Log Type: llm_message\n\n")
         f.write(llm_message)
     
     # 3. LLM response log - always overwrites
@@ -210,9 +209,9 @@ def get_input_values(conn, post_id: int, input_mapping: Dict[str, Any], frontend
     # If frontend inputs are provided, use them as the primary source
     if frontend_inputs:
         for input_name, input_data in frontend_inputs.items():
-            if isinstance(input_data, dict) and 'value' in input_data:
-                # Frontend provided structured input data
-                inputs[input_name] = input_data['value']
+            if isinstance(input_data, dict):
+                # Frontend provided structured input data - preserve the full structure
+                inputs[input_name] = input_data
             elif isinstance(input_data, str):
                 # Frontend provided direct string value
                 inputs[input_name] = input_data
@@ -239,7 +238,25 @@ def get_input_values(conn, post_id: int, input_mapping: Dict[str, Any], frontend
             else:
                 inputs[input_name] = ''
     
-    return inputs
+    # Convert generic input names to database field names for consistency
+    db_field_inputs = {}
+    for input_name, value in inputs.items():
+        # Check if this input has its own db_field information (from frontend)
+        if isinstance(value, dict) and 'db_field' in value:
+            # Frontend provided db_field information
+            db_field_inputs[value['db_field']] = value.get('value', '')
+        elif input_name in input_mapping:
+            # Use mapping from step configuration
+            field_name = input_mapping[input_name].get('db_field') or input_mapping[input_name].get('field')
+            if field_name:
+                db_field_inputs[field_name] = value
+            else:
+                db_field_inputs[input_name] = value
+        else:
+            # If not in mapping, assume it's already a database field name
+            db_field_inputs[input_name] = value
+    
+    return db_field_inputs
 
 def resolve_format_references(text: str, data: Dict[str, Any]) -> str:
     """Resolve [data:field_name] references in text."""
@@ -282,11 +299,21 @@ def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str
             step_config=step_config or {}
         )
         
+        # Debug: Log validation result
+        print(f"Prompt validation result: {prompt_result['validation']}", file=sys.stderr)
+        
         # Handle validation errors
         if not prompt_result['validation']['valid']:
             handle_prompt_construction_errors(prompt_result)
             # Fallback to simple prompt if validation fails
-            input_text = "\n".join([f"{k}: {v}" for k, v in inputs.items()])
+            # Convert input keys to display names (e.g., "input1" -> "Input1", "idea_seed" -> "Idea Seed")
+            input_text_parts = []
+            for k, v in inputs.items():
+                if v is not None:
+                    # Convert key to display name
+                    display_name = k.replace('_', ' ').title()
+                    input_text_parts.append(f"{display_name}:\n{v}")
+            input_text = "\n\n".join(input_text_parts)
             return f"{system_prompt}\n\n{task_prompt}\n\n{input_text}"
         
         # Log successful prompt construction
@@ -297,7 +324,14 @@ def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str
     except Exception as e:
         print(f"Error in structured prompt construction: {e}", file=sys.stderr)
         # Fallback to original simple prompt construction
-        input_text = "\n".join([f"{k}: {v}" for k, v in inputs.items()])
+        # Convert input keys to display names (e.g., "input1" -> "Input1", "idea_seed" -> "Idea Seed")
+        input_text_parts = []
+        for k, v in inputs.items():
+            if v is not None:
+                # Convert key to display name
+                display_name = k.replace('_', ' ').title()
+                input_text_parts.append(f"{display_name}:\n{v}")
+        input_text = "\n\n".join(input_text_parts)
         return f"{system_prompt}\n\n{task_prompt}\n\n{input_text}"
 
 def call_llm(prompt: str, parameters: Dict[str, Any], conn, timeout: int = 60) -> Dict[str, Any]:

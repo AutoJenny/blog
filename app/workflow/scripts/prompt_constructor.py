@@ -220,22 +220,14 @@ def map_input_fields(
     # Get input mapping from step configuration
     input_mapping = step_config.get('input_mapping', {})
     
-    # Transform field names and values
-    field_index = 1
+    # Use only db field names as keys
     for field_name, field_value in input_data.items():
         # Skip empty or None values
         if field_value is None or (isinstance(field_value, str) and not field_value.strip()):
             continue
-        
-        # Create transformed field name (Input1, Input2, etc.)
-        transformed_name = f"Input{field_index}"
-        field_mappings[field_name] = transformed_name
-        
-        # Transform field value based on format template
+        field_mappings[field_name] = field_name
         transformed_value = transform_field_value(field_value, input_format_template)
-        transformed_data[transformed_name] = transformed_value
-        
-        field_index += 1
+        transformed_data[field_name] = transformed_value
     
     # Validate against input format template if available
     if input_format_template:
@@ -373,34 +365,56 @@ def build_context_section(
     return "\n\n".join(context_parts)
 
 
+def build_inputs_section(
+    input_data: Dict[str, Any],
+    field_mappings: Dict[str, str]
+) -> str:
+    """
+    Build INPUTS section with input data using database field names converted to display names.
+    
+    Args:
+        input_data: Original input data with database field names
+        field_mappings: Mapping from database names to transformed names
+    
+    Returns:
+        Formatted INPUTS section
+    """
+    inputs_parts = ["INPUTS:"]
+    
+    # Add input data using database field names converted to display names
+    if input_data:
+        for db_field_name, field_value in input_data.items():
+            if field_value is not None:
+                # Convert db_field_name to display name (e.g., "idea_seed" -> "Idea Seed")
+                display_name = db_field_name.replace('_', ' ').title()
+                
+                if isinstance(field_value, str):
+                    inputs_parts.append(f"{display_name}:\n{field_value}")
+                else:
+                    inputs_parts.append(f"{display_name}:\n{str(field_value)}")
+    
+    return "\n\n".join(inputs_parts)
+
+
 def build_task_section(
     task_prompt: str,
     input_data: Dict[str, Any]
 ) -> str:
     """
-    Build TASK section with task prompt and mapped input data.
+    Build TASK section with task prompt only (no input data).
     
     Args:
         task_prompt: Task-specific prompt
-        input_data: Mapped input data
+        input_data: Mapped input data (not used in this section)
     
     Returns:
         Formatted TASK section
     """
     task_parts = ["TASK:"]
     
-    # Add task prompt
+    # Add task prompt only
     if task_prompt:
         task_parts.append(task_prompt.strip())
-    
-    # Add input data
-    if input_data:
-        for field_name, field_value in input_data.items():
-            if field_value is not None:
-                if isinstance(field_value, str):
-                    task_parts.append(f"{field_name}:\n{field_value}")
-                else:
-                    task_parts.append(f"{field_name}:\n{str(field_value)}")
     
     return "\n\n".join(task_parts)
 
@@ -435,7 +449,9 @@ def build_response_section(
 def build_prompt_sections(
     context_data: ContextData,
     task_data: TaskData,
-    response_data: ResponseData
+    response_data: ResponseData,
+    original_input_data: Dict[str, Any] = None,
+    field_mappings: Dict[str, str] = None
 ) -> str:
     """
     Build individual prompt sections with proper formatting.
@@ -444,6 +460,8 @@ def build_prompt_sections(
         context_data: Data for CONTEXT section
         task_data: Data for TASK section
         response_data: Data for RESPONSE section
+        original_input_data: Original input data with database field names
+        field_mappings: Mapping from database names to transformed names
     
     Returns:
         Complete formatted prompt with all sections
@@ -459,6 +477,14 @@ def build_prompt_sections(
         }
     )
     sections.append(context_section)
+    
+    # Build INPUTS section (new)
+    if original_input_data:
+        inputs_section = build_inputs_section(
+            original_input_data,
+            field_mappings or {}
+        )
+        sections.append(inputs_section)
     
     # Build TASK section
     task_section = build_task_section(
@@ -555,7 +581,13 @@ def build_structured_prompt(
         )
         
         # Step 5: Assemble final prompt
-        prompt = build_prompt_sections(context_data, task_data, response_data)
+        prompt = build_prompt_sections(
+            context_data, 
+            task_data, 
+            response_data,
+            original_input_data=input_data,
+            field_mappings=mapped_input.field_mappings
+        )
         
         # Step 6: Create metadata
         metadata = {
@@ -564,7 +596,7 @@ def build_structured_prompt(
             "field_mappings": mapped_input.field_mappings,
             "input_fields_count": len(mapped_input.transformed_data),
             "prompt_length": len(prompt),
-            "sections": ["CONTEXT", "TASK", "RESPONSE"]
+            "sections": ["CONTEXT", "INPUTS", "TASK", "RESPONSE"]
         }
         
         return {
