@@ -28,21 +28,31 @@ function renderSectionFields(section) {
 }
 
 function renderStructure(structure) {
+    // Generate a unique ID for each accordion to avoid conflicts
+    function sectionId(i) { return `section-accordion-${i}`; }
     return `
-        <div class="template-view" style="background:#0f2222;padding:2rem;min-height:100vh;">
-            <div class="actions" style="margin-bottom:2rem;">
-                <button class="btn btn-outline" onclick="goToTemplate(${structure.post.id})">Template</button>
-                <button class="btn btn-secondary" onclick="goToPreview(${structure.post.id})">Preview</button>
-            </div>
-            <div class="sections" style="display:flex;flex-direction:column;gap:2rem;">
-                ${structure.sections.map((s, i) => `
-                    <div class="section" style="background:#14342b;border-radius:1rem;box-shadow:0 2px 12px #0004;padding:2rem 1.5rem;">
-                        <h2 style="color:#7dd3fc;font-size:1.5rem;font-weight:bold;margin-bottom:1rem;">Section ${i + 1}: ${s.section_heading || '(No heading)'}</h2>
-                        ${renderSectionFields(s)}
-                        <button class="btn btn-secondary" style="margin-top:1rem;" onclick="goToEdit(${structure.post.id}, '${encodeURIComponent(s.section_heading || 'Section ' + (i+1))}')">Edit</button>
+        <div class="sections" style="display:flex;flex-direction:column;gap:2rem;">
+            ${structure.sections.map((s, i) => {
+                const number = (typeof s.orderIndex === 'number' ? s.orderIndex : i) + 1;
+                const heading = s.title || '(No heading)';
+                const desc = s.description || '';
+                const accId = sectionId(i);
+                return `
+                    <div class="section" style="background:#14342b;border-radius:1rem;box-shadow:0 2px 12px #0004;">
+                        <div style="display:flex;align-items:center;cursor:pointer;padding:1.5rem 2rem;" onclick="const c=document.getElementById('${accId}');c.style.display=c.style.display==='none'?'block':'none';">
+                            <h2 style="color:#7dd3fc;font-size:1.5rem;font-weight:bold;flex:1;">${number}. ${heading}</h2>
+                            <span style="color:#b9e0ff;font-size:1.5rem;user-select:none;">&#x25BC;</span>
+                        </div>
+                        <div style="padding:0 2rem 1.5rem 2rem;" onclick="event.stopPropagation();">
+                            <div style="color:#b9e0ff;font-size:1.1rem;margin-bottom:0.5rem;">${desc}</div>
+                        </div>
+                        <div id="${accId}" style="display:none;padding:0 2rem 2rem 2rem;">
+                            ${renderSectionFields(s)}
+                            <button class="btn btn-secondary" style="margin-top:1rem;" onclick="goToEdit(${structure.post.id}, '${encodeURIComponent(heading)}')">Edit</button>
+                        </div>
                     </div>
-                `).join('')}
-            </div>
+                `;
+            }).join('')}
         </div>
     `;
 }
