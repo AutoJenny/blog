@@ -889,7 +889,7 @@ def get_field_selection(step_id):
 
                 config = step['config']
                 if not config:
-                    return jsonify({'error': 'Step has no configuration'}), 404
+                    return jsonify({'success': True, 'data': None})
 
                 # Check for user output mapping
                 user_mapping = None
@@ -902,13 +902,8 @@ def get_field_selection(step_id):
                     if default_mapping:
                         user_mapping = default_mapping
 
-                if not user_mapping:
-                    return jsonify({'error': 'No output mapping found'}), 404
-
-                return jsonify({
-                    'success': True,
-                    'data': user_mapping
-                })
+                # Always return success, even if no mapping found
+                return jsonify({'success': True, 'data': user_mapping})
 
     except Exception as e:
         current_app.logger.error(f"Error getting field selection: {str(e)}")

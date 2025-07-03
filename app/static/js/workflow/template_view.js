@@ -122,7 +122,7 @@ function renderStructure(structure) {
     return `
         <div id="${containerId}" class="sections" style="display:flex;flex-direction:column;gap:2rem;">
             ${structure.sections.map((s, i) => {
-                const number = (typeof s.orderIndex === 'number' ? s.orderIndex : i) + 1;
+                const number = i + 1;
                 const heading = s.title || '(No heading)';
                 const desc = s.description || '';
                 const accId = sectionId(i);
