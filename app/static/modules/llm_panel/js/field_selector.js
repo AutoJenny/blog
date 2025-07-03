@@ -87,6 +87,24 @@ class FieldSelector {
             const data = await response.json();
             this.fieldValues = data;
             console.log('[DEBUG] Field values loaded:', Object.keys(this.fieldValues));
+            
+            // Fetch section fields
+            console.log('[DEBUG] Fetching section fields for post:', this.postId);
+            const sectionResponse = await fetch(`/api/workflow/fields/sections/${this.postId}`);
+            if (sectionResponse.ok) {
+                const sectionData = await sectionResponse.json();
+                this.sectionFields = sectionData.fields || [];
+                console.log('[DEBUG] Section fields loaded:', this.sectionFields.length, 'fields');
+                
+                // Add section field names to fieldValues (no specific values, just field names)
+                this.sectionFields.forEach(sectionField => {
+                    this.fieldValues[sectionField.field_name] = ''; // Empty value for field names
+                });
+            } else {
+                console.warn('[DEBUG] Could not fetch section fields:', sectionResponse.status);
+                this.sectionFields = [];
+            }
+            
             // Get all available fields with their groupings
             console.log('[DEBUG] Fetching available fields...');
             const fieldsResponse = await fetch('/api/workflow/fields/available');
@@ -220,10 +238,12 @@ class FieldSelector {
         // Get section (inputs/outputs) and target field
         const section = selector.dataset.section;
         const target = selector.dataset.target;
+        
         // Group fields by stage/substage/step
         let lastGroup = null;
         let optgroup = null;
-        // Add all fields, organized by their primary location
+        
+        // Add post_development fields, organized by their primary location
         Object.values(this.fields)
             .sort((a, b) => {
                 if (a.stage_order !== b.stage_order) return a.stage_order - b.stage_order;
@@ -242,8 +262,39 @@ class FieldSelector {
                 const option = document.createElement('option');
                 option.value = field.name;
                 option.textContent = field.name;
+                option.dataset.table = 'post_development';
                 optgroup.appendChild(option);
             });
+        
+        // Add section fields if available
+        if (this.sectionFields && this.sectionFields.length > 0) {
+            // Group section fields by their group property
+            const groupedFields = {};
+            this.sectionFields.forEach(sectionField => {
+                const group = sectionField.group || 'Section Fields';
+                if (!groupedFields[group]) {
+                    groupedFields[group] = [];
+                }
+                groupedFields[group].push(sectionField);
+            });
+            
+            // Create optgroups for each group
+            Object.keys(groupedFields).forEach(groupName => {
+                const sectionOptgroup = document.createElement('optgroup');
+                sectionOptgroup.label = groupName;
+                selector.appendChild(sectionOptgroup);
+                
+                // Add each section field in this group
+                groupedFields[groupName].forEach(sectionField => {
+                    const option = document.createElement('option');
+                    option.value = sectionField.field_name;
+                    option.textContent = sectionField.display_name;
+                    option.dataset.table = 'post_section';
+                    option.dataset.dbField = sectionField.db_field;
+                    sectionOptgroup.appendChild(option);
+                });
+            });
+        }
         // Set initial value based on saved mappings
         let selectedField = null;
         if (section === 'outputs' && this.savedOutputFieldSelection) {
@@ -303,6 +354,7 @@ class FieldSelector {
             const selectedField = event.target.value;
             const targetId = event.target.dataset.target;
             const section = event.target.dataset.section;
+            
             if (section === 'outputs') {
                 console.log('[DEBUG][OUTPUTS] fieldValues:', this.fieldValues);
                 console.log('[DEBUG][OUTPUTS] selectedField:', selectedField);
@@ -312,18 +364,31 @@ class FieldSelector {
                     console.log('[DEBUG][OUTPUTS] Value NOT found for selectedField');
                 }
             }
+            
             if (targetId) {
                 const targetElement = document.getElementById(targetId);
                 if (targetElement) {
                     // Always update textarea value and data-db-field for both inputs and outputs
                     if (targetElement.tagName === 'TEXTAREA') {
                         targetElement.dataset.dbField = selectedField;
-                        targetElement.value = this.fieldValues[selectedField] || '';
+                        
+                        // Handle section fields differently
+                        if (this.sectionFields.find(sf => sf.field_name === selectedField)) {
+                            // For section fields, just set the field name (no specific value)
+                            targetElement.value = '';
+                            targetElement.dataset.dbTable = 'post_section';
+                            targetElement.dataset.dbField = selectedField;
+                        } else {
+                            // For regular post_development fields
+                            targetElement.value = this.fieldValues[selectedField] || '';
+                            targetElement.dataset.dbTable = 'post_development';
+                        }
                     } else if (targetElement === event.target) {
                         targetElement.dataset.dbField = selectedField;
                     }
                 }
             }
+            
             // Save field mapping based on section
             if (selectedField) {
                 if (section === 'outputs') {
@@ -396,9 +461,41 @@ class FieldSelector {
                 return;
             }
             
+            // Determine the table based on the selected field
+            let outputTable = 'post_development';  // Default table for post fields
+            let outputField = fieldName;
+            
+            // Check if this is a section field
+            if (this.sectionFields.find(sf => sf.field_name === fieldName)) {
+                outputTable = 'post_section';
+                outputField = fieldName; // Use the field name directly
+                
+                const payload = {
+                    output_field: outputField,
+                    output_table: outputTable
+                };
+                
+                console.log('[DEBUG] Sending section output field selection payload:', payload);
+                
+                const response = await fetch(`/api/workflow/steps/${stepId}/field_selection`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                console.log('Section output field selection saved successfully');
+                return;
+            }
+            
             const payload = {
-                output_field: fieldName,
-                output_table: 'post_development'  // Default table for post fields
+                output_field: outputField,
+                output_table: outputTable
             };
             
             console.log('[DEBUG] Sending output field selection payload:', payload);

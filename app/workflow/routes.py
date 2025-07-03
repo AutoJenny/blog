@@ -762,7 +762,64 @@ def get_available_fields():
                     'order': row['step_order']
                 })
             
-            return jsonify(result) 
+            return jsonify(result)
+
+@api_workflow_bp.route('/fields/sections/<int:post_id>', methods=['GET'])
+def get_section_fields(post_id):
+    """Get section field names organized in the same groups as the green sections interface."""
+    
+    # Define the field groups that match the green sections interface
+    field_groups = {
+        'Content': [
+            {'field_name': 'title', 'display_name': 'Title', 'db_field': 'section_heading'},
+            {'field_name': 'subtitle', 'display_name': 'Subtitle', 'db_field': 'section_description'},
+            {'field_name': 'description', 'display_name': 'Description', 'db_field': 'section_description'},
+            {'field_name': 'content', 'display_name': 'Main Content', 'db_field': 'first_draft'},
+            {'field_name': 'elements.facts', 'display_name': 'Facts', 'db_field': 'facts_to_include'},
+            {'field_name': 'elements.ideas', 'display_name': 'Ideas', 'db_field': 'ideas_to_include'},
+            {'field_name': 'elements.themes', 'display_name': 'Themes', 'db_field': 'highlighting'},
+        ],
+        'Resources': [
+            {'field_name': 'image_id', 'display_name': 'Image', 'db_field': 'image_id'},
+            {'field_name': 'video_url', 'display_name': 'Video URL', 'db_field': 'generated_image_url'},
+            {'field_name': 'audio_url', 'display_name': 'Audio URL', 'db_field': 'generated_image_url'},
+            {'field_name': 'duration', 'display_name': 'Duration', 'db_field': 'status'},
+        ],
+        'Images': [
+            {'field_name': 'image_id', 'display_name': 'Image Preview', 'db_field': 'image_id'},
+            {'field_name': 'section_metadata.image_captions', 'display_name': 'Image Captions', 'db_field': 'image_captions'},
+            {'field_name': 'section_metadata.alt_text', 'display_name': 'Alt Text', 'db_field': 'image_meta_descriptions'},
+        ],
+        'Meta / SEO': [
+            {'field_name': 'keywords', 'display_name': 'Keywords', 'db_field': 'image_generation_metadata'},
+            {'field_name': 'section_metadata', 'display_name': 'Section Metadata', 'db_field': 'image_generation_metadata'},
+            {'field_name': 'social_media_snippets', 'display_name': 'Social Media Snippets', 'db_field': 'image_generation_metadata'},
+        ],
+        'Advanced / System': [
+            {'field_name': 'content_type', 'display_name': 'Content Type', 'db_field': 'status'},
+            {'field_name': 'position', 'display_name': 'Position', 'db_field': 'section_order'},
+            {'field_name': 'is_conclusion', 'display_name': 'Is Conclusion', 'db_field': 'status'},
+            {'field_name': 'created_at', 'display_name': 'Created At', 'db_field': 'status'},
+            {'field_name': 'updated_at', 'display_name': 'Updated At', 'db_field': 'status'},
+        ]
+    }
+    
+    # Flatten the groups into a single list
+    section_fields = []
+    for group_name, fields in field_groups.items():
+        for field in fields:
+            section_fields.append({
+                'field_name': field['field_name'],
+                'display_name': field['display_name'],
+                'db_table': 'post_section',
+                'db_field': field['db_field'],
+                'group': group_name,
+                'value': None
+            })
+    
+    return jsonify({
+        'fields': section_fields
+    })
 
 @api_workflow_bp.route('/steps/<int:step_id>/llm_settings', methods=['POST'])
 def update_llm_settings(step_id):
