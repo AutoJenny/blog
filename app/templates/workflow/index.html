@@ -51,6 +51,7 @@
                     const structure = { post: { id: postId }, sections: data.sections || [] };
                     panel.innerHTML = sectionPanel.renderStructure(structure);
                     sectionPanel.initAccordions();
+                    sectionPanel.initSectionSelectionUI();
                     // Dynamically import SectionDragDrop after rendering
                     const { default: SectionDragDrop } = await import('/static/js/workflow/section_drag_drop.js');
                     const dragDrop = new SectionDragDrop();

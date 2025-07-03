@@ -119,7 +119,16 @@ function renderStructure(structure) {
     console.log('[DEBUG] renderStructure called with structure:', structure);
     function sectionId(i) { return `section-accordion-${i}`; }
     const containerId = 'sections-sortable-container';
+    // Add Select All checkbox and selection count
+    let selectAllHtml = `
+        <div style="display:flex;align-items:center;gap:1em;margin-bottom:1.5em;">
+            <input type="checkbox" id="select-all-sections" checked style="width:1.2em;height:1.2em;">
+            <label for="select-all-sections" style="color:#7dd3fc;font-size:1.1rem;font-weight:bold;cursor:pointer;">Select All Sections</label>
+            <span id="selected-section-count" style="color:#b9e0ff;font-size:1rem;margin-left:1em;">All selected</span>
+        </div>
+    `;
     return `
+        ${selectAllHtml}
         <div id="${containerId}" class="sections" style="display:flex;flex-direction:column;gap:2rem;">
             ${structure.sections.map((s, i) => {
                 const number = i + 1;
@@ -128,11 +137,14 @@ function renderStructure(structure) {
                 const accId = sectionId(i);
                 return `
                     <div class="section" data-section-id="${s.id}" style="background:#14342b;border-radius:1rem;box-shadow:0 2px 12px #0004;">
-                        <button class="section-accordion-trigger" type="button" aria-expanded="false" aria-controls="${accId}" style="display:flex;align-items:center;width:100%;background:none;border:none;cursor:pointer;padding:1.5rem 2rem;text-align:left;">
-                            <span class="section-drag-handle" style="cursor:grab;margin-right:1rem;color:#b9e0ff;font-size:1.5rem;user-select:none;">&#x2630;</span>
-                            <h2 style="color:#7dd3fc;font-size:1.5rem;font-weight:bold;flex:1;margin:0;">${number}. ${heading}</h2>
-                            <span class="section-arrow" style="color:#b9e0ff;font-size:1.5rem;user-select:none;transition:transform 0.2s;">&#x25BC;</span>
-                        </button>
+                        <div style="display:flex;align-items:center;gap:1em;padding:1.2rem 2rem 0 2rem;">
+                            <input type="checkbox" class="section-select-checkbox" data-section-id="${s.id}" checked style="width:1.2em;height:1.2em;">
+                            <button class="section-accordion-trigger" type="button" aria-expanded="false" aria-controls="${accId}" style="display:flex;align-items:center;width:100%;background:none;border:none;cursor:pointer;padding:0;text-align:left;">
+                                <span class="section-drag-handle" style="cursor:grab;margin-right:1rem;color:#b9e0ff;font-size:1.5rem;user-select:none;">&#x2630;</span>
+                                <h2 style="color:#7dd3fc;font-size:1.5rem;font-weight:bold;flex:1;margin:0;">${number}. ${heading}</h2>
+                                <span class="section-arrow" style="color:#b9e0ff;font-size:1.5rem;user-select:none;transition:transform 0.2s;">&#x25BC;</span>
+                            </button>
+                        </div>
                         <div style="padding:0 2rem 1.5rem 2rem;" onclick="event.stopPropagation();">
                             <div style="color:#b9e0ff;font-size:1.1rem;margin-bottom:0.5rem;">${desc}</div>
                         </div>
@@ -171,10 +183,42 @@ function initAccordions() {
     console.log('[DEBUG] Found triggers:', triggers.length);
 }
 
+// UI-only: Section selection logic for checkboxes
+function initSectionSelectionUI() {
+    const selectAll = document.getElementById('select-all-sections');
+    const checkboxes = Array.from(document.querySelectorAll('.section-select-checkbox'));
+    const countSpan = document.getElementById('selected-section-count');
+    function updateCount() {
+        const selected = checkboxes.filter(cb => cb.checked).length;
+        if (selected === checkboxes.length) {
+            countSpan.textContent = 'All selected';
+        } else if (selected === 0) {
+            countSpan.textContent = 'None selected';
+        } else {
+            countSpan.textContent = `${selected} selected`;
+        }
+    }
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => { cb.checked = selectAll.checked; });
+            updateCount();
+        });
+    }
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (!cb.checked) selectAll.checked = false;
+            else if (checkboxes.every(c => c.checked)) selectAll.checked = true;
+            updateCount();
+        });
+    });
+    updateCount();
+}
+
 export default {
     renderStructure,
     goToTemplate,
     goToPreview,
     goToEdit,
-    initAccordions // <-- Call this after rendering
+    initAccordions, // <-- Call this after rendering
+    initSectionSelectionUI // <-- New: call after rendering for selection logic
 }; 
