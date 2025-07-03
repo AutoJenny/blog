@@ -448,6 +448,30 @@ def save_output(conn, post_id: int, output: str, mapping: dict):
         cur.execute(query, (output, post_id))
         conn.commit()
 
+def save_section_output(conn, section_ids: List[int], output: str, field: str):
+    """
+    WRITING STAGE ONLY: Save LLM output to specific sections.
+    
+    This function is specifically for Writing stage section processing.
+    DO NOT USE for Planning stage - use save_output() instead.
+    
+    Args:
+        conn: Database connection
+        section_ids: List of section IDs to update
+        output: LLM output content to save
+        field: Field name in post_section table to update
+    """
+    if not section_ids:
+        raise ValueError("section_ids cannot be empty for Writing stage processing")
+    
+    placeholders = ','.join(['%s'] * len(section_ids))
+    query = f"UPDATE post_section SET {field} = %s WHERE id IN ({placeholders})"
+    params = [output] + section_ids
+    
+    with conn.cursor() as cur:
+        cur.execute(query, params)
+        conn.commit()
+
 def get_step_id(conn, stage: str, substage: str, step: str) -> int:
     """Get step ID from stage, substage, and step names."""
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -645,9 +669,9 @@ def process_step(post_id: int, stage: str, substage: str, step: str, frontend_in
                 post_id, stage, substage, step,
                 diagnostic_data["db_fields"],
                 diagnostic_data["llm_message"],
-                f"ERROR: {str(e)}",
-                input_format_template,
-                output_format_template,
+                diagnostic_data["llm_response"],
+                diagnostic_data.get("input_format_template"),
+                diagnostic_data.get("output_format_template"),
                 diagnostic_data["frontend_inputs"]
             )
         print(f"Error processing step: {str(e)}", file=sys.stderr)
@@ -655,6 +679,149 @@ def process_step(post_id: int, stage: str, substage: str, step: str, frontend_in
     finally:
         if 'conn' in locals():
             conn.close()
+
+def process_writing_step(post_id: int, stage: str, substage: str, step: str, section_ids: List[int], frontend_inputs: Dict[str, Any] = None):
+    """
+    WRITING STAGE ONLY: Process a workflow step for specific sections.
+    
+    This function is specifically for Writing stage section processing.
+    DO NOT USE for Planning stage - use process_step() instead.
+    
+    Args:
+        post_id: Post ID
+        stage: Workflow stage (should be 'writing')
+        substage: Workflow substage
+        step: Workflow step name
+        section_ids: List of section IDs to process
+        frontend_inputs: Optional frontend inputs
+    """
+    if stage != 'writing':
+        raise ValueError("process_writing_step() is for Writing stage only. Use process_step() for Planning stage.")
+    
+    if not section_ids:
+        raise ValueError("section_ids cannot be empty for Writing stage processing")
+    
+    diagnostic_data = {
+        "db_fields": {},
+        "llm_message": "",
+        "llm_response": "",
+        "frontend_inputs": frontend_inputs or {},
+        "section_ids": section_ids
+    }
+    
+    try:
+        config = load_step_config(post_id, stage, substage, step)
+        if 'settings' not in config or 'llm' not in config['settings']:
+            raise Exception(f"Step {step} does not have LLM configuration")
+        
+        llm_config = config['settings']['llm']
+        conn = get_db_conn()
+        step_id = get_step_id(conn, stage, substage, step)
+        prompt_templates = get_step_prompt_templates(conn, step_id)
+        system_prompt = prompt_templates['system_prompt'] or llm_config.get('system_prompt', '')
+        task_prompt = prompt_templates['task_prompt'] or llm_config.get('task_prompt', '')
+
+        # Get input values and collect ALL database fields for diagnostic purposes
+        input_mapping = config.get('inputs', {})
+        if not input_mapping and 'input_mapping' in llm_config:
+            input_mapping = llm_config['input_mapping']
+        
+        inputs = get_input_values(conn, post_id, input_mapping, frontend_inputs)
+        diagnostic_data["db_fields"] = collect_all_database_fields(conn, post_id, stage, substage, step, config)
+
+        # Collect format templates separately to avoid duplication
+        input_format_template = None
+        output_format_template = None
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Get step-level format configuration from workflow_step_entity
+            cur.execute("""
+                SELECT 
+                    wse.default_input_format_id,
+                    wse.default_output_format_id
+                FROM workflow_step_entity wse
+                WHERE wse.id = %s
+            """, (step_id,))
+            step_format_result = cur.fetchone()
+            
+            if step_format_result:
+                # Input format template
+                if step_format_result['default_input_format_id']:
+                    cur.execute("""
+                        SELECT 
+                            id,
+                            name,
+                            description,
+                            fields,
+                            llm_instructions,
+                            created_at,
+                            updated_at
+                        FROM workflow_format_template 
+                        WHERE id = %s
+                    """, (step_format_result['default_input_format_id'],))
+                    input_template = cur.fetchone()
+                    if input_template:
+                        input_format_template = dict(input_template)
+                
+                # Output format template
+                if step_format_result['default_output_format_id']:
+                    cur.execute("""
+                        SELECT 
+                            id,
+                            name,
+                            description,
+                            fields,
+                            llm_instructions,
+                            created_at,
+                            updated_at
+                        FROM workflow_format_template 
+                        WHERE id = %s
+                    """, (step_format_result['default_output_format_id'],))
+                    output_template = cur.fetchone()
+                    if output_template:
+                        output_format_template = dict(output_template)
+
+        # Construct and send prompt
+        all_db_fields = diagnostic_data["db_fields"].get("post_development", {})
+        prompt = construct_prompt(system_prompt, task_prompt, inputs, all_db_fields, input_format_template, output_format_template, config)
+        diagnostic_data["llm_message"] = prompt
+
+        # Call LLM
+        llm_response = call_llm(prompt, llm_config['parameters'], conn, llm_config.get('timeout', 60))
+        output = llm_response['result']
+        diagnostic_data["llm_response"] = output
+
+        # Save output to specific sections (WRITING STAGE ONLY)
+        output_mapping = get_user_output_mapping(conn, step_id, post_id)
+        if not output_mapping:
+            output_mapping = llm_config['output_mapping']
+        
+        # Use section-specific save function for Writing stage
+        save_section_output(conn, section_ids, output, output_mapping['field'])
+
+        # Create diagnostic logs with unified, non-duplicated structure
+        create_diagnostic_logs(
+            post_id, stage, substage, step,
+            diagnostic_data["db_fields"],
+            diagnostic_data["llm_message"],
+            diagnostic_data["llm_response"],
+            input_format_template,
+            output_format_template,
+            diagnostic_data["frontend_inputs"]
+        )
+        print(f"Successfully processed Writing stage step {step} for post {post_id}, sections {section_ids}")
+        return output
+    except Exception as e:
+        if diagnostic_data["llm_message"] or diagnostic_data["db_fields"]:
+            create_diagnostic_logs(
+                post_id, stage, substage, step,
+                diagnostic_data["db_fields"],
+                diagnostic_data["llm_message"],
+                diagnostic_data["llm_response"],
+                diagnostic_data.get("input_format_template"),
+                diagnostic_data.get("output_format_template"),
+                diagnostic_data["frontend_inputs"]
+            )
+        raise e
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:

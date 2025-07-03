@@ -1101,3 +1101,49 @@ def sync_section_headings_to_sections(post_id: int, section_headings_json: str):
 4. **Test sync error conditions**
 
 This comprehensive documentation provides a complete guide to the section synchronization system, including implementation details, API endpoints, troubleshooting, and best practices. 
+
+## LLM Processing in Writing Stage
+
+### Section Selection Requirements
+- **Single Section**: Process only the selected section
+- **Multiple Sections**: Process each selected section sequentially
+- **No Selection**: Process first section by default
+- **All Selected**: Process all sections in order
+
+### Processing Logic
+- **Input**: Section-specific data + post context
+- **Output**: Save to specific section record(s)
+- **Scope**: Never update all sections unless explicitly requested
+- **Isolation**: Section-level changes do not affect post-level planning data
+
+### Current Implementation Issues
+- **Problem**: LLM output is saved to ALL sections for a post
+- **Root Cause**: `save_output()` function uses `WHERE post_id = %s` for all tables
+- **Impact**: Violates section-specific processing principle
+- **Fix Required**: Modify output saving to target specific section IDs
+
+### Required Changes
+1. **Modify `save_output()` function** to accept section selection
+2. **Update LLM processor** to handle section-specific processing
+3. **Add section selection logic** to Writing stage LLM actions
+4. **Maintain backward compatibility** for Planning stage (post-focused)
+
+### Implementation Status
+✅ **COMPLETED**: Separate functions created for Writing stage processing
+
+#### **New Writing Stage Functions**
+- `save_section_output()`: Saves LLM output to specific sections only
+- `process_writing_step()`: Processes Writing stage steps with section selection
+
+#### **Planning Stage Functions (Unchanged)**
+- `save_output()`: Remains unchanged for Planning stage
+- `process_step()`: Remains unchanged for Planning stage
+
+#### **Function Usage**
+- **Planning stage**: Uses `process_step()` → `save_output()`
+- **Writing stage**: Uses `process_writing_step()` → `save_section_output()`
+
+#### **Next Steps**
+1. **Update LLM endpoint** to accept section selection parameter
+2. **Add section selection UI** to Writing stage
+3. **Test section-specific processing** with new functions 

@@ -26,6 +26,47 @@ The workflow system provides a structured approach to content creation and manag
 - **Complete integration**: Format template data includes schema, LLM instructions, and descriptions
 - **Unified logs**: Format templates appear once in diagnostic logs with complete data
 
+## Workflow Stage Paradigms
+
+### Planning Stage: Post-Focused Processing
+- **Data Scope**: Post-level data (`post_development` table)
+- **LLM Actions**: Generate ideas, research, structure for entire post
+- **Processing Unit**: Single post with multiple fields
+- **Output Target**: `post_development` fields
+- **Selection Logic**: Processes entire post data as a unit
+
+### Writing Stage: Section-Specific Processing  
+- **Data Scope**: Individual section data (`post_section` table)
+- **LLM Actions**: Generate content for specific, selected sections
+- **Processing Unit**: Individual sections (single or multiple selected)
+- **Output Target**: Specific `post_section` records
+- **Selection Logic**: Process only checked/selected sections
+- **Critical Requirement**: Never update all sections unless explicitly requested
+
+### Stage Transition Logic
+- **Planning → Writing**: Post-level data becomes context for section processing
+- **Writing → Publishing**: Section content is aggregated for final post
+- **Data Isolation**: Section-level changes do not affect post-level planning data
+
+## Writing Stage Implementation
+
+### Separate Processing Functions
+The Writing stage uses completely separate functions to maintain isolation from Planning stage:
+
+#### **Planning Stage Functions (DO NOT MODIFY)**
+- `process_step()`: Post-focused processing for Planning stage
+- `save_output()`: Saves to post-level data (`post_development` table)
+
+#### **Writing Stage Functions (NEW)**
+- `process_writing_step()`: Section-specific processing for Writing stage
+- `save_section_output()`: Saves to specific sections (`post_section` table)
+
+### Function Separation Rules
+- **Planning stage**: Uses `process_step()` and `save_output()` only
+- **Writing stage**: Uses `process_writing_step()` and `save_section_output()` only
+- **No cross-contamination**: Functions are clearly labeled and separated
+- **Clear documentation**: Each function has explicit stage-specific comments
+
 ## Architecture
 
 ### Frontend Components
