@@ -683,24 +683,16 @@ def process_step(post_id: int, stage: str, substage: str, step: str, frontend_in
 def process_writing_step(post_id: int, stage: str, substage: str, step: str, section_ids: List[int], frontend_inputs: Dict[str, Any] = None):
     """
     WRITING STAGE ONLY: Process a workflow step for specific sections.
-    
     This function is specifically for Writing stage section processing.
-    DO NOT USE for Planning stage - use process_step() instead.
-    
-    Args:
-        post_id: Post ID
-        stage: Workflow stage (should be 'writing')
-        substage: Workflow substage
-        step: Workflow step name
-        section_ids: List of section IDs to process
-        frontend_inputs: Optional frontend inputs
+    DO NOT USE for Planning stage - use process_step() for Planning stage.
+    For the 'Section Headings' step, the LLM output is parsed as a list of sections and written directly to post_section.
+    post_section is now the only source of truth for sections.
     """
     if stage != 'writing':
         raise ValueError("process_writing_step() is for Writing stage only. Use process_step() for Planning stage.")
-    
-    if not section_ids:
+    # Only require section_ids for steps other than Section Headings/Create Sections
+    if not section_ids and step.lower() not in ["section headings", "create sections"]:
         raise ValueError("section_ids cannot be empty for Writing stage processing")
-    
     diagnostic_data = {
         "db_fields": {},
         "llm_message": "",
@@ -708,32 +700,24 @@ def process_writing_step(post_id: int, stage: str, substage: str, step: str, sec
         "frontend_inputs": frontend_inputs or {},
         "section_ids": section_ids
     }
-    
     try:
         config = load_step_config(post_id, stage, substage, step)
         if 'settings' not in config or 'llm' not in config['settings']:
             raise Exception(f"Step {step} does not have LLM configuration")
-        
         llm_config = config['settings']['llm']
         conn = get_db_conn()
         step_id = get_step_id(conn, stage, substage, step)
         prompt_templates = get_step_prompt_templates(conn, step_id)
         system_prompt = prompt_templates['system_prompt'] or llm_config.get('system_prompt', '')
         task_prompt = prompt_templates['task_prompt'] or llm_config.get('task_prompt', '')
-
-        # Get input values and collect ALL database fields for diagnostic purposes
         input_mapping = config.get('inputs', {})
         if not input_mapping and 'input_mapping' in llm_config:
             input_mapping = llm_config['input_mapping']
-        
         inputs = get_input_values(conn, post_id, input_mapping, frontend_inputs)
         diagnostic_data["db_fields"] = collect_all_database_fields(conn, post_id, stage, substage, step, config)
-
-        # Collect format templates separately to avoid duplication
         input_format_template = None
         output_format_template = None
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            # Get step-level format configuration from workflow_step_entity
             cur.execute("""
                 SELECT 
                     wse.default_input_format_id,
@@ -742,9 +726,7 @@ def process_writing_step(post_id: int, stage: str, substage: str, step: str, sec
                 WHERE wse.id = %s
             """, (step_id,))
             step_format_result = cur.fetchone()
-            
             if step_format_result:
-                # Input format template
                 if step_format_result['default_input_format_id']:
                     cur.execute("""
                         SELECT 
@@ -761,8 +743,6 @@ def process_writing_step(post_id: int, stage: str, substage: str, step: str, sec
                     input_template = cur.fetchone()
                     if input_template:
                         input_format_template = dict(input_template)
-                
-                # Output format template
                 if step_format_result['default_output_format_id']:
                     cur.execute("""
                         SELECT 
@@ -779,26 +759,43 @@ def process_writing_step(post_id: int, stage: str, substage: str, step: str, sec
                     output_template = cur.fetchone()
                     if output_template:
                         output_format_template = dict(output_template)
-
-        # Construct and send prompt
         all_db_fields = diagnostic_data["db_fields"].get("post_development", {})
         prompt = construct_prompt(system_prompt, task_prompt, inputs, all_db_fields, input_format_template, output_format_template, config)
         diagnostic_data["llm_message"] = prompt
-
-        # Call LLM
         llm_response = call_llm(prompt, llm_config['parameters'], conn, llm_config.get('timeout', 60))
         output = llm_response['result']
         diagnostic_data["llm_response"] = output
-
-        # Save output to specific sections (WRITING STAGE ONLY)
-        output_mapping = get_user_output_mapping(conn, step_id, post_id)
-        if not output_mapping:
-            output_mapping = llm_config['output_mapping']
-        
-        # Use section-specific save function for Writing stage
-        save_section_output(conn, section_ids, output, output_mapping['field'])
-
-        # Create diagnostic logs with unified, non-duplicated structure
+        # Special handling for Section Headings step: parse and insert into post_section table
+        if step.lower() in ["section headings", "create sections"]:
+            # Parse the LLM output as JSON sections
+            sections = json.loads(output) if isinstance(output, str) else output
+            
+            # Clear existing sections and insert new ones
+            with conn.cursor() as cur:
+                # Delete existing sections
+                cur.execute("DELETE FROM post_section WHERE post_id = %s", (post_id,))
+                print(f"Deleted existing sections for post {post_id}")
+                
+                # Insert new sections
+                for i, section in enumerate(sections, 1):
+                    heading = section.get('title') or section.get('heading') or f'Section {i}'
+                    description = section.get('description', '')
+                    
+                    cur.execute("""
+                        INSERT INTO post_section (post_id, section_order, section_heading, section_description, status)
+                        VALUES (%s, %s, %s, %s, 'draft')
+                    """, (post_id, i, heading, description))
+                    print(f"Inserted section {i}: {heading}")
+                
+                # Commit the transaction
+                conn.commit()
+                print(f"Committed transaction - inserted {len(sections)} sections into post_section for post {post_id}")
+        else:
+            # Use section-specific save function for Writing stage
+            output_mapping = get_user_output_mapping(conn, step_id, post_id)
+            if not output_mapping:
+                output_mapping = llm_config['output_mapping']
+            save_section_output(conn, section_ids, output, output_mapping['field'])
         create_diagnostic_logs(
             post_id, stage, substage, step,
             diagnostic_data["db_fields"],
@@ -822,6 +819,9 @@ def process_writing_step(post_id: int, stage: str, substage: str, step: str, sec
                 diagnostic_data["frontend_inputs"]
             )
         raise e
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:

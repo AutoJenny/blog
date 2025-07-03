@@ -113,6 +113,11 @@ class FieldSelector {
             }
             const fieldsData = await fieldsResponse.json();
             console.log('[DEBUG] Available fields loaded:', fieldsData.fields.length, 'fields');
+            console.log('[DEBUG] Post section fields loaded:', fieldsData.post_section_fields ? fieldsData.post_section_fields.length : 0, 'fields');
+            
+            // Store the complete fieldsData for access in initializeSingleFieldSelector
+            this.fieldsData = fieldsData;
+            
             // Process fields and groups
             this.fields = {};
             fieldsData.fields.forEach(field => {
@@ -295,6 +300,24 @@ class FieldSelector {
                 });
             });
         }
+        
+        // Add post_section fields from the available fields endpoint
+        if (this.fieldsData && this.fieldsData.post_section_fields && this.fieldsData.post_section_fields.length > 0) {
+            // Create optgroup for post_section fields
+            const postSectionOptgroup = document.createElement('optgroup');
+            postSectionOptgroup.label = 'Post Section Fields';
+            selector.appendChild(postSectionOptgroup);
+            
+            // Add each post_section field
+            this.fieldsData.post_section_fields.forEach(sectionField => {
+                const option = document.createElement('option');
+                option.value = sectionField.field_name;
+                option.textContent = sectionField.display_name;
+                option.dataset.table = sectionField.db_table;
+                option.dataset.dbField = sectionField.db_field;
+                postSectionOptgroup.appendChild(option);
+            });
+        }
         // Set initial value based on saved mappings
         let selectedField = null;
         if (section === 'outputs' && this.savedOutputFieldSelection) {
@@ -378,6 +401,13 @@ class FieldSelector {
                             targetElement.value = '';
                             targetElement.dataset.dbTable = 'post_section';
                             targetElement.dataset.dbField = selectedField;
+                        } else if (this.fieldsData && this.fieldsData.post_section_fields && 
+                                   this.fieldsData.post_section_fields.find(sf => sf.field_name === selectedField)) {
+                            // For post_section fields from the available fields endpoint
+                            const sectionField = this.fieldsData.post_section_fields.find(sf => sf.field_name === selectedField);
+                            targetElement.value = '';
+                            targetElement.dataset.dbTable = sectionField.db_table;
+                            targetElement.dataset.dbField = sectionField.db_field;
                         } else {
                             // For regular post_development fields
                             targetElement.value = this.fieldValues[selectedField] || '';

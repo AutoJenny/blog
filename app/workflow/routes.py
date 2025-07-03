@@ -655,7 +655,7 @@ def save_step_prompts(step_id):
 
 @api_workflow_bp.route('/fields/available', methods=['GET'])
 def get_available_fields():
-    """Get all available fields organized by stage/substage/step."""
+    """Get all available fields organized by stage/substage/step and database tables."""
     with get_db_conn() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             # Get all fields with their stage/substage/step context
@@ -707,7 +707,7 @@ def get_available_fields():
                     WHERE fm2.field_name = field_mappings.field_name
                 )
             """)
-            fields = [dict(row) for row in cur.fetchall()]
+            workflow_fields = [dict(row) for row in cur.fetchall()]
             
             # Get stage/substage/step hierarchy for grouping
             cur.execute("""
@@ -728,9 +728,126 @@ def get_available_fields():
             """)
             hierarchy = [dict(row) for row in cur.fetchall()]
             
+            # Add post_section table fields
+            post_section_fields = [
+                {
+                    'field_name': 'section_heading',
+                    'display_name': 'Section Heading',
+                    'db_table': 'post_section',
+                    'db_field': 'section_heading',
+                    'description': 'Section title/heading'
+                },
+                {
+                    'field_name': 'section_description',
+                    'display_name': 'Section Description',
+                    'db_table': 'post_section',
+                    'db_field': 'section_description',
+                    'description': 'Section description or summary'
+                },
+                {
+                    'field_name': 'first_draft',
+                    'display_name': 'First Draft',
+                    'db_table': 'post_section',
+                    'db_field': 'first_draft',
+                    'description': 'Initial draft content for the section'
+                },
+                {
+                    'field_name': 'ideas_to_include',
+                    'display_name': 'Ideas to Include',
+                    'db_table': 'post_section',
+                    'db_field': 'ideas_to_include',
+                    'description': 'Ideas to include in this section'
+                },
+                {
+                    'field_name': 'facts_to_include',
+                    'display_name': 'Facts to Include',
+                    'db_table': 'post_section',
+                    'db_field': 'facts_to_include',
+                    'description': 'Facts to include in this section'
+                },
+                {
+                    'field_name': 'highlighting',
+                    'display_name': 'Highlighting',
+                    'db_table': 'post_section',
+                    'db_field': 'highlighting',
+                    'description': 'Key points to highlight'
+                },
+                {
+                    'field_name': 'image_concepts',
+                    'display_name': 'Image Concepts',
+                    'db_table': 'post_section',
+                    'db_field': 'image_concepts',
+                    'description': 'Image concepts for this section'
+                },
+                {
+                    'field_name': 'image_prompts',
+                    'display_name': 'Image Prompts',
+                    'db_table': 'post_section',
+                    'db_field': 'image_prompts',
+                    'description': 'Image generation prompts'
+                },
+                {
+                    'field_name': 'generation',
+                    'display_name': 'Generation',
+                    'db_table': 'post_section',
+                    'db_field': 'generation',
+                    'description': 'Content generation notes'
+                },
+                {
+                    'field_name': 'optimization',
+                    'display_name': 'Optimization',
+                    'db_table': 'post_section',
+                    'db_field': 'optimization',
+                    'description': 'SEO optimization notes'
+                },
+                {
+                    'field_name': 'image_meta_descriptions',
+                    'display_name': 'Image Meta Descriptions',
+                    'db_table': 'post_section',
+                    'db_field': 'image_meta_descriptions',
+                    'description': 'Image metadata descriptions'
+                },
+                {
+                    'field_name': 'image_captions',
+                    'display_name': 'Image Captions',
+                    'db_table': 'post_section',
+                    'db_field': 'image_captions',
+                    'description': 'Image captions'
+                },
+                {
+                    'field_name': 'generated_image_url',
+                    'display_name': 'Generated Image URL',
+                    'db_table': 'post_section',
+                    'db_field': 'generated_image_url',
+                    'description': 'URL of generated image'
+                },
+                {
+                    'field_name': 'image_generation_metadata',
+                    'display_name': 'Image Generation Metadata',
+                    'db_table': 'post_section',
+                    'db_field': 'image_generation_metadata',
+                    'description': 'Metadata from image generation'
+                },
+                {
+                    'field_name': 'image_id',
+                    'display_name': 'Image ID',
+                    'db_table': 'post_section',
+                    'db_field': 'image_id',
+                    'description': 'Reference to image(id)'
+                },
+                {
+                    'field_name': 'status',
+                    'display_name': 'Status',
+                    'db_table': 'post_section',
+                    'db_field': 'status',
+                    'description': 'Section status (draft, in_progress, complete)'
+                }
+            ]
+            
             # Build groups array
             result = {
-                'fields': fields,
+                'fields': workflow_fields,
+                'post_section_fields': post_section_fields,
                 'groups': []
             }
             

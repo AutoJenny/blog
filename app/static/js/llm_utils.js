@@ -35,7 +35,8 @@ async function runLLM({ postId, stage, substage, step, inputs = {} }) {
             
             requestBody = { 
                 step: step,
-                section_ids: selectedSections
+                section_ids: selectedSections,
+                inputs: inputs  // Include multiple inputs in request
             };
         } else {
             // PLANNING STAGE: Use original endpoint

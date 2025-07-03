@@ -3,7 +3,7 @@ from app.db import get_db_conn
 import psycopg2.extras
 from app.api.workflow.decorators import handle_workflow_errors
 import json
-from app.workflow.scripts.llm_processor import load_step_config, process_writing_step
+from app.workflow.scripts.llm_processor import load_step_config, process_writing_step, process_step
 
 from . import bp
 
@@ -966,8 +966,11 @@ def run_writing_llm(post_id, stage, substage):
         if not step_config:
             return jsonify({'error': f'Step configuration not found for: {step}'}), 404
         
+        # Get frontend inputs from request body
+        frontend_inputs = data.get('inputs', {})
+        
         # Process the Writing stage step with section selection
-        output = process_writing_step(post_id, stage, substage, step, section_ids)
+        output = process_writing_step(post_id, stage, substage, step, section_ids, frontend_inputs)
         
         return jsonify({
             'success': True,
