@@ -11,6 +11,7 @@ import psycopg2.extras
 import requests
 import json
 from typing import Dict, Any, Optional
+from app.utils.json_extractor import extract_and_parse_json, extract_json_with_fallback
 
 logger = logging.getLogger(__name__)
 # All ORM model imports removed. Use direct SQL via psycopg2 for any DB access.
@@ -342,10 +343,19 @@ Example format:
             result = self.generate(parsed['prompt'], model_name=model, temperature=action['temperature'], max_tokens=action['max_tokens'])
         else:
             raise ValueError(f"Unsupported provider type: {self.ollama_url}")
-        if isinstance(result, dict) and 'output' in result:
+        # Process the result with JSON extraction if it's a string
+        if isinstance(result, str):
+            # Use robust JSON extraction from markdown
+            parsed_json = extract_and_parse_json(result)
+            if parsed_json is not None:
+                # Successfully extracted JSON, return as structured data
+                result = {output_field: parsed_json}
+            else:
+                # No JSON found, return as plain text
+                result = {output_field: result}
+        elif isinstance(result, dict) and 'output' in result:
+            # Handle case where result is already a dict with 'output' key
             result = {output_field: result['output'], **{k: v for k, v in result.items() if k != 'output'}}
-        elif isinstance(result, str):
-            result = {output_field: result}
         def make_json_safe(obj):
             if isinstance(obj, dict):
                 return {k: make_json_safe(v) for k, v in obj.items()}

@@ -8,6 +8,7 @@ from psycopg2.extras import RealDictCursor
 from app.database.routes import get_db_conn
 from app.api.workflow.format_validator import FormatValidator
 from app.llm.services import LLMService, parse_tagged_prompt_to_messages, modular_prompt_to_canonical
+from app.utils.json_extractor import extract_and_parse_json, extract_json_with_fallback
 from datetime import datetime
 
 # Import external prompt constructor
@@ -270,7 +271,7 @@ def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str
                     input_format_template: Dict[str, Any] = None, output_format_template: Dict[str, Any] = None,
                     step_config: Dict[str, Any] = None) -> str:
     """
-    Construct the full prompt for the LLM using the external prompt constructor.
+    Construct the full prompt for the LLM with proper CONTEXT, INPUTS, TASK, and RESPONSE sections.
     
     Args:
         system_prompt: System prompt for the LLM
@@ -282,57 +283,93 @@ def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str
         step_config: Step configuration data
     
     Returns:
-        Structured prompt string with CONTEXT, TASK, and RESPONSE sections
+        Structured prompt string with CONTEXT, INPUTS, TASK, and RESPONSE sections
     """
     try:
+        # Validate required components
+        if not system_prompt or not system_prompt.strip():
+            raise ValueError("System prompt is required and cannot be empty")
+        
+        if not task_prompt or not task_prompt.strip():
+            raise ValueError("Task prompt is required and cannot be empty")
+        
+        if not input_format_template:
+            raise ValueError("Input format template is required")
+        
+        if not output_format_template:
+            raise ValueError("Output format template is required")
+        
         # Resolve any [data:field_name] references in prompts
         system_prompt = resolve_format_references(system_prompt, all_db_fields)
         task_prompt = resolve_format_references(task_prompt, all_db_fields)
         
-        # Use external prompt constructor for structured prompt building
-        prompt_result = build_structured_prompt(
-            system_prompt=system_prompt,
-            task_prompt=task_prompt,
-            input_format_template=input_format_template or {},
-            output_format_template=output_format_template or {},
-            input_data=inputs,
-            step_config=step_config or {}
-        )
+        # Extract format instructions
+        input_instructions = input_format_template.get('llm_instructions', '')
+        input_description = input_format_template.get('description', '')
+        output_instructions = output_format_template.get('llm_instructions', '')
+        output_description = output_format_template.get('description', '')
         
-        # Debug: Log validation result
-        print(f"Prompt validation result: {prompt_result['validation']}", file=sys.stderr)
+        # Build CONTEXT section
+        context_parts = ["CONTEXT to orientate you", ""]
+        if system_prompt.strip():
+            context_parts.append(system_prompt.strip())
+        context_section = "\n".join(context_parts)
         
-        # Handle validation errors
-        if not prompt_result['validation']['valid']:
-            handle_prompt_construction_errors(prompt_result)
-            # Fallback to simple prompt if validation fails
-            # Convert input keys to display names (e.g., "input1" -> "Input1", "idea_seed" -> "Idea Seed")
-            input_text_parts = []
-            for k, v in inputs.items():
-                if v is not None:
-                    # Convert key to display name
-                    display_name = k.replace('_', ' ').title()
-                    input_text_parts.append(f"{display_name}:\n{v}")
-            input_text = "\n\n".join(input_text_parts)
-            return f"{system_prompt}\n\n{task_prompt}\n\n{input_text}"
+        # Build INPUTS section
+        inputs_parts = ["INPUTS for your TASK below"]
+        if input_description:
+            inputs_parts.append(f"({input_description})")
+        if input_instructions:
+            inputs_parts.append(input_instructions)
+        inputs_parts.append("")
         
-        # Log successful prompt construction
-        log_prompt_construction_metadata(prompt_result)
+        # Add input data with proper titles
+        for k, v in inputs.items():
+            if v is not None and v.strip():
+                # Convert key to display name (e.g., "basic_idea" -> "Basic Idea")
+                display_name = k.replace('_', ' ').title()
+                inputs_parts.append(f"{display_name}:")
+                inputs_parts.append(v.strip())
+                inputs_parts.append("")
         
-        return prompt_result['prompt']
+        inputs_section = "\n".join(inputs_parts)
+        
+        # Build TASK section
+        task_parts = ["TASK to process the INPUTS above", ""]
+        if task_prompt.strip():
+            task_parts.append(task_prompt.strip())
+        task_section = "\n".join(task_parts)
+        
+        # Build RESPONSE section
+        response_parts = ["RESPONSE to return", ""]
+        if output_description:
+            response_parts.append(output_description)
+        if output_instructions:
+            response_parts.append(output_instructions)
+        response_section = "\n".join(response_parts)
+        
+        # Combine all sections
+        full_prompt = f"{context_section}\n\n{inputs_section}\n\n{task_section}\n\n{response_section}"
+        
+        return full_prompt
         
     except Exception as e:
-        print(f"Error in structured prompt construction: {e}", file=sys.stderr)
-        # Fallback to original simple prompt construction
-        # Convert input keys to display names (e.g., "input1" -> "Input1", "idea_seed" -> "Idea Seed")
-        input_text_parts = []
-        for k, v in inputs.items():
-            if v is not None:
-                # Convert key to display name
-                display_name = k.replace('_', ' ').title()
-                input_text_parts.append(f"{display_name}:\n{v}")
-        input_text = "\n\n".join(input_text_parts)
-        return f"{system_prompt}\n\n{task_prompt}\n\n{input_text}"
+        print(f"Error in prompt construction: {e}", file=sys.stderr)
+        # Return a clear error message instead of malformed prompt
+        error_prompt = f"""SYSTEM ERROR: Prompt construction failed
+
+The LLM prompt could not be properly constructed due to the following error:
+{str(e)}
+
+Please report this error to the system administrator. The required prompt components are:
+- System prompt (for CONTEXT section)
+- Task prompt (for TASK section) 
+- Input format template (for INPUTS section)
+- Output format template (for RESPONSE section)
+
+This is a system configuration issue that needs to be resolved before LLM processing can continue."""
+        
+        return error_prompt
 
 def call_llm(prompt: str, parameters: Dict[str, Any], conn, timeout: int = 60) -> Dict[str, Any]:
     """Call LLM with prompt and parameters using the LLM service."""
@@ -368,11 +405,14 @@ def call_llm(prompt: str, parameters: Dict[str, Any], conn, timeout: int = 60) -
 def transform_output_to_format(output: str, format_spec: Dict[str, Any]) -> Dict[str, Any]:
     """Transform LLM output to match the required format specification."""
     try:
-        # Try to parse as JSON first
-        if output.strip().startswith('{') or output.strip().startswith('['):
-            parsed_output = json.loads(output)
+        # Use robust JSON extraction from markdown
+        parsed_json = extract_and_parse_json(output)
+        
+        if parsed_json is not None:
+            # Successfully extracted and parsed JSON
+            parsed_output = parsed_json
         else:
-            # If not JSON, create a simple text response
+            # If no JSON found, create a simple text response
             parsed_output = {"content": output.strip()}
         
         # Apply format transformation if specified
@@ -477,7 +517,7 @@ def get_step_prompt_templates(conn, step_id: int) -> Dict[str, str]:
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("""
             SELECT 
-                sys_prompt.prompt_text as system_prompt,
+                sys_prompt.system_prompt as system_prompt,
                 task_prompt.prompt_text as task_prompt
             FROM workflow_step_prompt wsp
             LEFT JOIN llm_prompt sys_prompt ON wsp.system_prompt_id = sys_prompt.id
