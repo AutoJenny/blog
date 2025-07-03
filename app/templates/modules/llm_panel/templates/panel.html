@@ -69,18 +69,32 @@
         if (runLLMBtn) {
             runLLMBtn.addEventListener('click', async function () {
                 try {
-                    // Get current workflow context from URL
+                    // Get current workflow context from URL and panel data attributes
                     const pathParts = window.location.pathname.split('/');
                     const postId = pathParts[3];
                     const stage = pathParts[4];
                     const substage = pathParts[5];
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const urlStep = urlParams.get('step') || 'initial';
-
-                    console.log('[PANEL] urlStep from URL:', urlStep);
-
-                    // Convert URL format (lowercase with underscores) to database format (title case with spaces)
-                    const step = urlStep.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    // Get step from panel data attributes (most reliable) or URL params
+                    const panel = document.querySelector('[data-current-stage]');
+                    let step = null;
+                    
+                    if (panel && panel.dataset.currentStep) {
+                        // Use the step from the panel data attributes (this is what the backend set)
+                        step = panel.dataset.currentStep;
+                        console.log('[PANEL] Using step from panel data:', step);
+                    } else {
+                        // Fallback to URL params
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const urlStep = urlParams.get('step');
+                        if (urlStep) {
+                            // Convert URL format (lowercase with underscores) to database format (title case with spaces)
+                            step = urlStep.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            console.log('[PANEL] Using step from URL params:', step);
+                        } else {
+                            throw new Error('No step found in panel data or URL parameters');
+                        }
+                    }
 
                     console.log('[PANEL] step after conversion:', step);
                     console.log('[PANEL] Running LLM with params:', { postId, stage, substage, step });

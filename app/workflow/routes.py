@@ -117,17 +117,57 @@ def workflow_index(post_id, stage=None, substage=None):
     if not post:
         abort(404, f"Post {post_id} not found.")
     
-    # If no stage/substage provided, redirect to planning/idea
+    # If no stage/substage provided, redirect to planning/idea with proper first step
     if not stage or not substage:
+        # Get the first step for planning/idea
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT wse.name
+                    FROM workflow_step_entity wse
+                    JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                    JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                    WHERE wst.name ILIKE 'planning' AND wsse.name ILIKE 'idea'
+                    ORDER BY wse.step_order ASC
+                    LIMIT 1
+                """)
+                first_step_result = cur.fetchone()
+                if first_step_result:
+                    first_step = first_step_result['name'].lower().replace(' ', '_')
+                else:
+                    # Fallback if no steps found
+                    first_step = 'initial_concept'
+        
         return redirect(url_for('workflow.workflow_index', 
             post_id=post_id, 
             stage='planning',
             substage='idea',
-            step='initial_concept'
+            step=first_step
         ))
     
     # Get step from query parameters, keeping original format for database lookup
-    step = request.args.get('step', 'initial_concept')
+    step = request.args.get('step')
+    
+    # If no step provided, get the first step for this substage
+    if not step:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT wse.name, wse.id
+                    FROM workflow_step_entity wse
+                    JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                    JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                    WHERE wst.name ILIKE %s AND wsse.name ILIKE %s
+                    ORDER BY wse.step_order ASC
+                    LIMIT 1
+                """, (stage, substage))
+                first_step_result = cur.fetchone()
+                if first_step_result:
+                    step = first_step_result['name'].lower().replace(' ', '_')
+                else:
+                    # Fallback to initial_concept if no steps found
+                    step = 'initial_concept'
+    
     # Convert URL format (lowercase with underscores) to DB format (title case with spaces)
     display_step = step.replace('_', ' ').title()
     
@@ -249,11 +289,30 @@ def stages(post_id):
     if not post:
         abort(404, f"Post {post_id} not found.")
     # Always redirect to the default stage/substage/step
+    # Get the first step for planning/idea
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT wse.name
+                FROM workflow_step_entity wse
+                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+                WHERE wst.name ILIKE 'planning' AND wsse.name ILIKE 'idea'
+                ORDER BY wse.step_order ASC
+                LIMIT 1
+            """)
+            first_step_result = cur.fetchone()
+            if first_step_result:
+                first_step = first_step_result['name'].lower().replace(' ', '_')
+            else:
+                # Fallback if no steps found
+                first_step = 'initial_concept'
+    
     return redirect(url_for('workflow.workflow_index', 
         post_id=post_id, 
         stage='planning',
         substage='idea',
-        step='initial_concept'
+        step=first_step
     ))
 
 @bp.route('/posts/<int:post_id>/<stage>/')

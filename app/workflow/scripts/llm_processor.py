@@ -690,8 +690,10 @@ def process_writing_step(post_id: int, stage: str, substage: str, step: str, sec
     """
     if stage != 'writing':
         raise ValueError("process_writing_step() is for Writing stage only. Use process_step() for Planning stage.")
+    # Normalize step name for robust matching
+    normalized_step = step.lower().replace('_', ' ').replace('-', ' ')
     # Only require section_ids for steps other than Section Headings/Create Sections
-    if not section_ids and step.lower() not in ["section headings", "create sections"]:
+    if not section_ids and normalized_step not in ["section headings", "create sections"]:
         raise ValueError("section_ids cannot be empty for Writing stage processing")
     diagnostic_data = {
         "db_fields": {},
@@ -766,30 +768,58 @@ def process_writing_step(post_id: int, stage: str, substage: str, step: str, sec
         output = llm_response['result']
         diagnostic_data["llm_response"] = output
         # Special handling for Section Headings step: parse and insert into post_section table
-        if step.lower() in ["section headings", "create sections"]:
+        if normalized_step in ["section headings", "create sections"]:
             # Parse the LLM output as JSON sections
-            sections = json.loads(output) if isinstance(output, str) else output
-            
+            # Extract JSON from the response (handle cases where LLM adds explanatory text)
+            json_start = output.find('[')
+            json_end = output.rfind(']') + 1
+            sections = []
+            if json_start != -1 and json_end > json_start:
+                json_str = output[json_start:json_end]
+                try:
+                    sections = json.loads(json_str)
+                except Exception as e:
+                    print(f"ERROR: Failed to parse JSON array from LLM output: {e}")
+                    return output
+            else:
+                try:
+                    sections = json.loads(output) if isinstance(output, str) else output
+                except Exception as e:
+                    print(f"ERROR: Failed to parse LLM output as JSON: {e}")
+                    return output
+
+            if not isinstance(sections, list):
+                print(f"ERROR: Parsed sections is not a list. Got: {type(sections)}")
+                return output
+
+            print(f"Parsed {len(sections)} sections from LLM response")
+
             # Clear existing sections and insert new ones
             with conn.cursor() as cur:
                 # Delete existing sections
                 cur.execute("DELETE FROM post_section WHERE post_id = %s", (post_id,))
                 print(f"Deleted existing sections for post {post_id}")
-                
+
                 # Insert new sections
+                inserted_count = 0
                 for i, section in enumerate(sections, 1):
-                    heading = section.get('title') or section.get('heading') or f'Section {i}'
+                    if not isinstance(section, dict):
+                        print(f"ERROR: Section {i} is not a dictionary: {type(section)}. Skipping.")
+                        continue
+                    heading = section.get('title', '') or section.get('heading', '') or f'Section {i}'
                     description = section.get('description', '')
-                    
+                    # Defensive: skip if heading is empty or looks like a JSON array
+                    if not heading or heading.strip().startswith('['):
+                        print(f"ERROR: Section {i} heading is invalid: {heading!r}. Skipping.")
+                        continue
+                    print(f"Inserting section {i}: {heading}")
                     cur.execute("""
                         INSERT INTO post_section (post_id, section_order, section_heading, section_description, status)
                         VALUES (%s, %s, %s, %s, 'draft')
                     """, (post_id, i, heading, description))
-                    print(f"Inserted section {i}: {heading}")
-                
-                # Commit the transaction
+                    inserted_count += 1
                 conn.commit()
-                print(f"Committed transaction - inserted {len(sections)} sections into post_section for post {post_id}")
+                print(f"Committed transaction - inserted {inserted_count} sections into post_section for post {post_id}")
         else:
             # Use section-specific save function for Writing stage
             output_mapping = get_user_output_mapping(conn, step_id, post_id)
