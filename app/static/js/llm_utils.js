@@ -21,12 +21,30 @@ async function runLLM({ postId, stage, substage, step, inputs = {} }) {
     }
 
     try {
-        // Use the correct endpoint path that matches the backend route
-        const url = `/api/workflow/posts/${postId}/${stage}/${substage}/llm`;
-        const requestBody = { 
-            step: step,
-            inputs: inputs  // Include multiple inputs in request
-        };
+        // Determine which endpoint to use based on stage
+        let url;
+        let requestBody;
+        
+        if (stage === 'writing') {
+            // WRITING STAGE: Use separate endpoint with section selection
+            url = `/api/workflow/posts/${postId}/${stage}/${substage}/writing_llm`;
+            
+            // Get selected section IDs from the page
+            const selectedSections = getSelectedSectionIds();
+            console.log('[LLM_UTILS] Selected sections for Writing stage:', selectedSections);
+            
+            requestBody = { 
+                step: step,
+                section_ids: selectedSections
+            };
+        } else {
+            // PLANNING STAGE: Use original endpoint
+            url = `/api/workflow/posts/${postId}/${stage}/${substage}/llm`;
+            requestBody = { 
+                step: step,
+                inputs: inputs  // Include multiple inputs in request
+            };
+        }
         
         console.log('[LLM_UTILS] Sending request to:', url);
         console.log('[LLM_UTILS] Request body:', requestBody);
@@ -75,6 +93,37 @@ async function runLLM({ postId, stage, substage, step, inputs = {} }) {
             btn.textContent = 'Run LLM';
         }
     }
+}
+
+/**
+ * Get selected section IDs from the Writing stage interface
+ * @returns {Array} Array of section IDs that are selected/checked
+ */
+function getSelectedSectionIds() {
+    const selectedSections = [];
+    
+    // Look for checked section checkboxes or selected section elements
+    const checkedSections = document.querySelectorAll('input[type="checkbox"][data-section-id]:checked');
+    checkedSections.forEach(checkbox => {
+        const sectionId = checkbox.getAttribute('data-section-id');
+        if (sectionId) {
+            selectedSections.push(parseInt(sectionId));
+        }
+    });
+    
+    // If no sections are explicitly selected, get all section IDs from the page
+    if (selectedSections.length === 0) {
+        const allSections = document.querySelectorAll('[data-section-id]');
+        allSections.forEach(element => {
+            const sectionId = element.getAttribute('data-section-id');
+            if (sectionId && !selectedSections.includes(parseInt(sectionId))) {
+                selectedSections.push(parseInt(sectionId));
+            }
+        });
+    }
+    
+    console.log('[LLM_UTILS] Found section IDs:', selectedSections);
+    return selectedSections;
 }
 
 // Utility to show the Ollama start alert/button

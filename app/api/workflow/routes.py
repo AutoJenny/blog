@@ -3,6 +3,7 @@ from app.db import get_db_conn
 import psycopg2.extras
 from app.api.workflow.decorators import handle_workflow_errors
 import json
+from app.workflow.scripts.llm_processor import load_step_config, process_writing_step
 
 from . import bp
 
@@ -913,44 +914,71 @@ def get_field_selection(step_id):
         }), 500
 
 @bp.route('/posts/<int:post_id>/<stage>/<substage>/llm', methods=['POST'])
-@handle_workflow_errors
 def run_workflow_llm(post_id, stage, substage):
-    """Execute an LLM request for a specific workflow step with multiple inputs."""
+    """Run LLM processing for a workflow step."""
     try:
         data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No JSON data provided'}), 400
-
         step = data.get('step')
+        
         if not step:
-            return jsonify({'error': 'Step is required'}), 400
-
-        # Get multiple inputs from request
-        inputs = data.get('inputs', {})
-        current_app.logger.info(f"LLM request with inputs: {inputs}")
-
-        # Import the process_step function from the workflow scripts
-        import sys
-        import os
-        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'workflow', 'scripts'))
-        from llm_processor import process_step
-
-        # Execute the LLM step with multiple inputs
-        result = process_step(post_id, stage, substage, step, frontend_inputs=inputs)
-
+            return jsonify({'error': 'Step parameter is required'}), 400
+        
+        # Get step configuration
+        step_config = load_step_config(post_id, stage, substage, step)
+        if not step_config:
+            return jsonify({'error': f'Step configuration not found for: {step}'}), 404
+        
+        # Process the step
+        output = process_step(post_id, stage, substage, step)
+        
         return jsonify({
             'success': True,
-            'data': {'result': result},
-            'error': None
+            'output': output,
+            'step': step
         })
-
+        
     except Exception as e:
-        current_app.logger.error(f"Error running LLM for step {step}: {str(e)}")
+        current_app.logger.error(f"Error in run_workflow_llm: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/posts/<int:post_id>/<stage>/<substage>/writing_llm', methods=['POST'])
+def run_writing_llm(post_id, stage, substage):
+    """
+    WRITING STAGE ONLY: Run LLM processing for Writing stage with section selection.
+    
+    This endpoint is completely separate from Planning stage processing.
+    DO NOT USE for Planning stage - use the standard /llm endpoint instead.
+    """
+    try:
+        data = request.get_json()
+        step = data.get('step')
+        section_ids = data.get('section_ids', [])  # List of section IDs to process
+        
+        if not step:
+            return jsonify({'error': 'Step parameter is required'}), 400
+        
+        # Validate this is Writing stage
+        if stage != 'writing':
+            return jsonify({'error': 'This endpoint is for Writing stage only'}), 400
+        
+        # Get step configuration
+        step_config = load_step_config(post_id, stage, substage, step)
+        if not step_config:
+            return jsonify({'error': f'Step configuration not found for: {step}'}), 404
+        
+        # Process the Writing stage step with section selection
+        output = process_writing_step(post_id, stage, substage, step, section_ids)
+        
         return jsonify({
-            'success': False,
-            'data': None,
-            'error': {'message': str(e)}
-        }), 500
+            'success': True,
+            'output': output,
+            'step': step,
+            'sections_processed': section_ids
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in run_writing_llm: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @bp.route('/llm/models', methods=['GET'])
 @handle_workflow_errors
