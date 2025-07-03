@@ -111,4 +111,104 @@ Enable robust, intuitive LLM actions that operate at the section level in the Wr
 - Do not touch Planning stage code or templates.
 - Do not implement backend or API changes at this stage.
 - Test thoroughly after each UI change.
-- Document every step and update the changes log. 
+- Document every step and update the changes log.
+
+---
+
+## [ADDED] Writing Stage LLM-Actions Framework: Directory, File Structure, and Integration Plan
+
+### 1. Overview
+- The Writing stage LLM-actions system will be implemented as a new, independent module.
+- All Planning stage (post-level) code, templates, and endpoints will remain untouched and firewalled.
+- The new system will provide section-centric LLM actions, with the same (purple) LLM-actions UI/UX and logic as the Planning stage, but adapted for per-section operation.
+
+### 2. Proposed Directory & File Structure
+
+**Backend (Python):**
+```
+app/
+  api/
+    writing_llm/                 # NEW: Writing-stage LLM API endpoints
+      __init__.py
+      routes.py                   # Section-level LLM action endpoints
+  writing/
+    llm_actions.py               # Section-level LLM action logic (no Planning imports)
+    ...
+```
+
+**Frontend (Templates & JS):**
+```
+app/
+  templates/
+    writing/
+      llm_panel.html             # NEW: Writing-stage LLM panel template (purple area)
+      ...
+  static/
+    js/
+      writing_llm_panel.js       # NEW: JS for Writing-stage LLM panel (section-centric)
+      ...
+```
+
+**Docs:**
+```
+docs/
+  temp/
+    llm_section_level_actions_mini_project.md  # This planning doc (updated)
+```
+
+### 3. API Endpoints (Writing Stage Only)
+- **POST** `/api/writing_llm/posts/<post_id>/sections/<section_id>/llm`  
+  Run LLM action for a single section, with post context.
+- **POST** `/api/writing_llm/posts/<post_id>/sections/batch_llm`  
+  Run LLM actions for multiple selected sections (batch processing).
+- **GET** `/api/writing_llm/posts/<post_id>/sections/<section_id>/fields`  
+  Get available fields for a section (for dropdowns).
+- **GET** `/api/writing_llm/posts/<post_id>/fields`  
+  Get post-level fields (for context in prompts).
+
+### 4. Templates & JS
+- `writing/llm_panel.html`: Identical in look/feel to Planning LLM panel, but operates on section context.
+- `static/js/writing_llm_panel.js`: Handles section selection, field mapping, and LLM action triggers for Writing stage.
+- **No imports or references to Planning stage code.**
+
+### 5. Field Mapping (Writing Stage)
+- **Per-section field mapping**: Store mapping in a new table or as a JSONB field in `post_section` (e.g., `llm_field_mapping`).
+- **Dropdowns**: Show both section-level and post-level fields, grouped and clearly labeled.
+- **Mapping Storage Example:**
+  - `post_section.llm_field_mapping` (JSONB):
+    ```json
+    {
+      "inputs": ["section_heading", "post_development.idea_scope"],
+      "output": "first_draft"
+    }
+    ```
+- **Field mapping UI**: Only available in Writing stage LLM panel.
+
+### 6. Data Integration Strategy
+- **Section as Primary:**
+  - All LLM actions are scoped to a section, with the section's data as the main input/output.
+  - The post-level data (from `post_development`) and other sections' data are passed as context only.
+- **No Overlap:**
+  - Section-level LLM actions never update post-level fields directly.
+  - Post-level LLM actions (Planning) never update section fields.
+- **Synchronization:**
+  - If section structure changes (add/delete/reorder), ensure `post_development.section_headings` is updated via existing triggers.
+  - Section content changes do not affect Planning data.
+
+### 7. Documentation & Firewalls
+- **All new endpoints, templates, and field mappings for Writing stage are documented in this planning doc.**
+- **Explicit note in all new files:**
+  - `// DO NOT IMPORT OR REFERENCE PLANNING STAGE CODE. This module is for Writing stage only.`
+- **Update this doc with every new file, endpoint, or mapping added.**
+
+### 8. Risks & Mitigations
+- **Risk:** Accidental import or reference to Planning code.
+  - **Mitigation:** Linting, code review, and explicit comments in all new files.
+- **Risk:** User confusion between Planning and Writing LLM panels.
+  - **Mitigation:** Clear UI labels and documentation.
+- **Risk:** Data drift between section and post-level fields.
+  - **Mitigation:** Rely on existing triggers for section structure; never update post-level fields from Writing LLM actions.
+
+---
+
+**No code will be written until you review and approve this plan.** 
