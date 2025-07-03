@@ -1024,4 +1024,115 @@ def get_first_step_for_substage(stage, substage):
                 'substage_name': step['substage_name'],
                 'stage_name': step['stage_name'],
                 'url_name': step['step_name'].lower().replace(' ', '_')
-            }) 
+            })
+
+@bp.route('/posts/<int:post_id>/sync-sections', methods=['POST'])
+@handle_workflow_errors
+def sync_sections(post_id):
+    """Synchronize sections between post_development.section_headings and post_section table."""
+    try:
+        data = request.get_json() or {}
+        direction = data.get('direction', 'both')  # 'to_sections', 'to_headings', or 'both'
+        
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Verify post exists
+                cur.execute("SELECT id FROM post WHERE id = %s", (post_id,))
+                if not cur.fetchone():
+                    return jsonify({'error': 'Post not found'}), 404
+                
+                # Get current state
+                cur.execute("""
+                    SELECT section_headings 
+                    FROM post_development 
+                    WHERE post_id = %s
+                """, (post_id,))
+                dev_result = cur.fetchone()
+                
+                cur.execute("""
+                    SELECT section_order, section_heading, section_description, status
+                    FROM post_section 
+                    WHERE post_id = %s 
+                    ORDER BY section_order
+                """, (post_id,))
+                sections = cur.fetchall()
+                
+                changes = []
+                
+                if direction in ['to_sections', 'both'] and dev_result and dev_result['section_headings']:
+                    # Sync from section_headings to post_section
+                    try:
+                        # Try to parse as direct JSON first
+                        headings_text = dev_result['section_headings']
+                        headings_data = None
+                        
+                        # Try direct JSON parsing
+                        try:
+                            headings_data = json.loads(headings_text)
+                        except json.JSONDecodeError:
+                            # Try to extract JSON from markdown code blocks
+                            import re
+                            json_match = re.search(r'```json\s*\n(.*?)\n```', headings_text, re.DOTALL)
+                            if json_match:
+                                try:
+                                    headings_data = json.loads(json_match.group(1))
+                                except json.JSONDecodeError:
+                                    pass
+                        
+                        if headings_data and isinstance(headings_data, list):
+                            # Clear existing sections
+                            cur.execute("DELETE FROM post_section WHERE post_id = %s", (post_id,))
+                            
+                            # Insert new sections from section_headings
+                            for i, heading in enumerate(headings_data):
+                                if isinstance(heading, dict):
+                                    title = heading.get('title', heading.get('heading', f'Section {i+1}'))
+                                    description = heading.get('description', '')
+                                    
+                                    cur.execute("""
+                                        INSERT INTO post_section (
+                                            post_id, section_order, section_heading, section_description, status
+                                        ) VALUES (%s, %s, %s, %s, %s)
+                                    """, (post_id, i+1, title, description, 'draft'))
+                            
+                            changes.append(f"Created {len(headings_data)} sections from section_headings")
+                        else:
+                            changes.append("No valid JSON data found in section_headings")
+                    except Exception as e:
+                        changes.append(f"Error parsing section_headings: {str(e)}")
+                
+                if direction in ['to_headings', 'both'] and sections:
+                    # Sync from post_section to section_headings
+                    section_headings = []
+                    for section in sections:
+                        section_headings.append({
+                            "order": section['section_order'],
+                            "heading": section['section_heading'],
+                            "description": section['section_description'] or "",
+                            "status": section['status'] or "draft"
+                        })
+                    
+                    # Update post_development
+                    cur.execute("""
+                        UPDATE post_development 
+                        SET section_headings = %s
+                        WHERE post_id = %s
+                    """, (json.dumps(section_headings), post_id))
+                    
+                    changes.append(f"Updated section_headings with {len(sections)} sections")
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Synchronization completed: {", ".join(changes)}',
+                    'changes': changes,
+                    'direction': direction
+                })
+                
+    except Exception as e:
+        current_app.logger.error(f"Error syncing sections for post {post_id}: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': {'message': str(e)}
+        }), 500 
