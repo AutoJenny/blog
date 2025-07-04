@@ -32,11 +32,19 @@ def process_writing_step(post_id, stage, substage, step, section_ids, frontend_i
                 if field:
                     save_section_output(conn, section_ids, result, field)
                     conn.close()
+                    # Return format expected by frontend
                     return {
                         'success': True,
-                        'result': result,
-                        'sections_processed': section_ids,
-                        'field_updated': field
+                        'results': [
+                            {
+                                'section_id': section_id,
+                                'output': result
+                            } for section_id in section_ids
+                        ],
+                        'parameters': {
+                            'field_updated': field,
+                            'sections_processed': section_ids
+                        }
                     }
             
             conn.close()
@@ -44,8 +52,14 @@ def process_writing_step(post_id, stage, substage, step, section_ids, frontend_i
         # Return standard result if no section-specific processing needed
         return {
             'success': True,
-            'result': result,
-            'sections_processed': section_ids if section_ids else []
+            'results': [
+                {
+                    'output': result
+                }
+            ],
+            'parameters': {
+                'sections_processed': section_ids if section_ids else []
+            }
         }
         
     except Exception as e:
