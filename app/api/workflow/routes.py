@@ -3,9 +3,57 @@ from app.db import get_db_conn
 import psycopg2.extras
 from app.api.workflow.decorators import handle_workflow_errors
 import json
-from app.workflow.scripts.llm_processor import load_step_config, process_step
+from app.workflow.scripts.llm_processor import load_step_config, process_step, save_section_output
 
 from . import bp
+
+def process_writing_step(post_id, stage, substage, step, section_ids, frontend_inputs):
+    """
+    Process a Writing stage step with section-specific handling.
+    
+    This function is specifically for Writing stage processing that needs to handle
+    section-specific output (saving to post_section table for specific sections).
+    """
+    try:
+        # Use the standard process_step for most of the processing
+        result = process_step(post_id, stage, substage, step, frontend_inputs)
+        
+        # If section_ids are provided, we need to save the output to specific sections
+        if section_ids:
+            # Get the output mapping to determine which field to update
+            from app.workflow.scripts.llm_processor import get_user_output_mapping, get_step_id, get_db_conn
+            conn = get_db_conn()
+            step_id = get_step_id(conn, stage, substage, step)
+            output_mapping = get_user_output_mapping(conn, step_id, post_id)
+            
+            if output_mapping and output_mapping.get('table') == 'post_section':
+                # Save to specific sections
+                field = output_mapping.get('field')
+                if field:
+                    save_section_output(conn, section_ids, result, field)
+                    conn.close()
+                    return {
+                        'success': True,
+                        'result': result,
+                        'sections_processed': section_ids,
+                        'field_updated': field
+                    }
+            
+            conn.close()
+        
+        # Return standard result if no section-specific processing needed
+        return {
+            'success': True,
+            'result': result,
+            'sections_processed': section_ids if section_ids else []
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e),
+            'sections_processed': section_ids if section_ids else []
+        }
 
 @bp.route('/posts/<int:post_id>', methods=['GET'])
 def get_post(post_id):
