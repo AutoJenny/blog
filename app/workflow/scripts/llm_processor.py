@@ -680,178 +680,59 @@ def process_step(post_id: int, stage: str, substage: str, step: str, frontend_in
         if 'conn' in locals():
             conn.close()
 
-def process_writing_step(post_id: int, stage: str, substage: str, step: str, section_ids: List[int], frontend_inputs: Dict[str, Any] = None):
-    """
-    WRITING STAGE ONLY: Process a workflow step for specific sections.
-    This function is specifically for Writing stage section processing.
-    DO NOT USE for Planning stage - use process_step() for Planning stage.
-    For the 'Section Headings' step, the LLM output is parsed as a list of sections and written directly to post_section.
-    post_section is now the only source of truth for sections.
-    """
-    if stage != 'writing':
-        raise ValueError("process_writing_step() is for Writing stage only. Use process_step() for Planning stage.")
-    # Normalize step name for robust matching
-    normalized_step = step.lower().replace('_', ' ').replace('-', ' ')
-    # Only require section_ids for steps other than Section Headings/Create Sections
-    if not section_ids and normalized_step not in ["section headings", "create sections"]:
-        raise ValueError("section_ids cannot be empty for Writing stage processing")
-    diagnostic_data = {
-        "db_fields": {},
-        "llm_message": "",
-        "llm_response": "",
-        "frontend_inputs": frontend_inputs or {},
-        "section_ids": section_ids
+def standardize_llm_response(success, results, step, sections_processed, parameters=None):
+    """Standardize LLM response format for consistent frontend handling"""
+    return {
+        'success': success,
+        'results': results,
+        'step': step,
+        'sections_processed': sections_processed,
+        'parameters': parameters or {}
     }
+
+def resolve_field_value(table_name, column_name, context):
+    """
+    Resolve field value from specified table based on context
+    
+    Args:
+        table_name: Name of the table (post_development, post_section, etc.)
+        column_name: Name of the column
+        context: Dict with post_id, section_id, etc.
+    
+    Returns:
+        Field value or None if not found
+    """
+    conn = get_db_conn()
     try:
-        config = load_step_config(post_id, stage, substage, step)
-        if 'settings' not in config or 'llm' not in config['settings']:
-            raise Exception(f"Step {step} does not have LLM configuration")
-        llm_config = config['settings']['llm']
-        conn = get_db_conn()
-        step_id = get_step_id(conn, stage, substage, step)
-        prompt_templates = get_step_prompt_templates(conn, step_id)
-        system_prompt = prompt_templates['system_prompt'] or llm_config.get('system_prompt', '')
-        task_prompt = prompt_templates['task_prompt'] or llm_config.get('task_prompt', '')
-        input_mapping = config.get('inputs', {})
-        if not input_mapping and 'input_mapping' in llm_config:
-            input_mapping = llm_config['input_mapping']
-        inputs = get_input_values(conn, post_id, input_mapping, frontend_inputs)
-        diagnostic_data["db_fields"] = collect_all_database_fields(conn, post_id, stage, substage, step, config)
-        input_format_template = None
-        output_format_template = None
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("""
-                SELECT 
-                    wse.default_input_format_id,
-                    wse.default_output_format_id
-                FROM workflow_step_entity wse
-                WHERE wse.id = %s
-            """, (step_id,))
-            step_format_result = cur.fetchone()
-            if step_format_result:
-                if step_format_result['default_input_format_id']:
-                    cur.execute("""
-                        SELECT 
-                            id,
-                            name,
-                            description,
-                            fields,
-                            llm_instructions,
-                            created_at,
-                            updated_at
-                        FROM workflow_format_template 
-                        WHERE id = %s
-                    """, (step_format_result['default_input_format_id'],))
-                    input_template = cur.fetchone()
-                    if input_template:
-                        input_format_template = dict(input_template)
-                if step_format_result['default_output_format_id']:
-                    cur.execute("""
-                        SELECT 
-                            id,
-                            name,
-                            description,
-                            fields,
-                            llm_instructions,
-                            created_at,
-                            updated_at
-                        FROM workflow_format_template 
-                        WHERE id = %s
-                    """, (step_format_result['default_output_format_id'],))
-                    output_template = cur.fetchone()
-                    if output_template:
-                        output_format_template = dict(output_template)
-        all_db_fields = diagnostic_data["db_fields"].get("post_development", {})
-        prompt = construct_prompt(system_prompt, task_prompt, inputs, all_db_fields, input_format_template, output_format_template, config)
-        diagnostic_data["llm_message"] = prompt
-        llm_response = call_llm(prompt, llm_config['parameters'], conn, llm_config.get('timeout', 60))
-        output = llm_response['result']
-        diagnostic_data["llm_response"] = output
-        # Special handling for Section Headings step: parse and insert into post_section table
-        if normalized_step in ["section headings", "create sections"]:
-            # Parse the LLM output as JSON sections
-            # Extract JSON from the response (handle cases where LLM adds explanatory text)
-            json_start = output.find('[')
-            json_end = output.rfind(']') + 1
-            sections = []
-            if json_start != -1 and json_end > json_start:
-                json_str = output[json_start:json_end]
-                try:
-                    sections = json.loads(json_str)
-                except Exception as e:
-                    print(f"ERROR: Failed to parse JSON array from LLM output: {e}")
-                    return output
-            else:
-                try:
-                    sections = json.loads(output) if isinstance(output, str) else output
-                except Exception as e:
-                    print(f"ERROR: Failed to parse LLM output as JSON: {e}")
-                    return output
-
-            if not isinstance(sections, list):
-                print(f"ERROR: Parsed sections is not a list. Got: {type(sections)}")
-                return output
-
-            print(f"Parsed {len(sections)} sections from LLM response")
-
-            # Clear existing sections and insert new ones
-            with conn.cursor() as cur:
-                # Delete existing sections
-                cur.execute("DELETE FROM post_section WHERE post_id = %s", (post_id,))
-                print(f"Deleted existing sections for post {post_id}")
-
-                # Insert new sections
-                inserted_count = 0
-                for i, section in enumerate(sections, 1):
-                    if not isinstance(section, dict):
-                        print(f"ERROR: Section {i} is not a dictionary: {type(section)}. Skipping.")
-                        continue
-                    heading = section.get('title', '') or section.get('heading', '') or f'Section {i}'
-                    description = section.get('description', '')
-                    # Defensive: skip if heading is empty or looks like a JSON array
-                    if not heading or heading.strip().startswith('['):
-                        print(f"ERROR: Section {i} heading is invalid: {heading!r}. Skipping.")
-                        continue
-                    print(f"Inserting section {i}: {heading}")
-                    cur.execute("""
-                        INSERT INTO post_section (post_id, section_order, section_heading, section_description, status)
-                        VALUES (%s, %s, %s, %s, 'draft')
-                    """, (post_id, i, heading, description))
-                    inserted_count += 1
-                conn.commit()
-                print(f"Committed transaction - inserted {inserted_count} sections into post_section for post {post_id}")
-        else:
-            # Use section-specific save function for Writing stage
-            output_mapping = get_user_output_mapping(conn, step_id, post_id)
-            if not output_mapping:
-                output_mapping = llm_config['output_mapping']
-            save_section_output(conn, section_ids, output, output_mapping['field'])
-        create_diagnostic_logs(
-            post_id, stage, substage, step,
-            diagnostic_data["db_fields"],
-            diagnostic_data["llm_message"],
-            diagnostic_data["llm_response"],
-            input_format_template,
-            output_format_template,
-            diagnostic_data["frontend_inputs"]
-        )
-        print(f"Successfully processed Writing stage step {step} for post {post_id}, sections {section_ids}")
-        return output
-    except Exception as e:
-        if diagnostic_data["llm_message"] or diagnostic_data["db_fields"]:
-            create_diagnostic_logs(
-                post_id, stage, substage, step,
-                diagnostic_data["db_fields"],
-                diagnostic_data["llm_message"],
-                diagnostic_data["llm_response"],
-                diagnostic_data.get("input_format_template"),
-                diagnostic_data.get("output_format_template"),
-                diagnostic_data["frontend_inputs"]
+        if table_name == 'post_development':
+            # Fetch from post_development table
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            cursor.execute(
+                "SELECT %s FROM post_development WHERE post_id = %s",
+                (column_name, context['post_id'])
             )
-        raise e
+            result = cursor.fetchone()
+            return result[column_name] if result else None
+            
+        elif table_name == 'post_section':
+            # Fetch from post_section table for specific section
+            if 'section_id' not in context:
+                raise ValueError("section_id required for post_section table")
+            
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            cursor.execute(
+                "SELECT %s FROM post_section WHERE id = %s AND post_id = %s",
+                (column_name, context['section_id'], context['post_id'])
+            )
+            result = cursor.fetchone()
+            return result[column_name] if result else None
+            
+        else:
+            # Future tables can be added here
+            raise ValueError(f"Unsupported table: {table_name}")
+            
     finally:
-        if 'conn' in locals():
-            conn.close()
+        conn.close()
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:

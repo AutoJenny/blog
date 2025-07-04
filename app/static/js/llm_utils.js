@@ -63,21 +63,56 @@ async function runLLM({ postId, stage, substage, step, inputs = {} }) {
             const data = await handleApiResponse(response);
             console.log('[LLM_UTILS] Response data:', data);
             
-            if (data.data && data.data.result) {
-                // Update all output textarea fields (not select elements)
+            // Handle standardized LLM response format
+            if (data.success && data.results) {
+                // Handle multiple results (for section processing)
+                data.results.forEach(result => {
+                    const sectionId = result.section_id;
+                    const output = result.output;
+                    
+                    if (sectionId) {
+                        // Update specific section output
+                        const sectionOutput = document.querySelector(`[data-section-id="${sectionId}"] textarea[data-field="output"]`);
+                        if (sectionOutput) {
+                            sectionOutput.value = output;
+                            sectionOutput.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    } else {
+                        // Update all outputs (for section creation or planning stage)
+                        const outputs = document.querySelectorAll('[data-section="outputs"] textarea');
+                        outputs.forEach(outputElement => {
+                            outputElement.value = output;
+                            outputElement.dispatchEvent(new Event('change', { bubbles: true }));
+                        });
+                        
+                        // Update the outputs summary in the accordion header
+                        const outputsSummary = document.getElementById('outputs-summary');
+                        if (outputsSummary) {
+                            const firstLine = output.split('\n')[0] || '';
+                            outputsSummary.innerHTML = `<span class="text-blue-500">[output]:</span> ${firstLine.substring(0, 100)}${firstLine.length > 100 ? '...' : ''}`;
+                        }
+                    }
+                });
+                
+                // Update parameters display if available
+                if (data.parameters) {
+                    updateParametersDisplay(data.parameters);
+                }
+            } else if (data.data && data.data.result) {
+                // Fallback for old response format (planning stage)
                 const outputs = document.querySelectorAll('[data-section="outputs"] textarea');
                 outputs.forEach(output => {
                     output.value = data.data.result;
-                    // Trigger change event
                     output.dispatchEvent(new Event('change', { bubbles: true }));
                 });
                 
-                // Update the outputs summary in the accordion header
                 const outputsSummary = document.getElementById('outputs-summary');
                 if (outputsSummary) {
                     const firstLine = data.data.result.split('\n')[0] || '';
                     outputsSummary.innerHTML = `<span class="text-blue-500">[basic_idea]:</span> ${firstLine.substring(0, 100)}${firstLine.length > 100 ? '...' : ''}`;
                 }
+            } else {
+                console.error('Invalid response format:', data);
             }
 
             return data;
@@ -125,6 +160,23 @@ function getSelectedSectionIds() {
     
     console.log('[LLM_UTILS] Found section IDs:', selectedSections);
     return selectedSections;
+}
+
+/**
+ * Update UI with LLM call parameters (tokens, model, etc.)
+ * @param {Object} parameters - LLM call parameters
+ */
+function updateParametersDisplay(parameters) {
+    const paramsContainer = document.getElementById('llm-parameters');
+    if (paramsContainer) {
+        paramsContainer.innerHTML = `
+            <div class="text-sm text-gray-600">
+                <span class="font-semibold">Model:</span> ${parameters.model || 'Unknown'} | 
+                <span class="font-semibold">Temperature:</span> ${parameters.temperature || 'Unknown'} | 
+                <span class="font-semibold">Tokens:</span> ${parameters.tokens_used || 'Unknown'}
+            </div>
+        `;
+    }
 }
 
 // Utility to show the Ollama start alert/button

@@ -352,4 +352,203 @@ def workflow_step_formats():
             return render_template('settings/workflow_step_formats.html',
                                 stages=stages,
                                 substages=substages,
-                                steps=steps) 
+                                steps=steps)
+
+# API endpoint for saving step order
+@bp.route('/api/step-order', methods=['POST'])
+def save_step_order():
+    """Save the order of steps within a substage."""
+    data = request.get_json()
+    substage_id = data.get('substage_id')
+    steps = data.get('steps', [])
+    
+    if not substage_id or not steps:
+        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor()
+            
+            # Update step order for each step
+            for step_data in steps:
+                step_id = step_data.get('step_id')
+                order = step_data.get('order')
+                
+                if step_id and order is not None:
+                    cur.execute("""
+                        UPDATE workflow_step_entity 
+                        SET step_order = %s 
+                        WHERE id = %s AND sub_stage_id = %s
+                    """, (order, step_id, substage_id))
+            
+            conn.commit()
+            
+        return jsonify({'success': True, 'message': 'Step order saved successfully'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error saving step order: {str(e)}'}), 500
+
+# API endpoint for saving individual step changes
+@bp.route('/api/step', methods=['POST'])
+def save_step():
+    """Save changes to an individual step."""
+    data = request.get_json()
+    step_id = data.get('id')
+    name = data.get('name')
+    stage_id = data.get('stage_id')
+    substage_id = data.get('substage_id')
+    config = data.get('config', '{}')
+    
+    if not step_id or not name or not stage_id or not substage_id:
+        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    
+    try:
+        # Validate JSON config
+        import json
+        if config:
+            json.loads(config)
+        
+        with get_db_conn() as conn:
+            cur = conn.cursor()
+            
+            # Update the step
+            cur.execute("""
+                UPDATE workflow_step_entity 
+                SET name = %s, sub_stage_id = %s, config = %s::jsonb
+                WHERE id = %s
+            """, (name, substage_id, config, step_id))
+            
+            if cur.rowcount == 0:
+                return jsonify({'success': False, 'message': 'Step not found'}), 404
+            
+            conn.commit()
+            
+        return jsonify({'success': True, 'message': 'Step saved successfully'})
+        
+    except json.JSONDecodeError:
+        return jsonify({'success': False, 'message': 'Invalid JSON configuration'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error saving step: {str(e)}'}), 500
+
+# API endpoint for getting substages by stage
+@bp.route('/api/substages')
+def get_substages():
+    """Get substages for a specific stage."""
+    stage_id = request.args.get('stage_id')
+    
+    if not stage_id:
+        return jsonify({'success': False, 'message': 'Missing stage_id parameter'}), 400
+    
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            
+            cur.execute("""
+                SELECT id, name, description
+                FROM workflow_sub_stage_entity
+                WHERE stage_id = %s
+                ORDER BY sub_stage_order
+            """, (stage_id,))
+            
+            substages = [dict(row) for row in cur.fetchall()]
+            
+        return jsonify({'success': True, 'substages': substages})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error fetching substages: {str(e)}'}), 500 
+
+# API endpoint to update llm_available_tables for a stage
+@bp.route('/api/stage/<int:stage_id>/llm_tables', methods=['POST'])
+def update_stage_llm_tables(stage_id):
+    data = request.get_json()
+    tables = data.get('llm_available_tables', [])
+    if not isinstance(tables, list):
+        return jsonify({'success': False, 'message': 'Invalid tables list'}), 400
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT config FROM workflow_stage_entity WHERE id = %s", (stage_id,))
+        row = cur.fetchone()
+        config = row[0] if row and row[0] else {}
+        if isinstance(config, str):
+            config = json.loads(config)
+        config['llm_available_tables'] = tables
+        cur.execute("UPDATE workflow_stage_entity SET config = %s WHERE id = %s", (json.dumps(config), stage_id))
+        conn.commit()
+    return jsonify({'success': True})
+
+# API endpoint to update llm_available_tables for a substage
+@bp.route('/api/substage/<int:substage_id>/llm_tables', methods=['POST'])
+def update_substage_llm_tables(substage_id):
+    data = request.get_json()
+    tables = data.get('llm_available_tables', [])
+    if not isinstance(tables, list):
+        return jsonify({'success': False, 'message': 'Invalid tables list'}), 400
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT config FROM workflow_sub_stage_entity WHERE id = %s", (substage_id,))
+        row = cur.fetchone()
+        config = row[0] if row and row[0] else {}
+        if isinstance(config, str):
+            config = json.loads(config)
+        config['llm_available_tables'] = tables
+        cur.execute("UPDATE workflow_sub_stage_entity SET config = %s WHERE id = %s", (json.dumps(config), substage_id))
+        conn.commit()
+    return jsonify({'success': True})
+
+# API endpoint to update llm_available_tables for a step
+@bp.route('/api/step/<int:step_id>/llm_tables', methods=['POST'])
+def update_step_llm_tables(step_id):
+    data = request.get_json()
+    tables = data.get('llm_available_tables', [])
+    if not isinstance(tables, list):
+        return jsonify({'success': False, 'message': 'Invalid tables list'}), 400
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT config FROM workflow_step_entity WHERE id = %s", (step_id,))
+        row = cur.fetchone()
+        config = row[0] if row and row[0] else {}
+        if isinstance(config, str):
+            config = json.loads(config)
+        config['llm_available_tables'] = tables
+        cur.execute("UPDATE workflow_step_entity SET config = %s WHERE id = %s", (json.dumps(config), step_id))
+        conn.commit()
+    return jsonify({'success': True})
+
+# API endpoint to get llm_available_tables for a stage
+@bp.route('/api/stage/<int:stage_id>/llm_tables', methods=['GET'])
+def get_stage_llm_tables(stage_id):
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT config FROM workflow_stage_entity WHERE id = %s", (stage_id,))
+        row = cur.fetchone()
+        config = row[0] if row and row[0] else {}
+        if isinstance(config, str):
+            config = json.loads(config)
+        tables = config.get('llm_available_tables', [])
+    return jsonify({'llm_available_tables': tables})
+
+# API endpoint to get llm_available_tables for a substage
+@bp.route('/api/substage/<int:substage_id>/llm_tables', methods=['GET'])
+def get_substage_llm_tables(substage_id):
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT config FROM workflow_sub_stage_entity WHERE id = %s", (substage_id,))
+        row = cur.fetchone()
+        config = row[0] if row and row[0] else {}
+        if isinstance(config, str):
+            config = json.loads(config)
+        tables = config.get('llm_available_tables', [])
+    return jsonify({'llm_available_tables': tables})
+
+# API endpoint to get llm_available_tables for a step
+@bp.route('/api/step/<int:step_id>/llm_tables', methods=['GET'])
+def get_step_llm_tables(step_id):
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT config FROM workflow_step_entity WHERE id = %s", (step_id,))
+        row = cur.fetchone()
+        config = row[0] if row and row[0] else {}
+        if isinstance(config, str):
+            config = json.loads(config)
+        tables = config.get('llm_available_tables', [])
+    return jsonify({'llm_available_tables': tables}) 

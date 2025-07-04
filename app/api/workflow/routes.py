@@ -3,7 +3,7 @@ from app.db import get_db_conn
 import psycopg2.extras
 from app.api.workflow.decorators import handle_workflow_errors
 import json
-from app.workflow.scripts.llm_processor import load_step_config, process_writing_step, process_step
+from app.workflow.scripts.llm_processor import load_step_config, process_step
 
 from . import bp
 
@@ -506,7 +506,7 @@ def get_fields():
 @handle_workflow_errors
 def get_field_mappings():
     """Get all field mappings with stage and substage details."""
-    with get_conn() as conn:
+    with get_db_conn() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             cur.execute("""
                 SELECT 
@@ -970,14 +970,10 @@ def run_writing_llm(post_id, stage, substage):
         frontend_inputs = data.get('inputs', {})
         
         # Process the Writing stage step with section selection
-        output = process_writing_step(post_id, stage, substage, step, section_ids, frontend_inputs)
+        result = process_writing_step(post_id, stage, substage, step, section_ids, frontend_inputs)
         
-        return jsonify({
-            'success': True,
-            'output': output,
-            'step': step,
-            'sections_processed': section_ids
-        })
+        # The result is already in standardized format, just return it
+        return jsonify(result)
         
     except Exception as e:
         current_app.logger.error(f"Error in run_writing_llm: {str(e)}")

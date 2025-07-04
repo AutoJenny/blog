@@ -65,6 +65,11 @@ class FieldSelector {
         this.initialized = false;
         this.eventHandlers = new Map();
         this.savedMappings = [];
+        // Get step_id, substage_id, stage_id from panel data attributes if available
+        const panel = document.querySelector('[data-step-id]');
+        this.stepId = panel ? panel.getAttribute('data-step-id') : null;
+        this.stageId = panel ? panel.getAttribute('data-stage-id') : null;
+        this.substageId = panel ? panel.getAttribute('data-substage-id') : null;
         this.initialize();
     }
 
@@ -107,7 +112,11 @@ class FieldSelector {
             
             // Get all available fields with their groupings
             console.log('[DEBUG] Fetching available fields...');
-            const fieldsResponse = await fetch('/api/workflow/fields/available');
+            let query = '';
+            if (this.stepId) query += `step_id=${this.stepId}`;
+            if (this.substageId) query += (query ? '&' : '') + `substage_id=${this.substageId}`;
+            if (this.stageId) query += (query ? '&' : '') + `stage_id=${this.stageId}`;
+            const fieldsResponse = await fetch(`/api/workflow/fields/available${query ? '?' + query : ''}`);
             if (!fieldsResponse.ok) {
                 throw new Error(`HTTP error! status: ${fieldsResponse.status}`);
             }
