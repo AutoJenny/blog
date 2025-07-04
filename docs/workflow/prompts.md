@@ -2,7 +2,81 @@
  
 ## Overview
 This guide documents the workflow prompt system, including system prompts and task prompts for each workflow stage.
- 
+
+## Data Flow and LLM Integration
+
+### Prompt Processing Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant A as API
+    participant P as Prompt Engine
+    participant L as LLM Service
+    participant D as Database
+
+    U->>F: Select LLM Action
+    F->>F: Gather LLM Settings
+    F->>A: Send Action Request
+    Note over F,A: Includes: section_ids, inputs, llm_settings
+    
+    A->>D: Load Action Configuration
+    D-->>A: Return prompt template
+    
+    A->>P: Prepare Prompt
+    P->>P: Replace [data:field] placeholders
+    P->>P: Apply LLM settings
+    
+    A->>L: Call LLM with prompt
+    Note over A,L: Timeout per request
+    L-->>A: Return response
+    
+    A->>A: Parse response
+    A->>D: Update database
+    A-->>F: Return standardized result
+    F->>F: Update UI
+```
+
+### LLM Settings Integration
+
+```mermaid
+graph TD
+    A[LLM Settings Panel] --> B[Model Selection]
+    A --> C[Temperature]
+    A --> D[Timeout]
+    A --> E[Max Tokens]
+    A --> F[Other Parameters]
+    
+    G[Action Request] --> H[Include Settings]
+    H --> I[Apply Per Request]
+    I --> J[Timeout Per Call]
+    I --> K[Model Per Call]
+    
+    L[Response Processing] --> M[Standardized Format]
+    M --> N[Success Status]
+    M --> O[Results Array]
+    M --> P[Parameters Metadata]
+```
+
+### Data Field Resolution
+
+```mermaid
+graph LR
+    A[Prompt Template] --> B[Find [data:field] placeholders]
+    B --> C[Resolve Field Source]
+    C --> D[post_development table]
+    C --> E[post_section table]
+    C --> F[Future tables]
+    
+    G[Context Awareness] --> H[Current Section ID]
+    G --> I[Current Post ID]
+    
+    J[Field Resolution] --> K[Fetch from correct table]
+    K --> L[Use context for row selection]
+    L --> M[Replace placeholder with value]
+```
+
 ## Prompt Types
 
 ### 1. System Prompts
@@ -31,6 +105,35 @@ Generate a clear, concise basic idea for a blog post that:
 4. Suggests potential angles
 
 Keep the response focused and actionable.
+```
+
+## LLM Settings and Configuration
+
+### Settings Panel Integration
+- **Location**: Purple panel on workflow pages
+- **Components**: Model selection, temperature, timeout, max tokens
+- **Application**: Settings applied per individual LLM request
+- **Timeout**: Each section gets its own timeout window
+
+### Response Standardization
+All LLM responses follow a consistent structure:
+```json
+{
+  "success": true,
+  "results": [
+    {
+      "section_id": 1,
+      "output": "Generated content",
+      "parameters": {
+        "model": "gpt-4",
+        "temperature": 0.7,
+        "tokens_used": 150
+      }
+    }
+  ],
+  "step": "action_name",
+  "sections_processed": [1, 2, 3]
+}
 ```
 
 ## Prompt Management
@@ -135,33 +238,27 @@ curl -s -X POST "http://localhost:5000/settings/workflow_prompts" \
    Distribute facts across sections...
    ```
 
-### 2. Authoring Stage
+### 2. Writing Stage
 
 #### Content Substage
-1. Draft
+1. Section Headings
    ```
-   Using the outline: [data:structure_outline]
-   And allocated facts: [data:structure_facts]
-   Write a draft that...
+   Based on the outline: [data:structure_outline]
+   Generate section headings and descriptions...
    ```
 
-2. Review
+2. Section Content
    ```
-   Review the draft: [data:content_draft]
+   For section: [data:section_heading]
+   Using allocated facts: [data:section_facts]
+   Write engaging content that...
+   ```
+
+#### Review Substage
+1. Content Review
+   ```
+   Review the section: [data:section_content]
    For clarity, engagement, and...
-   ```
-
-#### Meta Info Substage
-1. SEO
-   ```
-   Based on the content: [data:content_draft]
-   Generate SEO metadata including...
-   ```
-
-2. Social
-   ```
-   Using the content: [data:content_draft]
-   Create social media previews that...
    ```
 
 ### 3. Publishing Stage
@@ -184,7 +281,7 @@ curl -s -X POST "http://localhost:5000/settings/workflow_prompts" \
 1. Data References
    - Always use [data:field_name] syntax
    - Reference only fields available in the current context
-   - Verify field names in post_development table
+   - Verify field names in post_development and post_section tables
 
 2. Prompt Design
    - Keep instructions clear and specific
@@ -198,145 +295,29 @@ curl -s -X POST "http://localhost:5000/settings/workflow_prompts" \
    - Avoid redundant instructions
 
 4. Error Handling
-   - Provide fallback instructions
-   - Handle missing or invalid data
-   - Include validation criteria
+   - Include fallback instructions for missing data
+   - Specify what to do if LLM response is invalid
+   - Provide clear success criteria
 
-## Database Schema
+5. LLM Settings
+   - Use appropriate temperature for creativity vs consistency
+   - Set reasonable timeouts for each action type
+   - Monitor token usage for cost optimization
 
-### llm_prompt Table
-```sql
-CREATE TABLE llm_prompt (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(128) NOT NULL,
-    prompt_text TEXT NOT NULL,
-    prompt_type VARCHAR(32) NOT NULL,
-    stage VARCHAR(32),
-    substage VARCHAR(32),
-    step VARCHAR(32),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+## Universal Input Mapping
 
-### Prompt Types
-- system: Base context and instructions
-- task: Stage/step specific prompts
+### Current System
+- Input mappings are hardcoded to specific tables
+- Limited flexibility for different data sources
+- No dynamic table selection
 
-### Field References
-All [data:field_name] references must correspond to columns in:
-```sql
-CREATE TABLE post_development (
-    id SERIAL PRIMARY KEY,
-    post_id INTEGER REFERENCES post(id),
-    idea_seed TEXT,
-    basic_idea TEXT,
-    provisional_title TEXT,
-    research_facts TEXT,
-    research_concepts TEXT,
-    structure_outline TEXT,
-    structure_facts TEXT,
-    content_draft TEXT,
-    meta_info JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+### Future Enhancement
+- Allow table selection for each input/output mapping
+- Support multiple tables: post_development, post_section, future tables
+- Context-aware field resolution based on current section/post
 
-## Format Integration
-
-### Overview
-The prompt system works in conjunction with the format system (see formats.md) to ensure consistent data structures throughout the workflow. Each prompt can reference both input and output formats.
-
-### Using Formats in Prompts
-
-1. Input Format References
-   ```
-   Given the input in the following format:
-   [format:input]
-
-   Process the data: [data:field_name]
-   ```
-
-2. Output Format Requirements
-   ```
-   Generate output that strictly follows this format:
-   [format:output]
-
-   Ensure all required fields are included and properly formatted.
-   ```
-
-### Format Validation
-- Input data is validated against the input format before processing
-- LLM output is validated against the output format
-- Failed validations trigger reprocessing with format correction
-
-### Example Prompt with Formats
-```
-You are a blog post section creator.
-
-Input Format:
-[format:input]
-
-Output Format:
-[format:output]
-
-Given the section topic: [data:section_topic]
-Generate a well-structured section that:
-1. Follows the output format exactly
-2. Maintains consistent style
-3. Integrates smoothly with surrounding content
-
-Ensure all required fields in the output format are included.
-```
-
-## Workflow Step Prompt Configuration
-
-### Overview
-Each workflow step can have associated system and task prompts that are persisted in the `workflow_step_prompt` table. This configuration determines which prompts are used when the step is processed by the LLM.
-
-### Database Structure
-The workflow step prompts are stored in the following tables:
-- `workflow_step_prompt`: Links workflow steps to their system and task prompts
-- `workflow_step_entity`: Contains the step definitions
-- `llm_prompt`: Stores the actual prompt content
-
-### Saving Step Prompts
-To save prompt configuration for a workflow step:
-
-```bash
-curl -X POST "http://localhost:5000/workflow/api/step_prompts/{post_id}/{step_id}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "system_prompt_id": 71,  # Example: Scottish Culture Expert
-    "task_prompt_id": 86     # Example: Basic Idea Expander
-  }'
-```
-
-### Table Ownership Requirements
-- The `workflow_step_prompt` table must be owned by the same user as the `workflow_step_entity` and `llm_prompt` tables (typically `nickfiddes`)
-- If you encounter permission errors, verify table ownership with:
-  ```sql
-  SELECT tablename, tableowner 
-  FROM pg_tables 
-  WHERE tablename IN ('workflow_step_prompt', 'workflow_step_entity', 'llm_prompt');
-  ```
-- To fix ownership issues:
-  ```sql
-  ALTER TABLE workflow_step_entity OWNER TO nickfiddes;
-  ```
-
-### Best Practices
-1. Always verify table ownership before making schema changes
-2. Test prompt saving with curl before implementing UI changes
-3. Include both system and task prompts in configuration
-4. Verify prompt IDs exist in `llm_prompt` table before saving 
-
-### Format Configuration
-Each workflow step's prompt configuration should include:
-1. System prompt
-2. Task prompt
-3. Input format (optional)
-4. Output format (optional)
-
-See formats.md for detailed format configuration instructions. 
+### Implementation Plan
+1. **Database Schema**: Add table reference to field mappings
+2. **UI Enhancement**: Expand field mapping interface
+3. **Backend Logic**: Update field resolution to use specified tables
+4. **Documentation**: Update all relevant docs with new capabilities 
