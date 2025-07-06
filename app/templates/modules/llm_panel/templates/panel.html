@@ -9,6 +9,13 @@
             class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-colors duration-200 min-w-[200px]">
             Run LLM
         </button>
+
+        <!-- Sync Sections Button - Only show for section_headings step -->
+        <button id="sync-sections-btn" data-action="sync-sections"
+            class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-colors duration-200 min-w-[200px] hidden">
+            Sync to Sections
+        </button>
+
         <a href="#" onclick="startOllama(event)" class="text-blue-400 hover:text-blue-300 text-sm underline">Start
             Ollama</a>
     </div>
@@ -35,6 +42,7 @@
     import { runLLM } from "/static/js/llm_utils.js";
     import { FormatSelector } from "/static/js/format_selector.js";
     import { MultiInputManager } from "/static/modules/llm_panel/js/multi_input_manager.js";
+    import sectionPanel from "/static/js/workflow/template_view.js";
 
     // Initialize field selector
     window.addEventListener('DOMContentLoaded', () => {
@@ -74,11 +82,11 @@
                     const postId = pathParts[3];
                     const stage = pathParts[4];
                     const substage = pathParts[5];
-                    
+
                     // Get step from panel data attributes (most reliable) or URL params
                     const panel = document.querySelector('[data-current-stage]');
                     let step = null;
-                    
+
                     if (panel && panel.dataset.currentStep) {
                         // Use the step from the panel data attributes (this is what the backend set)
                         step = panel.dataset.currentStep;
@@ -115,6 +123,68 @@
                     alert('Error running LLM: ' + error.message);
                 }
             });
+        }
+
+        // Initialize Sync Sections button - only show for section_headings step
+        const syncSectionsBtn = document.getElementById('sync-sections-btn');
+        if (syncSectionsBtn) {
+            // Get current step to determine if we should show the sync button
+            const panel = document.querySelector('[data-current-stage]');
+            let currentStep = null;
+
+            if (panel && panel.dataset.currentStep) {
+                currentStep = panel.dataset.currentStep;
+            } else {
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlStep = urlParams.get('step');
+                if (urlStep) {
+                    currentStep = urlStep.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                }
+            }
+
+            // Show sync button only for Section Headings step
+            if (currentStep === 'Section Headings') {
+                syncSectionsBtn.classList.remove('hidden');
+                console.log('[PANEL] Showing sync button for Section Headings step');
+
+                // Add click handler for sync button
+                syncSectionsBtn.addEventListener('click', async function () {
+                    try {
+                        const pathParts = window.location.pathname.split('/');
+                        const postId = pathParts[3];
+
+                        console.log('[PANEL] Syncing sections for post:', postId);
+
+                        // Call the sync API
+                        const response = await fetch(`/api/workflow/posts/${postId}/sync-sections`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ direction: 'to_sections' })
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            alert('Sections synced successfully!');
+                            // Refresh the sections panel
+                            const sectionsPanel = document.getElementById('sections-panel-content');
+                            if (sectionsPanel) {
+                                const sectionResponse = await fetch(`/api/workflow/posts/${postId}/sections`);
+                                if (sectionResponse.ok) {
+                                    const sectionData = await sectionResponse.json();
+                                    const structure = { post: { id: postId }, sections: sectionData.sections || [] };
+                                    sectionsPanel.innerHTML = sectionPanel.renderStructure(structure);
+                                }
+                            }
+                        } else {
+                            throw new Error(result.error || 'Sync failed');
+                        }
+                    } catch (error) {
+                        console.error('Error syncing sections:', error);
+                        alert('Error syncing sections: ' + error.message);
+                    }
+                });
+            }
         }
     });
 
