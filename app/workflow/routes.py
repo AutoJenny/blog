@@ -941,29 +941,25 @@ def get_section_fields(post_id):
             {'field_name': 'elements.facts', 'display_name': 'Facts', 'db_field': 'facts_to_include'},
             {'field_name': 'elements.ideas', 'display_name': 'Ideas', 'db_field': 'ideas_to_include'},
             {'field_name': 'elements.themes', 'display_name': 'Themes', 'db_field': 'highlighting'},
+            {'field_name': 'uk_british', 'display_name': 'UK British', 'db_field': 'uk_british'},
         ],
-        'Resources': [
-            {'field_name': 'image_id', 'display_name': 'Image', 'db_field': 'image_id'},
-            {'field_name': 'video_url', 'display_name': 'Video URL', 'db_field': 'generated_image_url'},
-            {'field_name': 'audio_url', 'display_name': 'Audio URL', 'db_field': 'generated_image_url'},
-            {'field_name': 'duration', 'display_name': 'Duration', 'db_field': 'status'},
+        'Image Generation': [
+            {'field_name': 'image_concepts', 'display_name': 'Image Concepts', 'db_field': 'image_concepts'},
+            {'field_name': 'image_prompts', 'display_name': 'Image Prompts', 'db_field': 'image_prompts'},
+            {'field_name': 'generation', 'display_name': 'Generation', 'db_field': 'generation'},
+            {'field_name': 'optimization', 'display_name': 'Optimization', 'db_field': 'optimization'},
+            {'field_name': 'watermarking', 'display_name': 'Watermarking', 'db_field': 'watermarking'},
         ],
         'Images': [
-            {'field_name': 'image_id', 'display_name': 'Image Preview', 'db_field': 'image_id'},
-            {'field_name': 'section_metadata.image_captions', 'display_name': 'Image Captions', 'db_field': 'image_captions'},
-            {'field_name': 'section_metadata.alt_text', 'display_name': 'Alt Text', 'db_field': 'image_meta_descriptions'},
+            {'field_name': 'image_id', 'display_name': 'Image ID', 'db_field': 'image_id'},
+            {'field_name': 'image_captions', 'display_name': 'Image Captions', 'db_field': 'image_captions'},
+            {'field_name': 'image_meta_descriptions', 'display_name': 'Image Meta Descriptions', 'db_field': 'image_meta_descriptions'},
+            {'field_name': 'generated_image_url', 'display_name': 'Generated Image URL', 'db_field': 'generated_image_url'},
+            {'field_name': 'image_generation_metadata', 'display_name': 'Image Generation Metadata', 'db_field': 'image_generation_metadata'},
         ],
-        'Meta / SEO': [
-            {'field_name': 'keywords', 'display_name': 'Keywords', 'db_field': 'image_generation_metadata'},
-            {'field_name': 'section_metadata', 'display_name': 'Section Metadata', 'db_field': 'image_generation_metadata'},
-            {'field_name': 'social_media_snippets', 'display_name': 'Social Media Snippets', 'db_field': 'image_generation_metadata'},
-        ],
-        'Advanced / System': [
-            {'field_name': 'content_type', 'display_name': 'Content Type', 'db_field': 'status'},
+        'System': [
             {'field_name': 'position', 'display_name': 'Position', 'db_field': 'section_order'},
-            {'field_name': 'is_conclusion', 'display_name': 'Is Conclusion', 'db_field': 'status'},
-            {'field_name': 'created_at', 'display_name': 'Created At', 'db_field': 'status'},
-            {'field_name': 'updated_at', 'display_name': 'Updated At', 'db_field': 'status'},
+            {'field_name': 'status', 'display_name': 'Status', 'db_field': 'status'},
         ]
     }
     

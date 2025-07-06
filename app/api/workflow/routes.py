@@ -194,20 +194,40 @@ def manage_sections(post_id):
             return jsonify({'error': 'Post not found'}), 404
             
         if request.method == 'GET':
-            # Get all sections with their elements
+            # Get all sections with their elements and all database fields
             cur.execute("""
                 SELECT 
                     s.id,
                     s.section_heading as title,
                     s.section_description as description,
                     s.section_order as order_index,
+                    s.ideas_to_include,
+                    s.facts_to_include,
+                    s.first_draft as content,
+                    s.uk_british,
+                    s.highlighting,
+                    s.image_concepts,
+                    s.image_prompts,
+                    s.generation,
+                    s.optimization,
+                    s.watermarking,
+                    s.image_meta_descriptions,
+                    s.image_captions,
+                    s.generated_image_url,
+                    s.image_generation_metadata,
+                    s.image_id,
+                    s.status,
                     array_agg(DISTINCT e.element_text) FILTER (WHERE e.element_type = 'fact') as facts,
                     array_agg(DISTINCT e.element_text) FILTER (WHERE e.element_type = 'idea') as ideas,
                     array_agg(DISTINCT e.element_text) FILTER (WHERE e.element_type = 'theme') as themes
                 FROM post_section s
                 LEFT JOIN post_section_elements e ON e.section_id = s.id
                 WHERE s.post_id = %s
-                GROUP BY s.id, s.section_heading, s.section_description, s.section_order
+                GROUP BY s.id, s.section_heading, s.section_description, s.section_order, 
+                         s.ideas_to_include, s.facts_to_include, s.first_draft, s.uk_british, 
+                         s.highlighting, s.image_concepts, s.image_prompts, s.generation, 
+                         s.optimization, s.watermarking, s.image_meta_descriptions, s.image_captions, 
+                         s.generated_image_url, s.image_generation_metadata, s.image_id, s.status
                 ORDER BY s.section_order
             """, (post_id,))
             
@@ -219,6 +239,20 @@ def manage_sections(post_id):
                         'title': s['title'],
                         'description': s['description'],
                         'orderIndex': s['order_index'],
+                        'content': s['content'],
+                        'uk_british': s['uk_british'],
+                        'image_concepts': s['image_concepts'],
+                        'image_prompts': s['image_prompts'],
+                        'generation': s['generation'],
+                        'optimization': s['optimization'],
+                        'watermarking': s['watermarking'],
+                        'image_captions': s['image_captions'],
+                        'image_meta_descriptions': s['image_meta_descriptions'],
+                        'generated_image_url': s['generated_image_url'],
+                        'image_generation_metadata': s['image_generation_metadata'],
+                        'image_id': s['image_id'],
+                        'position': s['order_index'],
+                        'status': s['status'],
                         'elements': {
                             'facts': s['facts'] if s['facts'] and s['facts'][0] is not None else [],
                             'ideas': s['ideas'] if s['ideas'] and s['ideas'][0] is not None else [],

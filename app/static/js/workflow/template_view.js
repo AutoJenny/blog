@@ -26,53 +26,47 @@ function prettyValue(value) {
     }
 }
 
-// Group field definitions
+// Group field definitions - showing actual database field names from post_section table
+// API field names (key) map to database field names (label) for clarity
 const GROUPS = [
     {
         name: 'Content',
         fields: [
-            { key: 'title', label: 'Title' },
-            { key: 'subtitle', label: 'Subtitle' },
-            { key: 'description', label: 'Description' },
-            { key: 'content', label: 'Main Content' },
-            { key: 'elements.facts', label: 'Facts' },
-            { key: 'elements.ideas', label: 'Ideas' },
-            { key: 'elements.themes', label: 'Themes' },
+            { key: 'title', label: 'section_heading (DB)' },
+            { key: 'subtitle', label: 'section_description (DB)' },
+            { key: 'description', label: 'section_description (DB)' },
+            { key: 'content', label: 'first_draft (DB)' },
+            { key: 'elements.facts', label: 'facts_to_include (DB)' },
+            { key: 'elements.ideas', label: 'ideas_to_include (DB)' },
+            { key: 'elements.themes', label: 'highlighting (DB)' },
+            { key: 'uk_british', label: 'uk_british (DB)' },
         ]
     },
     {
-        name: 'Resources',
+        name: 'Image Generation',
         fields: [
-            { key: 'image_id', label: 'Image' },
-            { key: 'video_url', label: 'Video URL' },
-            { key: 'audio_url', label: 'Audio URL' },
-            { key: 'duration', label: 'Duration' },
+            { key: 'image_concepts', label: 'image_concepts (DB)' },
+            { key: 'image_prompts', label: 'image_prompts (DB)' },
+            { key: 'generation', label: 'generation (DB)' },
+            { key: 'optimization', label: 'optimization (DB)' },
+            { key: 'watermarking', label: 'watermarking (DB)' },
         ]
     },
     {
         name: 'Images',
         fields: [
-            { key: 'image_id', label: 'Image Preview' },
-            { key: 'section_metadata.image_captions', label: 'Image Captions' },
-            { key: 'section_metadata.alt_text', label: 'Alt Text' },
+            { key: 'image_id', label: 'image_id (DB)' },
+            { key: 'image_captions', label: 'image_captions (DB)' },
+            { key: 'image_meta_descriptions', label: 'image_meta_descriptions (DB)' },
+            { key: 'generated_image_url', label: 'generated_image_url (DB)' },
+            { key: 'image_generation_metadata', label: 'image_generation_metadata (DB)' },
         ]
     },
     {
-        name: 'Meta / SEO',
+        name: 'System',
         fields: [
-            { key: 'keywords', label: 'Keywords' },
-            { key: 'section_metadata', label: 'Section Metadata' },
-            { key: 'social_media_snippets', label: 'Social Media Snippets' },
-        ]
-    },
-    {
-        name: 'Advanced / System',
-        fields: [
-            { key: 'content_type', label: 'Content Type' },
-            { key: 'position', label: 'Position' },
-            { key: 'is_conclusion', label: 'Is Conclusion' },
-            { key: 'created_at', label: 'Created At' },
-            { key: 'updated_at', label: 'Updated At' },
+            { key: 'position', label: 'section_order (DB)' },
+            { key: 'status', label: 'status (DB)' },
         ]
     }
 ];
