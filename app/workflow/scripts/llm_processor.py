@@ -318,7 +318,7 @@ def resolve_format_references(text: str, data: Dict[str, Any]) -> str:
 
 def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str], all_db_fields: Dict[str, Any], 
                     input_format_template: Dict[str, Any] = None, output_format_template: Dict[str, Any] = None,
-                    step_config: Dict[str, Any] = None) -> str:
+                    step_config: Dict[str, Any] = None, stage: str = None) -> str:
     """
     Construct the full prompt for the LLM with proper CONTEXT, INPUTS, TASK, and RESPONSE sections.
     
@@ -330,9 +330,102 @@ def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str
         input_format_template: Input format template data
         output_format_template: Output format template data
         step_config: Step configuration data
+        stage: Workflow stage (e.g., 'writing', 'planning', etc.)
     
     Returns:
         Structured prompt string with CONTEXT, INPUTS, TASK, and RESPONSE sections
+    """
+    try:
+        # Check if this is Writing stage - use hard-coded structure
+        if stage == 'writing':
+            return construct_writing_stage_prompt(system_prompt, inputs, output_format_template)
+        
+        # Use existing logic for other stages
+        return construct_standard_prompt(system_prompt, task_prompt, inputs, all_db_fields, 
+                                       input_format_template, output_format_template, step_config)
+        
+    except Exception as e:
+        print(f"Error in prompt construction: {e}", file=sys.stderr)
+        # Return a clear error message instead of malformed prompt
+        error_prompt = f"""SYSTEM ERROR: Prompt construction failed
+
+The LLM prompt could not be properly constructed due to the following error:
+{str(e)}
+
+Please report this error to the system administrator. The required prompt components are:
+- System prompt (for CONTEXT section)
+- Task prompt (for TASK section) 
+- Input format template (for INPUTS section)
+- Output format template (for RESPONSE section)
+
+This is a system configuration issue that needs to be resolved before LLM processing can continue."""
+        
+        return error_prompt
+
+def construct_writing_stage_prompt(system_prompt: str, inputs: Dict[str, str], 
+                                 output_format_template: Dict[str, Any]) -> str:
+    """
+    Hard-coded prompt structure for Writing stage only.
+    This function creates a consistent, reliable prompt structure for all Writing stage steps.
+    """
+    try:
+        # CONTEXT section (expert knowledge)
+        context_section = f"""CONTEXT to orientate you
+
+{system_prompt.strip() if system_prompt else 'You are an expert in Scottish history, culture, and traditions. You have deep knowledge of clan history, tartans, kilts, quaichs, and other aspects of Scottish heritage. You write in a clear, engaging style that balances historical accuracy with accessibility for a general audience.'}"""
+
+        # INPUTS section (hard-coded structure)
+        avoid_topics_text = ""
+        if inputs.get('avoid_topics'):
+            avoid_topics_text = "\n".join([f"- {topic}" for topic in inputs.get('avoid_topics', [])])
+        
+        inputs_section = f"""INPUTS for your TASK below
+(Mixed plain text & JSON)
+The inputs are a combination of plain text and structured JSON. Interpret each type appropriately.
+
+WRITE ABOUT THIS SPECIFIC SECTION:
+Section Heading: {inputs.get('write_about_section_heading', '')}
+Section Description: {inputs.get('write_about_section_description', '')}
+
+AVOID THESE TOPICS (DO NOT WRITE ABOUT):
+{avoid_topics_text}
+
+CONTEXT:
+Idea Scope: {inputs.get('idea_scope', '')}
+
+Basic Idea: {inputs.get('basic_idea', '')}"""
+
+        # TASK section (hard-coded for Writing stage)
+        task_section = """TASK to process the INPUTS above
+
+We are authoring a blog article about the IDEA SCOPE and BASIC IDEA in the inputs above. These have been organised into Sections with titles and descriptions provided in the SECTION_HEADINGS above (note the plural in the field name).
+
+Your task is to write 2-3 HTML paragraphs (100-150 words) on the topic of the SECTION_HEADING (note singular) and SECTION_DESCRIPTION in the inputs above. Stick to this narrow topic, avoiding overlapping with related topics outlined in the full SECTION_HEADINGS input (note plural). 
+
+You must not use headings, numbering, and NO introduction, conclusions or commentary. Write only the topic content in a way that will flow naturally from and into other topic sections. Use only UK British idioms and spellings. Avoid long words or florid expressions."""
+
+        # RESPONSE section
+        output_instructions = output_format_template.get('llm_instructions', '') if output_format_template else 'Return your response as plain text using British English spellings and conventions (e.g., colour, centre, organisation). Do not include any JSON, metadata, or commentary—just the text.'
+        response_section = f"""RESPONSE to return
+
+{output_instructions}"""
+
+        return f"{context_section}\n\n{inputs_section}\n\n{task_section}\n\n{response_section}"
+        
+    except Exception as e:
+        print(f"Error in Writing stage prompt construction: {e}", file=sys.stderr)
+        return f"""SYSTEM ERROR: Writing stage prompt construction failed
+
+Error: {str(e)}
+
+This is a system configuration issue that needs to be resolved before LLM processing can continue."""
+
+def construct_standard_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str], all_db_fields: Dict[str, Any], 
+                            input_format_template: Dict[str, Any] = None, output_format_template: Dict[str, Any] = None,
+                            step_config: Dict[str, Any] = None) -> str:
+    """
+    Standard prompt construction for non-Writing stages (Planning, etc.).
+    This maintains the existing flexible prompt system for other stages.
     """
     try:
         # Validate required components
@@ -372,41 +465,14 @@ def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str
             inputs_parts.append(input_instructions)
         inputs_parts.append("")
         
-        # Check if this is a Writing stage section-specific prompt
-        if "write_about_section_heading" in inputs and "avoid_topics" in inputs:
-            # Writing stage format with clear structure
-            inputs_parts.append("WRITE ABOUT THIS SPECIFIC SECTION:")
-            inputs_parts.append(f"Section Heading: {inputs.get('write_about_section_heading', '')}")
-            inputs_parts.append(f"Section Description: {inputs.get('write_about_section_description', '')}")
-            inputs_parts.append("")
-            
-            # Add avoid topics section
-            avoid_topics = inputs.get('avoid_topics', [])
-            if avoid_topics:
-                inputs_parts.append("AVOID THESE TOPICS (DO NOT WRITE ABOUT):")
-                for topic in avoid_topics:
-                    inputs_parts.append(f"- {topic}")
+        # Add input data with proper titles
+        for k, v in inputs.items():
+            if v is not None and v.strip():
+                # Convert key to display name (e.g., "basic_idea" -> "Basic Idea")
+                display_name = k.replace('_', ' ').title()
+                inputs_parts.append(f"{display_name}:")
+                inputs_parts.append(v.strip())
                 inputs_parts.append("")
-            
-            # Add context information
-            if inputs.get('idea_scope'):
-                inputs_parts.append("CONTEXT:")
-                inputs_parts.append(f"Idea Scope: {inputs.get('idea_scope', '')}")
-                inputs_parts.append("")
-            
-            if inputs.get('basic_idea'):
-                inputs_parts.append(f"Basic Idea: {inputs.get('basic_idea', '')}")
-                inputs_parts.append("")
-        else:
-            # Standard format for other stages
-            # Add input data with proper titles
-            for k, v in inputs.items():
-                if v is not None and v.strip():
-                    # Convert key to display name (e.g., "basic_idea" -> "Basic Idea")
-                    display_name = k.replace('_', ' ').title()
-                    inputs_parts.append(f"{display_name}:")
-                    inputs_parts.append(v.strip())
-                    inputs_parts.append("")
         
         inputs_section = "\n".join(inputs_parts)
         
@@ -430,22 +496,12 @@ def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str
         return full_prompt
         
     except Exception as e:
-        print(f"Error in prompt construction: {e}", file=sys.stderr)
-        # Return a clear error message instead of malformed prompt
-        error_prompt = f"""SYSTEM ERROR: Prompt construction failed
+        print(f"Error in standard prompt construction: {e}", file=sys.stderr)
+        return f"""SYSTEM ERROR: Standard prompt construction failed
 
-The LLM prompt could not be properly constructed due to the following error:
-{str(e)}
-
-Please report this error to the system administrator. The required prompt components are:
-- System prompt (for CONTEXT section)
-- Task prompt (for TASK section) 
-- Input format template (for INPUTS section)
-- Output format template (for RESPONSE section)
+Error: {str(e)}
 
 This is a system configuration issue that needs to be resolved before LLM processing can continue."""
-        
-        return error_prompt
 
 def call_llm(prompt: str, parameters: Dict[str, Any], conn, timeout: int = 60) -> Dict[str, Any]:
     """Call LLM with prompt and parameters using the LLM service."""
@@ -902,7 +958,8 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
             all_db_fields,
             input_format_template,
             output_format_template,
-            step_config
+            step_config,
+            "writing"  # Specify the stage for the prompt construction
         )
         
         # Call LLM with timeout
@@ -1099,7 +1156,7 @@ def process_step(post_id: int, stage: str, substage: str, step: str, frontend_in
 
         # Construct and send prompt
         all_db_fields = diagnostic_data["db_fields"].get("post_development", {})
-        prompt = construct_prompt(system_prompt, task_prompt, inputs, all_db_fields, input_format_template, output_format_template, config)
+        prompt = construct_prompt(system_prompt, task_prompt, inputs, all_db_fields, input_format_template, output_format_template, config, stage)
         diagnostic_data["llm_message"] = prompt
 
         # Call LLM
