@@ -171,6 +171,20 @@ def workflow_field_mapping():
         """)
         steps = [dict(row) for row in cur.fetchall()]
         
+        # DEBUG: Log the data being passed to template
+        with open('logs/debug_workflow_data.txt', 'w') as f:
+            f.write(f"[DEBUG] Stages: {len(stages)}\n")
+            for stage in stages:
+                f.write(f"  Stage {stage['id']}: {stage['name']}\n")
+            
+            f.write(f"[DEBUG] Substages: {len(substages)}\n")
+            for substage in substages:
+                f.write(f"  Substage {substage['substage_id']}: {substage['substage_name']} (stage {substage['stage_id']})\n")
+            
+            f.write(f"[DEBUG] Steps: {len(steps)}\n")
+            for step in steps:
+                f.write(f"  Step {step['id']}: {step['name']} (substage {step['substage_id']})\n")
+        
         return render_template('settings/workflow_field_mapping.html',
                              stages=stages,
                              substages=substages,

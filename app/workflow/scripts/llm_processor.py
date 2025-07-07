@@ -12,6 +12,11 @@ from app.api.workflow.format_validator import FormatValidator
 from app.llm.services import LLMService, parse_tagged_prompt_to_messages, modular_prompt_to_canonical
 from app.utils.json_extractor import extract_and_parse_json, extract_json_with_fallback
 from datetime import datetime
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Import external prompt constructor
 try:
@@ -369,12 +374,17 @@ def construct_writing_stage_prompt(system_prompt: str, inputs: Dict[str, str],
     This function creates a consistent, reliable prompt structure for all Writing stage steps.
     """
     try:
-        # CONTEXT section (expert knowledge)
+        # CONTEXT section (expert knowledge + broad article context)
         context_section = f"""CONTEXT to orientate you
 
-{system_prompt.strip() if system_prompt else 'You are an expert in Scottish history, culture, and traditions. You have deep knowledge of clan history, tartans, kilts, quaichs, and other aspects of Scottish heritage. You write in a clear, engaging style that balances historical accuracy with accessibility for a general audience.'}"""
+{system_prompt.strip() if system_prompt else 'You are an expert in Scottish history, culture, and traditions. You have deep knowledge of clan history, tartans, kilts, quaichs, and other aspects of Scottish heritage. You write in a clear, engaging style that balances historical accuracy with accessibility for a general audience.'}
 
-        # INPUTS section (hard-coded structure)
+BROAD SUBJECT OF WIDER ARTICLE:
+Idea Scope: {inputs.get('idea_scope', '')}
+
+Basic Idea: {inputs.get('basic_idea', '')}"""
+
+        # INPUTS section (section-specific details only)
         avoid_topics_text = ""
         if inputs.get('avoid_topics'):
             avoid_topics_text = "\n".join([f"- {topic}" for topic in inputs.get('avoid_topics', [])])
@@ -388,17 +398,12 @@ Section Heading: {inputs.get('write_about_section_heading', '')}
 Section Description: {inputs.get('write_about_section_description', '')}
 
 AVOID THESE TOPICS (DO NOT WRITE ABOUT):
-{avoid_topics_text}
-
-CONTEXT:
-Idea Scope: {inputs.get('idea_scope', '')}
-
-Basic Idea: {inputs.get('basic_idea', '')}"""
+{avoid_topics_text}"""
 
         # TASK section (hard-coded for Writing stage)
         task_section = """TASK to process the INPUTS above
 
-We are authoring a blog article about the IDEA SCOPE and BASIC IDEA in the inputs above. These have been organised into Sections with titles and descriptions provided in the SECTION_HEADINGS above (note the plural in the field name).
+We are authoring a blog article about the IDEA SCOPE and BASIC IDEA in the context above. These have been organised into Sections with titles and descriptions provided in the SECTION_HEADINGS above (note the plural in the field name).
 
 Your task is to write 2-3 HTML paragraphs (100-150 words) on the topic of the SECTION_HEADING (note singular) and SECTION_DESCRIPTION in the inputs above. Stick to this narrow topic, avoiding overlapping with related topics outlined in the full SECTION_HEADINGS input (note plural). 
 
@@ -621,9 +626,14 @@ def save_section_output(conn, section_ids: List[int], output: str, field: str):
     query = f"UPDATE post_section SET {field} = %s WHERE id IN ({placeholders})"
     params = [output] + section_ids
     
+    logger.info(f"Saving section output: field={field}, section_ids={section_ids}, output_length={len(output)}")
+    logger.debug(f"SQL Query: {query}")
+    logger.debug(f"SQL Params: {params}")
+    
     with conn.cursor() as cur:
         cur.execute(query, params)
         conn.commit()
+        logger.info(f"Successfully saved output to {field} for sections {section_ids}")
 
 def get_step_id(conn, stage: str, substage: str, step: str) -> int:
     """Get step ID from stage, substage, and step names."""
@@ -672,21 +682,27 @@ def get_step_format_config(conn, step_id: int, post_id: int) -> Optional[Dict[st
 
 def get_user_output_mapping(conn, step_id: int, post_id: int) -> Optional[Dict[str, str]]:
     """Get the user's output field mapping for a workflow step, falling back to default if not set."""
+    logger.info(f"Getting output mapping for step_id: {step_id}, post_id: {post_id}")
+    
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("SELECT config FROM workflow_step_entity WHERE id = %s", (step_id,))
         result = cur.fetchone()
         if not result or not result['config']:
+            logger.warning(f"No config found for step_id: {step_id}")
             return None
         
         config = result['config']
+        logger.debug(f"Retrieved config for step_id {step_id}: {config}")
         
         # Check for user output mapping first
         user_mapping = config.get('settings', {}).get('llm', {}).get('user_output_mapping')
         if user_mapping:
+            logger.info(f"Found user output mapping: {user_mapping}")
             return user_mapping
         
         # Fallback to default mapping
         default_mapping = config.get('settings', {}).get('llm', {}).get('output_mapping')
+        logger.info(f"Using default output mapping: {default_mapping}")
         return default_mapping
 
 def get_step_prompt_templates(conn, step_id: int) -> Dict[str, str]:
@@ -901,6 +917,15 @@ Section Description: {section_data["current_section"]["description"]}
         print(f"Error getting section-specific prompts: {str(e)}", file=sys.stderr)
         raise
 
+def get_step_name_by_id(conn, step_id: int) -> str:
+    """Get the step name from workflow_step_entity by step_id."""
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("SELECT name FROM workflow_step_entity WHERE id = %s", (step_id,))
+        result = cur.fetchone()
+        if not result:
+            raise Exception(f"Step name not found for step_id {step_id}")
+        return result['name']
+
 def process_single_section(conn, post_id: int, step_id: int, section_id: int, selected_section_ids: List[int], 
                           timeout_per_section: int = 300) -> Dict[str, Any]:
     """
@@ -918,8 +943,10 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
         prompt_data = build_section_specific_prompt(conn, post_id, step_id, selected_section_ids, section_id)
         section_heading = prompt_data["section_data"]["current_section"]["heading"]
         
+        # Get step name for this step_id
+        step_name = get_step_name_by_id(conn, step_id)
         # Get step configuration for LLM parameters
-        step_config = load_step_config(post_id, "writing", "content", "author_first_drafts")  # Default step
+        step_config = load_step_config(post_id, "writing", "content", step_name)
         llm_config = step_config.get('settings', {}).get('llm', {})
         
         # Get format templates from database
@@ -968,9 +995,18 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
         
         # Save to specific section
         output_mapping = get_user_output_mapping(conn, step_id, post_id)
+        logger.info(f"Step ID: {step_id}, Step Name: {step_name}")
+        logger.info(f"Output mapping: {output_mapping}")
+        logger.info(f"Output content length: {len(output) if output else 0}")
+        
         if output_mapping and output_mapping.get('table') == 'post_section':
             field = output_mapping.get('field', 'first_draft')
+            logger.info(f"Saving to field: {field} for section {section_id}")
             save_section_output(conn, [section_id], output, field)
+            logger.info(f"Save completed")
+        else:
+            logger.warning(f"No valid output mapping found or wrong table")
+            logger.warning(f"output_mapping: {output_mapping}")
         
         return {
             "success": True,
@@ -996,7 +1032,7 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
                 post_id=post_id,
                 stage="writing",
                 substage="content", 
-                step="author_first_drafts",
+                step=step_name if 'step_name' in locals() else "unknown",
                 db_fields=all_db_fields,
                 llm_message=prompt if prompt else "[Prompt not constructed]",
                 llm_response=output if output else "[No response or error]",

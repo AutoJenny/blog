@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Field Selector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .field-selector {
+            width: 300px;
+            padding: 8px;
+            margin: 10px 0;
+        }
+
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Debug Field Selector</h1>
+
+    <div class="debug-info">
+        <h3>URL Information:</h3>
+        <div id="url-info"></div>
+    </div>
+
+    <div class="debug-info">
+        <h3>Stage Detection:</h3>
+        <div id="stage-info"></div>
+    </div>
+
+    <div class="debug-info">
+        <h3>Field Selector Test:</h3>
+        <select class="field-selector" data-target="output1" data-section="outputs" data-current-substage="content">
+            <!-- Options will be populated by JavaScript -->
+        </select>
+        <div id="field-selector-results"></div>
+    </div>
+
+    <script type="module">
+        // Mock the FieldSelector class for debugging
+        class DebugFieldSelector {
+            constructor(postId, stage, substage) {
+                this.fields = {};
+                this.postId = postId;
+                this.stage = stage;
+                this.substage = substage;
+                this.init();
+            }
+
+            getPostIdFromUrl() {
+                const match = window.location.pathname.match(/\/posts\/(\d+)/);
+                return match ? match[1] : null;
+            }
+
+            getStageFromUrl() {
+                const pathParts = window.location.pathname.split('/');
+                return pathParts[4] || null;
+            }
+
+            getSubstageFromUrl() {
+                const pathParts = window.location.pathname.split('/');
+                return pathParts[5] || null;
+            }
+
+            async init() {
+                try {
+                    // Display URL information
+                    this.displayUrlInfo();
+
+                    // Display stage detection
+                    this.displayStageInfo();
+
+                    // Fetch and display fields
+                    await this.fetchFields();
+                    this.initializeSelector();
+                } catch (error) {
+                    console.error('Error initializing field selector:', error);
+                    document.getElementById('field-selector-results').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                }
+            }
+
+            displayUrlInfo() {
+                const pathParts = window.location.pathname.split('/');
+                const urlInfo = document.getElementById('url-info');
+                urlInfo.innerHTML = `
+                    <p><strong>Path:</strong> ${window.location.pathname}</p>
+                    <p><strong>Path Parts:</strong> ${JSON.stringify(pathParts)}</p>
+                    <p><strong>Post ID (pathParts[3]):</strong> ${pathParts[3] || 'null'}</p>
+                    <p><strong>Stage (pathParts[4]):</strong> ${pathParts[4] || 'null'}</p>
+                    <p><strong>Substage (pathParts[5]):</strong> ${pathParts[5] || 'null'}</p>
+                `;
+            }
+
+            displayStageInfo() {
+                const stageInfo = document.getElementById('stage-info');
+                const detectedStage = this.getStageFromUrl();
+                const detectedSubstage = this.getSubstageFromUrl();
+                const isWritingStage = detectedStage === 'writing' || detectedStage === 'Writing';
+
+                stageInfo.innerHTML = `
+                    <p><strong>Detected Stage:</strong> ${detectedStage}</p>
+                    <p><strong>Detected Substage:</strong> ${detectedSubstage}</p>
+                    <p><strong>Is Writing Stage:</strong> ${isWritingStage ? 'Yes' : 'No'}</p>
+                    <p><strong>Constructor Stage:</strong> ${this.stage}</p>
+                    <p><strong>Constructor Substage:</strong> ${this.substage}</p>
+                `;
+            }
+
+            async fetchFields() {
+                try {
+                    // Check if we're in the Writing stage
+                    if (this.stage === 'writing' || this.stage === 'Writing') {
+                        console.log('Debug: Detected Writing stage, fetching post_section fields...');
+                        const response = await fetch('/api/workflow/fields/post_section');
+                        if (!response.ok) throw new Error('Failed to fetch post_section fields');
+                        this.fields = await response.json();
+                        console.log('Debug: Fetched post_section fields:', this.fields);
+                    } else {
+                        console.log('Debug: Not Writing stage, fetching regular fields...');
+                        const response = await fetch('/workflow/api/field_mappings/');
+                        if (!response.ok) throw new Error('Failed to fetch fields');
+                        this.fields = await response.json();
+                        console.log('Debug: Fetched regular fields:', this.fields);
+                    }
+                } catch (error) {
+                    console.error('Error fetching fields:', error);
+                    throw error;
+                }
+            }
+
+            initializeSelector() {
+                const selector = document.querySelector('.field-selector');
+                const resultsDiv = document.getElementById('field-selector-results');
+
+                // Clear existing options
+                selector.innerHTML = '';
+
+                // Add default option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = '-- Select Field --';
+                selector.appendChild(defaultOption);
+
+                // Check if we're in Writing stage
+                if (this.stage === 'writing' || this.stage === 'Writing') {
+                    console.log('Debug: Initializing Writing stage field selector...');
+                    // For Writing stage, show post_section fields directly
+                    if (this.fields && Array.isArray(this.fields)) {
+                        this.fields.forEach(field => {
+                            const option = document.createElement('option');
+                            option.value = field.field_name;
+                            option.textContent = field.display_name || field.field_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            selector.appendChild(option);
+                        });
+
+                        resultsDiv.innerHTML = `
+                            <div class="success">
+                                <strong>✓ Writing Stage Test Passed</strong><br>
+                                Found ${this.fields.length} post_section fields:<br>
+                                ${this.fields.map(f => f.display_name).join(', ')}
+                            </div>
+                        `;
+                    } else {
+                        resultsDiv.innerHTML = `<div class="error">✗ No fields found or fields is not an array</div>`;
+                    }
+                } else {
+                    console.log('Debug: Initializing regular field selector...');
+                    resultsDiv.innerHTML = `<div class="success">✓ Regular stage field selector initialized</div>`;
+                }
+            }
+        }
+
+        // Test with the current URL
+        console.log('Debug: Initializing DebugFieldSelector...');
+        const debugFieldSelector = new DebugFieldSelector(22, 'writing', 'content');
+    </script>
+</body>
+
+</html>

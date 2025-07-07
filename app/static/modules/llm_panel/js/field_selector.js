@@ -243,9 +243,18 @@ class FieldSelector {
         // Get section (inputs/outputs) and target field
         const section = selector.dataset.section;
         const target = selector.dataset.target;
+        
+        // Filter fields based on stage for Writing stage outputs
+        let filteredFields = Object.values(this.fields);
+        if (this.stage === 'writing' && section === 'outputs') {
+            // For Writing stage outputs, only show post_section table fields
+            filteredFields = filteredFields.filter(field => field.db_table === 'post_section');
+            console.log('[DEBUG] Writing stage outputs: filtered to post_section fields only');
+        }
+        
         // Group fields by db_table
         const groupedFields = {};
-        Object.values(this.fields).forEach(field => {
+        filteredFields.forEach(field => {
             if (!groupedFields[field.db_table]) groupedFields[field.db_table] = [];
             groupedFields[field.db_table].push(field);
         });

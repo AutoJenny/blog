@@ -239,8 +239,11 @@ def manage_sections(post_id):
                         'title': s['title'],
                         'description': s['description'],
                         'orderIndex': s['order_index'],
+                        'ideas_to_include': s['ideas_to_include'],
+                        'facts_to_include': s['facts_to_include'],
                         'content': s['content'],
                         'uk_british': s['uk_british'],
+                        'highlighting': s['highlighting'],
                         'image_concepts': s['image_concepts'],
                         'image_prompts': s['image_prompts'],
                         'generation': s['generation'],
@@ -1039,43 +1042,27 @@ def run_workflow_llm(post_id, stage, substage):
 
 @bp.route('/posts/<int:post_id>/<stage>/<substage>/writing_llm', methods=['POST'])
 def run_writing_llm(post_id, stage, substage):
-    """
-    WRITING STAGE ONLY: Run LLM processing for Writing stage with section selection.
-    
-    This endpoint is completely separate from Planning stage processing.
-    DO NOT USE for Planning stage - use the standard /llm endpoint instead.
-    """
+    """Run LLM for Writing stage with section-specific processing."""
     try:
         data = request.get_json()
         step = data.get('step')
-        selected_section_ids = data.get('selected_section_ids', [])  # NEW: Section selection
-        timeout_per_section = data.get('timeout_per_section', 300)  # NEW: Per-section timeout
-        
-        if not step:
-            return jsonify({'error': 'Step parameter is required'}), 400
-        
-        # Validate this is Writing stage
-        if stage != 'writing':
-            return jsonify({'error': 'This endpoint is for Writing stage only'}), 400
-        
-        # Get step configuration
-        step_config = load_step_config(post_id, stage, substage, step)
-        if not step_config:
-            return jsonify({'error': f'Step configuration not found for: {step}'}), 404
-        
-        # Get frontend inputs from request body
+        section_ids = data.get('selected_section_ids', [])
         frontend_inputs = data.get('inputs', {})
-        frontend_inputs['timeout_per_section'] = timeout_per_section  # Add timeout to inputs
         
-        # Process the Writing stage step with section selection
-        result = process_writing_step(post_id, stage, substage, step, selected_section_ids, frontend_inputs)
+        print(f"[WRITING_LLM] Processing step: {step}, section_ids: {section_ids}, post_id: {post_id}")
         
-        # The result is already in standardized format, just return it
+        result = process_writing_step(post_id, stage, substage, step, section_ids, frontend_inputs)
+        
+        print(f"[WRITING_LLM] Result success: {result.get('success')}")
+        
         return jsonify(result)
         
     except Exception as e:
-        current_app.logger.error(f"Error in run_writing_llm: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        print(f"[WRITING_LLM] Error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @bp.route('/llm/models', methods=['GET'])
 @handle_workflow_errors
@@ -1256,3 +1243,32 @@ def sync_sections(post_id):
             'success': False,
             'error': {'message': str(e)}
         }), 500 
+
+@bp.route('/fields/post_section', methods=['GET'])
+@handle_workflow_errors
+def get_post_section_fields():
+    """Get all available fields from the post_section table for Writing stage."""
+    with get_db_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            # Get column information for post_section table
+            cur.execute("""
+                SELECT 
+                    column_name as field_name,
+                    column_name as display_name
+                FROM information_schema.columns 
+                WHERE table_name = 'post_section' 
+                AND column_name NOT IN ('id', 'post_id', 'section_order', 'image_id', 'image_prompt_example_id')
+                ORDER BY ordinal_position
+            """)
+            fields = cur.fetchall()
+            
+            # Convert to list of dictionaries with better display names
+            field_list = []
+            for field in fields:
+                field_dict = dict(field)
+                # Create a better display name
+                display_name = field_dict['field_name'].replace('_', ' ').title()
+                field_dict['display_name'] = display_name
+                field_list.append(field_dict)
+            
+            return jsonify(field_list) 

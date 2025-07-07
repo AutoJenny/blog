@@ -277,13 +277,18 @@
     document.querySelectorAll('.save-order-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             const substageId = this.dataset.substageId;
-            const group = document.querySelector(`[data-substage-id="${substageId}"]`);
-            const steps = group.querySelectorAll('.step-accordion');
+            const group = document.querySelector(`.step-dnd-group[data-substage-id="${substageId}"]`);
+            const steps = group ? group.querySelectorAll('.step-accordion') : [];
 
             const orderData = Array.from(steps).map((step, index) => ({
                 step_id: parseInt(step.dataset.stepId),
                 order: index + 1
             }));
+
+            if (!substageId || orderData.length === 0) {
+                alert('Cannot save order: substageId or steps missing.');
+                return;
+            }
 
             // Save order to backend
             fetch('/settings/api/step-order', {

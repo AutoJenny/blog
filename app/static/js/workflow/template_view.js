@@ -33,12 +33,11 @@ const GROUPS = [
         name: 'Content',
         fields: [
             { key: 'title', label: 'section_heading (DB)' },
-            { key: 'subtitle', label: 'section_description (DB)' },
             { key: 'description', label: 'section_description (DB)' },
             { key: 'content', label: 'first_draft (DB)' },
-            { key: 'elements.facts', label: 'facts_to_include (DB)' },
-            { key: 'elements.ideas', label: 'ideas_to_include (DB)' },
-            { key: 'elements.themes', label: 'highlighting (DB)' },
+            { key: 'facts_to_include', label: 'facts_to_include (DB)' },
+            { key: 'ideas_to_include', label: 'ideas_to_include (DB)' },
+            { key: 'highlighting', label: 'highlighting (DB)' },
             { key: 'uk_british', label: 'uk_british (DB)' },
         ]
     },

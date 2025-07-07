@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Writing Stage Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        .field-selector {
+            width: 300px;
+            padding: 8px;
+            margin: 10px 0;
+            background: #23273a;
+            color: #e0e0e0;
+            border: 1.5px solid #3b4252;
+            border-radius: 0.5rem;
+        }
+
+        .debug-info {
+            background: #2d3748;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border: 1px solid #4a5568;
+        }
+
+        .success {
+            color: #68d391;
+        }
+
+        .error {
+            color: #fc8181;
+        }
+
+        .warning {
+            color: #f6e05e;
+        }
+
+        textarea {
+            width: 100%;
+            background: #23273a;
+            color: #e0e0e0;
+            border: 1.5px solid #3b4252;
+            border-radius: 0.5rem;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Test Writing Stage Debug</h1>
+
+    <div class="debug-info">
+        <h3>URL Information:</h3>
+        <div id="url-info"></div>
+    </div>
+
+    <div class="debug-info">
+        <h3>Field Selector Test:</h3>
+        <select class="field-selector" data-target="output1" data-section="outputs" data-current-substage="content">
+            <!-- Options will be populated by JavaScript -->
+        </select>
+        <textarea id="output1" name="output1" data-db-field="ideas_to_include" data-db-table="post_section"
+            data-section="outputs" rows="4" placeholder="Enter text...">None</textarea>
+        <div id="field-selector-results"></div>
+    </div>
+
+    <div class="debug-info">
+        <h3>Console Log:</h3>
+        <div id="console-log"
+            style="background: #1a1a1a; padding: 10px; border-radius: 5px; font-family: monospace; max-height: 300px; overflow-y: auto;">
+        </div>
+    </div>
+
+    <script type="module">
+        // Override console.log to capture output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addToLog(type, ...args) {
+            const logDiv = document.getElementById('console-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' ');
+            logDiv.innerHTML += `<div style="color: ${type === 'error' ? '#fc8181' : type === 'warn' ? '#f6e05e' : '#68d391'}">[${timestamp}] ${type.toUpperCase()}: ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        console.log = (...args) => {
+            originalLog(...args);
+            addToLog('log', ...args);
+        };
+
+        console.error = (...args) => {
+            originalError(...args);
+            addToLog('error', ...args);
+        };
+
+        console.warn = (...args) => {
+            originalWarn(...args);
+            addToLog('warn', ...args);
+        };
+
+        // Display URL information
+        const pathParts = window.location.pathname.split('/');
+        const urlInfo = document.getElementById('url-info');
+        urlInfo.innerHTML = `
+            <p><strong>Path:</strong> ${window.location.pathname}</p>
+            <p><strong>Path Parts:</strong> ${JSON.stringify(pathParts)}</p>
+            <p><strong>Post ID (pathParts[3]):</strong> ${pathParts[3] || 'null'}</p>
+            <p><strong>Stage (pathParts[4]):</strong> ${pathParts[4] || 'null'}</p>
+            <p><strong>Substage (pathParts[5]):</strong> ${pathParts[5] || 'null'}</p>
+        `;
+
+        // Import and test FieldSelector
+        try {
+            console.log('Starting FieldSelector test...');
+
+            // Import the FieldSelector
+            const { FieldSelector } = await import('/static/modules/llm_panel/js/field_selector.js');
+            console.log('FieldSelector imported successfully');
+
+            // Initialize FieldSelector with Writing stage parameters
+            const fieldSelector = new FieldSelector(22, 'writing', 'content');
+            console.log('FieldSelector initialized with:', { postId: 22, stage: 'writing', substage: 'content' });
+
+            // Wait a bit for initialization to complete
+            setTimeout(() => {
+                const resultsDiv = document.getElementById('field-selector-results');
+                const selector = document.querySelector('.field-selector');
+                const options = selector.querySelectorAll('option');
+
+                console.log('Field selector options count:', options.length);
+                console.log('Field selector options:', Array.from(options).map(opt => ({ value: opt.value, text: opt.textContent })));
+
+                if (options.length > 1) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✓ Field Selector Test Passed</strong><br>
+                            Found ${options.length - 1} options in dropdown (excluding default option)<br>
+                            Options: ${Array.from(options).slice(1).map(opt => opt.textContent).join(', ')}
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <strong>✗ Field Selector Test Failed</strong><br>
+                            Only found ${options.length} option(s) in dropdown<br>
+                            Expected post_section fields to be populated
+                        </div>
+                    `;
+                }
+            }, 2000);
+
+        } catch (error) {
+            console.error('Error in FieldSelector test:', error);
+            document.getElementById('field-selector-results').innerHTML = `
+                <div class="error">
+                    <strong>✗ Field Selector Test Failed</strong><br>
+                    Error: ${error.message}
+                </div>
+            `;
+        }
+    </script>
+</body>
+
+</html>
