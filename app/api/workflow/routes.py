@@ -3,7 +3,10 @@ from app.db import get_db_conn
 import psycopg2.extras
 from app.api.workflow.decorators import handle_workflow_errors
 import json
-from app.workflow.scripts.llm_processor import load_step_config, process_step, save_section_output
+from app.workflow.scripts.llm_processor import (
+    load_step_config, process_step, save_section_output, 
+    process_sections_sequentially, get_step_id
+)
 
 from . import bp
 
@@ -15,54 +18,51 @@ def process_writing_step(post_id, stage, substage, step, section_ids, frontend_i
     section-specific output (saving to post_section table for specific sections).
     """
     try:
-        # Use the standard process_step for most of the processing
-        result = process_step(post_id, stage, substage, step, frontend_inputs)
+        conn = get_db_conn()
+        step_id = get_step_id(conn, stage, substage, step)
         
-        # If section_ids are provided, we need to save the output to specific sections
+        # If section_ids are provided, use sequential processing with section-specific prompts
         if section_ids:
-            # Get the output mapping to determine which field to update
-            from app.workflow.scripts.llm_processor import get_user_output_mapping, get_step_id, get_db_conn
-            conn = get_db_conn()
-            step_id = get_step_id(conn, stage, substage, step)
-            output_mapping = get_user_output_mapping(conn, step_id, post_id)
+            # Get timeout from request or use default
+            timeout_per_section = frontend_inputs.get('timeout_per_section', 300) if frontend_inputs else 300
             
-            if output_mapping and output_mapping.get('table') == 'post_section':
-                # Save to specific sections
-                field = output_mapping.get('field')
-                if field:
-                    save_section_output(conn, section_ids, result, field)
-                    conn.close()
-                    # Return format expected by frontend
-                    return {
-                        'success': True,
-                        'results': [
-                            {
-                                'section_id': section_id,
-                                'output': result
-                            } for section_id in section_ids
-                        ],
-                        'parameters': {
-                            'field_updated': field,
-                            'sections_processed': section_ids
-                        }
-                    }
+            # Process sections sequentially with section-specific prompts
+            result = process_sections_sequentially(
+                conn, post_id, step_id, section_ids, timeout_per_section
+            )
             
             conn.close()
-        
-        # Return standard result if no section-specific processing needed
-        return {
-            'success': True,
-            'results': [
-                {
-                    'output': result
+            
+            # Return format expected by frontend
+            return {
+                'success': True,
+                'results': result['results'],
+                'summary': result['summary'],
+                'parameters': {
+                    'sections_processed': section_ids,
+                    'timeout_per_section': timeout_per_section
                 }
-            ],
-            'parameters': {
-                'sections_processed': section_ids if section_ids else []
             }
-        }
+        else:
+            # Fallback to standard processing if no sections specified
+            result = process_step(post_id, stage, substage, step, frontend_inputs)
+            conn.close()
+            
+            return {
+                'success': True,
+                'results': [
+                    {
+                        'output': result
+                    }
+                ],
+                'parameters': {
+                    'sections_processed': []
+                }
+            }
         
     except Exception as e:
+        if 'conn' in locals():
+            conn.close()
         return {
             'success': False,
             'error': str(e),
@@ -1048,7 +1048,8 @@ def run_writing_llm(post_id, stage, substage):
     try:
         data = request.get_json()
         step = data.get('step')
-        section_ids = data.get('section_ids', [])  # List of section IDs to process
+        selected_section_ids = data.get('selected_section_ids', [])  # NEW: Section selection
+        timeout_per_section = data.get('timeout_per_section', 300)  # NEW: Per-section timeout
         
         if not step:
             return jsonify({'error': 'Step parameter is required'}), 400
@@ -1064,9 +1065,10 @@ def run_writing_llm(post_id, stage, substage):
         
         # Get frontend inputs from request body
         frontend_inputs = data.get('inputs', {})
+        frontend_inputs['timeout_per_section'] = timeout_per_section  # Add timeout to inputs
         
         # Process the Writing stage step with section selection
-        result = process_writing_step(post_id, stage, substage, step, section_ids, frontend_inputs)
+        result = process_writing_step(post_id, stage, substage, step, selected_section_ids, frontend_inputs)
         
         # The result is already in standardized format, just return it
         return jsonify(result)

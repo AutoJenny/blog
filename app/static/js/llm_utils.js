@@ -35,7 +35,7 @@ async function runLLM({ postId, stage, substage, step, inputs = {} }) {
             
             requestBody = { 
                 step: step,
-                section_ids: selectedSections,
+                selected_section_ids: selectedSections,
                 inputs: inputs  // Include multiple inputs in request
             };
         } else {
@@ -65,34 +65,50 @@ async function runLLM({ postId, stage, substage, step, inputs = {} }) {
             
             // Handle standardized LLM response format
             if (data.success && data.results) {
-                // Handle multiple results (for section processing)
-                data.results.forEach(result => {
-                    const sectionId = result.section_id;
-                    const output = result.output;
-                    
-                    if (sectionId) {
-                        // Update specific section output
-                        const sectionOutput = document.querySelector(`[data-section-id="${sectionId}"] textarea[data-field="output"]`);
-                        if (sectionOutput) {
-                            sectionOutput.value = output;
-                            sectionOutput.dispatchEvent(new Event('change', { bubbles: true }));
+                // Handle results object with section IDs as keys (Writing stage format)
+                if (typeof data.results === 'object' && !Array.isArray(data.results)) {
+                    Object.entries(data.results).forEach(([sectionId, result]) => {
+                        if (result.success && result.result) {
+                            // Update specific section output
+                            const sectionOutput = document.querySelector(`[data-section-id="${sectionId}"] textarea[data-field="output"]`);
+                            if (sectionOutput) {
+                                sectionOutput.value = result.result;
+                                sectionOutput.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        } else if (result.error) {
+                            console.error(`Error processing section ${sectionId}:`, result.error);
                         }
-                    } else {
-                        // Update all outputs (for section creation or planning stage)
-                        const outputs = document.querySelectorAll('[data-section="outputs"] textarea');
-                        outputs.forEach(outputElement => {
-                            outputElement.value = output;
-                            outputElement.dispatchEvent(new Event('change', { bubbles: true }));
-                        });
+                    });
+                } else if (Array.isArray(data.results)) {
+                    // Handle results array (Planning stage format)
+                    data.results.forEach(result => {
+                        const sectionId = result.section_id;
+                        const output = result.output;
                         
-                        // Update the outputs summary in the accordion header
-                        const outputsSummary = document.getElementById('outputs-summary');
-                        if (outputsSummary) {
-                            const firstLine = output.split('\n')[0] || '';
-                            outputsSummary.innerHTML = `<span class="text-blue-500">[output]:</span> ${firstLine.substring(0, 100)}${firstLine.length > 100 ? '...' : ''}`;
+                        if (sectionId) {
+                            // Update specific section output
+                            const sectionOutput = document.querySelector(`[data-section-id="${sectionId}"] textarea[data-field="output"]`);
+                            if (sectionOutput) {
+                                sectionOutput.value = output;
+                                sectionOutput.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        } else {
+                            // Update all outputs (for section creation or planning stage)
+                            const outputs = document.querySelectorAll('[data-section="outputs"] textarea');
+                            outputs.forEach(outputElement => {
+                                outputElement.value = output;
+                                outputElement.dispatchEvent(new Event('change', { bubbles: true }));
+                            });
+                            
+                            // Update the outputs summary in the accordion header
+                            const outputsSummary = document.getElementById('outputs-summary');
+                            if (outputsSummary) {
+                                const firstLine = output.split('\n')[0] || '';
+                                outputsSummary.innerHTML = `<span class="text-blue-500">[output]:</span> ${firstLine.substring(0, 100)}${firstLine.length > 100 ? '...' : ''}`;
+                            }
                         }
-                    }
-                });
+                    });
+                }
                 
                 // Update parameters display if available
                 if (data.parameters) {

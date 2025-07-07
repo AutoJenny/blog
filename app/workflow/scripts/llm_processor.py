@@ -3,6 +3,8 @@ import os
 import sys
 import requests
 import re
+import threading
+import time
 from typing import Dict, Any, Optional, List
 from psycopg2.extras import RealDictCursor
 from app.database.routes import get_db_conn
@@ -28,6 +30,53 @@ except ImportError:
         log_prompt_construction_metadata,
         PromptConstructionError
     )
+
+class TimeoutError(Exception):
+    """Custom timeout exception for section processing."""
+    pass
+
+class timeout_context:
+    """Context manager for implementing per-section timeouts using threading."""
+    
+    def __init__(self, seconds):
+        self.seconds = seconds
+        self.result = None
+        self.exception = None
+        self.thread = None
+        
+    def __enter__(self):
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.thread and self.thread.is_alive():
+            # Thread is still running, timeout occurred
+            raise TimeoutError(f"Operation timed out after {self.seconds} seconds")
+        elif self.exception:
+            # Thread completed but raised an exception
+            raise self.exception
+        return False
+    
+    def run_with_timeout(self, func, *args, **kwargs):
+        """Run a function with timeout using threading."""
+        def target():
+            try:
+                self.result = func(*args, **kwargs)
+            except Exception as e:
+                self.exception = e
+        
+        self.thread = threading.Thread(target=target)
+        self.thread.daemon = True
+        self.thread.start()
+        self.thread.join(timeout=self.seconds)
+        
+        if self.thread.is_alive():
+            # Thread is still running, timeout occurred
+            raise TimeoutError(f"Operation timed out after {self.seconds} seconds")
+        elif self.exception:
+            # Thread completed but raised an exception
+            raise self.exception
+        
+        return self.result
 
 def create_diagnostic_logs(post_id: int, stage: str, substage: str, step: str, 
                           db_fields: Dict[str, Any], llm_message: str, llm_response: str,
@@ -323,14 +372,41 @@ def construct_prompt(system_prompt: str, task_prompt: str, inputs: Dict[str, str
             inputs_parts.append(input_instructions)
         inputs_parts.append("")
         
-        # Add input data with proper titles
-        for k, v in inputs.items():
-            if v is not None and v.strip():
-                # Convert key to display name (e.g., "basic_idea" -> "Basic Idea")
-                display_name = k.replace('_', ' ').title()
-                inputs_parts.append(f"{display_name}:")
-                inputs_parts.append(v.strip())
+        # Check if this is a Writing stage section-specific prompt
+        if "write_about_section_heading" in inputs and "avoid_topics" in inputs:
+            # Writing stage format with clear structure
+            inputs_parts.append("WRITE ABOUT THIS SPECIFIC SECTION:")
+            inputs_parts.append(f"Section Heading: {inputs.get('write_about_section_heading', '')}")
+            inputs_parts.append(f"Section Description: {inputs.get('write_about_section_description', '')}")
+            inputs_parts.append("")
+            
+            # Add avoid topics section
+            avoid_topics = inputs.get('avoid_topics', [])
+            if avoid_topics:
+                inputs_parts.append("AVOID THESE TOPICS (DO NOT WRITE ABOUT):")
+                for topic in avoid_topics:
+                    inputs_parts.append(f"- {topic}")
                 inputs_parts.append("")
+            
+            # Add context information
+            if inputs.get('idea_scope'):
+                inputs_parts.append("CONTEXT:")
+                inputs_parts.append(f"Idea Scope: {inputs.get('idea_scope', '')}")
+                inputs_parts.append("")
+            
+            if inputs.get('basic_idea'):
+                inputs_parts.append(f"Basic Idea: {inputs.get('basic_idea', '')}")
+                inputs_parts.append("")
+        else:
+            # Standard format for other stages
+            # Add input data with proper titles
+            for k, v in inputs.items():
+                if v is not None and v.strip():
+                    # Convert key to display name (e.g., "basic_idea" -> "Basic Idea")
+                    display_name = k.replace('_', ' ').title()
+                    inputs_parts.append(f"{display_name}:")
+                    inputs_parts.append(v.strip())
+                    inputs_parts.append("")
         
         inputs_section = "\n".join(inputs_parts)
         
@@ -373,13 +449,34 @@ This is a system configuration issue that needs to be resolved before LLM proces
 
 def call_llm(prompt: str, parameters: Dict[str, Any], conn, timeout: int = 60) -> Dict[str, Any]:
     """Call LLM with prompt and parameters using the LLM service."""
-    # Initialize LLM service
-    llm_service = LLMService()
+    # Get LLM configuration from database instead of Flask config
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("""
+            SELECT provider_type, model_name, api_base
+            FROM llm_config
+            WHERE is_active = true
+            ORDER BY id DESC
+            LIMIT 1
+        """)
+        config = cur.fetchone()
+        if not config:
+            # Fallback to default configuration
+            config = {
+                'provider_type': 'ollama',
+                'model_name': 'llama3.1:70b',
+                'api_base': 'http://localhost:11434'
+            }
     
-    # Extract parameters
-    model = parameters.get('model', 'llama3.1:70b')
-    temperature = parameters.get('temperature', 0.7)
-    max_tokens = parameters.get('max_tokens', 1000)
+    # Initialize LLM service with configuration
+    llm_service = LLMService()
+    llm_service.ollama_url = config['api_base'] if config['provider_type'] == 'ollama' else None
+    llm_service.openai_api_key = None  # No API key in current schema
+    llm_service.default_model = config['model_name']
+    
+    # Extract parameters (use database config as defaults)
+    model = parameters.get('model', config['model_name'])
+    temperature = parameters.get('temperature', 0.7)  # Default temperature
+    max_tokens = parameters.get('max_tokens', 1000)   # Default max_tokens
     
     # Check if prompt is modular (JSON) or plain text
     if prompt.strip().startswith('[') or prompt.strip().startswith('{'):
@@ -555,6 +652,371 @@ def get_step_prompt_templates(conn, step_id: int) -> Dict[str, str]:
                 'task_prompt': result['task_prompt'] or ''
             }
         return {'system_prompt': '', 'task_prompt': ''}
+
+def get_selected_sections_data(conn, post_id: int, selected_section_ids: List[int], current_section_id: int) -> Dict[str, Any]:
+    """
+    Get data for selected sections and current section context.
+    
+    Args:
+        conn: Database connection
+        post_id: Post ID
+        selected_section_ids: List of selected section IDs
+        current_section_id: ID of section being processed
+    
+    Returns:
+        Dict with filtered section data and current section context
+    """
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Get current section context
+            cur.execute("""
+                SELECT section_heading, section_description, first_draft
+                FROM post_section 
+                WHERE id = %s AND post_id = %s
+            """, (current_section_id, post_id))
+            current_section = cur.fetchone()
+            
+            if not current_section:
+                raise ValueError(f"Current section {current_section_id} not found for post {post_id}")
+            
+            # Get selected sections data (filtered)
+            if selected_section_ids:
+                placeholders = ','.join(['%s'] * len(selected_section_ids))
+                cur.execute(f"""
+                    SELECT id, section_heading, section_description, section_order
+                    FROM post_section 
+                    WHERE id IN ({placeholders}) AND post_id = %s
+                    ORDER BY section_order
+                """, selected_section_ids + [post_id])
+                selected_sections = cur.fetchall()
+            else:
+                selected_sections = []
+            
+            # Get post-level context
+            cur.execute("""
+                SELECT idea_scope, basic_idea, section_headings
+                FROM post_development 
+                WHERE post_id = %s
+            """, (post_id,))
+            post_context = cur.fetchone() or {}
+            
+            return {
+                "current_section": {
+                    "id": current_section_id,
+                    "heading": current_section['section_heading'],
+                    "description": current_section['section_description'],
+                    "first_draft": current_section['first_draft']
+                },
+                "selected_sections": [
+                    {
+                        "id": section['id'],
+                        "heading": section['section_heading'],
+                        "description": section['section_description'],
+                        "order": section['section_order']
+                    } for section in selected_sections
+                ],
+                "post_context": {
+                    "idea_scope": post_context.get('idea_scope'),
+                    "basic_idea": post_context.get('basic_idea'),
+                    "section_headings": post_context.get('section_headings')
+                }
+            }
+            
+    except Exception as e:
+        print(f"Error getting selected sections data: {str(e)}", file=sys.stderr)
+        raise
+
+def build_section_specific_prompt(conn, post_id: int, step_id: int, selected_section_ids: List[int], current_section_id: int) -> Dict[str, Any]:
+    """
+    Build section-specific prompt for Writing stage with clear "WRITE ABOUT" and "AVOID THESE TOPICS" structure.
+    
+    Args:
+        conn: Database connection
+        post_id: Post ID
+        step_id: Workflow step ID
+        selected_section_ids: List of selected section IDs
+        current_section_id: ID of section being processed
+    
+    Returns:
+        Dict with system_prompt, task_prompt, and context_data
+    """
+    try:
+        # Get base prompts from workflow_step_prompt table
+        prompt_templates = get_step_prompt_templates(conn, step_id)
+        system_prompt = prompt_templates.get('system_prompt', '')
+        task_prompt = prompt_templates.get('task_prompt', '')
+        
+        # Get section-specific data
+        section_data = get_selected_sections_data(conn, post_id, selected_section_ids, current_section_id)
+        
+        # Get all section headings from post_development
+        all_section_headings = []
+        if section_data["post_context"].get("section_headings"):
+            try:
+                all_section_headings = json.loads(section_data["post_context"]["section_headings"])
+                if not isinstance(all_section_headings, list):
+                    all_section_headings = []
+            except (json.JSONDecodeError, TypeError):
+                # If parsing fails, create headings from section data
+                all_section_headings = [
+                    {
+                        "title": section["heading"],
+                        "description": section["description"]
+                    } for section in section_data["selected_sections"]
+                ]
+        
+        # Extract current section and create "avoid topics" list
+        current_section_heading = section_data["current_section"]["heading"]
+        current_section_description = section_data["current_section"]["description"]
+        
+        # Create list of topics to avoid (all sections except current)
+        avoid_topics = []
+        for heading in all_section_headings:
+            if isinstance(heading, dict):
+                title = heading.get('title', heading.get('heading', ''))
+                if title != current_section_heading:
+                    avoid_topics.append(title)
+        
+        # Create context data for prompt construction with restructured format
+        context_data = {
+            "idea_scope": section_data["post_context"].get("idea_scope"),
+            "basic_idea": section_data["post_context"].get("basic_idea"),
+            "write_about_section_heading": current_section_heading,
+            "write_about_section_description": current_section_description,
+            "avoid_topics": avoid_topics,
+            # Keep legacy fields for backward compatibility
+            "section_heading": current_section_heading,
+            "section_description": current_section_description,
+            "section_headings": json.dumps(all_section_headings) if all_section_headings else "[]"
+        }
+        
+        return {
+            "system_prompt": system_prompt,
+            "task_prompt": task_prompt,
+            "context_data": context_data,
+            "section_data": section_data
+        }
+        
+    except Exception as e:
+        print(f"Error building section-specific prompt: {str(e)}", file=sys.stderr)
+        raise
+
+def get_section_specific_prompts(conn, step_id: int, post_id: int, selected_section_ids: List[int], current_section_id: int) -> Dict[str, Any]:
+    """
+    Get section-specific prompts while maintaining existing prompt system.
+    
+    Args:
+        conn: Database connection
+        step_id: Workflow step ID
+        post_id: Post ID
+        selected_section_ids: List of selected section IDs
+        current_section_id: ID of section being processed
+    
+    Returns:
+        Dict with system_prompt, task_prompt, and section_context
+    """
+    try:
+        # Get existing prompts from workflow_step_prompt table
+        prompt_templates = get_step_prompt_templates(conn, step_id)
+        system_prompt = prompt_templates.get('system_prompt', '')
+        task_prompt = prompt_templates.get('task_prompt', '')
+        
+        # Get section data for context
+        section_data = get_selected_sections_data(conn, post_id, selected_section_ids, current_section_id)
+        
+        # Add section-specific context to task_prompt
+        section_context = f"""
+Section Heading: {section_data["current_section"]["heading"]}
+Section Description: {section_data["current_section"]["description"]}
+"""
+        
+        # Only add section context if not already present
+        if "Section Heading:" not in task_prompt:
+            task_prompt = section_context + "\n" + task_prompt
+        
+        return {
+            "system_prompt": system_prompt,
+            "task_prompt": task_prompt,
+            "section_context": section_context,
+            "section_data": section_data
+        }
+        
+    except Exception as e:
+        print(f"Error getting section-specific prompts: {str(e)}", file=sys.stderr)
+        raise
+
+def process_single_section(conn, post_id: int, step_id: int, section_id: int, selected_section_ids: List[int], 
+                          timeout_per_section: int = 300) -> Dict[str, Any]:
+    """
+    Process a single section with section-specific prompt and timeout.
+    """
+    prompt_data = None
+    section_heading = "Unknown"
+    prompt = None
+    output = None
+    all_db_fields = {}
+    input_format_template = None
+    output_format_template = None
+    try:
+        # Build section-specific prompt
+        prompt_data = build_section_specific_prompt(conn, post_id, step_id, selected_section_ids, section_id)
+        section_heading = prompt_data["section_data"]["current_section"]["heading"]
+        
+        # Get step configuration for LLM parameters
+        step_config = load_step_config(post_id, "writing", "content", "author_first_drafts")  # Default step
+        llm_config = step_config.get('settings', {}).get('llm', {})
+        
+        # Get format templates from database
+        format_config = get_step_format_config(conn, step_id, post_id)
+        input_format_template = format_config.get('input') if format_config else None
+        output_format_template = format_config.get('output') if format_config else None
+        
+        # If no format templates found, create simple defaults
+        if not input_format_template:
+            input_format_template = {
+                'description': 'Mixed plain text & JSON',
+                'llm_instructions': 'The inputs are a combination of plain text and structured JSON. Interpret each type appropriately.'
+            }
+        if not output_format_template:
+            output_format_template = {
+                'description': 'Format for plain text responses using British English spellings and conventions',
+                'llm_instructions': 'Return your response as plain text using British English spellings and conventions (e.g., colour, centre, organisation). Do not include any JSON, metadata, or commentary—just the text.'
+            }
+        
+        # Construct the full prompt
+        all_db_fields = prompt_data["context_data"]
+        
+        # Extract section-specific inputs for the INPUTS section
+        section_inputs = {
+            "write_about_section_heading": prompt_data["context_data"].get("write_about_section_heading", ""),
+            "write_about_section_description": prompt_data["context_data"].get("write_about_section_description", ""),
+            "avoid_topics": prompt_data["context_data"].get("avoid_topics", []),
+            "idea_scope": prompt_data["context_data"].get("idea_scope", ""),
+            "basic_idea": prompt_data["context_data"].get("basic_idea", "")
+        }
+        
+        prompt = construct_prompt(
+            prompt_data["system_prompt"],
+            prompt_data["task_prompt"],
+            section_inputs,  # Pass section-specific inputs
+            all_db_fields,
+            input_format_template,
+            output_format_template,
+            step_config
+        )
+        
+        # Call LLM with timeout
+        llm_response = call_llm(prompt, llm_config.get('parameters', {}), conn, timeout_per_section)
+        output = llm_response['result']
+        
+        # Save to specific section
+        output_mapping = get_user_output_mapping(conn, step_id, post_id)
+        if output_mapping and output_mapping.get('table') == 'post_section':
+            field = output_mapping.get('field', 'first_draft')
+            save_section_output(conn, [section_id], output, field)
+        
+        return {
+            "success": True,
+            "result": output,
+            "section_id": section_id,
+            "section_heading": section_heading,
+            "processing_time": 0  # TODO: Add actual timing
+        }
+        
+    except Exception as e:
+        output = f"ERROR: {str(e)}"
+        return {
+            "success": False,
+            "error": str(e),
+            "section_id": section_id,
+            "section_heading": section_heading,
+            "processing_time": 0
+        }
+    finally:
+        # Always log the prompt and response/error for diagnostics
+        try:
+            create_diagnostic_logs(
+                post_id=post_id,
+                stage="writing",
+                substage="content", 
+                step="author_first_drafts",
+                db_fields=all_db_fields,
+                llm_message=prompt if prompt else "[Prompt not constructed]",
+                llm_response=output if output else "[No response or error]",
+                input_format_template=input_format_template,
+                output_format_template=output_format_template,
+                frontend_inputs={}  # No frontend inputs for section processing
+            )
+        except Exception as log_exc:
+            print(f"[LOGGING ERROR] Failed to write diagnostic logs: {log_exc}", file=sys.stderr)
+
+def process_sections_sequentially(conn, post_id: int, step_id: int, selected_section_ids: List[int], 
+                                 timeout_per_section: int = 300) -> Dict[str, Any]:
+    """
+    Process sections sequentially with per-section timeout.
+    
+    Args:
+        conn: Database connection
+        post_id: Post ID
+        step_id: Workflow step ID
+        selected_section_ids: List of selected section IDs
+        timeout_per_section: Timeout in seconds per section (default: 300)
+    
+    Returns:
+        Dict with results for each section
+    """
+    results = {}
+    total_time = 0
+    
+    for section_id in selected_section_ids:
+        start_time = datetime.now()
+        
+        try:
+            # Create timeout context
+            timeout_ctx = timeout_context(timeout_per_section)
+            
+            # Process section with section-specific prompt using timeout
+            result = timeout_ctx.run_with_timeout(
+                process_single_section, 
+                conn, post_id, step_id, section_id, selected_section_ids, timeout_per_section
+            )
+            results[section_id] = result
+                
+        except TimeoutError:
+            processing_time = (datetime.now() - start_time).total_seconds()
+            results[section_id] = {
+                "success": False,
+                "error": f"Timeout after {timeout_per_section}s",
+                "section_id": section_id,
+                "section_heading": "Unknown",
+                "processing_time": processing_time
+            }
+        except Exception as e:
+            processing_time = (datetime.now() - start_time).total_seconds()
+            results[section_id] = {
+                "success": False,
+                "error": str(e),
+                "section_id": section_id,
+                "section_heading": "Unknown",
+                "processing_time": processing_time
+            }
+            # Continue with next section
+        
+        total_time += (datetime.now() - start_time).total_seconds()
+    
+    # Add summary information
+    successful = sum(1 for r in results.values() if r.get("success", False))
+    failed = len(results) - successful
+    
+    return {
+        "results": results,
+        "summary": {
+            "total_sections": len(selected_section_ids),
+            "successful": successful,
+            "failed": failed,
+            "total_time": total_time
+        }
+    }
 
 def process_step(post_id: int, stage: str, substage: str, step: str, frontend_inputs: Dict[str, Any] = None):
     """Main function to process a workflow step with format validation and multiple inputs."""

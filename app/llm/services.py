@@ -3,6 +3,7 @@
 import httpx
 import logging
 import re
+import os
 from flask import current_app
 from datetime import datetime
 from jinja2 import Template
@@ -25,8 +26,8 @@ if not llm_outgoing_logger.handlers:
 
 def execute_request(request_data: Dict[str, Any], provider: str = 'ollama', model: str = 'llama3.1:70b') -> Optional[str]:
     """Execute an LLM request."""
-    current_app.logger.info(f"[LLM Request] Provider: {provider}, Model: {model}")
-    current_app.logger.info(f"[LLM Request] Prompt: {request_data.get('prompt')}")
+    logger.info(f"[LLM Request] Provider: {provider}, Model: {model}")
+    logger.info(f"[LLM Request] Prompt: {request_data.get('prompt')}")
     
     # Initialize LLM service and call the real LLM
     llm_service = LLMService()
@@ -83,7 +84,7 @@ def parse_tagged_prompt_to_messages(prompt_template: str, fields: dict) -> dict:
     Parse a tagged prompt template into structured messages (for chat LLMs) and a canonical prompt string (for single-prompt LLMs).
     Returns: { 'messages': [...], 'prompt': '...' }
     """
-    current_app.logger.debug(f"[DEBUG] Parsing tagged prompt: {prompt_template}")
+    logger.debug(f"[DEBUG] Parsing tagged prompt: {prompt_template}")
     # Replace [data:FIELDNAME] with the actual input, if present
     def replace_data_tags(text):
         def repl(match):
@@ -94,7 +95,7 @@ def parse_tagged_prompt_to_messages(prompt_template: str, fields: dict) -> dict:
     # Find all [role: TAG] or [role] blocks
     tag_pattern = re.compile(r'\[(system|user|assistant)(?::\s*([A-Z_]+))?\]\s*([^\[]+)', re.IGNORECASE)
     matches = tag_pattern.findall(prompt_template)
-    current_app.logger.debug(f"[DEBUG] Tag matches: {matches}")
+    logger.debug(f"[DEBUG] Tag matches: {matches}")
     # Group content by role
     role_contents = {'system': [], 'user': [], 'assistant': []}
     for role, tag, content in matches:
@@ -115,8 +116,8 @@ def parse_tagged_prompt_to_messages(prompt_template: str, fields: dict) -> dict:
     if 'input' in fields:
         prompt_lines.append('Input: ' + str(fields['input']))
     prompt = '\n'.join(prompt_lines)
-    current_app.logger.debug(f"[DEBUG] Parsed messages: {messages}")
-    current_app.logger.debug(f"[DEBUG] Parsed prompt: {prompt}")
+    logger.debug(f"[DEBUG] Parsed messages: {messages}")
+    logger.debug(f"[DEBUG] Parsed prompt: {prompt}")
     return {'messages': messages, 'prompt': prompt}
 
 def modular_prompt_to_canonical(prompt_json, fields: dict) -> dict:
@@ -178,11 +179,12 @@ def log_llm_outgoing(payload: dict) -> str:
 class LLMService:
     """Service for interacting with LLM providers."""
 
-    def __init__(self):
+    def __init__(self, ollama_url=None, openai_api_key=None, default_model=None):
         """Initialize the LLM service."""
-        self.ollama_url = current_app.config.get("OLLAMA_API_URL", "http://localhost:11434")
-        self.openai_api_key = current_app.config.get("OPENAI_API_KEY")
-        self.default_model = current_app.config.get("DEFAULT_LLM_MODEL", "mistral")
+        # Use provided config, environment variables, or sensible defaults
+        self.ollama_url = ollama_url or os.environ.get("OLLAMA_API_URL", "http://localhost:11434")
+        self.openai_api_key = openai_api_key or os.environ.get("OPENAI_API_KEY")
+        self.default_model = default_model or os.environ.get("DEFAULT_LLM_MODEL", "mistral")
 
     def plan_structure(self, title, idea, facts):
         """Plan the structure of a blog post using LLM."""
@@ -239,7 +241,7 @@ Example format:
             return sections
 
         except Exception as e:
-            current_app.logger.error(f"Error planning structure: {str(e)}")
+            logger.error(f"Error planning structure: {str(e)}")
             raise
 
     def generate(self, prompt, model_name=None, temperature=0.7, max_tokens=1000, timeout=60):
@@ -269,6 +271,7 @@ Example format:
             if not self.ollama_url:
                 raise ValueError("Ollama API URL not set on LLMService")
             # Use requests instead of httpx
+            import requests
             response = requests.post(
                 f"{self.ollama_url}/api/generate",
                 json=request_data,
@@ -320,7 +323,7 @@ Example format:
             # Fallback for legacy actions: use prompt_template string
             prompt_template = action.get('prompt_template', '')
             parsed = parse_tagged_prompt_to_messages(prompt_template, fields)
-        current_app.logger.debug(f"[DEBUG] LLMService.execute_action parsed: {parsed}")
+        logger.debug(f"[DEBUG] LLMService.execute_action parsed: {parsed}")
         input_field = action.get('input_field') or 'input'
         output_field = action.get('output_field') or 'output'
         llm_payload = None
@@ -344,6 +347,7 @@ Example format:
         else:
             raise ValueError(f"Unsupported provider type: {self.ollama_url}")
         # Process the result with JSON extraction if it's a string
+        from app.utils.json_extractor import extract_and_parse_json
         if isinstance(result, str):
             # Use robust JSON extraction from markdown
             parsed_json = extract_and_parse_json(result)
