@@ -388,47 +388,228 @@ def save_step_order():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error saving step order: {str(e)}'}), 500
 
-# API endpoint for saving individual step changes
 @bp.route('/api/step', methods=['POST'])
 def save_step():
-    """Save changes to an individual step."""
-    data = request.get_json()
-    step_id = data.get('id')
-    name = data.get('name')
-    stage_id = data.get('stage_id')
-    substage_id = data.get('substage_id')
-    config = data.get('config', '{}')
-    
-    if not step_id or not name or not stage_id or not substage_id:
-        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
-    
+    """Save or update a workflow step."""
     try:
-        # Validate JSON config
-        import json
-        if config:
-            json.loads(config)
+        data = request.get_json()
         
         with get_db_conn() as conn:
-            cur = conn.cursor()
-            
-            # Update the step
-            cur.execute("""
-                UPDATE workflow_step_entity 
-                SET name = %s, sub_stage_id = %s, config = %s::jsonb
-                WHERE id = %s
-            """, (name, substage_id, config, step_id))
-            
-            if cur.rowcount == 0:
-                return jsonify({'success': False, 'message': 'Step not found'}), 404
-            
-            conn.commit()
-            
-        return jsonify({'success': True, 'message': 'Step saved successfully'})
-        
-    except json.JSONDecodeError:
-        return jsonify({'success': False, 'message': 'Invalid JSON configuration'}), 400
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Parse config JSON if provided
+                config = {}
+                if data.get('config'):
+                    try:
+                        config = json.loads(data['config'])
+                    except json.JSONDecodeError:
+                        return jsonify({'success': False, 'message': 'Invalid JSON in config field'})
+                
+                # Update the step
+                cur.execute("""
+                    UPDATE workflow_step_entity 
+                    SET name = %s, sub_stage_id = %s, config = %s, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                """, (data['name'], data['substage_id'], json.dumps(config), data['id']))
+                
+                if cur.rowcount == 0:
+                    return jsonify({'success': False, 'message': 'Step not found'})
+                
+                conn.commit()
+                return jsonify({'success': True})
+                
     except Exception as e:
-        return jsonify({'success': False, 'message': f'Error saving step: {str(e)}'}), 500
+        return jsonify({'success': False, 'message': str(e)})
+
+@bp.route('/api/step', methods=['PUT'])
+def create_step():
+    """Create a new workflow step."""
+    try:
+        data = request.get_json()
+        
+        if not data.get('name') or not data.get('substage_id'):
+            return jsonify({'success': False, 'message': 'Missing required fields: name and substage_id'})
+        
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Parse config JSON if provided
+                config = {}
+                if data.get('config'):
+                    try:
+                        config = json.loads(data['config'])
+                    except json.JSONDecodeError:
+                        return jsonify({'success': False, 'message': 'Invalid JSON in config field'})
+                
+                # Get the next order number for this substage
+                cur.execute("""
+                    SELECT COALESCE(MAX(step_order), 0) + 1 as next_order
+                    FROM workflow_step_entity 
+                    WHERE sub_stage_id = %s
+                """, (data['substage_id'],))
+                
+                result = cur.fetchone()
+                next_order = result['next_order']
+                
+                # Create the new step
+                cur.execute("""
+                    INSERT INTO workflow_step_entity 
+                    (name, sub_stage_id, step_order, config)
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING id
+                """, (data['name'], data['substage_id'], next_order, json.dumps(config)))
+                
+                new_step_id = cur.fetchone()['id']
+                conn.commit()
+                
+                return jsonify({'success': True, 'step_id': new_step_id, 'message': f'Step "{data["name"]}" created successfully'})
+                
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@bp.route('/api/step/<int:step_id>', methods=['DELETE'])
+def delete_step(step_id):
+    """Delete a workflow step."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # First, check if the step exists and get its details
+                cur.execute("""
+                    SELECT id, name, sub_stage_id 
+                    FROM workflow_step_entity 
+                    WHERE id = %s
+                """, (step_id,))
+                
+                step = cur.fetchone()
+                if not step:
+                    return jsonify({'success': False, 'message': 'Step not found'})
+                
+                # Check if there are any dependent records (like workflow_step_prompt)
+                cur.execute("""
+                    SELECT COUNT(*) as count 
+                    FROM workflow_step_prompt 
+                    WHERE step_id = %s
+                """, (step_id,))
+                
+                prompt_count = cur.fetchone()['count']
+                
+                # Check for other potential dependencies
+                cur.execute("""
+                    SELECT COUNT(*) as count 
+                    FROM workflow_step_format 
+                    WHERE step_id = %s
+                """, (step_id,))
+                
+                format_count = cur.fetchone()['count']
+                
+                # Check for post workflow step actions
+                cur.execute("""
+                    SELECT COUNT(*) as count 
+                    FROM post_workflow_step_action 
+                    WHERE step_id = %s
+                """, (step_id,))
+                
+                action_count = cur.fetchone()['count']
+                
+                # If there are dependencies, warn the user
+                if prompt_count > 0 or format_count > 0 or action_count > 0:
+                    dependencies = []
+                    if prompt_count > 0:
+                        dependencies.append(f"{prompt_count} prompt association(s)")
+                    if format_count > 0:
+                        dependencies.append(f"{format_count} format association(s)")
+                    if action_count > 0:
+                        dependencies.append(f"{action_count} workflow action(s)")
+                    
+                    return jsonify({
+                        'success': False, 
+                        'message': f'Cannot delete step "{step["name"]}" because it has dependencies: {", ".join(dependencies)}. Please remove these associations first.'
+                    })
+                
+                # Delete the step
+                cur.execute("DELETE FROM workflow_step_entity WHERE id = %s", (step_id,))
+                
+                if cur.rowcount == 0:
+                    return jsonify({'success': False, 'message': 'Step not found'})
+                
+                conn.commit()
+                return jsonify({'success': True, 'message': f'Step "{step["name"]}" deleted successfully'})
+                
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@bp.route('/api/step/<int:step_id>/force-delete', methods=['DELETE'])
+def force_delete_step(step_id):
+    """Force delete a workflow step by removing all dependencies first."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # First, check if the step exists and get its details
+                cur.execute("""
+                    SELECT id, name, sub_stage_id 
+                    FROM workflow_step_entity 
+                    WHERE id = %s
+                """, (step_id,))
+                
+                step = cur.fetchone()
+                if not step:
+                    return jsonify({'success': False, 'message': 'Step not found'})
+                
+                # Count dependencies before deletion for reporting
+                cur.execute("""
+                    SELECT COUNT(*) as count 
+                    FROM workflow_step_prompt 
+                    WHERE step_id = %s
+                """, (step_id,))
+                prompt_count = cur.fetchone()['count']
+                
+                cur.execute("""
+                    SELECT COUNT(*) as count 
+                    FROM workflow_step_format 
+                    WHERE step_id = %s
+                """, (step_id,))
+                format_count = cur.fetchone()['count']
+                
+                cur.execute("""
+                    SELECT COUNT(*) as count 
+                    FROM post_workflow_step_action 
+                    WHERE step_id = %s
+                """, (step_id,))
+                action_count = cur.fetchone()['count']
+                
+                # Delete all dependencies first
+                deleted_items = []
+                
+                if prompt_count > 0:
+                    cur.execute("DELETE FROM workflow_step_prompt WHERE step_id = %s", (step_id,))
+                    deleted_items.append(f"{prompt_count} prompt association(s)")
+                
+                if format_count > 0:
+                    cur.execute("DELETE FROM workflow_step_format WHERE step_id = %s", (step_id,))
+                    deleted_items.append(f"{format_count} format association(s)")
+                
+                if action_count > 0:
+                    cur.execute("DELETE FROM post_workflow_step_action WHERE step_id = %s", (step_id,))
+                    deleted_items.append(f"{action_count} workflow action(s)")
+                
+                # Now delete the step itself
+                cur.execute("DELETE FROM workflow_step_entity WHERE id = %s", (step_id,))
+                
+                if cur.rowcount == 0:
+                    return jsonify({'success': False, 'message': 'Step not found'})
+                
+                conn.commit()
+                
+                # Build success message
+                if deleted_items:
+                    message = f'Step "{step["name"]}" force deleted successfully. Removed: {", ".join(deleted_items)}.'
+                else:
+                    message = f'Step "{step["name"]}" deleted successfully.'
+                
+                return jsonify({'success': True, 'message': message})
+                
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+
 
 # API endpoint for getting substages by stage
 @bp.route('/api/substages')

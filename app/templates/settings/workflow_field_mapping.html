@@ -41,12 +41,20 @@
                         class="bg-indigo-900 text-indigo-100 font-semibold px-4 py-2 text-base border-t border-indigo-800">
                         <div class="flex items-center justify-between">
                             <span>Substage: {{ substage.substage_name|capitalize }}</span>
-                            <button type="button"
-                                class="save-order-btn bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1 rounded shadow transition focus:ring-2 focus:ring-green-400 focus:outline-none text-sm flex items-center gap-2"
-                                data-substage-id="{{ substage.substage_id }}">
-                                <i class="fa-solid fa-floppy-disk"></i>
-                                Save Order
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <button type="button"
+                                    class="add-step-btn bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1 rounded shadow transition focus:ring-2 focus:ring-green-400 focus:outline-none text-sm flex items-center gap-2"
+                                    data-substage-id="{{ substage.substage_id }}">
+                                    <i class="fa-solid fa-plus"></i>
+                                    Add Step
+                                </button>
+                                <button type="button"
+                                    class="save-order-btn bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1 rounded shadow transition focus:ring-2 focus:ring-green-400 focus:outline-none text-sm flex items-center gap-2"
+                                    data-substage-id="{{ substage.substage_id }}">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                    Save Order
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -84,6 +92,12 @@
                                 <span class="text-xs text-indigo-200 px-2">{{ stage.name }}</span>
                                 <span class="text-xs text-indigo-200 px-2">{{ substage.substage_name }}</span>
                                 <span class="order-cell text-xs text-gray-400 px-2">{{ loop.index }}</span>
+                                <button type="button"
+                                    class="delete-step-btn bg-red-600 hover:bg-red-700 text-white font-semibold px-2 py-1 rounded shadow transition focus:ring-2 focus:ring-red-400 focus:outline-none text-xs ml-2"
+                                    data-step-id="{{ step.id }}"
+                                    onclick="event.stopPropagation(); deleteStep({{ step.id }}, '{{ step.name }}')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
                                 <span class="accordion-icon text-indigo-300 ml-2">
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </span>
@@ -301,6 +315,54 @@
         });
     });
 
+    // Add step button functionality
+    document.querySelectorAll('.add-step-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const substageId = this.dataset.substageId;
+
+            // Prompt for step name
+            const stepName = prompt('Enter the name for the new step:');
+            if (!stepName || stepName.trim() === '') {
+                return;
+            }
+
+            // Show loading state
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
+            btn.disabled = true;
+
+            // Create new step
+            fetch('/settings/api/step', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: stepName.trim(),
+                    substage_id: parseInt(substageId),
+                    config: '{}'
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the page to show the new step
+                        window.location.reload();
+                    } else {
+                        alert('Failed to create step: ' + (data.message || 'Unknown error'));
+                        // Restore button
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error creating step:', error);
+                    alert('Error creating step');
+                    // Restore button
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                });
+        });
+    });
+
     // Save individual step changes
     document.querySelectorAll('.save-step-btn').forEach(btn => {
         btn.addEventListener('click', function () {
@@ -345,6 +407,65 @@
                 });
         });
     });
+
+    // Delete step functionality
+    function deleteStep(stepId, stepName) {
+        // Show confirmation dialog
+        if (!confirm(`Are you sure you want to delete the step "${stepName}"?\n\nThis action will remove all dependencies and cannot be undone.`)) {
+            return;
+        }
+
+        // Find the step accordion element
+        const stepAccordion = document.querySelector(`[data-step-id="${stepId}"]`);
+        if (!stepAccordion) {
+            alert('Step not found');
+            return;
+        }
+
+        // Show loading state
+        const deleteBtn = stepAccordion.querySelector('.delete-step-btn');
+        const originalContent = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        deleteBtn.disabled = true;
+
+        // Call force delete API (since we only have one delete button now)
+        fetch(`/settings/api/step/${stepId}/force-delete`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the step from the DOM with animation
+                    stepAccordion.style.transition = 'all 0.3s ease';
+                    stepAccordion.style.opacity = '0';
+                    stepAccordion.style.transform = 'translateX(-100%)';
+
+                    setTimeout(() => {
+                        stepAccordion.remove();
+                        // Update order numbers for remaining steps
+                        const group = stepAccordion.closest('.step-dnd-group');
+                        if (group) {
+                            updateOrderNumbers(group);
+                        }
+                    }, 300);
+                } else {
+                    alert('Failed to delete step: ' + (data.message || 'Unknown error'));
+                    // Restore button
+                    deleteBtn.innerHTML = originalContent;
+                    deleteBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting step:', error);
+                alert('Error deleting step');
+                // Restore button
+                deleteBtn.innerHTML = originalContent;
+                deleteBtn.disabled = false;
+            });
+    }
+
+
 
     // Handle stage changes to update substage options
     document.querySelectorAll('.stage-select').forEach(select => {
