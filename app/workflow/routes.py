@@ -723,15 +723,26 @@ def get_available_fields():
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             # Resolve llm_available_tables (step → substage → stage)
             if step_id:
-                cur.execute("SELECT config FROM workflow_step_entity WHERE id = %s", (step_id,))
+                cur.execute("""
+                    SELECT wse.config, wst.name as stage_name 
+                    FROM workflow_step_entity wse 
+                    JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id 
+                    JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id 
+                    WHERE wse.id = %s
+                """, (step_id,))
                 row = cur.fetchone()
                 config = row['config'] if row and row['config'] else {}
                 if isinstance(config, str):
                     config = json.loads(config)
                 allowed_tables = config.get('llm_available_tables')
+                stage_name = row['stage_name'] if row else None
             # Note: Only step-level config lookup supported - substage and stage levels not implemented
             if not allowed_tables:
-                allowed_tables = ['post_development']
+                # Default to post_section for Writing stage, post_development for others
+                if stage_name and stage_name.lower() == 'writing':
+                    allowed_tables = ['post_section']
+                else:
+                    allowed_tables = ['post_development']
 
             all_fields = []
             for table in allowed_tables:

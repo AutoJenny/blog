@@ -16,7 +16,7 @@
             {% for stage in stages %}
             <div class="stage-group">
                 <div class="bg-indigo-950 text-indigo-200 font-bold px-4 py-3 text-lg border-t border-indigo-700">
-                    Stage: {{ stage.name|capitalize }}
+                    <span class="stage-name">{{ stage.name|capitalize }}</span>
                 </div>
 
                 {# Stage-level table selection #}
@@ -336,6 +336,36 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
             btn.disabled = true;
 
+            // Get the stage name for this substage to determine default config
+            const substageGroup = btn.closest('.substage-group');
+            const stageGroup = substageGroup.closest('.stage-group');
+            const stageName = stageGroup.querySelector('.stage-name')?.textContent || '';
+            
+            // Create default config based on stage
+            let defaultConfig = {
+                "settings": {
+                    "llm": {
+                        "model": "llama3.2:latest",
+                        "timeout": 360,
+                        "provider": "ollama",
+                        "parameters": {
+                            "top_p": 0.9,
+                            "max_tokens": 1000,
+                            "temperature": 0.7,
+                            "presence_penalty": 0.0,
+                            "frequency_penalty": 0.0
+                        }
+                    }
+                }
+            };
+            
+            // Set default llm_available_tables based on stage
+            if (stageName.toLowerCase().includes('writing')) {
+                defaultConfig.llm_available_tables = ["post_section"];
+            } else {
+                defaultConfig.llm_available_tables = ["post_development"];
+            }
+            
             // Create new step
             fetch('/settings/api/step', {
                 method: 'PUT',
@@ -343,7 +373,7 @@
                 body: JSON.stringify({
                     name: stepName.trim(),
                     substage_id: parseInt(substageId),
-                    config: '{}'
+                    config: JSON.stringify(defaultConfig)
                 })
             })
                 .then(response => response.json())

@@ -453,6 +453,42 @@ def create_step():
                     except json.JSONDecodeError:
                         return jsonify({'success': False, 'message': 'Invalid JSON in config field'})
                 
+                # If config is empty, provide defaults based on stage
+                if not config:
+                    # Get the stage name for this substage
+                    cur.execute("""
+                        SELECT wst.name as stage_name 
+                        FROM workflow_stage_entity wst 
+                        JOIN workflow_sub_stage_entity wsse ON wst.id = wsse.stage_id 
+                        WHERE wsse.id = %s
+                    """, (data['substage_id'],))
+                    stage_result = cur.fetchone()
+                    stage_name = stage_result['stage_name'] if stage_result else ''
+                    
+                    # Create default config
+                    config = {
+                        "settings": {
+                            "llm": {
+                                "model": "llama3.2:latest",
+                                "timeout": 360,
+                                "provider": "ollama",
+                                "parameters": {
+                                    "top_p": 0.9,
+                                    "max_tokens": 1000,
+                                    "temperature": 0.7,
+                                    "presence_penalty": 0.0,
+                                    "frequency_penalty": 0.0
+                                }
+                            }
+                        }
+                    }
+                    
+                    # Set default llm_available_tables based on stage
+                    if stage_name and stage_name.lower() == 'writing':
+                        config["llm_available_tables"] = ["post_section"]
+                    else:
+                        config["llm_available_tables"] = ["post_development"]
+                
                 # Get the next order number for this substage
                 cur.execute("""
                     SELECT COALESCE(MAX(step_order), 0) + 1 as next_order

@@ -497,12 +497,22 @@ def construct_standard_prompt(system_prompt: str, task_prompt: str, inputs: Dict
         
         # Add input data with proper titles
         for k, v in inputs.items():
-            if v is not None and v.strip():
-                # Convert key to display name (e.g., "basic_idea" -> "Basic Idea")
-                display_name = k.replace('_', ' ').title()
-                inputs_parts.append(f"{display_name}:")
-                inputs_parts.append(v.strip())
-                inputs_parts.append("")
+            if v is not None:
+                # Handle different data types
+                if isinstance(v, list):
+                    # Convert list to string representation
+                    v_str = "\n".join([str(item) for item in v if item])
+                elif isinstance(v, str):
+                    v_str = v.strip()
+                else:
+                    v_str = str(v).strip()
+                
+                if v_str:  # Only add if not empty
+                    # Convert key to display name (e.g., "basic_idea" -> "Basic Idea")
+                    display_name = k.replace('_', ' ').title()
+                    inputs_parts.append(f"{display_name}:")
+                    inputs_parts.append(v_str)
+                    inputs_parts.append("")
         
         inputs_section = "\n".join(inputs_parts)
         
@@ -991,10 +1001,22 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
         prompt_data = build_section_specific_prompt(conn, post_id, step_id, selected_section_ids, section_id)
         section_heading = prompt_data["section_data"]["current_section"]["heading"]
         
-        # Get step name for this step_id
+        # Get step name and substage for this step_id
         step_name = get_step_name_by_id(conn, step_id)
+        
+        # Get substage name from step_id
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT wsse.name as substage_name
+                FROM workflow_step_entity wse
+                JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+                WHERE wse.id = %s
+            """, (step_id,))
+            result = cur.fetchone()
+            substage_name = result['substage_name'] if result else "content"
+        
         # Get step configuration for LLM parameters
-        step_config = load_step_config(post_id, "writing", "content", step_name)
+        step_config = load_step_config(post_id, "writing", substage_name, step_name)
         llm_config = step_config.get('settings', {}).get('llm', {})
         
         # Collect ALL input field values for logging
@@ -1060,12 +1082,26 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
                 "basic_idea": prompt_data["context_data"].get("basic_idea", "")
             }
 
-        prompt = construct_writing_stage_prompt(
-            prompt_data["system_prompt"],
-            section_inputs,  # Pass section-specific inputs
-            output_format_template,
-            all_db_fields  # Pass all_db_fields for fallback
-        )
+        # Use custom prompts from database if available, otherwise fall back to writing stage prompt
+        if prompt_data["system_prompt"] and prompt_data["task_prompt"]:
+            # Use custom prompts from workflow_step_prompt table
+            prompt = construct_standard_prompt(
+                prompt_data["system_prompt"],
+                prompt_data["task_prompt"],
+                section_inputs,  # Pass section-specific inputs
+                all_db_fields,  # Pass all_db_fields for fallback
+                input_format_template,
+                output_format_template,
+                step_config
+            )
+        else:
+            # Fall back to writing stage prompt if no custom prompts configured
+            prompt = construct_writing_stage_prompt(
+                prompt_data["system_prompt"],
+                section_inputs,  # Pass section-specific inputs
+                output_format_template,
+                all_db_fields  # Pass all_db_fields for fallback
+            )
         
         # Call LLM with timeout
         llm_response = call_llm(prompt, llm_config.get('parameters', {}), conn, timeout_per_section)
@@ -1109,7 +1145,7 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
             create_diagnostic_logs(
                 post_id=post_id,
                 stage="writing",
-                substage="content", 
+                substage=substage_name,  # Use the actual substage from step_id
                 step=step_name if 'step_name' in locals() else "unknown",
                 db_fields=all_db_fields,
                 llm_message=prompt if prompt else "[Prompt not constructed]",
