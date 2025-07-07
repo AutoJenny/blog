@@ -86,7 +86,8 @@ class timeout_context:
 def create_diagnostic_logs(post_id: int, stage: str, substage: str, step: str, 
                           db_fields: Dict[str, Any], llm_message: str, llm_response: str,
                           input_format_template: dict = None, output_format_template: dict = None,
-                          frontend_inputs: Dict[str, Any] = None):
+                          frontend_inputs: Dict[str, Any] = None,
+                          input_field_values: Dict[str, Any] = None):
     """Create three diagnostic log files for troubleshooting - overwrites existing files."""
     logs_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'logs')
     os.makedirs(logs_dir, exist_ok=True)
@@ -105,7 +106,8 @@ def create_diagnostic_logs(post_id: int, stage: str, substage: str, step: str,
         "input_format_template": input_format_template or {},
         "output_format_template": output_format_template or {},
         "frontend_inputs": frontend_inputs or {},
-        "database_fields": db_fields
+        "database_fields": db_fields,
+        "input_field_values": input_field_values or {}
     }
     with open(db_log_path, 'w') as f:
         json.dump(log_obj, f, indent=2, default=str)
@@ -380,8 +382,6 @@ def construct_writing_stage_prompt(system_prompt: str, inputs: Dict[str, str],
 {system_prompt.strip() if system_prompt else 'You are an expert in Scottish history, culture, and traditions. You have deep knowledge of clan history, tartans, kilts, quaichs, and other aspects of Scottish heritage. You write in a clear, engaging style that balances historical accuracy with accessibility for a general audience.'}
 
 BROAD SUBJECT OF WIDER ARTICLE:
-Idea Scope: {inputs.get('idea_scope', '')}
-
 Basic Idea: {inputs.get('basic_idea', '')}"""
 
         # INPUTS section (section-specific details only)
@@ -728,21 +728,12 @@ def get_step_prompt_templates(conn, step_id: int) -> Dict[str, str]:
 def get_selected_sections_data(conn, post_id: int, selected_section_ids: List[int], current_section_id: int) -> Dict[str, Any]:
     """
     Get data for selected sections and current section context.
-    
-    Args:
-        conn: Database connection
-        post_id: Post ID
-        selected_section_ids: List of selected section IDs
-        current_section_id: ID of section being processed
-    
-    Returns:
-        Dict with filtered section data and current section context
     """
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            # Get current section context
+            # Get current section context (fetch all columns)
             cur.execute("""
-                SELECT section_heading, section_description, first_draft
+                SELECT *
                 FROM post_section 
                 WHERE id = %s AND post_id = %s
             """, (current_section_id, post_id))
@@ -772,12 +763,43 @@ def get_selected_sections_data(conn, post_id: int, selected_section_ids: List[in
             """, (post_id,))
             post_context = cur.fetchone() or {}
             
+            # Build context_data with all fields from current_section
+            context_data = dict(current_section)
+            # Add post-level context fields
+            context_data["idea_scope"] = post_context.get("idea_scope")
+            context_data["basic_idea"] = post_context.get("basic_idea")
+            context_data["section_headings"] = post_context.get("section_headings")
+            # Add legacy/compatibility fields
+            context_data["write_about_section_heading"] = current_section.get("section_heading", "")
+            context_data["write_about_section_description"] = current_section.get("section_description", "")
+            # All section headings for avoid_topics
+            all_section_headings = []
+            if post_context.get("section_headings"):
+                try:
+                    all_section_headings = json.loads(post_context["section_headings"])
+                    if not isinstance(all_section_headings, list):
+                        all_section_headings = []
+                except (json.JSONDecodeError, TypeError):
+                    all_section_headings = [
+                        {
+                            "title": section["section_heading"],
+                            "description": section["section_description"]
+                        } for section in selected_sections
+                    ]
+            current_section_heading = current_section.get("section_heading", "")
+            avoid_topics = []
+            for heading in all_section_headings:
+                if isinstance(heading, dict):
+                    title = heading.get('title', heading.get('heading', ''))
+                    if title != current_section_heading:
+                        avoid_topics.append(title)
+            context_data["avoid_topics"] = avoid_topics
             return {
                 "current_section": {
                     "id": current_section_id,
-                    "heading": current_section['section_heading'],
-                    "description": current_section['section_description'],
-                    "first_draft": current_section['first_draft']
+                    "heading": current_section.get('section_heading', ''),
+                    "description": current_section.get('section_description', ''),
+                    "first_draft": current_section.get('first_draft', '')
                 },
                 "selected_sections": [
                     {
@@ -787,13 +809,9 @@ def get_selected_sections_data(conn, post_id: int, selected_section_ids: List[in
                         "order": section['section_order']
                     } for section in selected_sections
                 ],
-                "post_context": {
-                    "idea_scope": post_context.get('idea_scope'),
-                    "basic_idea": post_context.get('basic_idea'),
-                    "section_headings": post_context.get('section_headings')
-                }
+                "post_context": post_context,
+                "context_data": context_data
             }
-            
     except Exception as e:
         print(f"Error getting selected sections data: {str(e)}", file=sys.stderr)
         raise
@@ -938,6 +956,7 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
     all_db_fields = {}
     input_format_template = None
     output_format_template = None
+    input_field_values = {}
     try:
         # Build section-specific prompt
         prompt_data = build_section_specific_prompt(conn, post_id, step_id, selected_section_ids, section_id)
@@ -948,6 +967,9 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
         # Get step configuration for LLM parameters
         step_config = load_step_config(post_id, "writing", "content", step_name)
         llm_config = step_config.get('settings', {}).get('llm', {})
+        
+        # Collect ALL input field values for logging
+        input_field_values = collect_all_input_field_values(conn, post_id, step_config)
         
         # Get format templates from database
         format_config = get_step_format_config(conn, step_id, post_id)
@@ -966,18 +988,32 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
                 'llm_instructions': 'Return your response as plain text using British English spellings and conventions (e.g., colour, centre, organisation). Do not include any JSON, metadata, or commentary—just the text.'
             }
         
-        # Construct the full prompt
-        all_db_fields = prompt_data["context_data"]
-        
-        # Extract section-specific inputs for the INPUTS section
-        section_inputs = {
-            "write_about_section_heading": prompt_data["context_data"].get("write_about_section_heading", ""),
-            "write_about_section_description": prompt_data["context_data"].get("write_about_section_description", ""),
-            "avoid_topics": prompt_data["context_data"].get("avoid_topics", []),
-            "idea_scope": prompt_data["context_data"].get("idea_scope", ""),
-            "basic_idea": prompt_data["context_data"].get("basic_idea", "")
-        }
-        
+        # DEBUG: Log step_config['inputs'] and prompt_data['context_data']
+        debug_log_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'logs', 'llm_section_inputs_debug.json')
+        with open(debug_log_path, 'w') as dbg:
+            import json
+            dbg.write(json.dumps({
+                'step_config_inputs': step_config.get('inputs', {}) if step_config else {},
+                'context_data': prompt_data.get('context_data', {})
+            }, indent=2, default=str))
+
+        # Dynamically extract all input fields from step_config['inputs']
+        section_inputs = {}
+        if step_config and 'inputs' in step_config:
+            for input_id, input_cfg in step_config['inputs'].items():
+                db_field = input_cfg.get('db_field', input_id)
+                # Use the db_field as the key for the prompt input, fallback to input_id
+                section_inputs[db_field] = prompt_data["context_data"].get(db_field, "")
+        # Fallback: if no config, use previous hardcoded fields
+        if not section_inputs:
+            section_inputs = {
+                "write_about_section_heading": prompt_data["context_data"].get("write_about_section_heading", ""),
+                "write_about_section_description": prompt_data["context_data"].get("write_about_section_description", ""),
+                "avoid_topics": prompt_data["context_data"].get("avoid_topics", []),
+                "idea_scope": prompt_data["context_data"].get("idea_scope", ""),
+                "basic_idea": prompt_data["context_data"].get("basic_idea", "")
+            }
+
         prompt = construct_prompt(
             prompt_data["system_prompt"],
             prompt_data["task_prompt"],
@@ -1038,7 +1074,8 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
                 llm_response=output if output else "[No response or error]",
                 input_format_template=input_format_template,
                 output_format_template=output_format_template,
-                frontend_inputs={}  # No frontend inputs for section processing
+                frontend_inputs={},  # No frontend inputs for section processing
+                input_field_values=input_field_values  # Pass all input field values
             )
         except Exception as log_exc:
             print(f"[LOGGING ERROR] Failed to write diagnostic logs: {log_exc}", file=sys.stderr)
@@ -1111,13 +1148,169 @@ def process_sections_sequentially(conn, post_id: int, step_id: int, selected_sec
         }
     }
 
+def collect_all_input_field_values(conn, post_id: int, config: Dict[str, Any]) -> Dict[str, Any]:
+    """Collect ALL input fields from step config and their values from database tables."""
+    all_input_fields = {}
+    
+    # Get all input fields from step configuration (these are what appear in the Inputs dropdown)
+    input_mapping = config.get('inputs', {})
+    
+    # First, collect all fields from post_development table
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Get all columns from post_development table
+            cur.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'post_development' 
+                AND column_name NOT IN ('id', 'post_id')
+                ORDER BY ordinal_position
+            """)
+            dev_columns = [row['column_name'] for row in cur.fetchall()]
+            
+            # Fetch all post_development fields for this post
+            if dev_columns:
+                column_list = ', '.join(dev_columns)
+                cur.execute(f"SELECT {column_list} FROM post_development WHERE post_id = %s", (post_id,))
+                dev_result = cur.fetchone()
+                
+                if dev_result:
+                    for column in dev_columns:
+                        field_id = f"post_development_{column}"
+                        all_input_fields[field_id] = {
+                            'input_id': field_id,
+                            'db_field': column,
+                            'db_table': 'post_development',
+                            'value': dev_result[column],
+                            'display_name': column.replace('_', ' ').title(),
+                            'type': 'text',
+                            'source': 'post_development_table'
+                        }
+                else:
+                    # Post development record doesn't exist, log all fields as null
+                    for column in dev_columns:
+                        field_id = f"post_development_{column}"
+                        all_input_fields[field_id] = {
+                            'input_id': field_id,
+                            'db_field': column,
+                            'db_table': 'post_development',
+                            'value': None,
+                            'display_name': column.replace('_', ' ').title(),
+                            'type': 'text',
+                            'source': 'post_development_table',
+                            'note': 'No post_development record found for this post'
+                        }
+    except Exception as e:
+        all_input_fields['post_development_error'] = {
+            'input_id': 'post_development_error',
+            'db_field': 'error',
+            'db_table': 'post_development',
+            'value': None,
+            'display_name': 'Post Development Error',
+            'type': 'error',
+            'error': str(e)
+        }
+    
+    # Then, collect all fields from post_section table
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Get all columns from post_section table
+            cur.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'post_section' 
+                AND column_name NOT IN ('id', 'post_id')
+                ORDER BY ordinal_position
+            """)
+            section_columns = [row['column_name'] for row in cur.fetchall()]
+            
+            # Fetch all post_section fields for this post
+            if section_columns:
+                column_list = ', '.join(section_columns)
+                cur.execute(f"SELECT id, {column_list} FROM post_section WHERE post_id = %s", (post_id,))
+                section_results = cur.fetchall()
+                
+                if section_results:
+                    # Create a mapping of section_id to all field values
+                    for column in section_columns:
+                        field_id = f"post_section_{column}"
+                        section_values = {row['id']: row[column] for row in section_results}
+                        all_input_fields[field_id] = {
+                            'input_id': field_id,
+                            'db_field': column,
+                            'db_table': 'post_section',
+                            'value': section_values,
+                            'display_name': column.replace('_', ' ').title(),
+                            'type': 'text',
+                            'source': 'post_section_table',
+                            'section_count': len(section_results)
+                        }
+                else:
+                    # No sections found, log all fields as empty
+                    for column in section_columns:
+                        field_id = f"post_section_{column}"
+                        all_input_fields[field_id] = {
+                            'input_id': field_id,
+                            'db_field': column,
+                            'db_table': 'post_section',
+                            'value': {},
+                            'display_name': column.replace('_', ' ').title(),
+                            'type': 'text',
+                            'source': 'post_section_table',
+                            'note': 'No sections found for this post'
+                        }
+    except Exception as e:
+        all_input_fields['post_section_error'] = {
+            'input_id': 'post_section_error',
+            'db_field': 'error',
+            'db_table': 'post_section',
+            'value': None,
+            'display_name': 'Post Section Error',
+            'type': 'error',
+            'error': str(e)
+        }
+    
+    # Finally, add the configured input fields with their specific config info
+    for input_id, input_config in input_mapping.items():
+        db_field = input_config.get('db_field', input_id)
+        db_table = input_config.get('db_table', 'post_development')
+        
+        # Check if we already have this field in our collection
+        existing_field_id = f"{db_table}_{db_field}"
+        if existing_field_id in all_input_fields:
+            # Update the existing field with config info
+            all_input_fields[existing_field_id].update({
+                'configured_input_id': input_id,
+                'configured_label': input_config.get('label', input_id),
+                'configured_type': input_config.get('type', 'unknown'),
+                'is_configured': True
+            })
+        else:
+            # This is a configured field that we didn't find in our table scan
+            all_input_fields[input_id] = {
+                'input_id': input_id,
+                'db_field': db_field,
+                'db_table': db_table,
+                'value': None,
+                'display_name': input_config.get('label', input_id),
+                'type': input_config.get('type', 'unknown'),
+                'configured_input_id': input_id,
+                'configured_label': input_config.get('label', input_id),
+                'configured_type': input_config.get('type', 'unknown'),
+                'is_configured': True,
+                'note': f'Configured field not found in {db_table} table'
+            }
+    
+    return all_input_fields
+
 def process_step(post_id: int, stage: str, substage: str, step: str, frontend_inputs: Dict[str, Any] = None):
     """Main function to process a workflow step with format validation and multiple inputs."""
     diagnostic_data = {
         "db_fields": {},
         "llm_message": "",
         "llm_response": "",
-        "frontend_inputs": frontend_inputs or {}
+        "frontend_inputs": frontend_inputs or {},
+        "input_field_values": {}
     }
     try:
         config = load_step_config(post_id, stage, substage, step)
@@ -1138,6 +1331,7 @@ def process_step(post_id: int, stage: str, substage: str, step: str, frontend_in
         
         inputs = get_input_values(conn, post_id, input_mapping, frontend_inputs)
         diagnostic_data["db_fields"] = collect_all_database_fields(conn, post_id, stage, substage, step, config)
+        diagnostic_data["input_field_values"] = collect_all_input_field_values(conn, post_id, config)  # Log ALL input fields and their values
 
         # Collect format templates separately to avoid duplication
         input_format_template = None
@@ -1214,7 +1408,8 @@ def process_step(post_id: int, stage: str, substage: str, step: str, frontend_in
             diagnostic_data["llm_response"],
             input_format_template,
             output_format_template,
-            diagnostic_data["frontend_inputs"]
+            diagnostic_data["frontend_inputs"],
+            diagnostic_data["input_field_values"]
         )
         print(f"Successfully processed step {step} for post {post_id}")
         return output
@@ -1227,7 +1422,8 @@ def process_step(post_id: int, stage: str, substage: str, step: str, frontend_in
                 diagnostic_data["llm_response"],
                 diagnostic_data.get("input_format_template"),
                 diagnostic_data.get("output_format_template"),
-                diagnostic_data["frontend_inputs"]
+                diagnostic_data["frontend_inputs"],
+                diagnostic_data["input_field_values"]
             )
         print(f"Error processing step: {str(e)}", file=sys.stderr)
         raise
