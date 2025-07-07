@@ -370,24 +370,49 @@ This is a system configuration issue that needs to be resolved before LLM proces
         return error_prompt
 
 def construct_writing_stage_prompt(system_prompt: str, inputs: Dict[str, str], 
-                                 output_format_template: Dict[str, Any]) -> str:
+                                 output_format_template: Dict[str, Any],
+                                 all_db_fields: Dict[str, Any] = None) -> str:
     """
     Hard-coded prompt structure for Writing stage only.
     This function creates a consistent, reliable prompt structure for all Writing stage steps.
     """
     try:
+        # Ensure basic_idea is present and fallback if missing
+        basic_idea = inputs.get('basic_idea', '')
+        if not basic_idea and all_db_fields:
+            # Try to find in all_db_fields (from post_development)
+            if 'post_development_basic_idea' in all_db_fields and all_db_fields['post_development_basic_idea'].get('value'):
+                basic_idea = all_db_fields['post_development_basic_idea']['value']
+            elif 'basic_idea' in all_db_fields and all_db_fields['basic_idea'].get('value'):
+                basic_idea = all_db_fields['basic_idea']['value']
+            else:
+                # Try any key ending with basic_idea
+                for k, v in all_db_fields.items():
+                    if k.endswith('basic_idea') and v.get('value'):
+                        basic_idea = v['value']
+                        break
+        
         # CONTEXT section (expert knowledge + broad article context)
         context_section = f"""CONTEXT to orientate you
 
 {system_prompt.strip() if system_prompt else 'You are an expert in Scottish history, culture, and traditions. You have deep knowledge of clan history, tartans, kilts, quaichs, and other aspects of Scottish heritage. You write in a clear, engaging style that balances historical accuracy with accessibility for a general audience.'}
 
 BROAD SUBJECT OF WIDER ARTICLE:
-Basic Idea: {inputs.get('basic_idea', '')}"""
+Basic Idea: {basic_idea}"""
 
         # INPUTS section (section-specific details only)
         avoid_topics_text = ""
         if inputs.get('avoid_topics'):
             avoid_topics_text = "\n".join([f"- {topic}" for topic in inputs.get('avoid_topics', [])])
+        
+        # Include ideas_to_include and facts_to_include if available
+        ideas_to_include_text = ""
+        if inputs.get('ideas_to_include'):
+            ideas_to_include_text = f"\nIDEAS TO INCLUDE:\n{inputs.get('ideas_to_include', '')}"
+        
+        facts_to_include_text = ""
+        if inputs.get('facts_to_include'):
+            facts_to_include_text = f"\nFACTS TO INCLUDE:\n{inputs.get('facts_to_include', '')}"
         
         inputs_section = f"""INPUTS for your TASK below
 (Mixed plain text & JSON)
@@ -395,7 +420,7 @@ The inputs are a combination of plain text and structured JSON. Interpret each t
 
 WRITE ABOUT THIS SPECIFIC SECTION:
 Section Heading: {inputs.get('write_about_section_heading', '')}
-Section Description: {inputs.get('write_about_section_description', '')}
+Section Description: {inputs.get('write_about_section_description', '')}{ideas_to_include_text}{facts_to_include_text}
 
 AVOID THESE TOPICS (DO NOT WRITE ABOUT):
 {avoid_topics_text}"""
@@ -867,8 +892,12 @@ def build_section_specific_prompt(conn, post_id: int, step_id: int, selected_sec
                 if title != current_section_heading:
                     avoid_topics.append(title)
         
-        # Create context data for prompt construction with restructured format
-        context_data = {
+        # Use the comprehensive context_data from get_selected_sections_data
+        # This includes ALL fields from post_section (ideas_to_include, facts_to_include, etc.)
+        context_data = section_data["context_data"]
+        
+        # Add/update specific fields for prompt construction
+        context_data.update({
             "idea_scope": section_data["post_context"].get("idea_scope"),
             "basic_idea": section_data["post_context"].get("basic_idea"),
             "write_about_section_heading": current_section_heading,
@@ -878,7 +907,7 @@ def build_section_specific_prompt(conn, post_id: int, step_id: int, selected_sec
             "section_heading": current_section_heading,
             "section_description": current_section_description,
             "section_headings": json.dumps(all_section_headings) if all_section_headings else "[]"
-        }
+        })
         
         return {
             "system_prompt": system_prompt,
@@ -1004,8 +1033,25 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
                 db_field = input_cfg.get('db_field', input_id)
                 # Use the db_field as the key for the prompt input, fallback to input_id
                 section_inputs[db_field] = prompt_data["context_data"].get(db_field, "")
-        # Fallback: if no config, use previous hardcoded fields
-        if not section_inputs:
+        
+        # For Writing stage, always include essential post_development fields
+        # These are needed for the Writing stage prompt even if not configured as inputs
+        essential_writing_fields = {
+            "basic_idea": prompt_data["context_data"].get("basic_idea", ""),
+            "idea_scope": prompt_data["context_data"].get("idea_scope", ""),
+            "write_about_section_heading": prompt_data["context_data"].get("write_about_section_heading", ""),
+            "write_about_section_description": prompt_data["context_data"].get("write_about_section_description", ""),
+            "avoid_topics": prompt_data["context_data"].get("avoid_topics", [])
+        }
+        
+        # Merge configured inputs with essential writing fields
+        section_inputs.update(essential_writing_fields)
+
+        # Ensure basic_idea is always present and correct
+        section_inputs['basic_idea'] = prompt_data["context_data"].get("basic_idea", "")
+
+        # Fallback: if no config at all, use previous hardcoded fields
+        if not step_config or 'inputs' not in step_config:
             section_inputs = {
                 "write_about_section_heading": prompt_data["context_data"].get("write_about_section_heading", ""),
                 "write_about_section_description": prompt_data["context_data"].get("write_about_section_description", ""),
@@ -1014,15 +1060,11 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
                 "basic_idea": prompt_data["context_data"].get("basic_idea", "")
             }
 
-        prompt = construct_prompt(
+        prompt = construct_writing_stage_prompt(
             prompt_data["system_prompt"],
-            prompt_data["task_prompt"],
             section_inputs,  # Pass section-specific inputs
-            all_db_fields,
-            input_format_template,
             output_format_template,
-            step_config,
-            "writing"  # Specify the stage for the prompt construction
+            all_db_fields  # Pass all_db_fields for fallback
         )
         
         # Call LLM with timeout
