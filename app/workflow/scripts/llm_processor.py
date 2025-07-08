@@ -454,8 +454,8 @@ def construct_standard_prompt(system_prompt: str, task_prompt: str, inputs: Dict
                             input_format_template: Dict[str, Any] = None, output_format_template: Dict[str, Any] = None,
                             step_config: Dict[str, Any] = None) -> str:
     """
-    Standard prompt construction for non-Writing stages (Planning, etc.).
-    This maintains the existing flexible prompt system for other stages.
+    Standard prompt construction with organized sections for clarity.
+    This creates a well-structured prompt that's easy for the LLM to understand.
     """
     try:
         # Validate required components
@@ -482,10 +482,19 @@ def construct_standard_prompt(system_prompt: str, task_prompt: str, inputs: Dict
         output_description = output_format_template.get('description', '')
         
         # Build CONTEXT section
-        context_parts = ["CONTEXT to orientate you", ""]
+        context_parts = ["CONTEXT to orientate you"]
         if system_prompt.strip():
             context_parts.append(system_prompt.strip())
         context_section = "\n".join(context_parts)
+        
+        # Build GENERAL BACKGROUND section (idea_scope only)
+        background_parts = []
+        if 'idea_scope' in inputs and inputs['idea_scope']:
+            background_parts.append("GENERAL BACKGROUND ABOUT THE ARTICLE AS A WHOLE:")
+            background_parts.append("Idea Scope:")
+            background_parts.append(str(inputs['idea_scope']))
+        
+        background_section = "\n".join(background_parts)
         
         # Build INPUTS section
         inputs_parts = ["INPUTS for your TASK below"]
@@ -495,31 +504,49 @@ def construct_standard_prompt(system_prompt: str, task_prompt: str, inputs: Dict
             inputs_parts.append(input_instructions)
         inputs_parts.append("")
         
-        # Add input data with proper titles
-        for k, v in inputs.items():
-            if v is not None:
-                # Handle different data types
-                if isinstance(v, list):
-                    # Convert list to string representation
-                    v_str = "\n".join([str(item) for item in v if item])
-                elif isinstance(v, str):
-                    v_str = v.strip()
-                else:
-                    v_str = str(v).strip()
-                
-                if v_str:  # Only add if not empty
-                    # Convert key to display name (e.g., "basic_idea" -> "Basic Idea")
-                    display_name = k.replace('_', ' ').title()
-                    inputs_parts.append(f"{display_name}:")
-                    inputs_parts.append(v_str)
-                    inputs_parts.append("")
+        # Build DO NOT WRITE ABOUT section (avoid_topics)
+        if 'avoid_topics' in inputs and inputs['avoid_topics']:
+            avoid_topics = inputs['avoid_topics']
+            if isinstance(avoid_topics, list):
+                avoid_list = avoid_topics
+            elif isinstance(avoid_topics, str):
+                # Try to parse as JSON if it's a string
+                try:
+                    avoid_list = json.loads(avoid_topics)
+                except:
+                    avoid_list = [avoid_topics]
+            else:
+                avoid_list = [str(avoid_topics)]
+            
+            inputs_parts.append("DO NOT WRITE ABOUT THESE TOPICS:{")
+            for topic in avoid_list:
+                if topic and str(topic).strip():
+                    inputs_parts.append(str(topic).strip())
+            inputs_parts.append("}")
+            inputs_parts.append("")
         
+        # Build DO WRITE ONLY ABOUT section (section heading and description)
+        write_about_parts = []
+        if 'write_about_section_heading' in inputs and inputs['write_about_section_heading']:
+            write_about_parts.append("DO WRITE ONLY ABOUT THESE TOPICS{")
+            write_about_parts.append("Section Heading:")
+            write_about_parts.append(str(inputs['write_about_section_heading']))
+            
+            if 'write_about_section_description' in inputs and inputs['write_about_section_description']:
+                write_about_parts.append("Section Description:")
+                write_about_parts.append(str(inputs['write_about_section_description']))
+            
+            write_about_parts.append("}")
+            write_about_parts.append("")
+        
+        inputs_parts.extend(write_about_parts)
         inputs_section = "\n".join(inputs_parts)
         
         # Build TASK section
-        task_parts = ["TASK to process the INPUTS above", ""]
+        task_parts = ["TASK to process the INPUTS above {"]
         if task_prompt.strip():
             task_parts.append(task_prompt.strip())
+        task_parts.append("}")
         task_section = "\n".join(task_parts)
         
         # Build RESPONSE section
@@ -530,8 +557,13 @@ def construct_standard_prompt(system_prompt: str, task_prompt: str, inputs: Dict
             response_parts.append(output_instructions)
         response_section = "\n".join(response_parts)
         
-        # Combine all sections
-        full_prompt = f"{context_section}\n\n{inputs_section}\n\n{task_section}\n\n{response_section}"
+        # Combine all sections with proper spacing
+        sections = [context_section]
+        if background_section:
+            sections.append(background_section)
+        sections.extend([inputs_section, task_section, response_section])
+        
+        full_prompt = "\n\n".join(sections)
         
         return full_prompt
         
@@ -1059,7 +1091,6 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
         # For Writing stage, always include essential post_development fields
         # These are needed for the Writing stage prompt even if not configured as inputs
         essential_writing_fields = {
-            "basic_idea": prompt_data["context_data"].get("basic_idea", ""),
             "idea_scope": prompt_data["context_data"].get("idea_scope", ""),
             "write_about_section_heading": prompt_data["context_data"].get("write_about_section_heading", ""),
             "write_about_section_description": prompt_data["context_data"].get("write_about_section_description", ""),
@@ -1069,17 +1100,13 @@ def process_single_section(conn, post_id: int, step_id: int, section_id: int, se
         # Merge configured inputs with essential writing fields
         section_inputs.update(essential_writing_fields)
 
-        # Ensure basic_idea is always present and correct
-        section_inputs['basic_idea'] = prompt_data["context_data"].get("basic_idea", "")
-
         # Fallback: if no config at all, use previous hardcoded fields
         if not step_config or 'inputs' not in step_config:
             section_inputs = {
                 "write_about_section_heading": prompt_data["context_data"].get("write_about_section_heading", ""),
                 "write_about_section_description": prompt_data["context_data"].get("write_about_section_description", ""),
                 "avoid_topics": prompt_data["context_data"].get("avoid_topics", []),
-                "idea_scope": prompt_data["context_data"].get("idea_scope", ""),
-                "basic_idea": prompt_data["context_data"].get("basic_idea", "")
+                "idea_scope": prompt_data["context_data"].get("idea_scope", "")
             }
 
         # Use custom prompts from database if available, otherwise fall back to writing stage prompt
