@@ -1,5 +1,6 @@
 from datetime import datetime
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, abort
+from app.db import get_db_conn
 
 bp = Blueprint('preview', __name__)
 
@@ -121,11 +122,97 @@ MOCK_POSTS = [
 
 @bp.route('/')
 def listing():
+    # Try to get real posts from database first
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT p.id, p.title, p.created_at, p.updated_at,
+                       pd.idea_seed, pd.provisional_title, pd.intro_blurb
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.status != 'deleted'
+                ORDER BY p.created_at DESC
+                LIMIT 20
+            """)
+            posts_data = cur.fetchall()
+            
+            if posts_data:
+                posts = []
+                for post_data in posts_data:
+                    posts.append({
+                        'id': post_data['id'],
+                        'title': post_data['title'] or post_data['provisional_title'] or 'Untitled Post',
+                        'date': post_data['created_at'].strftime('%Y-%m-%d') if post_data['created_at'] else 'Unknown',
+                        'author': 'nick-fiddes',  # Default author
+                        'summary': post_data['intro_blurb'] or post_data['idea_seed'] or 'No summary available.',
+                        'created_at': post_data['created_at'] or datetime.now()
+                    })
+                return render_template('preview/listing.html', posts=posts)
+    
+    # Fallback to mock data if no posts found in database
     return render_template('preview/listing.html', posts=MOCK_POSTS)
 
 @bp.route('/<int:post_id>/')
 def post_detail(post_id):
+    # Try to get real post data from database first
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT p.id, p.title, p.created_at, p.updated_at,
+                       pd.idea_seed, pd.provisional_title, pd.intro_blurb, pd.conclusion
+                FROM post p
+                LEFT JOIN post_development pd ON p.id = pd.post_id
+                WHERE p.id = %s AND p.status != 'deleted'
+            """, (post_id,))
+            post_data = cur.fetchone()
+            
+            if post_data:
+                # Get sections for this post
+                cur.execute("""
+                    SELECT id, section_heading, section_description, first_draft, 
+                           image_captions, generated_image_url
+                    FROM post_section 
+                    WHERE post_id = %s 
+                    ORDER BY section_order ASC
+                """, (post_id,))
+                sections_data = cur.fetchall()
+                
+                # Build post object
+                post = {
+                    'id': post_data['id'],
+                    'title': post_data['title'] or post_data['provisional_title'] or 'Untitled Post',
+                    'date': post_data['created_at'].strftime('%Y-%m-%d') if post_data['created_at'] else 'Unknown',
+                    'author': 'nick-fiddes',  # Default author
+                    'summary': post_data['intro_blurb'] or post_data['idea_seed'] or 'No summary available.',
+                    'created_at': post_data['created_at'] or datetime.now(),
+                    'subtitle': post_data['provisional_title'] or '',
+                    'header_image': '/static/images/site/header.jpg',  # Default header image
+                    'sections': []
+                }
+                
+                # Build sections
+                for section in sections_data:
+                    post['sections'].append({
+                        'heading': section['section_heading'] or 'Untitled Section',
+                        'text': section['first_draft'] or section['section_description'] or 'No content available.',
+                        'image': {
+                            'src': section['generated_image_url'] or '/static/images/site/default-section.jpg',
+                            'alt': section['section_heading'] or 'Section image',
+                            'caption': section['image_captions'] or ''
+                        } if section['generated_image_url'] else None
+                    })
+                
+                # Add conclusion if available
+                if post_data['conclusion']:
+                    post['conclusion'] = {
+                        'heading': 'Conclusion',
+                        'text': post_data['conclusion']
+                    }
+                
+                return render_template('preview/post_preview.html', post=post)
+    
+    # Fallback to mock data if post not found in database
     post = next((p for p in MOCK_POSTS if p['id'] == post_id), None)
     if not post:
-        return 'Post not found', 404
+        abort(404, f"Post {post_id} not found")
     return render_template('preview/post_preview.html', post=post) 

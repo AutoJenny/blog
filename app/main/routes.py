@@ -381,10 +381,6 @@ def api_test_provider(provider_id):
     """Deprecated LLM provider test endpoint."""
     return jsonify({'error': 'This endpoint is deprecated'}), 410
 
-@bp.route('/preview/')
-def preview_stub():
-    return render_template('blog/public/preview_listing.html')
-
 @bp.route('/structure/')
 def structure_stub():
     return render_template('main/structure_stub.html')

@@ -13,20 +13,30 @@
 
 <div class="bg-dark-bg py-6">
     <div class="container mx-auto px-6">
-        <!-- Line 1: Breadcrumbs and Post Selector -->
+        <!-- Line 1: Breadcrumbs, Post Selector, and Preview Toggle -->
         <div class="flex justify-between items-center mb-8">
             <nav class="text-base">
                 <h2 class="text-2xl font-bold text-dark-text">{{ current_substage|title }} : {{
                     all_posts|selectattr('id', 'equalto', current_post_id)|map(attribute='title')|first }}</h2>
             </nav>
-            <div class="relative">
-                <select id="post-selector"
-                    class="bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text min-w-[200px]">
-                    {% for post in all_posts %}
-                    <option value="{{ post.id }}" {% if post.id==current_post_id %}selected{% endif %}>{{ post.title }}
-                    </option>
-                    {% endfor %}
-                </select>
+            <div class="flex items-center gap-4">
+                <!-- Preview Toggle Button -->
+                <a href="/preview/{{ current_post_id }}/" 
+                   target="_blank"
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium">
+                    <i class="fas fa-eye"></i>
+                    <span>Preview</span>
+                </a>
+                <!-- Post Selector -->
+                <div class="relative">
+                    <select id="post-selector"
+                        class="bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text min-w-[200px]">
+                        {% for post in all_posts %}
+                        <option value="{{ post.id }}" {% if post.id==current_post_id %}selected{% endif %}>{{ post.title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
         </div>
 
