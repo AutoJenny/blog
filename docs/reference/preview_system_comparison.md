@@ -38,12 +38,12 @@ This document provides a systematic side-by-side comparison of the preview funct
 |---------|-------------------------|-------------------|---------|
 | **Section Heading** | `section.heading` | `section.section_heading` | ✅ Available |
 | **Section Text** | `section.text` | `section.optimization` / `section.generation` / `section.uk_british` / `section.first_draft` | ✅ Available (Multiple versions) |
-| **Section Image ID** | `section.imageId` | `section.image.id` | ✅ Available |
+| **Section Image ID** | `section.imageId` | `section.image_id` | ✅ Available |
 | **Section Image Path** | `section.image.src` | `section.image.path` | ✅ Available |
 | **Section Image Alt** | `section.image.alt` | `section.image.alt_text` | ✅ Available |
-| **Section Image Caption** | `section.image.caption` | `section.image.caption` | ✅ Available |
-| **Section Image Prompt** | `section.image.imagePrompt` | `section.image.prompt` | ❌ Missing |
-| **Section Image Notes** | `section.image.notes` | `section.image.notes` | ❌ Missing |
+| **Section Image Caption** | `section.image.caption` | `section.image_captions` | ✅ Available |
+| **Section Image Prompt** | `section.image.imagePrompt` | `section.image_prompts` | ✅ Available |
+| **Section Image Notes** | `section.image.notes` | `section.image_meta_descriptions` | ✅ Available |
 
 ### Conclusion
 
@@ -104,8 +104,8 @@ conclusion:
 -- New database structure
 post: id, title, slug, created_at, status, summary, footer
 post_development: post_id, idea_seed, subtitle, provisional_title, intro_blurb, conclusion
-post_section: post_id, section_heading, optimization, generation, uk_british, first_draft
-post_image: id, post_id, image_type, path, alt_text, caption, prompt, notes
+post_section: post_id, section_heading, optimization, generation, uk_british, first_draft, image_prompts, image_captions, image_meta_descriptions, image_id
+image: id, post_id, path, alt_text, caption
 ```
 
 ## Missing Elements in New System
@@ -117,8 +117,9 @@ post_image: id, post_id, image_type, path, alt_text, caption, prompt, notes
 
 ### 2. Image Prompts and Notes
 - **Legacy**: `imagePrompt` and `notes` fields for all images
-- **New**: Missing from `post_image` table
-- **Action**: Add `prompt` and `notes` columns to `post_image` table
+- **New**: Available in `post_section` table as `image_prompts` and `image_meta_descriptions`
+- **Status**: ✅ Available for section images, ❌ Missing for header images
+- **Action**: Add `prompt` and `notes` columns to `image` table for header images
 
 ### 3. Conclusion Image
 - **Legacy**: `metadata.conclusion.imageId` and related fields
@@ -198,13 +199,13 @@ post_image: id, post_id, image_type, path, alt_text, caption, prompt, notes
 
 ### Phase 1: Core Missing Elements
 1. **Add missing database fields:**
-   - `post_image.prompt` (TEXT)
-   - `post_image.notes` (TEXT)
+   - `image.prompt` (TEXT) - for header images
+   - `image.notes` (TEXT) - for header images  
    - `post_development.conclusion_heading` (VARCHAR)
    - `post.categories` (JSONB or separate junction table)
 
 2. **Add conclusion image support:**
-   - Extend `post_image` table to support `image_type = 'conclusion'`
+   - Extend `image` table to support conclusion images
    - Update preview template to display conclusion images
 
 3. **Add URL key support:**
@@ -241,13 +242,13 @@ post_image: id, post_id, image_type, path, alt_text, caption, prompt, notes
 
 ```sql
 -- Add missing fields to existing tables
-ALTER TABLE post_image ADD COLUMN prompt TEXT;
-ALTER TABLE post_image ADD COLUMN notes TEXT;
+ALTER TABLE image ADD COLUMN prompt TEXT;
+ALTER TABLE image ADD COLUMN notes TEXT;
 ALTER TABLE post_development ADD COLUMN conclusion_heading VARCHAR(255);
 ALTER TABLE post ADD COLUMN categories JSONB;
 
--- Add conclusion image support (extend existing post_image table)
--- No schema change needed - use existing image_type field with 'conclusion' value
+-- Add conclusion image support (extend existing image table)
+-- No schema change needed - use existing image table with conclusion images
 
 -- Add URL key support
 ALTER TABLE post ADD COLUMN url_key VARCHAR(255);
