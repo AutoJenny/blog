@@ -82,59 +82,48 @@
         padding: 2rem;
         background-color: #f8f6f2;
         border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .blog-header {
+    .blog-post__header {
         text-align: center;
         margin: 3rem 0 2rem;
         padding-bottom: 2rem;
         border-bottom: 2px solid var(--border-color);
     }
 
-    .blog-category {
-        display: inline-block;
-        background: var(--accent-color);
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 1rem;
-    }
-
-    .blog-title {
+    .blog-post__header h1 {
         font-size: 2.5rem;
         font-weight: 700;
         color: var(--text-primary);
         margin: 0 0 1rem;
         line-height: 1.2;
+        font-family: Georgia, serif;
     }
 
-    .blog-subtitle {
+    .blog-post__subtitle {
         font-size: 1.25rem;
         color: var(--text-secondary);
         margin: 0 0 1.5rem;
         font-weight: 400;
+        font-family: Georgia, serif;
     }
 
-    .blog-meta {
+    .post-meta {
         font-size: 0.9rem;
         color: var(--text-secondary);
         margin-bottom: 2rem;
     }
 
-    .blog-meta span {
+    .post-meta span {
         margin: 0 0.5rem;
     }
 
-    .blog-meta .separator {
+    .post-meta__separator {
         color: var(--border-color);
     }
 
-    .blog-summary {
+    .blog-post__summary {
         font-size: 1.1rem;
         color: var(--text-primary);
         margin: 2rem 0;
@@ -165,37 +154,38 @@
         font-size: 0.9rem;
     }
 
-    /* Blog sections */
+    /* Blog sections - matching clan.com exactly */
     .blog-section {
         margin: 3rem 0;
         padding: 0;
     }
 
-    .section-heading {
+    .blog-section h2 {
         font-size: 1.75rem;
         font-weight: 600;
         color: var(--text-primary);
         margin: 0 0 1.5rem;
         line-height: 1.3;
+        font-family: Georgia, serif;
     }
 
-    .section-content {
+    .section-text {
         font-size: 1.1rem;
         color: var(--text-primary);
         line-height: 1.7;
         margin-bottom: 2rem;
     }
 
-    .section-content p {
+    .section-text p {
         margin-bottom: 1rem;
     }
 
-    .section-content strong {
+    .section-text strong {
         font-weight: 600;
         color: var(--text-primary);
     }
 
-    .section-content em {
+    .section-text em {
         font-style: italic;
         color: var(--text-secondary);
     }
@@ -428,142 +418,149 @@
 <div class="blog-outer-container">
     <div class="blog-container">
         <!-- Blog Header -->
-        <header class="blog-header">
-        <div class="blog-category">History & Heritage</div>
-        <h1 class="blog-title">{{ post.title }}</h1>
-        {% if post.subtitle %}
-        <div class="blog-subtitle">{{ post.subtitle }}</div>
-        {% endif %}
-        <div class="blog-meta">
-            <span>Published on {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}</span>
-            <span class="separator">|</span>
-            <span>By {{ post.author or 'Unknown Author' }}</span>
-            {% if post.status %}
-            <span class="separator">|</span>
-            <span>{{ post.status.value }}</span>
+        <header class="blog-post__header">
+            <h1>{{ post.title }}</h1>
+            {% if post.subtitle %}
+            <p class="blog-post__subtitle">{{ post.subtitle }}</p>
             {% endif %}
-        </div>
-        {% if post.summary %}
-        <div class="blog-summary">
-            {{ post.summary | safe }}
-        </div>
-        {% endif %}
-    </header>
-
-    <!-- Header Image -->
-    {% if post.header_image %}
-    <div class="header-image">
-        <img src="{{ post.header_image.path }}" alt="{{ post.header_image.alt_text or 'Header image' }}"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-        <div class="image-error"
-            style="display: none; padding: 1rem; background: var(--background-light); border: 1px dashed var(--border-color); border-radius: 6px; text-align: center; color: var(--text-secondary);">
-            <small><strong>Image not found:</strong> {{ post.header_image.path }}</small>
-        </div>
-        {% if post.header_image.caption %}
-        <div class="header-image-caption">{{ post.header_image.caption }}</div>
-        {% endif %}
-    </div>
-    {% endif %}
-
-    <!-- Content Separator -->
-    <div class="content-separator"></div>
-
-    <!-- Blog Sections -->
-    <div class="blog-sections">
-        {% if sections %}
-        {% for section in sections %}
-        <section class="blog-section">
-            <h2 class="section-heading">{{ section.section_heading }}</h2>
-
-            <!-- Main content -->
-            <div class="section-content">
-                {% if is_placeholder(section) %}
-                <div class="placeholder-content meta-content">
-                    <div class="placeholder-header">
-                        <span class="stage-badge">{{ get_missing_stage(section) }}</span>
-                        <span class="field-indicator">content</span>
-                    </div>
-                    <div class="placeholder-body">
-                        <p>Content for this section will be generated during the <strong>{{ get_missing_stage(section)
-                                }}</strong> stage.</p>
-                        <p>Field: <code>content</code></p>
-                    </div>
-                </div>
-                {% else %}
-                {{ get_best_content(section) | safe }}
+            <div class="post-meta">
+                <span class="post-meta__date">Published on {{ post.created_at.strftime('%B %d, %Y') if post.created_at
+                    else 'Unknown date' }}</span>
+                <span class="post-meta__separator"> | </span>
+                <span class="post-meta__author">By {{ post.author or 'Unknown Author' }}</span>
+                {% if post.status %}
+                <span class="post-meta__separator"> | </span>
+                <span>{{ post.status.value }}</span>
                 {% endif %}
             </div>
-
-            <!-- Content priority indicator (meta only) -->
-            <div class="content-priority {{ get_content_class(section) }} meta-content">
-                <strong>Content from:</strong> {{ section.content_priority.stage }} stage ({{
-                section.content_priority.quality }} quality)
-                {% if section.missing_stages %}
-                <br><strong>Missing:</strong> {{ section.missing_stages | join(', ') }}
-                {% endif %}
-            </div>
-
-            <!-- Section image -->
-            {% if section.image %}
-            <div class="section-image">
-                <img src="{{ section.image.path }}" alt="{{ section.image.alt_text or 'Section image' }}"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <div class="image-error"
-                    style="display: none; padding: 1rem; background: var(--background-light); border: 1px dashed var(--border-color); border-radius: 6px; text-align: center; color: var(--text-secondary);">
-                    <small><strong>Image not found:</strong> {{ section.image.path }}</small>
-                </div>
-                {% if section.image_captions %}
-                <div class="section-image-caption">{{ section.image_captions }}</div>
-                {% endif %}
-            </div>
-
-            <!-- Image metadata (meta only) -->
-            <div class="image-meta meta-content">
-                {% if section.image_prompts %}
-                <div><strong>Prompt:</strong> {{ section.image_prompts }}</div>
-                {% endif %}
-                {% if section.image_meta_descriptions %}
-                <div><strong>Notes:</strong> {{ section.image_meta_descriptions }}</div>
-                {% endif %}
+            {% if post.summary %}
+            <div class="blog-post__summary">
+                {{ post.summary | safe }}
             </div>
             {% endif %}
+        </header>
 
-            <!-- Section metadata (meta only) -->
-            <div class="section-meta meta-content">
-                <span class="section-order">Section {{ section.section_order }}</span>
-                {% if section.status %}
-                <span class="section-status">{{ section.status }}</span>
+        <!-- Header Image -->
+        {% if post.header_image %}
+        <div class="header-image">
+            <img src="{{ post.header_image.path }}" alt="{{ post.header_image.alt_text or 'Header image' }}"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div class="image-error"
+                style="display: none; padding: 1rem; background: var(--background-light); border: 1px dashed var(--border-color); border-radius: 6px; text-align: center; color: var(--text-secondary);">
+                <small><strong>Image not found:</strong> {{ post.header_image.path }}</small>
+            </div>
+            {% if post.header_image.caption %}
+            <div class="header-image-caption">{{ post.header_image.caption }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Content Separator -->
+        <div class="content-separator"></div>
+
+        <!-- Blog Sections -->
+        <div class="blog-sections">
+            {% if sections %}
+            {% for section in sections %}
+            <section class="blog-section" id="section-{{ loop.index }}">
+                <h2>{{ section.section_heading }}</h2>
+
+                <!-- Main content -->
+                <div class="section-text">
+                    {% if is_placeholder(section) %}
+                    <div class="placeholder-content meta-content">
+                        <div class="placeholder-header">
+                            <span class="stage-badge">{{ get_missing_stage(section) }}</span>
+                            <span class="field-indicator">content</span>
+                        </div>
+                        <div class="placeholder-body">
+                            <p>Content for this section will be generated during the <strong>{{
+                                    get_missing_stage(section)
+                                    }}</strong> stage.</p>
+                            <p>Field: <code>content</code></p>
+                        </div>
+                    </div>
+                    {% else %}
+                    {{ get_best_content(section) | safe }}
+                    {% endif %}
+                </div>
+
+                <!-- Content priority indicator (meta only) -->
+                <div class="content-priority {{ get_content_class(section) }} meta-content">
+                    <strong>Content from:</strong> {{ section.content_priority.stage }} stage ({{
+                    section.content_priority.quality }} quality)
+                    {% if section.missing_stages %}
+                    <br><strong>Missing:</strong> {{ section.missing_stages | join(', ') }}
+                    {% endif %}
+                </div>
+
+                <!-- Section image -->
+                {% if section.image %}
+                <div class="section-image">
+                    <img src="{{ section.image.path }}" alt="{{ section.image.alt_text or 'Section image' }}"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="image-error"
+                        style="display: none; padding: 1rem; background: var(--background-light); border: 1px dashed var(--border-color); border-radius: 6px; text-align: center; color: var(--text-secondary);">
+                        <small><strong>Image not found:</strong> {{ section.image.path }}</small>
+                    </div>
+                    {% if section.image_captions %}
+                    <div class="section-image-caption">{{ section.image_captions }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Image metadata (meta only) -->
+                <div class="image-meta meta-content">
+                    {% if section.image_prompts %}
+                    <div><strong>Prompt:</strong> {{ section.image_prompts }}</div>
+                    {% endif %}
+                    {% if section.image_meta_descriptions %}
+                    <div><strong>Notes:</strong> {{ section.image_meta_descriptions }}</div>
+                    {% endif %}
+                </div>
                 {% endif %}
-                {% if section.missing_stages %}
-                <span class="missing-stages">Missing: {{ section.missing_stages | join(', ') }}</span>
-                {% endif %}
+
+                <!-- Section metadata (meta only) -->
+                <div class="section-meta meta-content">
+                    <span class="section-order">Section {{ section.section_order }}</span>
+                    {% if section.status %}
+                    <span class="section-status">{{ section.status }}</span>
+                    {% endif %}
+                    {% if section.missing_stages %}
+                    <span class="missing-stages">Missing: {{ section.missing_stages | join(', ') }}</span>
+                    {% endif %}
+                </div>
+            </section>
+            {% endfor %}
+            {% else %}
+            <p>No sections found for this post.</p>
+            {% endif %}
+        </div>
+
+        <!-- Conclusion Section -->
+        {% if post.conclusion %}
+        <section class="blog-section blog-section--conclusion" id="section-conclusion">
+            <h2>Conclusion: The Enduring Power of the Quaich</h2>
+            <div class="section-text">
+                {{ post.conclusion | safe }}
             </div>
         </section>
-        {% endfor %}
-        {% else %}
-        <p>No sections found for this post.</p>
         {% endif %}
-    </div>
 
-    <!-- Conclusion Section -->
-    {% if post.conclusion %}
-    <div class="blog-conclusion">
-        <h2>Conclusion</h2>
-        <div class="conclusion-content">
-            {{ post.conclusion | safe }}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Tags -->
-    <div class="blog-tags">
-        <ul>
-            <li>tradition</li>
-            <li>scotland</li>
-            <li>heritage</li>
-            <li>culture</li>
-        </ul>
-    </div>
+        <!-- Tags -->
+        <footer class="post-footer">
+            <div class="post-tags">
+                <strong>Tags:</strong>
+                <ul>
+                    <li>tradition</li>
+                    <li>scotland</li>
+                    <li>products</li>
+                    <li>pewter</li>
+                    <li>weddings</li>
+                    <li>celtic</li>
+                    <li>quaich</li>
+                </ul>
+            </div>
+        </footer>
     </div>
 </div>
 
