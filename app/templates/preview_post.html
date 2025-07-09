@@ -279,7 +279,11 @@
             <!-- Section image with metadata -->
             {% if section.image %}
             <div class="section-image">
-                <img src="{{ section.image.path }}" alt="{{ section.image.alt_text or 'Section image' }}">
+                <img src="{{ section.image.path }}" alt="{{ section.image.alt_text or 'Section image' }}" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="image-error" style="display: none; padding: 1rem; background: #f8f9fa; border: 1px dashed #dee2e6; border-radius: 0.375rem; text-align: center; color: #6c757d;">
+                    <small><strong>Image not found:</strong> {{ section.image.path }}</small>
+                </div>
                 {% if section.image_captions %}
                 <div class="image-caption">{{ section.image_captions }}</div>
                 {% endif %}

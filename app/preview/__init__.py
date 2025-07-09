@@ -113,7 +113,7 @@ def get_post_sections_with_images(post_id):
             section_dict = dict(section)
             print(f"DEBUG: Processing section {section_dict.get('id')} with heading: {section_dict.get('section_heading', 'No heading')}")  # Debug print
             
-            # Get section image if exists
+            # Get section image if exists - handle both image_id and generated_image_url
             if section.get('image_id'):
                 cur.execute("""
                     SELECT * FROM image WHERE id = %s
@@ -121,6 +121,12 @@ def get_post_sections_with_images(post_id):
                 image = cur.fetchone()
                 if image:
                     section_dict['image'] = dict(image)
+            elif section.get('generated_image_url'):
+                # Handle direct image URLs from generated_image_url
+                section_dict['image'] = {
+                    'path': section['generated_image_url'],
+                    'alt_text': section.get('image_captions') or 'Section image'
+                }
             
             # Add content priority analysis
             section_dict['content_priority'] = analyze_content_priority(section_dict)
