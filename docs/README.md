@@ -128,7 +128,7 @@ All links are accessible from the top navigation bar for quick access to major f
 
 ## 2024-06-07
 - Fixed: Correct substage is now always sent and saved for post_substage_action (e.g., 'research' as well as 'idea').
-- If a substage row is missing, verify the frontend is sending the correct substage in the payload. You can debug by POSTing directly to `/api/v1/llm/post_substage_actions` with the desired substage.
+- If a substage row is missing, verify the frontend is sending the correct substage in the payload. You can debug by POSTing directly to `/api/v1/llm/post_substage_actions` with the correct substage.
 
 ## 2024-06-14: Universal Modular LLM Workflow Panel
 - All workflow substages (Planning, Authoring, Publishing) now use a single modular LLM panel include and JS for input, output, and action selection.
@@ -169,4 +169,18 @@ All links are accessible from the top navigation bar for quick access to major f
 - `app/templates/preview/modular_workflow_stub.html` - Unused template
 
 **Related Documentation:**
-- [Preview System Architecture](reference/workflow/preview.md) 
+- [Preview System Architecture](reference/workflow/preview.md)
+
+### Post Section Text Fields Endpoint
+
+**IMPORTANT: The post section text fields endpoint does NOT take a post_id parameter.**
+
+- **Correct URL:** `/api/workflow/post_section_fields` (no post_id)
+- **Wrong URL:** `/api/workflow/post_section_text_fields/<post_id>` (this doesn't exist)
+- **Usage:** Used by Writing stage LLM panel Outputs dropdown to show all available text fields from post_section table
+- **Response:** Array of field names including `draft` and `polished` fields
+- **Testing:** `curl -s "http://localhost:5000/api/workflow/post_section_fields" -H "Accept: application/json"`
+
+**Related Documentation:**
+- [API Reference - Posts](reference/api/current/posts.md#post-section-text-fields-endpoint)
+- [LLM Panel System](reference/workflow/llm_panel.md#field-selector-system) 

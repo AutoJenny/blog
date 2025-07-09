@@ -198,86 +198,47 @@ All post-related endpoints are now under the `/api/workflow/posts/` base path.
 - **URL**: `/api/workflow/posts/<post_id>/stages`
 - **Method**: `GET`
 - **Description**: Retrieves all stages for a post
-- **URL Parameters**:
-  - `post_id`: ID of the post
-- **Response**:
-  ```json
-  [
-    {
-      "id": "integer",
-      "name": "string",
-      "order": "integer"
-    }
-  ]
-  ```
-- **Status Codes**:
-  - `200`: Success
-  - `404`: Post not found
 
-### Get Stage
-- **URL**: `/api/workflow/posts/<post_id>/stages/<stage_id>`
+## Post Section Text Fields Endpoint
+
+### Get Post Section Text Fields
+- **URL**: `/api/workflow/post_section_fields`
 - **Method**: `GET`
-- **Description**: Retrieves a specific stage
-- **URL Parameters**:
-  - `post_id`: ID of the post
-  - `stage_id`: ID of the stage
+- **Description**: Returns all text/content fields available in the post_section table. This endpoint is used by the frontend LLM panel to populate the Outputs dropdown for Writing stage actions.
+- **URL Parameters**: None (global endpoint, not post-specific)
 - **Response**:
   ```json
   {
-    "id": "integer",
-    "name": "string",
-    "order": "integer"
+    "fields": [
+      "section_heading",
+      "ideas_to_include", 
+      "facts_to_include",
+      "highlighting",
+      "image_concepts",
+      "image_prompts",
+      "watermarking",
+      "image_meta_descriptions",
+      "image_captions",
+      "generated_image_url",
+      "section_description",
+      "status",
+      "polished",
+      "draft"
+    ]
   }
   ```
 - **Status Codes**:
   - `200`: Success
-  - `404`: Stage not found
-
-### Get Stage Sub-stages
-- **URL**: `/api/workflow/posts/<post_id>/stages/<stage_id>/sub-stages`
-- **Method**: `GET`
-- **Description**: Retrieves sub-stages for a specific stage
-- **URL Parameters**:
-  - `post_id`: ID of the post
-  - `stage_id`: ID of the stage
-- **Response**:
-  ```json
-  [
-    {
-      "id": "integer",
-      "name": "string",
-      "order": "integer"
-    }
-  ]
+- **Usage Notes**:
+  - **IMPORTANT**: This endpoint does NOT take a post_id parameter
+  - Used specifically for Writing stage LLM action Outputs dropdown
+  - Returns all text fields from post_section table schema
+  - Includes the new simplified content fields: `draft` and `polished`
+  - Frontend JavaScript uses this to dynamically populate field selectors
+- **Testing**:
+  ```bash
+  curl -s "http://localhost:5000/api/workflow/post_section_fields" -H "Accept: application/json"
   ```
-- **Status Codes**:
-  - `200`: Success
-  - `404`: Stage not found
-
-### Transition Stage
-- **URL**: `/api/workflow/posts/<post_id>/stages/<stage_id>/transition`
-- **Method**: `POST`
-- **Description**: Transitions a post to a new stage
-- **URL Parameters**:
-  - `post_id`: ID of the post
-  - `stage_id`: ID of the stage
-- **Request Body**:
-  ```json
-  {
-    "target_stage": "string",
-    "target_substage": "string"
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "status": "success"
-  }
-  ```
-- **Status Codes**:
-  - `200`: Success
-  - `400`: Invalid transition
-  - `404`: Stage not found
 
 ## Error Handling
 

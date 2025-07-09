@@ -99,16 +99,34 @@ class FieldSelector {
             
             // Get all available fields with their groupings
             console.log('[DEBUG] Fetching available fields...');
-            let query = '';
-            if (this.stepId) query += `step_id=${this.stepId}`;
-            if (this.substageId) query += (query ? '&' : '') + `substage_id=${this.substageId}`;
-            if (this.stageId) query += (query ? '&' : '') + `stage_id=${this.stageId}`;
-            const fieldsResponse = await fetch(`/api/workflow/fields/available${query ? '?' + query : ''}`);
-            if (!fieldsResponse.ok) {
-                throw new Error(`HTTP error! status: ${fieldsResponse.status}`);
+            
+            // For Writing stage, we need post_section fields for both inputs and outputs
+            let fieldsData;
+            if (this.stage === 'writing') {
+                // Get post_section fields (for both inputs and outputs)
+                let query = '';
+                if (this.stepId) query += `step_id=${this.stepId}`;
+                if (this.substageId) query += (query ? '&' : '') + `substage_id=${this.substageId}`;
+                if (this.stageId) query += (query ? '&' : '') + `stage_id=${this.stageId}`;
+                const sectionResponse = await fetch(`/api/workflow/fields/available${query ? '?' + query : ''}`);
+                if (!sectionResponse.ok) {
+                    throw new Error(`HTTP error! status: ${sectionResponse.status}`);
+                }
+                fieldsData = await sectionResponse.json();
+                console.log('[DEBUG] Post section fields loaded:', fieldsData.fields.length, 'fields');
+            } else {
+                // For other stages, use the original logic
+                let query = '';
+                if (this.stepId) query += `step_id=${this.stepId}`;
+                if (this.substageId) query += (query ? '&' : '') + `substage_id=${this.substageId}`;
+                if (this.stageId) query += (query ? '&' : '') + `stage_id=${this.stageId}`;
+                const fieldsResponse = await fetch(`/api/workflow/fields/available${query ? '?' + query : ''}`);
+                if (!fieldsResponse.ok) {
+                    throw new Error(`HTTP error! status: ${fieldsResponse.status}`);
+                }
+                fieldsData = await fieldsResponse.json();
+                console.log('[DEBUG] Available fields loaded:', fieldsData.fields.length, 'fields');
             }
-            const fieldsData = await fieldsResponse.json();
-            console.log('[DEBUG] Available fields loaded:', fieldsData.fields.length, 'fields');
             
             // Store the complete fieldsData for access in initializeSingleFieldSelector
             this.fieldsData = fieldsData;
@@ -147,7 +165,7 @@ class FieldSelector {
             console.log('[DEBUG] Field mappings loaded:', this.savedMappings);
             // Initialize field selectors
             console.log('[DEBUG] Initializing field selectors...');
-            this.initializeFieldSelectors();
+            await this.initializeFieldSelectors();
             // Mark initialization as complete
             this.isInitializing = false;
             this.initialized = true;
@@ -218,25 +236,25 @@ class FieldSelector {
         }
     }
 
-    initializeFieldSelectors() {
+    async initializeFieldSelectors() {
         console.log('[DEBUG] initializeFieldSelectors() called');
         // Get all field selectors
         const selectors = document.querySelectorAll('.field-selector, #input_field_select, #output_field_select');
         console.log('[DEBUG] Found', selectors.length, 'field selectors');
-        selectors.forEach((selector) => {
-            this.initializeSingleFieldSelector(selector);
-        });
+        for (const selector of selectors) {
+            await this.initializeSingleFieldSelector(selector);
+        }
         // Listen for dynamic field selector initialization
-        document.addEventListener('fieldSelectorInit', (event) => {
+        document.addEventListener('fieldSelectorInit', async (event) => {
             console.log('[DEBUG] fieldSelectorInit event received:', event.detail);
             const { element } = event.detail;
             if (element) {
-                this.initializeSingleFieldSelector(element);
+                await this.initializeSingleFieldSelector(element);
             }
         });
     }
 
-    initializeSingleFieldSelector(selector) {
+    async initializeSingleFieldSelector(selector) {
         if (!selector) return;
         // Clear existing options
         selector.innerHTML = '<option value="">Select field...</option>';
@@ -244,38 +262,79 @@ class FieldSelector {
         const section = selector.dataset.section;
         const target = selector.dataset.target;
         
-        // Filter fields based on stage for Writing stage outputs
-        let filteredFields = Object.values(this.fields);
-        if (this.stage === 'writing' && section === 'outputs') {
-            // For Writing stage outputs, only show post_section table fields
-            filteredFields = filteredFields.filter(field => field.db_table === 'post_section');
-            console.log('[DEBUG] Writing stage outputs: filtered to post_section fields only');
-        }
+        // Use the original working logic - filter fields based on stage and section
+        this.initializeSingleFieldSelectorFallback(selector, section, target);
         
-        // Group fields by db_table
-        const groupedFields = {};
-        filteredFields.forEach(field => {
-            if (!groupedFields[field.db_table]) groupedFields[field.db_table] = [];
-            groupedFields[field.db_table].push(field);
-        });
-        Object.keys(groupedFields).forEach(tableName => {
-            const optgroup = document.createElement('optgroup');
-            optgroup.label = tableName;
-            selector.appendChild(optgroup);
-            groupedFields[tableName].forEach(field => {
-                const option = document.createElement('option');
-                option.value = field.name;
-                option.textContent = field.display_name || field.name;
-                option.dataset.table = field.db_table;
-                option.dataset.dbField = field.db_field;
-                optgroup.appendChild(option);
-            });
-        });
         // Set initial value based on saved mappings
         let selectedField = null;
         console.log('[DEBUG] Initializing selector for section:', section, 'target:', target);
         console.log('[DEBUG] Saved mappings:', this.savedMappings);
         console.log('[DEBUG] Saved output selection:', this.savedOutputFieldSelection);
+        
+        // Set initial value based on saved mappings
+        if (section === 'outputs' && this.savedOutputFieldSelection && this.savedOutputFieldSelection.field) {
+            selectedField = this.savedOutputFieldSelection.field;
+        } else if (this.savedMappings && this.savedMappings.length > 0) {
+            const mapping = this.savedMappings.find(m => m.target === target);
+            if (mapping) {
+                selectedField = mapping.field_name;
+            }
+        }
+        
+        if (selectedField) {
+            selector.value = selectedField;
+            console.log('[DEBUG] Set initial value to:', selectedField);
+        }
+        
+        // Add event listener
+        this.addFieldSelectorEventListener(selector);
+    }
+
+    initializeSingleFieldSelectorFallback(selector, section, target) {
+        let selectedField = null; // Declare selectedField at the beginning
+        let filteredFields = Object.values(this.fields);
+        // For Writing stage outputs, always show all post_section fields
+        if (this.stage === 'writing' && section === 'outputs') {
+            filteredFields = filteredFields.filter(field => field.db_table === 'post_section');
+            // If for some reason no post_section fields are present, show a warning option
+            if (filteredFields.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '[No post_section fields available]';
+                selector.appendChild(option);
+                return;
+            }
+            // Populate dropdown with all post_section fields
+            filteredFields.forEach(field => {
+                const option = document.createElement('option');
+                option.value = field.name;
+                option.textContent = field.display_name || field.name;
+                option.dataset.table = field.db_table;
+                option.dataset.dbField = field.db_field;
+                selector.appendChild(option);
+            });
+        } else {
+            // Original fallback for other cases
+            // Group fields by db_table
+            const groupedFields = {};
+            filteredFields.forEach(field => {
+                if (!groupedFields[field.db_table]) groupedFields[field.db_table] = [];
+                groupedFields[field.db_table].push(field);
+            });
+            Object.keys(groupedFields).forEach(tableName => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = tableName;
+                selector.appendChild(optgroup);
+                groupedFields[tableName].forEach(field => {
+                    const option = document.createElement('option');
+                    option.value = field.name;
+                    option.textContent = field.display_name || field.name;
+                    option.dataset.table = field.db_table;
+                    option.dataset.dbField = field.db_field;
+                    optgroup.appendChild(option);
+                });
+            });
+        }
         
         if (section === 'outputs' && this.savedOutputFieldSelection) {
             selectedField = this.savedOutputFieldSelection.field;

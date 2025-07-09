@@ -22,7 +22,15 @@ function prettyValue(value) {
     } else if (typeof value === 'object') {
         return `<pre style="background:#1a232a;color:#b9e0ff;padding:0.5em 1em;border-radius:0.3em;overflow-x:auto;">${JSON.stringify(value, null, 2)}</pre>`;
     } else {
-        return `<span style="color:#e0e6ed;">${value}</span>`;
+        // Check if the value contains HTML tags
+        if (typeof value === 'string' && (value.includes('<') && value.includes('>'))) {
+            // For HTML content, render it directly without wrapping in span
+            // Use a container div with proper styling for HTML content
+            return `<div style="color:#e0e6ed;max-height:200px;overflow-y:auto;border:1px solid #374151;padding:0.5em;border-radius:0.3em;background:#1a1a1a;white-space:pre-wrap;">${value}</div>`;
+        } else {
+            // For plain text, wrap in span as before
+            return `<span style="color:#e0e6ed;">${value}</span>`;
+        }
     }
 }
 
@@ -34,7 +42,8 @@ const GROUPS = [
         fields: [
             { key: 'title', label: 'section_heading (DB)' },
             { key: 'description', label: 'section_description (DB)' },
-            { key: 'content', label: 'first_draft (DB)' },
+            { key: 'draft', label: 'draft (DB)' },
+            { key: 'polished', label: 'polished (DB)' },
             { key: 'facts_to_include', label: 'facts_to_include (DB)' },
             { key: 'ideas_to_include', label: 'ideas_to_include (DB)' },
             { key: 'highlighting', label: 'highlighting (DB)' },

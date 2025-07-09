@@ -89,13 +89,11 @@ The `post_section` table stores section metadata and content for each blog post.
 | section_description | TEXT         | Section description or summary                   |
 | ideas_to_include    | TEXT         | Ideas to include in this section                 |
 | facts_to_include    | TEXT         | Facts to include in this section                 |
-| first_draft         | TEXT         | Initial draft content                            |
-| uk_british          | TEXT         | UK/British version of content                    |
+| draft               | TEXT         | Initial raw content before processing            |
+| polished            | TEXT         | Final publication-ready content after unified LLM processing |
 | highlighting        | TEXT         | Key points to highlight                          |
 | image_concepts      | TEXT         | Image concepts for this section                  |
 | image_prompts       | TEXT         | Image generation prompts                         |
-| generation          | TEXT         | Content generation notes                         |
-| optimization        | TEXT         | SEO optimization notes                           |
 | watermarking        | TEXT         | Image watermarking settings                      |
 | image_meta_descriptions | TEXT     | Image metadata descriptions                      |
 | image_captions      | TEXT         | Image captions                                   |
@@ -454,7 +452,7 @@ curl -s "http://localhost:5000/api/workflow/posts/22/sections" | python3 -m json
       "status": "draft",
       "ideas_to_include": "Key concepts to cover",
       "facts_to_include": "Important facts to mention",
-      "first_draft": "Initial content...",
+      "draft": "Initial content...",
       "created_at": "2024-01-15T10:30:00Z",
       "updated_at": "2024-01-15T10:30:00Z"
     }
@@ -717,7 +715,7 @@ export function renderStructure(data) {
         <strong>Status:</strong> ${section.status || 'draft'}
       </div>
       <div class="mt-2 text-gray-300">
-        ${section.first_draft ? section.first_draft.substring(0, 200) + '...' : 'No content yet'}
+        ${section.draft ? section.draft.substring(0, 200) + '...' : 'No content yet'}
       </div>
     </div>
   `).join('');

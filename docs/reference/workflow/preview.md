@@ -41,11 +41,9 @@ preview_base.html (base template)
 ## Content Priority System
 
 ### Priority Levels
-1. **optimization** (highest quality) - Green background
-2. **generation** (good quality) - Blue background  
-3. **uk_british** (style-specific) - Yellow background
-4. **first_draft** (basic content) - Red background
-5. **placeholder** (missing content) - Gray background
+1. **polished** (highest quality) - Final publication-ready content after unified LLM processing
+2. **draft** (basic content) - Initial raw content before processing
+3. **placeholder** (missing content) - When no content is available
 
 ### Helper Functions
 - `analyze_content_priority(section)` - Determines best available content
@@ -55,10 +53,8 @@ preview_base.html (base template)
 - `get_missing_stage(section)` - Returns next missing stage
 
 ### Content Fields
-- `first_draft` - Initial content
-- `uk_british` - UK/British style content
-- `generation` - Generated content
-- `optimization` - Optimized content
+- `draft` - Initial raw content
+- `polished` - Final publication-ready content after unified LLM processing
 
 ---
 
@@ -153,22 +149,12 @@ ORDER BY section_order
 
 ### Content Priority Indicators
 ```css
-.content-optimization {
+.content-polished {
     background-color: #d4edda;
     border-left: 4px solid #28a745;
 }
 
-.content-generation {
-    background-color: #d1ecf1;
-    border-left: 4px solid #17a2b8;
-}
-
-.content-uk-british {
-    background-color: #fff3cd;
-    border-left: 4px solid #ffc107;
-}
-
-.content-first-draft {
+.content-draft {
     background-color: #f8d7da;
     border-left: 4px solid #dc3545;
 }

@@ -719,6 +719,7 @@ def get_available_fields():
     substage_id = request.args.get('substage_id', type=int)
     stage_id = request.args.get('stage_id', type=int)
     allowed_tables = None
+    stage_name = None  # Ensure stage_name is always defined
     with get_db_conn() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             # Resolve llm_available_tables (step → substage → stage)
@@ -783,10 +784,10 @@ def get_available_fields():
                             'description': 'Section description or summary'
                         },
                         {
-                            'field_name': 'first_draft',
-                            'display_name': 'First Draft',
+                            'field_name': 'draft',
+                            'display_name': 'Draft',
                             'db_table': 'post_section',
-                            'db_field': 'first_draft',
+                            'db_field': 'draft',
                             'description': 'Initial draft content for the section'
                         },
                         {
@@ -825,18 +826,11 @@ def get_available_fields():
                             'description': 'Image generation prompts'
                         },
                         {
-                            'field_name': 'generation',
-                            'display_name': 'Generation',
+                            'field_name': 'polished',
+                            'display_name': 'Polished',
                             'db_table': 'post_section',
-                            'db_field': 'generation',
-                            'description': 'Content generation notes'
-                        },
-                        {
-                            'field_name': 'optimization',
-                            'display_name': 'Optimization',
-                            'db_table': 'post_section',
-                            'db_field': 'optimization',
-                            'description': 'SEO optimization notes'
+                            'db_field': 'polished',
+                            'description': 'Final polished content for the section'
                         },
                         {
                             'field_name': 'image_meta_descriptions',

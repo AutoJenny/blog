@@ -95,12 +95,26 @@ def create_format_template():
                 }
             }), 400
 
-    # Validate fields structure
+    # Validate fields structure - allow empty arrays for HTML/text templates
     if not isinstance(data['fields'], list):
         return jsonify({
             'error': {
                 'code': 'INVALID_FIELDS',
                 'message': 'Fields must be an array',
+                'details': {'fields': data['fields']}
+            }
+        }), 400
+    
+    # Allow empty arrays for output templates (HTML/text output)
+    format_type = data.get('format_type', 'output')
+    if format_type == 'output' and len(data['fields']) == 0:
+        # Empty array is allowed for output templates (HTML/text)
+        pass
+    elif len(data['fields']) == 0:
+        return jsonify({
+            'error': {
+                'code': 'EMPTY_FIELDS',
+                'message': 'Fields array cannot be empty for input or bidirectional templates',
                 'details': {'fields': data['fields']}
             }
         }), 400
@@ -320,6 +334,16 @@ def _extract_fields_from_jsonb(fields_jsonb):
 
 def _convert_fields_to_jsonb(fields_array, format_type='output'):
     """Convert API specification fields array to JSONB storage format"""
+    # Handle empty arrays for output templates (HTML/text)
+    if len(fields_array) == 0 and format_type == 'output':
+        return {
+            'type': format_type,
+            'schema': {
+                'type': 'object',
+                'properties': {}
+            }
+        }
+    
     # Convert fields array to schema format
     properties = {}
     required = []

@@ -203,13 +203,11 @@ def manage_sections(post_id):
                     s.section_order as order_index,
                     s.ideas_to_include,
                     s.facts_to_include,
-                    s.first_draft as content,
-                    s.uk_british,
+                    s.draft as content,
+                    s.polished,
                     s.highlighting,
                     s.image_concepts,
                     s.image_prompts,
-                    s.generation,
-                    s.optimization,
                     s.watermarking,
                     s.image_meta_descriptions,
                     s.image_captions,
@@ -224,9 +222,9 @@ def manage_sections(post_id):
                 LEFT JOIN post_section_elements e ON e.section_id = s.id
                 WHERE s.post_id = %s
                 GROUP BY s.id, s.section_heading, s.section_description, s.section_order, 
-                         s.ideas_to_include, s.facts_to_include, s.first_draft, s.uk_british, 
-                         s.highlighting, s.image_concepts, s.image_prompts, s.generation, 
-                         s.optimization, s.watermarking, s.image_meta_descriptions, s.image_captions, 
+                         s.ideas_to_include, s.facts_to_include, s.draft, s.polished,
+                         s.highlighting, s.image_concepts, s.image_prompts, 
+                         s.watermarking, s.image_meta_descriptions, s.image_captions, 
                          s.generated_image_url, s.image_generation_metadata, s.image_id, s.status
                 ORDER BY s.section_order
             """, (post_id,))
@@ -242,12 +240,11 @@ def manage_sections(post_id):
                         'ideas_to_include': s['ideas_to_include'],
                         'facts_to_include': s['facts_to_include'],
                         'content': s['content'],
-                        'uk_british': s['uk_british'],
+                        'draft': s['content'],  # Map content to draft for backward compatibility
+                        'polished': s.get('polished', ''),  # Add polished field
                         'highlighting': s['highlighting'],
                         'image_concepts': s['image_concepts'],
                         'image_prompts': s['image_prompts'],
-                        'generation': s['generation'],
-                        'optimization': s['optimization'],
                         'watermarking': s['watermarking'],
                         'image_captions': s['image_captions'],
                         'image_meta_descriptions': s['image_meta_descriptions'],
@@ -366,10 +363,10 @@ def manage_section(post_id, section_id):
                     s.section_heading as title,
                     s.section_description as description,
                     s.section_order as order_index,
+                    s.draft,
+                    s.polished,
                     s.image_concepts,
                     s.image_prompts,
-                    s.generation,
-                    s.optimization,
                     s.watermarking,
                     s.image_meta_descriptions,
                     s.image_captions,
@@ -384,7 +381,7 @@ def manage_section(post_id, section_id):
                 LEFT JOIN post_section_elements e ON e.section_id = s.id
                 WHERE s.post_id = %s AND s.id = %s
                 GROUP BY s.id, s.section_heading, s.section_description, s.section_order, 
-                         s.image_concepts, s.image_prompts, s.generation, s.optimization, 
+                         s.draft, s.polished, s.image_concepts, s.image_prompts, 
                          s.watermarking, s.image_meta_descriptions, s.image_captions, 
                          s.image_prompt_example_id, s.generated_image_url, s.image_generation_metadata, s.image_id
             """, (post_id, section_id))
@@ -398,10 +395,10 @@ def manage_section(post_id, section_id):
                 'title': section['title'],
                 'description': section['description'],
                 'orderIndex': section['order_index'],
+                'draft': section['draft'],
+                'polished': section['polished'],
                 'image_concepts': section['image_concepts'],
                 'image_prompts': section['image_prompts'],
-                'generation': section['generation'],
-                'optimization': section['optimization'],
                 'watermarking': section['watermarking'],
                 'image_meta_descriptions': section['image_meta_descriptions'],
                 'image_captions': section['image_captions'],
@@ -431,8 +428,6 @@ def manage_section(post_id, section_id):
                         section_order = %s,
                         image_concepts = %s,
                         image_prompts = %s,
-                        generation = %s,
-                        optimization = %s,
                         watermarking = %s,
                         image_meta_descriptions = %s,
                         image_captions = %s,
@@ -448,8 +443,6 @@ def manage_section(post_id, section_id):
                     data.get('orderIndex'),
                     data.get('image_concepts'),
                     data.get('image_prompts'),
-                    data.get('generation'),
-                    data.get('optimization'),
                     data.get('watermarking'),
                     data.get('image_meta_descriptions'),
                     data.get('image_captions'),
@@ -500,10 +493,10 @@ def manage_section(post_id, section_id):
                         s.section_heading as title,
                         s.section_description as description,
                         s.section_order as order_index,
+                        s.draft,
+                        s.polished,
                         s.image_concepts,
                         s.image_prompts,
-                        s.generation,
-                        s.optimization,
                         s.watermarking,
                         s.image_meta_descriptions,
                         s.image_captions,
@@ -518,7 +511,7 @@ def manage_section(post_id, section_id):
                     LEFT JOIN post_section_elements e ON e.section_id = s.id
                     WHERE s.post_id = %s AND s.id = %s
                     GROUP BY s.id, s.section_heading, s.section_description, s.section_order,
-                             s.image_concepts, s.image_prompts, s.generation, s.optimization,
+                             s.draft, s.polished, s.image_concepts, s.image_prompts,
                              s.watermarking, s.image_meta_descriptions, s.image_captions,
                              s.image_prompt_example_id, s.generated_image_url, s.image_generation_metadata, s.image_id
                 """, (post_id, section_id))
@@ -529,10 +522,10 @@ def manage_section(post_id, section_id):
                     'title': section['title'],
                     'description': section['description'],
                     'orderIndex': section['order_index'],
+                    'draft': section['draft'],
+                    'polished': section['polished'],
                     'image_concepts': section['image_concepts'],
                     'image_prompts': section['image_prompts'],
-                    'generation': section['generation'],
-                    'optimization': section['optimization'],
                     'watermarking': section['watermarking'],
                     'image_meta_descriptions': section['image_meta_descriptions'],
                     'image_captions': section['image_captions'],
@@ -1344,3 +1337,20 @@ def get_post_section_fields():
                 field_list.append(field_dict)
             
             return jsonify(field_list) 
+
+@bp.route('/post_section_fields', methods=['GET'])
+def get_post_section_text_fields():
+    """Return a list of text/content fields in the post_section table."""
+    with get_db_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            cur.execute("""
+                SELECT column_name, data_type
+                FROM information_schema.columns
+                WHERE table_name = 'post_section'
+            """)
+            columns = cur.fetchall()
+    # Only include text/content fields
+    text_types = {'text', 'character varying', 'varchar'}
+    exclude = {'id', 'post_id', 'section_order', 'image_id', 'image_prompt_example_id'}
+    fields = [col['column_name'] for col in columns if col['data_type'] in text_types and col['column_name'] not in exclude]
+    return jsonify({'fields': fields}) 

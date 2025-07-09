@@ -8,26 +8,20 @@ bp = Blueprint('preview', __name__)
 def analyze_content_priority(section):
     """
     Analyze which content version is best available based on priority:
-    1. optimization (highest quality)
-    2. generation (good quality) 
-    3. uk_british (style-specific)
-    4. first_draft (basic content)
-    5. placeholder text (when none available)
+    1. polished (highest quality) - Final publication-ready content
+    2. draft (basic content) - Initial raw content
+    3. placeholder (missing content) - When none available
     """
-    if section.get('optimization') and section['optimization'].strip():
-        return {'stage': 'optimization', 'quality': 'highest', 'content': section['optimization']}
-    elif section.get('generation') and section['generation'].strip():
-        return {'stage': 'generation', 'quality': 'good', 'content': section['generation']}
-    elif section.get('uk_british') and section['uk_british'].strip():
-        return {'stage': 'uk_british', 'quality': 'style-specific', 'content': section['uk_british']}
-    elif section.get('first_draft') and section['first_draft'].strip():
-        return {'stage': 'first_draft', 'quality': 'basic', 'content': section['first_draft']}
+    if section.get('polished') and section['polished'].strip():
+        return {'stage': 'polished', 'quality': 'highest', 'content': section['polished']}
+    elif section.get('draft') and section['draft'].strip():
+        return {'stage': 'draft', 'quality': 'basic', 'content': section['draft']}
     else:
         return {'stage': 'placeholder', 'quality': 'missing', 'content': None}
 
 def get_missing_stages(section):
     """Return list of missing content stages"""
-    stages = ['optimization', 'generation', 'uk_british', 'first_draft']
+    stages = ['polished', 'draft']
     return [stage for stage in stages if not section.get(stage) or not section[stage].strip()]
 
 def get_content_class(section):
@@ -90,14 +84,14 @@ def get_post_sections_with_images(post_id):
         count_result = cur.fetchone()
         print(f"DEBUG: Found {count_result['count']} sections in database")  # Debug print
         
-        # Get all sections for the post - using the correct field names
+        # Get all sections for the post - using the new simplified field names
         cur.execute("""
             SELECT 
                 id, post_id, section_order, 
                 section_heading,
                 section_description, ideas_to_include, facts_to_include,
-                first_draft, uk_british, highlighting, image_concepts,
-                image_prompts, generation, optimization, watermarking,
+                draft, polished, highlighting, image_concepts,
+                image_prompts, watermarking,
                 image_meta_descriptions, image_captions, image_prompt_example_id,
                 generated_image_url, image_generation_metadata, image_id, status
             FROM post_section 

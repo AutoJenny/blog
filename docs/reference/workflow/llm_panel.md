@@ -1,400 +1,180 @@
-# LLM Panel Module Documentation
+# LLM Panel System Reference
 
 ## Overview
 
-The LLM Panel module provides a universal, modular interface for AI-assisted content generation throughout the workflow system. It's designed as a reusable component that can be integrated into any workflow stage, providing consistent LLM functionality with dynamic field selection and format integration.
+The LLM Panel system provides a modular, reusable interface for LLM action execution across different workflow stages. It handles input/output field mapping, action selection, and result processing with a consistent UI pattern.
 
 ## Architecture
 
 ### Core Components
 
-The LLM Panel consists of several modular components:
+1. **Modular Panel Template**: `app/templates/modules/llm_panel/templates/components/`
+2. **JavaScript Field Selector**: `app/static/modules/llm_panel/js/field_selector.js`
+3. **Backend API Endpoints**: `/api/workflow/` routes
+4. **Field Mapping System**: Dynamic field selection based on stage/substage
+
+### Panel Structure
 
 ```
-modules/llm_panel/
-├── templates/
-│   ├── panel.html                    # Main container template
-│   └── components/
-│       ├── inputs.html              # Input field selection and display
-│       ├── prompt.html              # Prompt configuration and display
-│       ├── settings.html            # LLM settings and parameters
-│       └── outputs.html             # Output field selection and display
-├── static/
-│   ├── js/
-│   │   ├── field_selector.js        # Dynamic field selection logic
-│   │   └── accordion.js             # Accordion UI behavior
-│   └── css/
-│       └── panels.css               # Panel styling and themes
-└── config/
-    └── planning_steps.json          # Step configuration examples
+LLM Panel
+├── Inputs Section
+│   ├── Field Selector Dropdown
+│   └── Input Text Area
+├── Action Selection
+│   ├── Action Dropdown
+│   └── Action Details Panel
+└── Outputs Section
+    ├── Field Selector Dropdown
+    └── Output Text Area
 ```
 
-### Integration Points
+## Field Selector System
 
-The LLM Panel integrates with the workflow system through:
+### Dynamic Field Loading
 
-1. **Template Inclusion**: Included via `_modular_llm_panels.html` in workflow templates
-2. **API Integration**: Uses workflow API endpoints for data operations
-3. **Format System**: Integrates with the format system for validation and structure
-4. **Field Mapping**: Dynamic field selection based on workflow context
+The field selector system dynamically loads available fields based on the current workflow stage and context:
 
-## Template Structure
+#### For Writing Stage Outputs
+- **Endpoint**: `/api/workflow/post_section_fields`
+- **Usage**: Used specifically for Writing stage LLM action Outputs dropdown
+- **Response**: All text fields from post_section table
+- **Key Fields**: `draft`, `polished`, `section_heading`, `ideas_to_include`, etc.
 
-### Main Container (`panel.html`)
+#### For Other Stages
+- **Endpoint**: `/api/workflow/fields/available`
+- **Usage**: Used for Planning and Publishing stages
+- **Response**: All available fields with stage/substage mappings
 
-The main panel template provides the container and orchestrates all components:
+### JavaScript Implementation
 
-```html
-<div class="space-y-4 p-4 rounded-lg shadow-md" 
-     style="background-color: #2D0A50;"
-     data-current-stage="{{ current_stage }}" 
-     data-current-substage="{{ current_substage }}"
-     data-current-step="{{ current_step }}" 
-     data-step-id="{{ step_id }}" 
-     data-post-id="{{ current_post_id }}">
-    
-    <!-- Run LLM Button -->
-    <div class="mb-4 flex justify-center">
-        <button id="run-llm-btn" data-action="run-llm"
-                class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-colors duration-200 min-w-[200px]">
-            Run LLM
-        </button>
-    </div>
-
-    <!-- Component Includes -->
-    {% include 'modules/llm_panel/templates/components/inputs.html' %}
-    {% include 'modules/llm_panel/templates/components/prompt.html' %}
-    {% include 'modules/llm_panel/templates/components/settings.html' %}
-    {% include 'modules/llm_panel/templates/components/outputs.html' %}
-</div>
-```
-
-### Component Templates
-
-#### Inputs Component (`inputs.html`)
-- **Purpose**: Display and select input fields for LLM processing
-- **Features**: 
-  - Dynamic field dropdown based on workflow context
-  - Field value display with syntax highlighting
-  - Format validation indicators
-  - Field mapping to database tables
-
-#### Prompt Component (`prompt.html`)
-- **Purpose**: Configure and display LLM prompts
-- **Features**:
-  - Prompt template selection
-  - Dynamic prompt preview
-  - Format reference resolution (`[data:field_name]`)
-  - Prompt validation and testing
-
-#### Settings Component (`settings.html`)
-- **Purpose**: Configure LLM parameters and model settings
-- **Features**:
-  - Model selection (Ollama models)
-  - Temperature, max tokens, top_p configuration
-  - Format template selection
-  - Parameter validation
-
-#### Outputs Component (`outputs.html`)
-- **Purpose**: Configure output field mapping and display results
-- **Features**:
-  - Output field selection
-  - Format validation for output
-  - Result display with syntax highlighting
-  - Save to database functionality
-
-## JavaScript Components
-
-### Field Selector (`field_selector.js`)
-
-The FieldSelector class manages dynamic field selection and mapping:
+The field selector is implemented in `app/static/modules/llm_panel/js/field_selector.js`:
 
 ```javascript
-export class FieldSelector {
-    constructor(postId, stage, substage) {
-        this.postId = postId;
-        this.stage = stage;
-        this.substage = substage;
-        this.initialize();
-    }
-
-    async initialize() {
-        // Fetch available fields from API
-        // Group fields by stage/substage
-        // Initialize dropdowns
-        // Set up event handlers
-    }
-
-    async updateFieldMappings() {
-        // Update database field mappings
-        // Validate format compliance
-        // Handle errors gracefully
-    }
+// For Writing stage outputs, use the new post_section_text_fields endpoint
+if (this.stage === 'writing' && section === 'outputs') {
+    const response = await fetch('/api/workflow/post_section_fields');
+    const data = await response.json();
+    // Populate dropdown with data.fields
 }
 ```
 
-**Key Features:**
-- Fetches available fields from `/api/workflow/fields/available`
-- Groups fields by stage and substage
-- Updates field mappings via `/api/workflow/fields/mappings`
-- Integrates with format validation system
-- Handles error states and recovery
+### Field Selector Behavior
 
-### Accordion Component (`accordion.js`)
+| Stage | Section | Endpoint Used | Purpose |
+|-------|---------|---------------|---------|
+| Writing | outputs | `/api/workflow/post_section_fields` | Show all post_section text fields |
+| Writing | inputs | `/api/workflow/fields/available` | Show mapped input fields |
+| Planning | outputs | `/api/workflow/fields/available` | Show mapped output fields |
+| Publishing | outputs | `/api/workflow/fields/available` | Show mapped output fields |
 
-Manages the collapsible accordion behavior for panel sections:
+## API Endpoints
 
-```javascript
-export function initializeAccordions() {
-    const accordions = document.querySelectorAll('.accordion');
-    
-    accordions.forEach(accordion => {
-        const trigger = accordion.querySelector('.accordion-trigger');
-        const content = accordion.querySelector('.accordion-content');
-        
-        trigger.addEventListener('click', () => {
-            // Toggle accordion state
-            // Update icons
-            // Handle animations
-        });
-    });
-}
+### Post Section Text Fields
+- **URL**: `/api/workflow/post_section_fields`
+- **Method**: `GET`
+- **Description**: Returns all text fields from post_section table
+- **Used By**: Writing stage Outputs dropdown
+- **Response**: Array of field names including `draft` and `polished`
+
+### Available Fields
+- **URL**: `/api/workflow/fields/available`
+- **Method**: `GET`
+- **Description**: Returns all available fields with stage mappings
+- **Used By**: Input fields and non-Writing stage outputs
+- **Response**: Structured field data with mappings
+
+## Content Quality Fields
+
+### Simplified Two-Field System
+
+The system now uses a simplified content quality model:
+
+- **`draft`**: Initial raw content before LLM processing
+- **`polished`**: Final publication-ready content after unified LLM processing
+
+### Migration from Four-Field System
+
+Previously used four fields:
+- `first_draft` → `draft`
+- `generation` → (removed)
+- `optimization` → (removed)  
+- `uk_british` → `polished`
+
+### Database Schema
+
+```sql
+-- post_section table text fields
+SELECT column_name 
+FROM information_schema.columns 
+WHERE table_name = 'post_section' 
+AND data_type IN ('text', 'character varying', 'varchar')
+AND column_name NOT IN ('id', 'post_id', 'section_order', 'image_id', 'image_prompt_example_id');
 ```
 
-## Integration with Workflow System
+## Usage Examples
 
-### Template Integration
+### Testing the Endpoint
 
-The LLM Panel is integrated into workflow templates via the `_modular_llm_panels.html` include:
+```bash
+# Test post_section_fields endpoint
+curl -s "http://localhost:5000/api/workflow/post_section_fields" -H "Accept: application/json"
 
-```html
-<!-- In workflow templates -->
-<div id="llm-workflow-root" data-substage="{{ current_substage }}" data-post-id="{{ post.id }}"
-     class="max-w-5xl mx-auto py-10 flex flex-col gap-8">
-    {% with step_config=step_config, field_values=field_values, step_id=step_id, 
-            current_stage=current_stage, current_step=current_step %}
-    {% include 'modules/llm_panel/templates/panel.html' %}
-    {% endwith %}
-</div>
-```
-
-### Required Context Variables
-
-The following variables must be provided to the panel templates:
-
-- `current_stage`: Current workflow stage (e.g., 'planning', 'authoring')
-- `current_substage`: Current substage (e.g., 'idea', 'research')
-- `current_step`: Current step name (e.g., 'Initial Concept')
-- `step_id`: Database ID of the current step
-- `step_config`: Step configuration object from database
-- `field_values`: Current field values for the post
-- `post.id`: Post ID for API calls
-
-### API Integration
-
-The panel uses several API endpoints:
-
-1. **Field Operations**:
-   - `GET /api/workflow/fields/available` - List available fields
-   - `POST /api/workflow/fields/mappings` - Update field mappings
-
-2. **Format Operations**:
-   - `GET /api/workflow/formats/templates` - List format templates
-   - `POST /api/workflow/formats/validate` - Validate data against formats
-
-3. **LLM Operations**:
-   - `POST /api/workflow/posts/{post_id}/{stage}/{substage}/llm` - Execute LLM processing
-
-4. **Post Development**:
-   - `GET /api/workflow/posts/{post_id}/development` - Get field values
-   - `POST /api/workflow/posts/{post_id}/development` - Update field values
-
-## Configuration
-
-### Step Configuration Format
-
-Each workflow step can have LLM panel configuration:
-
-```json
+# Expected response:
 {
-    "inputs": {
-        "basic_idea": {
-            "type": "textarea",
-            "db_field": "idea_seed",
-            "db_table": "post_development",
-            "format_id": 1
-        }
-    },
-    "outputs": {
-        "refined_idea": {
-            "type": "textarea",
-            "db_field": "basic_idea",
-            "db_table": "post_development",
-            "format_id": 2
-        }
-    },
-    "settings": {
-        "llm": {
-            "model": "llama3.1:70b",
-            "temperature": 0.7,
-            "max_tokens": 1000,
-            "format_id": 2
-        }
-    }
+  "fields": [
+    "section_heading",
+    "ideas_to_include", 
+    "facts_to_include",
+    "highlighting",
+    "image_concepts",
+    "image_prompts",
+    "watermarking",
+    "image_meta_descriptions",
+    "image_captions",
+    "generated_image_url",
+    "section_description",
+    "status",
+    "polished",
+    "draft"
+  ]
 }
 ```
 
-### Format Integration
+### Frontend Integration
 
-The panel integrates with the format system for:
+The field selector automatically detects the stage and section to use the appropriate endpoint:
 
-1. **Input Validation**: Validate input data against format specifications
-2. **Output Structuring**: Ensure LLM output matches required format
-3. **Field References**: Resolve `[data:field_name]` references in prompts
-4. **Type Safety**: Enforce data types and constraints
-
-## Usage Patterns
-
-### Basic Integration
-
-To add the LLM Panel to a workflow template:
-
-```html
-{% extends 'base.html' %}
-
-{% block content %}
-<div class="flex flex-col min-h-screen">
-    <!-- Navigation -->
-    <div id="workflow-nav" class="mb-0">
-        {% include 'nav/workflow_nav.html' %}
-    </div>
-
-    <!-- Content with LLM Panel -->
-    <div class="flex-grow">
-        <div class="px-6 -mt-20">
-            <div id="workflow-llm-actions" 
-                 style="background-color: #2D0A50; width: 100%; min-height: 400px;"
-                 class="rounded-lg p-6 shadow-lg">
-                {% include 'workflow/_modular_llm_panels.html' %}
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-```
-
-### Customization
-
-The panel can be customized by:
-
-1. **Styling**: Override CSS classes in `panels.css`
-2. **Behavior**: Extend JavaScript components
-3. **Configuration**: Modify step configuration in database
-4. **Templates**: Customize component templates for specific needs
+1. **Writing Stage + Outputs**: Uses `/api/workflow/post_section_fields`
+2. **All Other Cases**: Uses `/api/workflow/fields/available`
 
 ## Error Handling
 
-### Common Error Scenarios
-
-1. **Missing Context Variables**:
-   - Panel won't initialize properly
-   - JavaScript errors in console
-   - Missing field data
-
-2. **API Failures**:
-   - Network errors during field fetching
-   - Database connection issues
-   - LLM service unavailable
-
-3. **Format Validation Errors**:
-   - Invalid data structure
-   - Missing required fields
-   - Type mismatches
-
-### Error Recovery
-
-The panel includes error recovery mechanisms:
-
-- **Graceful Degradation**: Panel remains functional with reduced features
-- **Retry Logic**: Automatic retry for transient failures
-- **User Feedback**: Clear error messages and suggestions
-- **Fallback Values**: Default values when data is unavailable
-
-## Best Practices
-
-### 1. Template Design
-- Always provide required context variables
-- Use consistent naming conventions
-- Follow proper template inheritance
-- Include error handling in templates
-
-### 2. JavaScript Integration
-- Use ES6 modules for component organization
-- Implement proper error handling
-- Follow async/await patterns
-- Maintain consistent API usage
-
-### 3. Configuration Management
-- Store configuration in database, not hardcoded
-- Use format system for validation
-- Implement proper field mapping
-- Document configuration requirements
-
-### 4. Performance Optimization
-- Lazy load components when possible
-- Cache field data appropriately
-- Minimize API calls
-- Use efficient DOM manipulation
-
-## Troubleshooting
-
 ### Common Issues
 
-1. **Panel Not Loading**:
-   - Check context variables are provided
-   - Verify template includes are correct
-   - Check JavaScript console for errors
+1. **Wrong Endpoint URL**: 
+   - ❌ `/api/workflow/post_section_text_fields/<post_id>`
+   - ✅ `/api/workflow/post_section_fields`
 
-2. **Fields Not Populating**:
-   - Verify API endpoints are accessible
-   - Check field mapping configuration
-   - Ensure post ID is valid
+2. **Missing Post ID Parameter**:
+   - The endpoint does NOT take a post_id parameter
+   - It returns global field list for post_section table
 
-3. **LLM Processing Fails**:
-   - Check Ollama service is running
-   - Verify step configuration
-   - Check format validation
+3. **Frontend Not Updating**:
+   - Check browser console for JavaScript errors
+   - Verify the stage is 'writing' and section is 'outputs'
+   - Ensure the field selector has correct data attributes
 
-4. **Styling Issues**:
-   - Verify CSS files are loaded
-   - Check for CSS conflicts
-   - Ensure proper class names
+## Testing Checklist
 
-### Debug Tools
+- [ ] Backend endpoint returns JSON (not HTML)
+- [ ] Frontend page loads without JavaScript errors
+- [ ] Writing stage Outputs dropdown shows all post_section fields
+- [ ] `draft` and `polished` fields are included in dropdown
+- [ ] Field selection saves correctly
+- [ ] LLM actions work with selected fields
 
-1. **Browser Console**: Check for JavaScript errors
-2. **Network Tab**: Monitor API calls and responses
-3. **Database Queries**: Verify data integrity
-4. **Template Debugging**: Use template debugging tools
+## Related Documentation
 
-## Migration Guide
-
-When updating the LLM Panel:
-
-1. **Backup Configuration**: Export step configurations
-2. **Test Integration**: Verify all workflow stages work
-3. **Update Documentation**: Keep this guide current
-4. **Validate Formats**: Ensure format compatibility
-5. **Performance Testing**: Verify no regressions
-
-## Support
-
-For technical issues with the LLM Panel:
-
-1. Check this documentation first
-2. Review the API reference in `endpoints.md`
-3. Check the workflow system documentation
-4. Consult the format system guide
-5. Contact the project maintainers
-
-Remember: This project does not use logins or registration. Never add authentication-related code to the LLM Panel. 
+- [API Reference - Posts](../api/current/posts.md#post-section-text-fields-endpoint)
+- [Workflow Endpoints](endpoints.md)
+- [Content Quality Migration](../workflow/sections.md#content-quality-fields) 
