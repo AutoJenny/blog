@@ -1,5 +1,5 @@
 from flask import jsonify, current_app, request
-from app.api import bp
+from app.api import api_bp
 import datetime
 import psutil
 import os
@@ -18,7 +18,7 @@ from psycopg2.extras import RealDictCursor
 import json
 from app.llm.services import LLMService
 from app.database.routes import get_db_conn
-from flask_restful import deprecated_endpoint
+# from flask_restful import deprecated_endpoint  # REMOVED: Not available in flask_restful
 
 
 def check_ollama_performance():
@@ -130,7 +130,7 @@ def _get_client():
     return openai.OpenAI(default_headers={"Authorization": f"Bearer {auth}"})
 
 
-@bp.route("/health/openai")
+@api_bp.route("/health/openai")
 def check_openai():
     """Check OpenAI's performance and availability."""
     try:
@@ -205,7 +205,7 @@ def check_dependencies():
         return {"status": "error", "error": str(e)}
 
 
-@bp.route("/health")
+@api_bp.route("/health")
 def health_check():
     """Check the health of the application and its dependencies."""
     # Support both /api/health and /v1/health paths
@@ -256,7 +256,7 @@ def health_check():
     return response
 
 
-@bp.route("/posts", methods=["GET"])
+@api_bp.route("/posts", methods=["GET"])
 def list_posts():
     print("[DEBUG] Entered list_posts endpoint", flush=True)
     # Return all posts as JSON, including idea_seed and substage_id.
@@ -287,7 +287,7 @@ def list_posts():
             return jsonify(result), 200
 
 
-@bp.route("/posts", methods=["POST"])
+@api_bp.route("/posts", methods=["POST"])
 def create_post():
     data = request.get_json() or {}
     title = data.get("title", "Untitled")
@@ -320,19 +320,19 @@ def create_post():
 
 
 # --- ImageStyle CRUD API endpoints ---
-@bp.route("/images/styles", methods=["GET"])
+@api_bp.route("/images/styles", methods=["GET"])
 def list_image_styles():
     styles = ImageStyle.query.order_by(ImageStyle.title).all()
     return jsonify([s.to_dict() for s in styles]), 200
 
-@bp.route("/images/styles/<int:style_id>", methods=["GET"])
+@api_bp.route("/images/styles/<int:style_id>", methods=["GET"])
 def get_image_style(style_id):
     style = ImageStyle.query.get(style_id)
     if not style:
         return jsonify({"error": "Style not found"}), 404
     return jsonify(style.to_dict()), 200
 
-@bp.route("/images/styles", methods=["POST"])
+@api_bp.route("/images/styles", methods=["POST"])
 def create_image_style():
     data = request.get_json() or {}
     title = data.get("title")
@@ -346,7 +346,7 @@ def create_image_style():
     db.session.commit()
     return jsonify(style.to_dict()), 201
 
-@bp.route("/images/styles/<int:style_id>", methods=["PUT"])
+@api_bp.route("/images/styles/<int:style_id>", methods=["PUT"])
 def update_image_style(style_id):
     style = ImageStyle.query.get(style_id)
     if not style:
@@ -365,7 +365,7 @@ def update_image_style(style_id):
     db.session.commit()
     return jsonify(style.to_dict()), 200
 
-@bp.route("/images/styles/<int:style_id>", methods=["DELETE"])
+@api_bp.route("/images/styles/<int:style_id>", methods=["DELETE"])
 def delete_image_style(style_id):
     style = ImageStyle.query.get(style_id)
     if not style:
@@ -376,19 +376,19 @@ def delete_image_style(style_id):
 
 
 # --- ImageFormat CRUD API endpoints ---
-@bp.route("/images/formats", methods=["GET"])
+@api_bp.route("/images/formats", methods=["GET"])
 def list_image_formats():
     formats = ImageFormat.query.order_by(ImageFormat.title).all()
     return jsonify([f.to_dict() for f in formats]), 200
 
-@bp.route("/images/formats/<int:format_id>", methods=["GET"])
+@api_bp.route("/images/formats/<int:format_id>", methods=["GET"])
 def get_image_format(format_id):
     fmt = ImageFormat.query.get(format_id)
     if not fmt:
         return jsonify({"error": "Format not found"}), 404
     return jsonify(fmt.to_dict()), 200
 
-@bp.route("/images/formats", methods=["POST"])
+@api_bp.route("/images/formats", methods=["POST"])
 def create_image_format():
     data = request.get_json() or {}
     title = data.get("title")
@@ -415,7 +415,7 @@ def create_image_format():
     db.session.commit()
     return jsonify(fmt.to_dict()), 201
 
-@bp.route("/images/formats/<int:format_id>", methods=["PUT"])
+@api_bp.route("/images/formats/<int:format_id>", methods=["PUT"])
 def update_image_format(format_id):
     fmt = ImageFormat.query.get(format_id)
     if not fmt:
@@ -448,7 +448,7 @@ def update_image_format(format_id):
     db.session.commit()
     return jsonify(fmt.to_dict()), 200
 
-@bp.route("/images/formats/<int:format_id>", methods=["DELETE"])
+@api_bp.route("/images/formats/<int:format_id>", methods=["DELETE"])
 def delete_image_format(format_id):
     fmt = ImageFormat.query.get(format_id)
     if not fmt:
@@ -459,20 +459,92 @@ def delete_image_format(format_id):
 
 
 # --- ImageSetting CRUD API ---
-@bp.route('/images/settings', methods=['GET'])
+@api_bp.route('/images/settings', methods=['GET'])
 def list_image_settings():
-    settings = ImageSetting.query.order_by(ImageSetting.name).all()
-    return jsonify([s.to_dict() for s in settings])
+    """Get all image settings from the database."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT 
+                        image_setting.id,
+                        image_setting.name,
+                        image_setting.style_id,
+                        image_setting.format_id,
+                        image_setting.width,
+                        image_setting.height,
+                        image_setting.steps,
+                        image_setting.guidance_scale,
+                        image_setting.extra_settings,
+                        image_setting.created_at,
+                        image_setting.updated_at,
+                        image_style.title as style_title,
+                        image_style.description as style_description,
+                        image_format.title as format_title,
+                        image_format.description as format_description
+                    FROM image_setting
+                    LEFT JOIN image_style ON image_style.id = image_setting.style_id
+                    LEFT JOIN image_format ON image_format.id = image_setting.format_id
+                    ORDER BY image_setting.name
+                """)
+                settings = []
+                for row in cur.fetchall():
+                    setting = dict(row)
+                    # Convert datetime objects to strings for JSON serialization
+                    if setting.get('created_at'):
+                        setting['created_at'] = setting['created_at'].isoformat()
+                    if setting.get('updated_at'):
+                        setting['updated_at'] = setting['updated_at'].isoformat()
+                    settings.append(setting)
+                return jsonify(settings)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@bp.route('/images/settings/<int:setting_id>', methods=['GET'])
+@api_bp.route('/images/settings/<int:setting_id>', methods=['GET'])
 def get_image_setting(setting_id):
-    s = ImageSetting.query.get(setting_id)
-    if not s:
-        return jsonify({'error': 'Not found'}), 404
-    return jsonify(s.to_dict())
+    """Get a specific image setting by ID."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT 
+                        image_setting.id,
+                        image_setting.name,
+                        image_setting.style_id,
+                        image_setting.format_id,
+                        image_setting.width,
+                        image_setting.height,
+                        image_setting.steps,
+                        image_setting.guidance_scale,
+                        image_setting.extra_settings,
+                        image_setting.created_at,
+                        image_setting.updated_at,
+                        image_style.title as style_title,
+                        image_style.description as style_description,
+                        image_format.title as format_title,
+                        image_format.description as format_description
+                    FROM image_setting
+                    LEFT JOIN image_style ON image_style.id = image_setting.style_id
+                    LEFT JOIN image_format ON image_format.id = image_setting.format_id
+                    WHERE image_setting.id = %s
+                """, (setting_id,))
+                row = cur.fetchone()
+                if not row:
+                    return jsonify({'error': 'Image setting not found'}), 404
+                
+                setting = dict(row)
+                # Convert datetime objects to strings for JSON serialization
+                if setting.get('created_at'):
+                    setting['created_at'] = setting['created_at'].isoformat()
+                if setting.get('updated_at'):
+                    setting['updated_at'] = setting['updated_at'].isoformat()
+                return jsonify(setting)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@bp.route('/images/settings', methods=['POST'])
+@api_bp.route('/images/settings', methods=['POST'])
 def create_image_setting():
+    """Create a new image setting."""
     data = request.get_json() or {}
     name = data.get('name')
     style_id = data.get('style_id')
@@ -482,33 +554,58 @@ def create_image_setting():
     steps = data.get('steps')
     guidance_scale = data.get('guidance_scale')
     extra_settings = data.get('extra_settings')
+    
     if not name or not style_id or not format_id:
         return jsonify({'error': 'Missing required fields'}), 400
-    if ImageSetting.query.filter_by(name=name).first():
-        return jsonify({'error': 'Name already exists'}), 400
-    style = ImageStyle.query.get(style_id)
-    fmt = ImageFormat.query.get(format_id)
-    if not style or not fmt:
-        return jsonify({'error': 'Invalid style or format'}), 400
-    s = ImageSetting(
-        name=name,
-        style_id=style_id,
-        format_id=format_id,
-        width=width,
-        height=height,
-        steps=steps,
-        guidance_scale=guidance_scale,
-        extra_settings=extra_settings
-    )
-    db.session.add(s)
-    db.session.commit()
-    return jsonify(s.to_dict()), 201
+    
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Check if name already exists
+                cur.execute("SELECT id FROM image_setting WHERE name = %s", (name,))
+                if cur.fetchone():
+                    return jsonify({'error': 'Name already exists'}), 400
+                
+                # Check if style and format exist
+                cur.execute("SELECT id FROM image_style WHERE id = %s", (style_id,))
+                if not cur.fetchone():
+                    return jsonify({'error': 'Invalid style'}), 400
+                
+                cur.execute("SELECT id FROM image_format WHERE id = %s", (format_id,))
+                if not cur.fetchone():
+                    return jsonify({'error': 'Invalid format'}), 400
+                
+                # Insert new setting
+                cur.execute("""
+                    INSERT INTO image_setting (name, style_id, format_id, width, height, steps, guidance_scale, extra_settings)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id, created_at, updated_at
+                """, (name, style_id, format_id, width, height, steps, guidance_scale, extra_settings))
+                
+                result = cur.fetchone()
+                conn.commit()
+                
+                # Return the created setting
+                setting = {
+                    'id': result['id'],
+                    'name': name,
+                    'style_id': style_id,
+                    'format_id': format_id,
+                    'width': width,
+                    'height': height,
+                    'steps': steps,
+                    'guidance_scale': guidance_scale,
+                    'extra_settings': extra_settings,
+                    'created_at': result['created_at'].isoformat() if result['created_at'] else None,
+                    'updated_at': result['updated_at'].isoformat() if result['updated_at'] else None
+                }
+                return jsonify(setting), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@bp.route('/images/settings/<int:setting_id>', methods=['PUT'])
+@api_bp.route('/images/settings/<int:setting_id>', methods=['PUT'])
 def update_image_setting(setting_id):
-    s = ImageSetting.query.get(setting_id)
-    if not s:
-        return jsonify({'error': 'Not found'}), 404
+    """Update an existing image setting."""
     data = request.get_json() or {}
     name = data.get('name')
     style_id = data.get('style_id')
@@ -518,44 +615,124 @@ def update_image_setting(setting_id):
     steps = data.get('steps')
     guidance_scale = data.get('guidance_scale')
     extra_settings = data.get('extra_settings')
-    if name:
-        existing = ImageSetting.query.filter_by(name=name).first()
-        if existing and existing.id != setting_id:
-            return jsonify({'error': 'Name already exists'}), 400
-        s.name = name
-    if style_id:
-        style = ImageStyle.query.get(style_id)
-        if not style:
-            return jsonify({'error': 'Invalid style'}), 400
-        s.style_id = style_id
-    if format_id:
-        fmt = ImageFormat.query.get(format_id)
-        if not fmt:
-            return jsonify({'error': 'Invalid format'}), 400
-        s.format_id = format_id
-    if width is not None:
-        s.width = width
-    if height is not None:
-        s.height = height
-    if steps is not None:
-        s.steps = steps
-    if guidance_scale is not None:
-        s.guidance_scale = guidance_scale
-    if extra_settings is not None:
-        s.extra_settings = extra_settings
-    db.session.commit()
-    return jsonify(s.to_dict())
+    
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Check if setting exists
+                cur.execute("SELECT id FROM image_setting WHERE id = %s", (setting_id,))
+                if not cur.fetchone():
+                    return jsonify({'error': 'Image setting not found'}), 404
+                
+                # Check if name already exists (if name is being updated)
+                if name:
+                    cur.execute("SELECT id FROM image_setting WHERE name = %s AND id != %s", (name, setting_id))
+                    if cur.fetchone():
+                        return jsonify({'error': 'Name already exists'}), 400
+                
+                # Check if style exists (if style_id is being updated)
+                if style_id:
+                    cur.execute("SELECT id FROM image_style WHERE id = %s", (style_id,))
+                    if not cur.fetchone():
+                        return jsonify({'error': 'Invalid style'}), 400
+                
+                # Check if format exists (if format_id is being updated)
+                if format_id:
+                    cur.execute("SELECT id FROM image_format WHERE id = %s", (format_id,))
+                    if not cur.fetchone():
+                        return jsonify({'error': 'Invalid format'}), 400
+                
+                # Build update query dynamically
+                update_fields = []
+                update_values = []
+                
+                if name is not None:
+                    update_fields.append("name = %s")
+                    update_values.append(name)
+                if style_id is not None:
+                    update_fields.append("style_id = %s")
+                    update_values.append(style_id)
+                if format_id is not None:
+                    update_fields.append("format_id = %s")
+                    update_values.append(format_id)
+                if width is not None:
+                    update_fields.append("width = %s")
+                    update_values.append(width)
+                if height is not None:
+                    update_fields.append("height = %s")
+                    update_values.append(height)
+                if steps is not None:
+                    update_fields.append("steps = %s")
+                    update_values.append(steps)
+                if guidance_scale is not None:
+                    update_fields.append("guidance_scale = %s")
+                    update_values.append(guidance_scale)
+                if extra_settings is not None:
+                    update_fields.append("extra_settings = %s")
+                    update_values.append(extra_settings)
+                
+                if update_fields:
+                    update_fields.append("updated_at = CURRENT_TIMESTAMP")
+                    update_values.append(setting_id)
+                    
+                    query = f"UPDATE image_setting SET {', '.join(update_fields)} WHERE id = %s"
+                    cur.execute(query, update_values)
+                    conn.commit()
+                
+                # Return the updated setting
+                cur.execute("""
+                    SELECT 
+                        image_setting.id,
+                        image_setting.name,
+                        image_setting.style_id,
+                        image_setting.format_id,
+                        image_setting.width,
+                        image_setting.height,
+                        image_setting.steps,
+                        image_setting.guidance_scale,
+                        image_setting.extra_settings,
+                        image_setting.created_at,
+                        image_setting.updated_at,
+                        image_style.title as style_title,
+                        image_style.description as style_description,
+                        image_format.title as format_title,
+                        image_format.description as format_description
+                    FROM image_setting
+                    LEFT JOIN image_style ON image_style.id = image_setting.style_id
+                    LEFT JOIN image_format ON image_format.id = image_setting.format_id
+                    WHERE image_setting.id = %s
+                """, (setting_id,))
+                
+                row = cur.fetchone()
+                setting = dict(row)
+                # Convert datetime objects to strings for JSON serialization
+                if setting.get('created_at'):
+                    setting['created_at'] = setting['created_at'].isoformat()
+                if setting.get('updated_at'):
+                    setting['updated_at'] = setting['updated_at'].isoformat()
+                return jsonify(setting)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@bp.route('/images/settings/<int:setting_id>', methods=['DELETE'])
+@api_bp.route('/images/settings/<int:setting_id>', methods=['DELETE'])
 def delete_image_setting(setting_id):
-    s = ImageSetting.query.get(setting_id)
-    if not s:
-        return jsonify({'error': 'Not found'}), 404
-    db.session.delete(s)
-    db.session.commit()
-    return jsonify({'success': True})
+    """Delete an image setting."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Check if setting exists
+                cur.execute("SELECT id FROM image_setting WHERE id = %s", (setting_id,))
+                if not cur.fetchone():
+                    return jsonify({'error': 'Image setting not found'}), 404
+                
+                # Delete the setting
+                cur.execute("DELETE FROM image_setting WHERE id = %s", (setting_id,))
+                conn.commit()
+                return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@bp.route('/comfyui/status', methods=['GET'])
+@api_bp.route('/comfyui/status', methods=['GET'])
 def comfyui_status():
     """Check if ComfyUI is running (by process name and port)."""
     # Check for process
@@ -569,7 +746,7 @@ def comfyui_status():
             continue
     return jsonify({"running": running})
 
-@bp.route('/comfyui/start', methods=['POST'])
+@api_bp.route('/comfyui/start', methods=['POST'])
 def comfyui_start():
     """Start ComfyUI if not running."""
     # Check if already running
@@ -600,7 +777,7 @@ def comfyui_start():
             continue
     return jsonify({"started": True, "running": running})
 
-@bp.route('/images/generate', methods=['POST'])
+@api_bp.route('/images/generate', methods=['POST'])
 def generate_image():
     data = request.get_json() or {}
     prompt = data.get('prompt', '').strip()
@@ -613,13 +790,23 @@ def generate_image():
     extra_settings = data.get('extra_settings')
     # If image_setting_id is provided, load settings from DB
     if image_setting_id:
-        setting = ImageSetting.query.get(image_setting_id)
-        if setting:
-            width = width or setting.width
-            height = height or setting.height
-            steps = steps or setting.steps
-            guidance_scale = guidance_scale or setting.guidance_scale
-            extra_settings = extra_settings or setting.extra_settings
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        SELECT width, height, steps, guidance_scale, extra_settings
+                        FROM image_setting WHERE id = %s
+                    """, (image_setting_id,))
+                    setting = cur.fetchone()
+                    if setting:
+                        width = width or setting['width']
+                        height = height or setting['height']
+                        steps = steps or setting['steps']
+                        guidance_scale = guidance_scale or setting['guidance_scale']
+                        extra_settings = extra_settings or setting['extra_settings']
+        except Exception as e:
+            # If we can't load settings, continue with provided values
+            pass
     if not prompt:
         return jsonify({'error': 'Prompt is required'}), 400
     if provider == 'sd':
@@ -771,19 +958,19 @@ def generate_image():
         return jsonify({'error': f'Unknown provider: {provider}'}), 400
 
 # --- ImagePromptExample CRUD API endpoints ---
-@bp.route('/images/prompt_examples', methods=['GET'])
+@api_bp.route('/images/prompt_examples', methods=['GET'])
 def list_prompt_examples():
     examples = ImagePromptExample.query.order_by(ImagePromptExample.created_at.desc()).all()
     return jsonify([e.to_dict() for e in examples]), 200
 
-@bp.route('/images/prompt_examples/<int:example_id>', methods=['GET'])
+@api_bp.route('/images/prompt_examples/<int:example_id>', methods=['GET'])
 def get_prompt_example(example_id):
     e = ImagePromptExample.query.get(example_id)
     if not e:
         return jsonify({'error': 'Not found'}), 404
     return jsonify(e.to_dict()), 200
 
-@bp.route('/images/prompt_examples', methods=['POST'])
+@api_bp.route('/images/prompt_examples', methods=['POST'])
 def create_prompt_example():
     data = request.get_json() or {}
     description = data.get('description')
@@ -808,7 +995,7 @@ def create_prompt_example():
     db.session.commit()
     return jsonify(example.to_dict()), 201
 
-@bp.route('/images/prompt_examples/<int:example_id>', methods=['PUT'])
+@api_bp.route('/images/prompt_examples/<int:example_id>', methods=['PUT'])
 def update_prompt_example(example_id):
     e = ImagePromptExample.query.get(example_id)
     if not e:
@@ -833,7 +1020,7 @@ def update_prompt_example(example_id):
     db.session.commit()
     return jsonify(e.to_dict()), 200
 
-@bp.route('/images/prompt_examples/<int:example_id>', methods=['DELETE'])
+@api_bp.route('/images/prompt_examples/<int:example_id>', methods=['DELETE'])
 def delete_prompt_example(example_id):
     e = ImagePromptExample.query.get(example_id)
     if not e:
@@ -842,13 +1029,13 @@ def delete_prompt_example(example_id):
     db.session.commit()
     return jsonify({'success': True}), 200
 
-@bp.route('/api/v1/posts/<int:post_id>/generate_images', methods=['POST'])
-@deprecated_endpoint(message="This endpoint is deprecated. Use /api/blog/posts/{post_id}/images/generate instead.")
+# This endpoint is deprecated. Use /api/blog/posts/{post_id}/images/generate instead.
+@api_bp.route('/api/v1/posts/<int:post_id>/generate_images', methods=['POST'])
 def api_generate_post_images(post_id):
     """Deprecated post image generation endpoint."""
     return jsonify({'error': 'This endpoint is deprecated'}), 410
 
-@bp.route("/debug/routes", methods=["GET"])
+@api_bp.route("/debug/routes", methods=["GET"])
 def debug_list_routes():
     """Return all registered routes and their methods for debugging."""
     from flask import current_app
@@ -864,7 +1051,7 @@ def debug_list_routes():
     return jsonify(sorted(output, key=lambda x: x["rule"])), 200
 
 # --- PostDevelopment Fields API ---
-@bp.route("/post_development/fields", methods=["GET"])
+@api_bp.route("/post_development/fields", methods=["GET"])
 def get_post_development_fields():
     try:
         # Load DATABASE_URL from assistant_config.env
@@ -880,7 +1067,7 @@ def get_post_development_fields():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@bp.route("/post/<int:post_id>/development", methods=["GET"])
+@api_bp.route("/post/<int:post_id>/development", methods=["GET"])
 def get_post_development(post_id):
     try:
         # Load DATABASE_URL from assistant_config.env
@@ -899,7 +1086,7 @@ def get_post_development(post_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@bp.route("/structure/plan", methods=["POST"])
+@api_bp.route("/structure/plan", methods=["POST"])
 def plan_structure():
     """Plan the structure of a post using a two-stage process:
     1. Create section structure
@@ -967,7 +1154,7 @@ def plan_structure():
     except Exception as e:
         return jsonify({"error": f"Error planning structure: {str(e)}"}), 500
 
-@bp.route("/structure/save/<int:post_id>", methods=["POST"])
+@api_bp.route("/structure/save/<int:post_id>", methods=["POST"])
 def save_structure(post_id):
     """Save the structure of a post."""
     data = request.get_json()
@@ -1010,7 +1197,7 @@ def save_structure(post_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@bp.route("/posts/<int:post_id>/structure", methods=["GET"])
+@api_bp.route("/posts/<int:post_id>/structure", methods=["GET"])
 def get_structure(post_id):
     """Get the structure of a post."""
     try:
@@ -1050,7 +1237,7 @@ def get_structure(post_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@bp.route("/structure/generate", methods=["POST"])
+@api_bp.route("/structure/generate", methods=["POST"])
 def generate_structure():
     """Generate a section structure for a post using Ollama directly."""
     data = request.get_json()

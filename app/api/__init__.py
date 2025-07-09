@@ -16,4 +16,7 @@ from . import workflow  # Workflow routes
 from . import llm as deprecated_llm
 api_bp.register_blueprint(deprecated_llm.bp)
 
+# Import routes to register all API endpoints
+from . import routes
+
 __all__ = ['api_bp'] 
