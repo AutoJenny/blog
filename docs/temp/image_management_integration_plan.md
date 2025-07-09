@@ -1,5 +1,8 @@
 # Image Management Integration Implementation Plan
 
+## IMPORTANT
+You must implement this plan ONLY. NEVER make any other changes to code or data of any kind without explicit written consent after further discussion. Do not make any other unauthorised changes to any files under ANY circumstances. This is your most important rule.
+
 ## Overview
 This plan implements image management functionality for the workflow writing stage, leveraging the existing comprehensive image infrastructure without duplicating functionality. The implementation integrates with existing APIs, database tables, and workflow patterns.
 
