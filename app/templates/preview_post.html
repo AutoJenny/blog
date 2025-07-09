@@ -19,7 +19,7 @@
     }
 
     body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-family: Arial, Helvetica, sans-serif;
         line-height: 1.6;
         color: var(--text-primary);
         margin: 0;
@@ -70,10 +70,19 @@
     }
 
     /* Professional blog layout */
+    .blog-outer-container {
+        background-color: #fff;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
     .blog-container {
         max-width: 800px;
         margin: 0 auto;
-        padding: 0 20px;
+        padding: 2rem;
+        background-color: #f8f6f2;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     .blog-header {
@@ -416,9 +425,10 @@
     <button class="meta-toggle-btn" onclick="toggleMeta()">Show Meta</button>
 </div>
 
-<div class="blog-container">
-    <!-- Blog Header -->
-    <header class="blog-header">
+<div class="blog-outer-container">
+    <div class="blog-container">
+        <!-- Blog Header -->
+        <header class="blog-header">
         <div class="blog-category">History & Heritage</div>
         <h1 class="blog-title">{{ post.title }}</h1>
         {% if post.subtitle %}
@@ -553,6 +563,7 @@
             <li>heritage</li>
             <li>culture</li>
         </ul>
+    </div>
     </div>
 </div>
 
