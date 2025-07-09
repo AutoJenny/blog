@@ -16,6 +16,7 @@ This workflow documentation is organized into the following sections:
 - **[endpoints.md](./endpoints.md)** - Complete API endpoint reference
 - **[sections.md](./sections.md)** - Section-based workflow and per-section editing
 - **[section_synchronization.md](./section_synchronization.md)** - Section data synchronization system
+- **[preview.md](./preview.md)** - Preview system with content priority and image display
 
 ## Core Concepts
 
@@ -88,6 +89,7 @@ app/
 - Section-specific LLM processing and format templates
 - Integration with workflow stages and field mapping
 - **Section Synchronization**: Automatic data consistency between planning and individual section management
+- **Image Management**: Comprehensive image generation, upload, and management per section
 
 ## Usage Guidelines
 
@@ -113,6 +115,7 @@ app/
 3. Use section elements for facts, ideas, and themes
 4. Test section-based workflow with provided curl examples
 5. **Section Synchronization**: Ensure data consistency between `post_development.section_headings` and `post_section` records
+6. **Image Management**: Use the comprehensive image management panel for section-specific image generation and upload
 
 ## Best Practices
 

@@ -112,6 +112,81 @@ The preview system handles two image field types:
 
 ---
 
+## Workflow UI Integration
+
+### Image Management Panel
+**Template:** `app/templates/workflow/_image_management_panel.html`
+**JavaScript:** `app/static/js/workflow/image_management.js`
+**Integration:** `app/templates/workflow/index.html` (three-column layout for images substage)
+
+### UI Components
+
+#### 1. **Section Context Dropdown**
+- **Purpose:** Select which section to manage images for
+- **API:** `GET /api/workflow/posts/<post_id>/sections`
+- **Features:** Auto-populates with all post sections, auto-selects first section
+- **Bug Fix:** JS error in `setSectionId` fixed with null check
+
+#### 2. **Tabbed Interface**
+- **Generate Tab:** Image generation with provider, style, and format selection
+- **Upload Tab:** Drag & drop file upload with preview
+- **Manage Tab:** Image management with optimization, watermarking, and metadata
+
+#### 3. **Generate Tab Features**
+- **Provider Selection:** ComfyUI (Local), DALL-E (OpenAI), Stable Diffusion
+- **Style Dropdown:** Populated from `/api/images/styles`
+- **Format Dropdown:** Populated from `/api/images/formats`
+- **Generate Button:** Creates image using `/api/images/generate`
+- **Generate Prompt Button:** AI-assisted prompt generation
+
+#### 4. **Upload Tab Features**
+- **Drag & Drop Area:** Visual upload interface
+- **File Browser:** Traditional file selection
+- **Preview:** Image preview before upload
+- **Upload to Section:** Associates image with selected section
+
+#### 5. **Manage Tab Features**
+- **Image Grid:** Displays all section images
+- **Image Selection:** Click to select and view metadata
+- **Action Buttons:** Optimize, Watermark, Download, Delete
+- **Metadata Display:** Prompt, style, generation time, file size
+
+#### 6. **Modal Components**
+- **Image Preview Modal:** Full-size image viewing
+- **Loading Overlay:** Progress indication during operations
+
+### JavaScript Functionality
+
+#### Core Methods
+- `ImageManagement(postId, sectionId)` - Main class constructor
+- `init()` - Initialize all components and load data
+- `loadSectionsDropdown()` - Populate section selector
+- `loadSectionImages()` - Load images for selected section
+- `generateImage()` - Generate new image
+- `uploadImageToSection()` - Upload file to section
+- `updateSectionWithImage()` - Update section with new image
+
+#### Event Handling
+- **Tab Switching:** Smooth tab transitions
+- **Drag & Drop:** File upload with visual feedback
+- **Section Selection:** Context switching between sections
+- **Image Selection:** Metadata display and action enabling
+
+#### API Integration
+- **Settings Loading:** `/api/images/settings`
+- **Styles Loading:** `/api/images/styles`
+- **Formats Loading:** `/api/images/formats`
+- **Image Generation:** `/api/images/generate`
+- **Image Upload:** `/api/images/upload`
+- **Section Updates:** `/api/workflow/posts/<post_id>/sections/<section_id>`
+
+### CSS Styling
+**File:** `app/static/css/panels.css`
+- **Dark Theme:** Consistent with existing workflow panels
+- **Responsive Design:** Adapts to three-column layout
+- **Interactive Elements:** Hover states and visual feedback
+- **Loading States:** Spinner and progress indicators
+
 ## Usage Patterns
 - **Upload or generate images** via the workflow UI or API
 - **Configure settings** (style, format, watermark) using the settings endpoints
@@ -119,6 +194,7 @@ The preview system handles two image field types:
 - **Track image status** through workflow and publishing stages
 - **Publish images** to CDN as part of the post publishing process
 - **Preview images** in the preview system with proper error handling
+- **Manage images** through the comprehensive workflow UI
 
 ---
 
