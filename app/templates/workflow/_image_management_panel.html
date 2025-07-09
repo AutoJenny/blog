@@ -1,0 +1,161 @@
+<!-- Redesigned Image Management Panel with Section Dropdown -->
+<div class="image-management-panel">
+    <div class="panel-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <h3 style="margin:0;"><i class="fas fa-images"></i> Image Management</h3>
+        <div class="section-context" style="font-size:1rem;color:#7dd3fc;">
+            <label for="section-select" style="margin-right:0.5em;">Section:</label>
+            <select id="section-select" class="form-control" style="min-width:180px;">
+                <option value="">Loading sections...</option>
+            </select>
+        </div>
+    </div>
+    <div class="panel-tabs" style="margin-top:1em;display:flex;gap:1em;">
+        <button class="tab-btn active" data-tab="generate">Generate</button>
+        <button class="tab-btn" data-tab="upload">Upload</button>
+        <button class="tab-btn" data-tab="manage">Manage</button>
+    </div>
+    <div class="panel-content" style="margin-top:1.5em;">
+        <!-- Generate Tab -->
+        <div class="tab-content" id="tab-generate">
+            <h4>Generate Images</h4>
+            <div class="control-group">
+                <label for="image-provider">Provider:</label>
+                <select id="image-provider" class="form-control">
+                    <option value="comfyui">ComfyUI (Local)</option>
+                    <option value="dalle">DALL-E (OpenAI)</option>
+                    <option value="stable-diffusion">Stable Diffusion</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="image-settings">Style:</label>
+                <select id="image-settings" class="form-control">
+                    <option value="">Loading styles...</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="image-format">Format:</label>
+                <select id="image-format" class="form-control">
+                    <option value="">Loading formats...</option>
+                </select>
+            </div>
+            <div class="control-group" style="margin-top:1em;display:flex;gap:1em;">
+                <button id="generate-image-btn" class="btn btn-primary btn-generate">
+                    <i class="fas fa-magic"></i> Generate Image
+                </button>
+                <button id="generate-prompt-btn" class="btn btn-secondary btn-prompt">
+                    <i class="fas fa-lightbulb"></i> Generate Prompt
+                </button>
+            </div>
+        </div>
+        <!-- Upload Tab -->
+        <div class="tab-content" id="tab-upload" style="display:none;">
+            <h4>Upload Image</h4>
+            <div class="upload-area" id="upload-area"
+                style="border:2px dashed #7dd3fc;padding:2em;text-align:center;border-radius:1em;background:#23273a;cursor:pointer;">
+                <i class="fas fa-upload" style="font-size:2em;color:#7dd3fc;"></i>
+                <p>Drag & drop an image here, or <label for="image-upload-input"
+                        style="color:#7dd3fc;cursor:pointer;text-decoration:underline;">browse</label> to upload</p>
+                <input type="file" id="image-upload-input" accept="image/*" style="display:none;" />
+            </div>
+            <div id="upload-preview" style="margin-top:1em;display:none;">
+                <img id="upload-preview-img" src="" alt="Preview"
+                    style="max-width:100%;max-height:200px;border-radius:0.5em;" />
+                <div style="margin-top:0.5em;">
+                    <button id="confirm-upload-btn" class="btn btn-primary">Upload to Section</button>
+                </div>
+            </div>
+        </div>
+        <!-- Manage Tab -->
+        <div class="tab-content" id="tab-manage" style="display:none;">
+            <h4>Section Images</h4>
+            <div class="image-preview-container" id="image-preview-container">
+                <div class="no-images-message" id="no-images-message">
+                    <i class="fas fa-image"></i>
+                    <p>No images for this section yet</p>
+                </div>
+                <div class="image-grid" id="image-grid" style="display: none;"></div>
+            </div>
+            <div class="image-actions" style="margin-top:1em;">
+                <button id="optimize-image-btn" class="btn btn-outline-primary" disabled>
+                    <i class="fas fa-tools"></i> Optimize
+                </button>
+                <button id="watermark-image-btn" class="btn btn-outline-secondary" disabled>
+                    <i class="fas fa-stamp"></i> Watermark
+                </button>
+                <button id="download-image-btn" class="btn btn-outline-success" disabled>
+                    <i class="fas fa-download"></i> Download
+                </button>
+                <button id="delete-image-btn" class="btn btn-outline-danger" disabled>
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+            <div class="image-metadata" style="margin-top:1em;">
+                <h5>Image Details</h5>
+                <div class="metadata-display" id="image-metadata">
+                    <div class="metadata-item">
+                        <span class="metadata-label">Prompt:</span>
+                        <span class="metadata-value" id="image-prompt">No image selected</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Style:</span>
+                        <span class="metadata-value" id="image-style">-</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Generated:</span>
+                        <span class="metadata-value" id="image-generated-time">-</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-label">Size:</span>
+                        <span class="metadata-value" id="image-size">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Simple tab switching logic
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            tabContents.forEach(tc => tc.style.display = 'none');
+            document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
+        });
+    });
+</script>
+
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Image Preview</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="image-preview-modal-content">
+                    <img id="modal-image-preview" src="" alt="Image Preview" class="img-fluid">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="modal-download-btn">Download</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="image-loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <p id="loading-message">Generating image...</p>
+    </div>
+</div>

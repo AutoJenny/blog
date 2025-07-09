@@ -29,14 +29,36 @@ Refer to `/docs/reference/database/schema.md` for field-level details and relati
 ---
 
 ## API Endpoints
-All image-related API endpoints are documented in `/docs/reference/api/current/`:
-- **Image Generation**: `/api/v1/images/generate` (POST)
-- **Image Settings**: `/api/v1/images/settings` (GET/POST/PUT/DELETE)
-- **Image Styles/Formats**: `/api/v1/images/styles`, `/api/v1/images/formats`
-- **Prompt Examples**: `/api/v1/images/prompt_examples`
-- **Batch Generation**: `/api/v1/posts/<post_id>/generate_images` (deprecated, see docs)
+**Note:** As of June 2024, all image-related API endpoints use `/api/images/*`. The `/api/v1/images/*` endpoints are deprecated and should not be used for new development.
 
-For full request/response details, see `/docs/reference/api/current/images.md` and `/docs/reference/api/current/posts.md`.
+All image-related API endpoints:
+- **Image Generation**: `/api/images/generate` (POST)
+- **Image Settings**: `/api/images/settings` (GET/POST/PUT/DELETE)
+- **Image Styles/Formats**: `/api/images/styles`, `/api/images/formats`
+- **Prompt Examples**: `/api/images/prompt_examples`
+- **Image Upload**: `/api/images/upload` (POST, multipart/form-data)
+- **Batch Generation**: `/api/posts/<post_id>/generate_images` (deprecated, see docs)
+
+All endpoints now return JSON. The previous HTML-vs-JSON bug has been fixed.
+
+For full request/response details, see `/docs/reference/api/current/`.
+
+### Section Dropdown API
+- **Endpoint:** `GET /api/workflow/posts/<post_id>/sections`
+- **Usage:** Used by the image management panel to populate the section dropdown. Returns a list of all sections for the post, each with its `id` and `title` (and other fields).
+- **UI Logic:** The dropdown is populated on page load and when sections are updated. Selecting a section updates the image management context.
+- **Bug Fix:** A JS error in `setSectionId` referencing a missing DOM element was fixed by guarding the reference. This ensures the dropdown now populates correctly.
+
+### Image Upload API
+- **Endpoint:** `POST /api/images/upload`
+- **Usage:** Uploads an image for a specific section. Expects `multipart/form-data` with fields:
+  - `image`: the image file
+  - `section_id`: the section to associate the image with
+  - `post_id`: the post containing the section
+- **Response:**
+  - `201 Created` with `{ success: true, image_url, filename, section_id, post_id }` on success
+  - `400` or `500` with `{ error: ... }` on error
+- **UI Logic:** On successful upload, the section's `generated_image_url` is updated and the image appears in the manage tab and green panel.
 
 ---
 

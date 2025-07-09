@@ -359,20 +359,34 @@ def manage_section(post_id, section_id):
             return jsonify({'error': 'Post not found'}), 404
             
         if request.method == 'GET':
-            # Get section details with elements
+            # Get section details with elements and image fields
             cur.execute("""
                 SELECT 
                     s.id,
                     s.section_heading as title,
                     s.section_description as description,
                     s.section_order as order_index,
+                    s.image_concepts,
+                    s.image_prompts,
+                    s.generation,
+                    s.optimization,
+                    s.watermarking,
+                    s.image_meta_descriptions,
+                    s.image_captions,
+                    s.image_prompt_example_id,
+                    s.generated_image_url,
+                    s.image_generation_metadata,
+                    s.image_id,
                     array_agg(DISTINCT e.element_text) FILTER (WHERE e.element_type = 'fact') as facts,
                     array_agg(DISTINCT e.element_text) FILTER (WHERE e.element_type = 'idea') as ideas,
                     array_agg(DISTINCT e.element_text) FILTER (WHERE e.element_type = 'theme') as themes
                 FROM post_section s
                 LEFT JOIN post_section_elements e ON e.section_id = s.id
                 WHERE s.post_id = %s AND s.id = %s
-                GROUP BY s.id, s.section_heading, s.section_description, s.section_order
+                GROUP BY s.id, s.section_heading, s.section_description, s.section_order, 
+                         s.image_concepts, s.image_prompts, s.generation, s.optimization, 
+                         s.watermarking, s.image_meta_descriptions, s.image_captions, 
+                         s.image_prompt_example_id, s.generated_image_url, s.image_generation_metadata, s.image_id
             """, (post_id, section_id))
             
             section = cur.fetchone()
@@ -384,6 +398,17 @@ def manage_section(post_id, section_id):
                 'title': section['title'],
                 'description': section['description'],
                 'orderIndex': section['order_index'],
+                'image_concepts': section['image_concepts'],
+                'image_prompts': section['image_prompts'],
+                'generation': section['generation'],
+                'optimization': section['optimization'],
+                'watermarking': section['watermarking'],
+                'image_meta_descriptions': section['image_meta_descriptions'],
+                'image_captions': section['image_captions'],
+                'image_prompt_example_id': section['image_prompt_example_id'],
+                'generated_image_url': section['generated_image_url'],
+                'image_generation_metadata': section['image_generation_metadata'],
+                'image_id': section['image_id'],
                 'elements': {
                     'facts': section['facts'] if section['facts'] and section['facts'][0] is not None else [],
                     'ideas': section['ideas'] if section['ideas'] and section['ideas'][0] is not None else [],
@@ -398,18 +423,40 @@ def manage_section(post_id, section_id):
                 # Start transaction
                 cur.execute("BEGIN")
                 
-                # Update section
+                # Update section (including image fields)
                 cur.execute("""
                     UPDATE post_section
                     SET section_heading = %s,
                         section_description = %s,
-                        section_order = %s
+                        section_order = %s,
+                        image_concepts = %s,
+                        image_prompts = %s,
+                        generation = %s,
+                        optimization = %s,
+                        watermarking = %s,
+                        image_meta_descriptions = %s,
+                        image_captions = %s,
+                        image_prompt_example_id = %s,
+                        generated_image_url = %s,
+                        image_generation_metadata = %s::jsonb,
+                        image_id = %s
                     WHERE post_id = %s AND id = %s
                     RETURNING id, section_heading, section_description, section_order
                 """, (
                     data.get('title'),
                     data.get('description'),
                     data.get('orderIndex'),
+                    data.get('image_concepts'),
+                    data.get('image_prompts'),
+                    data.get('generation'),
+                    data.get('optimization'),
+                    data.get('watermarking'),
+                    data.get('image_meta_descriptions'),
+                    data.get('image_captions'),
+                    data.get('image_prompt_example_id'),
+                    data.get('generated_image_url'),
+                    json.dumps(data.get('image_generation_metadata')) if data.get('image_generation_metadata') else None,
+                    data.get('image_id'),
                     post_id,
                     section_id
                 ))
@@ -446,20 +493,34 @@ def manage_section(post_id, section_id):
                 # Commit transaction
                 cur.execute("COMMIT")
                 
-                # Return updated section with elements
+                # Return updated section with elements and image fields
                 cur.execute("""
                     SELECT 
                         s.id,
                         s.section_heading as title,
                         s.section_description as description,
                         s.section_order as order_index,
+                        s.image_concepts,
+                        s.image_prompts,
+                        s.generation,
+                        s.optimization,
+                        s.watermarking,
+                        s.image_meta_descriptions,
+                        s.image_captions,
+                        s.image_prompt_example_id,
+                        s.generated_image_url,
+                        s.image_generation_metadata,
+                        s.image_id,
                         array_agg(DISTINCT e.element_text) FILTER (WHERE e.element_type = 'fact') as facts,
                         array_agg(DISTINCT e.element_text) FILTER (WHERE e.element_type = 'idea') as ideas,
                         array_agg(DISTINCT e.element_text) FILTER (WHERE e.element_type = 'theme') as themes
                     FROM post_section s
                     LEFT JOIN post_section_elements e ON e.section_id = s.id
                     WHERE s.post_id = %s AND s.id = %s
-                    GROUP BY s.id, s.section_heading, s.section_description, s.section_order
+                    GROUP BY s.id, s.section_heading, s.section_description, s.section_order,
+                             s.image_concepts, s.image_prompts, s.generation, s.optimization,
+                             s.watermarking, s.image_meta_descriptions, s.image_captions,
+                             s.image_prompt_example_id, s.generated_image_url, s.image_generation_metadata, s.image_id
                 """, (post_id, section_id))
                 
                 section = cur.fetchone()
@@ -468,6 +529,17 @@ def manage_section(post_id, section_id):
                     'title': section['title'],
                     'description': section['description'],
                     'orderIndex': section['order_index'],
+                    'image_concepts': section['image_concepts'],
+                    'image_prompts': section['image_prompts'],
+                    'generation': section['generation'],
+                    'optimization': section['optimization'],
+                    'watermarking': section['watermarking'],
+                    'image_meta_descriptions': section['image_meta_descriptions'],
+                    'image_captions': section['image_captions'],
+                    'image_prompt_example_id': section['image_prompt_example_id'],
+                    'generated_image_url': section['generated_image_url'],
+                    'image_generation_metadata': section['image_generation_metadata'],
+                    'image_id': section['image_id'],
                     'elements': {
                         'facts': section['facts'] if section['facts'] and section['facts'][0] is not None else [],
                         'ideas': section['ideas'] if section['ideas'] and section['ideas'][0] is not None else [],

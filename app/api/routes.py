@@ -322,74 +322,246 @@ def create_post():
 # --- ImageStyle CRUD API endpoints ---
 @api_bp.route("/images/styles", methods=["GET"])
 def list_image_styles():
-    styles = ImageStyle.query.order_by(ImageStyle.title).all()
-    return jsonify([s.to_dict() for s in styles]), 200
+    """Get all image styles from the database."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT 
+                        id,
+                        title,
+                        description,
+                        created_at,
+                        updated_at
+                    FROM image_style
+                    ORDER BY title
+                """)
+                styles = []
+                for row in cur.fetchall():
+                    style = dict(row)
+                    # Convert datetime objects to strings for JSON serialization
+                    if style.get('created_at'):
+                        style['created_at'] = style['created_at'].isoformat()
+                    if style.get('updated_at'):
+                        style['updated_at'] = style['updated_at'].isoformat()
+                    styles.append(style)
+                return jsonify(styles)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @api_bp.route("/images/styles/<int:style_id>", methods=["GET"])
 def get_image_style(style_id):
-    style = ImageStyle.query.get(style_id)
-    if not style:
-        return jsonify({"error": "Style not found"}), 404
-    return jsonify(style.to_dict()), 200
+    """Get a specific image style by ID."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT 
+                        id,
+                        title,
+                        description,
+                        created_at,
+                        updated_at
+                    FROM image_style
+                    WHERE id = %s
+                """, (style_id,))
+                row = cur.fetchone()
+                if not row:
+                    return jsonify({"error": "Style not found"}), 404
+                style = dict(row)
+                # Convert datetime objects to strings for JSON serialization
+                if style.get('created_at'):
+                    style['created_at'] = style['created_at'].isoformat()
+                if style.get('updated_at'):
+                    style['updated_at'] = style['updated_at'].isoformat()
+                return jsonify(style), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @api_bp.route("/images/styles", methods=["POST"])
 def create_image_style():
+    """Create a new image style."""
     data = request.get_json() or {}
     title = data.get("title")
     description = data.get("description")
+    
     if not title:
         return jsonify({"error": "Title is required"}), 400
-    if ImageStyle.query.filter_by(title=title).first():
-        return jsonify({"error": "Style with this title already exists"}), 400
-    style = ImageStyle(title=title, description=description)
-    db.session.add(style)
-    db.session.commit()
-    return jsonify(style.to_dict()), 201
+    
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Check for duplicate title
+                cur.execute("SELECT id FROM image_style WHERE title = %s", (title,))
+                if cur.fetchone():
+                    return jsonify({"error": "Style with this title already exists"}), 400
+                
+                # Insert new style
+                cur.execute("""
+                    INSERT INTO image_style (title, description, created_at, updated_at)
+                    VALUES (%s, %s, NOW(), NOW())
+                    RETURNING id, title, description, created_at, updated_at
+                """, (title, description))
+                row = cur.fetchone()
+                conn.commit()
+                
+                style = dict(row)
+                # Convert datetime objects to strings for JSON serialization
+                if style.get('created_at'):
+                    style['created_at'] = style['created_at'].isoformat()
+                if style.get('updated_at'):
+                    style['updated_at'] = style['updated_at'].isoformat()
+                return jsonify(style), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @api_bp.route("/images/styles/<int:style_id>", methods=["PUT"])
 def update_image_style(style_id):
-    style = ImageStyle.query.get(style_id)
-    if not style:
-        return jsonify({"error": "Style not found"}), 404
+    """Update an existing image style."""
     data = request.get_json() or {}
     title = data.get("title")
     description = data.get("description")
-    if title:
-        # Check for duplicate title
-        existing = ImageStyle.query.filter_by(title=title).first()
-        if existing and existing.id != style_id:
-            return jsonify({"error": "Style with this title already exists"}), 400
-        style.title = title
-    if description is not None:
-        style.description = description
-    db.session.commit()
-    return jsonify(style.to_dict()), 200
+    
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Check if style exists
+                cur.execute("SELECT id FROM image_style WHERE id = %s", (style_id,))
+                if not cur.fetchone():
+                    return jsonify({"error": "Style not found"}), 404
+                
+                # Check for duplicate title if title is being updated
+                if title:
+                    cur.execute("SELECT id FROM image_style WHERE title = %s AND id != %s", (title, style_id))
+                    if cur.fetchone():
+                        return jsonify({"error": "Style with this title already exists"}), 400
+                
+                # Update style
+                update_fields = []
+                params = []
+                if title is not None:
+                    update_fields.append("title = %s")
+                    params.append(title)
+                if description is not None:
+                    update_fields.append("description = %s")
+                    params.append(description)
+                
+                if update_fields:
+                    update_fields.append("updated_at = NOW()")
+                    params.append(style_id)
+                    
+                    cur.execute(f"""
+                        UPDATE image_style 
+                        SET {', '.join(update_fields)}
+                        WHERE id = %s
+                        RETURNING id, title, description, created_at, updated_at
+                    """, params)
+                    row = cur.fetchone()
+                    conn.commit()
+                    
+                    style = dict(row)
+                    # Convert datetime objects to strings for JSON serialization
+                    if style.get('created_at'):
+                        style['created_at'] = style['created_at'].isoformat()
+                    if style.get('updated_at'):
+                        style['updated_at'] = style['updated_at'].isoformat()
+                    return jsonify(style), 200
+                else:
+                    return jsonify({"error": "No fields to update"}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @api_bp.route("/images/styles/<int:style_id>", methods=["DELETE"])
 def delete_image_style(style_id):
-    style = ImageStyle.query.get(style_id)
-    if not style:
-        return jsonify({"error": "Style not found"}), 404
-    db.session.delete(style)
-    db.session.commit()
-    return jsonify({"result": "deleted"}), 200
+    """Delete an image style."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Check if style exists
+                cur.execute("SELECT id FROM image_style WHERE id = %s", (style_id,))
+                if not cur.fetchone():
+                    return jsonify({"error": "Style not found"}), 404
+                
+                # Delete style
+                cur.execute("DELETE FROM image_style WHERE id = %s", (style_id,))
+                conn.commit()
+                return jsonify({"result": "deleted"}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 # --- ImageFormat CRUD API endpoints ---
 @api_bp.route("/images/formats", methods=["GET"])
 def list_image_formats():
-    formats = ImageFormat.query.order_by(ImageFormat.title).all()
-    return jsonify([f.to_dict() for f in formats]), 200
+    """Get all image formats from the database."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT 
+                        id,
+                        title,
+                        description,
+                        width,
+                        height,
+                        steps,
+                        guidance_scale,
+                        extra_settings,
+                        created_at,
+                        updated_at
+                    FROM image_format
+                    ORDER BY title
+                """)
+                formats = []
+                for row in cur.fetchall():
+                    fmt = dict(row)
+                    # Convert datetime objects to strings for JSON serialization
+                    if fmt.get('created_at'):
+                        fmt['created_at'] = fmt['created_at'].isoformat()
+                    if fmt.get('updated_at'):
+                        fmt['updated_at'] = fmt['updated_at'].isoformat()
+                    formats.append(fmt)
+                return jsonify(formats)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @api_bp.route("/images/formats/<int:format_id>", methods=["GET"])
 def get_image_format(format_id):
-    fmt = ImageFormat.query.get(format_id)
-    if not fmt:
-        return jsonify({"error": "Format not found"}), 404
-    return jsonify(fmt.to_dict()), 200
+    """Get a specific image format by ID."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT 
+                        id,
+                        title,
+                        description,
+                        width,
+                        height,
+                        steps,
+                        guidance_scale,
+                        extra_settings,
+                        created_at,
+                        updated_at
+                    FROM image_format
+                    WHERE id = %s
+                """, (format_id,))
+                row = cur.fetchone()
+                if not row:
+                    return jsonify({"error": "Format not found"}), 404
+                fmt = dict(row)
+                # Convert datetime objects to strings for JSON serialization
+                if fmt.get('created_at'):
+                    fmt['created_at'] = fmt['created_at'].isoformat()
+                if fmt.get('updated_at'):
+                    fmt['updated_at'] = fmt['updated_at'].isoformat()
+                return jsonify(fmt), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @api_bp.route("/images/formats", methods=["POST"])
 def create_image_format():
+    """Create a new image format."""
     data = request.get_json() or {}
     title = data.get("title")
     description = data.get("description")
@@ -398,28 +570,40 @@ def create_image_format():
     steps = data.get("steps")
     guidance_scale = data.get("guidance_scale")
     extra_settings = data.get("extra_settings")
+    
     if not title:
         return jsonify({"error": "Title is required"}), 400
-    if ImageFormat.query.filter_by(title=title).first():
-        return jsonify({"error": "Format with this title already exists"}), 400
-    fmt = ImageFormat(
-        title=title,
-        description=description,
-        width=width,
-        height=height,
-        steps=steps,
-        guidance_scale=guidance_scale,
-        extra_settings=extra_settings
-    )
-    db.session.add(fmt)
-    db.session.commit()
-    return jsonify(fmt.to_dict()), 201
+    
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Check for duplicate title
+                cur.execute("SELECT id FROM image_format WHERE title = %s", (title,))
+                if cur.fetchone():
+                    return jsonify({"error": "Format with this title already exists"}), 400
+                
+                # Insert new format
+                cur.execute("""
+                    INSERT INTO image_format (title, description, width, height, steps, guidance_scale, extra_settings, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                    RETURNING id, title, description, width, height, steps, guidance_scale, extra_settings, created_at, updated_at
+                """, (title, description, width, height, steps, guidance_scale, extra_settings))
+                row = cur.fetchone()
+                conn.commit()
+                
+                fmt = dict(row)
+                # Convert datetime objects to strings for JSON serialization
+                if fmt.get('created_at'):
+                    fmt['created_at'] = fmt['created_at'].isoformat()
+                if fmt.get('updated_at'):
+                    fmt['updated_at'] = fmt['updated_at'].isoformat()
+                return jsonify(fmt), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @api_bp.route("/images/formats/<int:format_id>", methods=["PUT"])
 def update_image_format(format_id):
-    fmt = ImageFormat.query.get(format_id)
-    if not fmt:
-        return jsonify({"error": "Format not found"}), 404
+    """Update an existing image format."""
     data = request.get_json() or {}
     title = data.get("title")
     description = data.get("description")
@@ -428,34 +612,88 @@ def update_image_format(format_id):
     steps = data.get("steps")
     guidance_scale = data.get("guidance_scale")
     extra_settings = data.get("extra_settings")
-    if title:
-        existing = ImageFormat.query.filter_by(title=title).first()
-        if existing and existing.id != format_id:
-            return jsonify({"error": "Format with this title already exists"}), 400
-        fmt.title = title
-    if description is not None:
-        fmt.description = description
-    if width is not None:
-        fmt.width = width
-    if height is not None:
-        fmt.height = height
-    if steps is not None:
-        fmt.steps = steps
-    if guidance_scale is not None:
-        fmt.guidance_scale = guidance_scale
-    if extra_settings is not None:
-        fmt.extra_settings = extra_settings
-    db.session.commit()
-    return jsonify(fmt.to_dict()), 200
+    
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Check if format exists
+                cur.execute("SELECT id FROM image_format WHERE id = %s", (format_id,))
+                if not cur.fetchone():
+                    return jsonify({"error": "Format not found"}), 404
+                
+                # Check for duplicate title if title is being updated
+                if title:
+                    cur.execute("SELECT id FROM image_format WHERE title = %s AND id != %s", (title, format_id))
+                    if cur.fetchone():
+                        return jsonify({"error": "Format with this title already exists"}), 400
+                
+                # Update format
+                update_fields = []
+                params = []
+                if title is not None:
+                    update_fields.append("title = %s")
+                    params.append(title)
+                if description is not None:
+                    update_fields.append("description = %s")
+                    params.append(description)
+                if width is not None:
+                    update_fields.append("width = %s")
+                    params.append(width)
+                if height is not None:
+                    update_fields.append("height = %s")
+                    params.append(height)
+                if steps is not None:
+                    update_fields.append("steps = %s")
+                    params.append(steps)
+                if guidance_scale is not None:
+                    update_fields.append("guidance_scale = %s")
+                    params.append(guidance_scale)
+                if extra_settings is not None:
+                    update_fields.append("extra_settings = %s")
+                    params.append(extra_settings)
+                
+                if update_fields:
+                    update_fields.append("updated_at = NOW()")
+                    params.append(format_id)
+                    
+                    cur.execute(f"""
+                        UPDATE image_format 
+                        SET {', '.join(update_fields)}
+                        WHERE id = %s
+                        RETURNING id, title, description, width, height, steps, guidance_scale, extra_settings, created_at, updated_at
+                    """, params)
+                    row = cur.fetchone()
+                    conn.commit()
+                    
+                    fmt = dict(row)
+                    # Convert datetime objects to strings for JSON serialization
+                    if fmt.get('created_at'):
+                        fmt['created_at'] = fmt['created_at'].isoformat()
+                    if fmt.get('updated_at'):
+                        fmt['updated_at'] = fmt['updated_at'].isoformat()
+                    return jsonify(fmt), 200
+                else:
+                    return jsonify({"error": "No fields to update"}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @api_bp.route("/images/formats/<int:format_id>", methods=["DELETE"])
 def delete_image_format(format_id):
-    fmt = ImageFormat.query.get(format_id)
-    if not fmt:
-        return jsonify({"error": "Format not found"}), 404
-    db.session.delete(fmt)
-    db.session.commit()
-    return jsonify({"result": "deleted"}), 200
+    """Delete an image format."""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Check if format exists
+                cur.execute("SELECT id FROM image_format WHERE id = %s", (format_id,))
+                if not cur.fetchone():
+                    return jsonify({"error": "Format not found"}), 404
+                
+                # Delete format
+                cur.execute("DELETE FROM image_format WHERE id = %s", (format_id,))
+                conn.commit()
+                return jsonify({"result": "deleted"}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 # --- ImageSetting CRUD API ---
@@ -776,6 +1014,83 @@ def comfyui_start():
         except Exception:
             continue
     return jsonify({"started": True, "running": running})
+
+@api_bp.route('/images/upload', methods=['POST'])
+def upload_image():
+    """Upload an image for a specific section."""
+    try:
+        # Check if file is present
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image file provided'}), 400
+        
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Get section and post IDs
+        section_id = request.form.get('section_id')
+        post_id = request.form.get('post_id')
+        
+        if not section_id or not post_id:
+            return jsonify({'error': 'Missing section_id or post_id'}), 400
+        
+        # Validate file type
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+        if not file.filename.lower().endswith(tuple('.' + ext for ext in allowed_extensions)):
+            return jsonify({'error': 'Invalid file type. Allowed: PNG, JPG, JPEG, GIF, WEBP'}), 400
+        
+        # Create upload directory if it doesn't exist
+        import os
+        from pathlib import Path
+        
+        upload_dir = Path('app/static/uploads/images')
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate unique filename
+        import uuid
+        import datetime
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        unique_id = str(uuid.uuid4())[:8]
+        file_extension = os.path.splitext(file.filename)[1].lower()
+        filename = f"section_{section_id}_{timestamp}_{unique_id}{file_extension}"
+        
+        # Save file
+        file_path = upload_dir / filename
+        file.save(file_path)
+        
+        # Generate URL for the uploaded image
+        image_url = f"/static/uploads/images/{filename}"
+        
+        # Update the section with the image URL
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    UPDATE post_section 
+                    SET generated_image_url = %s,
+                        image_generation_metadata = %s
+                    WHERE id = %s AND post_id = %s
+                """, (image_url, json.dumps({
+                    'uploaded_at': datetime.datetime.now().isoformat(),
+                    'original_filename': file.filename,
+                    'file_size': os.path.getsize(file_path),
+                    'upload_method': 'manual'
+                }), section_id, post_id))
+                
+                if cur.rowcount == 0:
+                    return jsonify({'error': 'Section not found or does not belong to post'}), 404
+                
+                conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'image_url': image_url,
+            'filename': filename,
+            'section_id': section_id,
+            'post_id': post_id
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/images/generate', methods=['POST'])
 def generate_image():

@@ -38,57 +38,7 @@
                 {# Right column - Image Management (33%) #}
                 <div id="workflow-images" style="background-color: #1a365d; width: 33%;"
                     class="rounded-lg p-6 shadow-lg transition-all duration-300">
-                    <div class="text-gray-200">
-                        <h3 class="text-lg font-semibold mb-4 flex items-center">
-                            <i class="fas fa-image mr-2"></i>
-                            Image Management
-                        </h3>
-                        <div id="image-panel-content">
-                            <div class="space-y-4">
-                                <!-- Image Upload Section -->
-                                <div class="bg-blue-900 bg-opacity-30 rounded-lg p-4">
-                                    <h4 class="text-sm font-medium mb-2">Upload Image</h4>
-                                    <div class="space-y-2">
-                                        <input type="file" accept="image/*"
-                                            class="w-full text-sm text-gray-300 file:mr-4 file:py-1 file:px-4 file:rounded file:border-0 file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700">
-                                        <button
-                                            class="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition-colors">
-                                            Upload
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Image Generation Section -->
-                                <div class="bg-green-900 bg-opacity-30 rounded-lg p-4">
-                                    <h4 class="text-sm font-medium mb-2">Generate Image</h4>
-                                    <div class="space-y-2">
-                                        <textarea placeholder="Enter image prompt..."
-                                            class="w-full bg-gray-800 text-gray-200 rounded px-3 py-2 text-sm resize-none"
-                                            rows="3"></textarea>
-                                        <div class="flex gap-2">
-                                            <select class="bg-gray-800 text-gray-200 rounded px-2 py-1 text-sm">
-                                                <option>SD 3.5</option>
-                                                <option>DALL-E 3</option>
-                                            </select>
-                                            <button
-                                                class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors">
-                                                Generate
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Current Images Section -->
-                                <div class="bg-purple-900 bg-opacity-30 rounded-lg p-4">
-                                    <h4 class="text-sm font-medium mb-2">Current Images</h4>
-                                    <div class="space-y-2">
-                                        <div class="text-xs text-gray-400">No images uploaded yet</div>
-                                        <div class="text-xs text-gray-400">Generated images will appear here</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {% include 'workflow/_image_management_panel.html' %}
                 </div>
             </div>
             {% else %}
@@ -135,6 +85,25 @@
                 }
             });
         </script>
+
+        {% if current_substage == 'images' %}
+        <script type="module">
+            import ImageManagement from '/static/js/workflow/image_management.js';
+            document.addEventListener('DOMContentLoaded', async () => {
+                // Get postId from URL
+                const pathParts = window.location.pathname.split('/');
+                const postId = pathParts[3];
+
+                // Initialize image management
+                const imageManagement = new ImageManagement(postId);
+
+                // Make it globally available for section selection
+                window.imageManagement = imageManagement;
+
+                console.log('Image management initialized for post:', postId);
+            });
+        </script>
+        {% endif %}
         {% else %}
         <div class="px-6 -mt-20 text-white">
             <p>Current stage: {{ current_stage }}</p>
@@ -146,6 +115,7 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='modules/llm_panel/css/panels.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/image_management.css') }}">
 <style>
     #workflow-llm-actions {
         background-color: #2D0A50 !important;
