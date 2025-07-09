@@ -292,51 +292,11 @@ def update_section_field(post_id, section_id, field):
     return jsonify({"status": "success"})
 
 
-# Public-facing post detail view
+# Public-facing post detail view - DEPRECATED: Use /preview/<post_id>/ instead
 @bp.route("/public/<int:post_id>/")
 def post_public(post_id):
-    try:
-        with get_db_conn() as conn:
-            with conn.cursor() as cur:
-                # Get post with development data
-                cur.execute("""
-                    SELECT p.*, pd.*
-                    FROM post p
-                    LEFT JOIN post_development pd ON p.id = pd.post_id
-                    WHERE p.id = %s
-                """, (post_id,))
-                post = cur.fetchone()
-                if not post:
-                    abort(404)
-                
-                # Get sections
-                cur.execute("""
-                    SELECT * FROM post_section 
-                    WHERE post_id = %s 
-                    ORDER BY section_order
-                """, (post_id,))
-                sections = cur.fetchall()
-                
-                # Format post data for the template
-                formatted_post = {
-                    'title': post['title'],
-                    'subtitle': post.get('subtitle', ''),
-                    'date': post['created_at'].strftime('%B %d, %Y') if post.get('created_at') else '',
-                    'author': 'CLAN Blog',  # Default author
-                    'summary': post.get('summary', ''),
-                    'header_image': post.get('header_image', ''),
-                    'sections': [{
-                        'heading': section['section_heading'],
-                        'text': section.get('first_draft', '') or section.get('optimization', '') or section.get('generation', '') or ''
-                    } for section in sections],
-                    'tags': [],  # We can add tag support later if needed
-                    'footer': ''  # We can add footer support later if needed
-                }
-                
-                return render_template("preview_post.html", post=formatted_post)
-    except Exception as e:
-        print(f"Error in post_public: {str(e)}")  # Log the error
-        abort(500, str(e))
+    # Redirect to the working preview route
+    return redirect(url_for('preview.post_detail', post_id=post_id))
 
 
 @bp.route('/posts', methods=['GET'])

@@ -149,4 +149,24 @@ All links are accessible from the top navigation bar for quick access to major f
 
 **Related Documentation:**
 - [Database Schema - Field Selection Policy](reference/database/schema.md#field-selection-mapping-policy)
-- [API Reference - Field Selection Endpoints](reference/api/current/fields.md#field-selection-endpoints) 
+- [API Reference - Field Selection Endpoints](reference/api/current/fields.md#field-selection-endpoints)
+
+### Preview Routes & Templates
+
+**CANONICAL PREVIEW SYSTEM: Use `/preview/<post_id>/` for all preview functionality.**
+
+- **Primary Route:** `/preview/<post_id>/` - The working preview route with full content and placeholder support
+- **Deprecated Route:** `/blog/public/<post_id>/` - Redirects to the primary preview route
+- **Canonical Template:** `app/templates/preview_post.html` - The only preview template with complex content priority logic
+- **Template Features:** Content priority indicators, placeholder logic, section-by-section rendering with fallbacks for missing content
+- **Helper Functions:** The preview template requires helper functions (`get_content_class`, `get_best_content`, `is_placeholder`, `get_missing_stage`) which are provided by the preview blueprint
+
+**Removed Templates:**
+- `app/templates/preview/post_preview.html` - Unused legacy template
+- `app/templates/preview/preview.html` - Unused template
+- `app/templates/preview/structure.html` - Unused template  
+- `app/templates/preview/landing.html` - Unused template
+- `app/templates/preview/modular_workflow_stub.html` - Unused template
+
+**Related Documentation:**
+- [Preview System Architecture](reference/workflow/preview.md) 
