@@ -12,6 +12,7 @@ The new image system provides robust, modular support for image upload, generati
 - **Format optimization**: Images are optimized for web (e.g., WEBP, JPEG)
 - **Workflow integration**: Images are linked to post sections and tracked through all workflow stages
 - **Publishing integration**: Images are prepared for CDN upload and public URLs are managed
+- **Preview integration**: Images display in preview templates with graceful error handling
 
 ---
 
@@ -25,6 +26,22 @@ The following tables are central to the image system (see `/docs/reference/datab
 - `post_section` (image-related fields)
 
 Refer to `/docs/reference/database/schema.md` for field-level details and relationships.
+
+---
+
+## File System Structure
+```
+static/
+├── uploads/
+│   └── images/                    # Generated and uploaded images
+│       └── section_<id>_<timestamp>_<hash>.png
+├── images/
+│   ├── posts/                     # Legacy post images
+│   ├── site/                      # Site header/footer images
+│   └── watermarked/               # Watermarked versions
+```
+
+**Important:** The `static/uploads/images/` directory is created automatically and is the canonical location for all generated and uploaded images.
 
 ---
 
@@ -62,12 +79,66 @@ For full request/response details, see `/docs/reference/api/current/`.
 
 ---
 
+## Preview System Integration
+
+### Image Display in Preview
+- **Template:** `app/templates/preview_post.html`
+- **Route:** `/preview/<post_id>/` (canonical preview route)
+- **Image Processing:** `app/preview/__init__.py` - `get_post_sections_with_images()`
+
+### Image Field Mapping
+The preview system handles two image field types:
+1. **`image_id`** → Fetches from `image` table → Creates `section.image` object
+2. **`generated_image_url`** → Direct URL → Creates `section.image` object with `path` and `alt_text`
+
+### Template Image Rendering
+```html
+{% if section.image %}
+<div class="section-image">
+    <img src="{{ section.image.path }}" alt="{{ section.image.alt_text or 'Section image' }}" 
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+    <div class="image-error" style="display: none;">
+        <small><strong>Image not found:</strong> {{ section.image.path }}</small>
+    </div>
+    <!-- Image metadata: captions, prompts, notes -->
+</div>
+{% endif %}
+```
+
+### Error Handling
+- **Missing Images:** Graceful error display with image path for debugging
+- **Broken URLs:** `onerror` handler hides broken images and shows error message
+- **File System:** `static/uploads/images/` directory created automatically
+
+---
+
 ## Usage Patterns
 - **Upload or generate images** via the workflow UI or API
 - **Configure settings** (style, format, watermark) using the settings endpoints
 - **Link images to post sections** using the `post_section` table fields
 - **Track image status** through workflow and publishing stages
 - **Publish images** to CDN as part of the post publishing process
+- **Preview images** in the preview system with proper error handling
+
+---
+
+## Database Field Reference
+
+### `post_section` Image Fields
+- `image_id` - References `image.id` (legacy system)
+- `generated_image_url` - Direct file path (new system)
+- `image_captions` - Image caption text
+- `image_prompts` - Generation prompt used
+- `image_meta_descriptions` - Additional image notes
+- `image_prompt_example_id` - References `image_prompt_example.id`
+
+### `image` Table Fields
+- `id` - Primary key
+- `path` - File system path
+- `alt_text` - Alt text for accessibility
+- `caption` - Image caption
+- `prompt` - Generation prompt
+- `metadata` - JSON metadata
 
 ---
 
@@ -81,6 +152,7 @@ For a detailed comparison and migration notes, see:
 - **API Reference**: `/docs/reference/api/current/`
 - **Database Schema**: `/docs/reference/database/schema.md`
 - **Workflow Integration**: `/docs/reference/workflow/`
+- **Preview System**: `/docs/reference/workflow/preview.md`
 
 ---
 
