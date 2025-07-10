@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Management Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-white p-8">
+    <h1 class="text-2xl font-bold mb-4">Context Management Test</h1>
+
+    <button id="test-context-btn"
+        class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded shadow-lg transition-colors duration-200">
+        Test Context Management
+    </button>
+
+    <div id="test-results" class="mt-4 p-4 bg-gray-800 rounded"></div>
+
+    <!-- Context Management Modal -->
+    <div id="context-management-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+                <!-- Header -->
+                <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                    <h2 class="text-xl font-bold text-white">Context Management</h2>
+                    <div class="flex gap-2">
+                        <button id="refresh-context"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                            Refresh
+                        </button>
+                        <button id="close-context-modal" class="text-gray-400 hover:text-white text-xl">&times;</button>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="flex h-[calc(90vh-120px)]">
+                    <!-- Left: Context Sections -->
+                    <div class="w-1/2 p-4 border-r border-gray-700 overflow-y-auto">
+                        <h3 class="text-lg font-semibold text-white mb-4">Prompt Sections</h3>
+                        <div id="context-sections" class="space-y-4">
+                            <!-- Context sections will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Right: Preview -->
+                    <div class="w-1/2 p-4 overflow-y-auto">
+                        <h3 class="text-lg font-semibold text-white mb-4">Preview</h3>
+                        <div class="mb-4">
+                            <label class="text-sm text-gray-300">Character count: <span
+                                    id="preview-char-count">0</span></label>
+                        </div>
+                        <div id="prompt-preview"
+                            class="bg-gray-900 p-4 rounded text-sm text-gray-300 font-mono whitespace-pre-wrap max-h-[calc(90vh-200px)] overflow-y-auto">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex justify-between items-center p-4 border-t border-gray-700">
+                    <div class="text-sm text-gray-400">
+                        <span id="context-summary">0 sections enabled</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="save-context-config"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                            Save Configuration
+                        </button>
+                        <button id="run-with-context"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                            Run LLM with This Context
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Section Template -->
+    <template id="context-section-template">
+        <div class="context-section bg-gray-700 rounded-lg p-4" data-section-id="">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" class="section-toggle" checked>
+                    <h4 class="text-white font-medium section-title"></h4>
+                </div>
+                <div class="flex gap-1">
+                    <button class="edit-heading-btn text-blue-400 hover:text-blue-300 text-sm">Edit</button>
+                    <button class="move-up-btn text-gray-400 hover:text-white text-sm">↑</button>
+                    <button class="move-down-btn text-gray-400 hover:text-white text-sm">↓</button>
+                </div>
+            </div>
+            <div class="section-content space-y-2">
+                <!-- Content blocks will be populated here -->
+            </div>
+        </div>
+    </template>
+
+    <script>
+        // Simplified ContextManager for testing
+        class TestContextManager {
+            constructor() {
+                this.modal = document.getElementById('context-management-modal');
+                this.contextSections = [];
+                this.currentPrompt = '';
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                document.getElementById('close-context-modal')?.addEventListener('click', () => this.hide());
+                document.getElementById('refresh-context')?.addEventListener('click', () => this.refreshContext());
+                document.getElementById('save-context-config')?.addEventListener('click', () => this.saveConfiguration());
+                document.getElementById('run-with-context')?.addEventListener('click', () => this.runWithContext());
+
+                this.modal?.addEventListener('click', (e) => {
+                    if (e.target === this.modal) this.hide();
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.modal && !this.modal.classList.contains('hidden')) {
+                        this.hide();
+                    }
+                });
+            }
+
+            show() {
+                if (this.modal) {
+                    this.modal.classList.remove('hidden');
+                    this.loadContext();
+                }
+            }
+
+            hide() {
+                if (this.modal) {
+                    this.modal.classList.add('hidden');
+                }
+            }
+
+            async loadContext() {
+                try {
+                    console.log('[TEST_CONTEXT_MANAGER] Loading context...');
+
+                    // Use the actual API endpoint
+                    const response = await fetch('/api/workflow/debug/context/22/writing/content/fix_language');
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch context: ${response.status}`);
+                    }
+
+                    const contextData = await response.json();
+                    console.log('[TEST_CONTEXT_MANAGER] Context data:', contextData);
+
+                    this.parseContext(contextData);
+                    this.renderContext();
+                    this.updatePreview();
+
+                } catch (error) {
+                    console.error('[TEST_CONTEXT_MANAGER] Error loading context:', error);
+                    document.getElementById('test-results').innerHTML = `<p class="text-red-400">Error: ${error.message}</p>`;
+                }
+            }
+
+            parseContext(contextData) {
+                this.contextSections = [];
+
+                const sections = this.parseDiagnosticLog(contextData.diagnostic_log || '');
+
+                sections.forEach((section, index) => {
+                    this.contextSections.push({
+                        id: `section_${index}`,
+                        title: section.title,
+                        enabled: true,
+                        content: section.content,
+                        order: index
+                    });
+                });
+
+                console.log('[TEST_CONTEXT_MANAGER] Parsed context sections:', this.contextSections);
+            }
+
+            parseDiagnosticLog(logContent) {
+                const sections = [];
+                const lines = logContent.split('\n');
+
+                let currentSection = null;
+                let currentContent = [];
+
+                console.log('[TEST_CONTEXT_MANAGER] Parsing diagnostic log with', lines.length, 'lines');
+
+                for (const line of lines) {
+                    if (line.match(/^[A-Z\s]+$/)) {
+                        if (currentSection) {
+                            sections.push({
+                                title: currentSection,
+                                content: currentContent.join('\n').trim()
+                            });
+                            console.log('[TEST_CONTEXT_MANAGER] Found section:', currentSection, 'with', currentContent.length, 'content lines');
+                        }
+
+                        currentSection = line.trim();
+                        currentContent = [];
+                    } else if (currentSection && line.trim()) {
+                        currentContent.push(line);
+                    }
+                }
+
+                if (currentSection) {
+                    sections.push({
+                        title: currentSection,
+                        content: currentContent.join('\n').trim()
+                    });
+                    console.log('[TEST_CONTEXT_MANAGER] Found final section:', currentSection, 'with', currentContent.length, 'content lines');
+                }
+
+                console.log('[TEST_CONTEXT_MANAGER] Parsed', sections.length, 'sections total');
+                return sections;
+            }
+
+            renderContext() {
+                const container = document.getElementById('context-sections');
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                this.contextSections.forEach((section, index) => {
+                    const sectionElement = this.createSectionElement(section, index);
+                    container.appendChild(sectionElement);
+                });
+
+                this.updateSummary();
+            }
+
+            createSectionElement(section, index) {
+                const template = document.getElementById('context-section-template');
+                const clone = template.content.cloneNode(true);
+
+                const sectionDiv = clone.querySelector('.context-section');
+                sectionDiv.dataset.sectionId = section.id;
+
+                const toggle = clone.querySelector('.section-toggle');
+                toggle.checked = section.enabled;
+                toggle.addEventListener('change', (e) => {
+                    section.enabled = e.target.checked;
+                    this.updatePreview();
+                    this.updateSummary();
+                });
+
+                const title = clone.querySelector('.section-title');
+                title.textContent = section.title;
+
+                const content = clone.querySelector('.section-content');
+                content.innerHTML = `<div class="text-sm text-gray-300 whitespace-pre-wrap">${section.content}</div>`;
+
+                return clone;
+            }
+
+            updatePreview() {
+                const preview = document.getElementById('prompt-preview');
+                const charCount = document.getElementById('preview-char-count');
+
+                if (!preview) return;
+
+                const enabledSections = this.contextSections.filter(s => s.enabled);
+                const previewText = enabledSections.map(s => `${s.title}\n\n${s.content}`).join('\n\n');
+
+                preview.textContent = previewText;
+                charCount.textContent = previewText.length;
+
+                this.currentPrompt = previewText;
+            }
+
+            updateSummary() {
+                const summary = document.getElementById('context-summary');
+                if (!summary) return;
+
+                const enabledCount = this.contextSections.filter(s => s.enabled).length;
+                const totalCount = this.contextSections.length;
+                summary.textContent = `${enabledCount}/${totalCount} sections enabled`;
+            }
+
+            refreshContext() {
+                this.loadContext();
+            }
+
+            saveConfiguration() {
+                console.log('[TEST_CONTEXT_MANAGER] Saving configuration:', this.contextSections);
+                alert('Configuration saved! (Test mode)');
+            }
+
+            runWithContext() {
+                console.log('[TEST_CONTEXT_MANAGER] Running with context:', this.currentPrompt);
+                alert('LLM run initiated! (Test mode)');
+            }
+        }
+
+        // Initialize test
+        document.addEventListener('DOMContentLoaded', () => {
+            const testBtn = document.getElementById('test-context-btn');
+            const contextManager = new TestContextManager();
+
+            testBtn.addEventListener('click', () => {
+                console.log('[TEST] Opening context management modal');
+                contextManager.show();
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -10,6 +10,12 @@
             Run LLM
         </button>
 
+        <!-- Manage Context Button -->
+        <button id="manage-context-btn" data-action="manage-context"
+            class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded shadow-lg transition-colors duration-200">
+            Manage Context
+        </button>
+
         <!-- Sync Sections Button - Only show for section_headings step -->
         <button id="sync-sections-btn" data-action="sync-sections"
             class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-colors duration-200 min-w-[200px] hidden">
@@ -33,6 +39,9 @@
     {% include 'modules/llm_panel/templates/components/outputs.html' %}
 </div>
 
+<!-- Context Management Modal -->
+{% include 'modules/llm_panel/templates/context_management_modal.html' %}
+
 <!-- Styles -->
 <link rel="stylesheet" href="{{ url_for('static', filename='modules/llm_panel/css/panels.css') }}">
 
@@ -43,6 +52,7 @@
     import { FormatSelector } from "/static/js/format_selector.js";
     import { MultiInputManager } from "/static/modules/llm_panel/js/multi_input_manager.js";
     import sectionPanel from "/static/js/workflow/template_view.js";
+    import ContextManager from "/static/js/context_manager.js";
 
     // Initialize field selector
     window.addEventListener('DOMContentLoaded', () => {
@@ -71,6 +81,28 @@
         console.log('[PANEL] Initializing FormatSelector...');
         const formatSelector = new FormatSelector();
         window.formatSelector = formatSelector;
+
+        // Initialize ContextManager
+        console.log('[PANEL] Initializing ContextManager...');
+        const contextManager = new ContextManager();
+        window.contextManager = contextManager;
+
+        // Initialize Manage Context button
+        const manageContextBtn = document.getElementById('manage-context-btn');
+        if (manageContextBtn) {
+            console.log('[PANEL] Found manage context button, adding event listener');
+            manageContextBtn.addEventListener('click', () => {
+                console.log('[PANEL] Manage context button clicked');
+                if (window.contextManager) {
+                    console.log('[PANEL] ContextManager found, showing modal');
+                    window.contextManager.show();
+                } else {
+                    console.error('[PANEL] ContextManager not found');
+                }
+            });
+        } else {
+            console.error('[PANEL] Manage context button not found');
+        }
 
         // Initialize LLM button
         const runLLMBtn = document.getElementById('run-llm-btn');

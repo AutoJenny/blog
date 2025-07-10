@@ -7,6 +7,7 @@ from app.workflow.scripts.llm_processor import (
     load_step_config, process_step, save_section_output, 
     process_sections_sequentially, get_step_id
 )
+from datetime import datetime
 
 from . import bp
 
@@ -1353,4 +1354,67 @@ def get_post_section_text_fields():
     text_types = {'text', 'character varying', 'varchar'}
     exclude = {'id', 'post_id', 'section_order', 'image_id', 'image_prompt_example_id'}
     fields = [col['column_name'] for col in columns if col['data_type'] in text_types and col['column_name'] not in exclude]
-    return jsonify({'fields': fields}) 
+    return jsonify({'fields': fields})
+
+@bp.route('/debug/context/<int:post_id>/<stage>/<substage>/<step>', methods=['GET'])
+def get_debug_context(post_id, stage, substage, step):
+    """Get diagnostic context data for the context management interface."""
+    try:
+        # Read the most recent diagnostic log for this step
+        import os
+        import glob
+        
+        # Look for diagnostic logs in the logs directory
+        log_pattern = f"logs/workflow_diagnostic_llm_message.txt"
+        diagnostic_log = ""
+        
+        if os.path.exists(log_pattern):
+            with open(log_pattern, 'r') as f:
+                diagnostic_log = f.read()
+        
+        # Also try to get the database fields log
+        db_fields_log = ""
+        db_log_pattern = f"logs/workflow_diagnostic_db_fields.json"
+        if os.path.exists(db_log_pattern):
+            with open(db_log_pattern, 'r') as f:
+                db_fields_log = f.read()
+        
+        return jsonify({
+            'success': True,
+            'diagnostic_log': diagnostic_log,
+            'db_fields_log': db_fields_log,
+            'metadata': {
+                'post_id': post_id,
+                'stage': stage,
+                'substage': substage,
+                'step': step,
+                'timestamp': datetime.now().isoformat()
+            }
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error getting debug context: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500 
+
+@bp.route('/steps/<int:step_id>/context-config', methods=['POST'])
+def save_context_config(step_id):
+    """Save context management configuration for a workflow step."""
+    data = request.get_json()
+    config = data.get('context_sections')
+    created_at = data.get('created_at')
+    if not config:
+        return jsonify({'success': False, 'error': 'No config provided'}), 400
+    with get_db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO workflow_step_context_config (step_id, config, created_at)
+                VALUES (%s, %s, %s)
+                """,
+                (step_id, json.dumps(config), created_at)
+            )
+            conn.commit()
+    return jsonify({'success': True}) 

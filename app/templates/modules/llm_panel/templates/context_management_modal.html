@@ -1,0 +1,102 @@
+<!-- Context Management Modal -->
+<div id="context-management-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 class="text-xl font-bold text-white">Context Management</h2>
+                <div class="flex gap-2">
+                    <button id="refresh-context"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                        Refresh
+                    </button>
+                    <button id="close-context-modal" class="text-gray-400 hover:text-white text-xl">&times;</button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="flex h-[calc(90vh-120px)]">
+                <!-- Left: Context Sections -->
+                <div class="w-1/2 p-4 border-r border-gray-700 overflow-y-auto">
+                    <h3 class="text-lg font-semibold text-white mb-4">Prompt Preview</h3>
+                    <p class="text-sm text-gray-400 mb-4">
+                        This shows the current prompt from the Prompt panel above. The context manager is for organizing
+                        and previewing what will be sent to the LLM.
+                    </p>
+                    <div id="context-sections" class="space-y-4">
+                        <!-- No context sections - only prompt from Prompt panel -->
+                        <div class="text-sm text-gray-400 italic">
+                            Prompt content will appear in the preview panel on the right.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Preview -->
+                <div class="w-1/2 p-4 overflow-y-auto">
+                    <h3 class="text-lg font-semibold text-white mb-4">Current Prompt</h3>
+                    <p class="text-sm text-gray-400 mb-4">
+                        This shows the prompt that will be sent to the LLM.
+                    </p>
+                    <div class="mb-4">
+                        <label class="text-sm text-gray-300">Character count: <span
+                                id="preview-char-count">0</span></label>
+                    </div>
+                    <div id="prompt-preview"
+                        class="bg-gray-900 p-4 rounded text-sm text-gray-300 font-mono whitespace-pre-wrap max-h-[calc(90vh-200px)] overflow-y-auto">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-between items-center p-4 border-t border-gray-700">
+                <div class="text-sm text-gray-400">
+                    <span id="context-summary">0 sections enabled</span>
+                </div>
+                <div class="flex gap-2">
+                    <button id="save-context-config" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                        Save Configuration
+                    </button>
+                    <button id="run-with-context" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                        Run LLM (Uses Prompt Panel)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Context Section Template -->
+<template id="context-section-template">
+    <div class="context-section bg-gray-700 rounded-lg p-4" data-section-id="">
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+                <input type="checkbox" class="section-toggle" checked>
+                <h4 class="text-white font-medium section-title"></h4>
+            </div>
+            <div class="flex gap-1">
+                <button class="edit-heading-btn text-blue-400 hover:text-blue-300 text-sm">Edit</button>
+                <button class="move-up-btn text-gray-400 hover:text-white text-sm">↑</button>
+                <button class="move-down-btn text-gray-400 hover:text-white text-sm">↓</button>
+            </div>
+        </div>
+        <div class="section-content space-y-2">
+            <!-- Content blocks will be populated here -->
+        </div>
+    </div>
+</template>
+
+<!-- Content Block Template -->
+<template id="content-block-template">
+    <div class="content-block bg-gray-600 rounded p-3" data-block-id="">
+        <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+                <input type="checkbox" class="block-toggle" checked>
+                <span class="block-label text-sm text-gray-300"></span>
+            </div>
+            <div class="flex gap-1">
+                <button class="edit-content-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+            </div>
+        </div>
+        <div class="block-content text-xs text-gray-400 max-h-20 overflow-y-auto"></div>
+    </div>
+</template>
