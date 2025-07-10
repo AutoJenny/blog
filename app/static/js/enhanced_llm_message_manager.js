@@ -284,10 +284,11 @@ class EnhancedLLMMessageManager {
                     sectionFieldsData.fields.forEach(field => {
                         const displayName = this.mapFieldToDisplayName(field.field_name);
                         // For Writing stage, post_section fields are used as inputs (purple dropdown)
+                        // Don't set content here - it will be loaded when section-specific data is available
                         fields.inputs.push({
                             id: field.field_name,
                             name: displayName,
-                            content: '',
+                            content: null, // Will be populated when section data is loaded
                             type: 'field',
                             source: 'post_section',
                             isSectionField: true
@@ -820,7 +821,17 @@ class EnhancedLLMMessageManager {
             // Create field elements with section-specific content
             sectionFields.forEach(field => {
                 console.log('[ENHANCED_LLM] Creating field element for:', field.name, 'with content from:', field.id);
-                const fieldContent = sectionData[field.id] || sectionData[field.db_field] || field.content || 'No content available';
+                
+                // Get content from section data, with fallbacks
+                let fieldContent = 'No content available';
+                if (sectionData[field.id]) {
+                    fieldContent = sectionData[field.id];
+                } else if (sectionData[field.db_field]) {
+                    fieldContent = sectionData[field.db_field];
+                } else if (field.content && field.content !== null) {
+                    fieldContent = field.content;
+                }
+                
                 console.log('[ENHANCED_LLM] Field content:', fieldContent.substring(0, 50) + '...');
                 
                 const fieldElement = this.createFieldElement({
