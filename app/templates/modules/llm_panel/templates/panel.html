@@ -197,6 +197,7 @@
         console.log('[PANEL] Initializing EnhancedLLMMessageManager...');
         const enhancedLLMMessageManager = new EnhancedLLMMessageManager();
         window.enhancedLLMMessageManager = enhancedLLMMessageManager;
+        console.log('[PANEL] EnhancedLLMMessageManager created and assigned to window:', window.enhancedLLMMessageManager);
 
         // Initialize Manage Context button
         const manageContextBtn = document.getElementById('manage-context-btn');
@@ -221,6 +222,7 @@
             console.log('[PANEL] Found enhanced LLM message button, adding event listener');
             enhancedLLMMessageBtn.addEventListener('click', () => {
                 console.log('[PANEL] Enhanced LLM message button clicked');
+                console.log('[PANEL] window.enhancedLLMMessageManager:', window.enhancedLLMMessageManager);
                 if (window.enhancedLLMMessageManager) {
                     console.log('[PANEL] enhancedLLMMessageManager found, opening modal');
                     window.enhancedLLMMessageManager.openModal();

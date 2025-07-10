@@ -54,6 +54,11 @@ class EnhancedLLMMessageManager {
             this.refreshContext();
         });
 
+        // Test field detection button
+        document.getElementById('test-field-detection')?.addEventListener('click', () => {
+            this.testFieldDetection();
+        });
+
         // Copy preview button
         document.getElementById('copy-preview-btn')?.addEventListener('click', () => {
             this.copyPreview();
@@ -121,12 +126,27 @@ class EnhancedLLMMessageManager {
     openModal() {
         console.log('[ENHANCED_LLM] openModal called!');
         this.modal.classList.remove('hidden');
+        
+        console.log('[ENHANCED_LLM] Loading workflow context...');
         this.loadWorkflowContext();
+        
+        console.log('[ENHANCED_LLM] Loading post sections...');
         this.loadPostSections();
+        
+        console.log('[ENHANCED_LLM] Refreshing context...');
         this.refreshContext();
-        this.updateInputFieldsForSection(this.selectedPostSection);
-        this.updatePreview();
-        this.updateSummary();
+        
+        // Add a small delay to ensure field selectors are populated
+        setTimeout(() => {
+            console.log('[ENHANCED_LLM] Updating input fields for section:', this.selectedPostSection);
+            this.updateInputFieldsForSection(this.selectedPostSection);
+            
+            console.log('[ENHANCED_LLM] Updating preview...');
+            this.updatePreview();
+            
+            console.log('[ENHANCED_LLM] Updating summary...');
+            this.updateSummary();
+        }, 500);
     }
 
     closeModal() {
@@ -189,126 +209,302 @@ class EnhancedLLMMessageManager {
                 }
                 
                 console.log('[ENHANCED_LLM] Post sections loaded:', this.postSections.length);
+                
+                // Debug: Show section details
+                this.postSections.forEach((section, index) => {
+                    console.log(`[ENHANCED_LLM] Section ${index}:`, {
+                        id: section.id,
+                        title: section.title,
+                        hasDraft: !!section.draft,
+                        hasContent: !!section.content,
+                        hasIdeas: !!section.ideas_to_include,
+                        draftLength: section.draft ? section.draft.length : 0,
+                        contentLength: section.content ? section.content.length : 0
+                    });
+                });
             }
         } catch (error) {
             console.error('[ENHANCED_LLM] Error loading post sections:', error);
         }
     }
 
+    // Test method to manually trigger field detection
+    async testFieldDetection() {
+        console.log('[ENHANCED_LLM] Testing field detection...');
+        const fields = await this.detectAvailableFields();
+        console.log('[ENHANCED_LLM] Test results:', fields);
+        return fields;
+    }
+
     async detectAvailableFields() {
         try {
-            console.log('[ENHANCED_LLM] Detecting available fields...');
+            console.log('[ENHANCED_LLM] Detecting available fields from purple module dropdowns...');
             
             const fields = {
                 inputs: [],
                 outputs: []
             };
 
-            // Get post development fields (for Context and Task sections)
-            if (this.workflowContext.postId) {
-                const devResponse = await fetch(`/api/workflow/posts/${this.workflowContext.postId}/development`);
-                if (devResponse.ok) {
-                    const devData = await devResponse.json();
-                    console.log('[ENHANCED_LLM] Development data loaded:', Object.keys(devData));
-                    
-                    // Update the accordion content with real data from post_development
-                    this.updateAccordionContent('system_prompt', this.getSystemPromptContent());
-                    this.updateAccordionContent('basic_idea', devData.basic_idea || 'No basic idea available');
-                    this.updateAccordionContent('section_headings', devData.section_headings || 'No section headings available');
-                    this.updateAccordionContent('idea_scope', devData.idea_scope || 'No idea scope available');
-                    
-                    // Get the actual task prompt from the saved prompts API
-                    const stepId = this.getCurrentStepId();
-                    if (stepId) {
-                        const promptsResponse = await fetch(`/api/workflow/steps/${stepId}/prompts`);
-                        if (promptsResponse.ok) {
-                            const promptsData = await promptsResponse.json();
-                            const taskPrompt = promptsData.task_prompt_content || 'No task prompt available';
-                            const systemPrompt = promptsData.system_prompt_content || this.getSystemPromptContent();
-                            this.updateAccordionContent('task_prompt', taskPrompt);
-                            this.updateAccordionContent('system_prompt', systemPrompt);
-                        } else {
-                            // Fallback to textarea if API fails
-                            const taskPromptTextarea = document.getElementById('task_prompt');
-                            const actualTaskPrompt = taskPromptTextarea ? taskPromptTextarea.value : 'No task prompt available';
-                            this.updateAccordionContent('task_prompt', actualTaskPrompt);
-                            this.updateAccordionContent('system_prompt', this.getSystemPromptContent());
-                        }
-                    } else {
-                        // Fallback to textarea if no step ID
-                        const taskPromptTextarea = document.getElementById('task_prompt');
-                        const actualTaskPrompt = taskPromptTextarea ? taskPromptTextarea.value : 'No task prompt available';
-                        this.updateAccordionContent('task_prompt', actualTaskPrompt);
-                        this.updateAccordionContent('system_prompt', this.getSystemPromptContent());
-                    }
-                }
-            }
-
             // Get LLM settings from the purple panel
             this.updateAccordionContent('settings', this.getLLMSettingsContent());
 
-            // Get available field mappings (for Inputs and Outputs sections)
-            const fieldsResponse = await fetch('/api/workflow/fields/available');
-            if (fieldsResponse.ok) {
-                const fieldsData = await fieldsResponse.json();
-                console.log('[ENHANCED_LLM] Available fields loaded:', fieldsData.fields.length);
-                
-                // Categorize mapped fields
-                fieldsData.fields.forEach(field => {
-                    if (field.mappings && field.mappings.length > 0) {
-                        const mapping = field.mappings[0];
-                        const displayName = field.display_name || this.mapFieldToDisplayName(field.field_name);
-                        
-                        const fieldElement = {
-                            id: field.field_name,
-                            name: displayName,
-                            content: this.fieldData[field.field_name] || '',
-                            type: 'field',
-                            source: field.db_table,
-                            mapping: mapping
-                        };
-
-                        // Categorize based on mapping
-                        if (mapping.section === 'inputs') {
-                            fields.inputs.push(fieldElement);
-                        } else if (mapping.section === 'outputs') {
-                            fields.outputs.push(fieldElement);
-                        }
-                    }
-                });
+            // Get system prompt and task prompt from purple module
+            const systemPromptTextarea = document.getElementById('system_prompt');
+            const taskPromptTextarea = document.getElementById('task_prompt');
+            
+            if (systemPromptTextarea) {
+                this.updateAccordionContent('system_prompt', systemPromptTextarea.value || 'No system prompt available');
+            }
+            
+            if (taskPromptTextarea) {
+                this.updateAccordionContent('task_prompt', taskPromptTextarea.value || 'No task prompt available');
             }
 
-            // For Writing stage, get post_section fields
-            if (this.workflowContext.stage === 'writing') {
-                const sectionFieldsResponse = await fetch('/api/workflow/post_section_fields');
-                if (sectionFieldsResponse.ok) {
-                    const sectionFieldsData = await sectionFieldsResponse.json();
-                    console.log('[ENHANCED_LLM] Post section fields loaded:', sectionFieldsData.fields.length);
+            // Get basic idea and other context fields from purple module
+            const basicIdeaTextarea = document.getElementById('context_basic_idea');
+            const sectionHeadingsTextarea = document.getElementById('context_section_headings');
+            const ideaScopeTextarea = document.getElementById('context_idea_scope');
+            
+            if (basicIdeaTextarea) {
+                this.updateAccordionContent('basic_idea', basicIdeaTextarea.value || 'No basic idea available');
+            }
+            
+            if (sectionHeadingsTextarea) {
+                this.updateAccordionContent('section_headings', sectionHeadingsTextarea.value || 'No section headings available');
+            }
+            
+            if (ideaScopeTextarea) {
+                this.updateAccordionContent('idea_scope', ideaScopeTextarea.value || 'No idea scope available');
+            }
+
+            // Find all input field groups in the purple module
+            const inputFieldGroups = document.querySelectorAll('.input-field-group');
+            console.log('[ENHANCED_LLM] Found input field groups:', inputFieldGroups.length);
+            
+            inputFieldGroups.forEach((group, index) => {
+                console.log(`[ENHANCED_LLM] Processing input field group ${index}:`, group);
+                
+                const fieldSelector = group.querySelector('.field-selector[data-section="inputs"]');
+                const textarea = group.querySelector('textarea');
+                
+                console.log(`[ENHANCED_LLM] Field selector found:`, fieldSelector);
+                console.log(`[ENHANCED_LLM] Textarea found:`, textarea);
+                
+                if (fieldSelector && textarea) {
+                    const selectedField = fieldSelector.value;
+                    const fieldContent = textarea.value;
+                    const fieldId = textarea.id;
+                    const dataTarget = fieldSelector.getAttribute('data-target');
                     
-                    sectionFieldsData.fields.forEach(field => {
-                        const displayName = this.mapFieldToDisplayName(field.field_name);
-                        // For Writing stage, post_section fields are used as inputs (purple dropdown)
-                        // Don't set content here - it will be loaded when section-specific data is available
-                        fields.inputs.push({
-                            id: field.field_name,
-                            name: displayName,
-                            content: null, // Will be populated when section data is loaded
-                            type: 'field',
-                            source: 'post_section',
-                            isSectionField: true
-                        });
+                    console.log('[ENHANCED_LLM] Input field details:', {
+                        id: fieldId,
+                        dataTarget: dataTarget,
+                        selectedField: selectedField,
+                        content: fieldContent ? fieldContent.substring(0, 50) + '...' : 'empty',
+                        options: Array.from(fieldSelector.options).map(opt => opt.value)
                     });
+                    
+                    // If no field is selected but we have a data-target, use that as the field name
+                    const fieldName = selectedField || dataTarget || fieldId;
+                    
+                    if (fieldName) {
+                        fields.inputs.push({
+                            id: fieldName,
+                            name: this.mapFieldToDisplayName(fieldName),
+                            content: fieldContent || 'No content available',
+                            type: 'field',
+                            source: 'purple_module',
+                            fieldId: fieldId
+                        });
+                    }
+                }
+            });
+
+            // Find all output field groups in the purple module
+            const outputFieldGroups = document.querySelectorAll('[data-section="outputs"]');
+            console.log('[ENHANCED_LLM] Found output field groups:', outputFieldGroups.length);
+            
+            outputFieldGroups.forEach((group, index) => {
+                console.log(`[ENHANCED_LLM] Processing output field group ${index}:`, group);
+                
+                const fieldSelector = group.querySelector('.field-selector[data-section="outputs"]');
+                const textarea = group.querySelector('textarea');
+                
+                console.log(`[ENHANCED_LLM] Output field selector found:`, fieldSelector);
+                console.log(`[ENHANCED_LLM] Output textarea found:`, textarea);
+                
+                if (fieldSelector && textarea) {
+                    const selectedField = fieldSelector.value;
+                    const fieldContent = textarea.value;
+                    const fieldId = textarea.id;
+                    const dataTarget = fieldSelector.getAttribute('data-target');
+                    
+                    console.log('[ENHANCED_LLM] Output field details:', {
+                        id: fieldId,
+                        dataTarget: dataTarget,
+                        selectedField: selectedField,
+                        content: fieldContent ? fieldContent.substring(0, 50) + '...' : 'empty',
+                        options: Array.from(fieldSelector.options).map(opt => opt.value)
+                    });
+                    
+                    // If no field is selected but we have a data-target, use that as the field name
+                    const fieldName = selectedField || dataTarget || fieldId;
+                    
+                    if (fieldName) {
+                        fields.outputs.push({
+                            id: fieldName,
+                            name: this.mapFieldToDisplayName(fieldName),
+                            content: fieldContent || 'No content available',
+                            type: 'field',
+                            source: 'purple_module',
+                            fieldId: fieldId
+                        });
+                    }
+                }
+            });
+
+            // If no content found in purple module, try to get content from sections
+            if (fields.inputs.length === 0 && this.postSections.length > 0) {
+                console.log('[ENHANCED_LLM] No content found in purple module, loading from sections...');
+                
+                // Get content from the first section
+                const firstSection = this.postSections[0];
+                if (firstSection) {
+                    console.log('[ENHANCED_LLM] Loading content from section:', firstSection.id);
+                    
+                    // Add section content as input fields
+                    if (firstSection.draft) {
+                        fields.inputs.push({
+                            id: 'draft',
+                            name: 'Draft Content',
+                            content: firstSection.draft,
+                            type: 'field',
+                            source: 'section_data',
+                            fieldId: 'section_draft'
+                        });
+                    }
+                    
+                    if (firstSection.ideas_to_include) {
+                        fields.inputs.push({
+                            id: 'ideas_to_include',
+                            name: 'Ideas to Include',
+                            content: firstSection.ideas_to_include,
+                            type: 'field',
+                            source: 'section_data',
+                            fieldId: 'section_ideas'
+                        });
+                    }
+                    
+                    if (firstSection.content) {
+                        fields.inputs.push({
+                            id: 'content',
+                            name: 'Section Content',
+                            content: firstSection.content,
+                            type: 'field',
+                            source: 'section_data',
+                            fieldId: 'section_content'
+                        });
+                    }
                 }
             }
 
-            console.log('[ENHANCED_LLM] Field detection complete:', {
+            // Check if we have any actual content in the detected fields
+            const hasActualContent = fields.inputs.some(field => field.content && field.content.trim() !== '' && field.content !== 'No content available');
+            
+            console.log('[ENHANCED_LLM] Content check:', {
+                totalInputs: fields.inputs.length,
+                hasActualContent: hasActualContent,
+                inputFields: fields.inputs.map(f => ({
+                    id: f.id,
+                    content: f.content ? f.content.substring(0, 30) + '...' : 'empty',
+                    hasContent: f.content && f.content.trim() !== '' && f.content !== 'No content available'
+                }))
+            });
+            
+            if (!hasActualContent && this.postSections.length > 0) {
+                console.log('[ENHANCED_LLM] No actual content found in detected fields, forcing fallback to sections...');
+                
+                // Clear any empty fields
+                fields.inputs = fields.inputs.filter(field => field.content && field.content.trim() !== '' && field.content !== 'No content available');
+                
+                // Always check section data as fallback, regardless of purple module detection
+                if (this.postSections.length > 0) {
+                    console.log('[ENHANCED_LLM] Checking section data as fallback...');
+                    
+                    // Get content from the first section
+                    const firstSection = this.postSections[0];
+                    if (firstSection) {
+                        console.log('[ENHANCED_LLM] Loading content from section:', firstSection.id);
+                        console.log('[ENHANCED_LLM] Section data:', {
+                            hasDraft: !!firstSection.draft,
+                            hasContent: !!firstSection.content,
+                            hasIdeas: !!firstSection.ideas_to_include,
+                            draftLength: firstSection.draft ? firstSection.draft.length : 0,
+                            contentLength: firstSection.content ? firstSection.content.length : 0
+                        });
+                        
+                        // Add section content as input fields (only if not already present)
+                        if (firstSection.draft && firstSection.draft.trim() !== '' && !fields.inputs.some(f => f.id === 'draft')) {
+                            console.log('[ENHANCED_LLM] Adding draft content:', firstSection.draft.substring(0, 50) + '...');
+                            fields.inputs.push({
+                                id: 'draft',
+                                name: 'Draft Content',
+                                content: firstSection.draft,
+                                type: 'field',
+                                source: 'section_data',
+                                fieldId: 'section_draft'
+                            });
+                        }
+                        
+                        if (firstSection.ideas_to_include && firstSection.ideas_to_include.trim() !== '' && !fields.inputs.some(f => f.id === 'ideas_to_include')) {
+                            console.log('[ENHANCED_LLM] Adding ideas content:', firstSection.ideas_to_include.substring(0, 50) + '...');
+                            fields.inputs.push({
+                                id: 'ideas_to_include',
+                                name: 'Ideas to Include',
+                                content: firstSection.ideas_to_include,
+                                type: 'field',
+                                source: 'section_data',
+                                fieldId: 'section_ideas'
+                            });
+                        }
+                        
+                        if (firstSection.content && firstSection.content.trim() !== '' && !fields.inputs.some(f => f.id === 'content')) {
+                            console.log('[ENHANCED_LLM] Adding section content:', firstSection.content.substring(0, 50) + '...');
+                            fields.inputs.push({
+                                id: 'content',
+                                name: 'Section Content',
+                                content: firstSection.content,
+                                type: 'field',
+                                source: 'section_data',
+                                fieldId: 'section_content'
+                            });
+                        }
+                    }
+                }
+            }
+
+            console.log('[ENHANCED_LLM] Field detection complete from purple module:', {
                 inputs: fields.inputs.length,
-                outputs: fields.outputs.length
+                outputs: fields.outputs.length,
+                inputFields: fields.inputs.map(f => ({ 
+                    id: f.id, 
+                    content: f.content ? f.content.substring(0, 50) + '...' : 'empty',
+                    source: f.source,
+                    hasContent: f.content && f.content.trim() !== '' && f.content !== 'No content available'
+                })),
+                outputFields: fields.outputs.map(f => ({ 
+                    id: f.id, 
+                    content: f.content ? f.content.substring(0, 50) + '...' : 'empty',
+                    source: f.source,
+                    hasContent: f.content && f.content.trim() !== '' && f.content !== 'No content available'
+                })),
+                hasActualContent: hasActualContent,
+                postSectionsAvailable: this.postSections.length
             });
 
             return fields;
         } catch (error) {
-            console.error('[ENHANCED_LLM] Error detecting fields:', error);
+            console.error('[ENHANCED_LLM] Error detecting fields from purple module:', error);
             return { inputs: [], outputs: [] };
         }
     }
@@ -465,16 +661,22 @@ class EnhancedLLMMessageManager {
             console.log('[ENHANCED_LLM] Refreshing context...');
             
             // Reload workflow context
+            console.log('[ENHANCED_LLM] Reloading workflow context...');
             await this.loadWorkflowContext();
             
             // Reload post sections
+            console.log('[ENHANCED_LLM] Reloading post sections...');
             await this.loadPostSections();
             
             // Update input fields for current section
+            console.log('[ENHANCED_LLM] Updating input fields for current section:', this.selectedPostSection);
             await this.updateInputFieldsForSection(this.selectedPostSection);
             
             // Update preview and summary
+            console.log('[ENHANCED_LLM] Updating preview...');
             this.updatePreview();
+            
+            console.log('[ENHANCED_LLM] Updating summary...');
             this.updateSummary();
             
             console.log('[ENHANCED_LLM] Context refreshed successfully');
@@ -780,84 +982,10 @@ class EnhancedLLMMessageManager {
         try {
             console.log('[ENHANCED_LLM] updateInputFieldsForSection called with sectionId:', sectionId);
             
-            if (!sectionId || sectionId === '') {
-                console.log('[ENHANCED_LLM] No section selected, showing all sections data');
-                // Show all sections data
-                this.populateInputFieldsWithAllSections();
-                return;
-            }
+            // Since we're now reading directly from the purple module, we don't need section-specific loading
+            // Just populate with all input fields from the purple module
+            await this.populateInputFieldsWithAllSections();
             
-            console.log('[ENHANCED_LLM] Getting section-specific content for section:', sectionId);
-            const sectionData = await this.getSectionSpecificContent(sectionId);
-            console.log('[ENHANCED_LLM] Section data received:', Object.keys(sectionData));
-            
-            if (!sectionData || Object.keys(sectionData).length === 0) {
-                console.log('[ENHANCED_LLM] No section data found, showing all sections data');
-                this.populateInputFieldsWithAllSections();
-                return;
-            }
-            
-            // Update input fields with section-specific content
-            const inputContainer = document.getElementById('input-elements-list');
-            if (!inputContainer) {
-                console.error('[ENHANCED_LLM] Input container not found');
-                return;
-            }
-            
-            // Clear existing content
-            inputContainer.innerHTML = '';
-            
-            // Get available input fields
-            const fields = await this.detectAvailableFields();
-            console.log('[ENHANCED_LLM] Available fields:', {
-                inputs: fields.inputs.length,
-                outputs: fields.outputs.length
-            });
-            
-            // Filter to only show section-specific fields
-            const sectionFields = fields.inputs.filter(field => 
-                field.source === 'post_section' || 
-                field.isSectionField === true
-            );
-            
-            console.log('[ENHANCED_LLM] Section fields found:', sectionFields.length);
-            
-            // Create field elements with section-specific content
-            sectionFields.forEach(field => {
-                console.log('[ENHANCED_LLM] Creating field element for:', field.name, 'with content from:', field.id);
-                
-                // Get content from section data, with fallbacks
-                let fieldContent = 'No content available';
-                if (sectionData[field.id]) {
-                    fieldContent = sectionData[field.id];
-                } else if (sectionData[field.db_field]) {
-                    fieldContent = sectionData[field.db_field];
-                } else if (field.content && field.content !== null) {
-                    fieldContent = field.content;
-                }
-                
-                console.log('[ENHANCED_LLM] Field content:', fieldContent.substring(0, 50) + '...');
-                
-                const fieldElement = this.createFieldElement({
-                    ...field,
-                    content: fieldContent
-                });
-                inputContainer.appendChild(fieldElement);
-            });
-            
-            if (sectionFields.length === 0) {
-                console.log('[ENHANCED_LLM] No section fields found, showing placeholder');
-                const placeholder = document.createElement('div');
-                placeholder.className = 'text-sm text-gray-400 italic';
-                placeholder.textContent = 'No section-specific input fields available.';
-                inputContainer.appendChild(placeholder);
-            }
-            
-            console.log('[ENHANCED_LLM] Updated input fields for section', sectionId);
-            
-            // Update preview and summary after updating input fields
-            this.updatePreview();
-            this.updateSummary();
         } catch (error) {
             console.error('[ENHANCED_LLM] Error updating input fields for section:', error);
         }
@@ -876,14 +1004,14 @@ class EnhancedLLMMessageManager {
             // Clear existing content
             inputContainer.innerHTML = '';
             
-            // Get available input fields
+            // Get available input fields from purple module
             const fields = await this.detectAvailableFields();
-            console.log('[ENHANCED_LLM] All available fields:', {
+            console.log('[ENHANCED_LLM] All available fields from purple module:', {
                 inputs: fields.inputs.length,
                 outputs: fields.outputs.length
             });
             
-            // Show all input fields
+            // Show all input fields from purple module
             fields.inputs.forEach(field => {
                 console.log('[ENHANCED_LLM] Creating field element for:', field.name, 'with content:', field.content?.substring(0, 50) + '...');
                 const fieldElement = this.createFieldElement(field);
@@ -891,20 +1019,20 @@ class EnhancedLLMMessageManager {
             });
             
             if (fields.inputs.length === 0) {
-                console.log('[ENHANCED_LLM] No input fields found, showing placeholder');
+                console.log('[ENHANCED_LLM] No input fields found in purple module, showing placeholder');
                 const placeholder = document.createElement('div');
                 placeholder.className = 'text-sm text-gray-400 italic';
-                placeholder.textContent = 'No input fields available for current workflow stage.';
+                placeholder.textContent = 'No input fields available in purple module.';
                 inputContainer.appendChild(placeholder);
             }
             
-            console.log('[ENHANCED_LLM] Populated input fields with all sections data');
+            console.log('[ENHANCED_LLM] Populated input fields with purple module data');
             
             // Update preview and summary after populating input fields
             this.updatePreview();
             this.updateSummary();
         } catch (error) {
-            console.error('[ENHANCED_LLM] Error populating input fields with all sections:', error);
+            console.error('[ENHANCED_LLM] Error populating input fields with purple module data:', error);
         }
     }
 }
