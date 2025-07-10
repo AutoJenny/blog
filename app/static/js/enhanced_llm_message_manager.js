@@ -16,16 +16,19 @@ class EnhancedLLMMessageManager {
     }
 
     init() {
+        console.log('[ENHANCED_LLM] Initializing EnhancedLLMMessageManager...');
         this.modal = document.getElementById('enhanced-llm-message-modal');
         if (!this.modal) {
-            console.error('Enhanced LLM Message Modal not found');
+            console.error('[ENHANCED_LLM] Enhanced LLM Message Modal not found!');
             return;
         }
+        console.log('[ENHANCED_LLM] Modal found, setting up event listeners...');
 
         this.setupEventListeners();
         this.initializeAccordions();
         this.initializeSortable();
         this.updatePreview();
+        console.log('[ENHANCED_LLM] Initialization complete');
     }
 
     setupEventListeners() {
@@ -116,6 +119,7 @@ class EnhancedLLMMessageManager {
     }
 
     openModal() {
+        console.log('[ENHANCED_LLM] openModal called!');
         this.modal.classList.remove('hidden');
         this.loadWorkflowContext();
         this.loadPostSections();
