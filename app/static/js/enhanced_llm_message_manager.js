@@ -283,7 +283,8 @@ class EnhancedLLMMessageManager {
                     
                     sectionFieldsData.fields.forEach(field => {
                         const displayName = this.mapFieldToDisplayName(field.field_name);
-                        fields.outputs.push({
+                        // For Writing stage, post_section fields are used as inputs (purple dropdown)
+                        fields.inputs.push({
                             id: field.field_name,
                             name: displayName,
                             content: '',
@@ -794,8 +795,7 @@ class EnhancedLLMMessageManager {
             // Filter to only show section-specific fields
             const sectionFields = fields.inputs.filter(field => 
                 field.source === 'post_section' || 
-                field.id.includes('section') ||
-                field.id.includes('write_about')
+                field.isSectionField === true
             );
             
             // Create field elements with section-specific content
