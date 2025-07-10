@@ -1,16 +1,16 @@
 /**
  * Enhanced LLM Message Manager
- * Provides advanced message management with categorized sections, drag & drop, and live preview
+ * Provides advanced message management with accordion sections, drag & drop, and live preview
  */
 
 class EnhancedLLMMessageManager {
     constructor() {
         this.modal = null;
-        this.currentSection = 'context';
-        this.elements = new Map();
-        this.instructionCounter = 1;
-        this.fieldData = {};
         this.workflowContext = {};
+        this.fieldData = {};
+        this.postSections = [];
+        this.selectedPostSection = '';
+        this.instructionCounter = 1;
         
         this.init();
     }
@@ -23,6 +23,7 @@ class EnhancedLLMMessageManager {
         }
 
         this.setupEventListeners();
+        this.initializeAccordions();
         this.initializeSortable();
         this.updatePreview();
     }
@@ -33,9 +34,10 @@ class EnhancedLLMMessageManager {
             this.closeModal();
         });
 
-        // Section selector
-        document.getElementById('section-selector')?.addEventListener('change', (e) => {
-            this.switchSection(e.target.value);
+        // Post section selector
+        document.getElementById('post-section-selector')?.addEventListener('change', (e) => {
+            this.selectedPostSection = e.target.value;
+            this.updatePreview();
         });
 
         // Add instruction button
@@ -74,10 +76,10 @@ class EnhancedLLMMessageManager {
         // Edit buttons
         this.modal.addEventListener('click', (e) => {
             if (e.target.classList.contains('edit-element-btn')) {
-                this.editElement(e.target.closest('.message-element'));
+                this.editElement(e.target.closest('.message-accordion'));
             }
             if (e.target.classList.contains('remove-element-btn')) {
-                this.removeElement(e.target.closest('.message-element'));
+                this.removeElement(e.target.closest('.message-accordion'));
             }
         });
 
@@ -89,9 +91,33 @@ class EnhancedLLMMessageManager {
         });
     }
 
+    initializeAccordions() {
+        // Add click handlers for accordion headers
+        this.modal.addEventListener('click', (e) => {
+            if (e.target.closest('.accordion-header')) {
+                const accordion = e.target.closest('.message-accordion');
+                this.toggleAccordion(accordion);
+            }
+        });
+    }
+
+    toggleAccordion(accordion) {
+        const content = accordion.querySelector('.accordion-content');
+        const toggle = accordion.querySelector('.accordion-toggle');
+        
+        if (content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            toggle.textContent = '▲';
+        } else {
+            content.classList.add('hidden');
+            toggle.textContent = '▼';
+        }
+    }
+
     openModal() {
         this.modal.classList.remove('hidden');
         this.loadWorkflowContext();
+        this.loadPostSections();
         this.refreshContext();
         this.updatePreview();
         this.updateSummary();
@@ -126,13 +152,42 @@ class EnhancedLLMMessageManager {
         }
     }
 
+    async loadPostSections() {
+        try {
+            if (!this.workflowContext.postId) return;
+
+            // Get post sections
+            const response = await fetch(`/api/workflow/posts/${this.workflowContext.postId}/sections`);
+            if (response.ok) {
+                const sectionsData = await response.json();
+                this.postSections = sectionsData || [];
+                
+                // Populate the post section selector
+                const selector = document.getElementById('post-section-selector');
+                if (selector) {
+                    // Clear existing options except "All Sections"
+                    selector.innerHTML = '<option value="">All Sections</option>';
+                    
+                    this.postSections.forEach(section => {
+                        const option = document.createElement('option');
+                        option.value = section.id;
+                        option.textContent = section.section_heading || `Section ${section.id}`;
+                        selector.appendChild(option);
+                    });
+                }
+                
+                console.log('[ENHANCED_LLM] Post sections loaded:', this.postSections.length);
+            }
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error loading post sections:', error);
+        }
+    }
+
     async detectAvailableFields() {
         try {
             console.log('[ENHANCED_LLM] Detecting available fields...');
             
             const fields = {
-                context: [],
-                task: [],
                 inputs: [],
                 outputs: []
             };
@@ -144,31 +199,12 @@ class EnhancedLLMMessageManager {
                     const devData = await devResponse.json();
                     console.log('[ENHANCED_LLM] Development data loaded:', Object.keys(devData));
                     
-                    // Map development fields to sections
-                    for (const [fieldName, value] of Object.entries(devData)) {
-                        if (value && typeof value === 'string' && value.trim()) {
-                            const displayName = this.mapFieldToDisplayName(fieldName);
-                            
-                            // Categorize fields based on common patterns
-                            if (fieldName.includes('idea') || fieldName.includes('scope') || fieldName.includes('seed')) {
-                                fields.context.push({
-                                    id: fieldName,
-                                    name: displayName,
-                                    content: value,
-                                    type: 'field',
-                                    source: 'post_development'
-                                });
-                            } else if (fieldName.includes('prompt') || fieldName.includes('task')) {
-                                fields.task.push({
-                                    id: fieldName,
-                                    name: displayName,
-                                    content: value,
-                                    type: 'field',
-                                    source: 'post_development'
-                                });
-                            }
-                        }
-                    }
+                    // Update the accordion content with real data
+                    this.updateAccordionContent('system_prompt', 'You are a helpful assistant, expert in social media blogging and online marketing...');
+                    this.updateAccordionContent('basic_idea', devData.basic_idea || 'No basic idea available');
+                    this.updateAccordionContent('section_headings', devData.section_headings || 'No section headings available');
+                    this.updateAccordionContent('idea_scope', devData.idea_scope || 'No idea scope available');
+                    this.updateAccordionContent('task_prompt', 'Write 2-3 HTML paragraphs (100-150 words) on the topic of the SECTION_HEADING...');
                 }
             }
 
@@ -225,8 +261,6 @@ class EnhancedLLMMessageManager {
             }
 
             console.log('[ENHANCED_LLM] Field detection complete:', {
-                context: fields.context.length,
-                task: fields.task.length,
                 inputs: fields.inputs.length,
                 outputs: fields.outputs.length
             });
@@ -234,7 +268,17 @@ class EnhancedLLMMessageManager {
             return fields;
         } catch (error) {
             console.error('[ENHANCED_LLM] Error detecting fields:', error);
-            return { context: [], task: [], inputs: [], outputs: [] };
+            return { inputs: [], outputs: [] };
+        }
+    }
+
+    updateAccordionContent(elementType, content) {
+        const accordion = this.modal.querySelector(`[data-element-type="${elementType}"]`);
+        if (accordion) {
+            const contentDiv = accordion.querySelector('.element-content');
+            if (contentDiv) {
+                contentDiv.textContent = content;
+            }
         }
     }
 
@@ -271,26 +315,24 @@ class EnhancedLLMMessageManager {
     }
 
     async populateSectionWithRealData(sectionName, fields) {
-        const section = document.getElementById(`${sectionName}-section`);
-        if (!section) return;
+        const container = document.getElementById(`${sectionName}-elements-list`);
+        if (!container) return;
 
-        // Clear existing content except header
-        const header = section.querySelector('h4');
-        section.innerHTML = '';
-        if (header) section.appendChild(header);
+        // Clear existing content
+        container.innerHTML = '';
 
         if (fields.length === 0) {
             const placeholder = document.createElement('div');
             placeholder.className = 'text-sm text-gray-400 italic';
             placeholder.textContent = `No ${sectionName} fields available for current workflow stage.`;
-            section.appendChild(placeholder);
+            container.appendChild(placeholder);
             return;
         }
 
         // Create field elements
         fields.forEach(field => {
             const fieldElement = this.createFieldElement(field);
-            section.appendChild(fieldElement);
+            container.appendChild(fieldElement);
         });
     }
 
@@ -318,21 +360,6 @@ class EnhancedLLMMessageManager {
         return fieldDiv;
     }
 
-    switchSection(sectionName) {
-        // Hide all sections
-        document.querySelectorAll('.message-section').forEach(section => {
-            section.classList.add('hidden');
-        });
-
-        // Show selected section
-        const targetSection = document.getElementById(`${sectionName}-section`);
-        if (targetSection) {
-            targetSection.classList.remove('hidden');
-            this.currentSection = sectionName;
-            this.updateSummary();
-        }
-    }
-
     addInstruction() {
         const template = document.getElementById('instruction-element-template');
         if (!template) return;
@@ -344,10 +371,10 @@ class EnhancedLLMMessageManager {
         instructionDiv.setAttribute('data-element-id', instructionId);
         instructionDiv.querySelector('.element-content').textContent = 'Enter your instruction here...';
 
-        // Add to current section
-        const currentSection = document.getElementById(`${this.currentSection}-section`);
-        if (currentSection) {
-            currentSection.appendChild(instructionDiv);
+        // Add to the all-elements-container (default location)
+        const container = document.getElementById('all-elements-container');
+        if (container) {
+            container.appendChild(instructionDiv);
             this.updatePreview();
             this.updateSummary();
         }
@@ -399,11 +426,9 @@ class EnhancedLLMMessageManager {
             // Detect available fields
             const availableFields = await this.detectAvailableFields();
             
-            // Populate each section with real data
-            await this.populateSectionWithRealData('context', availableFields.context);
-            await this.populateSectionWithRealData('task', availableFields.task);
-            await this.populateSectionWithRealData('inputs', availableFields.inputs);
-            await this.populateSectionWithRealData('outputs', availableFields.outputs);
+            // Populate input and output sections with real data
+            await this.populateSectionWithRealData('input', availableFields.inputs);
+            await this.populateSectionWithRealData('output', availableFields.outputs);
             
             // Update preview and summary
             this.updatePreview();
@@ -421,25 +446,23 @@ class EnhancedLLMMessageManager {
         
         if (!preview || !charCount) return;
 
-        // Collect all enabled elements from current section
+        // Collect all enabled elements from all accordions
         const enabledElements = [];
-        const currentSection = document.getElementById(`${this.currentSection}-section`);
+        const allAccordions = this.modal.querySelectorAll('.message-accordion');
         
-        if (currentSection) {
-            currentSection.querySelectorAll('.message-element').forEach(element => {
-                const toggle = element.querySelector('.element-toggle');
-                if (toggle && toggle.checked) {
-                    const content = element.querySelector('.element-content');
-                    if (content) {
-                        enabledElements.push(content.textContent.trim());
-                    }
+        allAccordions.forEach(accordion => {
+            const toggle = accordion.querySelector('.element-toggle');
+            if (toggle && toggle.checked) {
+                const content = accordion.querySelector('.element-content');
+                if (content) {
+                    enabledElements.push(content.textContent.trim());
                 }
-            });
-        }
+            }
+        });
 
         // Assemble the message
         const message = enabledElements.join('\n\n');
-        preview.textContent = message || 'No elements enabled in current section';
+        preview.textContent = message || 'No elements enabled';
         
         // Update character count
         charCount.textContent = message.length;
@@ -449,13 +472,21 @@ class EnhancedLLMMessageManager {
         const summary = document.getElementById('enhanced-context-summary');
         if (!summary) return;
 
-        const currentSection = document.getElementById(`${this.currentSection}-section`);
-        if (!currentSection) return;
-
-        const enabledCount = currentSection.querySelectorAll('.element-toggle:checked').length;
-        const totalCount = currentSection.querySelectorAll('.element-toggle').length;
+        // Count all enabled elements across all accordions
+        let totalEnabled = 0;
+        let totalElements = 0;
         
-        summary.textContent = `${enabledCount} of ${totalCount} elements enabled (${this.currentSection} section)`;
+        const allAccordions = this.modal.querySelectorAll('.message-accordion');
+        
+        allAccordions.forEach(accordion => {
+            const toggles = accordion.querySelectorAll('.element-toggle');
+            totalElements += toggles.length;
+            toggles.forEach(toggle => {
+                if (toggle.checked) totalEnabled++;
+            });
+        });
+        
+        summary.textContent = `${totalEnabled} of ${totalElements} elements enabled`;
     }
 
     copyPreview() {
@@ -476,30 +507,21 @@ class EnhancedLLMMessageManager {
     saveConfiguration() {
         // Collect all configuration data
         const config = {
-            sections: {},
+            accordions: {},
             timestamp: new Date().toISOString()
         };
 
-        // Save each section's configuration
-        ['context', 'task', 'inputs', 'outputs'].forEach(sectionName => {
-            const section = document.getElementById(`${sectionName}-section`);
-            if (section) {
-                config.sections[sectionName] = {
-                    elements: []
-                };
-
-                section.querySelectorAll('.message-element').forEach(element => {
-                    const toggle = element.querySelector('.element-toggle');
-                    const content = element.querySelector('.element-content');
-                    
-                    config.sections[sectionName].elements.push({
-                        id: element.getAttribute('data-element-id'),
-                        type: element.getAttribute('data-element-type'),
-                        enabled: toggle ? toggle.checked : true,
-                        content: content ? content.textContent : ''
-                    });
-                });
-            }
+        // Save each accordion's configuration
+        const allAccordions = this.modal.querySelectorAll('.message-accordion');
+        allAccordions.forEach(accordion => {
+            const elementType = accordion.getAttribute('data-element-type');
+            const toggle = accordion.querySelector('.element-toggle');
+            const content = accordion.querySelector('.element-content');
+            
+            config.accordions[elementType] = {
+                enabled: toggle ? toggle.checked : true,
+                content: content ? content.textContent : ''
+            };
         });
 
         // Save to localStorage for now
@@ -519,7 +541,7 @@ class EnhancedLLMMessageManager {
         if (!preview) return;
 
         const message = preview.textContent;
-        if (!message || message === 'No elements enabled in current section') {
+        if (!message || message === 'No elements enabled') {
             alert('Please enable some elements before running the LLM.');
             return;
         }
@@ -532,28 +554,25 @@ class EnhancedLLMMessageManager {
     }
 
     initializeSortable() {
-        // Initialize drag & drop for each section
-        ['context', 'task', 'inputs', 'outputs'].forEach(sectionName => {
-            const section = document.getElementById(`${sectionName}-section`);
-            if (section) {
-                // Simple drag & drop implementation
-                this.setupDragAndDrop(section);
-            }
-        });
+        // Initialize drag & drop for the unified container
+        const container = document.getElementById('all-elements-container');
+        if (container) {
+            this.setupDragAndDrop(container);
+        }
     }
 
     setupDragAndDrop(container) {
         let draggedElement = null;
 
         container.addEventListener('dragstart', (e) => {
-            if (e.target.classList.contains('message-element')) {
+            if (e.target.classList.contains('message-accordion')) {
                 draggedElement = e.target;
                 e.target.style.opacity = '0.5';
             }
         });
 
         container.addEventListener('dragend', (e) => {
-            if (e.target.classList.contains('message-element')) {
+            if (e.target.classList.contains('message-accordion')) {
                 e.target.style.opacity = '1';
                 draggedElement = null;
             }
@@ -572,20 +591,20 @@ class EnhancedLLMMessageManager {
             }
         });
 
-        // Make elements draggable
-        container.querySelectorAll('.message-element').forEach(element => {
-            element.draggable = true;
-            element.addEventListener('dragstart', () => {
-                element.classList.add('dragging');
+        // Make accordions draggable
+        container.querySelectorAll('.message-accordion').forEach(accordion => {
+            accordion.draggable = true;
+            accordion.addEventListener('dragstart', () => {
+                accordion.classList.add('dragging');
             });
-            element.addEventListener('dragend', () => {
-                element.classList.remove('dragging');
+            accordion.addEventListener('dragend', () => {
+                accordion.classList.remove('dragging');
             });
         });
     }
 
     getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.message-element:not(.dragging)')];
+        const draggableElements = [...container.querySelectorAll('.message-accordion:not(.dragging)')];
         
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
