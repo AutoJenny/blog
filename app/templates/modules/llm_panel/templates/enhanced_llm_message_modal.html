@@ -1,0 +1,265 @@
+<!-- Enhanced LLM Message Management Modal -->
+<div id="enhanced-llm-message-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-gray-800 rounded-lg shadow-xl max-w-7xl w-full max-h-[95vh] overflow-hidden">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-xl font-bold text-white">LLM Message Management</h2>
+
+                    <!-- Section Selector Dropdown -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-gray-300">Section:</label>
+                        <select id="section-selector"
+                            class="bg-gray-700 text-white border border-gray-600 rounded px-3 py-1 text-sm">
+                            <option value="context">Context</option>
+                            <option value="task">Task</option>
+                            <option value="inputs">Inputs</option>
+                            <option value="outputs">Outputs</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="refresh-enhanced-context"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                        Refresh
+                    </button>
+                    <button id="close-enhanced-modal" class="text-gray-400 hover:text-white text-xl">&times;</button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="flex h-[calc(95vh-140px)]">
+                <!-- Left: Message Elements -->
+                <div class="w-1/2 p-4 border-r border-gray-700 overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-white">Message Elements</h3>
+                        <button id="add-instruction-btn"
+                            class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-plus mr-1"></i>Add Instruction
+                        </button>
+                    </div>
+
+                    <p class="text-sm text-gray-400 mb-4">
+                        Organize and reorder the elements that will be sent to the LLM. Use drag & drop to reorder,
+                        checkboxes to enable/disable.
+                    </p>
+
+                    <!-- Context Section (Default View) -->
+                    <div id="context-section" class="message-section space-y-3">
+                        <h4 class="text-md font-medium text-blue-400 border-b border-gray-600 pb-2">Context Fields</h4>
+
+                        <!-- System Prompt Field -->
+                        <div class="message-element bg-gray-700 rounded-lg p-3 border border-gray-600"
+                            data-element-id="system_prompt" data-element-type="field">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" class="element-toggle" checked>
+                                    <span class="element-label text-sm text-gray-300">System Prompt</span>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button
+                                        class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                                    <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                                </div>
+                            </div>
+                            <div
+                                class="element-content text-xs text-gray-400 max-h-16 overflow-y-auto bg-gray-800 p-2 rounded">
+                                You are a helpful assistant, expert in social media blogging and online marketing...
+                            </div>
+                        </div>
+
+                        <!-- Basic Idea Field -->
+                        <div class="message-element bg-gray-700 rounded-lg p-3 border border-gray-600"
+                            data-element-id="context_basic_idea" data-element-type="field">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" class="element-toggle" checked>
+                                    <span class="element-label text-sm text-gray-300">Basic Idea</span>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button
+                                        class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                                    <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                                </div>
+                            </div>
+                            <div
+                                class="element-content text-xs text-gray-400 max-h-16 overflow-y-auto bg-gray-800 p-2 rounded">
+                                In this article, we'll embark on a journey through the rich landscape of Scottish
+                                storytelling...
+                            </div>
+                        </div>
+
+                        <!-- Section Headings Field -->
+                        <div class="message-element bg-gray-700 rounded-lg p-3 border border-gray-600"
+                            data-element-id="context_section_headings" data-element-type="field">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" class="element-toggle" checked>
+                                    <span class="element-label text-sm text-gray-300">Section Headings (JSON)</span>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button
+                                        class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                                    <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                                </div>
+                            </div>
+                            <div
+                                class="element-content text-xs text-gray-400 max-h-16 overflow-y-auto bg-gray-800 p-2 rounded">
+                                [{"title": "Ancient Roots: Uncovering Scotland's Celtic Storytelling Heritage"...
+                            </div>
+                        </div>
+
+                        <!-- Instructional Text Element -->
+                        <div class="message-element bg-green-700 rounded-lg p-3 border border-green-600"
+                            data-element-id="instruction_1" data-element-type="instruction">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" class="element-toggle" checked>
+                                    <span class="element-label text-sm text-green-300">Instruction</span>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button
+                                        class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                                    <button
+                                        class="remove-element-btn text-red-400 hover:text-red-300 text-xs">Remove</button>
+                                    <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                                </div>
+                            </div>
+                            <div
+                                class="element-content text-xs text-green-300 max-h-16 overflow-y-auto bg-green-800 p-2 rounded">
+                                Focus on the historical development and cultural significance of Scottish storytelling
+                                traditions.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Task Section (Hidden by default) -->
+                    <div id="task-section" class="message-section space-y-3 hidden">
+                        <h4 class="text-md font-medium text-green-400 border-b border-gray-600 pb-2">Task Fields</h4>
+
+                        <!-- Task Prompt Field -->
+                        <div class="message-element bg-gray-700 rounded-lg p-3 border border-gray-600"
+                            data-element-id="task_prompt" data-element-type="field">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" class="element-toggle" checked>
+                                    <span class="element-label text-sm text-gray-300">Task Prompt</span>
+                                </div>
+                                <div class="flex gap-1">
+                                    <button
+                                        class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                                    <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                                </div>
+                            </div>
+                            <div
+                                class="element-content text-xs text-gray-400 max-h-16 overflow-y-auto bg-gray-800 p-2 rounded">
+                                Write 2-3 HTML paragraphs (100-150 words) on the topic of the SECTION_HEADING...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inputs Section (Hidden by default) -->
+                    <div id="inputs-section" class="message-section space-y-3 hidden">
+                        <h4 class="text-md font-medium text-yellow-400 border-b border-gray-600 pb-2">Input Fields</h4>
+
+                        <!-- Dynamic input fields will be populated here -->
+                        <div class="text-sm text-gray-400 italic">
+                            Input fields will be detected from the Inputs panel...
+                        </div>
+                    </div>
+
+                    <!-- Outputs Section (Hidden by default) -->
+                    <div id="outputs-section" class="message-section space-y-3 hidden">
+                        <h4 class="text-md font-medium text-purple-400 border-b border-gray-600 pb-2">Output Fields</h4>
+
+                        <!-- Dynamic output fields will be populated here -->
+                        <div class="text-sm text-gray-400 italic">
+                            Output fields will be detected from the Outputs panel...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Live Preview -->
+                <div class="w-1/2 p-4 overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-white">Live Preview</h3>
+                        <div class="flex gap-2">
+                            <button id="copy-preview-btn"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                                <i class="fas fa-copy mr-1"></i>Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-gray-400 mb-4">
+                        Real-time preview of the assembled LLM message. Character count: <span
+                            id="preview-char-count">0</span>
+                    </p>
+
+                    <div id="enhanced-prompt-preview"
+                        class="bg-gray-900 p-4 rounded text-sm text-gray-300 font-mono whitespace-pre-wrap max-h-[calc(95vh-280px)] overflow-y-auto border border-gray-600">
+                        <div class="text-gray-500 italic">Message preview will appear here as you organize elements...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-between items-center p-4 border-t border-gray-700">
+                <div class="text-sm text-gray-400">
+                    <span id="enhanced-context-summary">4 elements enabled (Context section)</span>
+                </div>
+                <div class="flex gap-2">
+                    <button id="save-enhanced-config"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                        Save Configuration
+                    </button>
+                    <button id="run-with-enhanced-context"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                        Run LLM
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Message Element Template -->
+<template id="enhanced-message-element-template">
+    <div class="message-element bg-gray-700 rounded-lg p-3 border border-gray-600" data-element-id=""
+        data-element-type="">
+        <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+                <input type="checkbox" class="element-toggle" checked>
+                <span class="element-label text-sm text-gray-300"></span>
+            </div>
+            <div class="flex gap-1">
+                <button class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                <button class="remove-element-btn text-red-400 hover:text-red-300 text-xs hidden">Remove</button>
+                <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+            </div>
+        </div>
+        <div class="element-content text-xs text-gray-400 max-h-16 overflow-y-auto bg-gray-800 p-2 rounded"></div>
+    </div>
+</template>
+
+<!-- Instructional Text Template -->
+<template id="instruction-element-template">
+    <div class="message-element bg-green-700 rounded-lg p-3 border border-green-600" data-element-id=""
+        data-element-type="instruction">
+        <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+                <input type="checkbox" class="element-toggle" checked>
+                <span class="element-label text-sm text-green-300">Instruction</span>
+            </div>
+            <div class="flex gap-1">
+                <button class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                <button class="remove-element-btn text-red-400 hover:text-red-300 text-xs">Remove</button>
+                <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+            </div>
+        </div>
+        <div class="element-content text-xs text-green-300 max-h-16 overflow-y-auto bg-green-800 p-2 rounded"></div>
+    </div>
+</template>

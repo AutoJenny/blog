@@ -16,6 +16,12 @@
             Manage Context
         </button>
 
+        <!-- Enhanced LLM Message Management Button -->
+        <button id="enhanced-llm-message-btn" data-action="enhanced-llm-message"
+            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded shadow-lg transition-colors duration-200">
+            Manage LLM Message
+        </button>
+
         <!-- Sync Sections Button - Only show for section_headings step -->
         <button id="sync-sections-btn" data-action="sync-sections"
             class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-colors duration-200 min-w-[200px] hidden">
@@ -138,6 +144,9 @@
 <!-- Context Management Modal -->
 {% include 'modules/llm_panel/templates/context_management_modal.html' %}
 
+<!-- Enhanced LLM Message Management Modal -->
+{% include 'modules/llm_panel/templates/enhanced_llm_message_modal.html' %}
+
 <!-- Styles -->
 <link rel="stylesheet" href="{{ url_for('static', filename='modules/llm_panel/css/panels.css') }}">
 
@@ -149,6 +158,7 @@
     import { MultiInputManager } from "/static/modules/llm_panel/js/multi_input_manager.js";
     import sectionPanel from "/static/js/workflow/template_view.js";
     import ContextManager from "/static/js/context_manager.js";
+    import EnhancedLLMMessageManager from "/static/js/enhanced_llm_message_manager.js";
 
     // Initialize field selector
     window.addEventListener('DOMContentLoaded', () => {
@@ -183,6 +193,11 @@
         const contextManager = new ContextManager();
         window.contextManager = contextManager;
 
+        // Initialize EnhancedLLMMessageManager
+        console.log('[PANEL] Initializing EnhancedLLMMessageManager...');
+        const enhancedLLMMessageManager = new EnhancedLLMMessageManager();
+        window.enhancedLLMMessageManager = enhancedLLMMessageManager;
+
         // Initialize Manage Context button
         const manageContextBtn = document.getElementById('manage-context-btn');
         if (manageContextBtn) {
@@ -199,6 +214,25 @@
         } else {
             console.error('[PANEL] Manage context button not found');
         }
+
+        // Initialize Enhanced LLM Message Management button
+        const enhancedLLMMessageBtn = document.getElementById('enhanced-llm-message-btn');
+        if (enhancedLLMMessageBtn) {
+            console.log('[PANEL] Found enhanced LLM message button, adding event listener');
+            enhancedLLMMessageBtn.addEventListener('click', () => {
+                console.log('[PANEL] Enhanced LLM message button clicked');
+                if (window.enhancedLLMMessageManager) {
+                    console.log('[PANEL] enhancedLLMMessageManager found, opening modal');
+                    window.enhancedLLMMessageManager.openModal();
+                } else {
+                    console.error('[PANEL] enhancedLLMMessageManager not found');
+                }
+            });
+        } else {
+            console.error('[PANEL] Enhanced LLM message button not found');
+        }
+
+
 
         // Initialize LLM button
         const runLLMBtn = document.getElementById('run-llm-btn');
