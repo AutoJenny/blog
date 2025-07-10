@@ -199,8 +199,8 @@ class EnhancedLLMMessageManager {
                     const devData = await devResponse.json();
                     console.log('[ENHANCED_LLM] Development data loaded:', Object.keys(devData));
                     
-                    // Update the accordion content with real data
-                    this.updateAccordionContent('system_prompt', 'You are a helpful assistant, expert in social media blogging and online marketing...');
+                    // Update the accordion content with real data from post_development
+                    this.updateAccordionContent('system_prompt', this.getSystemPromptContent());
                     this.updateAccordionContent('basic_idea', devData.basic_idea || 'No basic idea available');
                     this.updateAccordionContent('section_headings', devData.section_headings || 'No section headings available');
                     this.updateAccordionContent('idea_scope', devData.idea_scope || 'No idea scope available');
@@ -212,21 +212,28 @@ class EnhancedLLMMessageManager {
                         if (promptsResponse.ok) {
                             const promptsData = await promptsResponse.json();
                             const taskPrompt = promptsData.task_prompt_content || 'No task prompt available';
+                            const systemPrompt = promptsData.system_prompt_content || this.getSystemPromptContent();
                             this.updateAccordionContent('task_prompt', taskPrompt);
+                            this.updateAccordionContent('system_prompt', systemPrompt);
                         } else {
                             // Fallback to textarea if API fails
                             const taskPromptTextarea = document.getElementById('task_prompt');
                             const actualTaskPrompt = taskPromptTextarea ? taskPromptTextarea.value : 'No task prompt available';
                             this.updateAccordionContent('task_prompt', actualTaskPrompt);
+                            this.updateAccordionContent('system_prompt', this.getSystemPromptContent());
                         }
                     } else {
                         // Fallback to textarea if no step ID
                         const taskPromptTextarea = document.getElementById('task_prompt');
                         const actualTaskPrompt = taskPromptTextarea ? taskPromptTextarea.value : 'No task prompt available';
                         this.updateAccordionContent('task_prompt', actualTaskPrompt);
+                        this.updateAccordionContent('system_prompt', this.getSystemPromptContent());
                     }
                 }
             }
+
+            // Get LLM settings from the purple panel
+            this.updateAccordionContent('settings', this.getLLMSettingsContent());
 
             // Get available field mappings (for Inputs and Outputs sections)
             const fieldsResponse = await fetch('/api/workflow/fields/available');
@@ -674,6 +681,34 @@ class EnhancedLLMMessageManager {
         }
         
         return null;
+    }
+
+    getSystemPromptContent() {
+        // Try to get system prompt from saved prompts API first
+        const stepId = this.getCurrentStepId();
+        if (stepId) {
+            // This will be handled asynchronously in detectAvailableFields
+            return 'Loading system prompt...';
+        }
+        
+        // Fallback to textarea
+        const systemPromptTextarea = document.getElementById('system_prompt');
+        return systemPromptTextarea ? systemPromptTextarea.value : 'No system prompt available';
+    }
+
+    getLLMSettingsContent() {
+        // Get actual LLM settings from the purple panel
+        const modelSelect = document.getElementById('llm-model');
+        const temperatureInput = document.getElementById('llm-temperature');
+        const maxTokensInput = document.getElementById('llm-max-tokens');
+        const timeoutInput = document.getElementById('llm-timeout');
+        
+        const model = modelSelect ? modelSelect.value : 'Not selected';
+        const temperature = temperatureInput ? temperatureInput.value : '0.7';
+        const maxTokens = maxTokensInput ? maxTokensInput.value : '1000';
+        const timeout = timeoutInput ? timeoutInput.value : '60';
+        
+        return `Model: ${model}, Temperature: ${temperature}, Max Tokens: ${maxTokens}, Timeout: ${timeout}s`;
     }
 }
 
