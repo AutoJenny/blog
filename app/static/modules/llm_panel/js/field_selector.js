@@ -293,6 +293,94 @@ class FieldSelector {
     initializeSingleFieldSelectorFallback(selector, section, target) {
         let selectedField = null; // Declare selectedField at the beginning
         let filteredFields = Object.values(this.fields);
+        
+        // Special handling for Basic Idea field - it should always be mapped to basic_idea from post_development
+        if (target === 'context_basic_idea') {
+            console.log('[DEBUG] Special handling for Basic Idea field');
+            // Clear existing options
+            selector.innerHTML = '<option value="">Select field...</option>';
+            
+            // Add basic_idea as the only option for this field
+            const option = document.createElement('option');
+            option.value = 'basic_idea';
+            option.textContent = 'Basic Idea';
+            option.dataset.table = 'post_development';
+            option.dataset.dbField = 'basic_idea';
+            selector.appendChild(option);
+            
+            // Set the value and populate the textarea
+            selector.value = 'basic_idea';
+            const targetElement = document.getElementById(target);
+            if (targetElement && targetElement.tagName === 'TEXTAREA') {
+                targetElement.dataset.dbField = 'basic_idea';
+                targetElement.dataset.dbTable = 'post_development';
+                const fieldValue = this.fieldValues['basic_idea'] || '';
+                targetElement.value = fieldValue;
+                console.log('[DEBUG] Set Basic Idea textarea value, length:', fieldValue.length);
+            }
+            
+            this.addFieldSelectorEventListener(selector);
+            return;
+        }
+        
+        // Special handling for Idea Scope field - it should always be mapped to idea_scope from post_development
+        if (target === 'context_idea_scope') {
+            console.log('[DEBUG] Special handling for Idea Scope field');
+            // Clear existing options
+            selector.innerHTML = '<option value="">Select field...</option>';
+            
+            // Add idea_scope as the only option for this field
+            const option = document.createElement('option');
+            option.value = 'idea_scope';
+            option.textContent = 'Idea Scope';
+            option.dataset.table = 'post_development';
+            option.dataset.dbField = 'idea_scope';
+            selector.appendChild(option);
+            
+            // Set the value and populate the textarea
+            selector.value = 'idea_scope';
+            const targetElement = document.getElementById(target);
+            if (targetElement && targetElement.tagName === 'TEXTAREA') {
+                targetElement.dataset.dbField = 'idea_scope';
+                targetElement.dataset.dbTable = 'post_development';
+                const fieldValue = this.fieldValues['idea_scope'] || '';
+                targetElement.value = fieldValue;
+                console.log('[DEBUG] Set Idea Scope textarea value, length:', fieldValue.length);
+            }
+            
+            this.addFieldSelectorEventListener(selector);
+            return;
+        }
+        
+        // Special handling for Section Headings field - it should always be mapped to section_headings from post_development
+        if (target === 'context_section_headings') {
+            console.log('[DEBUG] Special handling for Section Headings field');
+            // Clear existing options
+            selector.innerHTML = '<option value="">Select field...</option>';
+            
+            // Add section_headings as the only option for this field
+            const option = document.createElement('option');
+            option.value = 'section_headings';
+            option.textContent = 'Section Headings';
+            option.dataset.table = 'post_development';
+            option.dataset.dbField = 'section_headings';
+            selector.appendChild(option);
+            
+            // Set the value and populate the textarea
+            selector.value = 'section_headings';
+            const targetElement = document.getElementById(target);
+            if (targetElement && targetElement.tagName === 'TEXTAREA') {
+                targetElement.dataset.dbField = 'section_headings';
+                targetElement.dataset.dbTable = 'post_development';
+                const fieldValue = this.fieldValues['section_headings'] || '';
+                targetElement.value = fieldValue;
+                console.log('[DEBUG] Set Section Headings textarea value, length:', fieldValue.length);
+            }
+            
+            this.addFieldSelectorEventListener(selector);
+            return;
+        }
+        
         // For Writing stage outputs, always show all post_section fields
         if (this.stage === 'writing' && section === 'outputs') {
             filteredFields = filteredFields.filter(field => field.db_table === 'post_section');
