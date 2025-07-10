@@ -773,24 +773,41 @@ class EnhancedLLMMessageManager {
 
     async updateInputFieldsForSection(sectionId) {
         try {
-            if (!sectionId) {
+            console.log('[ENHANCED_LLM] updateInputFieldsForSection called with sectionId:', sectionId);
+            
+            if (!sectionId || sectionId === '') {
+                console.log('[ENHANCED_LLM] No section selected, showing all sections data');
                 // Show all sections data
                 this.populateInputFieldsWithAllSections();
                 return;
             }
             
+            console.log('[ENHANCED_LLM] Getting section-specific content for section:', sectionId);
             const sectionData = await this.getSectionSpecificContent(sectionId);
-            if (!sectionData) return;
+            console.log('[ENHANCED_LLM] Section data received:', Object.keys(sectionData));
+            
+            if (!sectionData || Object.keys(sectionData).length === 0) {
+                console.log('[ENHANCED_LLM] No section data found, showing all sections data');
+                this.populateInputFieldsWithAllSections();
+                return;
+            }
             
             // Update input fields with section-specific content
             const inputContainer = document.getElementById('input-elements-list');
-            if (!inputContainer) return;
+            if (!inputContainer) {
+                console.error('[ENHANCED_LLM] Input container not found');
+                return;
+            }
             
             // Clear existing content
             inputContainer.innerHTML = '';
             
             // Get available input fields
             const fields = await this.detectAvailableFields();
+            console.log('[ENHANCED_LLM] Available fields:', {
+                inputs: fields.inputs.length,
+                outputs: fields.outputs.length
+            });
             
             // Filter to only show section-specific fields
             const sectionFields = fields.inputs.filter(field => 
@@ -798,16 +815,23 @@ class EnhancedLLMMessageManager {
                 field.isSectionField === true
             );
             
+            console.log('[ENHANCED_LLM] Section fields found:', sectionFields.length);
+            
             // Create field elements with section-specific content
             sectionFields.forEach(field => {
+                console.log('[ENHANCED_LLM] Creating field element for:', field.name, 'with content from:', field.id);
+                const fieldContent = sectionData[field.id] || sectionData[field.db_field] || field.content || 'No content available';
+                console.log('[ENHANCED_LLM] Field content:', fieldContent.substring(0, 50) + '...');
+                
                 const fieldElement = this.createFieldElement({
                     ...field,
-                    content: sectionData[field.id] || sectionData[field.db_field] || field.content || 'No content available'
+                    content: fieldContent
                 });
                 inputContainer.appendChild(fieldElement);
             });
             
             if (sectionFields.length === 0) {
+                console.log('[ENHANCED_LLM] No section fields found, showing placeholder');
                 const placeholder = document.createElement('div');
                 placeholder.className = 'text-sm text-gray-400 italic';
                 placeholder.textContent = 'No section-specific input fields available.';
@@ -826,22 +850,33 @@ class EnhancedLLMMessageManager {
 
     async populateInputFieldsWithAllSections() {
         try {
+            console.log('[ENHANCED_LLM] populateInputFieldsWithAllSections called');
+            
             const inputContainer = document.getElementById('input-elements-list');
-            if (!inputContainer) return;
+            if (!inputContainer) {
+                console.error('[ENHANCED_LLM] Input container not found in populateInputFieldsWithAllSections');
+                return;
+            }
             
             // Clear existing content
             inputContainer.innerHTML = '';
             
             // Get available input fields
             const fields = await this.detectAvailableFields();
+            console.log('[ENHANCED_LLM] All available fields:', {
+                inputs: fields.inputs.length,
+                outputs: fields.outputs.length
+            });
             
             // Show all input fields
             fields.inputs.forEach(field => {
+                console.log('[ENHANCED_LLM] Creating field element for:', field.name, 'with content:', field.content?.substring(0, 50) + '...');
                 const fieldElement = this.createFieldElement(field);
                 inputContainer.appendChild(fieldElement);
             });
             
             if (fields.inputs.length === 0) {
+                console.log('[ENHANCED_LLM] No input fields found, showing placeholder');
                 const placeholder = document.createElement('div');
                 placeholder.className = 'text-sm text-gray-400 italic';
                 placeholder.textContent = 'No input fields available for current workflow stage.';
