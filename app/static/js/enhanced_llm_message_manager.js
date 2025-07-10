@@ -490,9 +490,27 @@ class EnhancedLLMMessageManager {
         allAccordions.forEach(accordion => {
             const toggle = accordion.querySelector('.element-toggle');
             if (toggle && toggle.checked) {
-                const content = accordion.querySelector('.element-content');
-                if (content) {
-                    enabledElements.push(content.textContent.trim());
+                // Check if this accordion has individual field elements (like inputs/outputs)
+                const fieldElements = accordion.querySelectorAll('.message-element');
+                if (fieldElements.length > 0) {
+                    // This accordion contains individual field elements
+                    fieldElements.forEach(fieldElement => {
+                        const fieldToggle = fieldElement.querySelector('.element-toggle');
+                        if (fieldToggle && fieldToggle.checked) {
+                            const fieldContent = fieldElement.querySelector('.element-content');
+                            if (fieldContent && fieldContent.textContent.trim()) {
+                                const fieldLabel = fieldElement.querySelector('.element-label');
+                                const label = fieldLabel ? fieldLabel.textContent : 'Field';
+                                enabledElements.push(`${label}: ${fieldContent.textContent.trim()}`);
+                            }
+                        }
+                    });
+                } else {
+                    // This accordion has direct content
+                    const content = accordion.querySelector('.element-content');
+                    if (content && content.textContent.trim()) {
+                        enabledElements.push(content.textContent.trim());
+                    }
                 }
             }
         });
@@ -516,11 +534,25 @@ class EnhancedLLMMessageManager {
         const allAccordions = this.modal.querySelectorAll('.message-accordion');
         
         allAccordions.forEach(accordion => {
-            const toggles = accordion.querySelectorAll('.element-toggle');
-            totalElements += toggles.length;
-            toggles.forEach(toggle => {
-                if (toggle.checked) totalEnabled++;
-            });
+            const accordionToggle = accordion.querySelector('.element-toggle');
+            if (accordionToggle && accordionToggle.checked) {
+                // Check if this accordion has individual field elements
+                const fieldElements = accordion.querySelectorAll('.message-element');
+                if (fieldElements.length > 0) {
+                    // Count individual field elements
+                    fieldElements.forEach(fieldElement => {
+                        const fieldToggle = fieldElement.querySelector('.element-toggle');
+                        if (fieldToggle) {
+                            totalElements++;
+                            if (fieldToggle.checked) totalEnabled++;
+                        }
+                    });
+                } else {
+                    // Count the accordion itself
+                    totalElements++;
+                    totalEnabled++;
+                }
+            }
         });
         
         summary.textContent = `${totalEnabled} of ${totalElements} elements enabled`;
@@ -783,6 +815,10 @@ class EnhancedLLMMessageManager {
             }
             
             console.log('[ENHANCED_LLM] Updated input fields for section', sectionId);
+            
+            // Update preview and summary after updating input fields
+            this.updatePreview();
+            this.updateSummary();
         } catch (error) {
             console.error('[ENHANCED_LLM] Error updating input fields for section:', error);
         }
@@ -813,6 +849,10 @@ class EnhancedLLMMessageManager {
             }
             
             console.log('[ENHANCED_LLM] Populated input fields with all sections data');
+            
+            // Update preview and summary after populating input fields
+            this.updatePreview();
+            this.updateSummary();
         } catch (error) {
             console.error('[ENHANCED_LLM] Error populating input fields with all sections:', error);
         }
