@@ -691,17 +691,55 @@ class EnhancedLLMMessageManager {
         
         if (!preview || !charCount) return;
 
-        // Collect all enabled elements from all accordions
+        // Collect all enabled elements from all accordions with colored labels
         const enabledElements = [];
         const allAccordions = this.modal.querySelectorAll('.message-accordion');
         
         allAccordions.forEach(accordion => {
             const toggle = accordion.querySelector('.element-toggle');
             if (toggle && toggle.checked) {
+                const elementType = accordion.getAttribute('data-element-type');
+                
+                // Get color based on element type (matching left menu colors)
+                let color = '#60a5fa'; // Default blue
+                let label = elementType.replace('_', ' ').toUpperCase();
+                
+                switch (elementType) {
+                    case 'system_prompt':
+                        color = '#60a5fa'; // Blue
+                        label = 'SYSTEM PROMPT';
+                        break;
+                    case 'basic_idea':
+                        color = '#60a5fa'; // Blue
+                        label = 'BASIC IDEA';
+                        break;
+                    case 'section_headings':
+                        color = '#60a5fa'; // Blue
+                        label = 'SECTION HEADINGS';
+                        break;
+                    case 'idea_scope':
+                        color = '#60a5fa'; // Blue
+                        label = 'IDEA SCOPE';
+                        break;
+                    case 'task_prompt':
+                        color = '#10b981'; // Green
+                        label = 'TASK PROMPT';
+                        break;
+                    case 'inputs':
+                        color = '#f59e0b'; // Yellow
+                        label = 'INPUT FIELDS';
+                        break;
+                    case 'settings':
+                        color = '#8b5cf6'; // Purple
+                        label = 'SETTINGS';
+                        break;
+                }
+                
                 // Check if this accordion has individual field elements (like inputs/outputs)
                 const fieldElements = accordion.querySelectorAll('.message-element');
                 if (fieldElements.length > 0) {
                     // This accordion contains individual field elements
+                    let sectionContent = '';
                     fieldElements.forEach(fieldElement => {
                         const fieldToggle = fieldElement.querySelector('.element-toggle');
                         if (fieldToggle && fieldToggle.checked) {
@@ -709,23 +747,47 @@ class EnhancedLLMMessageManager {
                             if (fieldContent && fieldContent.textContent.trim()) {
                                 const fieldLabel = fieldElement.querySelector('.element-label');
                                 const label = fieldLabel ? fieldLabel.textContent : 'Field';
-                                enabledElements.push(`${label}: ${fieldContent.textContent.trim()}`);
+                                sectionContent += `${label}: ${fieldContent.textContent.trim()}\n`;
                             }
                         }
                     });
+                    
+                    if (sectionContent.trim()) {
+                        enabledElements.push({
+                            label: label,
+                            color: color,
+                            content: sectionContent.trim()
+                        });
+                    }
                 } else {
                     // This accordion has direct content
                     const content = accordion.querySelector('.element-content');
                     if (content && content.textContent.trim()) {
-                        enabledElements.push(content.textContent.trim());
+                        enabledElements.push({
+                            label: label,
+                            color: color,
+                            content: content.textContent.trim()
+                        });
                     }
                 }
             }
         });
 
-        // Assemble the message
-        const message = enabledElements.join('\n\n');
-        preview.textContent = message || 'No elements enabled';
+        // Assemble the message with colored labels and line returns
+        let message = '';
+        enabledElements.forEach((element, index) => {
+            if (index > 0) {
+                message += '<br><br>'; // Add visible line returns before each part
+            }
+            message += `<span style="color: ${element.color}; font-weight: bold;">=== ${element.label} ===</span><br>${element.content}`;
+        });
+        
+        // If no elements enabled, show placeholder
+        if (enabledElements.length === 0) {
+            message = 'No elements enabled';
+        }
+        
+        preview.innerHTML = message;
         
         // Update character count
         charCount.textContent = message.length;
