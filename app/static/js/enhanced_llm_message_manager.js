@@ -37,6 +37,7 @@ class EnhancedLLMMessageManager {
         // Post section selector
         document.getElementById('post-section-selector')?.addEventListener('change', (e) => {
             this.selectedPostSection = e.target.value;
+            this.updateInputFieldsForSection(this.selectedPostSection);
             this.updatePreview();
         });
 
@@ -119,6 +120,7 @@ class EnhancedLLMMessageManager {
         this.loadWorkflowContext();
         this.loadPostSections();
         this.refreshContext();
+        this.updateInputFieldsForSection(this.selectedPostSection);
         this.updatePreview();
         this.updateSummary();
     }
@@ -160,7 +162,7 @@ class EnhancedLLMMessageManager {
             const response = await fetch(`/api/workflow/posts/${this.workflowContext.postId}/sections`);
             if (response.ok) {
                 const sectionsData = await response.json();
-                this.postSections = sectionsData || [];
+                this.postSections = sectionsData.sections || [];
                 
                 // Populate the post section selector
                 const selector = document.getElementById('post-section-selector');
@@ -171,9 +173,15 @@ class EnhancedLLMMessageManager {
                     this.postSections.forEach(section => {
                         const option = document.createElement('option');
                         option.value = section.id;
-                        option.textContent = section.section_heading || `Section ${section.id}`;
+                        option.textContent = section.title || section.section_heading || `Section ${section.id}`;
                         selector.appendChild(option);
                     });
+                    
+                    // Set default to first section if available
+                    if (this.postSections.length > 0) {
+                        selector.value = this.postSections[0].id;
+                        this.selectedPostSection = this.postSections[0].id;
+                    }
                 }
                 
                 console.log('[ENHANCED_LLM] Post sections loaded:', this.postSections.length);
@@ -450,18 +458,20 @@ class EnhancedLLMMessageManager {
         try {
             console.log('[ENHANCED_LLM] Refreshing context...');
             
-            // Detect available fields
-            const availableFields = await this.detectAvailableFields();
+            // Reload workflow context
+            await this.loadWorkflowContext();
             
-            // Populate input and output sections with real data
-            await this.populateSectionWithRealData('input', availableFields.inputs);
-            await this.populateSectionWithRealData('output', availableFields.outputs);
+            // Reload post sections
+            await this.loadPostSections();
+            
+            // Update input fields for current section
+            await this.updateInputFieldsForSection(this.selectedPostSection);
             
             // Update preview and summary
             this.updatePreview();
             this.updateSummary();
             
-            console.log('[ENHANCED_LLM] Context refresh complete');
+            console.log('[ENHANCED_LLM] Context refreshed successfully');
         } catch (error) {
             console.error('[ENHANCED_LLM] Error refreshing context:', error);
         }
@@ -709,6 +719,103 @@ class EnhancedLLMMessageManager {
         const timeout = timeoutInput ? timeoutInput.value : '60';
         
         return `Model: ${model}, Temperature: ${temperature}, Max Tokens: ${maxTokens}, Timeout: ${timeout}s`;
+    }
+
+    async getSectionSpecificContent(sectionId) {
+        try {
+            if (!sectionId || !this.workflowContext.postId) return {};
+            
+            // Get specific section data
+            const response = await fetch(`/api/workflow/posts/${this.workflowContext.postId}/sections/${sectionId}`);
+            if (response.ok) {
+                const sectionData = await response.json();
+                console.log('[ENHANCED_LLM] Section data loaded for section', sectionId, ':', Object.keys(sectionData));
+                return sectionData;
+            }
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error loading section data:', error);
+        }
+        return {};
+    }
+
+    async updateInputFieldsForSection(sectionId) {
+        try {
+            if (!sectionId) {
+                // Show all sections data
+                this.populateInputFieldsWithAllSections();
+                return;
+            }
+            
+            const sectionData = await this.getSectionSpecificContent(sectionId);
+            if (!sectionData) return;
+            
+            // Update input fields with section-specific content
+            const inputContainer = document.getElementById('input-elements-list');
+            if (!inputContainer) return;
+            
+            // Clear existing content
+            inputContainer.innerHTML = '';
+            
+            // Get available input fields
+            const fields = await this.detectAvailableFields();
+            
+            // Filter to only show section-specific fields
+            const sectionFields = fields.inputs.filter(field => 
+                field.source === 'post_section' || 
+                field.id.includes('section') ||
+                field.id.includes('write_about')
+            );
+            
+            // Create field elements with section-specific content
+            sectionFields.forEach(field => {
+                const fieldElement = this.createFieldElement({
+                    ...field,
+                    content: sectionData[field.id] || sectionData[field.db_field] || field.content || 'No content available'
+                });
+                inputContainer.appendChild(fieldElement);
+            });
+            
+            if (sectionFields.length === 0) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'text-sm text-gray-400 italic';
+                placeholder.textContent = 'No section-specific input fields available.';
+                inputContainer.appendChild(placeholder);
+            }
+            
+            console.log('[ENHANCED_LLM] Updated input fields for section', sectionId);
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error updating input fields for section:', error);
+        }
+    }
+
+    async populateInputFieldsWithAllSections() {
+        try {
+            const inputContainer = document.getElementById('input-elements-list');
+            if (!inputContainer) return;
+            
+            // Clear existing content
+            inputContainer.innerHTML = '';
+            
+            // Get available input fields
+            const fields = await this.detectAvailableFields();
+            
+            // Show all input fields
+            fields.inputs.forEach(field => {
+                const fieldElement = this.createFieldElement(field);
+                inputContainer.appendChild(fieldElement);
+            });
+            
+            if (fields.inputs.length === 0) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'text-sm text-gray-400 italic';
+                placeholder.textContent = 'No input fields available for current workflow stage.';
+                inputContainer.appendChild(placeholder);
+            }
+            
+            console.log('[ENHANCED_LLM] Populated input fields with all sections data');
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error populating input fields with all sections:', error);
+        }
     }
 }
 
