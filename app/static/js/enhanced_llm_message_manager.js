@@ -204,7 +204,27 @@ class EnhancedLLMMessageManager {
                     this.updateAccordionContent('basic_idea', devData.basic_idea || 'No basic idea available');
                     this.updateAccordionContent('section_headings', devData.section_headings || 'No section headings available');
                     this.updateAccordionContent('idea_scope', devData.idea_scope || 'No idea scope available');
-                    this.updateAccordionContent('task_prompt', 'Write 2-3 HTML paragraphs (100-150 words) on the topic of the SECTION_HEADING...');
+                    
+                    // Get the actual task prompt from the saved prompts API
+                    const stepId = this.getCurrentStepId();
+                    if (stepId) {
+                        const promptsResponse = await fetch(`/api/workflow/steps/${stepId}/prompts`);
+                        if (promptsResponse.ok) {
+                            const promptsData = await promptsResponse.json();
+                            const taskPrompt = promptsData.task_prompt_content || 'No task prompt available';
+                            this.updateAccordionContent('task_prompt', taskPrompt);
+                        } else {
+                            // Fallback to textarea if API fails
+                            const taskPromptTextarea = document.getElementById('task_prompt');
+                            const actualTaskPrompt = taskPromptTextarea ? taskPromptTextarea.value : 'No task prompt available';
+                            this.updateAccordionContent('task_prompt', actualTaskPrompt);
+                        }
+                    } else {
+                        // Fallback to textarea if no step ID
+                        const taskPromptTextarea = document.getElementById('task_prompt');
+                        const actualTaskPrompt = taskPromptTextarea ? taskPromptTextarea.value : 'No task prompt available';
+                        this.updateAccordionContent('task_prompt', actualTaskPrompt);
+                    }
                 }
             }
 
@@ -616,6 +636,44 @@ class EnhancedLLMMessageManager {
                 return closest;
             }
         }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    getCurrentStepId() {
+        // Try to get step ID from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const stepParam = urlParams.get('step');
+        
+        if (stepParam) {
+            // Map step names to IDs based on the workflow structure
+            const stepMap = {
+                'ideas_to_include': 43,
+                'author_first_drafts': 16,
+                'fix_language': 49,
+                'main': 18,
+                'images_section_concept': 44,
+                'images_section_llm_prompt': 45
+            };
+            
+            return stepMap[stepParam] || null;
+        }
+        
+        // If no step parameter, try to get from panel data
+        const panel = document.querySelector('[data-current-stage]');
+        if (panel && panel.dataset.currentStep) {
+            const stepName = panel.dataset.currentStep;
+            const stepMap = {
+                'Ideas to include': 43,
+                'Author First Drafts': 16,
+                'FIX language': 49,
+                'Main': 18,
+                'IMAGES section concept': 44,
+                'IMAGES section LLM prompt': 45
+            };
+            
+            return stepMap[stepName] || null;
+        }
+        
+        return null;
     }
 }
 
