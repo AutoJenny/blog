@@ -30,7 +30,8 @@
 - **Section Selector**: ✅ Populated with actual section titles from post sections API
 - **Section-Specific Input Fields**: ✅ Filter input fields based on selected section, load section-specific content
 - **Preview Assembly**: ✅ Section-specific input fields now appear in preview with field labels
-- **Draft Content**: ✅ Draft content from purple dropdown now appears in preview
+- **Draft Content**: ✅ Fixed content loading from section-specific data, added debugging
+- **Field Content Loading**: ✅ Fixed post_section field content loading with proper fallbacks
 
 ## Overview
 Transform the existing "Context Management" modal into a comprehensive "LLM Message Management" interface that allows users to organize, reorder, and customize LLM message assembly with drag & drop functionality and instructional text.
@@ -327,7 +328,9 @@ The mockup is ready for user review and discussion. All requested features are v
   - [x] Move post_section fields from outputs to inputs array for Writing stage
   - [x] Update filtering logic to include all post_section fields (including draft)
   - [x] Fix field detection to properly include purple dropdown fields in preview
-  - [x] Test that draft content from purple dropdown appears in preview
+  - [x] Add debugging to track field detection and content loading
+  - [x] Fix post_section field content loading with proper fallbacks
+  - [x] Set post_section field content to null during detection, load from section data later
 
 ### Phase 7: Persistence and Integration
 - [ ] **Enhance save/load functionality**
