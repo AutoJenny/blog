@@ -9,6 +9,8 @@ class EnhancedLLMMessageManager {
         this.currentSection = 'context';
         this.elements = new Map();
         this.instructionCounter = 1;
+        this.fieldData = {};
+        this.workflowContext = {};
         
         this.init();
     }
@@ -89,6 +91,7 @@ class EnhancedLLMMessageManager {
 
     openModal() {
         this.modal.classList.remove('hidden');
+        this.loadWorkflowContext();
         this.refreshContext();
         this.updatePreview();
         this.updateSummary();
@@ -96,6 +99,223 @@ class EnhancedLLMMessageManager {
 
     closeModal() {
         this.modal.classList.add('hidden');
+    }
+
+    async loadWorkflowContext() {
+        try {
+            // Get current workflow context from URL
+            const pathParts = window.location.pathname.split('/');
+            this.workflowContext = {
+                postId: pathParts[3],
+                stage: pathParts[4],
+                substage: pathParts[5]
+            };
+
+            // Get step from panel data attributes
+            const panel = document.querySelector('[data-current-stage]');
+            if (panel) {
+                this.workflowContext.step = panel.dataset.currentStep;
+                this.workflowContext.stepId = panel.dataset.stepId;
+                this.workflowContext.stageId = panel.dataset.stageId;
+                this.workflowContext.substageId = panel.dataset.substageId;
+            }
+
+            console.log('[ENHANCED_LLM] Workflow context loaded:', this.workflowContext);
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error loading workflow context:', error);
+        }
+    }
+
+    async detectAvailableFields() {
+        try {
+            console.log('[ENHANCED_LLM] Detecting available fields...');
+            
+            const fields = {
+                context: [],
+                task: [],
+                inputs: [],
+                outputs: []
+            };
+
+            // Get post development fields (for Context and Task sections)
+            if (this.workflowContext.postId) {
+                const devResponse = await fetch(`/api/workflow/posts/${this.workflowContext.postId}/development`);
+                if (devResponse.ok) {
+                    const devData = await devResponse.json();
+                    console.log('[ENHANCED_LLM] Development data loaded:', Object.keys(devData));
+                    
+                    // Map development fields to sections
+                    for (const [fieldName, value] of Object.entries(devData)) {
+                        if (value && typeof value === 'string' && value.trim()) {
+                            const displayName = this.mapFieldToDisplayName(fieldName);
+                            
+                            // Categorize fields based on common patterns
+                            if (fieldName.includes('idea') || fieldName.includes('scope') || fieldName.includes('seed')) {
+                                fields.context.push({
+                                    id: fieldName,
+                                    name: displayName,
+                                    content: value,
+                                    type: 'field',
+                                    source: 'post_development'
+                                });
+                            } else if (fieldName.includes('prompt') || fieldName.includes('task')) {
+                                fields.task.push({
+                                    id: fieldName,
+                                    name: displayName,
+                                    content: value,
+                                    type: 'field',
+                                    source: 'post_development'
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Get available field mappings (for Inputs and Outputs sections)
+            const fieldsResponse = await fetch('/api/workflow/fields/available');
+            if (fieldsResponse.ok) {
+                const fieldsData = await fieldsResponse.json();
+                console.log('[ENHANCED_LLM] Available fields loaded:', fieldsData.fields.length);
+                
+                // Categorize mapped fields
+                fieldsData.fields.forEach(field => {
+                    if (field.mappings && field.mappings.length > 0) {
+                        const mapping = field.mappings[0];
+                        const displayName = field.display_name || this.mapFieldToDisplayName(field.field_name);
+                        
+                        const fieldElement = {
+                            id: field.field_name,
+                            name: displayName,
+                            content: this.fieldData[field.field_name] || '',
+                            type: 'field',
+                            source: field.db_table,
+                            mapping: mapping
+                        };
+
+                        // Categorize based on mapping
+                        if (mapping.section === 'inputs') {
+                            fields.inputs.push(fieldElement);
+                        } else if (mapping.section === 'outputs') {
+                            fields.outputs.push(fieldElement);
+                        }
+                    }
+                });
+            }
+
+            // For Writing stage, get post_section fields
+            if (this.workflowContext.stage === 'writing') {
+                const sectionFieldsResponse = await fetch('/api/workflow/post_section_fields');
+                if (sectionFieldsResponse.ok) {
+                    const sectionFieldsData = await sectionFieldsResponse.json();
+                    console.log('[ENHANCED_LLM] Post section fields loaded:', sectionFieldsData.fields.length);
+                    
+                    sectionFieldsData.fields.forEach(field => {
+                        const displayName = this.mapFieldToDisplayName(field.field_name);
+                        fields.outputs.push({
+                            id: field.field_name,
+                            name: displayName,
+                            content: '',
+                            type: 'field',
+                            source: 'post_section',
+                            isSectionField: true
+                        });
+                    });
+                }
+            }
+
+            console.log('[ENHANCED_LLM] Field detection complete:', {
+                context: fields.context.length,
+                task: fields.task.length,
+                inputs: fields.inputs.length,
+                outputs: fields.outputs.length
+            });
+
+            return fields;
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error detecting fields:', error);
+            return { context: [], task: [], inputs: [], outputs: [] };
+        }
+    }
+
+    mapFieldToDisplayName(fieldName) {
+        // Convert field names to user-friendly display names
+        const nameMappings = {
+            'basic_idea': 'Basic Idea',
+            'idea_seed': 'Idea Seed',
+            'idea_scope': 'Idea Scope',
+            'expanded_idea': 'Expanded Idea',
+            'provisional_title': 'Provisional Title',
+            'topics_to_cover': 'Topics to Cover',
+            'section_headings': 'Section Headings',
+            'system_prompt': 'System Prompt',
+            'task_prompt': 'Task Prompt',
+            'section_heading': 'Section Heading',
+            'section_description': 'Section Description',
+            'draft': 'Draft Content',
+            'polished': 'Polished Content',
+            'facts_to_include': 'Facts to Include',
+            'ideas_to_include': 'Ideas to Include',
+            'highlighting': 'Highlighting',
+            'image_concepts': 'Image Concepts',
+            'image_prompts': 'Image Prompts',
+            'watermarking': 'Watermarking',
+            'image_meta_descriptions': 'Image Meta Descriptions',
+            'image_captions': 'Image Captions',
+            'generated_image_url': 'Generated Image URL',
+            'status': 'Status',
+            'polished': 'Polished'
+        };
+
+        return nameMappings[fieldName] || fieldName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    async populateSectionWithRealData(sectionName, fields) {
+        const section = document.getElementById(`${sectionName}-section`);
+        if (!section) return;
+
+        // Clear existing content except header
+        const header = section.querySelector('h4');
+        section.innerHTML = '';
+        if (header) section.appendChild(header);
+
+        if (fields.length === 0) {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'text-sm text-gray-400 italic';
+            placeholder.textContent = `No ${sectionName} fields available for current workflow stage.`;
+            section.appendChild(placeholder);
+            return;
+        }
+
+        // Create field elements
+        fields.forEach(field => {
+            const fieldElement = this.createFieldElement(field);
+            section.appendChild(fieldElement);
+        });
+    }
+
+    createFieldElement(field) {
+        const template = document.getElementById('enhanced-message-element-template');
+        const element = template.content.cloneNode(true);
+        const fieldDiv = element.querySelector('.message-element');
+        
+        fieldDiv.setAttribute('data-element-id', field.id);
+        fieldDiv.setAttribute('data-element-type', field.type);
+        fieldDiv.setAttribute('data-field-source', field.source);
+        
+        const label = fieldDiv.querySelector('.element-label');
+        label.textContent = field.name;
+        
+        const content = fieldDiv.querySelector('.element-content');
+        content.textContent = field.content || 'No content available';
+        
+        // Show remove button for instructional text only
+        const removeBtn = fieldDiv.querySelector('.remove-element-btn');
+        if (removeBtn && field.type !== 'instruction') {
+            removeBtn.classList.add('hidden');
+        }
+        
+        return fieldDiv;
     }
 
     switchSection(sectionName) {
@@ -172,10 +392,27 @@ class EnhancedLLMMessageManager {
         }
     }
 
-    refreshContext() {
-        // This would populate fields from the actual panels
-        // For now, we'll just update the preview
-        this.updatePreview();
+    async refreshContext() {
+        try {
+            console.log('[ENHANCED_LLM] Refreshing context...');
+            
+            // Detect available fields
+            const availableFields = await this.detectAvailableFields();
+            
+            // Populate each section with real data
+            await this.populateSectionWithRealData('context', availableFields.context);
+            await this.populateSectionWithRealData('task', availableFields.task);
+            await this.populateSectionWithRealData('inputs', availableFields.inputs);
+            await this.populateSectionWithRealData('outputs', availableFields.outputs);
+            
+            // Update preview and summary
+            this.updatePreview();
+            this.updateSummary();
+            
+            console.log('[ENHANCED_LLM] Context refresh complete');
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error refreshing context:', error);
+        }
     }
 
     updatePreview() {
