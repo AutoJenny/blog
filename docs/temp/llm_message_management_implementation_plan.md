@@ -6,25 +6,29 @@
 - **Phase 1.5: Working Mockup** - Fully implemented with all UI features
 - **Phase 2: UI Structure Enhancement** - Section selector, categorized sections, instruction buttons
 - **Phase 3: Field Population and Management** - Partial: Task prompt gets real data, others are hard-coded
+- **Phase 3.5: Real Content Display** - ✅ COMPLETE: Replace hard-coded content with actual database content
+- **Phase 3.6: Section-Specific Input Fields** - ✅ COMPLETE: Filter input fields based on selected section, load section-specific content
 - **Phase 4: Drag & Drop Implementation** - SortableJS integration, reordering, visual feedback
 - **Phase 5: Instructional Text System** - Instruction templates, management, styling
 - **Phase 6: Live Preview Assembly** - Assembly logic, real-time updates, preview features
 
 ### ❌ REMAINING PHASES:
-- **Phase 3.5: Real Content Display** - Replace hard-coded content with actual database content
 - **Phase 7: Persistence and Integration** - Save/load functionality, system integration, error handling
 - **Phase 8: Testing and Refinement** - Comprehensive testing, UX testing, final refinements
 
 ### 🎯 NEXT PRIORITY:
-**Phase 3.5: Real Content Display** - Replace hard-coded sample data with actual content from database. Currently the modal shows fake content instead of real section texts, making it unusable for actual workflow management.
+**Phase 7: Persistence and Integration** - Now that real content is displayed and section-specific filtering works, the enhanced modal needs persistence and integration with the existing LLM run functionality to be fully functional.
 
-### CURRENT ISSUES:
-- **System Prompt**: Shows hard-coded "You are a helpful assistant..." instead of actual system prompt
-- **Basic Idea**: Shows hard-coded Scottish storytelling text instead of real basic_idea from database
-- **Section Headings**: Shows hard-coded JSON instead of actual section_headings from database
-- **Idea Scope**: Shows hard-coded text instead of real idea_scope from database
-- **Settings**: Shows hard-coded "Model: llama3.1:70b..." instead of actual LLM settings
-- **Input/Output Fields**: Show placeholder text instead of real field mappings
+### CURRENT STATUS:
+- **System Prompt**: ✅ Gets actual content from saved prompts API or textarea
+- **Basic Idea**: ✅ Gets real basic_idea from post_development table
+- **Section Headings**: ✅ Gets real section_headings from post_development table
+- **Idea Scope**: ✅ Gets real idea_scope from post_development table
+- **Task Prompt**: ✅ Gets actual task prompt from saved prompts API
+- **Settings**: ✅ Gets actual LLM settings from purple panel
+- **Input/Output Fields**: ✅ Populated with real field mappings
+- **Section Selector**: ✅ Populated with actual section titles from post sections API
+- **Section-Specific Input Fields**: ✅ Filter input fields based on selected section, load section-specific content
 
 ## Overview
 Transform the existing "Context Management" modal into a comprehensive "LLM Message Management" interface that allows users to organize, reorder, and customize LLM message assembly with drag & drop functionality and instructional text.
@@ -259,26 +263,57 @@ The mockup is ready for user review and discussion. All requested features are v
   - [x] Test preview features
 
 ### Phase 3.5: Real Content Display
-- [ ] **Replace hard-coded content with actual database content**
-  - [ ] **System Prompt**: Get actual system prompt from saved prompts API or textarea
-  - [ ] **Basic Idea**: Fetch real basic_idea from post_development table
-  - [ ] **Section Headings**: Fetch real section_headings from post_development table  
-  - [ ] **Idea Scope**: Fetch real idea_scope from post_development table
-  - [ ] **Settings**: Get actual LLM settings from purple panel (model, temperature, etc.)
-  - [ ] **Input Fields**: Populate with real field mappings from inputs panel
-  - [ ] **Output Fields**: Populate with real field mappings from outputs panel
-  - [ ] **Test all content displays** with various post states
+- [x] **Replace hard-coded content with actual database content**
+  - [x] **System Prompt**: Get actual system prompt from saved prompts API or textarea
+  - [x] **Basic Idea**: Fetch real basic_idea from post_development table
+  - [x] **Section Headings**: Fetch real section_headings from post_development table  
+  - [x] **Idea Scope**: Fetch real idea_scope from post_development table
+  - [x] **Settings**: Get actual LLM settings from purple panel (model, temperature, etc.)
+  - [x] **Input Fields**: Populate with real field mappings from inputs panel
+  - [x] **Output Fields**: Populate with real field mappings from outputs panel
+  - [x] **Test all content displays** with various post states
 
-- [ ] **Update content population logic**
-  - [ ] Modify `detectAvailableFields()` to fetch real data for all sections
-  - [ ] Update `updateAccordionContent()` to handle all element types
-  - [ ] Add error handling for missing or empty content
-  - [ ] Test content updates when modal is refreshed
+- [x] **Update content population logic**
+  - [x] Modify `detectAvailableFields()` to fetch real data for all sections
+  - [x] Update `updateAccordionContent()` to handle all element types
+  - [x] Add error handling for missing or empty content
+  - [x] Test content updates when modal is refreshed
 
-- [ ] **Remove hard-coded HTML content**
-  - [ ] Replace hard-coded text in modal template with dynamic placeholders
-  - [ ] Ensure all content is populated via JavaScript
-  - [ ] Test modal with empty/null content scenarios
+- [x] **Remove hard-coded HTML content**
+  - [x] Replace hard-coded text in modal template with dynamic placeholders
+  - [x] Ensure all content is populated via JavaScript
+  - [x] Test modal with empty/null content scenarios
+
+### Phase 3.6: Section-Specific Input Fields (COMPLETED)
+- [x] **Populate section selector with actual section titles**
+  - [x] Update `loadPostSections()` to fetch real section data from `/api/workflow/posts/{post_id}/sections`
+  - [x] Populate dropdown with section titles from API response
+  - [x] Set default selection to first section when modal opens
+  - [x] Test section selector with posts that have multiple sections
+
+- [x] **Add section-specific content loading**
+  - [x] Create `getSectionSpecificContent()` method to fetch individual section data
+  - [x] Create `updateInputFieldsForSection()` method to filter and populate input fields
+  - [x] Create `populateInputFieldsWithAllSections()` method for "All Sections" view
+  - [x] Test content loading with different section selections
+
+- [x] **Implement section filtering logic**
+  - [x] Filter input fields to show only section-specific fields (post_section source)
+  - [x] Load section-specific content for each field based on selected section
+  - [x] Handle "All Sections" view to show all input fields
+  - [x] Test filtering with various section selections
+
+- [x] **Update event handlers and initialization**
+  - [x] Update section selector change event to call filtering methods
+  - [x] Update `openModal()` to initialize with selected section
+  - [x] Update `refreshContext()` to maintain section selection
+  - [x] Test event handling and initialization flow
+
+- [x] **Test section-specific functionality**
+  - [x] Test with posts that have multiple sections
+  - [x] Test with posts that have no sections
+  - [x] Test section switching and content updates
+  - [x] Verify API endpoints work correctly
 
 ### Phase 7: Persistence and Integration
 - [ ] **Enhance save/load functionality**
