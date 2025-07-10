@@ -16,10 +16,18 @@
                 </button>
                 {% endif %}
             </div>
-            <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
-                data-target="input_{{ input_id }}" data-section="inputs" data-current-substage="{{ current_substage }}">
-                <!-- Options will be populated by JavaScript -->
-            </select>
+            <div class="flex gap-2 mb-2">
+                <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 flex-1"
+                    data-target="input_{{ input_id }}" data-section="inputs"
+                    data-current-substage="{{ current_substage }}">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <select id="input_format_select_{{ input_id }}"
+                    class="format-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-48"
+                    data-section="input">
+                    <option value="">Input Format</option>
+                </select>
+            </div>
             <textarea id="input_{{ input_id }}" name="{{ input_id }}"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
                 data-db-field="{{ input_config.db_field }}" data-db-table="{{ input_config.db_table }}" rows="4"
@@ -33,10 +41,17 @@
                     [input1]
                 </label>
             </div>
-            <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
-                data-target="input_input1" data-section="inputs" data-current-substage="{{ current_substage }}">
-                <!-- Options will be populated by JavaScript -->
-            </select>
+            <div class="flex gap-2 mb-2">
+                <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 flex-1"
+                    data-target="input_input1" data-section="inputs" data-current-substage="{{ current_substage }}">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <select id="input_format_select_input1"
+                    class="format-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-48"
+                    data-section="input">
+                    <option value="">Input Format</option>
+                </select>
+            </div>
             <textarea id="input_input1" name="input1"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4" data-db-field=""
                 data-db-table="post_development" rows="4" placeholder="Enter text..."></textarea>

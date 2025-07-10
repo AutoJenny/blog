@@ -1,20 +1,6 @@
-<!-- Prompt Section -->
+<!-- Task Section -->
 <div class="border border-dark-border rounded-lg p-4 mb-4">
-    <h2 class="text-xl font-medium text-dark-text mb-4">Prompt</h2>
-
-    <!-- System Mini-Panel -->
-    <div class="bg-dark-hover rounded-lg p-3 mb-3">
-        <h3 class="text-sm font-medium text-blue-500 mb-2">System</h3>
-        <div class="flex flex-col space-y-2">
-            <select id="system_prompt_select"
-                class="w-full bg-dark-bg text-dark-text border border-dark-border rounded p-1 text-sm">
-                <option value="">Select system prompt...</option>
-            </select>
-            <textarea id="system_prompt"
-                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-2 text-sm" rows="2"
-                placeholder="Enter system prompt..."></textarea>
-        </div>
-    </div>
+    <h2 class="text-xl font-medium text-dark-text mb-4">Task</h2>
 
     <!-- Task Mini-Panel -->
     <div class="bg-dark-hover rounded-lg p-3 mb-3">
@@ -27,27 +13,6 @@
             <textarea id="task_prompt"
                 class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-2 text-sm" rows="2"
                 placeholder="Enter task prompt..."></textarea>
-        </div>
-    </div>
-
-    <!-- Format Mapping Mini-Panel -->
-    <div class="bg-dark-hover rounded-lg p-3 mb-3">
-        <h3 class="text-sm font-medium text-blue-500 mb-2">Prompt Format Mapping</h3>
-        <div class="format-mapping">
-            <div class="input-formats">
-                <label for="prompt_input_format_select">Input Format:</label>
-                <select id="prompt_input_format_select" class="format-selector" data-section="input">
-                    <option value="">Select input format...</option>
-                </select>
-                <div id="input_format_preview" class="hidden"></div>
-            </div>
-            <div class="output-formats">
-                <label for="prompt_output_format_select">Output Format:</label>
-                <select id="prompt_output_format_select" class="format-selector" data-section="output">
-                    <option value="">Select output format...</option>
-                </select>
-                <div id="output_format_preview" class="hidden"></div>
-            </div>
         </div>
     </div>
 

@@ -26,11 +26,107 @@
             Ollama</a>
     </div>
 
+    <!-- Context -->
+    <div class="border border-dark-border rounded-lg p-4 mb-4">
+        <h2 class="text-xl font-medium text-dark-text mb-4">Context</h2>
+
+        <!-- System Prompt -->
+        <div class="bg-dark-hover rounded-lg p-3 mb-3">
+            <h3 class="text-sm font-medium text-blue-500 mb-2">System Prompt</h3>
+            <div class="flex flex-col space-y-2">
+                <select id="system_prompt_select"
+                    class="w-full bg-dark-bg text-dark-text border border-dark-border rounded p-1 text-sm">
+                    <option value="">Select system prompt...</option>
+                </select>
+                <textarea id="system_prompt"
+                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-2 text-sm" rows="2"
+                    placeholder="Enter system prompt..."></textarea>
+            </div>
+        </div>
+
+        <!-- Context Fields -->
+        <div id="context-container">
+            <!-- Basic Idea -->
+            <div class="context-field-group mb-4 p-3 border border-gray-600 rounded" data-context-id="basic_idea">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="context_basic_idea" class="block text-sm font-medium text-blue-500">
+                        Basic Idea
+                    </label>
+                    <button type="button" class="remove-context-btn text-red-500 hover:text-red-400 text-sm">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                <select
+                    class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                    data-target="context_basic_idea" data-section="context"
+                    data-current-substage="{{ current_substage }}">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <textarea id="context_basic_idea" name="basic_idea"
+                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                    data-db-field="basic_idea" data-db-table="post_development" rows="3"
+                    placeholder="Basic idea content..."></textarea>
+            </div>
+
+            <!-- Section Headings (JSON list from post_development) -->
+            <div class="context-field-group mb-4 p-3 border border-gray-600 rounded" data-context-id="section_headings">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="context_section_headings" class="block text-sm font-medium text-blue-500">
+                        Section Headings (JSON)
+                    </label>
+                    <button type="button" class="remove-context-btn text-red-500 hover:text-red-400 text-sm">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                <select
+                    class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                    data-target="context_section_headings" data-section="context"
+                    data-current-substage="{{ current_substage }}">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <textarea id="context_section_headings" name="section_headings"
+                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                    data-db-field="section_headings" data-db-table="post_development" rows="3"
+                    placeholder="JSON list of section headings..."></textarea>
+            </div>
+
+            <!-- Idea Scope -->
+            <div class="context-field-group mb-4 p-3 border border-gray-600 rounded" data-context-id="idea_scope">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="context_idea_scope" class="block text-sm font-medium text-blue-500">
+                        Idea Scope
+                    </label>
+                    <button type="button" class="remove-context-btn text-red-500 hover:text-red-400 text-sm">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                <select
+                    class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                    data-target="context_idea_scope" data-section="context"
+                    data-current-substage="{{ current_substage }}">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <textarea id="context_idea_scope" name="idea_scope"
+                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                    data-db-field="idea_scope" data-db-table="post_development" rows="3"
+                    placeholder="Idea scope content..."></textarea>
+            </div>
+        </div>
+
+        <!-- Add Context Button -->
+        <div class="mt-4">
+            <button type="button" id="add-context-btn"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors duration-200">
+                <i class="fas fa-plus mr-2"></i>Add Context Field
+            </button>
+        </div>
+    </div>
+
+    <!-- Task -->
+    {% include 'modules/llm_panel/templates/components/prompt.html' %}
+
     <!-- Inputs -->
     {% include 'modules/llm_panel/templates/components/inputs.html' %}
-
-    <!-- Prompt -->
-    {% include 'modules/llm_panel/templates/components/prompt.html' %}
 
     <!-- Settings -->
     {% include 'modules/llm_panel/templates/components/settings.html' %}
