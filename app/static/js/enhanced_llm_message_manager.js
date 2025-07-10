@@ -698,9 +698,9 @@ class EnhancedLLMMessageManager {
 
     getLLMSettingsContent() {
         // Get actual LLM settings from the purple panel
-        const modelSelect = document.getElementById('llm-model');
-        const temperatureInput = document.getElementById('llm-temperature');
-        const maxTokensInput = document.getElementById('llm-max-tokens');
+        const modelSelect = document.getElementById('llm-model-select');
+        const temperatureInput = document.querySelector('input[name="temperature"]');
+        const maxTokensInput = document.querySelector('input[name="max_tokens"]');
         const timeoutInput = document.getElementById('llm-timeout');
         
         const model = modelSelect ? modelSelect.value : 'Not selected';
