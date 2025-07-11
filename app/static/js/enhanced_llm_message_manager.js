@@ -28,6 +28,7 @@ class EnhancedLLMMessageManager {
         this.initializeAccordions();
         this.initializeSortable();
         this.loadInstructionsFromStorage();
+        this.loadElementOrder();
         this.updatePreview();
         console.log('[ENHANCED_LLM] Initialization complete');
     }
@@ -690,6 +691,15 @@ class EnhancedLLMMessageManager {
         if (container) {
             container.appendChild(instructionDiv);
             
+            // Make the new instruction element draggable
+            instructionDiv.draggable = true;
+            instructionDiv.addEventListener('dragstart', () => {
+                instructionDiv.classList.add('dragging');
+            });
+            instructionDiv.addEventListener('dragend', () => {
+                instructionDiv.classList.remove('dragging');
+            });
+            
             // Immediately start editing the new instruction
             setTimeout(() => {
                 this.editElement(instructionDiv);
@@ -698,6 +708,7 @@ class EnhancedLLMMessageManager {
             this.updatePreview();
             this.updateSummary();
             this.saveInstructionsToStorage();
+            this.saveElementOrder();
         }
     }
 
@@ -805,6 +816,7 @@ class EnhancedLLMMessageManager {
             this.updatePreview();
             this.updateSummary();
             this.saveInstructionsToStorage();
+            this.saveElementOrder();
         }
     }
 
@@ -867,6 +879,15 @@ class EnhancedLLMMessageManager {
         const container = document.getElementById('all-elements-container');
         if (container) {
             container.appendChild(instructionDiv);
+            
+            // Make the loaded instruction element draggable
+            instructionDiv.draggable = true;
+            instructionDiv.addEventListener('dragstart', () => {
+                instructionDiv.classList.add('dragging');
+            });
+            instructionDiv.addEventListener('dragend', () => {
+                instructionDiv.classList.remove('dragging');
+            });
         }
     }
 
@@ -905,100 +926,100 @@ class EnhancedLLMMessageManager {
         
         if (!preview || !charCount) return;
 
-        // Collect all enabled elements from all accordions with colored labels
+        // Collect all enabled elements in DOM order (respecting drag & drop positioning)
         const enabledElements = [];
-        const allAccordions = this.modal.querySelectorAll('.message-accordion');
+        const container = document.getElementById('all-elements-container');
+        if (!container) return;
+
+        // Get all draggable elements in their current order
+        const allElements = container.querySelectorAll('.message-accordion, .message-element[data-element-type="instruction"]');
         
-        allAccordions.forEach(accordion => {
-            const toggle = accordion.querySelector('.element-toggle');
+        allElements.forEach(element => {
+            const toggle = element.querySelector('.element-toggle');
             if (toggle && toggle.checked) {
-                const elementType = accordion.getAttribute('data-element-type');
+                const elementType = element.getAttribute('data-element-type');
                 
-                // Get color based on element type (matching left menu colors)
-                let color = '#60a5fa'; // Default blue
-                let label = elementType.replace('_', ' ').toUpperCase();
-                
-                switch (elementType) {
-                    case 'system_prompt':
-                        color = '#60a5fa'; // Blue
-                        label = 'SYSTEM PROMPT';
-                        break;
-                    case 'basic_idea':
-                        color = '#60a5fa'; // Blue
-                        label = 'BASIC IDEA';
-                        break;
-                    case 'section_headings':
-                        color = '#60a5fa'; // Blue
-                        label = 'SECTION HEADINGS';
-                        break;
-                    case 'idea_scope':
-                        color = '#60a5fa'; // Blue
-                        label = 'IDEA SCOPE';
-                        break;
-                    case 'task_prompt':
-                        color = '#10b981'; // Green
-                        label = 'TASK PROMPT';
-                        break;
-                    case 'inputs':
-                        color = '#f59e0b'; // Yellow
-                        label = 'INPUT FIELDS';
-                        break;
-                    case 'settings':
-                        color = '#8b5cf6'; // Purple
-                        label = 'SETTINGS';
-                        break;
-                }
-                
-                // Check if this accordion has individual field elements (like inputs/outputs)
-                const fieldElements = accordion.querySelectorAll('.message-element');
-                if (fieldElements.length > 0) {
-                    // This accordion contains individual field elements
-                    let sectionContent = '';
-                    fieldElements.forEach(fieldElement => {
-                        const fieldToggle = fieldElement.querySelector('.element-toggle');
-                        if (fieldToggle && fieldToggle.checked) {
-                            const fieldContent = fieldElement.querySelector('.element-content');
-                            if (fieldContent && fieldContent.textContent.trim()) {
-                                const fieldLabel = fieldElement.querySelector('.element-label');
-                                const label = fieldLabel ? fieldLabel.textContent : 'Field';
-                                sectionContent += `${label}: ${fieldContent.textContent.trim()}\n`;
-                            }
-                        }
-                    });
-                    
-                    if (sectionContent.trim()) {
+                if (elementType === 'instruction') {
+                    // Handle instruction elements
+                    const content = element.querySelector('.element-content');
+                    if (content && content.textContent.trim() && content.textContent !== 'Click to edit your instruction...') {
                         enabledElements.push({
-                            label: label,
-                            color: color,
-                            content: sectionContent.trim()
-                        });
-                    }
-                } else {
-                    // This accordion has direct content
-                    const content = accordion.querySelector('.element-content');
-                    if (content && content.textContent.trim()) {
-                        enabledElements.push({
-                            label: label,
-                            color: color,
+                            label: 'INSTRUCTION',
+                            color: '#10b981', // Green
                             content: content.textContent.trim()
                         });
                     }
-                }
-            }
-        });
-
-        // Process instruction elements (they're not in accordions)
-        const instructionElements = this.modal.querySelectorAll('.message-element[data-element-type="instruction"]');
-        instructionElements.forEach(instructionElement => {
-            const toggle = instructionElement.querySelector('.element-toggle');
-            if (toggle && toggle.checked) {
-                const content = instructionElement.querySelector('.element-content');
-                if (content && content.textContent.trim() && content.textContent !== 'Click to edit your instruction...') {
-                    enabledElements.push({
-                        label: 'INSTRUCTION',
-                        color: '#10b981', // Green
-                        content: content.textContent.trim()
-                    });
+                } else {
+                    // Handle accordion elements
+                    let color = '#60a5fa'; // Default blue
+                    let label = elementType.replace('_', ' ').toUpperCase();
+                    
+                    switch (elementType) {
+                        case 'system_prompt':
+                            color = '#60a5fa'; // Blue
+                            label = 'SYSTEM PROMPT';
+                            break;
+                        case 'basic_idea':
+                            color = '#60a5fa'; // Blue
+                            label = 'BASIC IDEA';
+                            break;
+                        case 'section_headings':
+                            color = '#60a5fa'; // Blue
+                            label = 'SECTION HEADINGS';
+                            break;
+                        case 'idea_scope':
+                            color = '#60a5fa'; // Blue
+                            label = 'IDEA SCOPE';
+                            break;
+                        case 'task_prompt':
+                            color = '#10b981'; // Green
+                            label = 'TASK PROMPT';
+                            break;
+                        case 'inputs':
+                            color = '#f59e0b'; // Yellow
+                            label = 'INPUT FIELDS';
+                            break;
+                        case 'settings':
+                            color = '#8b5cf6'; // Purple
+                            label = 'SETTINGS';
+                            break;
+                    }
+                    
+                    // Check if this accordion has individual field elements (like inputs/outputs)
+                    const fieldElements = element.querySelectorAll('.message-element');
+                    if (fieldElements.length > 0) {
+                        // This accordion contains individual field elements
+                        let sectionContent = '';
+                        fieldElements.forEach(fieldElement => {
+                            const fieldToggle = fieldElement.querySelector('.element-toggle');
+                            if (fieldToggle && fieldToggle.checked) {
+                                const fieldContent = fieldElement.querySelector('.element-content');
+                                if (fieldContent && fieldContent.textContent.trim()) {
+                                    const fieldLabel = fieldElement.querySelector('.element-label');
+                                    const label = fieldLabel ? fieldLabel.textContent : 'Field';
+                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}\n`;
+                                }
+                            }
+                        });
+                        
+                        if (sectionContent.trim()) {
+                            enabledElements.push({
+                                label: label,
+                                color: color,
+                                content: sectionContent.trim()
+                            });
+                        }
+                    } else {
+                        // This accordion has direct content
+                        const content = element.querySelector('.element-content');
+                        if (content && content.textContent.trim()) {
+                            enabledElements.push({
+                                label: label,
+                                color: color,
+                                content: content.textContent.trim()
+                            });
+                        }
+                    }
                 }
             }
         });
@@ -1144,16 +1165,20 @@ class EnhancedLLMMessageManager {
         let draggedElement = null;
 
         container.addEventListener('dragstart', (e) => {
-            if (e.target.classList.contains('message-accordion')) {
+            if (e.target.classList.contains('message-accordion') || e.target.classList.contains('message-element')) {
                 draggedElement = e.target;
                 e.target.style.opacity = '0.5';
             }
         });
 
         container.addEventListener('dragend', (e) => {
-            if (e.target.classList.contains('message-accordion')) {
+            if (e.target.classList.contains('message-accordion') || e.target.classList.contains('message-element')) {
                 e.target.style.opacity = '1';
                 draggedElement = null;
+                
+                // Update preview and save order after drag ends
+                this.updatePreview();
+                this.saveElementOrder();
             }
         });
 
@@ -1180,10 +1205,81 @@ class EnhancedLLMMessageManager {
                 accordion.classList.remove('dragging');
             });
         });
+
+        // Make instruction elements draggable
+        this.makeInstructionElementsDraggable();
+    }
+
+    makeInstructionElementsDraggable() {
+        const container = document.getElementById('all-elements-container');
+        if (!container) return;
+
+        // Make existing instruction elements draggable
+        container.querySelectorAll('.message-element[data-element-type="instruction"]').forEach(element => {
+            element.draggable = true;
+            element.addEventListener('dragstart', () => {
+                element.classList.add('dragging');
+            });
+            element.addEventListener('dragend', () => {
+                element.classList.remove('dragging');
+            });
+        });
+    }
+
+    saveElementOrder() {
+        try {
+            const container = document.getElementById('all-elements-container');
+            if (!container) return;
+
+            const order = [];
+            const allElements = container.querySelectorAll('.message-accordion, .message-element[data-element-type="instruction"]');
+            
+            allElements.forEach((element, index) => {
+                const elementType = element.getAttribute('data-element-type');
+                const elementId = element.getAttribute('data-element-id');
+                
+                order.push({
+                    type: elementType,
+                    id: elementId,
+                    index: index
+                });
+            });
+
+            const storageKey = `llm_element_order_${this.getCurrentStepId()}`;
+            localStorage.setItem(storageKey, JSON.stringify(order));
+            console.log('[ENHANCED_LLM] Saved element order:', order.length, 'elements');
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error saving element order:', error);
+        }
+    }
+
+    loadElementOrder() {
+        try {
+            const storageKey = `llm_element_order_${this.getCurrentStepId()}`;
+            const stored = localStorage.getItem(storageKey);
+            
+            if (stored) {
+                const order = JSON.parse(stored);
+                console.log('[ENHANCED_LLM] Loading element order:', order.length, 'elements');
+                
+                const container = document.getElementById('all-elements-container');
+                if (!container) return;
+
+                // Reorder elements based on saved order
+                order.forEach(item => {
+                    const element = container.querySelector(`[data-element-type="${item.type}"][data-element-id="${item.id}"]`);
+                    if (element) {
+                        container.appendChild(element);
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error loading element order:', error);
+        }
     }
 
     getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.message-accordion:not(.dragging)')];
+        const draggableElements = [...container.querySelectorAll('.message-accordion:not(.dragging), .message-element:not(.dragging)')];
         
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
