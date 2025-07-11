@@ -37,10 +37,16 @@
                 <div class="w-1/2 p-4 border-r border-gray-700 overflow-y-auto">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold text-white">Message Elements</h3>
-                        <button id="add-instruction-btn"
-                            class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
-                            <i class="fas fa-plus mr-1"></i>Add Instruction
-                        </button>
+                        <div class="flex gap-2">
+                            <button id="save-enhanced-config"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
+                                Save Configuration
+                            </button>
+                            <button id="add-instruction-btn"
+                                class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                                <i class="fas fa-plus mr-1"></i>Add Instruction
+                            </button>
+                        </div>
                     </div>
 
                     <p class="text-sm text-gray-400 mb-4">
@@ -271,10 +277,6 @@
                     <span id="enhanced-context-summary">0 elements enabled</span>
                 </div>
                 <div class="flex gap-2">
-                    <button id="save-enhanced-config"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                        Save Configuration
-                    </button>
                     <button id="run-with-enhanced-context"
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
                         Run LLM

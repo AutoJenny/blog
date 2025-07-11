@@ -1107,6 +1107,8 @@ class EnhancedLLMMessageManager {
     }
 
     saveConfiguration() {
+        console.log('[ENHANCED_LLM] saveConfiguration called');
+        
         // Collect all configuration data
         const config = {
             accordions: {},
@@ -1115,6 +1117,8 @@ class EnhancedLLMMessageManager {
 
         // Save each accordion's configuration
         const allAccordions = this.modal.querySelectorAll('.message-accordion');
+        console.log('[ENHANCED_LLM] Found accordions:', allAccordions.length);
+        
         allAccordions.forEach(accordion => {
             const elementType = accordion.getAttribute('data-element-type');
             const toggle = accordion.querySelector('.element-toggle');
@@ -1124,12 +1128,16 @@ class EnhancedLLMMessageManager {
                 enabled: toggle ? toggle.checked : true,
                 content: content ? content.textContent : ''
             };
+            
+            console.log('[ENHANCED_LLM] Saved accordion:', elementType, 'enabled:', config.accordions[elementType].enabled);
         });
 
         // Save to localStorage for now
         localStorage.setItem('enhanced-llm-config', JSON.stringify(config));
+        console.log('[ENHANCED_LLM] Saved config to localStorage');
         
         // Also save the current element order
+        console.log('[ENHANCED_LLM] Calling saveElementOrder...');
         this.saveElementOrder();
         
         // Show feedback
@@ -1139,6 +1147,8 @@ class EnhancedLLMMessageManager {
         setTimeout(() => {
             saveBtn.textContent = originalText;
         }, 2000);
+        
+        console.log('[ENHANCED_LLM] saveConfiguration completed');
     }
 
     runLLM() {
@@ -1232,12 +1242,18 @@ class EnhancedLLMMessageManager {
     }
 
     saveElementOrder() {
+        console.log('[ENHANCED_LLM] saveElementOrder called');
         try {
             const container = document.getElementById('all-elements-container');
-            if (!container) return;
+            if (!container) {
+                console.error('[ENHANCED_LLM] Container not found');
+                return;
+            }
+            console.log('[ENHANCED_LLM] Found container');
 
             const order = [];
             const allElements = container.querySelectorAll('.message-accordion, .message-element[data-element-type="instruction"]');
+            console.log('[ENHANCED_LLM] Found elements:', allElements.length);
             
             allElements.forEach((element, index) => {
                 const elementType = element.getAttribute('data-element-type');
@@ -1248,6 +1264,8 @@ class EnhancedLLMMessageManager {
                     id: elementId,
                     index: index
                 });
+                
+                console.log('[ENHANCED_LLM] Element', index, ':', elementType, 'ID:', elementId);
             });
 
             const stepId = this.getCurrentStepId();
@@ -1257,15 +1275,18 @@ class EnhancedLLMMessageManager {
             console.log('[ENHANCED_LLM] Step ID:', stepId);
             console.log('[ENHANCED_LLM] Storage key:', storageKey);
             console.log('[ENHANCED_LLM] Order data:', order);
+            console.log('[ENHANCED_LLM] saveElementOrder completed successfully');
         } catch (error) {
             console.error('[ENHANCED_LLM] Error saving element order:', error);
         }
     }
 
     loadElementOrder() {
+        console.log('[ENHANCED_LLM] loadElementOrder called');
         try {
             const stepId = this.getCurrentStepId();
             const storageKey = `llm_element_order_${stepId}`;
+            console.log('[ENHANCED_LLM] Looking for storage key:', storageKey);
             const stored = localStorage.getItem(storageKey);
             
             if (stored) {
@@ -1276,13 +1297,18 @@ class EnhancedLLMMessageManager {
                 console.log('[ENHANCED_LLM] Order data:', order);
                 
                 const container = document.getElementById('all-elements-container');
-                if (!container) return;
+                if (!container) {
+                    console.error('[ENHANCED_LLM] Container not found during load');
+                    return;
+                }
+                console.log('[ENHANCED_LLM] Found container for loading');
 
                 // Create a temporary container to hold elements while reordering
                 const tempContainer = document.createElement('div');
                 
                 // Move all elements to temp container first
                 const allElements = container.querySelectorAll('.message-accordion, .message-element[data-element-type="instruction"]');
+                console.log('[ENHANCED_LLM] Found elements to reorder:', allElements.length);
                 allElements.forEach(element => {
                     tempContainer.appendChild(element);
                 });
@@ -1292,6 +1318,9 @@ class EnhancedLLMMessageManager {
                     const element = tempContainer.querySelector(`[data-element-type="${item.type}"][data-element-id="${item.id}"]`);
                     if (element) {
                         container.appendChild(element);
+                        console.log('[ENHANCED_LLM] Moved element:', item.type, 'ID:', item.id);
+                    } else {
+                        console.log('[ENHANCED_LLM] Element not found:', item.type, 'ID:', item.id);
                     }
                 });
                 
@@ -1299,9 +1328,12 @@ class EnhancedLLMMessageManager {
                 const remainingElements = tempContainer.querySelectorAll('.message-accordion, .message-element[data-element-type="instruction"]');
                 remainingElements.forEach(element => {
                     container.appendChild(element);
+                    console.log('[ENHANCED_LLM] Added remaining element:', element.getAttribute('data-element-type'));
                 });
                 
                 console.log('[ENHANCED_LLM] Element order restored');
+            } else {
+                console.log('[ENHANCED_LLM] No stored order found for key:', storageKey);
             }
         } catch (error) {
             console.error('[ENHANCED_LLM] Error loading element order:', error);
