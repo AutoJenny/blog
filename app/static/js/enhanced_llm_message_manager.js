@@ -1250,9 +1250,11 @@ class EnhancedLLMMessageManager {
                 });
             });
 
-            const storageKey = `llm_element_order_${this.getCurrentStepId()}`;
+            const stepId = this.getCurrentStepId();
+            const storageKey = `llm_element_order_${stepId}`;
             localStorage.setItem(storageKey, JSON.stringify(order));
             console.log('[ENHANCED_LLM] Saved element order:', order.length, 'elements');
+            console.log('[ENHANCED_LLM] Step ID:', stepId);
             console.log('[ENHANCED_LLM] Storage key:', storageKey);
             console.log('[ENHANCED_LLM] Order data:', order);
         } catch (error) {
@@ -1262,12 +1264,14 @@ class EnhancedLLMMessageManager {
 
     loadElementOrder() {
         try {
-            const storageKey = `llm_element_order_${this.getCurrentStepId()}`;
+            const stepId = this.getCurrentStepId();
+            const storageKey = `llm_element_order_${stepId}`;
             const stored = localStorage.getItem(storageKey);
             
             if (stored) {
                 const order = JSON.parse(stored);
                 console.log('[ENHANCED_LLM] Loading element order:', order.length, 'elements');
+                console.log('[ENHANCED_LLM] Step ID:', stepId);
                 console.log('[ENHANCED_LLM] Storage key:', storageKey);
                 console.log('[ENHANCED_LLM] Order data:', order);
                 
@@ -1354,7 +1358,19 @@ class EnhancedLLMMessageManager {
             return stepMap[stepName] || null;
         }
         
-        return null;
+        // If no step ID found, use the step name as a fallback
+        // This ensures we have a unique storage key even without numeric IDs
+        if (panel && panel.dataset.currentStep) {
+            return panel.dataset.currentStep;
+        }
+        
+        // Final fallback: use the URL path to create a unique identifier
+        const pathParts = window.location.pathname.split('/');
+        if (pathParts.length >= 5) {
+            return `${pathParts[3]}_${pathParts[4]}_${pathParts[5]}`;
+        }
+        
+        return 'default';
     }
 
     getSystemPromptContent() {
