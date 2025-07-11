@@ -27,6 +27,7 @@ class EnhancedLLMMessageManager {
         this.setupEventListeners();
         this.initializeAccordions();
         this.initializeSortable();
+        this.loadInstructionsFromStorage();
         this.updatePreview();
         console.log('[ENHANCED_LLM] Initialization complete');
     }
@@ -677,19 +678,26 @@ class EnhancedLLMMessageManager {
         const template = document.getElementById('instruction-element-template');
         if (!template) return;
 
-        const instructionId = `instruction_${this.instructionCounter++}`;
+        const instructionId = `instruction_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const instructionElement = template.content.cloneNode(true);
         const instructionDiv = instructionElement.querySelector('.message-element');
         
         instructionDiv.setAttribute('data-element-id', instructionId);
-        instructionDiv.querySelector('.element-content').textContent = 'Enter your instruction here...';
+        instructionDiv.querySelector('.element-content').textContent = 'Click to edit your instruction...';
 
         // Add to the all-elements-container (default location)
         const container = document.getElementById('all-elements-container');
         if (container) {
             container.appendChild(instructionDiv);
+            
+            // Immediately start editing the new instruction
+            setTimeout(() => {
+                this.editElement(instructionDiv);
+            }, 100);
+            
             this.updatePreview();
             this.updateSummary();
+            this.saveInstructionsToStorage();
         }
     }
 
@@ -697,30 +705,97 @@ class EnhancedLLMMessageManager {
         const content = element.querySelector('.element-content');
         const currentText = content.textContent;
         
+        // Don't edit if already editing
+        if (content.parentNode.querySelector('textarea')) return;
+        
         // Create textarea for editing
         const textarea = document.createElement('textarea');
         textarea.value = currentText;
-        textarea.className = 'w-full bg-gray-800 text-gray-300 text-xs p-2 rounded border border-gray-600';
-        textarea.rows = 3;
+        textarea.className = 'w-full bg-gray-800 text-gray-300 text-xs p-2 rounded border border-gray-600 resize-none';
+        textarea.rows = 4;
+        textarea.placeholder = 'Enter your instruction here...';
         
-        // Replace content with textarea
+        // Create character count display
+        const charCount = document.createElement('div');
+        charCount.className = 'text-xs text-gray-500 mt-1';
+        charCount.textContent = `${currentText.length} characters`;
+        
+        // Create save/cancel buttons
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'flex gap-2 mt-2';
+        
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs';
+        saveBtn.textContent = 'Save';
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded text-xs';
+        cancelBtn.textContent = 'Cancel';
+        
+        buttonContainer.appendChild(saveBtn);
+        buttonContainer.appendChild(cancelBtn);
+        
+        // Replace content with editing interface
         content.style.display = 'none';
         content.parentNode.insertBefore(textarea, content);
+        content.parentNode.insertBefore(charCount, content.nextSibling);
+        content.parentNode.insertBefore(buttonContainer, charCount.nextSibling);
+        
         textarea.focus();
+        textarea.select();
 
-        // Handle save on blur or enter
+        // Update character count as user types
+        textarea.addEventListener('input', () => {
+            charCount.textContent = `${textarea.value.length} characters`;
+        });
+
+        // Handle save
         const saveEdit = () => {
-            content.textContent = textarea.value;
+            const newText = textarea.value.trim();
+            content.textContent = newText || 'Click to edit your instruction...';
             content.style.display = 'block';
             textarea.remove();
+            charCount.remove();
+            buttonContainer.remove();
             this.updatePreview();
+            
+            // Save to storage if this is an instruction
+            if (element.getAttribute('data-element-type') === 'instruction') {
+                this.saveInstructionsToStorage();
+            }
         };
 
-        textarea.addEventListener('blur', saveEdit);
+        // Handle cancel
+        const cancelEdit = () => {
+            content.style.display = 'block';
+            textarea.remove();
+            charCount.remove();
+            buttonContainer.remove();
+        };
+
+        saveBtn.addEventListener('click', saveEdit);
+        cancelBtn.addEventListener('click', cancelEdit);
+        
         textarea.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
                 saveEdit();
+            } else if (e.key === 'Escape') {
+                cancelEdit();
             }
+        });
+        
+        // Auto-save on blur (but only if content changed)
+        textarea.addEventListener('blur', () => {
+            setTimeout(() => {
+                if (textarea.parentNode) { // Still editing
+                    if (textarea.value.trim() !== currentText.trim()) {
+                        saveEdit();
+                    } else {
+                        cancelEdit();
+                    }
+                }
+            }, 100);
         });
     }
 
@@ -729,6 +804,69 @@ class EnhancedLLMMessageManager {
             element.remove();
             this.updatePreview();
             this.updateSummary();
+            this.saveInstructionsToStorage();
+        }
+    }
+
+    saveInstructionsToStorage() {
+        try {
+            const instructions = [];
+            const instructionElements = this.modal.querySelectorAll('.message-element[data-element-type="instruction"]');
+            
+            instructionElements.forEach(element => {
+                const id = element.getAttribute('data-element-id');
+                const content = element.querySelector('.element-content').textContent;
+                const isEnabled = element.querySelector('.element-toggle').checked;
+                
+                instructions.push({
+                    id: id,
+                    content: content,
+                    enabled: isEnabled,
+                    timestamp: Date.now()
+                });
+            });
+            
+            const storageKey = `llm_instructions_${this.getCurrentStepId()}`;
+            localStorage.setItem(storageKey, JSON.stringify(instructions));
+            console.log('[ENHANCED_LLM] Saved instructions to storage:', instructions.length);
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error saving instructions:', error);
+        }
+    }
+
+    loadInstructionsFromStorage() {
+        try {
+            const storageKey = `llm_instructions_${this.getCurrentStepId()}`;
+            const stored = localStorage.getItem(storageKey);
+            
+            if (stored) {
+                const instructions = JSON.parse(stored);
+                console.log('[ENHANCED_LLM] Loading instructions from storage:', instructions.length);
+                
+                instructions.forEach(instruction => {
+                    this.createInstructionFromStorage(instruction);
+                });
+            }
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error loading instructions:', error);
+        }
+    }
+
+    createInstructionFromStorage(instructionData) {
+        const template = document.getElementById('instruction-element-template');
+        if (!template) return;
+
+        const instructionElement = template.content.cloneNode(true);
+        const instructionDiv = instructionElement.querySelector('.message-element');
+        
+        instructionDiv.setAttribute('data-element-id', instructionData.id);
+        instructionDiv.querySelector('.element-content').textContent = instructionData.content || 'Click to edit your instruction...';
+        instructionDiv.querySelector('.element-toggle').checked = instructionData.enabled !== false;
+        
+        // Add to the all-elements-container
+        const container = document.getElementById('all-elements-container');
+        if (container) {
+            container.appendChild(instructionDiv);
         }
     }
 
@@ -849,6 +987,22 @@ class EnhancedLLMMessageManager {
             }
         });
 
+        // Process instruction elements (they're not in accordions)
+        const instructionElements = this.modal.querySelectorAll('.message-element[data-element-type="instruction"]');
+        instructionElements.forEach(instructionElement => {
+            const toggle = instructionElement.querySelector('.element-toggle');
+            if (toggle && toggle.checked) {
+                const content = instructionElement.querySelector('.element-content');
+                if (content && content.textContent.trim() && content.textContent !== 'Click to edit your instruction...') {
+                    enabledElements.push({
+                        label: 'INSTRUCTION',
+                        color: '#10b981', // Green
+                        content: content.textContent.trim()
+                    });
+                }
+            }
+        });
+
         // Assemble the message with colored labels and line returns
         let message = '';
         enabledElements.forEach((element, index) => {
@@ -898,6 +1052,16 @@ class EnhancedLLMMessageManager {
                     totalElements++;
                     totalEnabled++;
                 }
+            }
+        });
+        
+        // Count instruction elements
+        const instructionElements = this.modal.querySelectorAll('.message-element[data-element-type="instruction"]');
+        instructionElements.forEach(instructionElement => {
+            const toggle = instructionElement.querySelector('.element-toggle');
+            if (toggle) {
+                totalElements++;
+                if (toggle.checked) totalEnabled++;
             }
         });
         
