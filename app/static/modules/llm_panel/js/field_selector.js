@@ -685,13 +685,20 @@ class FieldSelector {
                         fieldValue = firstSection.description || '';
                         break;
                     case 'ideas_to_include':
-                        fieldValue = firstSection.elements?.ideas?.join('\n') || '';
+                        fieldValue = firstSection.ideas_to_include || '';
                         break;
                     case 'facts_to_include':
-                        fieldValue = firstSection.elements?.facts?.join('\n') || '';
+                        fieldValue = firstSection.facts_to_include || '';
+                        break;
+                    case 'draft':
+                        fieldValue = firstSection.draft || '';
+                        break;
+                    case 'content':
+                        fieldValue = firstSection.content || '';
                         break;
                     default:
-                        fieldValue = `Section data available for field: ${fieldName}`;
+                        // Try to get the field directly from the section data
+                        fieldValue = firstSection[fieldName] || `Section data available for field: ${fieldName}`;
                 }
                 
                 targetElement.value = fieldValue;
