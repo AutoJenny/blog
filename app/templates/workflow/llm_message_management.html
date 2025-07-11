@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Message Management</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #111827;
+            color: #f9fafb;
+        }
+
+        .message-accordion {
+            transition: all 0.3s ease;
+        }
+
+        .accordion-content {
+            transition: all 0.3s ease;
+        }
+
+        .drag-handle {
+            cursor: grab;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .element-toggle:checked+span {
+            color: #60a5fa;
+        }
+
+        .element-toggle:not(:checked)+span {
+            color: #6b7280;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #374151;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #6b7280;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header -->
+    <div class="bg-gray-800 border-b border-gray-700 p-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <h1 class="text-2xl font-bold text-white">LLM Message Management</h1>
+
+                <!-- Post Section Selector for Preview -->
+                <div class="flex items-center gap-2">
+                    <label class="text-sm text-gray-300">Preview Section:</label>
+                    <select id="post-section-selector"
+                        class="bg-gray-700 text-white border border-gray-600 rounded px-3 py-1 text-sm">
+                        <option value="">All Sections</option>
+                        <!-- Post sections will be populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button id="refresh-enhanced-context"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                    <i class="fas fa-sync-alt mr-1"></i>Refresh
+                </button>
+                <button id="test-field-detection"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                    <i class="fas fa-vial mr-1"></i>Test Fields
+                </button>
+                <button id="debug-preview-btn"
+                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded text-sm">
+                    <i class="fas fa-bug mr-1"></i>Debug Preview
+                </button>
+                <a href="/workflow" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm">
+                    <i class="fas fa-arrow-left mr-1"></i>Back to Workflow
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex min-h-[calc(100vh-80px)]">
+        <!-- Left: All Message Elements as Accordions -->
+        <div class="w-1/2 p-6 border-r border-gray-700 overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-white">Message Elements</h2>
+                <button id="add-instruction-btn"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                    <i class="fas fa-plus mr-1"></i>Add Instruction
+                </button>
+            </div>
+
+            <p class="text-sm text-gray-400 mb-6">
+                Organize and reorder all elements that will be sent to the LLM. Use drag & drop to reorder,
+                checkboxes to enable/disable. Click headers to expand/collapse sections.
+            </p>
+
+            <!-- Unified Elements Container with Accordions -->
+            <div id="all-elements-container" class="space-y-3">
+                <!-- System Prompt Accordion -->
+                <div class="message-accordion bg-gray-700 rounded-lg border border-gray-600"
+                    data-element-type="system_prompt">
+                    <div
+                        class="accordion-header flex items-center justify-between p-4 cursor-pointer hover:bg-gray-600 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" class="element-toggle" checked>
+                            <span class="text-sm font-medium text-blue-400">System Prompt</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                            <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                            <span class="accordion-toggle text-gray-400 hover:text-white text-sm">▼</span>
+                        </div>
+                    </div>
+                    <div class="accordion-content hidden p-4 border-t border-gray-600">
+                        <div class="element-content text-xs text-gray-300 bg-gray-800 p-3 rounded">
+                            <!-- System prompt content will be populated dynamically -->
+                            <p class="text-gray-400 italic">System prompt content will be loaded here...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Basic Idea Accordion -->
+                <div class="message-accordion bg-gray-700 rounded-lg border border-gray-600"
+                    data-element-type="basic_idea">
+                    <div
+                        class="accordion-header flex items-center justify-between p-4 cursor-pointer hover:bg-gray-600 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" class="element-toggle" checked>
+                            <span class="text-sm font-medium text-blue-400">Basic Idea</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                            <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                            <span class="accordion-toggle text-gray-400 hover:text-white text-sm">▼</span>
+                        </div>
+                    </div>
+                    <div class="accordion-content hidden p-4 border-t border-gray-600">
+                        <div class="element-content text-xs text-gray-300 bg-gray-800 p-3 rounded">
+                            <!-- Basic idea content will be populated dynamically -->
+                            <p class="text-gray-400 italic">Basic idea content will be loaded here...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Headings Accordion -->
+                <div class="message-accordion bg-gray-700 rounded-lg border border-gray-600"
+                    data-element-type="section_headings">
+                    <div
+                        class="accordion-header flex items-center justify-between p-4 cursor-pointer hover:bg-gray-600 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" class="element-toggle" checked>
+                            <span class="text-sm font-medium text-blue-400">Section Headings</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                            <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                            <span class="accordion-toggle text-gray-400 hover:text-white text-sm">▼</span>
+                        </div>
+                    </div>
+                    <div class="accordion-content hidden p-4 border-t border-gray-600">
+                        <div class="element-content text-xs text-gray-300 bg-gray-800 p-3 rounded">
+                            <!-- Section headings content will be populated dynamically -->
+                            <p class="text-gray-400 italic">Section headings content will be loaded here...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Idea Scope Accordion -->
+                <div class="message-accordion bg-gray-700 rounded-lg border border-gray-600"
+                    data-element-type="idea_scope">
+                    <div
+                        class="accordion-header flex items-center justify-between p-4 cursor-pointer hover:bg-gray-600 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" class="element-toggle" checked>
+                            <span class="text-sm font-medium text-blue-400">Idea Scope</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                            <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                            <span class="accordion-toggle text-gray-400 hover:text-white text-sm">▼</span>
+                        </div>
+                    </div>
+                    <div class="accordion-content hidden p-4 border-t border-gray-600">
+                        <div class="element-content text-xs text-gray-300 bg-gray-800 p-3 rounded">
+                            <!-- Idea scope content will be populated dynamically -->
+                            <p class="text-gray-400 italic">Idea scope content will be loaded here...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Prompt Accordion -->
+                <div class="message-accordion bg-gray-700 rounded-lg border border-gray-600"
+                    data-element-type="task_prompt">
+                    <div
+                        class="accordion-header flex items-center justify-between p-4 cursor-pointer hover:bg-gray-600 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" class="element-toggle" checked>
+                            <span class="text-sm font-medium text-green-400">Task Prompt</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                            <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                            <span class="accordion-toggle text-gray-400 hover:text-white text-sm">▼</span>
+                        </div>
+                    </div>
+                    <div class="accordion-content hidden p-4 border-t border-gray-600">
+                        <div class="element-content text-xs text-gray-300 bg-gray-800 p-3 rounded">
+                            <!-- Task prompt content will be populated dynamically -->
+                            <p class="text-gray-400 italic">Task prompt content will be loaded here...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Fields Container -->
+                <div class="message-accordion bg-gray-700 rounded-lg border border-gray-600" data-element-type="inputs">
+                    <div
+                        class="accordion-header flex items-center justify-between p-4 cursor-pointer hover:bg-gray-600 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" class="element-toggle" checked>
+                            <span class="text-sm font-medium text-yellow-400">Input Fields</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                            <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                            <span class="accordion-toggle text-gray-400 hover:text-white text-sm">▼</span>
+                        </div>
+                    </div>
+                    <div class="accordion-content hidden p-4 border-t border-gray-600">
+                        <div id="input-elements-list" class="space-y-2">
+                            <!-- Input elements will be populated here -->
+                            <div class="text-sm text-gray-400 italic">Input fields will be detected from the
+                                Inputs panel...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Container -->
+                <div class="message-accordion bg-gray-700 rounded-lg border border-gray-600"
+                    data-element-type="settings">
+                    <div
+                        class="accordion-header flex items-center justify-between p-4 cursor-pointer hover:bg-gray-600 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" class="element-toggle" checked>
+                            <span class="text-sm font-medium text-purple-400">Settings</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="edit-element-btn text-blue-400 hover:text-blue-300 text-xs">Edit</button>
+                            <div class="drag-handle text-gray-400 hover:text-white cursor-move text-xs">⋮⋮</div>
+                            <span class="accordion-toggle text-gray-400 hover:text-white text-sm">▼</span>
+                        </div>
+                    </div>
+                    <div class="accordion-content hidden p-4 border-t border-gray-600">
+                        <div class="element-content text-xs text-gray-300 bg-gray-800 p-3 rounded">
+                            <!-- Settings content will be populated dynamically -->
+                            <p class="text-gray-400 italic">Settings content will be loaded here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Preview Panel -->
+        <div class="w-1/2 p-6 overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-white">Message Preview</h2>
+                <div class="flex gap-2">
+                    <button id="copy-preview-btn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                        <i class="fas fa-copy mr-1"></i>Copy
+                    </button>
+                    <button id="send-test-btn"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                        <i class="fas fa-paper-plane mr-1"></i>Send Test
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 border border-gray-700 rounded-lg p-4">
+                <div id="message-preview" class="text-sm text-gray-300 whitespace-pre-wrap">
+                    <!-- Preview content will be populated dynamically -->
+                    <p class="text-gray-400 italic">Message preview will be generated here...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        class LLMMessageManager {
+            constructor() {
+                this.workflowContext = {};
+                this.fieldData = {};
+                this.postSections = [];
+                this.selectedPostSection = '';
+                this.init();
+            }
+
+            async init() {
+                await this.loadWorkflowContext();
+                await this.loadPostSections();
+                await this.loadFieldData();
+                this.setupEventListeners();
+                this.updatePreview();
+            }
+
+            async loadWorkflowContext() {
+                try {
+                    // Get current workflow context from URL or default to post 1
+                    const pathParts = window.location.pathname.split('/');
+                    let postId = '1'; // Default to post 1
+
+                    // Try to get post ID from URL if we're in a workflow context
+                    if (pathParts.length > 3 && pathParts[1] === 'workflow' && pathParts[2] === 'posts') {
+                        postId = pathParts[3];
+                    }
+
+                    console.log('Loading workflow context for post:', postId);
+
+                    // Load post development data
+                    const response = await fetch(`/api/workflow/posts/${postId}/development`);
+                    if (response.ok) {
+                        this.workflowContext = await response.json();
+                        console.log('Loaded workflow context:', this.workflowContext);
+                    } else {
+                        console.error('Failed to load workflow context:', response.status);
+                    }
+                } catch (error) {
+                    console.error('Error loading workflow context:', error);
+                }
+            }
+
+            async loadPostSections() {
+                try {
+                    const pathParts = window.location.pathname.split('/');
+                    let postId = '1'; // Default to post 1
+
+                    // Try to get post ID from URL if we're in a workflow context
+                    if (pathParts.length > 3 && pathParts[1] === 'workflow' && pathParts[2] === 'posts') {
+                        postId = pathParts[3];
+                    }
+
+                    console.log('Loading post sections for post:', postId);
+
+                    const response = await fetch(`/api/workflow/posts/${postId}/sections`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.postSections = data.sections || [];
+                        console.log('Loaded post sections:', this.postSections);
+                        this.populateSectionSelector();
+                    } else {
+                        console.error('Failed to load post sections:', response.status);
+                    }
+                } catch (error) {
+                    console.error('Error loading post sections:', error);
+                }
+            }
+
+            async loadFieldData() {
+                try {
+                    const response = await fetch('/api/workflow/fields/available');
+                    if (response.ok) {
+                        this.fieldData = await response.json();
+                        this.populateInputFields();
+                    }
+                } catch (error) {
+                    console.error('Error loading field data:', error);
+                }
+            }
+
+            populateSectionSelector() {
+                const selector = document.getElementById('post-section-selector');
+                selector.innerHTML = '<option value="">All Sections</option>';
+
+                this.postSections.forEach(section => {
+                    const option = document.createElement('option');
+                    option.value = section.id;
+                    option.textContent = section.heading || `Section ${section.id}`;
+                    selector.appendChild(option);
+                });
+            }
+
+            populateInputFields() {
+                const inputList = document.getElementById('input-elements-list');
+                if (!inputList) return;
+
+                inputList.innerHTML = '';
+
+                if (this.fieldData.fields && this.fieldData.fields.length > 0) {
+                    this.fieldData.fields.forEach(field => {
+                        const fieldElement = document.createElement('div');
+                        fieldElement.className = 'flex items-center gap-2 p-2 bg-gray-800 rounded border border-gray-600';
+                        fieldElement.innerHTML = `
+                            <input type="checkbox" class="field-toggle" checked data-field="${field.field_name}">
+                            <span class="text-xs text-gray-300">${field.display_name}</span>
+                            <span class="text-xs text-gray-500">(${field.db_table}.${field.db_field})</span>
+                        `;
+                        inputList.appendChild(fieldElement);
+                    });
+                } else {
+                    inputList.innerHTML = '<div class="text-sm text-gray-400 italic">No input fields available</div>';
+                }
+            }
+
+            setupEventListeners() {
+                // Accordion functionality
+                document.querySelectorAll('.accordion-header').forEach(header => {
+                    header.addEventListener('click', () => {
+                        const accordion = header.closest('.message-accordion');
+                        const content = accordion.querySelector('.accordion-content');
+                        const toggle = header.querySelector('.accordion-toggle');
+
+                        content.classList.toggle('hidden');
+                        toggle.textContent = content.classList.contains('hidden') ? '▼' : '▲';
+                    });
+                });
+
+                // Element toggle functionality
+                document.querySelectorAll('.element-toggle').forEach(toggle => {
+                    toggle.addEventListener('change', () => {
+                        const span = toggle.nextElementSibling;
+                        if (toggle.checked) {
+                            span.style.color = '#60a5fa';
+                        } else {
+                            span.style.color = '#6b7280';
+                        }
+                        this.updatePreview();
+                    });
+                });
+
+                // Field toggle functionality (for input fields)
+                document.addEventListener('change', (e) => {
+                    if (e.target.classList.contains('field-toggle')) {
+                        console.log('Field toggle changed:', e.target.dataset.field, e.target.checked);
+                        this.updatePreview();
+                    }
+                });
+
+                // Section selector
+                document.getElementById('post-section-selector').addEventListener('change', (e) => {
+                    this.selectedPostSection = e.target.value;
+                    this.updatePreview();
+                });
+
+                // Copy button
+                document.getElementById('copy-preview-btn').addEventListener('click', () => {
+                    const preview = document.getElementById('message-preview');
+                    navigator.clipboard.writeText(preview.textContent);
+                    alert('Preview copied to clipboard!');
+                });
+
+                // Test fields button
+                document.getElementById('test-field-detection').addEventListener('click', () => {
+                    this.testFieldDetection();
+                });
+
+                // Debug preview button
+                document.getElementById('debug-preview-btn').addEventListener('click', () => {
+                    this.debugPreview();
+                });
+
+                // Refresh button
+                document.getElementById('refresh-enhanced-context').addEventListener('click', () => {
+                    this.refreshContext();
+                });
+            }
+
+            updatePreview() {
+                const preview = document.getElementById('message-preview');
+                const enabledElements = document.querySelectorAll('.element-toggle:checked');
+
+                console.log('Updating preview with enabled elements:', enabledElements.length);
+                console.log('Workflow context:', this.workflowContext);
+
+                let previewText = '';
+
+                enabledElements.forEach(toggle => {
+                    const accordion = toggle.closest('.message-accordion');
+                    const elementType = accordion.dataset.elementType;
+                    const content = accordion.querySelector('.element-content');
+
+                    console.log('Processing element type:', elementType);
+
+                    previewText += `=== ${elementType.toUpperCase()} ===\n`;
+
+                    // Get actual content based on element type
+                    const actualContent = this.getActualContent(elementType);
+                    console.log('Actual content for', elementType, ':', actualContent);
+                    previewText += actualContent + '\n\n';
+                });
+
+                console.log('Final preview text:', previewText);
+                preview.textContent = previewText || 'No enabled elements to preview';
+            }
+
+            getActualContent(elementType) {
+                switch (elementType) {
+                    case 'system_prompt':
+                        return this.workflowContext.system_prompt || 'System prompt not configured';
+
+                    case 'basic_idea':
+                        return this.workflowContext.basic_idea || 'Basic idea not available';
+
+                    case 'section_headings':
+                        return this.workflowContext.section_headings || 'Section headings not available';
+
+                    case 'idea_scope':
+                        return this.workflowContext.idea_scope || 'Idea scope not available';
+
+                    case 'task_prompt':
+                        return this.workflowContext.task_prompt || 'Task prompt not configured';
+
+                    case 'inputs':
+                        return this.getInputFieldsContent();
+
+                    case 'settings':
+                        return this.getSettingsContent();
+
+                    default:
+                        return 'Content not available';
+                }
+            }
+
+            getInputFieldsContent() {
+                const enabledFields = document.querySelectorAll('.field-toggle:checked');
+                if (enabledFields.length === 0) {
+                    return 'No input fields selected';
+                }
+
+                let content = '';
+                enabledFields.forEach(field => {
+                    const fieldName = field.dataset.field;
+                    const fieldSpan = field.nextElementSibling;
+                    const displayName = fieldSpan.textContent;
+
+                    // Get field value from workflow context
+                    const fieldValue = this.workflowContext[fieldName] || '[No value]';
+                    content += `${displayName}: ${fieldValue}\n`;
+                });
+
+                return content;
+            }
+
+            getSettingsContent() {
+                const settings = this.workflowContext.llm_settings || {};
+                return `Model: ${settings.model || 'Not configured'}\nTemperature: ${settings.temperature || 'Not configured'}\nMax Tokens: ${settings.max_tokens || 'Not configured'}`;
+            }
+
+            async testFieldDetection() {
+                try {
+                    const response = await fetch('/api/workflow/fields/available');
+                    if (response.ok) {
+                        const data = await response.json();
+                        alert(`Field detection test successful!\nFound ${data.fields ? data.fields.length : 0} available fields.`);
+                    } else {
+                        alert('Field detection test failed.');
+                    }
+                } catch (error) {
+                    alert('Field detection test failed: ' + error.message);
+                }
+            }
+
+            async refreshContext() {
+                await this.loadWorkflowContext();
+                await this.loadPostSections();
+                await this.loadFieldData();
+                this.updatePreview();
+                alert('Context refreshed successfully!');
+            }
+
+            debugPreview() {
+                const enabledElements = document.querySelectorAll('.element-toggle:checked');
+                const preview = document.getElementById('message-preview');
+
+                let debugInfo = `=== DEBUG INFO ===\n`;
+                debugInfo += `Enabled elements: ${enabledElements.length}\n`;
+                debugInfo += `Workflow context keys: ${Object.keys(this.workflowContext).join(', ')}\n`;
+                debugInfo += `Post sections: ${this.postSections.length}\n`;
+                debugInfo += `Selected section: ${this.selectedPostSection}\n\n`;
+
+                enabledElements.forEach((toggle, index) => {
+                    const accordion = toggle.closest('.message-accordion');
+                    const elementType = accordion.dataset.elementType;
+                    debugInfo += `Element ${index + 1}: ${elementType}\n`;
+                });
+
+                debugInfo += `\n=== CURRENT PREVIEW ===\n`;
+                debugInfo += preview.textContent;
+
+                alert(debugInfo);
+                console.log('Debug info:', debugInfo);
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new LLMMessageManager();
+        });
+    </script>
+</body>
+
+</html>
