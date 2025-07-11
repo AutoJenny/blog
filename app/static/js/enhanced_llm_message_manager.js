@@ -84,10 +84,43 @@ class EnhancedLLMMessageManager {
             // Field selector changes - refresh input fields and preview
             if (e.target.classList.contains('field-selector')) {
                 console.log('[ENHANCED_LLM] Field selector changed, refreshing input fields...');
+                console.log('[ENHANCED_LLM] Selected value:', e.target.value);
+                
+                // Get the target textarea for this field selector
+                const targetId = e.target.getAttribute('data-target');
+                const textarea = document.getElementById(targetId);
+                
+                if (textarea && e.target.value) {
+                    console.log('[ENHANCED_LLM] Found target textarea:', targetId);
+                    
+                    // If this is a section field, get the content directly from section data
+                    if (e.target.value === 'ideas_to_include' && this.postSections.length > 0) {
+                        const firstSection = this.postSections[0];
+                        if (firstSection.ideas_to_include) {
+                            console.log('[ENHANCED_LLM] Setting ideas_to_include content directly:', firstSection.ideas_to_include.substring(0, 50) + '...');
+                            textarea.value = firstSection.ideas_to_include;
+                        }
+                    } else if (e.target.value === 'draft' && this.postSections.length > 0) {
+                        const firstSection = this.postSections[0];
+                        if (firstSection.draft) {
+                            console.log('[ENHANCED_LLM] Setting draft content directly:', firstSection.draft.substring(0, 50) + '...');
+                            textarea.value = firstSection.draft;
+                        }
+                    } else if (e.target.value === 'content' && this.postSections.length > 0) {
+                        const firstSection = this.postSections[0];
+                        if (firstSection.content) {
+                            console.log('[ENHANCED_LLM] Setting content directly:', firstSection.content.substring(0, 50) + '...');
+                            textarea.value = firstSection.content;
+                        }
+                    }
+                }
+                
+                // Wait for field selector to update the textarea, then refresh
                 setTimeout(() => {
+                    console.log('[ENHANCED_LLM] Refreshing after field selector change...');
                     this.updateInputFieldsForSection(this.selectedPostSection);
                     this.updatePreview();
-                }, 100); // Small delay to ensure field selector has updated the textarea
+                }, 200); // Longer delay to ensure field selector has updated the textarea
             }
         });
 
@@ -310,7 +343,10 @@ class EnhancedLLMMessageManager {
                         dataTarget: dataTarget,
                         selectedField: selectedField,
                         content: fieldContent ? fieldContent.substring(0, 50) + '...' : 'empty',
-                        options: Array.from(fieldSelector.options).map(opt => opt.value)
+                        contentLength: fieldContent ? fieldContent.length : 0,
+                        options: Array.from(fieldSelector.options).map(opt => opt.value),
+                        textareaId: textarea.id,
+                        textareaValue: textarea.value ? textarea.value.substring(0, 50) + '...' : 'empty'
                     });
                     
                     // Use the selected field name if available, otherwise fall back to data-target or fieldId
