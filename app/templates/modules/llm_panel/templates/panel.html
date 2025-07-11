@@ -10,11 +10,7 @@
             Run LLM
         </button>
 
-        <!-- Manage Context Button -->
-        <button id="manage-context-btn" data-action="manage-context"
-            class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded shadow-lg transition-colors duration-200">
-            Manage Context
-        </button>
+
 
         <!-- Enhanced LLM Message Management Button -->
         <button id="enhanced-llm-message-btn" data-action="enhanced-llm-message"
@@ -141,9 +137,6 @@
     {% include 'modules/llm_panel/templates/components/outputs.html' %}
 </div>
 
-<!-- Context Management Modal -->
-{% include 'modules/llm_panel/templates/context_management_modal.html' %}
-
 <!-- Enhanced LLM Message Management Modal -->
 {% include 'modules/llm_panel/templates/enhanced_llm_message_modal.html' %}
 
@@ -157,7 +150,6 @@
     import { FormatSelector } from "/static/js/format_selector.js";
     import { MultiInputManager } from "/static/modules/llm_panel/js/multi_input_manager.js";
     import sectionPanel from "/static/js/workflow/template_view.js";
-    import ContextManager from "/static/js/context_manager.js";
     import EnhancedLLMMessageManager from "/static/js/enhanced_llm_message_manager.js";
 
     // Initialize field selector
@@ -188,10 +180,7 @@
         const formatSelector = new FormatSelector();
         window.formatSelector = formatSelector;
 
-        // Initialize ContextManager
-        console.log('[PANEL] Initializing ContextManager...');
-        const contextManager = new ContextManager();
-        window.contextManager = contextManager;
+
 
         // Initialize EnhancedLLMMessageManager
         console.log('[PANEL] Initializing EnhancedLLMMessageManager...');
@@ -199,22 +188,7 @@
         window.enhancedLLMMessageManager = enhancedLLMMessageManager;
         console.log('[PANEL] EnhancedLLMMessageManager created and assigned to window:', window.enhancedLLMMessageManager);
 
-        // Initialize Manage Context button
-        const manageContextBtn = document.getElementById('manage-context-btn');
-        if (manageContextBtn) {
-            console.log('[PANEL] Found manage context button, adding event listener');
-            manageContextBtn.addEventListener('click', () => {
-                console.log('[PANEL] Manage context button clicked');
-                if (window.contextManager) {
-                    console.log('[PANEL] ContextManager found, showing modal');
-                    window.contextManager.show();
-                } else {
-                    console.error('[PANEL] ContextManager not found');
-                }
-            });
-        } else {
-            console.error('[PANEL] Manage context button not found');
-        }
+
 
         // Initialize Enhanced LLM Message Management button
         const enhancedLLMMessageBtn = document.getElementById('enhanced-llm-message-btn');
