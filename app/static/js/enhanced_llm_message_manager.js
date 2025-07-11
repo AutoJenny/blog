@@ -74,11 +74,20 @@ class EnhancedLLMMessageManager {
             this.runLLM();
         });
 
-        // Element toggles
+        // Element toggles and field selector changes
         this.modal.addEventListener('change', (e) => {
             if (e.target.classList.contains('element-toggle')) {
                 this.updatePreview();
                 this.updateSummary();
+            }
+            
+            // Field selector changes - refresh input fields and preview
+            if (e.target.classList.contains('field-selector')) {
+                console.log('[ENHANCED_LLM] Field selector changed, refreshing input fields...');
+                setTimeout(() => {
+                    this.updateInputFieldsForSection(this.selectedPostSection);
+                    this.updatePreview();
+                }, 100); // Small delay to ensure field selector has updated the textarea
             }
         });
 
@@ -304,17 +313,48 @@ class EnhancedLLMMessageManager {
                         options: Array.from(fieldSelector.options).map(opt => opt.value)
                     });
                     
-                    // If no field is selected but we have a data-target, use that as the field name
+                    // Use the selected field name if available, otherwise fall back to data-target or fieldId
                     const fieldName = selectedField || dataTarget || fieldId;
                     
                     if (fieldName) {
+                        // Get the display name for the selected field
+                        const displayName = this.mapFieldToDisplayName(fieldName);
+                        
+                        // If we have a selected field but no content in textarea, try to get content from section data
+                        let content = fieldContent;
+                        if (selectedField && (!content || content.trim() === '')) {
+                            console.log('[ENHANCED_LLM] Selected field has no content, checking section data for:', selectedField);
+                            // Try to get content from the first section data
+                            if (this.postSections.length > 0) {
+                                const firstSection = this.postSections[0];
+                                switch (selectedField) {
+                                    case 'ideas_to_include':
+                                        content = firstSection.ideas_to_include || '';
+                                        break;
+                                    case 'draft':
+                                        content = firstSection.draft || '';
+                                        break;
+                                    case 'content':
+                                        content = firstSection.content || '';
+                                        break;
+                                    case 'facts_to_include':
+                                        content = firstSection.facts_to_include || '';
+                                        break;
+                                    default:
+                                        content = firstSection[selectedField] || '';
+                                }
+                                console.log('[ENHANCED_LLM] Retrieved content from section data:', content ? content.substring(0, 50) + '...' : 'empty');
+                            }
+                        }
+                        
                         fields.inputs.push({
                             id: fieldName,
-                            name: this.mapFieldToDisplayName(fieldName),
-                            content: fieldContent || 'No content available',
+                            name: displayName,
+                            content: content || 'No content available',
                             type: 'field',
                             source: 'purple_module',
-                            fieldId: fieldId
+                            fieldId: fieldId,
+                            selectedField: selectedField
                         });
                     }
                 }
@@ -443,7 +483,7 @@ class EnhancedLLMMessageManager {
                             contentLength: firstSection.content ? firstSection.content.length : 0
                         });
                         
-                        // Add section content as input fields (only if not already present)
+                        // Add section content as input fields (only if not already present and no selected field)
                         if (firstSection.draft && firstSection.draft.trim() !== '' && !fields.inputs.some(f => f.id === 'draft')) {
                             console.log('[ENHANCED_LLM] Adding draft content:', firstSection.draft.substring(0, 50) + '...');
                             fields.inputs.push({
