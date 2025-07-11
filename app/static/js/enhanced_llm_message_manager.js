@@ -1315,12 +1315,26 @@ class EnhancedLLMMessageManager {
                 
                 // Reorder elements based on saved order
                 order.forEach(item => {
-                    const element = tempContainer.querySelector(`[data-element-type="${item.type}"][data-element-id="${item.id}"]`);
+                    let element;
+                    if (item.id) {
+                        // For elements with IDs (like instructions)
+                        element = tempContainer.querySelector(`[data-element-type="${item.type}"][data-element-id="${item.id}"]`);
+                    } else {
+                        // For elements without IDs (like accordions)
+                        element = tempContainer.querySelector(`[data-element-type="${item.type}"]`);
+                    }
+                    
                     if (element) {
                         container.appendChild(element);
                         console.log('[ENHANCED_LLM] Moved element:', item.type, 'ID:', item.id);
                     } else {
                         console.log('[ENHANCED_LLM] Element not found:', item.type, 'ID:', item.id);
+                        // Additional debugging: show what elements are actually available
+                        const availableElements = tempContainer.querySelectorAll(`[data-element-type="${item.type}"]`);
+                        console.log('[ENHANCED_LLM] Available elements of type', item.type, ':', availableElements.length);
+                        availableElements.forEach((el, idx) => {
+                            console.log('[ENHANCED_LLM] Available element', idx, ':', el.getAttribute('data-element-type'), 'ID:', el.getAttribute('data-element-id'));
+                        });
                     }
                 });
                 
