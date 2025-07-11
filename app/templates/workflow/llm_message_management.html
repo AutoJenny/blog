@@ -381,9 +381,31 @@
 
             async loadFieldData() {
                 try {
-                    const response = await fetch('/api/workflow/fields/available');
-                    if (response.ok) {
-                        this.fieldData = await response.json();
+                    // Load both post_development and post_section fields
+                    const [devResponse, sectionResponse] = await Promise.all([
+                        fetch('/api/workflow/fields/available'),
+                        fetch('/api/workflow/fields/post_section')
+                    ]);
+
+                    if (devResponse.ok && sectionResponse.ok) {
+                        const devData = await devResponse.json();
+                        const sectionData = await sectionResponse.json();
+
+                        // Combine the fields with proper table information
+                        this.fieldData = {
+                            fields: [
+                                ...devData.fields.map(field => ({
+                                    ...field,
+                                    db_table: 'post_development'
+                                })),
+                                ...sectionData.map(field => ({
+                                    ...field,
+                                    db_table: 'post_section',
+                                    db_field: field.field_name
+                                }))
+                            ]
+                        };
+
                         this.populateInputFields();
                     }
                 } catch (error) {
@@ -556,12 +578,48 @@
                     const fieldSpan = field.nextElementSibling;
                     const displayName = fieldSpan.textContent;
 
-                    // Get field value from workflow context
-                    const fieldValue = this.workflowContext[fieldName] || '[No value]';
+                    // Get field value from the correct data source
+                    const fieldValue = this.getFieldValue(fieldName);
                     content += `${displayName}: ${fieldValue}\n`;
                 });
 
                 return content;
+            }
+
+            getFieldValue(fieldName) {
+                // Find the field definition to determine which table it belongs to
+                const fieldDef = this.fieldData.fields.find(f => f.field_name === fieldName);
+                if (!fieldDef) {
+                    console.log(`Field definition not found for: ${fieldName}`);
+                    return '[No value]';
+                }
+
+                const dbTable = fieldDef.db_table;
+                console.log(`Field ${fieldName} belongs to table: ${dbTable}`);
+
+                if (dbTable === 'post_section') {
+                    // For section fields, check if a section is selected
+                    if (this.selectedPostSection && this.postSections.length > 0) {
+                        const selectedSection = this.postSections.find(section => section.id == this.selectedPostSection);
+                        if (selectedSection && selectedSection[fieldName]) {
+                            console.log(`Found ${fieldName} in section data:`, selectedSection[fieldName]);
+                            return selectedSection[fieldName];
+                        }
+                    }
+                    console.log(`No section selected or field ${fieldName} not found in section data`);
+                    return '[No value - select a section]';
+                } else if (dbTable === 'post_development') {
+                    // For development fields, use workflow context
+                    if (this.workflowContext[fieldName]) {
+                        console.log(`Found ${fieldName} in development data:`, this.workflowContext[fieldName]);
+                        return this.workflowContext[fieldName];
+                    }
+                    console.log(`Field ${fieldName} not found in development data`);
+                    return '[No value]';
+                }
+
+                console.log(`Unknown table for field ${fieldName}: ${dbTable}`);
+                return '[No value]';
             }
 
             getSettingsContent() {
