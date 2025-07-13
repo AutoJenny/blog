@@ -80,6 +80,7 @@ class EnhancedLLMMessageManager {
             if (e.target.classList.contains('element-toggle')) {
                 this.updatePreview();
                 this.updateSummary();
+                this.saveConfiguration();
             }
             
             // Field selector changes - refresh input fields and preview
@@ -186,6 +187,9 @@ class EnhancedLLMMessageManager {
             
             console.log('[ENHANCED_LLM] Loading element order...');
             this.loadElementOrder();
+            
+            console.log('[ENHANCED_LLM] Loading configuration...');
+            this.loadConfiguration();
             
             console.log('[ENHANCED_LLM] Updating preview...');
             this.updatePreview();
@@ -1149,6 +1153,37 @@ class EnhancedLLMMessageManager {
         }, 2000);
         
         console.log('[ENHANCED_LLM] saveConfiguration completed');
+    }
+
+    loadConfiguration() {
+        console.log('[ENHANCED_LLM] loadConfiguration called');
+        try {
+            const stored = localStorage.getItem('enhanced-llm-config');
+            if (!stored) {
+                console.log('[ENHANCED_LLM] No stored configuration found');
+                return;
+            }
+
+            const config = JSON.parse(stored);
+            console.log('[ENHANCED_LLM] Loading configuration:', config);
+
+            // Restore accordion checkbox states
+            const allAccordions = this.modal.querySelectorAll('.message-accordion');
+            allAccordions.forEach(accordion => {
+                const elementType = accordion.getAttribute('data-element-type');
+                const toggle = accordion.querySelector('.element-toggle');
+                
+                if (toggle && config.accordions && config.accordions[elementType]) {
+                    const savedState = config.accordions[elementType].enabled;
+                    toggle.checked = savedState;
+                    console.log('[ENHANCED_LLM] Restored accordion:', elementType, 'enabled:', savedState);
+                }
+            });
+
+            console.log('[ENHANCED_LLM] Configuration loaded successfully');
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error loading configuration:', error);
+        }
     }
 
     runLLM() {
