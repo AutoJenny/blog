@@ -2,11 +2,12 @@
  * MultiInputManager - Handles dynamic input field management for LLM panels
  */
 export class MultiInputManager {
-    constructor(containerId = 'inputs-container') {
+    constructor(containerId = 'inputs-container', stage = '', substage = '') {
         this.container = document.getElementById(containerId);
         this.inputCounter = this.getInitialInputCounter();
-        this.currentSubstage = this.container?.dataset?.currentSubstage || '';
-        this.localStorageKey = 'multiInputConfig';
+        this.currentStage = stage;
+        this.currentSubstage = substage;
+        this.localStorageKey = `multiInputConfig_${this.currentStage}_${this.currentSubstage}`;
         this.init();
     }
     
@@ -44,6 +45,13 @@ export class MultiInputManager {
                 this.removeInputField(removeBtn.closest('.input-field-group'));
             }
         });
+
+        // Field selector change events (delegated)
+        this.container.addEventListener('change', (e) => {
+            if (e.target.classList.contains('field-selector')) {
+                this.persistInputsToStorage();
+            }
+        });
     }
     
     persistInputsToStorage() {
@@ -51,42 +59,60 @@ export class MultiInputManager {
         this.container.querySelectorAll('.input-field-group').forEach(group => {
             const inputId = group.dataset.inputId;
             const select = group.querySelector('select.field-selector');
-            config.push({ inputId, selectedField: select ? select.value : '' });
+            const textarea = group.querySelector('textarea');
+            config.push({ 
+                inputId, 
+                selectedField: select ? select.value : '',
+                value: textarea ? textarea.value : ''
+            });
         });
         localStorage.setItem(this.localStorageKey, JSON.stringify(config));
+        console.log('[MultiInputManager] Persisted config to', this.localStorageKey, config);
     }
     
     restoreInputsFromStorage() {
-        const config = JSON.parse(localStorage.getItem(this.localStorageKey) || '[]');
-        if (config.length > 1) {
-            // Remove all but the first input
-            this.container.querySelectorAll('.input-field-group').forEach((group, idx) => {
-                if (idx > 0) group.remove();
-            });
-            // Add inputs as per config
-            for (let i = 1; i < config.length; i++) {
-                this.addInputField();
-            }
-            // Set dropdown values and trigger fieldSelectorInit
-            this.container.querySelectorAll('.input-field-group').forEach((group, idx) => {
-                const select = group.querySelector('select.field-selector');
-                if (select && config[idx]) {
-                    select.value = config[idx].selectedField;
-                    const event = new CustomEvent('fieldSelectorInit', {
-                        detail: { target: group.dataset.inputId, element: select }
-                    });
-                    document.dispatchEvent(event);
-                }
-            });
-            // Wait for FieldSelector to finish loading, then dispatch change events
-            document.addEventListener('fieldSelectorReady', () => {
+        try {
+            const config = JSON.parse(localStorage.getItem(this.localStorageKey) || '[]');
+            console.log('[MultiInputManager] Restoring config from', this.localStorageKey, config);
+            
+            if (config.length > 0) {
+                // Remove all but the first input
                 this.container.querySelectorAll('.input-field-group').forEach((group, idx) => {
+                    if (idx > 0) group.remove();
+                });
+                
+                // Add inputs as per config
+                for (let i = 1; i < config.length; i++) {
+                    this.addInputField();
+                }
+                
+                // Set dropdown values and trigger fieldSelectorInit
+                this.container.querySelectorAll('.input-field-group').forEach((group, idx) => {
+                    if (!config[idx]) return;
+                    
                     const select = group.querySelector('select.field-selector');
-                    if (select && config[idx]) {
-                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                    const textarea = group.querySelector('textarea');
+                    
+                    if (select) {
+                        select.value = config[idx].selectedField || '';
+                        // Trigger field selector initialization
+                        const event = new CustomEvent('fieldSelectorInit', {
+                            detail: { 
+                                target: group.dataset.inputId,
+                                element: select,
+                                value: config[idx].selectedField
+                            }
+                        });
+                        document.dispatchEvent(event);
+                    }
+                    
+                    if (textarea && config[idx].value) {
+                        textarea.value = config[idx].value;
                     }
                 });
-            }, { once: true });
+            }
+        } catch (error) {
+            console.error('[MultiInputManager] Error restoring config:', error);
         }
     }
     
@@ -97,8 +123,8 @@ export class MultiInputManager {
         const inputHtml = `
             <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="${inputId}">
                 <div class="flex justify-between items-center mb-2">
-                    <label for="input_${inputId}" class="block text-sm font-medium text-blue-500">
-                        [${inputId}]
+                    <label for="input_${inputId}" class="block text-sm font-medium">
+                        <!-- Removed blue title -->
                     </label>
                     <button type="button" class="remove-input-btn text-red-500 hover:text-red-400 text-sm">
                         <i class="fas fa-trash"></i> Remove
@@ -209,8 +235,8 @@ export class MultiInputManager {
         const inputHtml = `
             <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="${inputId}">
                 <div class="flex justify-between items-center mb-2">
-                    <label for="input_${inputId}" class="block text-sm font-medium text-blue-500">
-                        [${inputId}]
+                    <label for="input_${inputId}" class="block text-sm font-medium">
+                        <!-- Removed blue title -->
                     </label>
                     ${inputId !== 'input1' ? `
                     <button type="button" class="remove-input-btn text-red-500 hover:text-red-400 text-sm">

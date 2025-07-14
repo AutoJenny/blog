@@ -1248,7 +1248,30 @@ def run_workflow_llm(post_id, stage, substage):
                                 SET {output_field} = %s 
                                 WHERE post_id = %s
                             """, (output, post_id))
-                        
+                            
+                            # If this is the section_headings field, sync to post_section table
+                            if output_field == 'section_headings':
+                                # Clear existing sections
+                                cur.execute("DELETE FROM post_section WHERE post_id = %s", (post_id,))
+                                
+                                try:
+                                    # Parse the output as JSON
+                                    headings_data = json.loads(output)
+                                    if isinstance(headings_data, list):
+                                        # Insert new sections
+                                        for i, heading in enumerate(headings_data):
+                                            if isinstance(heading, dict):
+                                                title = heading.get('title', heading.get('heading', f'Section {i+1}'))
+                                                description = heading.get('description', '')
+                                                
+                                                cur.execute("""
+                                                    INSERT INTO post_section (
+                                                        post_id, section_order, section_heading, section_description, status
+                                                    ) VALUES (%s, %s, %s, %s, %s)
+                                                """, (post_id, i+1, title, description, 'draft'))
+                                except Exception as e:
+                                    current_app.logger.error(f"Error syncing sections after LLM output: {str(e)}")
+                            
                         conn.commit()
         except Exception as e:
             current_app.logger.error(f"Error saving output: {str(e)}")
@@ -1649,6 +1672,24 @@ def direct_llm_call():
         result = response.json()
         output = result.get('response', '')
         
+        # Clean the output by removing any trailing characters that aren't part of the JSON
+        output = output.strip()
+        if output.endswith('%'):
+            output = output[:-1].strip()
+            
+        # Clean up newlines and validate JSON
+        try:
+            # Remove newlines and extra spaces from the output
+            output = output.replace('\n', '').replace('\\n', '')
+            # Parse the output as JSON to validate it
+            json_output = json.loads(output)
+            # Convert back to string with proper formatting
+            output = json.dumps(json_output, indent=2)
+            current_app.logger.info(f"Parsed JSON output: {output}")
+        except json.JSONDecodeError as e:
+            current_app.logger.error(f"Error parsing LLM output as JSON: {str(e)}")
+            return jsonify({'error': 'Invalid JSON output from LLM'}), 500
+        
         # Save output to database
         try:
             with get_db_conn() as conn:
@@ -1673,7 +1714,30 @@ def direct_llm_call():
                                 SET {output_field} = %s 
                                 WHERE post_id = %s
                             """, (output, post_id))
-                        
+                            
+                            # If this is the section_headings field, sync to post_section table
+                            if output_field == 'section_headings':
+                                # Clear existing sections
+                                cur.execute("DELETE FROM post_section WHERE post_id = %s", (post_id,))
+                                
+                                try:
+                                    # Parse the output as JSON
+                                    headings_data = json.loads(output)
+                                    if isinstance(headings_data, list):
+                                        # Insert new sections
+                                        for i, heading in enumerate(headings_data):
+                                            if isinstance(heading, dict):
+                                                title = heading.get('title', heading.get('heading', f'Section {i+1}'))
+                                                description = heading.get('description', '')
+                                                
+                                                cur.execute("""
+                                                    INSERT INTO post_section (
+                                                        post_id, section_order, section_heading, section_description, status
+                                                    ) VALUES (%s, %s, %s, %s, %s)
+                                                """, (post_id, i+1, title, description, 'draft'))
+                                except Exception as e:
+                                    current_app.logger.error(f"Error syncing sections after LLM output: {str(e)}")
+                            
                         conn.commit()
         except Exception as e:
             current_app.logger.error(f"Error saving output: {str(e)}")

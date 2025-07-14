@@ -152,40 +152,40 @@
     import sectionPanel from "/static/js/workflow/template_view.js";
     import EnhancedLLMMessageManager from "/static/js/enhanced_llm_message_manager.js";
 
-            // Initialize field selector
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log('[PANEL] DOM loaded, initializing components...');
+    // Initialize field selector
+    window.addEventListener('DOMContentLoaded', () => {
+        console.log('[PANEL] DOM loaded, initializing components...');
 
-            // Restore hidden context fields on page load
-            const stepId = document.querySelector('[data-step-id]')?.dataset.stepId || 'unknown';
-            const storageKey = `hidden_context_${stepId}`;
-            const hiddenContexts = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            
-            hiddenContexts.forEach(contextId => {
-                const contextGroup = document.querySelector(`[data-context-id="${contextId}"]`);
-                if (contextGroup) {
-                    contextGroup.style.display = 'none';
-                    console.log('[PANEL] Restored hidden context field:', contextId);
-                }
-            });
+        // Restore hidden context fields on page load
+        const stepId = document.querySelector('[data-step-id]')?.dataset.stepId || 'unknown';
+        const storageKey = `hidden_context_${stepId}`;
+        const hiddenContexts = JSON.parse(localStorage.getItem(storageKey) || '[]');
 
-            // Get current workflow context from URL
-            const pathParts = window.location.pathname.split('/');
-            const postId = pathParts[3];
-            const stage = pathParts[4];
-            const substage = pathParts[5];
-
-            if (postId) {
-                console.log('[PANEL] Initializing FieldSelector...');
-                const fieldSelector = new FieldSelector(postId, stage, substage);
-                window.fieldSelector = fieldSelector;
-            } else {
-                console.warn('[PANEL] Post ID not found, cannot initialize field selector');
+        hiddenContexts.forEach(contextId => {
+            const contextGroup = document.querySelector(`[data-context-id="${contextId}"]`);
+            if (contextGroup) {
+                contextGroup.style.display = 'none';
+                console.log('[PANEL] Restored hidden context field:', contextId);
             }
+        });
+
+        // Get current workflow context from URL
+        const pathParts = window.location.pathname.split('/');
+        const postId = pathParts[3];
+        const stage = pathParts[4];
+        const substage = pathParts[5];
+
+        if (postId) {
+            console.log('[PANEL] Initializing FieldSelector...');
+            const fieldSelector = new FieldSelector(postId, stage, substage);
+            window.fieldSelector = fieldSelector;
+        } else {
+            console.warn('[PANEL] Post ID not found, cannot initialize field selector');
+        }
 
         // Initialize MultiInputManager
         console.log('[PANEL] Initializing MultiInputManager...');
-        const multiInputManager = new MultiInputManager('inputs-container');
+        const multiInputManager = new MultiInputManager('inputs-container', stage, substage);
         window.multiInputManager = multiInputManager;
 
         // Initialize FormatSelector
@@ -343,25 +343,25 @@
         // Handle remove context buttons
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('remove-context-btn') || e.target.closest('.remove-context-btn')) {
-                const removeBtn = e.target.classList.contains('remove-context-btn') ? 
+                const removeBtn = e.target.classList.contains('remove-context-btn') ?
                     e.target : e.target.closest('.remove-context-btn');
                 const contextGroup = removeBtn.closest('.context-field-group');
-                
+
                 if (contextGroup) {
                     // Hide the entire context field group
                     contextGroup.style.display = 'none';
-                    
+
                     // Save the hidden state to localStorage
                     const contextId = contextGroup.dataset.contextId;
                     const stepId = document.querySelector('[data-step-id]')?.dataset.stepId || 'unknown';
                     const storageKey = `hidden_context_${stepId}`;
-                    
+
                     let hiddenContexts = JSON.parse(localStorage.getItem(storageKey) || '[]');
                     if (!hiddenContexts.includes(contextId)) {
                         hiddenContexts.push(contextId);
                         localStorage.setItem(storageKey, JSON.stringify(hiddenContexts));
                     }
-                    
+
                     console.log('[PANEL] Removed context field:', contextId);
                 }
             }

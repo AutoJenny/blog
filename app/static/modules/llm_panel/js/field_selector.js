@@ -75,7 +75,6 @@ class FieldSelector {
 
     async initialize() {
         console.log('[DEBUG] FieldSelector.initialize() called');
-        console.log('[DEBUG] isInitializing:', this.isInitializing, 'initialized:', this.initialized);
         if (this.isInitializing || this.initialized) {
             console.log('[DEBUG] Already initializing or initialized, returning');
             return;
@@ -92,10 +91,6 @@ class FieldSelector {
             const data = await response.json();
             this.fieldValues = data;
             console.log('[DEBUG] Field values loaded:', Object.keys(this.fieldValues));
-            console.log('[DEBUG] Sample field values:', {
-                'basic_idea': this.fieldValues.basic_idea ? this.fieldValues.basic_idea.substring(0, 50) + '...' : 'null',
-                'idea_seed': this.fieldValues.idea_seed ? this.fieldValues.idea_seed.substring(0, 50) + '...' : 'null'
-            });
             
             // Get all available fields with their groupings
             console.log('[DEBUG] Fetching available fields...');
@@ -159,21 +154,22 @@ class FieldSelector {
             // Store groups for organizing dropdowns
             this.groups = fieldsData.groups || [];
             console.log('[DEBUG] Groups loaded:', this.groups.length, 'groups');
+            
             // Load saved field mappings
             console.log('[DEBUG] Loading saved field mappings...');
             await this.loadFieldMappings();
             console.log('[DEBUG] Field mappings loaded:', this.savedMappings);
+            
             // Initialize field selectors
             console.log('[DEBUG] Initializing field selectors...');
             await this.initializeFieldSelectors();
+            
             // Mark initialization as complete
             this.isInitializing = false;
             this.initialized = true;
             console.log('[DEBUG] Field selector initialization complete');
-            // Dispatch custom event to signal ready
-            document.dispatchEvent(new CustomEvent('fieldSelectorReady'));
         } catch (error) {
-            console.error('Error fetching field values:', error);
+            console.error('Error in field selector initialization:', error);
             this.isInitializing = false;
         }
     }
@@ -203,9 +199,27 @@ class FieldSelector {
             
             // Load saved output field selections
             await this.loadOutputFieldSelections();
+
+            // Load saved input field selections from localStorage
+            this.loadInputFieldSelections();
         } catch (error) {
             console.error('Error loading field mappings:', error);
             this.savedMappings = [];
+        }
+    }
+
+    loadInputFieldSelections() {
+        try {
+            // Get saved input configurations from localStorage using stage/substage-specific key
+            const localStorageKey = `multiInputConfig_${this.stage}_${this.substage}`;
+            const savedConfig = localStorage.getItem(localStorageKey);
+            if (savedConfig) {
+                this.savedInputSelections = JSON.parse(savedConfig);
+                console.log('[DEBUG] Loaded input field selections from localStorage:', this.savedInputSelections);
+            }
+        } catch (error) {
+            console.error('Error loading input field selections:', error);
+            this.savedInputSelections = [];
         }
     }
 
@@ -256,219 +270,154 @@ class FieldSelector {
 
     async initializeSingleFieldSelector(selector) {
         if (!selector) return;
+        
         // Clear existing options
         selector.innerHTML = '<option value="">Select field...</option>';
+        
         // Get section (inputs/outputs) and target field
         const section = selector.dataset.section;
         const target = selector.dataset.target;
         
-        // Use the original working logic - filter fields based on stage and section
-        this.initializeSingleFieldSelectorFallback(selector, section, target);
+        // Get all available fields
+        const availableFields = Object.values(this.fields);
+        
+        // Filter fields based on section and stage
+        let filteredFields = availableFields;
+        
+        // Special handling for Writing stage
+        if (this.stage === 'writing') {
+            if (section === 'outputs') {
+                // For Writing stage outputs, show only post_section fields
+                filteredFields = availableFields.filter(field => field.db_table === 'post_section');
+            } else {
+                // For Writing stage inputs, show post_development fields
+                filteredFields = availableFields.filter(field => field.db_table === 'post_development');
+            }
+        }
+        
+        // Group fields by stage and substage
+        const groupedFields = {};
+        filteredFields.forEach(field => {
+            const stageName = field.stage || 'Other';
+            const substageName = field.substage || 'General';
+            
+            if (!groupedFields[stageName]) {
+                groupedFields[stageName] = {};
+            }
+            if (!groupedFields[stageName][substageName]) {
+                groupedFields[stageName][substageName] = [];
+            }
+            groupedFields[stageName][substageName].push(field);
+        });
+        
+        // Populate dropdown with grouped options
+        Object.entries(groupedFields).forEach(([stageName, substages]) => {
+            const stageGroup = document.createElement('optgroup');
+            stageGroup.label = stageName;
+            
+            Object.entries(substages).forEach(([substageName, fields]) => {
+                // Add substage label
+                const substageLabel = document.createElement('option');
+                substageLabel.textContent = substageName;
+                substageLabel.disabled = true;
+                stageGroup.appendChild(substageLabel);
+                
+                // Add fields for this substage
+                fields.forEach(field => {
+                    const option = document.createElement('option');
+                    option.value = field.name;
+                    option.textContent = field.display_name || field.name;
+                    option.dataset.table = field.db_table;
+                    option.dataset.dbField = field.db_field;
+                    stageGroup.appendChild(option);
+                });
+            });
+            
+            selector.appendChild(stageGroup);
+        });
         
         // Set initial value based on saved mappings
         let selectedField = null;
-        console.log('[DEBUG] Initializing selector for section:', section, 'target:', target);
-        console.log('[DEBUG] Saved mappings:', this.savedMappings);
-        console.log('[DEBUG] Saved output selection:', this.savedOutputFieldSelection);
         
-        // Set initial value based on saved mappings
-        if (section === 'outputs' && this.savedOutputFieldSelection && this.savedOutputFieldSelection.field) {
+        if (section === 'outputs' && this.savedOutputFieldSelection) {
             selectedField = this.savedOutputFieldSelection.field;
+            console.log('[DEBUG] Setting output field from saved selection:', selectedField);
+        } else if (section === 'inputs' && this.savedInputSelections) {
+            // For input fields, check localStorage
+            const inputId = target.replace('input_', '');
+            const savedInput = this.savedInputSelections.find(config => config.inputId === inputId);
+            if (savedInput) {
+                selectedField = savedInput.selectedField;
+                console.log('[DEBUG] Setting input field from localStorage:', selectedField);
+            }
         } else if (this.savedMappings && this.savedMappings.length > 0) {
             const mapping = this.savedMappings.find(m => m.target === target);
             if (mapping) {
                 selectedField = mapping.field_name;
+                console.log('[DEBUG] Setting field from saved mapping:', selectedField);
             }
         }
         
         if (selectedField) {
             selector.value = selectedField;
             console.log('[DEBUG] Set initial value to:', selectedField);
+            
+            // Load the field content immediately
+            await this.loadFieldContent(selectedField, selector);
+            
+            // Trigger change event to update any associated elements
+            const event = new Event('change');
+            selector.dispatchEvent(event);
         }
         
         // Add event listener
         this.addFieldSelectorEventListener(selector);
     }
 
-    initializeSingleFieldSelectorFallback(selector, section, target) {
-        let selectedField = null; // Declare selectedField at the beginning
-        let filteredFields = Object.values(this.fields);
+    async loadFieldContent(selectedField, selector) {
+        console.log('[DEBUG] Loading field content for:', selectedField);
+        const targetId = selector.dataset.target;
+        if (!targetId) return;
+
+        const targetElement = document.getElementById(targetId);
+        if (!targetElement || targetElement.tagName !== 'TEXTAREA') return;
+
+        const fieldInfo = this.fields[selectedField];
+        if (!fieldInfo) return;
+
+        // Set data attributes
+        targetElement.dataset.dbField = fieldInfo.db_field || selectedField;
+        targetElement.dataset.dbTable = fieldInfo.db_table || 'post_development';
         
-        // Special handling for Basic Idea field - it should always be mapped to basic_idea from post_development
-        if (target === 'context_basic_idea') {
-            console.log('[DEBUG] Special handling for Basic Idea field');
-            // Clear existing options
-            selector.innerHTML = '<option value="">Select field...</option>';
-            
-            // Add basic_idea as the only option for this field
-            const option = document.createElement('option');
-            option.value = 'basic_idea';
-            option.textContent = 'Basic Idea';
-            option.dataset.table = 'post_development';
-            option.dataset.dbField = 'basic_idea';
-            selector.appendChild(option);
-            
-            // Set the value and populate the textarea
-            selector.value = 'basic_idea';
-            const targetElement = document.getElementById(target);
-            if (targetElement && targetElement.tagName === 'TEXTAREA') {
-                targetElement.dataset.dbField = 'basic_idea';
-                targetElement.dataset.dbTable = 'post_development';
-                const fieldValue = this.fieldValues['basic_idea'] || '';
-                targetElement.value = fieldValue;
-                console.log('[DEBUG] Set Basic Idea textarea value, length:', fieldValue.length);
-            }
-            
-            this.addFieldSelectorEventListener(selector);
-            return;
-        }
-        
-        // Special handling for Idea Scope field - it should always be mapped to idea_scope from post_development
-        if (target === 'context_idea_scope') {
-            console.log('[DEBUG] Special handling for Idea Scope field');
-            // Clear existing options
-            selector.innerHTML = '<option value="">Select field...</option>';
-            
-            // Add idea_scope as the only option for this field
-            const option = document.createElement('option');
-            option.value = 'idea_scope';
-            option.textContent = 'Idea Scope';
-            option.dataset.table = 'post_development';
-            option.dataset.dbField = 'idea_scope';
-            selector.appendChild(option);
-            
-            // Set the value and populate the textarea
-            selector.value = 'idea_scope';
-            const targetElement = document.getElementById(target);
-            if (targetElement && targetElement.tagName === 'TEXTAREA') {
-                targetElement.dataset.dbField = 'idea_scope';
-                targetElement.dataset.dbTable = 'post_development';
-                const fieldValue = this.fieldValues['idea_scope'] || '';
-                targetElement.value = fieldValue;
-                console.log('[DEBUG] Set Idea Scope textarea value, length:', fieldValue.length);
-            }
-            
-            this.addFieldSelectorEventListener(selector);
-            return;
-        }
-        
-        // Special handling for Section Headings field - it should always be mapped to section_headings from post_development
-        if (target === 'context_section_headings') {
-            console.log('[DEBUG] Special handling for Section Headings field');
-            // Clear existing options
-            selector.innerHTML = '<option value="">Select field...</option>';
-            
-            // Add section_headings as the only option for this field
-            const option = document.createElement('option');
-            option.value = 'section_headings';
-            option.textContent = 'Section Headings';
-            option.dataset.table = 'post_development';
-            option.dataset.dbField = 'section_headings';
-            selector.appendChild(option);
-            
-            // Set the value and populate the textarea
-            selector.value = 'section_headings';
-            const targetElement = document.getElementById(target);
-            if (targetElement && targetElement.tagName === 'TEXTAREA') {
-                targetElement.dataset.dbField = 'section_headings';
-                targetElement.dataset.dbTable = 'post_development';
-                const fieldValue = this.fieldValues['section_headings'] || '';
-                targetElement.value = fieldValue;
-                console.log('[DEBUG] Set Section Headings textarea value, length:', fieldValue.length);
-            }
-            
-            this.addFieldSelectorEventListener(selector);
-            return;
-        }
-        
-        // For Writing stage outputs, always show all post_section fields
-        if (this.stage === 'writing' && section === 'outputs') {
-            filteredFields = filteredFields.filter(field => field.db_table === 'post_section');
-            // If for some reason no post_section fields are present, show a warning option
-            if (filteredFields.length === 0) {
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = '[No post_section fields available]';
-                selector.appendChild(option);
-                return;
-            }
-            // Populate dropdown with all post_section fields
-            filteredFields.forEach(field => {
-                const option = document.createElement('option');
-                option.value = field.name;
-                option.textContent = field.display_name || field.name;
-                option.dataset.table = field.db_table;
-                option.dataset.dbField = field.db_field;
-                selector.appendChild(option);
-            });
-        } else {
-            // Original fallback for other cases
-            // Group fields by db_table
-            const groupedFields = {};
-            filteredFields.forEach(field => {
-                if (!groupedFields[field.db_table]) groupedFields[field.db_table] = [];
-                groupedFields[field.db_table].push(field);
-            });
-            Object.keys(groupedFields).forEach(tableName => {
-                const optgroup = document.createElement('optgroup');
-                optgroup.label = tableName;
-                selector.appendChild(optgroup);
-                groupedFields[tableName].forEach(field => {
-                    const option = document.createElement('option');
-                    option.value = field.name;
-                    option.textContent = field.display_name || field.name;
-                    option.dataset.table = field.db_table;
-                    option.dataset.dbField = field.db_field;
-                    optgroup.appendChild(option);
-                });
-            });
-        }
-        
-        if (section === 'outputs' && this.savedOutputFieldSelection) {
-            selectedField = this.savedOutputFieldSelection.field;
-            console.log('[DEBUG] Using saved output field:', selectedField);
-        } else if (this.savedMappings && this.savedMappings.length > 0) {
-            let savedMapping = null;
-            if (target) {
-                const targetElement = document.getElementById(target);
-                if (targetElement && targetElement.dataset.dbField) {
-                    savedMapping = this.savedMappings.find(m => m.field_name === targetElement.dataset.dbField);
-                    console.log('[DEBUG] Found mapping by target dbField:', savedMapping);
+        try {
+            // Fetch and set value
+            if (fieldInfo.db_table === 'post_section') {
+                // For post_section fields, fetch section data
+                const response = await fetch(`/api/workflow/posts/${this.postId}/sections`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.sections && data.sections.length > 0) {
+                        targetElement.value = data.sections[0][fieldInfo.db_field] || '';
+                    }
+                }
+            } else {
+                // For post_development fields, use cached values or fetch if needed
+                if (selectedField in this.fieldValues) {
+                    targetElement.value = this.fieldValues[selectedField] || '';
+                } else {
+                    // Fetch the latest value
+                    const response = await fetch(`/api/workflow/posts/${this.postId}/development`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.fieldValues = data;
+                        targetElement.value = this.fieldValues[selectedField] || '';
+                    }
                 }
             }
-            if (!savedMapping) {
-                const allSelectors = document.querySelectorAll('.field-selector, #input_field_select, #output_field_select');
-                const selectorIndex = Array.from(allSelectors).indexOf(selector);
-                savedMapping = this.savedMappings.find(m => m.order_index === selectorIndex);
-                console.log('[DEBUG] Found mapping by selector index:', selectorIndex, 'mapping:', savedMapping);
-            }
-            if (savedMapping) {
-                selectedField = savedMapping.field_name;
-                console.log('[DEBUG] Using saved mapping field:', selectedField);
-            }
-        } else if (target) {
-            const targetElement = document.getElementById(target);
-            if (targetElement && targetElement.dataset.dbField) {
-                selectedField = targetElement.dataset.dbField;
-                console.log('[DEBUG] Using target dbField:', selectedField);
-            }
+            console.log('[DEBUG] Field content loaded successfully');
+        } catch (error) {
+            console.error('Error loading field content:', error);
         }
-        if (selectedField) {
-            selector.value = selectedField;
-            console.log('[DEBUG] Set selector value to:', selectedField);
-            // Update target textarea with the selected field's content
-            const targetId = selector.dataset.target;
-            if (targetId) {
-                const targetElement = document.getElementById(targetId);
-                if (targetElement && targetElement.tagName === 'TEXTAREA') {
-                    targetElement.dataset.dbField = selectedField;
-                    const fieldValue = this.fieldValues[selectedField] || '';
-                    targetElement.value = fieldValue;
-                    console.log('[DEBUG] Set textarea value for field:', selectedField, 'value length:', fieldValue.length);
-                }
-            }
-        }
-        this.addFieldSelectorEventListener(selector);
     }
 
     addFieldSelectorEventListener(selector) {
@@ -483,61 +432,21 @@ class FieldSelector {
             selector.removeEventListener('change', existingHandler);
         }
 
-        const handler = (event) => {
-            console.log('[DEBUG][HANDLER] Change event fired for selector:', event.target, 'section:', event.target.dataset.section, 'value:', event.target.value);
+        const handler = async (event) => {
+            console.log('[DEBUG] Field selector change event:', event.target.value);
             const selectedField = event.target.value;
-            const targetId = event.target.dataset.target;
             const section = event.target.dataset.section;
             
+            if (!selectedField) return;
+            
+            // Load the field content
+            await this.loadFieldContent(selectedField, event.target);
+            
+            // Save the selection
             if (section === 'outputs') {
-                console.log('[DEBUG][OUTPUTS] fieldValues:', this.fieldValues);
-                console.log('[DEBUG][OUTPUTS] selectedField:', selectedField);
-                if (this.fieldValues && selectedField && this.fieldValues[selectedField]) {
-                    console.log('[DEBUG][OUTPUTS] Value found for selectedField:', this.fieldValues[selectedField]);
-                } else {
-                    console.log('[DEBUG][OUTPUTS] Value NOT found for selectedField');
-                }
-            }
-            
-            if (targetId) {
-                const targetElement = document.getElementById(targetId);
-                if (targetElement) {
-                    // Always update textarea value and data-db-field for both inputs and outputs
-                    if (targetElement.tagName === 'TEXTAREA') {
-                        targetElement.dataset.dbField = selectedField;
-                        
-                        // Handle different field types
-                        const selectedFieldData = this.fieldsData.fields.find(sf => sf.field_name === selectedField);
-                        if (selectedFieldData) {
-                                                    if (selectedFieldData.db_table === 'post_section') {
-                            // For post_section fields, fetch the section data and populate with actual values
-                            targetElement.dataset.dbTable = 'post_section';
-                            targetElement.dataset.dbField = selectedFieldData.db_field;
-                            // Fetch section data for this post
-                            this.fetchSectionData(selectedFieldData.db_field, targetElement);
-                        } else {
-                                // For post_development fields
-                                targetElement.value = this.fieldValues[selectedField] || '';
-                                targetElement.dataset.dbTable = 'post_development';
-                            }
-                        } else {
-                            // Fallback for any other field types
-                            targetElement.value = this.fieldValues[selectedField] || '';
-                            targetElement.dataset.dbTable = 'post_development';
-                        }
-                    } else if (targetElement === event.target) {
-                        targetElement.dataset.dbField = selectedField;
-                    }
-                }
-            }
-            
-            // Save field mapping based on section
-            if (selectedField) {
-                if (section === 'outputs') {
-                    this.saveOutputFieldSelection(selectedField, event.target);
-                } else {
-                    this.saveFieldMapping(selectedField, event.target);
-                }
+                await this.saveOutputFieldSelection(selectedField, event.target);
+            } else {
+                await this.saveFieldMapping(selectedField, event.target);
             }
         };
 
@@ -547,46 +456,43 @@ class FieldSelector {
 
     async saveFieldMapping(fieldName, selector) {
         try {
-            console.log('[DEBUG] saveFieldMapping called with:', { fieldName, stage: this.stage, substage: this.substage });
-            console.log('[DEBUG] this.groups:', this.groups);
+            const target = selector.dataset.target;
+            const section = selector.dataset.section;
             
-            // Find the current stage and substage IDs from the groups
-            const currentStage = this.groups.find(g => g.name === this.stage);
-            const currentSubstage = currentStage?.substages.find(s => s.name === this.substage);
-            
-            console.log('[DEBUG] Found stage:', currentStage);
-            console.log('[DEBUG] Found substage:', currentSubstage);
-            
-            if (!currentStage || !currentSubstage) {
-                throw new Error('Current stage or substage not found');
+            if (section === 'inputs') {
+                // Save input field selection to localStorage
+                const localStorageKey = `multiInputConfig_${this.stage}_${this.substage}`;
+                const savedConfig = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
+                const inputId = target.replace('input_', '');
+                const existingIndex = savedConfig.findIndex(config => config.inputId === inputId);
+                
+                if (existingIndex >= 0) {
+                    savedConfig[existingIndex].selectedField = fieldName;
+                } else {
+                    savedConfig.push({ inputId, selectedField: fieldName });
+                }
+                
+                localStorage.setItem(localStorageKey, JSON.stringify(savedConfig));
+                console.log('[DEBUG] Saved input field selection to localStorage:', { inputId, fieldName });
             }
             
-            // Get the position of this selector among all field selectors
-            const allSelectors = document.querySelectorAll('.field-selector, #input_field_select, #output_field_select');
-            const selectorIndex = Array.from(allSelectors).indexOf(selector);
-            
-            const payload = {
-                field_name: fieldName,
-                stage_id: currentStage.id,
-                substage_id: currentSubstage.id,
-                order_index: selectorIndex
-            };
-            
-            console.log('[DEBUG] Sending payload:', payload);
-            
+            // Save field mapping to backend
             const response = await fetch('/api/workflow/fields/mappings', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    stage: this.stage,
+                    substage: this.substage,
+                    target: target,
+                    field_name: fieldName
+                })
             });
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
-            console.log('Field mapping saved successfully');
+            console.log('[DEBUG] Saved field mapping:', { target, fieldName });
         } catch (error) {
             console.error('Error saving field mapping:', error);
         }
@@ -594,59 +500,21 @@ class FieldSelector {
 
     async saveOutputFieldSelection(fieldName, selector) {
         try {
-            console.log('[DEBUG] saveOutputFieldSelection called with:', { fieldName });
-            
-            // Get the step ID from the current page context
             const stepId = this.getCurrentStepId();
             if (!stepId) {
                 console.warn('Could not determine current step ID');
                 return;
             }
             
-            // Determine the table based on the selected field
-            let outputTable = 'post_development';  // Default table for post fields
-            let outputField = fieldName;
-            
-            // Check if this is a section field
-            if (this.fieldsData && this.fieldsData.fields && this.fieldsData.fields.find(sf => sf.field_name === fieldName)) {
-                outputTable = 'post_section';
-                outputField = fieldName; // Use the field name directly
-                
-                const payload = {
-                    output_field: outputField,
-                    output_table: outputTable
-                };
-                
-                console.log('[DEBUG] Sending section output field selection payload:', payload);
-                
-                const response = await fetch(`/api/workflow/steps/${stepId}/field_selection`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                console.log('Section output field selection saved successfully');
-                return;
-            }
-            
+            const fieldInfo = this.fields[fieldName];
             const payload = {
-                output_field: outputField,
-                output_table: outputTable
+                output_field: fieldName,
+                output_table: fieldInfo?.db_table || 'post_development'
             };
-            
-            console.log('[DEBUG] Sending output field selection payload:', payload);
             
             const response = await fetch(`/api/workflow/steps/${stepId}/field_selection`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
             
@@ -660,110 +528,29 @@ class FieldSelector {
         }
     }
 
-    async fetchSectionData(fieldName, targetElement) {
-        try {
-            console.log('[DEBUG] fetchSectionData called for field:', fieldName);
-            const response = await fetch(`/api/workflow/posts/${this.postId}/sections`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            console.log('[DEBUG] Section data loaded:', data);
-            
-            // For now, just show the first section's data for the selected field
-            // In the future, this could be enhanced to show data from specific sections
-            if (data.sections && data.sections.length > 0) {
-                const firstSection = data.sections[0];
-                let fieldValue = '';
-                
-                // Map field names to section data properties
-                switch (fieldName) {
-                    case 'section_heading':
-                        fieldValue = firstSection.title || '';
-                        break;
-                    case 'section_description':
-                        fieldValue = firstSection.description || '';
-                        break;
-                    case 'ideas_to_include':
-                        fieldValue = firstSection.ideas_to_include || '';
-                        break;
-                    case 'facts_to_include':
-                        fieldValue = firstSection.facts_to_include || '';
-                        break;
-                    case 'draft':
-                        fieldValue = firstSection.draft || '';
-                        break;
-                    case 'content':
-                        fieldValue = firstSection.content || '';
-                        break;
-                    default:
-                        // Try to get the field directly from the section data
-                        fieldValue = firstSection[fieldName] || `Section data available for field: ${fieldName}`;
-                }
-                
-                targetElement.value = fieldValue;
-                console.log('[DEBUG] Set section field value:', fieldValue);
-            } else {
-                targetElement.value = 'No sections found for this post';
-            }
-        } catch (error) {
-            console.error('Error fetching section data:', error);
-            targetElement.value = 'Error loading section data';
-        }
-    }
-
     getCurrentStepId() {
-        console.log('[DEBUG] getCurrentStepId() called');
-        console.log('[DEBUG] Current stage/substage:', this.stage, this.substage);
-        
-        // Method 1: Try to get step ID from the panel data attributes with more specific selector
-        const panel = document.querySelector('.space-y-4[data-step-id]');
+        // Try to get step ID from panel data attributes
+        const panel = document.querySelector('[data-step-id]');
         if (panel) {
-            const stepId = panel.dataset.stepId;
-            console.log('[DEBUG] Found step ID from panel data attribute:', stepId);
-            return stepId;
+            return panel.dataset.stepId;
         }
         
-        // Method 2: Try broader selector as fallback
-        const anyPanel = document.querySelector('[data-step-id]');
-        if (anyPanel) {
-            const stepId = anyPanel.dataset.stepId;
-            console.log('[DEBUG] Found step ID from any data-step-id element:', stepId);
-            return stepId;
-        }
-        
-        // Method 3: Try to get from URL parameters and map to known step IDs
+        // Fallback to URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const step = urlParams.get('step');
-        console.log('[DEBUG] Step from URL params:', step);
         
-        if (step) {
-            // Map known step names to their IDs
-            const stepIdMap = {
-                'initial_concept': '41',
-                'allocate_facts': '15',
-                'structure': '14',
-                'interesting_facts': '13',
-                'provisional_title': '21',
-                'idea_scope': '22'
-            };
-            
-            const mappedStepId = stepIdMap[step];
-            if (mappedStepId) {
-                console.log('[DEBUG] Mapped step ID from URL:', mappedStepId);
-                return mappedStepId;
-            }
-        }
+        // Map known step names to IDs
+        const stepMap = {
+            'section_headings': '24',
+            'initial_concept': '41',
+            'allocate_facts': '15',
+            'structure': '14',
+            'interesting_facts': '13',
+            'provisional_title': '21',
+            'idea_scope': '22'
+        };
         
-        // Method 4: Fallback to hardcoded logic for known combinations
-        if (this.stage === 'planning' && this.substage === 'idea' && step === 'initial_concept') {
-            console.log('[DEBUG] Using hardcoded step ID for initial_concept: 41');
-            return '41';
-        }
-        
-        console.warn('[DEBUG] Could not determine step ID. Stage:', this.stage, 'Substage:', this.substage, 'Step:', step);
-        console.warn('[DEBUG] Available data-step-id elements:', document.querySelectorAll('[data-step-id]').length);
-        return null;
+        return stepMap[step] || null;
     }
 }
 

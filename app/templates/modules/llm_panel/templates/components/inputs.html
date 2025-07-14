@@ -2,7 +2,7 @@
 <div class="border border-dark-border rounded-lg p-4 mb-4">
     <h2 class="text-xl font-medium text-dark-text mb-4">Inputs</h2>
 
-    <div id="inputs-container">
+    <div id="inputs-container" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}">
         {% if step_config and step_config.inputs %}
         {% for input_id, input_config in step_config.inputs.items() %}
         <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="{{ input_id }}">
