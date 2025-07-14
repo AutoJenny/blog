@@ -31,6 +31,25 @@ async function runLLM({ postId, stage, substage, step }) {
         const previewContent = previewElement.textContent || previewElement.innerText;
         console.log('Found preview content:', previewContent);
         
+        // Check if the enhanced LLM message manager is available and has content
+        if (window.enhancedLLMMessageManager) {
+            // Use the enhanced system's content assembly logic
+            const enhancedContent = window.enhancedLLMMessageManager.getAssembledContent();
+            if (enhancedContent && enhancedContent.trim()) {
+                console.log('Using enhanced LLM message manager content');
+                previewContent = enhancedContent;
+            }
+        }
+        
+        // If still no content, try to get content from the enhanced preview element
+        if (!previewContent || previewContent === 'No enabled elements to preview' || previewContent === 'Message preview will appear here as you organize elements...') {
+            const enhancedPreview = document.getElementById('enhanced-prompt-preview');
+            if (enhancedPreview && enhancedPreview.textContent.trim()) {
+                previewContent = enhancedPreview.textContent.trim();
+                console.log('Using enhanced preview content:', previewContent.substring(0, 100) + '...');
+            }
+        }
+        
         if (!previewContent || previewContent === 'No enabled elements to preview' || previewContent === 'Message preview will appear here as you organize elements...') {
             throw new Error('No content in Live Preview. Please enable some elements in the LLM Message Management panel.');
         }

@@ -1701,7 +1701,125 @@ class EnhancedLLMMessageManager {
             console.error('[ENHANCED_LLM] Error populating input fields with purple module data:', error);
         }
     }
+
+    // Method to get assembled content for external use (like llm_utils.js)
+    getAssembledContent() {
+        console.log('[ENHANCED_LLM] getAssembledContent called');
+        
+        const enabledElements = [];
+        const container = document.getElementById('all-elements-container');
+        if (!container) {
+            console.error('[ENHANCED_LLM] Container not found for content assembly');
+            return '';
+        }
+
+        // Get all draggable elements in their current order
+        const allElements = container.querySelectorAll('.message-accordion, .message-element[data-element-type="instruction"]');
+        
+        allElements.forEach(element => {
+            const toggle = element.querySelector('.element-toggle');
+            if (toggle && toggle.checked) {
+                const elementType = element.getAttribute('data-element-type');
+                
+                if (elementType === 'instruction') {
+                    // Handle instruction elements
+                    const content = element.querySelector('.element-content');
+                    if (content && content.textContent.trim() && content.textContent !== 'Click to edit your instruction...') {
+                        enabledElements.push({
+                            label: 'INSTRUCTION',
+                            content: content.textContent.trim()
+                        });
+                    }
+                } else {
+                    // Handle accordion elements
+                    let label = elementType.replace('_', ' ').toUpperCase();
+                    
+                    switch (elementType) {
+                        case 'system_prompt':
+                            label = 'SYSTEM PROMPT';
+                            break;
+                        case 'basic_idea':
+                            label = 'BASIC IDEA';
+                            break;
+                        case 'section_headings':
+                            label = 'SECTION HEADINGS';
+                            break;
+                        case 'idea_scope':
+                            label = 'IDEA SCOPE';
+                            break;
+                        case 'task_prompt':
+                            label = 'TASK PROMPT';
+                            break;
+                        case 'inputs':
+                            label = 'INPUT FIELDS';
+                            break;
+                        case 'settings':
+                            label = 'SETTINGS';
+                            break;
+                    }
+                    
+                    // Check if this accordion has individual field elements (like inputs/outputs)
+                    const fieldElements = element.querySelectorAll('.message-element');
+                    if (fieldElements.length > 0) {
+                        // This accordion contains individual field elements
+                        let sectionContent = '';
+                        fieldElements.forEach(fieldElement => {
+                            const fieldToggle = fieldElement.querySelector('.element-toggle');
+                            if (fieldToggle && fieldToggle.checked) {
+                                const fieldContent = fieldElement.querySelector('.element-content');
+                                if (fieldContent && fieldContent.textContent.trim()) {
+                                    const fieldLabel = fieldElement.querySelector('.element-label');
+                                    const label = fieldLabel ? fieldLabel.textContent : 'Field';
+                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}\n`;
+                                }
+                            }
+                        });
+                        
+                        if (sectionContent.trim()) {
+                            enabledElements.push({
+                                label: label,
+                                content: sectionContent.trim()
+                            });
+                        }
+                    } else {
+                        // This accordion has direct content
+                        const content = element.querySelector('.element-content');
+                        if (content && content.textContent.trim()) {
+                            enabledElements.push({
+                                label: label,
+                                content: content.textContent.trim()
+                            });
+                        }
+                    }
+                }
+            }
+        });
+
+        // Assemble the message with labels and line returns (plain text version)
+        let message = '';
+        enabledElements.forEach((element, index) => {
+            if (index > 0) {
+                message += '\n\n'; // Add line returns before each part
+            }
+            message += `=== ${element.label} ===\n${element.content}`;
+        });
+        
+        console.log('[ENHANCED_LLM] Assembled content:', message ? message.substring(0, 200) + '...' : 'empty');
+        return message;
+    }
 }
 
 // Export for ES6 modules
-export default EnhancedLLMMessageManager; 
+export default EnhancedLLMMessageManager;
+
+// Make it available globally for llm_utils.js to access
+if (typeof window !== 'undefined') {
+    window.enhancedLLMMessageManager = null;
+    
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        const manager = new EnhancedLLMMessageManager();
+        window.enhancedLLMMessageManager = manager;
+        manager.init();
+    });
+} 
