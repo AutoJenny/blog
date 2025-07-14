@@ -258,11 +258,7 @@
                     console.log('[PANEL] step after conversion:', step);
                     console.log('[PANEL] Running LLM with params:', { postId, stage, substage, step });
 
-                    // Get all input values from MultiInputManager
-                    const allInputs = window.multiInputManager?.getAllInputs() || {};
-                    console.log('[PANEL] All inputs:', allInputs);
-
-                    const result = await runLLM({ postId, stage, substage, step, inputs: allInputs });
+                    const result = await runLLM({ postId, stage, substage, step });
 
                     console.log('[PANEL] LLM result:', result);
 

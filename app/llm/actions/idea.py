@@ -12,7 +12,7 @@ class IdeaGenerationAction(BaseAction):
             'description': 'Generate a basic idea from an idea seed',
             'input_fields': ['idea_seed'],
             'output_fields': ['basic_idea'],
-            'prompt_template': """[system] You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism.
+            'prompt_template': """[system] 
 
 [system] Expand the following short idea into a paragraph-length brief for a long-form blog article. The brief should outline the scope, angle, tone, and core ideas that could be developed into a full article. Use clear, engaging language.
 

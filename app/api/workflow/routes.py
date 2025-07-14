@@ -3,13 +3,104 @@ from app.db import get_db_conn
 import psycopg2.extras
 from app.api.workflow.decorators import handle_workflow_errors
 import json
-from app.workflow.scripts.llm_processor import (
-    load_step_config, process_step, save_section_output, 
-    process_sections_sequentially, get_step_id
-)
+# Removed import of deprecated llm_processor module
+# Functions will be implemented directly in this file as needed
 from datetime import datetime
 
 from . import bp
+
+def load_step_config(post_id, stage, substage, step):
+    """Load step configuration from workflow_step_entity table."""
+    with get_db_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        # Convert step name from URL format to database format
+        db_step_name = step.replace('_', ' ').title()
+        
+        # First get the substage_id
+        cur.execute("""
+            SELECT id FROM workflow_sub_stage_entity 
+            WHERE name ILIKE %s
+        """, (substage,))
+        result = cur.fetchone()
+        if not result:
+            raise Exception(f"Substage {substage} not found")
+        substage_id = result['id']
+
+        # Then get the step configuration
+        cur.execute("""
+            SELECT config FROM workflow_step_entity 
+            WHERE sub_stage_id = %s AND name ILIKE %s
+        """, (substage_id, db_step_name))
+        result = cur.fetchone()
+        if not result or not result['config']:
+            raise Exception(f"Step {step} not found in substage {substage} or has no configuration")
+        return result['config']
+
+def get_step_id(conn, stage, substage, step):
+    """Get step ID from database."""
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        # Convert step name from URL format to database format
+        db_step_name = step.replace('_', ' ').title()
+        
+        cur.execute("""
+            SELECT wse.id
+            FROM workflow_step_entity wse
+            JOIN workflow_sub_stage_entity wsse ON wse.sub_stage_id = wsse.id
+            JOIN workflow_stage_entity wst ON wsse.stage_id = wst.id
+            WHERE wst.name ILIKE %s AND wsse.name ILIKE %s AND wse.name ILIKE %s
+        """, (stage, substage, db_step_name))
+        result = cur.fetchone()
+        if not result:
+            raise Exception(f"Step {step} not found")
+        return result['id']
+
+def save_section_output(conn, section_ids, output, field):
+    """Save output to specific section field."""
+    with conn.cursor() as cur:
+        for section_id in section_ids:
+            cur.execute(f"""
+                UPDATE post_section 
+                SET {field} = %s 
+                WHERE id = %s
+            """, (output, section_id))
+        conn.commit()
+
+def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_per_section):
+    """Process sections sequentially with timeout."""
+    results = {}
+    total_time = 0
+    
+    for section_id in section_ids:
+        start_time = datetime.now()
+        
+        try:
+            # For now, just return a placeholder result
+            # This would need to be implemented with the actual LLM processing logic
+            results[section_id] = {
+                "success": True,
+                "result": f"Processed section {section_id}",
+                "processing_time": 0
+            }
+                
+        except Exception as e:
+            processing_time = (datetime.now() - start_time).total_seconds()
+            results[section_id] = {
+                "success": False,
+                "error": str(e),
+                "section_id": section_id,
+                "processing_time": processing_time
+            }
+    
+    return {
+        "results": results,
+        "summary": f"Processed {len(section_ids)} sections"
+    }
+
+def process_step(post_id, stage, substage, step, frontend_inputs=None):
+    """Process a workflow step."""
+    # This is a placeholder - the actual processing is now done in the endpoint
+    # that uses Live Preview content
+    return "Step processed using Live Preview content"
 
 def process_writing_step(post_id, stage, substage, step, section_ids, frontend_inputs):
     """
@@ -1080,21 +1171,87 @@ def get_field_selection(step_id):
 
 @bp.route('/posts/<int:post_id>/<stage>/<substage>/llm', methods=['POST'])
 def run_workflow_llm(post_id, stage, substage):
-    """Run LLM processing for a workflow step."""
+    """Run LLM processing for a workflow step using Live Preview content."""
     try:
         data = request.get_json()
         step = data.get('step')
+        preview_content = data.get('preview_content')
         
         if not step:
             return jsonify({'error': 'Step parameter is required'}), 400
         
-        # Get step configuration
-        step_config = load_step_config(post_id, stage, substage, step)
-        if not step_config:
-            return jsonify({'error': f'Step configuration not found for: {step}'}), 404
+        if not preview_content:
+            return jsonify({'error': 'Live Preview content is required'}), 400
         
-        # Process the step
-        output = process_step(post_id, stage, substage, step)
+        # Get LLM configuration from database
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur.execute("""
+                SELECT provider_type, model_name, api_base
+                FROM llm_config
+                WHERE is_active = true
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            config = cur.fetchone()
+            if not config:
+                # Fallback to default configuration
+                config = {
+                    'provider_type': 'ollama',
+                    'model_name': 'llama3.1:70b',
+                    'api_base': 'http://localhost:11434'
+                }
+        
+        # Call LLM directly with the preview content
+        import requests
+        llm_request = {
+            "model": config['model_name'],
+            "prompt": preview_content,
+            "temperature": 0.7,
+            "max_tokens": 1000,
+            "stream": False
+        }
+        
+        response = requests.post(
+            f"{config['api_base']}/api/generate",
+            json=llm_request,
+            timeout=60
+        )
+        
+        if response.status_code != 200:
+            return jsonify({'error': f'LLM request failed: {response.text}'}), 500
+        
+        result = response.json()
+        output = result.get('response', '')
+        
+        # Save output to database
+        try:
+            with get_db_conn() as conn:
+                cur = conn.cursor()
+                # Get step configuration to determine output field
+                cur.execute("""
+                    SELECT config FROM workflow_step_entity 
+                    WHERE name ILIKE %s
+                """, (step,))
+                step_result = cur.fetchone()
+                
+                if step_result and step_result[0]:
+                    config_data = step_result[0]
+                    output_mapping = config_data.get('settings', {}).get('llm', {}).get('user_output_mapping', {})
+                    output_field = output_mapping.get('field')
+                    output_table = output_mapping.get('table', 'post_development')
+                    
+                    if output_field and output_table:
+                        if output_table == 'post_development':
+                            cur.execute(f"""
+                                UPDATE post_development 
+                                SET {output_field} = %s 
+                                WHERE post_id = %s
+                            """, (output, post_id))
+                        
+                        conn.commit()
+        except Exception as e:
+            current_app.logger.error(f"Error saving output: {str(e)}")
         
         return jsonify({
             'success': True,
@@ -1418,3 +1575,85 @@ def save_context_config(step_id):
             )
             conn.commit()
     return jsonify({'success': True}) 
+
+@bp.route('/llm/direct', methods=['POST'])
+@handle_workflow_errors
+def direct_llm_call():
+    """Send preview content directly to LLM."""
+    try:
+        data = request.get_json()
+        prompt = data.get('prompt')
+        post_id = data.get('post_id')
+        step = data.get('step')
+        
+        if not prompt:
+            return jsonify({'error': 'Prompt content is required'}), 400
+        
+        # Log diagnostic information
+        import os
+        from datetime import datetime
+        
+        diagnostic_log = f"""# LLM Message Diagnostic Log
+# Post ID: {post_id}
+# Stage: planning
+# Substage: structure
+# Step: {step}
+# Timestamp: {datetime.now().isoformat()}
+# Log Type: llm_message
+
+{prompt}"""
+        
+        # Write diagnostic log
+        os.makedirs('logs', exist_ok=True)
+        with open('logs/workflow_diagnostic_llm_message.txt', 'w') as f:
+            f.write(diagnostic_log)
+        
+        # Get LLM configuration from database
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur.execute("""
+                SELECT provider_type, model_name, api_base
+                FROM llm_config
+                WHERE is_active = true
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+            config = cur.fetchone()
+            if not config:
+                # Fallback to default configuration
+                config = {
+                    'provider_type': 'ollama',
+                    'model_name': 'llama3.1:70b',
+                    'api_base': 'http://localhost:11434'
+                }
+        
+        # Call LLM directly with the preview content
+        import requests
+        llm_request = {
+            "model": config['model_name'],
+            "prompt": prompt,
+            "temperature": 0.7,
+            "max_tokens": 1000,
+            "stream": False
+        }
+        
+        response = requests.post(
+            f"{config['api_base']}/api/generate",
+            json=llm_request,
+            timeout=60
+        )
+        
+        if response.status_code != 200:
+            return jsonify({'error': f'LLM request failed: {response.text}'}), 500
+        
+        result = response.json()
+        output = result.get('response', '')
+        
+        return jsonify({
+            'success': True,
+            'result': output
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in direct LLM call: {str(e)}")
+        return jsonify({'error': str(e)}), 500 

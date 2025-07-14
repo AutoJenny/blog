@@ -711,8 +711,8 @@ if __name__ == "__main__":
     
     # Example usage
     result = build_structured_prompt(
-        system_prompt="You are an expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do.",
-        task_prompt="Generate five alternative, arresting, and informative blog post titles for a post based on the following Input.",
+        system_prompt="",
+        task_prompt="",
         input_format_template=example_input_template,
         output_format_template=example_output_template,
         input_data={"idea_seed": "Story-telling"},

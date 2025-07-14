@@ -196,8 +196,4 @@ def api_get_action(action_id):
     """Deprecated LLM action endpoint."""
     return jsonify({'error': 'This endpoint is deprecated'}), 410
 
-@bp.route('/message-management')
-def message_management():
-    """LLM Message Management interface."""
-    print("DEBUG: message_management route called")
-    return render_template('workflow/llm_message_management.html')
+

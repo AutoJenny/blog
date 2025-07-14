@@ -2,17 +2,16 @@
 import { API_CONFIG, buildApiUrl, handleApiResponse } from './config/api.js';
 
 /**
- * Run an LLM operation
+ * Run an LLM operation using the visible preview content
  * @param {Object} params - Parameters for the LLM operation
  * @param {number} params.postId - The post ID
  * @param {string} params.stage - The workflow stage
  * @param {string} params.substage - The workflow substage
  * @param {string} params.step - The workflow step
- * @param {Object} params.inputs - Multiple input values from MultiInputManager
  * @returns {Promise<Object>} The LLM response
  */
-async function runLLM({ postId, stage, substage, step, inputs = {} }) {
-    console.log('[LLM_UTILS] runLLM function called with params:', { postId, stage, substage, step, inputs });
+async function runLLM({ postId, stage, substage, step }) {
+    console.log('[LLM_UTILS] runLLM function called with params:', { postId, stage, substage, step });
     
     const btn = document.querySelector('[data-action="run-llm"]');
     if (btn) {
@@ -21,121 +20,59 @@ async function runLLM({ postId, stage, substage, step, inputs = {} }) {
     }
 
     try {
-        // Determine which endpoint to use based on stage
-        let url;
-        let requestBody;
+        // Get the visible preview content - use the correct element ID
+        const previewElement = document.getElementById('enhanced-prompt-preview');
         
-        if (stage === 'writing') {
-            // WRITING STAGE: Use separate endpoint with section selection
-            url = `/api/workflow/posts/${postId}/${stage}/${substage}/writing_llm`;
-            
-            // Get selected section IDs from the page
-            const selectedSections = getSelectedSectionIds();
-            console.log('[LLM_UTILS] Selected sections for Writing stage:', selectedSections);
-            
-            requestBody = { 
-                step: step,
-                selected_section_ids: selectedSections,
-                inputs: inputs  // Include multiple inputs in request
-            };
-        } else {
-            // PLANNING STAGE: Use original endpoint
-            url = `/api/workflow/posts/${postId}/${stage}/${substage}/llm`;
-            requestBody = { 
-                step: step,
-                inputs: inputs  // Include multiple inputs in request
-            };
+        if (!previewElement) {
+            console.error('Live Preview element not found. Available elements with "preview" in ID:', document.querySelectorAll('[id*="preview"]'));
+            throw new Error('Live Preview not found. Please open the LLM Message Management panel first.');
         }
         
-        console.log('[LLM_UTILS] Sending request to:', url);
-        console.log('[LLM_UTILS] Request body:', requestBody);
+        const previewContent = previewElement.textContent || previewElement.innerText;
+        console.log('Found preview content:', previewContent);
         
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
+        if (!previewContent || previewContent === 'No enabled elements to preview' || previewContent === 'Message preview will appear here as you organize elements...') {
+            throw new Error('No content in Live Preview. Please enable some elements in the LLM Message Management panel.');
+        }
+        
+        console.log('[LLM_UTILS] Using Live Preview content:', previewContent);
+        
+        // Send the preview content directly to LLM
+        const response = await fetch('/api/workflow/llm/direct', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: previewContent,
+                post_id: postId,
+                step: step
+            })
+        });
+
+        console.log('[LLM_UTILS] Response status:', response.status);
+        const data = await handleApiResponse(response);
+        console.log('[LLM_UTILS] Response data:', data);
+        
+        // Update output fields with the result
+        if (data.success && data.result) {
+            const outputs = document.querySelectorAll('[data-section="outputs"] textarea');
+            outputs.forEach(output => {
+                output.value = data.result;
+                output.dispatchEvent(new Event('change', { bubbles: true }));
             });
-
-            console.log('[LLM_UTILS] Response status:', response.status);
-            const data = await handleApiResponse(response);
-            console.log('[LLM_UTILS] Response data:', data);
             
-            // Handle standardized LLM response format
-            if (data.success && data.results) {
-                // Handle results object with section IDs as keys (Writing stage format)
-                if (typeof data.results === 'object' && !Array.isArray(data.results)) {
-                    Object.entries(data.results).forEach(([sectionId, result]) => {
-                        if (result.success && result.result) {
-                            // Update specific section output
-                            const sectionOutput = document.querySelector(`[data-section-id="${sectionId}"] textarea[data-field="output"]`);
-                            if (sectionOutput) {
-                                sectionOutput.value = result.result;
-                                sectionOutput.dispatchEvent(new Event('change', { bubbles: true }));
-                            }
-                        } else if (result.error) {
-                            console.error(`Error processing section ${sectionId}:`, result.error);
-                        }
-                    });
-                } else if (Array.isArray(data.results)) {
-                    // Handle results array (Planning stage format)
-                    data.results.forEach(result => {
-                        const sectionId = result.section_id;
-                        const output = result.output;
-                        
-                        if (sectionId) {
-                            // Update specific section output
-                            const sectionOutput = document.querySelector(`[data-section-id="${sectionId}"] textarea[data-field="output"]`);
-                            if (sectionOutput) {
-                                sectionOutput.value = output;
-                                sectionOutput.dispatchEvent(new Event('change', { bubbles: true }));
-                            }
-                        } else {
-                            // Update all outputs (for section creation or planning stage)
-                            const outputs = document.querySelectorAll('[data-section="outputs"] textarea');
-                            outputs.forEach(outputElement => {
-                                outputElement.value = output;
-                                outputElement.dispatchEvent(new Event('change', { bubbles: true }));
-                            });
-                            
-                            // Update the outputs summary in the accordion header
-                            const outputsSummary = document.getElementById('outputs-summary');
-                            if (outputsSummary) {
-                                const firstLine = output.split('\n')[0] || '';
-                                outputsSummary.innerHTML = `<span class="text-blue-500">[output]:</span> ${firstLine.substring(0, 100)}${firstLine.length > 100 ? '...' : ''}`;
-                            }
-                        }
-                    });
-                }
-                
-                // Update parameters display if available
-                if (data.parameters) {
-                    updateParametersDisplay(data.parameters);
-                }
-            } else if (data.data && data.data.result) {
-                // Fallback for old response format (planning stage)
-                const outputs = document.querySelectorAll('[data-section="outputs"] textarea');
-                outputs.forEach(output => {
-                    output.value = data.data.result;
-                    output.dispatchEvent(new Event('change', { bubbles: true }));
-                });
-                
-                const outputsSummary = document.getElementById('outputs-summary');
-                if (outputsSummary) {
-                    const firstLine = data.data.result.split('\n')[0] || '';
-                    outputsSummary.innerHTML = `<span class="text-blue-500">[basic_idea]:</span> ${firstLine.substring(0, 100)}${firstLine.length > 100 ? '...' : ''}`;
-                }
-            } else {
-                console.error('Invalid response format:', data);
+            // Update the outputs summary in the accordion header
+            const outputsSummary = document.getElementById('outputs-summary');
+            if (outputsSummary) {
+                const firstLine = data.result.split('\n')[0] || '';
+                outputsSummary.innerHTML = `<span class="text-blue-500">[output]:</span> ${firstLine.substring(0, 100)}${firstLine.length > 100 ? '...' : ''}`;
             }
-
-            return data;
-        } catch (fetchError) {
-            console.error('[LLM_UTILS] Fetch error:', fetchError);
-            throw fetchError;
+        } else {
+            console.error('Invalid response format:', data);
         }
+
+        return data;
     } catch (error) {
         console.error('LLM Error:', error);
         throw error;
