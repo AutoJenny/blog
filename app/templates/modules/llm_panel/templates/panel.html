@@ -259,8 +259,9 @@
                     console.log('[PANEL] Running LLM with params:', { postId, stage, substage, step });
 
                     // Use the enhanced LLM message manager's runLLM method
+                    let result;
                     if (window.enhancedLLMMessageManager) {
-                        const result = await window.enhancedLLMMessageManager.runLLM();
+                        result = await window.enhancedLLMMessageManager.runLLM();
                     } else {
                         throw new Error('Enhanced LLM Message Manager not available');
                     }
