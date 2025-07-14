@@ -575,7 +575,24 @@ def test_database_triggers():
 
 ### Common Issues
 
-#### 1. Sync Not Working
+#### 1. Database Column Errors
+**Error**: `column "section_headings" of relation "post_section" does not exist`
+
+**Cause**: Workflow step configuration is trying to write to the wrong table/field.
+
+**Solution**: 
+1. Check workflow_step_entity configuration for the step
+2. Ensure `user_output_mapping` points to `post_development.section_headings`, not `post_section.section_headings`
+3. Run the migration: `migrations/20250107_fix_section_headings_workflow_config.sql`
+
+**Example Fix**:
+```sql
+UPDATE workflow_step_entity 
+SET config = jsonb_set(config, '{settings,llm,user_output_mapping}', '{"field": "section_headings", "table": "post_development"}') 
+WHERE id = 24 AND name = 'Section Headings';
+```
+
+#### 2. Sync Not Working
 **Symptoms**: Changes to post_development.section_headings don't appear in post_section
 **Causes**: 
 - Database triggers not installed
@@ -596,7 +613,7 @@ curl -X POST "http://localhost:5000/api/workflow/posts/1/sync-sections" \
 psql -d blog -c "SELECT post_id, section_headings FROM post_development WHERE post_id = 1;"
 ```
 
-#### 2. Data Inconsistency
+#### 3. Data Inconsistency
 **Symptoms**: post_development and post_section have different section data
 **Causes**:
 - Manual updates bypassing sync
@@ -623,7 +640,7 @@ GROUP BY pd.post_id, pd.section_headings;
 "
 ```
 
-#### 3. Performance Issues
+#### 4. Performance Issues
 **Symptoms**: Slow sync operations with large datasets
 **Causes**:
 - Inefficient database queries
