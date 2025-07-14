@@ -1200,18 +1200,29 @@ class EnhancedLLMMessageManager {
         }
     }
 
-    runLLM() {
-        console.log('[ENHANCED_LLM] Run LLM called - using same logic as updatePreview()');
+    async runLLM() {
+        console.log('[ENHANCED_LLM] Run LLM called');
         
-        // Use the same content assembly logic as updatePreview() but get content from current workflow context
-        const enabledElements = [];
+        // First, ensure we have the necessary context loaded
+        if (!this.workflowContext.postId) {
+            console.log('[ENHANCED_LLM] Loading workflow context for LLM run...');
+            await this.loadWorkflowContext();
+        }
+        
+        if (!this.postSections.length) {
+            console.log('[ENHANCED_LLM] Loading post sections for LLM run...');
+            await this.loadPostSections();
+        }
+        
+        // Check if modal elements exist, if not, we need to run without modal
         const container = document.getElementById('all-elements-container');
         if (!container) {
-            console.error('[ENHANCED_LLM] Container not found for LLM run');
-            return;
+            console.log('[ENHANCED_LLM] Modal not open, running LLM with direct context assembly...');
+            return this.runLLMWithoutModal();
         }
 
-        // Get all draggable elements in their current order
+        // Use the same content assembly logic as updatePreview() but get content from current workflow context
+        const enabledElements = [];
         const allElements = container.querySelectorAll('.message-accordion, .message-element[data-element-type="instruction"]');
         
         allElements.forEach(element => {
@@ -1311,9 +1322,15 @@ class EnhancedLLMMessageManager {
         
         if (!message || message.trim() === '') {
             alert('Please enable some elements before running the LLM.');
-            return;
+            return { success: false, error: 'No content to send to LLM' };
         }
 
+        return this.executeLLMRequest(message);
+    }
+
+    async runLLMWithoutModal() {
+        console.log('[ENHANCED_LLM] Running LLM without modal - assembling content from current context...');
+        
         // Get current workflow context
         const pathParts = window.location.pathname.split('/');
         const postId = pathParts[3];
@@ -1326,33 +1343,190 @@ class EnhancedLLMMessageManager {
         
         console.log('[ENHANCED_LLM] Running LLM with context:', { postId, stage, substage, step });
         
-        // Use the existing LLM direct endpoint
-        return fetch('/api/workflow/llm/direct', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                prompt: message,
-                post_id: postId,
-                step: step
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
+        // Assemble content from current page context using the panel fields
+        const message = this.assembleContentFromPanel();
+        
+        if (!message || message.trim() === '') {
+            alert('No content available to send to LLM. Please open the LLM Message Manager to configure content.');
+            return { success: false, error: 'No content available' };
+        }
+        
+        console.log('[ENHANCED_LLM] Assembled content for LLM (without modal):', message.substring(0, 200) + '...');
+        
+        return this.executeLLMRequest(message);
+    }
+
+    assembleContentFromPanel() {
+        console.log('[ENHANCED_LLM] Assembling content from panel fields...');
+        
+        const enabledElements = [];
+        
+        // Get system prompt
+        const systemPromptTextarea = document.getElementById('system_prompt');
+        if (systemPromptTextarea && systemPromptTextarea.value.trim()) {
+            enabledElements.push({
+                label: 'SYSTEM PROMPT',
+                content: systemPromptTextarea.value.trim()
+            });
+        }
+        
+        // Get context fields
+        const contextFields = document.querySelectorAll('.context-field-group');
+        contextFields.forEach(fieldGroup => {
+            if (fieldGroup.style.display !== 'none') {
+                const textarea = fieldGroup.querySelector('textarea');
+                const label = fieldGroup.querySelector('label');
+                if (textarea && textarea.value.trim() && label) {
+                    enabledElements.push({
+                        label: label.textContent.trim().toUpperCase(),
+                        content: textarea.value.trim()
+                    });
+                }
+            }
+        });
+        
+        // Get task prompt
+        const taskPromptTextarea = document.getElementById('task_prompt');
+        if (taskPromptTextarea && taskPromptTextarea.value.trim()) {
+            enabledElements.push({
+                label: 'TASK PROMPT',
+                content: taskPromptTextarea.value.trim()
+            });
+        }
+        
+        // Get inputs
+        const inputFields = document.querySelectorAll('#inputs-container .input-field-group');
+        inputFields.forEach(fieldGroup => {
+            if (fieldGroup.style.display !== 'none') {
+                const textarea = fieldGroup.querySelector('textarea');
+                const label = fieldGroup.querySelector('label');
+                if (textarea && textarea.value.trim() && label) {
+                    enabledElements.push({
+                        label: label.textContent.trim().toUpperCase(),
+                        content: textarea.value.trim()
+                    });
+                }
+            }
+        });
+        
+        // Get settings
+        const modelSelect = document.getElementById('model_select');
+        const temperatureInput = document.getElementById('temperature');
+        const maxTokensInput = document.getElementById('max_tokens');
+        const timeoutInput = document.getElementById('timeout');
+        
+        if (modelSelect || temperatureInput || maxTokensInput || timeoutInput) {
+            const model = modelSelect ? modelSelect.value : 'Not selected';
+            const temperature = temperatureInput ? temperatureInput.value : '0.7';
+            const maxTokens = maxTokensInput ? maxTokensInput.value : '1000';
+            const timeout = timeoutInput ? timeoutInput.value : '60';
+            
+            enabledElements.push({
+                label: 'SETTINGS',
+                content: `Model: ${model}, Temperature: ${temperature}, Max Tokens: ${maxTokens}, Timeout: ${timeout}s`
+            });
+        }
+        
+        // Assemble the message with labels and line returns (plain text version)
+        let message = '';
+        enabledElements.forEach((element, index) => {
+            if (index > 0) {
+                message += '\n\n'; // Add line returns before each part
+            }
+            message += `=== ${element.label} ===\n${element.content}`;
+        });
+        
+        console.log('[ENHANCED_LLM] Assembled content from panel:', message ? message.substring(0, 200) + '...' : 'empty');
+        return message;
+    }
+
+    async executeLLMRequest(message) {
+        // Get current workflow context
+        const pathParts = window.location.pathname.split('/');
+        const postId = pathParts[3];
+        const stage = pathParts[4];
+        const substage = pathParts[5];
+        
+        // Get current step from panel data
+        const panel = document.querySelector('[data-current-stage]');
+        const step = panel ? panel.dataset.currentStep : 'section_headings';
+        
+        console.log('[ENHANCED_LLM] Executing LLM request with context:', { postId, stage, substage, step });
+        
+        // Show loading state
+        const runBtn = document.getElementById('run-llm-btn');
+        if (runBtn) {
+            const originalText = runBtn.textContent;
+            const originalClass = runBtn.className;
+            
+            // Update button to show loading state
+            runBtn.textContent = 'Running...';
+            runBtn.disabled = true;
+            runBtn.className = originalClass + ' opacity-50';
+            
+            console.log('[ENHANCED_LLM] Button state changed to loading');
+            
+            try {
+                // Use the existing LLM direct endpoint
+                const response = await fetch('/api/workflow/llm/direct', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: message,
+                        post_id: postId,
+                        step: step
+                    })
+                });
+
+                const data = await response.json();
+                console.log('[ENHANCED_LLM] LLM response:', data);
+                
+                if (data.success) {
+                    alert('LLM run completed successfully!');
+                } else {
+                    alert('LLM run failed: ' + (data.error || 'Unknown error'));
+                }
+                
+                return data; // Return the data for the panel template
+            } catch (error) {
+                console.error('[ENHANCED_LLM] LLM run error:', error);
+                alert('LLM run failed: ' + error.message);
+                throw error; // Re-throw for the panel template to handle
+            } finally {
+                // Restore button state
+                runBtn.textContent = originalText;
+                runBtn.disabled = false;
+                runBtn.className = originalClass;
+                console.log('[ENHANCED_LLM] Button state restored');
+            }
+        } else {
+            console.warn('[ENHANCED_LLM] Run LLM button not found, using fallback');
+            // Fallback if button not found
+            const response = await fetch('/api/workflow/llm/direct', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prompt: message,
+                    post_id: postId,
+                    step: step
+                })
+            });
+
+            const data = await response.json();
             console.log('[ENHANCED_LLM] LLM response:', data);
+            
             if (data.success) {
                 alert('LLM run completed successfully!');
             } else {
                 alert('LLM run failed: ' + (data.error || 'Unknown error'));
             }
-            return data; // Return the data for the panel template
-        })
-        .catch(error => {
-            console.error('[ENHANCED_LLM] LLM run error:', error);
-            alert('LLM run failed: ' + error.message);
-            throw error; // Re-throw for the panel template to handle
-        });
+            
+            return data;
+        }
     }
 
     initializeSortable() {
