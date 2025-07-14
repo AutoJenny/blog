@@ -1350,19 +1350,26 @@ class EnhancedLLMMessageManager {
         if (!message || message.trim() === '') {
             console.log('[ENHANCED_LLM] No content in panel fields, temporarily opening modal...');
             
-            // Temporarily open the modal to load content
-            this.openModal();
-            
-            // Wait a bit for the modal to load content
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Get the content from the modal
-            message = this.getAssembledContent();
-            
-            // Close the modal
-            this.closeModal();
-            
-            console.log('[ENHANCED_LLM] Got content from modal:', message ? message.substring(0, 200) + '...' : 'empty');
+            try {
+                // Temporarily open the modal to load content
+                this.openModal();
+                
+                // Wait for the modal to fully load content
+                await this.waitForModalContent();
+                
+                // Get the content from the modal
+                message = this.getAssembledContent();
+                
+                console.log('[ENHANCED_LLM] Got content from modal:', message ? message.substring(0, 200) + '...' : 'empty');
+                
+                // Close the modal
+                this.closeModal();
+                
+            } catch (error) {
+                console.error('[ENHANCED_LLM] Error loading modal content:', error);
+                // If modal fails, try default content
+                message = this.getDefaultContentFromWorkflow();
+            }
         }
         
         if (!message || message.trim() === '') {
@@ -1373,6 +1380,42 @@ class EnhancedLLMMessageManager {
         console.log('[ENHANCED_LLM] Final assembled content for LLM:', message.substring(0, 200) + '...');
         
         return this.executeLLMRequest(message);
+    }
+
+    async waitForModalContent() {
+        console.log('[ENHANCED_LLM] Waiting for modal content to load...');
+        
+        // Wait for the modal to be visible
+        let attempts = 0;
+        const maxAttempts = 20; // 2 seconds total
+        
+        while (attempts < maxAttempts) {
+            const modal = document.getElementById('enhanced-llm-message-modal');
+            if (modal && !modal.classList.contains('hidden')) {
+                console.log('[ENHANCED_LLM] Modal is visible, waiting for content...');
+                break;
+            }
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (attempts >= maxAttempts) {
+            throw new Error('Modal failed to open');
+        }
+        
+        // Wait for content to be loaded
+        attempts = 0;
+        while (attempts < maxAttempts) {
+            const container = document.getElementById('all-elements-container');
+            if (container && container.children.length > 0) {
+                console.log('[ENHANCED_LLM] Modal content loaded');
+                return;
+            }
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        throw new Error('Modal content failed to load');
     }
 
     assembleContentFromPanel() {
