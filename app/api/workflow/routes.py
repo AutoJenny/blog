@@ -1649,6 +1649,35 @@ def direct_llm_call():
         result = response.json()
         output = result.get('response', '')
         
+        # Save output to database
+        try:
+            with get_db_conn() as conn:
+                cur = conn.cursor()
+                # Get step configuration to determine output field
+                cur.execute("""
+                    SELECT config FROM workflow_step_entity 
+                    WHERE name ILIKE %s
+                """, (step,))
+                step_result = cur.fetchone()
+                
+                if step_result and step_result[0]:
+                    config_data = step_result[0]
+                    output_mapping = config_data.get('settings', {}).get('llm', {}).get('user_output_mapping', {})
+                    output_field = output_mapping.get('field')
+                    output_table = output_mapping.get('table', 'post_development')
+                    
+                    if output_field and output_table:
+                        if output_table == 'post_development':
+                            cur.execute(f"""
+                                UPDATE post_development 
+                                SET {output_field} = %s 
+                                WHERE post_id = %s
+                            """, (output, post_id))
+                        
+                        conn.commit()
+        except Exception as e:
+            current_app.logger.error(f"Error saving output: {str(e)}")
+        
         # Log response diagnostic information
         response_log = f"""# LLM Response Diagnostic Log
 # Post ID: {post_id}
