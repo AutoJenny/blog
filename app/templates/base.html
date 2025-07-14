@@ -111,7 +111,7 @@
 
     {% block scripts %}
     <!-- LLM Utilities -->
-    <script type="module" src="{{ url_for('static', filename='js/llm_utils.js') }}"></script>
+    <!-- LLM functionality now handled by enhanced_llm_message_manager.js loaded in specific templates -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var newPostBtn = document.getElementById('newPostBtn');

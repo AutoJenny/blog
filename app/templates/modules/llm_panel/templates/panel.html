@@ -146,7 +146,7 @@
 <!-- Scripts -->
 <script type="module">
     import { FieldSelector } from "/static/modules/llm_panel/js/field_selector.js";
-    import { runLLM } from "/static/js/llm_utils.js";
+    // runLLM functionality now provided by EnhancedLLMMessageManager
     import { FormatSelector } from "/static/js/format_selector.js";
     import { MultiInputManager } from "/static/modules/llm_panel/js/multi_input_manager.js";
     import sectionPanel from "/static/js/workflow/template_view.js";
@@ -258,7 +258,12 @@
                     console.log('[PANEL] step after conversion:', step);
                     console.log('[PANEL] Running LLM with params:', { postId, stage, substage, step });
 
-                    const result = await runLLM({ postId, stage, substage, step });
+                    // Use the enhanced LLM message manager's runLLM method
+                    if (window.enhancedLLMMessageManager) {
+                        const result = await window.enhancedLLMMessageManager.runLLM();
+                    } else {
+                        throw new Error('Enhanced LLM Message Manager not available');
+                    }
 
                     console.log('[PANEL] LLM result:', result);
 
