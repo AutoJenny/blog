@@ -1329,7 +1329,7 @@ class EnhancedLLMMessageManager {
     }
 
     async runLLMWithoutModal() {
-        console.log('[ENHANCED_LLM] Running LLM without modal - assembling content from current context...');
+        console.log('[ENHANCED_LLM] Running LLM without modal - temporarily opening modal to get content...');
         
         // Get current workflow context
         const pathParts = window.location.pathname.split('/');
@@ -1343,15 +1343,34 @@ class EnhancedLLMMessageManager {
         
         console.log('[ENHANCED_LLM] Running LLM with context:', { postId, stage, substage, step });
         
-        // Assemble content from current page context using the panel fields
-        const message = this.assembleContentFromPanel();
+        // First try to get content from panel fields
+        let message = this.assembleContentFromPanel();
+        
+        // If no content found, temporarily open the modal to get the content
+        if (!message || message.trim() === '') {
+            console.log('[ENHANCED_LLM] No content in panel fields, temporarily opening modal...');
+            
+            // Temporarily open the modal to load content
+            this.openModal();
+            
+            // Wait a bit for the modal to load content
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Get the content from the modal
+            message = this.getAssembledContent();
+            
+            // Close the modal
+            this.closeModal();
+            
+            console.log('[ENHANCED_LLM] Got content from modal:', message ? message.substring(0, 200) + '...' : 'empty');
+        }
         
         if (!message || message.trim() === '') {
             alert('No content available to send to LLM. Please open the LLM Message Manager to configure content.');
             return { success: false, error: 'No content available' };
         }
         
-        console.log('[ENHANCED_LLM] Assembled content for LLM (without modal):', message.substring(0, 200) + '...');
+        console.log('[ENHANCED_LLM] Final assembled content for LLM:', message.substring(0, 200) + '...');
         
         return this.executeLLMRequest(message);
     }
