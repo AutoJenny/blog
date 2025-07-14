@@ -1327,7 +1327,7 @@ class EnhancedLLMMessageManager {
         console.log('[ENHANCED_LLM] Running LLM with context:', { postId, stage, substage, step });
         
         // Use the existing LLM direct endpoint
-        fetch('/api/workflow/llm/direct', {
+        return fetch('/api/workflow/llm/direct', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1346,10 +1346,12 @@ class EnhancedLLMMessageManager {
             } else {
                 alert('LLM run failed: ' + (data.error || 'Unknown error'));
             }
+            return data; // Return the data for the panel template
         })
         .catch(error => {
             console.error('[ENHANCED_LLM] LLM run error:', error);
             alert('LLM run failed: ' + error.message);
+            throw error; // Re-throw for the panel template to handle
         });
     }
 
