@@ -1361,6 +1361,9 @@ class EnhancedLLMMessageManager {
         
         const enabledElements = [];
         
+        // First, try to get content from regular panel fields
+        let foundContent = false;
+        
         // Get system prompt
         const systemPromptTextarea = document.getElementById('system_prompt');
         if (systemPromptTextarea && systemPromptTextarea.value.trim()) {
@@ -1368,6 +1371,7 @@ class EnhancedLLMMessageManager {
                 label: 'SYSTEM PROMPT',
                 content: systemPromptTextarea.value.trim()
             });
+            foundContent = true;
         }
         
         // Get context fields
@@ -1381,6 +1385,7 @@ class EnhancedLLMMessageManager {
                         label: label.textContent.trim().toUpperCase(),
                         content: textarea.value.trim()
                     });
+                    foundContent = true;
                 }
             }
         });
@@ -1392,6 +1397,7 @@ class EnhancedLLMMessageManager {
                 label: 'TASK PROMPT',
                 content: taskPromptTextarea.value.trim()
             });
+            foundContent = true;
         }
         
         // Get inputs
@@ -1405,6 +1411,7 @@ class EnhancedLLMMessageManager {
                         label: label.textContent.trim().toUpperCase(),
                         content: textarea.value.trim()
                     });
+                    foundContent = true;
                 }
             }
         });
@@ -1425,6 +1432,23 @@ class EnhancedLLMMessageManager {
                 label: 'SETTINGS',
                 content: `Model: ${model}, Temperature: ${temperature}, Max Tokens: ${maxTokens}, Timeout: ${timeout}s`
             });
+            foundContent = true;
+        }
+        
+        // If no content found in regular fields, try to get content from the enhanced LLM message manager modal
+        if (!foundContent) {
+            console.log('[ENHANCED_LLM] No content found in regular fields, checking enhanced modal...');
+            
+            // Check if modal is open and has content
+            const container = document.getElementById('all-elements-container');
+            if (container) {
+                console.log('[ENHANCED_LLM] Modal is open, using modal content');
+                return this.getAssembledContent();
+            } else {
+                console.log('[ENHANCED_LLM] Modal not open, need to open it first to get content');
+                // Try to get default content from the current workflow context
+                return this.getDefaultContentFromWorkflow();
+            }
         }
         
         // Assemble the message with labels and line returns (plain text version)
@@ -1437,6 +1461,45 @@ class EnhancedLLMMessageManager {
         });
         
         console.log('[ENHANCED_LLM] Assembled content from panel:', message ? message.substring(0, 200) + '...' : 'empty');
+        return message;
+    }
+
+    getDefaultContentFromWorkflow() {
+        console.log('[ENHANCED_LLM] Getting default content from workflow context...');
+        
+        // Create a basic prompt based on the current workflow context
+        const pathParts = window.location.pathname.split('/');
+        const postId = pathParts[3];
+        const stage = pathParts[4];
+        const substage = pathParts[5];
+        
+        // Get current step from panel data
+        const panel = document.querySelector('[data-current-stage]');
+        const step = panel ? panel.dataset.currentStep : 'section_headings';
+        
+        // Create a basic system prompt and task prompt based on the step
+        let systemPrompt = "You are an expert in Scottish history, culture, and traditions. You have deep knowledge of clan history, tartans, kilts, quaichs, and other aspects of Scottish heritage. You write in a clear, engaging style that balances historical accuracy with accessibility for a general audience.";
+        
+        let taskPrompt = "";
+        switch (step) {
+            case 'section_headings':
+                taskPrompt = "Review all the content in the inputs above, and consider how to structure this into a blog article with around 5-8 sections. The sections should flow logically and build upon each other to tell a complete story. Create a structured outline for a blog post with the following details:\nPlease provide a JSON array of sections, where each section has:\n- title: A clear, engaging section heading\n- description: The main theme or focus of this section\nDO NOT include any introduction or conclusions, or comment at all. ONLY title and describe the sections for the article.";
+                break;
+            case 'basic_idea':
+                taskPrompt = "Create a compelling basic idea for a Scottish heritage blog post based on the available context.";
+                break;
+            case 'idea_scope':
+                taskPrompt = "Define the scope and structure for a Scottish heritage blog post based on the available context.";
+                break;
+            default:
+                taskPrompt = "Create content for the current workflow step based on the available context.";
+        }
+        
+        const settings = "Model: llama3.2:latest, Temperature: 0.7, Max Tokens: 1000, Timeout: 360s";
+        
+        const message = `=== SYSTEM PROMPT ===\n${systemPrompt}\n\n=== TASK PROMPT ===\n${taskPrompt}\n\n=== SETTINGS ===\n${settings}`;
+        
+        console.log('[ENHANCED_LLM] Created default content:', message.substring(0, 200) + '...');
         return message;
     }
 
