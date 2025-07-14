@@ -1649,6 +1649,22 @@ def direct_llm_call():
         result = response.json()
         output = result.get('response', '')
         
+        # Log response diagnostic information
+        response_log = f"""# LLM Response Diagnostic Log
+# Post ID: {post_id}
+# Stage: planning
+# Substage: structure
+# Step: {step}
+# Timestamp: {datetime.now().isoformat()}
+# Log Type: llm_response
+# Frontend Inputs: {{}}
+
+{output}"""
+        
+        # Write response diagnostic log
+        with open('logs/workflow_diagnostic_llm_response.txt', 'w') as f:
+            f.write(response_log)
+        
         return jsonify({
             'success': True,
             'result': output
