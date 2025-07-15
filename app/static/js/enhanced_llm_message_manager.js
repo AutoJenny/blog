@@ -430,14 +430,25 @@ class EnhancedLLMMessageManager {
 
         console.log('[ENHANCED_LLM] Starting field detection...');
 
-        // Get textareas with correct IDs from context section
-        const basicIdeaTextarea = document.getElementById('context_basic_idea');
-        const ideaScopeTextarea = document.getElementById('context_idea_scope');
-        const sectionHeadingsTextarea = document.getElementById('context_section_headings');
+        // Get post_development data from API for context fields
+        const postId = this.getCurrentPostId();
+        let postDevelopmentData = null;
+        
+        try {
+            const response = await fetch(`/api/workflow/posts/${postId}/fields`);
+            if (response.ok) {
+                postDevelopmentData = await response.json();
+                console.log('[ENHANCED_LLM] Post development data loaded:', Object.keys(postDevelopmentData));
+            } else {
+                console.log('[ENHANCED_LLM] Failed to load post development data:', response.status);
+            }
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error loading post development data:', error);
+        }
 
-        // Handle basic_idea - always include if it has content
-        if (basicIdeaTextarea) {
-            const basicIdeaContent = basicIdeaTextarea.value || '';
+        // Handle basic_idea from post_development API
+        if (postDevelopmentData && postDevelopmentData.basic_idea) {
+            const basicIdeaContent = postDevelopmentData.basic_idea;
             console.log('[ENHANCED_LLM] Basic idea content length:', basicIdeaContent.length);
             this.updateAccordionContent('basic_idea', basicIdeaContent || 'No content available');
             if (basicIdeaContent.trim()) {
@@ -445,48 +456,64 @@ class EnhancedLLMMessageManager {
                     id: 'basic_idea',
                     name: this.mapFieldToDisplayName('basic_idea'),
                     content: basicIdeaContent,
-                    source: 'context'
+                    source: 'post_development'
                 });
             }
         } else {
-            console.log('[ENHANCED_LLM] Basic idea textarea not found');
+            console.log('[ENHANCED_LLM] Basic idea not found in post_development data');
             this.updateAccordionContent('basic_idea', 'Field not available');
         }
 
-        // Handle idea_scope - always include if it has content
-        if (ideaScopeTextarea) {
-            const ideaScopeContent = ideaScopeTextarea.value || '';
+        // Handle idea_scope from post_development API
+        console.log('[ENHANCED_LLM] Checking idea_scope:', {
+            hasPostData: !!postDevelopmentData,
+            hasIdeaScope: !!(postDevelopmentData && postDevelopmentData.idea_scope),
+            ideaScopeValue: postDevelopmentData ? postDevelopmentData.idea_scope : 'undefined',
+            ideaScopeType: postDevelopmentData ? typeof postDevelopmentData.idea_scope : 'undefined'
+        });
+        
+        if (postDevelopmentData && postDevelopmentData.idea_scope !== null && postDevelopmentData.idea_scope !== undefined) {
+            const ideaScopeContent = postDevelopmentData.idea_scope;
             console.log('[ENHANCED_LLM] Idea scope content length:', ideaScopeContent.length);
+            console.log('[ENHANCED_LLM] Idea scope content preview:', ideaScopeContent.substring(0, 100));
             this.updateAccordionContent('idea_scope', ideaScopeContent || 'No content available');
             if (ideaScopeContent.trim()) {
                 fields.inputs.push({
                     id: 'idea_scope',
                     name: this.mapFieldToDisplayName('idea_scope'),
                     content: ideaScopeContent,
-                    source: 'context'
+                    source: 'post_development'
                 });
             }
         } else {
-            console.log('[ENHANCED_LLM] Idea scope textarea not found');
+            console.log('[ENHANCED_LLM] Idea scope not found in post_development data');
             this.updateAccordionContent('idea_scope', 'Field not available');
         }
 
-        // Handle section_headings - only include if visible and has content
-        if (sectionHeadingsTextarea && sectionHeadingsTextarea.style.display !== 'none') {
-            const sectionHeadingsContent = sectionHeadingsTextarea.value || '';
+        // Handle section_headings from post_development API
+        console.log('[ENHANCED_LLM] Checking section_headings:', {
+            hasPostData: !!postDevelopmentData,
+            hasSectionHeadings: !!(postDevelopmentData && postDevelopmentData.section_headings),
+            sectionHeadingsValue: postDevelopmentData ? postDevelopmentData.section_headings : 'undefined',
+            sectionHeadingsType: postDevelopmentData ? typeof postDevelopmentData.section_headings : 'undefined'
+        });
+        
+        if (postDevelopmentData && postDevelopmentData.section_headings !== null && postDevelopmentData.section_headings !== undefined) {
+            const sectionHeadingsContent = postDevelopmentData.section_headings;
             console.log('[ENHANCED_LLM] Section headings content length:', sectionHeadingsContent.length);
+            console.log('[ENHANCED_LLM] Section headings content preview:', sectionHeadingsContent.substring(0, 100));
             this.updateAccordionContent('section_headings', sectionHeadingsContent || 'No content available');
             if (sectionHeadingsContent.trim()) {
                 fields.inputs.push({
                     id: 'section_headings',
                     name: this.mapFieldToDisplayName('section_headings'),
                     content: sectionHeadingsContent,
-                    source: 'context'
+                    source: 'post_development'
                 });
             }
         } else {
-            console.log('[ENHANCED_LLM] Section headings textarea not found or hidden');
-            this.updateAccordionContent('section_headings', 'Field not available or hidden');
+            console.log('[ENHANCED_LLM] Section headings not found in post_development data');
+            this.updateAccordionContent('section_headings', 'Field not available');
         }
 
         // Get LLM settings from the purple panel
@@ -2084,6 +2111,26 @@ class EnhancedLLMMessageManager {
         }
         
         return 'default';
+    }
+
+    getCurrentPostId() {
+        // Extract post ID from URL path: /workflow/posts/{post_id}/...
+        const pathParts = window.location.pathname.split('/');
+        if (pathParts.length >= 4 && pathParts[1] === 'workflow' && pathParts[2] === 'posts') {
+            const postId = pathParts[3];
+            console.log('[ENHANCED_LLM] Extracted post ID from URL:', postId);
+            return postId;
+        }
+        
+        // Fallback: try to get from panel data
+        const panel = document.querySelector('[data-current-stage]');
+        if (panel && panel.dataset.postId) {
+            console.log('[ENHANCED_LLM] Got post ID from panel data:', panel.dataset.postId);
+            return panel.dataset.postId;
+        }
+        
+        console.warn('[ENHANCED_LLM] Could not determine post ID from URL or panel data');
+        return null;
     }
 
     async getSystemPromptContent() {
