@@ -1,5 +1,7 @@
 # LLM Panel System Reference
 
+> **Note**: For comprehensive documentation of the LLM message preview and assembly system, see [LLM Message System Reference](llm_message_system.md).
+
 ## Overview
 
 The LLM Panel system provides a modular, reusable interface for LLM action execution across different workflow stages. It handles input/output field mapping, action selection, and result processing with a consistent UI pattern.

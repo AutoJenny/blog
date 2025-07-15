@@ -129,6 +129,7 @@ workflow_format_template:
 - Dynamic field selection based on stage/substage
 - Configurable LLM actions per stage
 - Format template integration with complete schema and LLM instructions
+- **[Complete LLM Message System Documentation](../reference/workflow/llm_message_system.md)**
 
 ### 2. Navigation System
 - Hierarchical navigation through stages and substages

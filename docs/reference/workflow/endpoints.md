@@ -6,6 +6,10 @@ This document provides a reference for workflow-specific API endpoints. For comp
 
 **[📚 Complete API Reference](../api/current/README.md)**
 
+For detailed documentation of the LLM message preview and assembly system, including field selection and validation, see:
+
+**[📝 LLM Message System Reference](llm_message_system.md)**
+
 ## Data Flow Architecture
 
 ### Workflow LLM Action Processing Flow
