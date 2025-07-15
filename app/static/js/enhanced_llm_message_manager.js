@@ -1568,7 +1568,7 @@ class EnhancedLLMMessageManager {
     }
 
     async runLLMWithoutModal() {
-        console.log('[ENHANCED_LLM] Running LLM without modal - temporarily opening modal to get content...');
+        console.log('[ENHANCED_LLM] Running LLM without modal - opening modal to get content...');
         
         // Get current workflow context
         const pathParts = window.location.pathname.split('/');
@@ -1582,43 +1582,38 @@ class EnhancedLLMMessageManager {
         
         console.log('[ENHANCED_LLM] Running LLM with context:', { postId, stage, substage, step });
         
-        // First try to get content from panel fields
-        let message = this.assembleContentFromPanel();
-        
-        // If no content found, temporarily open the modal to get the content
-        if (!message || message.trim() === '') {
-            console.log('[ENHANCED_LLM] No content in panel fields, temporarily opening modal...');
+        // Always open the modal to get the correct content
+        try {
+            console.log('[ENHANCED_LLM] Opening modal to get content...');
             
-            try {
-                // Temporarily open the modal to load content
-                this.openModal();
-                
-                // Wait for the modal to fully load content
-                await this.waitForModalContent();
-                
-                // Get the content from the modal
-                message = this.getAssembledContent();
-                
-                console.log('[ENHANCED_LLM] Got content from modal:', message ? message.substring(0, 200) + '...' : 'empty');
-                
-                // Close the modal
-                this.closeModal();
-                
-            } catch (error) {
-                console.error('[ENHANCED_LLM] Error loading modal content:', error);
-                // If modal fails, try default content
-                message = this.getDefaultContentFromWorkflow();
+            // Open the modal to load content
+            this.openModal();
+            
+            // Wait for the modal to fully load content
+            await this.waitForModalContent();
+            
+            // Get the content from the modal
+            const message = this.getAssembledContent();
+            
+            console.log('[ENHANCED_LLM] Got content from modal:', message ? message.substring(0, 200) + '...' : 'empty');
+            
+            // Close the modal
+            this.closeModal();
+            
+            if (!message || message.trim() === '') {
+                alert('No content available to send to LLM. Please configure content in the LLM Message Manager.');
+                return { success: false, error: 'No content available' };
             }
+            
+            console.log('[ENHANCED_LLM] Final assembled content for LLM:', message.substring(0, 200) + '...');
+            
+            return this.executeLLMRequest(message);
+            
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error loading modal content:', error);
+            alert('Failed to load LLM content. Please open the LLM Message Manager manually and try again.');
+            return { success: false, error: 'Failed to load modal content: ' + error.message };
         }
-        
-        if (!message || message.trim() === '') {
-            alert('No content available to send to LLM. Please open the LLM Message Manager to configure content.');
-            return { success: false, error: 'No content available' };
-        }
-        
-        console.log('[ENHANCED_LLM] Final assembled content for LLM:', message.substring(0, 200) + '...');
-        
-        return this.executeLLMRequest(message);
     }
 
     async waitForModalContent() {
@@ -1655,114 +1650,6 @@ class EnhancedLLMMessageManager {
         }
         
         throw new Error('Modal content failed to load');
-    }
-
-    assembleContentFromPanel() {
-        console.log('[ENHANCED_LLM] Assembling content from panel fields...');
-        
-        const enabledElements = [];
-        
-        // First, try to get content from regular panel fields
-        let foundContent = false;
-        
-        // Get system prompt
-        const systemPromptTextarea = document.getElementById('system_prompt');
-        if (systemPromptTextarea && systemPromptTextarea.value.trim()) {
-            enabledElements.push({
-                label: 'SYSTEM PROMPT',
-                content: systemPromptTextarea.value.trim()
-            });
-            foundContent = true;
-        }
-        
-        // Get context fields
-        const contextFields = document.querySelectorAll('.context-field-group');
-        contextFields.forEach(fieldGroup => {
-            if (fieldGroup.style.display !== 'none') {
-                const textarea = fieldGroup.querySelector('textarea');
-                const label = fieldGroup.querySelector('label');
-                if (textarea && textarea.value.trim() && label) {
-                    enabledElements.push({
-                        label: label.textContent.trim().toUpperCase(),
-                        content: textarea.value.trim()
-                    });
-                    foundContent = true;
-                }
-            }
-        });
-        
-        // Get task prompt
-        const taskPromptTextarea = document.getElementById('task_prompt');
-        if (taskPromptTextarea && taskPromptTextarea.value.trim()) {
-            enabledElements.push({
-                label: 'TASK PROMPT',
-                content: taskPromptTextarea.value.trim()
-            });
-            foundContent = true;
-        }
-        
-        // Get inputs
-        const inputFields = document.querySelectorAll('#inputs-container .input-field-group');
-        inputFields.forEach(fieldGroup => {
-            if (fieldGroup.style.display !== 'none') {
-                const textarea = fieldGroup.querySelector('textarea');
-                const label = fieldGroup.querySelector('label');
-                if (textarea && textarea.value.trim() && label) {
-                    enabledElements.push({
-                        label: label.textContent.trim().toUpperCase(),
-                        content: textarea.value.trim()
-                    });
-                    foundContent = true;
-                }
-            }
-        });
-        
-        // Get settings
-        const modelSelect = document.getElementById('model_select');
-        const temperatureInput = document.getElementById('temperature');
-        const maxTokensInput = document.getElementById('max_tokens');
-        const timeoutInput = document.getElementById('timeout');
-        
-        if (modelSelect || temperatureInput || maxTokensInput || timeoutInput) {
-            const model = modelSelect ? modelSelect.value : 'Not selected';
-            const temperature = temperatureInput ? temperatureInput.value : '0.7';
-            const maxTokens = maxTokensInput ? maxTokensInput.value : '1000';
-            const timeout = timeoutInput ? timeoutInput.value : '60';
-            
-            enabledElements.push({
-                label: 'SETTINGS',
-                content: `Model: ${model}, Temperature: ${temperature}, Max Tokens: ${maxTokens}, Timeout: ${timeout}s`
-            });
-            foundContent = true;
-        }
-        
-        // If no content found in regular fields, try to get content from the enhanced LLM message manager modal
-        if (!foundContent) {
-            console.log('[ENHANCED_LLM] No content found in regular fields, checking enhanced modal...');
-            
-            // Check if modal is open and has content
-            const container = document.getElementById('all-elements-container');
-            if (container) {
-                console.log('[ENHANCED_LLM] Modal is open, using modal content');
-                return this.getAssembledContent();
-            } else {
-                console.log('[ENHANCED_LLM] Modal not open, need to open it first to get content');
-                // Try to get default content from the current workflow context
-                return this.getDefaultContentFromWorkflow();
-            }
-        }
-        
-        // Assemble the message with labels and line returns (plain text version)
-        let message = '';
-        enabledElements.forEach((element, index) => {
-            if (index > 0) {
-                message += '\n\n'; // Add line returns before each part
-            }
-            message += `=== ${element.label} ===\n${element.content}`;
-        });
-        
-        console.log('[ENHANCED_LLM] Assembled content from panel:', message ? message.substring(0, 200) + '...' : 'empty');
-        return message;
     }
 
     getDefaultContentFromWorkflow() {
