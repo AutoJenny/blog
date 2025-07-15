@@ -1358,10 +1358,17 @@ class EnhancedLLMMessageManager {
     saveConfiguration() {
         console.log('[ENHANCED_LLM] saveConfiguration called');
         
+        // Get current step ID for step-specific storage
+        const stepId = this.getCurrentStepId();
+        const configKey = `enhanced-llm-config-${stepId}`;
+        
+        console.log('[ENHANCED_LLM] Saving configuration for step:', stepId, 'with key:', configKey);
+        
         // Collect all configuration data
         const config = {
             accordions: {},
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            stepId: stepId
         };
 
         // Save each accordion's configuration
@@ -1381,9 +1388,9 @@ class EnhancedLLMMessageManager {
             console.log('[ENHANCED_LLM] Saved accordion:', elementType, 'enabled:', config.accordions[elementType].enabled);
         });
 
-        // Save to localStorage for now
-        localStorage.setItem('enhanced-llm-config', JSON.stringify(config));
-        console.log('[ENHANCED_LLM] Saved config to localStorage');
+        // Save to localStorage with step-specific key
+        localStorage.setItem(configKey, JSON.stringify(config));
+        console.log('[ENHANCED_LLM] Saved config to localStorage with key:', configKey);
         
         // Also save the current element order
         console.log('[ENHANCED_LLM] Calling saveElementOrder...');
@@ -1403,14 +1410,26 @@ class EnhancedLLMMessageManager {
     loadConfiguration() {
         console.log('[ENHANCED_LLM] loadConfiguration called');
         try {
-            const stored = localStorage.getItem('enhanced-llm-config');
+            // Get current step ID for step-specific storage
+            const stepId = this.getCurrentStepId();
+            const configKey = `enhanced-llm-config-${stepId}`;
+            
+            console.log('[ENHANCED_LLM] Loading configuration for step:', stepId, 'with key:', configKey);
+            
+            const stored = localStorage.getItem(configKey);
             if (!stored) {
-                console.log('[ENHANCED_LLM] No stored configuration found');
+                console.log('[ENHANCED_LLM] No stored configuration found for step:', stepId);
                 return;
             }
 
             const config = JSON.parse(stored);
             console.log('[ENHANCED_LLM] Loading configuration:', config);
+
+            // Verify this config is for the current step
+            if (config.stepId !== stepId) {
+                console.warn('[ENHANCED_LLM] Config step ID mismatch, skipping load');
+                return;
+            }
 
             // Restore accordion checkbox states
             const allAccordions = this.modal.querySelectorAll('.message-accordion');
@@ -1425,7 +1444,7 @@ class EnhancedLLMMessageManager {
                 }
             });
 
-            console.log('[ENHANCED_LLM] Configuration loaded successfully');
+            console.log('[ENHANCED_LLM] Configuration loaded successfully for step:', stepId);
         } catch (error) {
             console.error('[ENHANCED_LLM] Error loading configuration:', error);
         }
@@ -2016,6 +2035,8 @@ class EnhancedLLMMessageManager {
         const urlParams = new URLSearchParams(window.location.search);
         const stepParam = urlParams.get('step');
         
+        console.log('[ENHANCED_LLM] getCurrentStepId - URL step parameter:', stepParam);
+        
         if (stepParam) {
             // Map step names to IDs based on the workflow structure
             const stepMap = {
@@ -2027,13 +2048,17 @@ class EnhancedLLMMessageManager {
                 'images_section_llm_prompt': 45
             };
             
-            return stepMap[stepParam] || null;
+            const stepId = stepMap[stepParam] || null;
+            console.log('[ENHANCED_LLM] getCurrentStepId - Mapped step ID from URL:', stepId);
+            return stepId;
         }
         
         // If no step parameter, try to get from panel data
         const panel = document.querySelector('[data-current-stage]');
         if (panel && panel.dataset.currentStep) {
             const stepName = panel.dataset.currentStep;
+            console.log('[ENHANCED_LLM] getCurrentStepId - Panel step name:', stepName);
+            
             const stepMap = {
                 'Ideas to include': 43,
                 'Author First Drafts': 16,
@@ -2043,21 +2068,27 @@ class EnhancedLLMMessageManager {
                 'IMAGES section LLM prompt': 45
             };
             
-            return stepMap[stepName] || null;
+            const stepId = stepMap[stepName] || null;
+            console.log('[ENHANCED_LLM] getCurrentStepId - Mapped step ID from panel:', stepId);
+            return stepId;
         }
         
         // If no step ID found, use the step name as a fallback
         // This ensures we have a unique storage key even without numeric IDs
         if (panel && panel.dataset.currentStep) {
+            console.log('[ENHANCED_LLM] getCurrentStepId - Using panel step name as fallback:', panel.dataset.currentStep);
             return panel.dataset.currentStep;
         }
         
         // Final fallback: use the URL path to create a unique identifier
         const pathParts = window.location.pathname.split('/');
         if (pathParts.length >= 5) {
-            return `${pathParts[3]}_${pathParts[4]}_${pathParts[5]}`;
+            const fallbackId = `${pathParts[3]}_${pathParts[4]}_${pathParts[5]}`;
+            console.log('[ENHANCED_LLM] getCurrentStepId - Using URL path fallback:', fallbackId);
+            return fallbackId;
         }
         
+        console.log('[ENHANCED_LLM] getCurrentStepId - Using default fallback');
         return 'default';
     }
 
@@ -2119,6 +2150,9 @@ class EnhancedLLMMessageManager {
             }
             
             console.log('[ENHANCED_LLM] Fetching task prompt from API for step:', stepId);
+            console.log('[ENHANCED_LLM] Current URL:', window.location.href);
+            console.log('[ENHANCED_LLM] URL step parameter:', new URLSearchParams(window.location.search).get('step'));
+            
             const response = await fetch(`/api/workflow/steps/${stepId}/prompts`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -2127,6 +2161,7 @@ class EnhancedLLMMessageManager {
             
             const content = prompts.task_prompt_content || '';
             console.log('[ENHANCED_LLM] Task prompt content from API length:', content.length);
+            console.log('[ENHANCED_LLM] Task prompt content preview:', content.substring(0, 200) + '...');
             return content;
         } catch (error) {
             console.error('[ENHANCED_LLM] Error fetching task prompt from API:', error);
