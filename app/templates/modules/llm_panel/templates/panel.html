@@ -207,12 +207,12 @@
         const enhancedLLMMessageBtn = document.getElementById('enhanced-llm-message-btn');
         if (enhancedLLMMessageBtn) {
             console.log('[PANEL] Found enhanced LLM message button, adding event listener');
-            enhancedLLMMessageBtn.addEventListener('click', () => {
+            enhancedLLMMessageBtn.addEventListener('click', async () => {
                 console.log('[PANEL] Enhanced LLM message button clicked');
                 console.log('[PANEL] window.enhancedLLMMessageManager:', window.enhancedLLMMessageManager);
                 if (window.enhancedLLMMessageManager) {
                     console.log('[PANEL] enhancedLLMMessageManager found, opening modal');
-                    window.enhancedLLMMessageManager.openModal();
+                    await window.enhancedLLMMessageManager.openModal();
                 } else {
                     console.error('[PANEL] enhancedLLMMessageManager not found');
                 }

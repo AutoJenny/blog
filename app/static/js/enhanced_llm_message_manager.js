@@ -30,6 +30,17 @@ class EnhancedLLMMessageManager {
         this.loadInstructionsFromStorage();
         this.updatePreview();
         console.log('[ENHANCED_LLM] Initialization complete');
+        
+        // Debug: Check if modal and accordions are properly set up
+        setTimeout(() => {
+            if (this.modal) {
+                const accordions = this.modal.querySelectorAll('.message-accordion');
+                const headers = this.modal.querySelectorAll('.accordion-header');
+                console.log('[ENHANCED_LLM] Debug: Modal setup complete');
+                console.log('[ENHANCED_LLM] Debug: Found', accordions.length, 'accordions');
+                console.log('[ENHANCED_LLM] Debug: Found', headers.length, 'accordion headers');
+            }
+        }, 200);
     }
 
     setupEventListeners() {
@@ -68,6 +79,11 @@ class EnhancedLLMMessageManager {
         // Save configuration button
         document.getElementById('save-enhanced-config')?.addEventListener('click', () => {
             this.saveConfiguration();
+        });
+
+        // Test accordions button
+        document.getElementById('test-accordions-btn')?.addEventListener('click', () => {
+            this.testAccordions();
         });
 
         // Run LLM button
@@ -147,43 +163,79 @@ class EnhancedLLMMessageManager {
     initializeAccordions() {
         // Add click handlers for accordion headers
         this.modal.addEventListener('click', (e) => {
-            if (e.target.closest('.accordion-header')) {
+            // Check if click is on accordion header or its children
+            if (e.target.closest('.accordion-header') || e.target.classList.contains('accordion-toggle')) {
                 const accordion = e.target.closest('.message-accordion');
-                this.toggleAccordion(accordion);
+                if (accordion) {
+                    console.log('[ENHANCED_LLM] Accordion clicked:', accordion.dataset.elementType);
+                    this.toggleAccordion(accordion);
+                }
             }
         });
+        
+        // Also add direct click handlers to accordion headers for better reliability
+        setTimeout(() => {
+            const accordionHeaders = this.modal.querySelectorAll('.accordion-header');
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const accordion = header.closest('.message-accordion');
+                    if (accordion) {
+                        console.log('[ENHANCED_LLM] Direct accordion header click:', accordion.dataset.elementType);
+                        this.toggleAccordion(accordion);
+                    }
+                });
+            });
+            console.log('[ENHANCED_LLM] Added direct click handlers to', accordionHeaders.length, 'accordion headers');
+        }, 100);
     }
 
     toggleAccordion(accordion) {
         const content = accordion.querySelector('.accordion-content');
         const toggle = accordion.querySelector('.accordion-toggle');
         
-        if (content.classList.contains('hidden')) {
+        if (!content || !toggle) {
+            console.error('[ENHANCED_LLM] Missing content or toggle element for accordion');
+            return;
+        }
+        
+        const isHidden = content.classList.contains('hidden');
+        console.log('[ENHANCED_LLM] Toggling accordion:', accordion.dataset.elementType, 'isHidden:', isHidden);
+        
+        if (isHidden) {
             content.classList.remove('hidden');
             toggle.textContent = '▲';
+            // Fix: Ensure the content is visible by setting proper opacity
+            content.style.opacity = '1';
+            console.log('[ENHANCED_LLM] Accordion expanded:', accordion.dataset.elementType);
         } else {
             content.classList.add('hidden');
             toggle.textContent = '▼';
+            console.log('[ENHANCED_LLM] Accordion collapsed:', accordion.dataset.elementType);
         }
     }
 
-    openModal() {
+    async openModal() {
         console.log('[ENHANCED_LLM] openModal called!');
         this.modal.classList.remove('hidden');
         
         console.log('[ENHANCED_LLM] Loading workflow context...');
-        this.loadWorkflowContext();
+        await this.loadWorkflowContext();
         
         console.log('[ENHANCED_LLM] Loading post sections...');
-        this.loadPostSections();
+        await this.loadPostSections();
+        
+        // Wait for field selectors to be initialized before reading content
+        console.log('[ENHANCED_LLM] Waiting for field selectors to be ready...');
+        await this.waitForFieldSelectorsReady();
         
         console.log('[ENHANCED_LLM] Refreshing context...');
-        this.refreshContext();
+        await this.refreshContext();
         
         // Add a small delay to ensure field selectors are populated
-        setTimeout(() => {
+        setTimeout(async () => {
             console.log('[ENHANCED_LLM] Updating input fields for section:', this.selectedPostSection);
-            this.updateInputFieldsForSection(this.selectedPostSection);
+            await this.updateInputFieldsForSection(this.selectedPostSection);
             
             console.log('[ENHANCED_LLM] Loading element order...');
             this.loadElementOrder();
@@ -201,6 +253,41 @@ class EnhancedLLMMessageManager {
 
     closeModal() {
         this.modal.classList.add('hidden');
+    }
+
+    async waitForFieldSelectorsReady() {
+        console.log('[ENHANCED_LLM] Waiting for field selectors to be ready...');
+        
+        // Wait for the FieldSelector to be initialized
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max wait
+        
+        while (attempts < maxAttempts) {
+            // Check if field selectors have been populated
+            const fieldSelectors = document.querySelectorAll('.field-selector');
+            const hasPopulatedSelectors = Array.from(fieldSelectors).some(selector => {
+                return selector.options.length > 1; // More than just the default "Select field..." option
+            });
+            
+            if (hasPopulatedSelectors) {
+                console.log('[ENHANCED_LLM] Field selectors are ready!');
+                return;
+            }
+            
+            // Check if FieldSelector is initialized
+            if (window.fieldSelector && window.fieldSelector.initialized) {
+                console.log('[ENHANCED_LLM] FieldSelector is initialized, waiting for content...');
+                // Give a bit more time for content to load
+                await new Promise(resolve => setTimeout(resolve, 200));
+                return;
+            }
+            
+            console.log(`[ENHANCED_LLM] Waiting for field selectors... (attempt ${attempts + 1}/${maxAttempts})`);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        console.warn('[ENHANCED_LLM] Field selectors not ready after timeout, proceeding anyway...');
     }
 
     async loadWorkflowContext() {
@@ -286,60 +373,120 @@ class EnhancedLLMMessageManager {
         return fields;
     }
 
-    detectAvailableFields() {
+    // Test method to manually test accordion functionality
+    testAccordions() {
+        console.log('[ENHANCED_LLM] Testing accordion functionality...');
+        
+        const accordions = this.modal.querySelectorAll('.message-accordion');
+        console.log('[ENHANCED_LLM] Found', accordions.length, 'accordions');
+        
+        accordions.forEach((accordion, index) => {
+            const elementType = accordion.dataset.elementType;
+            const content = accordion.querySelector('.accordion-content');
+            const toggle = accordion.querySelector('.accordion-toggle');
+            const header = accordion.querySelector('.accordion-header');
+            const elementContent = accordion.querySelector('.element-content');
+            
+            console.log(`[ENHANCED_LLM] Accordion ${index}:`, {
+                elementType,
+                hasContent: !!content,
+                hasToggle: !!toggle,
+                hasHeader: !!header,
+                hasElementContent: !!elementContent,
+                isHidden: content ? content.classList.contains('hidden') : 'N/A',
+                toggleText: toggle ? toggle.textContent : 'N/A',
+                contentText: elementContent ? elementContent.textContent.substring(0, 100) + '...' : 'N/A'
+            });
+            
+            // Test clicking the first accordion
+            if (index === 0 && header) {
+                console.log('[ENHANCED_LLM] Testing click on first accordion...');
+                header.click();
+            }
+        });
+        
+        // Also test field selector status
+        console.log('[ENHANCED_LLM] Field selector status:');
+        console.log('[ENHANCED_LLM] - window.fieldSelector exists:', !!window.fieldSelector);
+        console.log('[ENHANCED_LLM] - window.fieldSelector.initialized:', window.fieldSelector ? window.fieldSelector.initialized : 'N/A');
+        
+        const fieldSelectors = document.querySelectorAll('.field-selector');
+        console.log('[ENHANCED_LLM] - Field selectors found:', fieldSelectors.length);
+        fieldSelectors.forEach((selector, index) => {
+            console.log(`[ENHANCED_LLM] - Selector ${index}:`, {
+                options: selector.options.length,
+                value: selector.value,
+                section: selector.dataset.section,
+                target: selector.dataset.target
+            });
+        });
+    }
+
+    async detectAvailableFields() {
         const fields = {
             inputs: [],
             outputs: []
         };
 
-        // Get textareas
-        const basicIdeaTextarea = document.getElementById('basic_idea');
-        const ideaScopeTextarea = document.getElementById('idea_scope');
-        const sectionHeadingsTextarea = document.getElementById('section_headings');
+        console.log('[ENHANCED_LLM] Starting field detection...');
+
+        // Get textareas with correct IDs from context section
+        const basicIdeaTextarea = document.getElementById('context_basic_idea');
+        const ideaScopeTextarea = document.getElementById('context_idea_scope');
+        const sectionHeadingsTextarea = document.getElementById('context_section_headings');
 
         // Handle basic_idea - always include if it has content
         if (basicIdeaTextarea) {
             const basicIdeaContent = basicIdeaTextarea.value || '';
-            console.log('[ENHANCED_LLM] Basic idea content:', basicIdeaContent);
-            this.updateAccordionContent('basic_idea', basicIdeaContent);
+            console.log('[ENHANCED_LLM] Basic idea content length:', basicIdeaContent.length);
+            this.updateAccordionContent('basic_idea', basicIdeaContent || 'No content available');
             if (basicIdeaContent.trim()) {
                 fields.inputs.push({
                     id: 'basic_idea',
                     name: this.mapFieldToDisplayName('basic_idea'),
                     content: basicIdeaContent,
-                    source: 'purple_module'
+                    source: 'context'
                 });
             }
+        } else {
+            console.log('[ENHANCED_LLM] Basic idea textarea not found');
+            this.updateAccordionContent('basic_idea', 'Field not available');
         }
 
         // Handle idea_scope - always include if it has content
         if (ideaScopeTextarea) {
             const ideaScopeContent = ideaScopeTextarea.value || '';
-            console.log('[ENHANCED_LLM] Idea scope content:', ideaScopeContent);
-            this.updateAccordionContent('idea_scope', ideaScopeContent);
+            console.log('[ENHANCED_LLM] Idea scope content length:', ideaScopeContent.length);
+            this.updateAccordionContent('idea_scope', ideaScopeContent || 'No content available');
             if (ideaScopeContent.trim()) {
                 fields.inputs.push({
                     id: 'idea_scope',
                     name: this.mapFieldToDisplayName('idea_scope'),
                     content: ideaScopeContent,
-                    source: 'purple_module'
+                    source: 'context'
                 });
             }
+        } else {
+            console.log('[ENHANCED_LLM] Idea scope textarea not found');
+            this.updateAccordionContent('idea_scope', 'Field not available');
         }
 
         // Handle section_headings - only include if visible and has content
         if (sectionHeadingsTextarea && sectionHeadingsTextarea.style.display !== 'none') {
             const sectionHeadingsContent = sectionHeadingsTextarea.value || '';
-            console.log('[ENHANCED_LLM] Section headings content:', sectionHeadingsContent);
-            this.updateAccordionContent('section_headings', sectionHeadingsContent);
+            console.log('[ENHANCED_LLM] Section headings content length:', sectionHeadingsContent.length);
+            this.updateAccordionContent('section_headings', sectionHeadingsContent || 'No content available');
             if (sectionHeadingsContent.trim()) {
                 fields.inputs.push({
                     id: 'section_headings',
                     name: this.mapFieldToDisplayName('section_headings'),
                     content: sectionHeadingsContent,
-                    source: 'purple_module'
+                    source: 'context'
                 });
             }
+        } else {
+            console.log('[ENHANCED_LLM] Section headings textarea not found or hidden');
+            this.updateAccordionContent('section_headings', 'Field not available or hidden');
         }
 
         // Get LLM settings from the purple panel
@@ -347,29 +494,25 @@ class EnhancedLLMMessageManager {
         console.log('[ENHANCED_LLM] Settings content:', settingsContent);
         this.updateAccordionContent('settings', settingsContent);
 
-        // Get system prompt and task prompt from purple module
-        const systemPromptTextarea = document.getElementById('system_prompt');
-        const taskPromptTextarea = document.getElementById('task_prompt');
+        // Get system prompt and task prompt using the EXACT SAME API call as PromptSelector
+        const systemContent = await this.getSystemPromptContent();
+        console.log('[ENHANCED_LLM] System prompt content length:', systemContent.length);
+        this.updateAccordionContent('system_prompt', systemContent || 'No system prompt set');
         
-        if (systemPromptTextarea) {
-            const systemContent = systemPromptTextarea.value || '';
-            console.log('[ENHANCED_LLM] System prompt content:', systemContent);
-            this.updateAccordionContent('system_prompt', systemContent);
-        } else {
-            console.log('[ENHANCED_LLM] System prompt textarea not found');
-        }
-        
-        if (taskPromptTextarea) {
-            const taskContent = taskPromptTextarea.value || '';
-            console.log('[ENHANCED_LLM] Task prompt content:', taskContent);
-            this.updateAccordionContent('task_prompt', taskContent);
-        } else {
-            console.log('[ENHANCED_LLM] Task prompt textarea not found');
-        }
+        const taskContent = await this.getTaskPromptContent();
+        console.log('[ENHANCED_LLM] Task prompt content length:', taskContent.length);
+        this.updateAccordionContent('task_prompt', taskContent || 'No task prompt set');
 
         // Find all input field groups in the purple module
         const inputFieldGroups = document.querySelectorAll('.input-field-group');
         console.log('[ENHANCED_LLM] Found input field groups:', inputFieldGroups.length);
+        
+        if (inputFieldGroups.length === 0) {
+            console.log('[ENHANCED_LLM] No input field groups found, checking for alternative selectors...');
+            // Try alternative selectors
+            const alternativeInputs = document.querySelectorAll('[data-section="inputs"]');
+            console.log('[ENHANCED_LLM] Alternative inputs found:', alternativeInputs.length);
+        }
         
         inputFieldGroups.forEach((group, index) => {
             console.log(`[ENHANCED_LLM] Processing input field group ${index}:`, group);
@@ -377,8 +520,8 @@ class EnhancedLLMMessageManager {
             const fieldSelector = group.querySelector('.field-selector[data-section="inputs"]');
             const textarea = group.querySelector('textarea');
             
-            console.log(`[ENHANCED_LLM] Field selector found:`, fieldSelector);
-            console.log(`[ENHANCED_LLM] Textarea found:`, textarea);
+            console.log(`[ENHANCED_LLM] Field selector found:`, !!fieldSelector);
+            console.log(`[ENHANCED_LLM] Textarea found:`, !!textarea);
             
             if (fieldSelector && textarea) {
                 const selectedField = fieldSelector.value;
@@ -390,11 +533,10 @@ class EnhancedLLMMessageManager {
                     id: fieldId,
                     dataTarget: dataTarget,
                     selectedField: selectedField,
-                    content: fieldContent ? fieldContent.substring(0, 50) + '...' : 'empty',
                     contentLength: fieldContent ? fieldContent.length : 0,
-                    options: Array.from(fieldSelector.options).map(opt => opt.value),
-                    textareaId: textarea.id,
-                    textareaValue: textarea.value ? textarea.value.substring(0, 50) + '...' : 'empty'
+                    hasContent: fieldContent && fieldContent.trim() !== '',
+                    optionsCount: fieldSelector.options.length,
+                    textareaId: textarea.id
                 });
                 
                 // Use the selected field name if available, otherwise fall back to data-target or fieldId
@@ -404,19 +546,24 @@ class EnhancedLLMMessageManager {
                     // Get the display name for the selected field
                     const displayName = this.mapFieldToDisplayName(fieldName);
                     
-                    // NO FALLBACK CONTENT - ONLY USE TEXTAREA CONTENT
+                    // Show content or placeholder
                     let content = fieldContent;
+                    if (!content || content.trim() === '') {
+                        content = selectedField ? `Field "${displayName}" selected but no content available` : 'No field selected';
+                    }
                     
                     fields.inputs.push({
                         id: fieldName,
                         name: displayName,
-                        content: content || '',
+                        content: content,
                         type: 'field',
                         source: 'purple_module',
                         fieldId: fieldId,
                         selectedField: selectedField
                     });
                 }
+            } else {
+                console.log(`[ENHANCED_LLM] Input field group ${index} missing required elements`);
             }
         });
 
@@ -430,8 +577,8 @@ class EnhancedLLMMessageManager {
             const fieldSelector = group.querySelector('.field-selector[data-section="outputs"]');
             const textarea = group.querySelector('textarea');
             
-            console.log(`[ENHANCED_LLM] Output field selector found:`, fieldSelector);
-            console.log(`[ENHANCED_LLM] Output textarea found:`, textarea);
+            console.log(`[ENHANCED_LLM] Output field selector found:`, !!fieldSelector);
+            console.log(`[ENHANCED_LLM] Output textarea found:`, !!textarea);
             
             if (fieldSelector && textarea) {
                 const selectedField = fieldSelector.value;
@@ -443,23 +590,32 @@ class EnhancedLLMMessageManager {
                     id: fieldId,
                     dataTarget: dataTarget,
                     selectedField: selectedField,
-                    content: fieldContent ? fieldContent.substring(0, 50) + '...' : 'empty',
-                    options: Array.from(fieldSelector.options).map(opt => opt.value)
+                    contentLength: fieldContent ? fieldContent.length : 0,
+                    hasContent: fieldContent && fieldContent.trim() !== '',
+                    optionsCount: fieldSelector.options.length
                 });
                 
                 // If no field is selected but we have a data-target, use that as the field name
                 const fieldName = selectedField || dataTarget || fieldId;
                 
                 if (fieldName) {
+                    // Show content or placeholder
+                    let content = fieldContent;
+                    if (!content || content.trim() === '') {
+                        content = selectedField ? `Field "${this.mapFieldToDisplayName(fieldName)}" selected but no content available` : 'No field selected';
+                    }
+                    
                     fields.outputs.push({
                         id: fieldName,
                         name: this.mapFieldToDisplayName(fieldName),
-                        content: fieldContent || '',
+                        content: content,
                         type: 'field',
                         source: 'purple_module',
                         fieldId: fieldId
                     });
                 }
+            } else {
+                console.log(`[ENHANCED_LLM] Output field group ${index} missing required elements`);
             }
         });
 
@@ -496,7 +652,8 @@ class EnhancedLLMMessageManager {
     }
 
     updateAccordionContent(elementType, content) {
-        console.log(`[ENHANCED_LLM] updateAccordionContent called for ${elementType} with content:`, content ? content.substring(0, 100) + '...' : 'empty');
+        console.log(`[ENHANCED_LLM] updateAccordionContent called for ${elementType} with content length:`, content ? content.length : 0);
+        console.log(`[ENHANCED_LLM] Content preview:`, content ? content.substring(0, 100) + '...' : 'null');
         
         const accordion = this.modal.querySelector(`[data-element-type="${elementType}"]`);
         if (accordion) {
@@ -504,12 +661,22 @@ class EnhancedLLMMessageManager {
             const contentDiv = accordion.querySelector('.element-content');
             if (contentDiv) {
                 console.log(`[ENHANCED_LLM] Found content div for ${elementType}, setting content`);
+                console.log(`[ENHANCED_LLM] Content div before setting:`, contentDiv.textContent.substring(0, 50) + '...');
                 contentDiv.textContent = content;
+                console.log(`[ENHANCED_LLM] Content set for ${elementType}, new content length:`, contentDiv.textContent.length);
+                console.log(`[ENHANCED_LLM] Content div after setting:`, contentDiv.textContent.substring(0, 100) + '...');
+                
+                // Verify the content was actually set
+                setTimeout(() => {
+                    console.log(`[ENHANCED_LLM] Content verification for ${elementType}:`, contentDiv.textContent.substring(0, 100) + '...');
+                }, 100);
             } else {
                 console.log(`[ENHANCED_LLM] Content div not found for ${elementType}`);
+                console.log(`[ENHANCED_LLM] Accordion HTML:`, accordion.innerHTML.substring(0, 200) + '...');
             }
         } else {
             console.log(`[ENHANCED_LLM] Accordion not found for ${elementType}`);
+            console.log(`[ENHANCED_LLM] Available accordions:`, Array.from(this.modal.querySelectorAll('.message-accordion')).map(a => a.dataset.elementType));
         }
     }
 
@@ -1919,16 +2086,57 @@ class EnhancedLLMMessageManager {
         return 'default';
     }
 
-    getSystemPromptContent() {
-        // Get system prompt from textarea
-        const systemPromptTextarea = document.getElementById('system_prompt');
-        if (systemPromptTextarea && systemPromptTextarea.value) {
-            console.log('[ENHANCED_LLM] Found system prompt in textarea:', systemPromptTextarea.value.substring(0, 100) + '...');
-            return systemPromptTextarea.value;
+    async getSystemPromptContent() {
+        // Use the EXACT SAME API call as PromptSelector
+        try {
+            const stepId = this.getCurrentStepId();
+            if (!stepId) {
+                console.log('[ENHANCED_LLM] No step ID available for system prompt');
+                return '';
+            }
+            
+            console.log('[ENHANCED_LLM] Fetching system prompt from API for step:', stepId);
+            const response = await fetch(`/api/workflow/steps/${stepId}/prompts`);
+            console.log('[ENHANCED_LLM] API response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const prompts = await response.json();
+            console.log('[ENHANCED_LLM] API response keys:', Object.keys(prompts));
+            
+            const content = prompts.system_prompt_content || '';
+            console.log('[ENHANCED_LLM] System prompt content from API length:', content.length);
+            console.log('[ENHANCED_LLM] System prompt content preview:', content.substring(0, 100) + '...');
+            return content;
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error fetching system prompt from API:', error);
+            return '';
         }
-        
-        console.log('[ENHANCED_LLM] No system prompt found in textarea');
-        return '';
+    }
+
+    async getTaskPromptContent() {
+        // Use the EXACT SAME API call as PromptSelector
+        try {
+            const stepId = this.getCurrentStepId();
+            if (!stepId) {
+                console.log('[ENHANCED_LLM] No step ID available for task prompt');
+                return '';
+            }
+            
+            console.log('[ENHANCED_LLM] Fetching task prompt from API for step:', stepId);
+            const response = await fetch(`/api/workflow/steps/${stepId}/prompts`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const prompts = await response.json();
+            
+            const content = prompts.task_prompt_content || '';
+            console.log('[ENHANCED_LLM] Task prompt content from API length:', content.length);
+            return content;
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error fetching task prompt from API:', error);
+            return '';
+        }
     }
 
     getLLMSettingsContent() {
@@ -1989,23 +2197,55 @@ class EnhancedLLMMessageManager {
             // Clear existing content
             inputContainer.innerHTML = '';
             
-            // Get available input fields from purple module
-            const fields = await this.detectAvailableFields();
-            console.log('[ENHANCED_LLM] All available fields from purple module:', {
-                inputs: fields.inputs.length,
-                outputs: fields.outputs.length
-            });
+            // Don't call detectAvailableFields again - it's already been called in refreshContext
+            // and the accordion content has already been set
+            console.log('[ENHANCED_LLM] Skipping detectAvailableFields call to preserve accordion content');
             
-            // Show all input fields from purple module
-            fields.inputs.forEach(field => {
-                console.log('[ENHANCED_LLM] Creating field element for:', field.name, 'with content:', field.content?.substring(0, 50) + '...');
-                const fieldElement = this.createFieldElement(field);
-                inputContainer.appendChild(fieldElement);
-            });
+            // Instead, just populate the input fields from the purple module directly
+            const inputFieldGroups = document.querySelectorAll('.input-field-group');
+            console.log('[ENHANCED_LLM] Found input field groups:', inputFieldGroups.length);
             
-            if (fields.inputs.length === 0) {
-                console.log('[ENHANCED_LLM] No input fields found in purple module');
-            }
+            inputFieldGroups.forEach((group, index) => {
+                console.log(`[ENHANCED_LLM] Processing input field group ${index}:`, group);
+                
+                const fieldSelector = group.querySelector('.field-selector[data-section="inputs"]');
+                const textarea = group.querySelector('textarea');
+                
+                if (fieldSelector && textarea) {
+                    const selectedField = fieldSelector.value;
+                    const fieldContent = textarea.value;
+                    const fieldId = textarea.id;
+                    const dataTarget = fieldSelector.getAttribute('data-target');
+                    
+                    // Use the selected field name if available, otherwise fall back to data-target or fieldId
+                    const fieldName = selectedField || dataTarget || fieldId;
+                    
+                    if (fieldName) {
+                        // Get the display name for the selected field
+                        const displayName = this.mapFieldToDisplayName(fieldName);
+                        
+                        // Show content or placeholder
+                        let content = fieldContent;
+                        if (!content || content.trim() === '') {
+                            content = selectedField ? `Field "${displayName}" selected but no content available` : 'No field selected';
+                        }
+                        
+                        const field = {
+                            id: fieldName,
+                            name: displayName,
+                            content: content,
+                            type: 'field',
+                            source: 'purple_module',
+                            fieldId: fieldId,
+                            selectedField: selectedField
+                        };
+                        
+                        console.log('[ENHANCED_LLM] Creating field element for:', field.name, 'with content:', field.content?.substring(0, 50) + '...');
+                        const fieldElement = this.createFieldElement(field);
+                        inputContainer.appendChild(fieldElement);
+                    }
+                }
+            });
             
             console.log('[ENHANCED_LLM] Populated input fields with purple module data');
             
