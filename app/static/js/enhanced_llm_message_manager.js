@@ -49,6 +49,13 @@ class EnhancedLLMMessageManager {
             this.closeModal();
         });
 
+        // ESC key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.modal && !this.modal.classList.contains('hidden')) {
+                this.closeModal();
+            }
+        });
+
         // Post section selector
         document.getElementById('post-section-selector')?.addEventListener('change', (e) => {
             this.selectedPostSection = e.target.value;
@@ -1104,6 +1111,7 @@ class EnhancedLLMMessageManager {
                     if (fieldElements.length > 0) {
                         // This accordion contains individual field elements
                         let sectionContent = '';
+                        let fieldCount = 0;
                         fieldElements.forEach(fieldElement => {
                             const fieldToggle = fieldElement.querySelector('.element-toggle');
                             if (fieldToggle && fieldToggle.checked) {
@@ -1111,7 +1119,14 @@ class EnhancedLLMMessageManager {
                                 if (fieldContent && fieldContent.textContent.trim()) {
                                     const fieldLabel = fieldElement.querySelector('.element-label');
                                     const label = fieldLabel ? fieldLabel.textContent : 'Field';
-                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}\n`;
+                                    
+                                    // Add line break before each field (except the first one)
+                                    if (fieldCount > 0) {
+                                        sectionContent += '\n';
+                                    }
+                                    
+                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}`;
+                                    fieldCount++;
                                 }
                             }
                         });
@@ -1264,6 +1279,7 @@ class EnhancedLLMMessageManager {
                     if (fieldElements.length > 0) {
                         // This accordion contains individual field elements
                         let sectionContent = '';
+                        let fieldCount = 0;
                         fieldElements.forEach(fieldElement => {
                             const fieldToggle = fieldElement.querySelector('.element-toggle');
                             if (fieldToggle && fieldToggle.checked) {
@@ -1271,7 +1287,14 @@ class EnhancedLLMMessageManager {
                                 if (fieldContent && fieldContent.textContent.trim()) {
                                     const fieldLabel = fieldElement.querySelector('.element-label');
                                     const label = fieldLabel ? fieldLabel.textContent : 'Field';
-                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}\n`;
+                                    
+                                    // Add line break before each field (except the first one)
+                                    if (fieldCount > 0) {
+                                        sectionContent += '\n';
+                                    }
+                                    
+                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}`;
+                                    fieldCount++;
                                 }
                             }
                         });
@@ -1480,6 +1503,7 @@ class EnhancedLLMMessageManager {
                     if (fieldElements.length > 0) {
                         // This accordion contains individual field elements
                         let sectionContent = '';
+                        let fieldCount = 0;
                         fieldElements.forEach(fieldElement => {
                             const fieldToggle = fieldElement.querySelector('.element-toggle');
                             if (fieldToggle && fieldToggle.checked) {
@@ -1487,7 +1511,14 @@ class EnhancedLLMMessageManager {
                                 if (fieldContent && fieldContent.textContent.trim()) {
                                     const fieldLabel = fieldElement.querySelector('.element-label');
                                     const label = fieldLabel ? fieldLabel.textContent : 'Field';
-                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}\n`;
+                                    
+                                    // Add line break before each field (except the first one)
+                                    if (fieldCount > 0) {
+                                        sectionContent += '\n';
+                                    }
+                                    
+                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}`;
+                                    fieldCount++;
                                 }
                             }
                         });
@@ -2477,6 +2508,7 @@ class EnhancedLLMMessageManager {
                     if (fieldElements.length > 0) {
                         // This accordion contains individual field elements
                         let sectionContent = '';
+                        let fieldCount = 0;
                         fieldElements.forEach(fieldElement => {
                             const fieldToggle = fieldElement.querySelector('.element-toggle');
                             if (fieldToggle && fieldToggle.checked) {
@@ -2484,7 +2516,14 @@ class EnhancedLLMMessageManager {
                                 if (fieldContent && fieldContent.textContent.trim()) {
                                     const fieldLabel = fieldElement.querySelector('.element-label');
                                     const label = fieldLabel ? fieldLabel.textContent : 'Field';
-                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}\n`;
+                                    
+                                    // Add line break before each field (except the first one)
+                                    if (fieldCount > 0) {
+                                        sectionContent += '\n';
+                                    }
+                                    
+                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}`;
+                                    fieldCount++;
                                 }
                             }
                         });
