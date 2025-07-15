@@ -7,7 +7,6 @@ from config import get_config
 import redis
 import psutil
 import time
-from app.workflow import bp as workflow_bp
 
 def create_app():
     # Load environment variables
@@ -41,9 +40,8 @@ def create_app():
     app.register_blueprint(blog_bp, url_prefix='/blog')
     from app.llm import bp as llm_bp
     app.register_blueprint(llm_bp, url_prefix='/llm')
-    app.register_blueprint(workflow_bp, url_prefix='/workflow')
     
-    # Initialize workflow module (includes api_workflow_bp registration)
+    # Initialize workflow module (includes workflow_bp and api_workflow_bp registration)
     from app.workflow import init_workflow
     init_workflow(app)
 

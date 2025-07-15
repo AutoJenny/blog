@@ -1621,7 +1621,7 @@ class EnhancedLLMMessageManager {
         
         // Wait for the modal to be visible
         let attempts = 0;
-        const maxAttempts = 20; // 2 seconds total
+        const maxAttempts = 50; // 5 seconds total
         
         while (attempts < maxAttempts) {
             const modal = document.getElementById('enhanced-llm-message-modal');
@@ -1634,22 +1634,49 @@ class EnhancedLLMMessageManager {
         }
         
         if (attempts >= maxAttempts) {
-            throw new Error('Modal failed to open');
+            throw new Error('Modal failed to open within timeout');
         }
         
-        // Wait for content to be loaded
+        // Wait for the content to actually be loaded
+        console.log('[ENHANCED_LLM] Modal is visible, waiting for content to load...');
         attempts = 0;
+        
         while (attempts < maxAttempts) {
-            const container = document.getElementById('all-elements-container');
-            if (container && container.children.length > 0) {
-                console.log('[ENHANCED_LLM] Modal content loaded');
-                return;
+            // Check if task prompt content is loaded
+            const taskPromptElement = document.querySelector('[data-element-type="task_prompt"] .element-content');
+            if (taskPromptElement && taskPromptElement.textContent.trim() && 
+                taskPromptElement.textContent.trim() !== 'Loading...' &&
+                taskPromptElement.textContent.trim() !== 'No prompt configured for this step.') {
+                
+                console.log('[ENHANCED_LLM] Task prompt content loaded:', taskPromptElement.textContent.substring(0, 100) + '...');
+                
+                // Also wait for input fields to be populated
+                const inputFields = document.querySelectorAll('[data-element-type="inputs"] .message-element');
+                if (inputFields.length > 0) {
+                    const hasContent = Array.from(inputFields).some(field => {
+                        const content = field.querySelector('.element-content');
+                        return content && content.textContent.trim() && 
+                               content.textContent.trim() !== 'Loading...' &&
+                               !content.textContent.trim().includes('Field selected but no content available');
+                    });
+                    
+                    if (hasContent) {
+                        console.log('[ENHANCED_LLM] Input fields content loaded successfully');
+                        return; // Content is loaded
+                    }
+                } else {
+                    // No input fields to wait for, content is ready
+                    console.log('[ENHANCED_LLM] No input fields to wait for, content is ready');
+                    return;
+                }
             }
+            
+            console.log(`[ENHANCED_LLM] Waiting for content to load... (attempt ${attempts + 1}/${maxAttempts})`);
             await new Promise(resolve => setTimeout(resolve, 100));
             attempts++;
         }
         
-        throw new Error('Modal content failed to load');
+        console.warn('[ENHANCED_LLM] Content not fully loaded after timeout, proceeding anyway...');
     }
 
     getDefaultContentFromWorkflow() {
