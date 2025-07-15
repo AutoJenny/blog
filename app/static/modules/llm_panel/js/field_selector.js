@@ -95,33 +95,40 @@ class FieldSelector {
             // Get all available fields with their groupings
             console.log('[DEBUG] Fetching available fields...');
             
-            // For Writing stage, we need post_section fields for both inputs and outputs
-            let fieldsData;
-            if (this.stage === 'writing') {
-                // Get post_section fields (for both inputs and outputs)
-                let query = '';
-                if (this.stepId) query += `step_id=${this.stepId}`;
-                if (this.substageId) query += (query ? '&' : '') + `substage_id=${this.substageId}`;
-                if (this.stageId) query += (query ? '&' : '') + `stage_id=${this.stageId}`;
-                const sectionResponse = await fetch(`/api/workflow/fields/available${query ? '?' + query : ''}`);
-                if (!sectionResponse.ok) {
-                    throw new Error(`HTTP error! status: ${sectionResponse.status}`);
-                }
-                fieldsData = await sectionResponse.json();
-                console.log('[DEBUG] Post section fields loaded:', fieldsData.fields.length, 'fields');
-            } else {
-                // For other stages, use the original logic
-                let query = '';
-                if (this.stepId) query += `step_id=${this.stepId}`;
-                if (this.substageId) query += (query ? '&' : '') + `substage_id=${this.substageId}`;
-                if (this.stageId) query += (query ? '&' : '') + `stage_id=${this.stageId}`;
-                const fieldsResponse = await fetch(`/api/workflow/fields/available${query ? '?' + query : ''}`);
-                if (!fieldsResponse.ok) {
-                    throw new Error(`HTTP error! status: ${fieldsResponse.status}`);
-                }
-                fieldsData = await fieldsResponse.json();
-                console.log('[DEBUG] Available fields loaded:', fieldsData.fields.length, 'fields');
+            // Always get post_development fields from the regular endpoint
+            let query = '';
+            if (this.stepId) query += `step_id=${this.stepId}`;
+            if (this.substageId) query += (query ? '&' : '') + `substage_id=${this.substageId}`;
+            if (this.stageId) query += (query ? '&' : '') + `stage_id=${this.stageId}`;
+            const devResponse = await fetch(`/api/workflow/fields/available${query ? '?' + query : ''}`);
+            if (!devResponse.ok) {
+                throw new Error(`HTTP error! status: ${devResponse.status}`);
             }
+            const devFields = await devResponse.json();
+            console.log('[DEBUG] Post development fields loaded:', devFields.fields.length, 'fields');
+            
+            // Always get post_section fields from the correct endpoint
+            const sectionResponse = await fetch('/api/workflow/post_section_fields');
+            if (!sectionResponse.ok) {
+                throw new Error(`HTTP error! status: ${sectionResponse.status}`);
+            }
+            const postSectionFields = await sectionResponse.json();
+            console.log('[DEBUG] Post section fields loaded:', postSectionFields.fields.length, 'fields');
+            
+            // Combine both sets of fields
+            const fieldsData = {
+                fields: [
+                    ...devFields.fields,
+                    ...postSectionFields.fields.map(field => ({
+                        field_name: field,
+                        display_name: field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        db_table: 'post_section',
+                        db_field: field,
+                        description: `Section field: ${field}`
+                    }))
+                ],
+                groups: devFields.groups
+            };
             
             // Store the complete fieldsData for access in initializeSingleFieldSelector
             this.fieldsData = fieldsData;
@@ -284,14 +291,20 @@ class FieldSelector {
         // Filter fields based on section and stage
         let filteredFields = availableFields;
         
-        // Special handling for Writing stage
-        if (this.stage === 'writing') {
-            if (section === 'outputs') {
+        // For Inputs section, always show post_section fields (section content)
+        if (section === 'inputs') {
+            filteredFields = availableFields.filter(field => field.db_table === 'post_section');
+            console.log('[DEBUG] Filtering for inputs - showing post_section fields:', filteredFields.length, 'fields');
+        } else if (section === 'outputs') {
+            // For outputs, use existing logic
+            if (this.stage === 'writing') {
                 // For Writing stage outputs, show only post_section fields
                 filteredFields = availableFields.filter(field => field.db_table === 'post_section');
+                console.log('[DEBUG] Filtering for writing outputs - showing post_section fields:', filteredFields.length, 'fields');
             } else {
-                // For Writing stage inputs, show post_development fields
+                // For other stages outputs, show post_development fields
                 filteredFields = availableFields.filter(field => field.db_table === 'post_development');
+                console.log('[DEBUG] Filtering for non-writing outputs - showing post_development fields:', filteredFields.length, 'fields');
             }
         }
         
