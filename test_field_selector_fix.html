@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Field Selector Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .info {
+            color: blue;
+        }
+
+        select {
+            width: 300px;
+            padding: 5px;
+            margin: 5px 0;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Field Selector Fix Test</h1>
+
+    <div class="test-section">
+        <h2>Test 1: API Endpoints</h2>
+        <button onclick="testEndpoints()">Test API Endpoints</button>
+        <div id="endpoint-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Field Selector Simulation</h2>
+        <button onclick="testFieldSelector()">Test Field Selector Logic</button>
+        <div id="selector-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Input Field Selector</h2>
+        <label>Input Field Selector (should show post_section fields):</label><br>
+        <select id="test-input-selector" data-section="inputs" data-target="test_input">
+            <option value="">Loading...</option>
+        </select>
+        <div id="input-selector-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Output Field Selector</h2>
+        <label>Output Field Selector (should show post_section fields in writing stage):</label><br>
+        <select id="test-output-selector" data-section="outputs" data-target="test_output">
+            <option value="">Loading...</option>
+        </select>
+        <div id="output-selector-results"></div>
+    </div>
+
+    <script>
+        async function testEndpoints() {
+            const results = document.getElementById('endpoint-results');
+            results.innerHTML = '<div class="info">Testing endpoints...</div>';
+
+            try {
+                // Test post_section_fields endpoint
+                const sectionResponse = await fetch('/api/workflow/post_section_fields');
+                const sectionData = await sectionResponse.json();
+
+                // Test fields/available endpoint
+                const availableResponse = await fetch('/api/workflow/fields/available');
+                const availableData = await availableResponse.json();
+
+                const postSectionCount = sectionData.fields.length;
+                const availableCount = availableData.fields.length;
+                const postSectionInAvailable = availableData.fields.filter(f => f.db_table === 'post_section').length;
+
+                results.innerHTML = `
+                    <div class="success">✓ API Endpoints Test Results:</div>
+                    <ul>
+                        <li><strong>/api/workflow/post_section_fields:</strong> ${postSectionCount} fields</li>
+                        <li><strong>/api/workflow/fields/available:</strong> ${availableCount} fields</li>
+                        <li><strong>post_section fields in available:</strong> ${postSectionInAvailable} fields</li>
+                    </ul>
+                    <div class="info">Expected: post_section_fields should have fields, available should have 0 post_section fields</div>
+                `;
+
+                if (postSectionCount > 0 && postSectionInAvailable === 0) {
+                    results.innerHTML += '<div class="success">✓ Endpoints working correctly!</div>';
+                } else {
+                    results.innerHTML += '<div class="error">✗ Endpoints not working as expected</div>';
+                }
+
+            } catch (error) {
+                results.innerHTML = `<div class="error">✗ Error testing endpoints: ${error.message}</div>`;
+            }
+        }
+
+        async function testFieldSelector() {
+            const results = document.getElementById('selector-results');
+            results.innerHTML = '<div class="info">Testing field selector logic...</div>';
+
+            try {
+                // Simulate the field selector logic
+                const sectionResponse = await fetch('/api/workflow/post_section_fields');
+                const postSectionFields = await sectionResponse.json();
+
+                const availableResponse = await fetch('/api/workflow/fields/available');
+                const devFields = await availableResponse.json();
+
+                // Combine fields (simulating the fix)
+                const allFields = [
+                    ...devFields.fields,
+                    ...postSectionFields.fields.map(field => ({
+                        field_name: field,
+                        display_name: field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        db_table: 'post_section',
+                        db_field: field
+                    }))
+                ];
+
+                // Test filtering logic
+                const inputFields = allFields.filter(field => field.db_table === 'post_section');
+                const outputFields = allFields.filter(field => field.db_table === 'post_section'); // writing stage
+
+                results.innerHTML = `
+                    <div class="success">✓ Field Selector Logic Test Results:</div>
+                    <ul>
+                        <li><strong>Total fields available:</strong> ${allFields.length}</li>
+                        <li><strong>Input fields (post_section):</strong> ${inputFields.length}</li>
+                        <li><strong>Output fields (post_section):</strong> ${outputFields.length}</li>
+                    </ul>
+                    <div class="info">Expected: Input fields should show post_section fields regardless of stage</div>
+                `;
+
+                if (inputFields.length > 0) {
+                    results.innerHTML += '<div class="success">✓ Field selector logic working correctly!</div>';
+                    results.innerHTML += '<div class="info">Input fields found: ' + inputFields.map(f => f.display_name).join(', ') + '</div>';
+                } else {
+                    results.innerHTML += '<div class="error">✗ No input fields found</div>';
+                }
+
+            } catch (error) {
+                results.innerHTML = `<div class="error">✗ Error testing field selector: ${error.message}</div>`;
+            }
+        }
+
+        async function populateTestSelectors() {
+            try {
+                // Simulate the field selector initialization
+                const sectionResponse = await fetch('/api/workflow/post_section_fields');
+                const postSectionFields = await sectionResponse.json();
+
+                const availableResponse = await fetch('/api/workflow/fields/available');
+                const devFields = await availableResponse.json();
+
+                // Combine fields
+                const allFields = [
+                    ...devFields.fields,
+                    ...postSectionFields.fields.map(field => ({
+                        field_name: field,
+                        display_name: field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        db_table: 'post_section',
+                        db_field: field
+                    }))
+                ];
+
+                // Populate input selector (should show post_section fields)
+                const inputSelector = document.getElementById('test-input-selector');
+                inputSelector.innerHTML = '<option value="">Select field...</option>';
+                const inputFields = allFields.filter(field => field.db_table === 'post_section');
+                inputFields.forEach(field => {
+                    const option = document.createElement('option');
+                    option.value = field.field_name;
+                    option.textContent = field.display_name;
+                    inputSelector.appendChild(option);
+                });
+
+                // Populate output selector (should show post_section fields in writing stage)
+                const outputSelector = document.getElementById('test-output-selector');
+                outputSelector.innerHTML = '<option value="">Select field...</option>';
+                const outputFields = allFields.filter(field => field.db_table === 'post_section');
+                outputFields.forEach(field => {
+                    const option = document.createElement('option');
+                    option.value = field.field_name;
+                    option.textContent = field.display_name;
+                    outputSelector.appendChild(option);
+                });
+
+                // Update results
+                document.getElementById('input-selector-results').innerHTML =
+                    `<div class="success">✓ Input selector populated with ${inputFields.length} post_section fields</div>`;
+                document.getElementById('output-selector-results').innerHTML =
+                    `<div class="success">✓ Output selector populated with ${outputFields.length} post_section fields</div>`;
+
+            } catch (error) {
+                document.getElementById('input-selector-results').innerHTML =
+                    `<div class="error">✗ Error populating selectors: ${error.message}</div>`;
+                document.getElementById('output-selector-results').innerHTML =
+                    `<div class="error">✗ Error populating selectors: ${error.message}</div>`;
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', populateTestSelectors);
+    </script>
+</body>
+
+</html>

@@ -1087,6 +1087,11 @@ def save_field_selection(step_id):
         input_field = data.get('input_field')
         input_table = data.get('input_table')
         input_id = data.get('input_id')
+        
+        # Handle context field selection (new functionality)
+        context_field = data.get('context_field')
+        context_table = data.get('context_table')
+        context_id = data.get('context_id')
 
         with get_db_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
@@ -1122,6 +1127,16 @@ def save_field_selection(step_id):
                     config['settings']['llm']['user_input_mappings'][input_id] = {
                         'field': input_field,
                         'table': input_table
+                    }
+                
+                # Handle context field mapping
+                if context_field and context_table and context_id:
+                    if 'user_context_mappings' not in config['settings']['llm']:
+                        config['settings']['llm']['user_context_mappings'] = {}
+                    
+                    config['settings']['llm']['user_context_mappings'][context_id] = {
+                        'field': context_field,
+                        'table': context_table
                     }
                 
                 # Update the database
@@ -1170,6 +1185,9 @@ def get_field_selection(step_id):
                 # Check for user input mappings
                 user_input_mappings = llm_settings.get('user_input_mappings', {})
                 
+                # Check for user context mappings
+                user_context_mappings = llm_settings.get('user_context_mappings', {})
+                
                 # Fallback to default mapping if no user mapping
                 if not user_output_mapping:
                     default_mapping = llm_settings.get('output_mapping')
@@ -1179,7 +1197,8 @@ def get_field_selection(step_id):
                 # Return both input and output mappings
                 result = {
                     'output': user_output_mapping,
-                    'inputs': user_input_mappings
+                    'inputs': user_input_mappings,
+                    'context': user_context_mappings
                 }
 
                 # Always return success, even if no mapping found

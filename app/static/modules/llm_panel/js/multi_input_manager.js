@@ -8,6 +8,7 @@ export class MultiInputManager {
         this.currentStage = stage;
         this.currentSubstage = substage;
         this.localStorageKey = `multiInputConfig_${this.currentStage}_${this.currentSubstage}`;
+        this.persistTimeout = null;
         this.init();
     }
     
@@ -29,27 +30,32 @@ export class MultiInputManager {
     
     bindEvents() {
         // Add input button
-        const addBtn = document.getElementById('add-input-btn');
-        if (addBtn) {
-            addBtn.addEventListener('click', () => {
-                this.addInputField();
-            });
+        const addInputBtn = document.getElementById('add-input-btn');
+        if (addInputBtn) {
+            addInputBtn.addEventListener('click', () => this.addInputField());
         }
-        
-        // Remove input buttons (delegated event)
+
+        // Remove input buttons (delegated)
         this.container.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-input-btn') || 
-                e.target.closest('.remove-input-btn')) {
-                const removeBtn = e.target.classList.contains('remove-input-btn') ? 
+            if (e.target.classList.contains('remove-input-btn') || e.target.closest('.remove-input-btn')) {
+                const removeBtn = e.target.classList.contains('remove-input-btn') ?
                     e.target : e.target.closest('.remove-input-btn');
-                this.removeInputField(removeBtn.closest('.input-field-group'));
+                const inputGroup = removeBtn.closest('.input-field-group');
+                if (inputGroup) {
+                    this.removeInputField(inputGroup);
+                }
             }
         });
 
-        // Field selector change events (delegated)
-        this.container.addEventListener('change', (e) => {
-            if (e.target.classList.contains('field-selector')) {
-                this.persistInputsToStorage();
+        // Persist textarea changes
+        this.container.addEventListener('input', (e) => {
+            if (e.target.tagName === 'TEXTAREA') {
+                // Debounce the persistence to avoid too many localStorage writes
+                clearTimeout(this.persistTimeout);
+                this.persistTimeout = setTimeout(() => {
+                    this.persistInputsToStorage();
+                    console.log('[MultiInputManager] Persisted textarea change');
+                }, 500);
             }
         });
     }
@@ -178,6 +184,19 @@ export class MultiInputManager {
         }
     }
     
+    updateTextareaValue(inputId, value) {
+        const inputGroup = this.container.querySelector(`[data-input-id="${inputId}"]`);
+        if (inputGroup) {
+            const textarea = inputGroup.querySelector('textarea');
+            if (textarea) {
+                textarea.value = value || '';
+                // Persist the updated value
+                this.persistInputsToStorage();
+                console.log('[MultiInputManager] Updated textarea value for', inputId, 'and persisted');
+            }
+        }
+    }
+
     getAllInputs() {
         const inputs = {};
         this.container.querySelectorAll('.input-field-group').forEach(group => {
