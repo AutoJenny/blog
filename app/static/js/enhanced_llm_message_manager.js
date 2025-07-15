@@ -2225,13 +2225,43 @@ class EnhancedLLMMessageManager {
         try {
             console.log('[ENHANCED_LLM] updateInputFieldsForSection called with sectionId:', sectionId);
             
-            // Since we're now reading directly from the purple module, we don't need section-specific loading
-            // Just populate with all input fields from the purple module
-            await this.populateInputFieldsWithAllSections();
+            if (!sectionId) {
+                console.log('[ENHANCED_LLM] No section ID provided, using purple module data');
+                await this.populateInputFieldsWithAllSections();
+                return;
+            }
+            
+            // Load section-specific data
+            const sectionData = await this.getSectionSpecificContent(sectionId);
+            console.log('[ENHANCED_LLM] Loaded section data:', Object.keys(sectionData));
+            
+            // Update input fields with section-specific data
+            await this.populateInputFieldsWithSectionData(sectionData);
             
         } catch (error) {
             console.error('[ENHANCED_LLM] Error updating input fields for section:', error);
         }
+    }
+
+    mapFieldNameToApiField(fieldName) {
+        // Map purple module field names to API response field names
+        const fieldMapping = {
+            'section_heading': 'title',
+            'section_description': 'description',
+            'ideas_to_include': 'ideas_to_include',
+            'facts_to_include': 'facts_to_include',
+            'image_prompts': 'image_prompts',
+            'image_captions': 'image_captions',
+            'image_concepts': 'image_concepts',
+            'image_meta_descriptions': 'image_meta_descriptions',
+            'draft': 'draft',
+            'polished': 'polished',
+            'content': 'content',
+            'highlighting': 'highlighting',
+            'watermarking': 'watermarking'
+        };
+        
+        return fieldMapping[fieldName] || fieldName;
     }
 
     async populateInputFieldsWithAllSections() {
@@ -2304,6 +2334,85 @@ class EnhancedLLMMessageManager {
             this.updateSummary();
         } catch (error) {
             console.error('[ENHANCED_LLM] Error populating input fields with purple module data:', error);
+        }
+    }
+
+    async populateInputFieldsWithSectionData(sectionData) {
+        try {
+            console.log('[ENHANCED_LLM] populateInputFieldsWithSectionData called with section data:', Object.keys(sectionData));
+            
+            const inputContainer = document.getElementById('input-elements-list');
+            if (!inputContainer) {
+                console.error('[ENHANCED_LLM] Input container not found in populateInputFieldsWithSectionData');
+                return;
+            }
+            
+            // Clear existing content
+            inputContainer.innerHTML = '';
+            
+            // Get input field mappings from purple module
+            const inputFieldGroups = document.querySelectorAll('.input-field-group');
+            console.log('[ENHANCED_LLM] Found input field groups:', inputFieldGroups.length);
+            
+            inputFieldGroups.forEach((group, index) => {
+                console.log(`[ENHANCED_LLM] Processing input field group ${index}:`, group);
+                
+                const fieldSelector = group.querySelector('.field-selector[data-section="inputs"]');
+                const textarea = group.querySelector('textarea');
+                
+                if (fieldSelector && textarea) {
+                    const selectedField = fieldSelector.value;
+                    const fieldId = textarea.id;
+                    const dataTarget = fieldSelector.getAttribute('data-target');
+                    
+                    // Use the selected field name if available, otherwise fall back to data-target or fieldId
+                    const fieldName = selectedField || dataTarget || fieldId;
+                    
+                    if (fieldName) {
+                        // Get the display name for the selected field
+                        const displayName = this.mapFieldToDisplayName(fieldName);
+                        
+                        // Map the field name to API field name
+                        const apiFieldName = this.mapFieldNameToApiField(fieldName);
+                        console.log('[ENHANCED_LLM] Field mapping:', fieldName, '->', apiFieldName);
+                        
+                        // Get content from section data using mapped field name
+                        let content = '';
+                        if (sectionData && sectionData[apiFieldName]) {
+                            content = sectionData[apiFieldName];
+                        } else if (sectionData && sectionData.section && sectionData.section[apiFieldName]) {
+                            content = sectionData.section[apiFieldName];
+                        }
+                        
+                        // Show content or placeholder
+                        if (!content || content.trim() === '') {
+                            content = selectedField ? `Field "${displayName}" selected but no content available for this section` : 'No field selected';
+                        }
+                        
+                        const field = {
+                            id: fieldName,
+                            name: displayName,
+                            content: content,
+                            type: 'field',
+                            source: 'section_data',
+                            fieldId: fieldId,
+                            selectedField: selectedField
+                        };
+                        
+                        console.log('[ENHANCED_LLM] Creating field element for:', field.name, 'with content:', field.content?.substring(0, 50) + '...');
+                        const fieldElement = this.createFieldElement(field);
+                        inputContainer.appendChild(fieldElement);
+                    }
+                }
+            });
+            
+            console.log('[ENHANCED_LLM] Populated input fields with section-specific data');
+            
+            // Update preview and summary after populating input fields
+            this.updatePreview();
+            this.updateSummary();
+        } catch (error) {
+            console.error('[ENHANCED_LLM] Error populating input fields with section data:', error);
         }
     }
 

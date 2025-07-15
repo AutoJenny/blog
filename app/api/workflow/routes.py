@@ -545,6 +545,8 @@ def manage_section(post_id, section_id):
                     s.section_heading as title,
                     s.section_description as description,
                     s.section_order as order_index,
+                    s.ideas_to_include,
+                    s.facts_to_include,
                     s.draft,
                     s.polished,
                     s.image_concepts,
@@ -563,7 +565,7 @@ def manage_section(post_id, section_id):
                 LEFT JOIN post_section_elements e ON e.section_id = s.id
                 WHERE s.post_id = %s AND s.id = %s
                 GROUP BY s.id, s.section_heading, s.section_description, s.section_order, 
-                         s.draft, s.polished, s.image_concepts, s.image_prompts, 
+                         s.ideas_to_include, s.facts_to_include, s.draft, s.polished, s.image_concepts, s.image_prompts, 
                          s.watermarking, s.image_meta_descriptions, s.image_captions, 
                          s.image_prompt_example_id, s.generated_image_url, s.image_generation_metadata, s.image_id
             """, (post_id, section_id))
@@ -577,6 +579,8 @@ def manage_section(post_id, section_id):
                 'title': section['title'],
                 'description': section['description'],
                 'orderIndex': section['order_index'],
+                'ideas_to_include': section['ideas_to_include'],
+                'facts_to_include': section['facts_to_include'],
                 'draft': section['draft'],
                 'polished': section['polished'],
                 'image_concepts': section['image_concepts'],
@@ -675,6 +679,8 @@ def manage_section(post_id, section_id):
                         s.section_heading as title,
                         s.section_description as description,
                         s.section_order as order_index,
+                        s.ideas_to_include,
+                        s.facts_to_include,
                         s.draft,
                         s.polished,
                         s.image_concepts,
@@ -693,7 +699,7 @@ def manage_section(post_id, section_id):
                     LEFT JOIN post_section_elements e ON e.section_id = s.id
                     WHERE s.post_id = %s AND s.id = %s
                     GROUP BY s.id, s.section_heading, s.section_description, s.section_order,
-                             s.draft, s.polished, s.image_concepts, s.image_prompts,
+                             s.ideas_to_include, s.facts_to_include, s.draft, s.polished, s.image_concepts, s.image_prompts,
                              s.watermarking, s.image_meta_descriptions, s.image_captions,
                              s.image_prompt_example_id, s.generated_image_url, s.image_generation_metadata, s.image_id
                 """, (post_id, section_id))
@@ -704,6 +710,8 @@ def manage_section(post_id, section_id):
                     'title': section['title'],
                     'description': section['description'],
                     'orderIndex': section['order_index'],
+                    'ideas_to_include': section['ideas_to_include'],
+                    'facts_to_include': section['facts_to_include'],
                     'draft': section['draft'],
                     'polished': section['polished'],
                     'image_concepts': section['image_concepts'],
