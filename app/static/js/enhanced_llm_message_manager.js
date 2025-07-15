@@ -286,199 +286,213 @@ class EnhancedLLMMessageManager {
         return fields;
     }
 
-    async detectAvailableFields() {
-        try {
-            console.log('[ENHANCED_LLM] Detecting available fields from purple module dropdowns...');
-            
-            const fields = {
-                inputs: [],
-                outputs: []
-            };
+    detectAvailableFields() {
+        const fields = {
+            inputs: [],
+            outputs: []
+        };
 
-            // Get LLM settings from the purple panel
-            const settingsContent = this.getLLMSettingsContent();
-            console.log('[ENHANCED_LLM] Settings content:', settingsContent);
-            this.updateAccordionContent('settings', settingsContent);
+        // Get textareas
+        const basicIdeaTextarea = document.getElementById('basic_idea');
+        const ideaScopeTextarea = document.getElementById('idea_scope');
+        const sectionHeadingsTextarea = document.getElementById('section_headings');
 
-            // Get system prompt and task prompt from purple module
-            const systemPromptTextarea = document.getElementById('system_prompt');
-            const taskPromptTextarea = document.getElementById('task_prompt');
-            
-            if (systemPromptTextarea) {
-                const systemContent = systemPromptTextarea.value || '';
-                console.log('[ENHANCED_LLM] System prompt content:', systemContent);
-                this.updateAccordionContent('system_prompt', systemContent);
-            } else {
-                console.log('[ENHANCED_LLM] System prompt textarea not found');
+        // Handle basic_idea - always include if it has content
+        if (basicIdeaTextarea) {
+            const basicIdeaContent = basicIdeaTextarea.value || '';
+            console.log('[ENHANCED_LLM] Basic idea content:', basicIdeaContent);
+            this.updateAccordionContent('basic_idea', basicIdeaContent);
+            if (basicIdeaContent.trim()) {
+                fields.inputs.push({
+                    id: 'basic_idea',
+                    name: this.mapFieldToDisplayName('basic_idea'),
+                    content: basicIdeaContent,
+                    source: 'purple_module'
+                });
             }
-            
-            if (taskPromptTextarea) {
-                const taskContent = taskPromptTextarea.value || '';
-                console.log('[ENHANCED_LLM] Task prompt content:', taskContent);
-                this.updateAccordionContent('task_prompt', taskContent);
-            } else {
-                console.log('[ENHANCED_LLM] Task prompt textarea not found');
-            }
-
-            // Get basic idea and other context fields from purple module
-            const basicIdeaTextarea = document.getElementById('context_basic_idea');
-            const sectionHeadingsTextarea = document.getElementById('context_section_headings');
-            const ideaScopeTextarea = document.getElementById('context_idea_scope');
-            
-            if (basicIdeaTextarea) {
-                const basicIdeaContent = basicIdeaTextarea.value || '';
-                console.log('[ENHANCED_LLM] Basic idea content:', basicIdeaContent);
-                this.updateAccordionContent('basic_idea', basicIdeaContent);
-            } else {
-                console.log('[ENHANCED_LLM] Basic idea textarea not found');
-            }
-            
-            if (sectionHeadingsTextarea) {
-                const sectionHeadingsContent = sectionHeadingsTextarea.value || '';
-                console.log('[ENHANCED_LLM] Section headings content:', sectionHeadingsContent);
-                this.updateAccordionContent('section_headings', sectionHeadingsContent);
-            } else {
-                console.log('[ENHANCED_LLM] Section headings textarea not found');
-            }
-            
-            if (ideaScopeTextarea) {
-                const ideaScopeContent = ideaScopeTextarea.value || '';
-                console.log('[ENHANCED_LLM] Idea scope content:', ideaScopeContent);
-                this.updateAccordionContent('idea_scope', ideaScopeContent);
-            } else {
-                console.log('[ENHANCED_LLM] Idea scope textarea not found');
-            }
-
-            // Find all input field groups in the purple module
-            const inputFieldGroups = document.querySelectorAll('.input-field-group');
-            console.log('[ENHANCED_LLM] Found input field groups:', inputFieldGroups.length);
-            
-            inputFieldGroups.forEach((group, index) => {
-                console.log(`[ENHANCED_LLM] Processing input field group ${index}:`, group);
-                
-                const fieldSelector = group.querySelector('.field-selector[data-section="inputs"]');
-                const textarea = group.querySelector('textarea');
-                
-                console.log(`[ENHANCED_LLM] Field selector found:`, fieldSelector);
-                console.log(`[ENHANCED_LLM] Textarea found:`, textarea);
-                
-                if (fieldSelector && textarea) {
-                    const selectedField = fieldSelector.value;
-                    const fieldContent = textarea.value;
-                    const fieldId = textarea.id;
-                    const dataTarget = fieldSelector.getAttribute('data-target');
-                    
-                    console.log('[ENHANCED_LLM] Input field details:', {
-                        id: fieldId,
-                        dataTarget: dataTarget,
-                        selectedField: selectedField,
-                        content: fieldContent ? fieldContent.substring(0, 50) + '...' : 'empty',
-                        contentLength: fieldContent ? fieldContent.length : 0,
-                        options: Array.from(fieldSelector.options).map(opt => opt.value),
-                        textareaId: textarea.id,
-                        textareaValue: textarea.value ? textarea.value.substring(0, 50) + '...' : 'empty'
-                    });
-                    
-                    // Use the selected field name if available, otherwise fall back to data-target or fieldId
-                    const fieldName = selectedField || dataTarget || fieldId;
-                    
-                    if (fieldName) {
-                        // Get the display name for the selected field
-                        const displayName = this.mapFieldToDisplayName(fieldName);
-                        
-                        // NO FALLBACK CONTENT - ONLY USE TEXTAREA CONTENT
-                        let content = fieldContent;
-                        
-                        fields.inputs.push({
-                            id: fieldName,
-                            name: displayName,
-                            content: content || '',
-                            type: 'field',
-                            source: 'purple_module',
-                            fieldId: fieldId,
-                            selectedField: selectedField
-                        });
-                    }
-                }
-            });
-
-            // Find all output field groups in the purple module
-            const outputFieldGroups = document.querySelectorAll('[data-section="outputs"]');
-            console.log('[ENHANCED_LLM] Found output field groups:', outputFieldGroups.length);
-            
-            outputFieldGroups.forEach((group, index) => {
-                console.log(`[ENHANCED_LLM] Processing output field group ${index}:`, group);
-                
-                const fieldSelector = group.querySelector('.field-selector[data-section="outputs"]');
-                const textarea = group.querySelector('textarea');
-                
-                console.log(`[ENHANCED_LLM] Output field selector found:`, fieldSelector);
-                console.log(`[ENHANCED_LLM] Output textarea found:`, textarea);
-                
-                if (fieldSelector && textarea) {
-                    const selectedField = fieldSelector.value;
-                    const fieldContent = textarea.value;
-                    const fieldId = textarea.id;
-                    const dataTarget = fieldSelector.getAttribute('data-target');
-                    
-                    console.log('[ENHANCED_LLM] Output field details:', {
-                        id: fieldId,
-                        dataTarget: dataTarget,
-                        selectedField: selectedField,
-                        content: fieldContent ? fieldContent.substring(0, 50) + '...' : 'empty',
-                        options: Array.from(fieldSelector.options).map(opt => opt.value)
-                    });
-                    
-                    // If no field is selected but we have a data-target, use that as the field name
-                    const fieldName = selectedField || dataTarget || fieldId;
-                    
-                    if (fieldName) {
-                        fields.outputs.push({
-                            id: fieldName,
-                            name: this.mapFieldToDisplayName(fieldName),
-                            content: fieldContent || '',
-                            type: 'field',
-                            source: 'purple_module',
-                            fieldId: fieldId
-                        });
-                    }
-                }
-            });
-
-            // NO FALLBACK CONTENT - ONLY USE SOURCE TEXTAREA ELEMENTS
-            console.log('[ENHANCED_LLM] Content check:', {
-                totalInputs: fields.inputs.length,
-                inputFields: fields.inputs.map(f => ({
-                    id: f.id,
-                    content: f.content ? f.content.substring(0, 30) + '...' : 'empty',
-                    hasContent: f.content && f.content.trim() !== ''
-                }))
-            });
-
-            console.log('[ENHANCED_LLM] Field detection complete from purple module:', {
-                inputs: fields.inputs.length,
-                outputs: fields.outputs.length,
-                inputFields: fields.inputs.map(f => ({ 
-                    id: f.id, 
-                    content: f.content ? f.content.substring(0, 50) + '...' : 'empty',
-                    source: f.source,
-                    hasContent: f.content && f.content.trim() !== ''
-                })),
-                outputFields: fields.outputs.map(f => ({ 
-                    id: f.id, 
-                    content: f.content ? f.content.substring(0, 50) + '...' : 'empty',
-                    source: f.source,
-                    hasContent: f.content && f.content.trim() !== ''
-                })),
-
-                postSectionsAvailable: this.postSections.length
-            });
-
-            return fields;
-        } catch (error) {
-            console.error('[ENHANCED_LLM] Error detecting fields from purple module:', error);
-            return { inputs: [], outputs: [] };
         }
+
+        // Handle idea_scope - always include if it has content
+        if (ideaScopeTextarea) {
+            const ideaScopeContent = ideaScopeTextarea.value || '';
+            console.log('[ENHANCED_LLM] Idea scope content:', ideaScopeContent);
+            this.updateAccordionContent('idea_scope', ideaScopeContent);
+            if (ideaScopeContent.trim()) {
+                fields.inputs.push({
+                    id: 'idea_scope',
+                    name: this.mapFieldToDisplayName('idea_scope'),
+                    content: ideaScopeContent,
+                    source: 'purple_module'
+                });
+            }
+        }
+
+        // Handle section_headings - only include if visible and has content
+        if (sectionHeadingsTextarea && sectionHeadingsTextarea.style.display !== 'none') {
+            const sectionHeadingsContent = sectionHeadingsTextarea.value || '';
+            console.log('[ENHANCED_LLM] Section headings content:', sectionHeadingsContent);
+            this.updateAccordionContent('section_headings', sectionHeadingsContent);
+            if (sectionHeadingsContent.trim()) {
+                fields.inputs.push({
+                    id: 'section_headings',
+                    name: this.mapFieldToDisplayName('section_headings'),
+                    content: sectionHeadingsContent,
+                    source: 'purple_module'
+                });
+            }
+        }
+
+        // Get LLM settings from the purple panel
+        const settingsContent = this.getLLMSettingsContent();
+        console.log('[ENHANCED_LLM] Settings content:', settingsContent);
+        this.updateAccordionContent('settings', settingsContent);
+
+        // Get system prompt and task prompt from purple module
+        const systemPromptTextarea = document.getElementById('system_prompt');
+        const taskPromptTextarea = document.getElementById('task_prompt');
+        
+        if (systemPromptTextarea) {
+            const systemContent = systemPromptTextarea.value || '';
+            console.log('[ENHANCED_LLM] System prompt content:', systemContent);
+            this.updateAccordionContent('system_prompt', systemContent);
+        } else {
+            console.log('[ENHANCED_LLM] System prompt textarea not found');
+        }
+        
+        if (taskPromptTextarea) {
+            const taskContent = taskPromptTextarea.value || '';
+            console.log('[ENHANCED_LLM] Task prompt content:', taskContent);
+            this.updateAccordionContent('task_prompt', taskContent);
+        } else {
+            console.log('[ENHANCED_LLM] Task prompt textarea not found');
+        }
+
+        // Find all input field groups in the purple module
+        const inputFieldGroups = document.querySelectorAll('.input-field-group');
+        console.log('[ENHANCED_LLM] Found input field groups:', inputFieldGroups.length);
+        
+        inputFieldGroups.forEach((group, index) => {
+            console.log(`[ENHANCED_LLM] Processing input field group ${index}:`, group);
+            
+            const fieldSelector = group.querySelector('.field-selector[data-section="inputs"]');
+            const textarea = group.querySelector('textarea');
+            
+            console.log(`[ENHANCED_LLM] Field selector found:`, fieldSelector);
+            console.log(`[ENHANCED_LLM] Textarea found:`, textarea);
+            
+            if (fieldSelector && textarea) {
+                const selectedField = fieldSelector.value;
+                const fieldContent = textarea.value;
+                const fieldId = textarea.id;
+                const dataTarget = fieldSelector.getAttribute('data-target');
+                
+                console.log('[ENHANCED_LLM] Input field details:', {
+                    id: fieldId,
+                    dataTarget: dataTarget,
+                    selectedField: selectedField,
+                    content: fieldContent ? fieldContent.substring(0, 50) + '...' : 'empty',
+                    contentLength: fieldContent ? fieldContent.length : 0,
+                    options: Array.from(fieldSelector.options).map(opt => opt.value),
+                    textareaId: textarea.id,
+                    textareaValue: textarea.value ? textarea.value.substring(0, 50) + '...' : 'empty'
+                });
+                
+                // Use the selected field name if available, otherwise fall back to data-target or fieldId
+                const fieldName = selectedField || dataTarget || fieldId;
+                
+                if (fieldName) {
+                    // Get the display name for the selected field
+                    const displayName = this.mapFieldToDisplayName(fieldName);
+                    
+                    // NO FALLBACK CONTENT - ONLY USE TEXTAREA CONTENT
+                    let content = fieldContent;
+                    
+                    fields.inputs.push({
+                        id: fieldName,
+                        name: displayName,
+                        content: content || '',
+                        type: 'field',
+                        source: 'purple_module',
+                        fieldId: fieldId,
+                        selectedField: selectedField
+                    });
+                }
+            }
+        });
+
+        // Find all output field groups in the purple module
+        const outputFieldGroups = document.querySelectorAll('[data-section="outputs"]');
+        console.log('[ENHANCED_LLM] Found output field groups:', outputFieldGroups.length);
+        
+        outputFieldGroups.forEach((group, index) => {
+            console.log(`[ENHANCED_LLM] Processing output field group ${index}:`, group);
+            
+            const fieldSelector = group.querySelector('.field-selector[data-section="outputs"]');
+            const textarea = group.querySelector('textarea');
+            
+            console.log(`[ENHANCED_LLM] Output field selector found:`, fieldSelector);
+            console.log(`[ENHANCED_LLM] Output textarea found:`, textarea);
+            
+            if (fieldSelector && textarea) {
+                const selectedField = fieldSelector.value;
+                const fieldContent = textarea.value;
+                const fieldId = textarea.id;
+                const dataTarget = fieldSelector.getAttribute('data-target');
+                
+                console.log('[ENHANCED_LLM] Output field details:', {
+                    id: fieldId,
+                    dataTarget: dataTarget,
+                    selectedField: selectedField,
+                    content: fieldContent ? fieldContent.substring(0, 50) + '...' : 'empty',
+                    options: Array.from(fieldSelector.options).map(opt => opt.value)
+                });
+                
+                // If no field is selected but we have a data-target, use that as the field name
+                const fieldName = selectedField || dataTarget || fieldId;
+                
+                if (fieldName) {
+                    fields.outputs.push({
+                        id: fieldName,
+                        name: this.mapFieldToDisplayName(fieldName),
+                        content: fieldContent || '',
+                        type: 'field',
+                        source: 'purple_module',
+                        fieldId: fieldId
+                    });
+                }
+            }
+        });
+
+        // NO FALLBACK CONTENT - ONLY USE SOURCE TEXTAREA ELEMENTS
+        console.log('[ENHANCED_LLM] Content check:', {
+            totalInputs: fields.inputs.length,
+            inputFields: fields.inputs.map(f => ({
+                id: f.id,
+                content: f.content ? f.content.substring(0, 30) + '...' : 'empty',
+                hasContent: f.content && f.content.trim() !== ''
+            }))
+        });
+
+        console.log('[ENHANCED_LLM] Field detection complete from purple module:', {
+            inputs: fields.inputs.length,
+            outputs: fields.outputs.length,
+            inputFields: fields.inputs.map(f => ({ 
+                id: f.id, 
+                content: f.content ? f.content.substring(0, 50) + '...' : 'empty',
+                source: f.source,
+                hasContent: f.content && f.content.trim() !== ''
+            })),
+            outputFields: fields.outputs.map(f => ({ 
+                id: f.id, 
+                content: f.content ? f.content.substring(0, 50) + '...' : 'empty',
+                source: f.source,
+                hasContent: f.content && f.content.trim() !== ''
+            })),
+
+            postSectionsAvailable: this.postSections.length
+        });
+
+        return fields;
     }
 
     updateAccordionContent(elementType, content) {

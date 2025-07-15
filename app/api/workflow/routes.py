@@ -1677,18 +1677,19 @@ def direct_llm_call():
         if output.endswith('%'):
             output = output[:-1].strip()
             
-        # Clean up newlines and validate JSON
+        # For preview, return the raw text
+        preview_output = output
+        
+        # For database storage, try to parse as JSON
+        json_output = None
         try:
             # Remove newlines and extra spaces from the output
-            output = output.replace('\n', '').replace('\\n', '')
+            json_text = output.replace('\n', '').replace('\\n', '')
             # Parse the output as JSON to validate it
-            json_output = json.loads(output)
-            # Convert back to string with proper formatting
-            output = json.dumps(json_output, indent=2)
-            current_app.logger.info(f"Parsed JSON output: {output}")
-        except json.JSONDecodeError as e:
-            current_app.logger.error(f"Error parsing LLM output as JSON: {str(e)}")
-            return jsonify({'error': 'Invalid JSON output from LLM'}), 500
+            json_output = json.loads(json_text)
+        except json.JSONDecodeError:
+            current_app.logger.info("Output is not JSON, using raw text")
+            json_output = output
         
         # Save output to database
         try:
@@ -1713,30 +1714,24 @@ def direct_llm_call():
                                 UPDATE post_development 
                                 SET {output_field} = %s 
                                 WHERE post_id = %s
-                            """, (output, post_id))
+                            """, (json.dumps(json_output) if isinstance(json_output, (dict, list)) else json_output, post_id))
                             
                             # If this is the section_headings field, sync to post_section table
-                            if output_field == 'section_headings':
+                            if output_field == 'section_headings' and isinstance(json_output, list):
                                 # Clear existing sections
                                 cur.execute("DELETE FROM post_section WHERE post_id = %s", (post_id,))
                                 
-                                try:
-                                    # Parse the output as JSON
-                                    headings_data = json.loads(output)
-                                    if isinstance(headings_data, list):
-                                        # Insert new sections
-                                        for i, heading in enumerate(headings_data):
-                                            if isinstance(heading, dict):
-                                                title = heading.get('title', heading.get('heading', f'Section {i+1}'))
-                                                description = heading.get('description', '')
-                                                
-                                                cur.execute("""
-                                                    INSERT INTO post_section (
-                                                        post_id, section_order, section_heading, section_description, status
-                                                    ) VALUES (%s, %s, %s, %s, %s)
-                                                """, (post_id, i+1, title, description, 'draft'))
-                                except Exception as e:
-                                    current_app.logger.error(f"Error syncing sections after LLM output: {str(e)}")
+                                # Insert new sections
+                                for i, heading in enumerate(json_output):
+                                    if isinstance(heading, dict):
+                                        title = heading.get('title', heading.get('heading', f'Section {i+1}'))
+                                        description = heading.get('description', '')
+                                        
+                                        cur.execute("""
+                                            INSERT INTO post_section (
+                                                post_id, section_order, section_heading, section_description, status
+                                            ) VALUES (%s, %s, %s, %s, %s)
+                                        """, (post_id, i+1, title, description, 'draft'))
                             
                         conn.commit()
         except Exception as e:
@@ -1752,7 +1747,7 @@ def direct_llm_call():
 # Log Type: llm_response
 # Frontend Inputs: {{}}
 
-{output}"""
+{preview_output}"""
         
         # Write response diagnostic log
         with open('logs/workflow_diagnostic_llm_response.txt', 'w') as f:
@@ -1760,7 +1755,7 @@ def direct_llm_call():
         
         return jsonify({
             'success': True,
-            'result': output
+            'result': preview_output
         })
         
     except Exception as e:
