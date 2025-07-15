@@ -1773,92 +1773,95 @@ class EnhancedLLMMessageManager {
         return message;
     }
 
+    getSelectedSectionIds() {
+        const checkboxes = Array.from(document.querySelectorAll('.section-select-checkbox'));
+        return checkboxes
+            .filter(cb => cb.checked)
+            .map(cb => parseInt(cb.dataset.sectionId))
+            .filter(id => !isNaN(id));
+    }
+
+    getOutputFieldMapping() {
+        // Get output field selection from purple panel
+        const outputSelector = document.querySelector('select[data-section="outputs"]');
+        if (!outputSelector || !outputSelector.value) {
+            throw new Error('No output field selected');
+        }
+        
+        // Get field info from field selector
+        const fieldInfo = window.fieldSelector?.fields?.[outputSelector.value];
+        if (!fieldInfo) {
+            throw new Error('Output field not found in field mapping');
+        }
+        
+        return {
+            field: fieldInfo.db_field,
+            table: fieldInfo.db_table,
+            display_name: fieldInfo.display_name
+        };
+    }
+
     async executeLLMRequest(message) {
-        // Get current workflow context
         const pathParts = window.location.pathname.split('/');
         const postId = pathParts[3];
         const stage = pathParts[4];
         const substage = pathParts[5];
         
-        // Get current step from panel data
         const panel = document.querySelector('[data-current-stage]');
         const step = panel ? panel.dataset.currentStep : 'section_headings';
         
-        console.log('[ENHANCED_LLM] Executing LLM request with context:', { postId, stage, substage, step });
+        // Get selected sections and output field mapping
+        const selectedSectionIds = this.getSelectedSectionIds();
+        const outputMapping = this.getOutputFieldMapping();
+        
+        if (selectedSectionIds.length === 0) {
+            throw new Error('No sections selected for processing');
+        }
+        
+        console.log('[ENHANCED_LLM] Processing sections:', selectedSectionIds);
+        console.log('[ENHANCED_LLM] Output mapping:', outputMapping);
         
         // Show loading state
         const runBtn = document.getElementById('run-llm-btn');
         if (runBtn) {
-            const originalText = runBtn.textContent;
-            const originalClass = runBtn.className;
-            
-            // Update button to show loading state
-            runBtn.textContent = 'Running...';
+            runBtn.textContent = `Processing ${selectedSectionIds.length} sections...`;
             runBtn.disabled = true;
-            runBtn.className = originalClass + ' opacity-50';
-            
-            console.log('[ENHANCED_LLM] Button state changed to loading');
-            
-            try {
-                // Use the existing LLM direct endpoint
-                const response = await fetch('/api/workflow/llm/direct', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        prompt: message,
-                        post_id: postId,
-                        step: step
-                    })
-                });
-
-                const data = await response.json();
-                console.log('[ENHANCED_LLM] LLM response:', data);
-                
-                if (data.success) {
-                    alert('LLM run completed successfully!');
-                } else {
-                    alert('LLM run failed: ' + (data.error || 'Unknown error'));
-                }
-                
-                return data; // Return the data for the panel template
-            } catch (error) {
-                console.error('[ENHANCED_LLM] LLM run error:', error);
-                alert('LLM run failed: ' + error.message);
-                throw error; // Re-throw for the panel template to handle
-            } finally {
-                // Restore button state
-                runBtn.textContent = originalText;
-                runBtn.disabled = false;
-                runBtn.className = originalClass;
-                console.log('[ENHANCED_LLM] Button state restored');
-            }
-        } else {
-            console.warn('[ENHANCED_LLM] Run LLM button not found, using fallback');
-            // Fallback if button not found
-            const response = await fetch('/api/workflow/llm/direct', {
+        }
+        
+        try {
+            // Use Writing stage endpoint for section-specific processing
+            const response = await fetch(`/api/workflow/posts/${postId}/${stage}/${substage}/writing_llm`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    prompt: message,
-                    post_id: postId,
-                    step: step
+                    step: step,
+                    selected_section_ids: selectedSectionIds,
+                    inputs: {
+                        prompt: message,
+                        output_field: outputMapping.field,
+                        output_table: outputMapping.table
+                    }
                 })
             });
 
             const data = await response.json();
-            console.log('[ENHANCED_LLM] LLM response:', data);
             
             if (data.success) {
-                alert('LLM run completed successfully!');
+                alert(`LLM processing completed! Processed ${data.parameters.sections_processed.length} sections.`);
             } else {
-                alert('LLM run failed: ' + (data.error || 'Unknown error'));
+                throw new Error(data.error || 'Unknown error');
             }
             
             return data;
+        } catch (error) {
+            console.error('[ENHANCED_LLM] LLM run error:', error);
+            alert('LLM run failed: ' + error.message);
+            throw error;
+        } finally {
+            if (runBtn) {
+                runBtn.textContent = 'Run LLM';
+                runBtn.disabled = false;
+            }
         }
     }
 

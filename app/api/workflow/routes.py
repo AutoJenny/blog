@@ -65,25 +65,117 @@ def save_section_output(conn, section_ids, output, field):
             """, (output, section_id))
         conn.commit()
 
-def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_per_section):
-    """Process sections sequentially with timeout."""
+def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_per_section, output_field, output_table):
+    """Process sections sequentially with actual LLM processing."""
     results = {}
     total_time = 0
+    
+    # Get LLM configuration
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("""
+        SELECT provider_type, model_name, api_base
+        FROM llm_config
+        WHERE is_active = true
+        ORDER BY id DESC
+        LIMIT 1
+    """)
+    config = cur.fetchone()
+    if not config:
+        config = {
+            'provider_type': 'ollama',
+            'model_name': 'llama3.1:70b',
+            'api_base': 'http://localhost:11434'
+        }
+    
+    # Get step prompts
+    cur.execute("""
+        SELECT lp.prompt_text FROM workflow_step_prompt wsp
+        JOIN llm_prompt lp ON lp.id = wsp.task_prompt_id
+        WHERE wsp.step_id = %s
+    """, (step_id,))
+    prompt_result = cur.fetchone()
+    task_prompt = prompt_result[0] if prompt_result else "Generate content for this section."
     
     for section_id in section_ids:
         start_time = datetime.now()
         
         try:
-            # For now, just return a placeholder result
-            # This would need to be implemented with the actual LLM processing logic
+            # Get section data for context
+            cur.execute("""
+                SELECT section_heading, section_description, draft, ideas_to_include, facts_to_include
+                FROM post_section 
+                WHERE id = %s AND post_id = %s
+            """, (section_id, post_id))
+            section_data = cur.fetchone()
+            
+            if not section_data:
+                raise Exception(f"Section {section_id} not found")
+            
+            # Build section-specific prompt
+            section_prompt = f"""
+{task_prompt}
+
+Section: {section_data['section_heading']}
+Description: {section_data['section_description'] or 'No description'}
+Current Content: {section_data['draft'] or 'No content yet'}
+Ideas to Include: {section_data['ideas_to_include'] or 'None specified'}
+Facts to Include: {section_data['facts_to_include'] or 'None specified'}
+
+Please generate content for this section.
+"""
+            
+            # Call LLM
+            import requests
+            llm_request = {
+                "model": config['model_name'],
+                "prompt": section_prompt,
+                "temperature": 0.7,
+                "max_tokens": 1000,
+                "stream": False
+            }
+            
+            response = requests.post(
+                f"{config['api_base']}/api/generate",
+                json=llm_request,
+                timeout=timeout_per_section
+            )
+            
+            if response.status_code != 200:
+                raise Exception(f"LLM request failed: {response.text}")
+            
+            result = response.json()
+            output = result.get('response', '').strip()
+            
+            # Save output to specific section
+            if output_table == 'post_section':
+                cur.execute(f"""
+                    UPDATE post_section 
+                    SET {output_field} = %s 
+                    WHERE id = %s AND post_id = %s
+                """, (output, section_id, post_id))
+            else:
+                # Fallback to post_development if needed
+                cur.execute(f"""
+                    UPDATE post_development 
+                    SET {output_field} = %s 
+                    WHERE post_id = %s
+                """, (output, post_id))
+            
+            conn.commit()
+            
+            processing_time = (datetime.now() - start_time).total_seconds()
+            total_time += processing_time
+            
             results[section_id] = {
                 "success": True,
-                "result": f"Processed section {section_id}",
-                "processing_time": 0
+                "result": output,
+                "processing_time": processing_time,
+                "section_heading": section_data['section_heading']
             }
                 
         except Exception as e:
             processing_time = (datetime.now() - start_time).total_seconds()
+            total_time += processing_time
             results[section_id] = {
                 "success": False,
                 "error": str(e),
@@ -93,7 +185,8 @@ def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_p
     
     return {
         "results": results,
-        "summary": f"Processed {len(section_ids)} sections"
+        "summary": f"Processed {len(section_ids)} sections in {total_time:.2f} seconds",
+        "total_time": total_time
     }
 
 def process_step(post_id, stage, substage, step, frontend_inputs=None):
@@ -103,36 +196,39 @@ def process_step(post_id, stage, substage, step, frontend_inputs=None):
     return "Step processed using Live Preview content"
 
 def process_writing_step(post_id, stage, substage, step, section_ids, frontend_inputs):
-    """
-    Process a Writing stage step with section-specific handling.
-    
-    This function is specifically for Writing stage processing that needs to handle
-    section-specific output (saving to post_section table for specific sections).
-    """
+    """Process a Writing stage step with section-specific handling."""
     try:
         conn = get_db_conn()
         step_id = get_step_id(conn, stage, substage, step)
         
-        # If section_ids are provided, use sequential processing with section-specific prompts
+        # Extract output field mapping from frontend inputs
+        output_field = frontend_inputs.get('output_field') if frontend_inputs else None
+        output_table = frontend_inputs.get('output_table', 'post_section') if frontend_inputs else 'post_section'
+        
+        if not output_field:
+            raise Exception("No output field specified")
+        
+        # If section_ids are provided, use sequential processing
         if section_ids:
-            # Get timeout from request or use default
             timeout_per_section = frontend_inputs.get('timeout_per_section', 300) if frontend_inputs else 300
             
-            # Process sections sequentially with section-specific prompts
             result = process_sections_sequentially(
-                conn, post_id, step_id, section_ids, timeout_per_section
+                conn, post_id, step_id, section_ids, timeout_per_section, 
+                output_field, output_table
             )
             
             conn.close()
             
-            # Return format expected by frontend
             return {
                 'success': True,
                 'results': result['results'],
                 'summary': result['summary'],
                 'parameters': {
                     'sections_processed': section_ids,
-                    'timeout_per_section': timeout_per_section
+                    'timeout_per_section': timeout_per_section,
+                    'output_field': output_field,
+                    'output_table': output_table,
+                    'total_time': result['total_time']
                 }
             }
         else:
@@ -142,14 +238,8 @@ def process_writing_step(post_id, stage, substage, step, section_ids, frontend_i
             
             return {
                 'success': True,
-                'results': [
-                    {
-                        'output': result
-                    }
-                ],
-                'parameters': {
-                    'sections_processed': []
-                }
+                'results': [{'output': result}],
+                'parameters': {'sections_processed': []}
             }
         
     except Exception as e:
@@ -1337,11 +1427,15 @@ def run_writing_llm(post_id, stage, substage):
         section_ids = data.get('selected_section_ids', [])
         frontend_inputs = data.get('inputs', {})
         
-        print(f"[WRITING_LLM] Processing step: {step}, section_ids: {section_ids}, post_id: {post_id}")
+        print(f"[WRITING_LLM] Processing step: {step}")
+        print(f"[WRITING_LLM] Section IDs: {section_ids}")
+        print(f"[WRITING_LLM] Frontend inputs: {frontend_inputs}")
         
         result = process_writing_step(post_id, stage, substage, step, section_ids, frontend_inputs)
         
         print(f"[WRITING_LLM] Result success: {result.get('success')}")
+        if result.get('success'):
+            print(f"[WRITING_LLM] Processed {len(result.get('parameters', {}).get('sections_processed', []))} sections")
         
         return jsonify(result)
         
