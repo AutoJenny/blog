@@ -166,6 +166,7 @@ class FieldSelector {
             this.loadFieldMappings();
             await this.loadInputFieldSelections();
             await this.loadOutputFieldSelections();
+            await this.loadContextFieldSelections(); // Load context field selections
             
             // Initialize field selectors
             console.log('[DEBUG] Initializing field selectors...');
@@ -267,11 +268,51 @@ class FieldSelector {
             
             const data = await response.json();
             if (data.success && data.data) {
-                console.log('[DEBUG] Loaded output field selection:', data.data);
-                this.savedOutputFieldSelection = data.data;
+                // Handle new API format with both output and inputs
+                if (data.data.output) {
+                    this.savedOutputFieldSelection = data.data.output;
+                    console.log('[DEBUG] Loaded output field selection:', data.data.output);
+                } else if (data.data.field) {
+                    // Handle old API format for backward compatibility
+                    this.savedOutputFieldSelection = data.data;
+                    console.log('[DEBUG] Loaded output field selection (old format):', data.data);
+                }
             }
         } catch (error) {
             console.error('Error loading output field selections:', error);
+        }
+    }
+
+    async loadContextFieldSelections() {
+        try {
+            const stepId = this.getCurrentStepId();
+            if (!stepId) {
+                console.warn('[DEBUG] Could not determine current step ID for loading context field selections');
+                this.savedContextSelections = [];
+                return;
+            }
+            
+            // Load context field selections from backend database
+            const response = await fetch(`/api/workflow/steps/${stepId}/field_selection`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            if (result.success && result.data && result.data.context) {
+                // Convert backend format to frontend format
+                this.savedContextSelections = Object.entries(result.data.context).map(([contextId, mapping]) => ({
+                    contextId: contextId,
+                    selectedField: mapping.field
+                }));
+                console.log('[DEBUG] Loaded context field selections from backend:', this.savedContextSelections);
+            } else {
+                this.savedContextSelections = [];
+                console.log('[DEBUG] No context field selections found in backend');
+            }
+        } catch (error) {
+            console.error('Error loading context field selections:', error);
+            this.savedContextSelections = [];
         }
     }
 
@@ -309,18 +350,19 @@ class FieldSelector {
         // Filter fields based on section and stage
         let filteredFields = availableFields;
         
-        // For Inputs section, always show post_section fields (section content)
-        if (section === 'inputs') {
+        if (section === 'context') {
+            // Context menus: show only post_development fields
+            filteredFields = availableFields.filter(field => field.db_table === 'post_development');
+            console.log('[DEBUG] Filtering for context - showing post_development fields:', filteredFields.length, 'fields');
+        } else if (section === 'inputs') {
+            // Inputs: show only post_section fields (for writing stage)
             filteredFields = availableFields.filter(field => field.db_table === 'post_section');
             console.log('[DEBUG] Filtering for inputs - showing post_section fields:', filteredFields.length, 'fields');
         } else if (section === 'outputs') {
-            // For outputs, use existing logic
             if (this.stage === 'writing') {
-                // For Writing stage outputs, show only post_section fields
                 filteredFields = availableFields.filter(field => field.db_table === 'post_section');
                 console.log('[DEBUG] Filtering for writing outputs - showing post_section fields:', filteredFields.length, 'fields');
             } else {
-                // For other stages outputs, show post_development fields
                 filteredFields = availableFields.filter(field => field.db_table === 'post_development');
                 console.log('[DEBUG] Filtering for non-writing outputs - showing post_development fields:', filteredFields.length, 'fields');
             }
@@ -374,12 +416,20 @@ class FieldSelector {
             selectedField = this.savedOutputFieldSelection.field;
             console.log('[DEBUG] Setting output field from saved selection:', selectedField);
         } else if (section === 'inputs' && this.savedInputSelections) {
-            // For input fields, check localStorage
+            // For input fields, check backend
             const inputId = target.replace('input_', '');
             const savedInput = this.savedInputSelections.find(config => config.inputId === inputId);
             if (savedInput) {
                 selectedField = savedInput.selectedField;
-                console.log('[DEBUG] Setting input field from localStorage:', selectedField);
+                console.log('[DEBUG] Setting input field from backend:', selectedField);
+            }
+        } else if (section === 'context' && this.savedContextSelections) {
+            // For context fields, check backend
+            const contextId = target.replace('context_', '');
+            const savedContext = this.savedContextSelections.find(config => config.contextId === contextId);
+            if (savedContext) {
+                selectedField = savedContext.selectedField;
+                console.log('[DEBUG] Setting context field from backend:', selectedField);
             }
         } else if (this.savedMappings && this.savedMappings.length > 0) {
             const mapping = this.savedMappings.find(m => m.target === target);
@@ -565,6 +615,32 @@ class FieldSelector {
                 }
                 
                 console.log('[DEBUG] Saved input field selection to backend:', { inputId, fieldName });
+            } else if (section === 'context') {
+                // Save context field selection to backend database
+                const stepId = this.getCurrentStepId();
+                if (!stepId) {
+                    console.warn('[DEBUG] Could not determine current step ID for context field persistence');
+                    return;
+                }
+
+                const contextId = target.replace('context_', '');
+                const fieldInfo = this.fields[fieldName];
+
+                const response = await fetch(`/api/workflow/steps/${stepId}/field_selection`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        context_field: fieldName,
+                        context_table: fieldInfo?.db_table || 'post_development',
+                        context_id: contextId
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                console.log('[DEBUG] Saved context field selection to backend:', { contextId, fieldName });
             }
             
             // Save field mapping to backend
