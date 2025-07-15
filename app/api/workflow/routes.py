@@ -1079,11 +1079,14 @@ def save_field_selection(step_id):
         if not data:
             return jsonify({'error': 'No JSON data provided'}), 400
 
+        # Handle output field selection (existing functionality)
         output_field = data.get('output_field')
         output_table = data.get('output_table')
         
-        if not all([output_field, output_table]):
-            return jsonify({'error': 'output_field and output_table are required'}), 400
+        # Handle input field selection (new functionality)
+        input_field = data.get('input_field')
+        input_table = data.get('input_table')
+        input_id = data.get('input_id')
 
         with get_db_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
@@ -1093,7 +1096,7 @@ def save_field_selection(step_id):
                 if not step:
                     return jsonify({'error': 'Step not found'}), 404
 
-                # Update the config with user output mapping
+                # Update the config with user mappings
                 config = step['config']
                 if not config:
                     config = {}
@@ -1104,11 +1107,22 @@ def save_field_selection(step_id):
                 if 'llm' not in config['settings']:
                     config['settings']['llm'] = {}
                 
-                # Add user output mapping
-                config['settings']['llm']['user_output_mapping'] = {
-                    'field': output_field,
-                    'table': output_table
-                }
+                # Handle output field mapping
+                if output_field and output_table:
+                    config['settings']['llm']['user_output_mapping'] = {
+                        'field': output_field,
+                        'table': output_table
+                    }
+                
+                # Handle input field mapping
+                if input_field and input_table and input_id:
+                    if 'user_input_mappings' not in config['settings']['llm']:
+                        config['settings']['llm']['user_input_mappings'] = {}
+                    
+                    config['settings']['llm']['user_input_mappings'][input_id] = {
+                        'field': input_field,
+                        'table': input_table
+                    }
                 
                 # Update the database
                 cur.execute("""
@@ -1148,19 +1162,28 @@ def get_field_selection(step_id):
                 if not config:
                     return jsonify({'success': True, 'data': None})
 
+                llm_settings = config.get('settings', {}).get('llm', {})
+                
                 # Check for user output mapping
-                user_mapping = None
-                if (config.get('settings', {}).get('llm', {}).get('user_output_mapping')):
-                    user_mapping = config['settings']['llm']['user_output_mapping']
+                user_output_mapping = llm_settings.get('user_output_mapping')
+                
+                # Check for user input mappings
+                user_input_mappings = llm_settings.get('user_input_mappings', {})
                 
                 # Fallback to default mapping if no user mapping
-                if not user_mapping:
-                    default_mapping = config.get('settings', {}).get('llm', {}).get('output_mapping')
+                if not user_output_mapping:
+                    default_mapping = llm_settings.get('output_mapping')
                     if default_mapping:
-                        user_mapping = default_mapping
+                        user_output_mapping = default_mapping
+
+                # Return both input and output mappings
+                result = {
+                    'output': user_output_mapping,
+                    'inputs': user_input_mappings
+                }
 
                 # Always return success, even if no mapping found
-                return jsonify({'success': True, 'data': user_mapping})
+                return jsonify({'success': True, 'data': result})
 
     except Exception as e:
         current_app.logger.error(f"Error getting field selection: {str(e)}")

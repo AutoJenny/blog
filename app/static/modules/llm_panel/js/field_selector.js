@@ -162,10 +162,10 @@ class FieldSelector {
             this.groups = fieldsData.groups || [];
             console.log('[DEBUG] Groups loaded:', this.groups.length, 'groups');
             
-            // Load saved field mappings
-            console.log('[DEBUG] Loading saved field mappings...');
-            await this.loadFieldMappings();
-            console.log('[DEBUG] Field mappings loaded:', this.savedMappings);
+            // Load saved field selections
+            this.loadFieldMappings();
+            await this.loadInputFieldSelections();
+            await this.loadOutputFieldSelections();
             
             // Initialize field selectors
             console.log('[DEBUG] Initializing field selectors...');
@@ -215,14 +215,32 @@ class FieldSelector {
         }
     }
 
-    loadInputFieldSelections() {
+    async loadInputFieldSelections() {
         try {
-            // Get saved input configurations from localStorage using stage/substage-specific key
-            const localStorageKey = `multiInputConfig_${this.stage}_${this.substage}`;
-            const savedConfig = localStorage.getItem(localStorageKey);
-            if (savedConfig) {
-                this.savedInputSelections = JSON.parse(savedConfig);
-                console.log('[DEBUG] Loaded input field selections from localStorage:', this.savedInputSelections);
+            const stepId = this.getCurrentStepId();
+            if (!stepId) {
+                console.warn('[DEBUG] Could not determine current step ID for loading input field selections');
+                this.savedInputSelections = [];
+                return;
+            }
+            
+            // Load input field selections from backend database (same as other dropdowns)
+            const response = await fetch(`/api/workflow/steps/${stepId}/field_selection`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            if (result.success && result.data && result.data.inputs) {
+                // Convert backend format to frontend format
+                this.savedInputSelections = Object.entries(result.data.inputs).map(([inputId, mapping]) => ({
+                    inputId: inputId,
+                    selectedField: mapping.field
+                }));
+                console.log('[DEBUG] Loaded input field selections from backend:', this.savedInputSelections);
+            } else {
+                this.savedInputSelections = [];
+                console.log('[DEBUG] No input field selections found in backend');
             }
         } catch (error) {
             console.error('Error loading input field selections:', error);
@@ -410,7 +428,46 @@ class FieldSelector {
                 if (response.ok) {
                     const data = await response.json();
                     if (data.sections && data.sections.length > 0) {
-                        targetElement.value = data.sections[0][fieldInfo.db_field] || '';
+                        // Map field names from canonical table names to API response fields
+                        const fieldMapping = {
+                            'section_heading': 'title',
+                            'section_description': 'description'
+                        };
+                        
+                        const apiFieldName = fieldMapping[fieldInfo.db_field] || fieldInfo.db_field;
+                        console.log('[DEBUG] Field mapping:', fieldInfo.db_field, '->', apiFieldName);
+                        
+                        // Try to get the selected section from the modal, fallback to first section
+                        let targetSection = data.sections[0];
+                        
+                        // Check if we're in the modal context and get selected section
+                        const modal = document.querySelector('#enhanced-llm-message-modal');
+                        if (modal) {
+                            const sectionSelector = modal.querySelector('#section-selector');
+                            if (sectionSelector && sectionSelector.value) {
+                                const selectedSectionId = parseInt(sectionSelector.value);
+                                const selectedSection = data.sections.find(s => s.id === selectedSectionId);
+                                if (selectedSection) {
+                                    targetSection = selectedSection;
+                                    console.log('[DEBUG] Using selected section:', selectedSectionId);
+                                } else {
+                                    console.log('[DEBUG] Selected section not found, using first section');
+                                }
+                            }
+                        }
+                        
+                        const fieldValue = targetSection[apiFieldName] || '';
+                        console.log('[DEBUG] Setting field value:', apiFieldName, '=', fieldValue ? fieldValue.substring(0, 50) + '...' : 'empty');
+                        targetElement.value = fieldValue;
+                        
+                        // Also update MultiInputManager's textarea value for persistence
+                        if (targetElement.dataset.target && targetElement.dataset.target.startsWith('input_')) {
+                            const inputId = targetElement.dataset.target.replace('input_', '');
+                            const multiInputManager = window.multiInputManager;
+                            if (multiInputManager) {
+                                multiInputManager.updateTextareaValue(inputId, fieldValue);
+                            }
+                        }
                     }
                 }
             } else {
@@ -424,6 +481,15 @@ class FieldSelector {
                         const data = await response.json();
                         this.fieldValues = data;
                         targetElement.value = this.fieldValues[selectedField] || '';
+                    }
+                }
+                
+                // Also update MultiInputManager's textarea value for persistence
+                if (targetElement.dataset.target && targetElement.dataset.target.startsWith('input_')) {
+                    const inputId = targetElement.dataset.target.replace('input_', '');
+                    const multiInputManager = window.multiInputManager;
+                    if (multiInputManager) {
+                        multiInputManager.updateTextareaValue(inputId, targetElement.value);
                     }
                 }
             }
@@ -473,20 +539,32 @@ class FieldSelector {
             const section = selector.dataset.section;
             
             if (section === 'inputs') {
-                // Save input field selection to localStorage
-                const localStorageKey = `multiInputConfig_${this.stage}_${this.substage}`;
-                const savedConfig = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
-                const inputId = target.replace('input_', '');
-                const existingIndex = savedConfig.findIndex(config => config.inputId === inputId);
-                
-                if (existingIndex >= 0) {
-                    savedConfig[existingIndex].selectedField = fieldName;
-                } else {
-                    savedConfig.push({ inputId, selectedField: fieldName });
+                // Save input field selection to backend database (same as other dropdowns)
+                const stepId = this.getCurrentStepId();
+                if (!stepId) {
+                    console.warn('[DEBUG] Could not determine current step ID for input field persistence');
+                    return;
                 }
                 
-                localStorage.setItem(localStorageKey, JSON.stringify(savedConfig));
-                console.log('[DEBUG] Saved input field selection to localStorage:', { inputId, fieldName });
+                const inputId = target.replace('input_', '');
+                const fieldInfo = this.fields[fieldName];
+                
+                // Save to backend using the same pattern as other dropdowns
+                const response = await fetch(`/api/workflow/steps/${stepId}/field_selection`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input_field: fieldName,
+                        input_table: fieldInfo?.db_table || 'post_development',
+                        input_id: inputId
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                console.log('[DEBUG] Saved input field selection to backend:', { inputId, fieldName });
             }
             
             // Save field mapping to backend
