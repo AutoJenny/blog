@@ -1331,6 +1331,38 @@ def run_workflow_llm(post_id, stage, substage):
         if not preview_content:
             return jsonify({'error': 'Live Preview content is required'}), 400
         
+        # Convert step name from URL format to database format
+        import re
+        step_db = re.sub(r'\b\w', lambda m: m.group(0).upper(), step.replace('_', ' '))
+        
+        print(f"[PLANNING_LLM] Processing step: {step} -> {step_db}")
+        print(f"[PLANNING_LLM] Preview content length: {len(preview_content) if preview_content else 0}")
+        
+        # Log diagnostic information
+        import os
+        from datetime import datetime
+        
+        diagnostic_log = f"""# LLM Message Diagnostic Log (Planning Stage)
+# Post ID: {post_id}
+# Stage: {stage}
+# Substage: {substage}
+# Step: {step} -> {step_db}
+# Timestamp: {datetime.now().isoformat()}
+# Log Type: llm_message_planning_stage
+
+=== FRONTEND PROMPT ===
+{preview_content}
+
+=== STEP MAPPING ===
+URL Format: {step}
+Database Format: {step_db}
+"""
+        
+        # Write diagnostic log
+        os.makedirs('logs', exist_ok=True)
+        with open('logs/workflow_diagnostic_llm_message.txt', 'w') as f:
+            f.write(diagnostic_log)
+        
         # Get LLM configuration from database
         with get_db_conn() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -1380,7 +1412,7 @@ def run_workflow_llm(post_id, stage, substage):
                 cur.execute("""
                     SELECT config FROM workflow_step_entity 
                     WHERE name ILIKE %s
-                """, (step,))
+                """, (step_db,))
                 step_result = cur.fetchone()
                 
                 if step_result and step_result[0]:
@@ -1423,6 +1455,30 @@ def run_workflow_llm(post_id, stage, substage):
                         conn.commit()
         except Exception as e:
             current_app.logger.error(f"Error saving output: {str(e)}")
+        
+        # Log response diagnostic information
+        response_log = f"""# LLM Response Diagnostic Log (Planning Stage)
+# Post ID: {post_id}
+# Stage: {stage}
+# Substage: {substage}
+# Step: {step} -> {step_db}
+# Timestamp: {datetime.now().isoformat()}
+# Log Type: llm_response_planning_stage
+
+=== LLM OUTPUT ===
+{output}
+
+=== OUTPUT MAPPING ===
+Field: {output_field if 'output_field' in locals() else 'Not found'}
+Table: {output_table if 'output_table' in locals() else 'Not found'}
+"""
+        
+        # Write response diagnostic log
+        with open('logs/workflow_diagnostic_llm_response.txt', 'w') as f:
+            f.write(response_log)
+        
+        print(f"[PLANNING_LLM] Result success: True")
+        print(f"[PLANNING_LLM] Output length: {len(output) if output else 0}")
         
         return jsonify({
             'success': True,

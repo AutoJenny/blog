@@ -1807,9 +1807,7 @@ class EnhancedLLMMessageManager {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         step: step,
-                        inputs: {
-                            prompt: message
-                        }
+                        preview_content: message
                     })
                 });
 
