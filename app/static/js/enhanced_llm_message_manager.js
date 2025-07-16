@@ -2045,6 +2045,15 @@ class EnhancedLLMMessageManager {
         if (stepParam) {
             // Map step names to IDs based on the workflow structure
             const stepMap = {
+                // Planning stage steps
+                'initial_concept': 41,
+                'provisional_title': 21,
+                'interesting_facts': 13,
+                'topics_to_cover': 32,
+                'section_headings': 24,
+                'section_order': 23,
+                'allocate_facts': 15,
+                // Writing stage steps
                 'ideas_to_include': 43,
                 'author_first_drafts': 16,
                 'fix_language': 49,

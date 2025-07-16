@@ -106,29 +106,36 @@ class FieldSelector {
             }
             const devFields = await devResponse.json();
             console.log('[DEBUG] Post development fields loaded:', devFields.fields.length, 'fields');
-            
-            // Always get post_section fields from the correct endpoint
-            const sectionResponse = await fetch('/api/workflow/post_section_fields');
-            if (!sectionResponse.ok) {
-                throw new Error(`HTTP error! status: ${sectionResponse.status}`);
+
+            let fieldsData;
+            if (this.stage === 'writing') {
+                // Only fetch post_section fields for writing stage
+                const sectionResponse = await fetch('/api/workflow/post_section_fields');
+                if (!sectionResponse.ok) {
+                    throw new Error(`HTTP error! status: ${sectionResponse.status}`);
+                }
+                const postSectionFields = await sectionResponse.json();
+                console.log('[DEBUG] Post section fields loaded:', postSectionFields.fields.length, 'fields');
+                fieldsData = {
+                    fields: [
+                        ...devFields.fields,
+                        ...postSectionFields.fields.map(field => ({
+                            field_name: field,
+                            display_name: field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                            db_table: 'post_section',
+                            db_field: field,
+                            description: `Section field: ${field}`
+                        }))
+                    ],
+                    groups: devFields.groups
+                };
+            } else {
+                // For planning and all other stages, only use post_development fields
+                fieldsData = {
+                    fields: devFields.fields,
+                    groups: devFields.groups
+                };
             }
-            const postSectionFields = await sectionResponse.json();
-            console.log('[DEBUG] Post section fields loaded:', postSectionFields.fields.length, 'fields');
-            
-            // Combine both sets of fields
-            const fieldsData = {
-                fields: [
-                    ...devFields.fields,
-                    ...postSectionFields.fields.map(field => ({
-                        field_name: field,
-                        display_name: field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                        db_table: 'post_section',
-                        db_field: field,
-                        description: `Section field: ${field}`
-                    }))
-                ],
-                groups: devFields.groups
-            };
             
             // Store the complete fieldsData for access in initializeSingleFieldSelector
             this.fieldsData = fieldsData;
@@ -355,9 +362,14 @@ class FieldSelector {
             filteredFields = availableFields.filter(field => field.db_table === 'post_development');
             console.log('[DEBUG] Filtering for context - showing post_development fields:', filteredFields.length, 'fields');
         } else if (section === 'inputs') {
-            // Inputs: show only post_section fields (for writing stage)
-            filteredFields = availableFields.filter(field => field.db_table === 'post_section');
-            console.log('[DEBUG] Filtering for inputs - showing post_section fields:', filteredFields.length, 'fields');
+            // Inputs: show post_development fields for planning, post_section fields for writing
+            if (this.stage === 'writing') {
+                filteredFields = availableFields.filter(field => field.db_table === 'post_section');
+                console.log('[DEBUG] Filtering for writing inputs - showing post_section fields:', filteredFields.length, 'fields');
+            } else {
+                filteredFields = availableFields.filter(field => field.db_table === 'post_development');
+                console.log('[DEBUG] Filtering for planning inputs - showing post_development fields:', filteredFields.length, 'fields');
+            }
         } else if (section === 'outputs') {
             if (this.stage === 'writing') {
                 filteredFields = availableFields.filter(field => field.db_table === 'post_section');
