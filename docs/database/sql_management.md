@@ -199,7 +199,7 @@ psql $DATABASE_URL -U nickfiddes -c "REASSIGN OWNED BY nickfiddes TO postgres;"
 - Do **not** rely on a single os.getenv or load_dotenv at import time; always reload the config file for robust, predictable behavior.
 - See CHANGES.log for details of the 2025-05-28 fix.
 
-## 2025-05-30: Added `input_field` and `output_field` columns to `post_substage_action` for LLM workflow field persistence. All backup, restore, and migration scripts must be updated to match this schema. Test restores after migration.
+## 2025-05-30: Added `input_field` and `output_field` columns to post_workflow_step_action for LLM workflow field persistence. All backup, restore, and migration scripts must be updated to match this schema. Test restores after migration.
 
 ## Post-Restore Validation Checklist (2024-06)
 

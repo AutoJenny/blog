@@ -129,7 +129,7 @@
                         });
                         const data = await response.json();
                         if (response.ok && data.id) {
-                            window.location.href = `/blog/post/${data.id}`;
+                            window.location.href = `/workflow/posts/${data.id}/planning/idea`;
                         } else {
                             alert(data.error || 'Failed to create post');
                         }

@@ -2,6 +2,37 @@
 
 All post-related endpoints are now under the `/api/workflow/posts/` base path.
 
+## Post Creation Endpoints
+
+### Create New Post
+- **URL**: `/blog/new`
+- **Method**: `POST`
+- **Description**: Creates a new post with basic idea and redirects to workflow planning
+- **Request Body**:
+  ```json
+  {
+    "basic_idea": "string"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "id": "integer",
+    "message": "Post created successfully",
+    "slug": "string"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `400`: Invalid request data
+- **Frontend Behavior**: After successful creation, automatically redirects to `/workflow/posts/<id>/planning/idea`
+- **Example**:
+  ```bash
+  curl -X POST "http://localhost:5000/blog/new" \
+       -H "Content-Type: application/json" \
+       -d '{"basic_idea": "My new blog post idea"}'
+  ```
+
 ## Development Endpoints
 
 ### Get Post Development Data

@@ -110,10 +110,10 @@ All field-related endpoints are now under the `/api/workflow/fields/` base path.
 ### Update Post Field
 - **URL**: `/api/workflow/posts/<post_id>/fields/<field_name>`
 - **Method**: `POST`
-- **Description**: Updates a specific field for a post
+- **Description**: Updates a specific field for a post. Supports both post_development table fields and the status field in the post table.
 - **URL Parameters**:
   - `post_id`: ID of the post
-  - `field_name`: Name of the field
+  - `field_name`: Name of the field (e.g., 'status', 'title', 'content')
 - **Request Body**:
   ```json
   {
@@ -130,6 +130,41 @@ All field-related endpoints are now under the `/api/workflow/fields/` base path.
   - `200`: Success
   - `400`: Invalid field value
   - `404`: Field not found
+
+### Soft Delete/Restore Post
+- **URL**: `/api/workflow/posts/<post_id>/fields/status`
+- **Method**: `POST`
+- **Description**: Soft delete or restore a post by updating its status field
+- **URL Parameters**:
+  - `post_id`: ID of the post
+- **Request Body**:
+  ```json
+  {
+    "value": "deleted"  // or "draft", "published", etc.
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "status": "success"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `400`: Invalid status value
+  - `404`: Post not found
+- **Example**:
+  ```bash
+  # Soft delete a post
+  curl -X POST "http://localhost:5000/api/workflow/posts/45/fields/status" \
+       -H "Content-Type: application/json" \
+       -d '{"value": "deleted"}'
+  
+  # Restore a post
+  curl -X POST "http://localhost:5000/api/workflow/posts/45/fields/status" \
+       -H "Content-Type: application/json" \
+       -d '{"value": "draft"}'
+  ```
 
 ## Stage Field Endpoints
 

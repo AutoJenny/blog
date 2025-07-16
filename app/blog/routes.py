@@ -65,18 +65,18 @@ def new_post():
                     """,
                     (post_id, data["basic_idea"])
                 )
-                # --- CLONE post_substage_action from previous post ---
+                # --- CLONE post_workflow_step_action from previous post ---
                 cur.execute("SELECT id FROM post WHERE id != %s ORDER BY id DESC LIMIT 1", (post_id,))
                 prev_row = cur.fetchone()
                 if prev_row:
                     prev_post_id = prev_row["id"]
-                    cur.execute("SELECT substage, action_id, input_field, output_field, button_label, button_order FROM post_substage_action WHERE post_id = %s", (prev_post_id,))
+                    cur.execute("SELECT step_id, action_id, input_field, output_field, button_label, button_order FROM post_workflow_step_action WHERE post_id = %s", (prev_post_id,))
                     actions = cur.fetchall()
                     for a in actions:
                         cur.execute('''
-                            INSERT INTO post_substage_action (post_id, substage, action_id, input_field, output_field, button_label, button_order)
+                            INSERT INTO post_workflow_step_action (post_id, step_id, action_id, input_field, output_field, button_label, button_order)
                             VALUES (%s, %s, %s, %s, %s, %s, %s)
-                        ''', (post_id, a["substage"], a["action_id"], a["input_field"], a["output_field"], a["button_label"], a["button_order"]))
+                        ''', (post_id, a["step_id"], a["action_id"], a["input_field"], a["output_field"], a["button_label"], a["button_order"]))
                 conn.commit()
         return jsonify({
             "message": "Post created successfully",

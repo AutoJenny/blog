@@ -65,10 +65,16 @@ def save_section_output(conn, section_ids, output, field):
             """, (output, section_id))
         conn.commit()
 
-def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_per_section, output_field, output_table):
+def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_per_section, output_field, output_table, frontend_prompt):
     """Process sections sequentially with actual LLM processing."""
     results = {}
     total_time = 0
+    
+    # Require frontend prompt - no fallback
+    if not frontend_prompt:
+        raise Exception("Frontend prompt is required - no fallback to database prompts")
+    
+    print(f"[PROCESS_SECTIONS] Using frontend prompt: {frontend_prompt[:200]}...")
     
     # Get LLM configuration
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -87,20 +93,11 @@ def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_p
             'api_base': 'http://localhost:11434'
         }
     
-    # Get step prompts
-    cur.execute("""
-        SELECT lp.prompt_text FROM workflow_step_prompt wsp
-        JOIN llm_prompt lp ON lp.id = wsp.task_prompt_id
-        WHERE wsp.step_id = %s
-    """, (step_id,))
-    prompt_result = cur.fetchone()
-    task_prompt = prompt_result[0] if prompt_result else "Generate content for this section."
-    
     for section_id in section_ids:
         start_time = datetime.now()
         
         try:
-            # Get section data for context
+            # Get section data for context (for logging only)
             cur.execute("""
                 SELECT section_heading, section_description, draft, ideas_to_include, facts_to_include
                 FROM post_section 
@@ -111,24 +108,31 @@ def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_p
             if not section_data:
                 raise Exception(f"Section {section_id} not found")
             
-            # Build section-specific prompt
-            section_prompt = f"""
-{task_prompt}
-
-Section: {section_data['section_heading']}
-Description: {section_data['section_description'] or 'No description'}
-Current Content: {section_data['draft'] or 'No content yet'}
-Ideas to Include: {section_data['ideas_to_include'] or 'None specified'}
-Facts to Include: {section_data['facts_to_include'] or 'None specified'}
-
-Please generate content for this section.
-"""
+            # Update the frontend prompt with section-specific data
+            llm_prompt = frontend_prompt
             
-            # Call LLM
+            # Replace the generic section heading and description with the actual section data
+            # Use regex to find and replace the section heading and description lines
+            import re
+            
+            # Replace section heading
+            section_heading_pattern = r'Section Heading: .*'
+            actual_section_heading = f"Section Heading: {section_data['section_heading']}"
+            llm_prompt = re.sub(section_heading_pattern, actual_section_heading, llm_prompt)
+            
+            # Replace section description
+            section_description_pattern = r'Section Description: .*'
+            actual_section_description = f"Section Description: {section_data['section_description']}"
+            llm_prompt = re.sub(section_description_pattern, actual_section_description, llm_prompt)
+            
+            print(f"[PROCESS_SECTIONS] Section {section_id} ({section_data['section_heading']}) - Updated prompt with section-specific data")
+            print(f"[PROCESS_SECTIONS] LLM prompt for section {section_id}: {llm_prompt[:300]}...")
+            
+            # Call LLM with frontend prompt as-is
             import requests
             llm_request = {
                 "model": config['model_name'],
-                "prompt": section_prompt,
+                "prompt": llm_prompt,
                 "temperature": 0.7,
                 "max_tokens": 1000,
                 "stream": False
@@ -201,12 +205,19 @@ def process_writing_step(post_id, stage, substage, step, section_ids, frontend_i
         conn = get_db_conn()
         step_id = get_step_id(conn, stage, substage, step)
         
-        # Extract output field mapping from frontend inputs
+        # Extract output field mapping and prompt from frontend inputs
         output_field = frontend_inputs.get('output_field') if frontend_inputs else None
         output_table = frontend_inputs.get('output_table', 'post_section') if frontend_inputs else 'post_section'
+        frontend_prompt = frontend_inputs.get('prompt') if frontend_inputs else None
+        
+        print(f"[PROCESS_WRITING_STEP] Frontend inputs: {frontend_inputs}")
+        print(f"[PROCESS_WRITING_STEP] Frontend prompt: {frontend_prompt[:200] if frontend_prompt else 'None'}...")
         
         if not output_field:
             raise Exception("No output field specified")
+        
+        if not frontend_prompt:
+            raise Exception("Frontend prompt is required - no fallback to database prompts")
         
         # If section_ids are provided, use sequential processing
         if section_ids:
@@ -214,7 +225,7 @@ def process_writing_step(post_id, stage, substage, step, section_ids, frontend_i
             
             result = process_sections_sequentially(
                 conn, post_id, step_id, section_ids, timeout_per_section, 
-                output_field, output_table
+                output_field, output_table, frontend_prompt
             )
             
             conn.close()
@@ -909,38 +920,35 @@ def get_post_fields(post_id):
                     
             return jsonify(field_dict)
 
-@bp.route('/posts/<int:post_id>/fields/<field_name>', methods=['PUT'])
+@bp.route('/posts/<int:post_id>/fields/<field_name>', methods=['POST'])
 @handle_workflow_errors
 def update_post_field(post_id, field_name):
-    """Update a specific field value for a post."""
+    """Update a specific field value for a post (post_development or post.status)."""
     data = request.get_json()
     if 'value' not in data:
         return jsonify({'error': 'Field value is required'}), 400
-        
+    value = data['value']
     with get_db_conn() as conn:
         with conn.cursor() as cur:
             # First verify post exists
             cur.execute("SELECT id FROM post WHERE id = %s", (post_id,))
             if not cur.fetchone():
                 return jsonify({'error': 'Post not found'}), 404
-                
-            # Verify field exists in post_development
-            cur.execute("""
-                SELECT column_name 
-                FROM information_schema.columns 
-                WHERE table_name = 'post_development' 
-                AND column_name = %s
-            """, (field_name,))
-            
+            # Special case: allow updating 'status' in post table
+            if field_name == 'status':
+                cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post' AND column_name = 'status'")
+                if not cur.fetchone():
+                    return jsonify({'error': 'Invalid field name'}), 400
+                cur.execute("UPDATE post SET status = %s, updated_at = NOW() WHERE id = %s", (value, post_id))
+                conn.commit()
+                return jsonify({'status': 'success'})
+            # Otherwise, update in post_development
+            cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'post_development' AND column_name = %s", (field_name,))
             if not cur.fetchone():
                 return jsonify({'error': 'Invalid field name'}), 400
-                
-            # Update the field
-            query = f"UPDATE post_development SET {field_name} = %s WHERE post_id = %s"
-            cur.execute(query, (data['value'], post_id))
+            cur.execute(f"UPDATE post_development SET {field_name} = %s WHERE post_id = %s", (value, post_id))
             conn.commit()
-            
-            return jsonify({'message': 'Field updated successfully'})
+            return jsonify({'status': 'success'})
 
 @bp.route('/posts/<int:post_id>/stages', methods=['GET'])
 @handle_workflow_errors
@@ -1439,11 +1447,62 @@ def run_writing_llm(post_id, stage, substage):
         print(f"[WRITING_LLM] Section IDs: {section_ids}")
         print(f"[WRITING_LLM] Frontend inputs: {frontend_inputs}")
         
+        # Log diagnostic information
+        import os
+        from datetime import datetime
+        
+        diagnostic_log = f"""# LLM Message Diagnostic Log (Writing Stage)
+# Post ID: {post_id}
+# Stage: {stage}
+# Substage: {substage}
+# Step: {step}
+# Timestamp: {datetime.now().isoformat()}
+# Log Type: llm_message_writing_stage
+
+=== FRONTEND PROMPT ===
+{frontend_inputs.get('prompt', 'No prompt provided')}
+
+=== SECTION IDs ===
+{section_ids}
+
+=== OUTPUT MAPPING ===
+Field: {frontend_inputs.get('output_field', 'Not specified')}
+Table: {frontend_inputs.get('output_table', 'Not specified')}
+"""
+        
+        # Write diagnostic log
+        os.makedirs('logs', exist_ok=True)
+        with open('logs/workflow_diagnostic_llm_message.txt', 'w') as f:
+            f.write(diagnostic_log)
+        
         result = process_writing_step(post_id, stage, substage, step, section_ids, frontend_inputs)
         
         print(f"[WRITING_LLM] Result success: {result.get('success')}")
         if result.get('success'):
             print(f"[WRITING_LLM] Processed {len(result.get('parameters', {}).get('sections_processed', []))} sections")
+            
+            # Log response diagnostic information
+            response_log = f"""# LLM Response Diagnostic Log (Writing Stage)
+# Post ID: {post_id}
+# Stage: {stage}
+# Substage: {substage}
+# Step: {step}
+# Timestamp: {datetime.now().isoformat()}
+# Log Type: llm_response_writing_stage
+# Frontend Inputs: {frontend_inputs}
+
+"""
+            
+            # Add results to response log
+            for section_id, section_result in result.get('results', {}).items():
+                if section_result.get('success'):
+                    response_log += f"=== SECTION {section_id} RESULT ===\n{section_result.get('result', 'No result')}\n\n"
+                else:
+                    response_log += f"=== SECTION {section_id} ERROR ===\n{section_result.get('error', 'Unknown error')}\n\n"
+            
+            # Write response diagnostic log
+            with open('logs/workflow_diagnostic_llm_response.txt', 'w') as f:
+                f.write(response_log)
         
         return jsonify(result)
         

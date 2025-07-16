@@ -1531,12 +1531,15 @@ class EnhancedLLMMessageManager {
                                     const fieldLabel = fieldElement.querySelector('.element-label');
                                     const label = fieldLabel ? fieldLabel.textContent : 'Field';
                                     
+                                    // Clean up numbered lists in field content
+                                    let cleanedContent = this.cleanNumberedLists(fieldContent.textContent.trim());
+                                    
                                     // Add line break before each field (except the first one)
                                     if (fieldCount > 0) {
                                         sectionContent += '\n';
                                     }
                                     
-                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}`;
+                                    sectionContent += `${label}: ${cleanedContent}`;
                                     fieldCount++;
                                 }
                             }
@@ -1552,9 +1555,11 @@ class EnhancedLLMMessageManager {
                         // This accordion has direct content - get from current workflow context
                         const content = element.querySelector('.element-content');
                         if (content && content.textContent.trim()) {
+                            // Clean up numbered lists in direct content
+                            let cleanedContent = this.cleanNumberedLists(content.textContent.trim());
                             enabledElements.push({
                                 label: label,
-                                content: content.textContent.trim()
+                                content: cleanedContent
                             });
                         }
                     }
@@ -2396,6 +2401,27 @@ class EnhancedLLMMessageManager {
         }
     }
 
+    // Method to clean up numbered lists in content to prevent LLM from formatting responses as lists
+    cleanNumberedLists(content) {
+        if (!content) return content;
+        
+        // Remove numbered list patterns like "1. ", "2. ", etc.
+        // This helps prevent the LLM from interpreting the input as a request for a numbered list response
+        let cleaned = content.replace(/^\d+\.\s+/gm, ''); // Remove "1. ", "2. ", etc. at start of lines
+        
+        // Also remove patterns like "(1)", "(2)", etc.
+        cleaned = cleaned.replace(/\(\d+\)/g, '');
+        
+        // Remove any remaining numbered patterns
+        cleaned = cleaned.replace(/\d+\.\s+/g, '');
+        
+        // Clean up extra whitespace
+        cleaned = cleaned.replace(/\n\s*\n/g, '\n\n'); // Remove extra blank lines
+        cleaned = cleaned.trim();
+        
+        return cleaned;
+    }
+
     // Method to get assembled content for external use (like llm_utils.js)
     getAssembledContent() {
         console.log('[ENHANCED_LLM] getAssembledContent called');
@@ -2466,12 +2492,15 @@ class EnhancedLLMMessageManager {
                                     const fieldLabel = fieldElement.querySelector('.element-label');
                                     const label = fieldLabel ? fieldLabel.textContent : 'Field';
                                     
+                                    // Clean up numbered lists in field content
+                                    let cleanedContent = this.cleanNumberedLists(fieldContent.textContent.trim());
+                                    
                                     // Add line break before each field (except the first one)
                                     if (fieldCount > 0) {
                                         sectionContent += '\n';
                                     }
                                     
-                                    sectionContent += `${label}: ${fieldContent.textContent.trim()}`;
+                                    sectionContent += `${label}: ${cleanedContent}`;
                                     fieldCount++;
                                 }
                             }
@@ -2487,9 +2516,11 @@ class EnhancedLLMMessageManager {
                         // This accordion has direct content
                         const content = element.querySelector('.element-content');
                         if (content && content.textContent.trim()) {
+                            // Clean up numbered lists in direct content
+                            let cleanedContent = this.cleanNumberedLists(content.textContent.trim());
                             enabledElements.push({
                                 label: label,
-                                content: content.textContent.trim()
+                                content: cleanedContent
                             });
                         }
                     }

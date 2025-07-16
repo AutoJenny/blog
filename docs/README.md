@@ -127,8 +127,8 @@ All links are accessible from the top navigation bar for quick access to major f
 - LLM actions now use `parse_tagged_prompt_to_messages` to build canonical prompts, ensuring all prompt elements (system, user, operation, data) are included as per [llm/llm_prompt_structuring.md](llm/llm_prompt_structuring.md). See the changelog for details.
 
 ## 2024-06-07
-- Fixed: Correct substage is now always sent and saved for post_substage_action (e.g., 'research' as well as 'idea').
-- If a substage row is missing, verify the frontend is sending the correct substage in the payload. You can debug by POSTing directly to `/api/v1/llm/post_substage_actions` with the correct substage.
+- Fixed: Correct substage is now always sent and saved for post_workflow_step_action (e.g., 'research' as well as 'idea').
+- Fixed: LLM action selection now works correctly by POSTing directly to `/api/workflow/posts/<post_id>/<stage>/<substage>/llm` with the correct substage.
 
 ## 2024-06-14: Universal Modular LLM Workflow Panel
 - All workflow substages (Planning, Authoring, Publishing) now use a single modular LLM panel include and JS for input, output, and action selection.

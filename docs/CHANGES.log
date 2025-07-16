@@ -1,3 +1,11 @@
+2025-07-16: Fixed critical post management functionality
+- **Soft Delete Fix**: Updated frontend JavaScript to use canonical `/api/workflow/posts/<post_id>/fields/status` endpoint with POST method for soft delete/restore functionality. Fixed 404 errors when clicking delete button.
+- **New Post Redirect Fix**: Updated New Post button JavaScript to redirect to `/workflow/posts/<id>/planning/idea` instead of deprecated `/blog/post/<id>` route. Fixed 404 errors after post creation.
+- **Backend Endpoint Enhancement**: Enhanced `/api/workflow/posts/<post_id>/fields/<field_name>` endpoint to support updating both `post_development` table fields and the `status` field in the `post` table.
+- **Table Name Update**: Updated all code references from deprecated `post_substage_action` to canonical `post_workflow_step_action` table name.
+- **Documentation Updates**: Updated API reference documentation to include soft delete endpoint, New Post creation endpoint, and corrected table name references.
+- **Testing**: Verified all endpoints work correctly with curl and browser testing.
+
 2025-05-22: LLM admin UI refactor — All LLM dashboard and sub-pages now use base.html for consistent header/footer. Dashboard cards are clickable links to sub-pages. Updated docs/llm/README.md.
 
 2025-05-22: Added unified icon-based navigation bar to all /llm admin pages for consistent, accessible navigation. Navigation is visible at the top of all LLM admin and image tool pages, styled per dark theme and workflow nav conventions.
