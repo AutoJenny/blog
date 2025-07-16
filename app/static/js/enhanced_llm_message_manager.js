@@ -1744,6 +1744,13 @@ class EnhancedLLMMessageManager {
 
     getSelectedSectionIds() {
         const checkboxes = Array.from(document.querySelectorAll('.section-select-checkbox'));
+        
+        // If no checkboxes found, sections might not be loaded yet
+        if (checkboxes.length === 0) {
+            console.warn('[ENHANCED_LLM] No section checkboxes found - sections may not be loaded yet');
+            return [];
+        }
+        
         return checkboxes
             .filter(cb => cb.checked)
             .map(cb => parseInt(cb.dataset.sectionId))
@@ -1779,57 +1786,108 @@ class EnhancedLLMMessageManager {
         const panel = document.querySelector('[data-current-stage]');
         const step = panel ? panel.dataset.currentStep : 'section_headings';
         
-        // Get selected sections and output field mapping
-        const selectedSectionIds = this.getSelectedSectionIds();
-        const outputMapping = this.getOutputFieldMapping();
+        console.log('[ENHANCED_LLM] Executing LLM request for stage:', stage);
         
-        if (selectedSectionIds.length === 0) {
-            throw new Error('No sections selected for processing');
-        }
-        
-        console.log('[ENHANCED_LLM] Processing sections:', selectedSectionIds);
-        console.log('[ENHANCED_LLM] Output mapping:', outputMapping);
-        
-        // Show loading state
-        const runBtn = document.getElementById('run-llm-btn');
-        if (runBtn) {
-            runBtn.textContent = `Processing ${selectedSectionIds.length} sections...`;
-            runBtn.disabled = true;
-        }
-        
-        try {
-            // Use Writing stage endpoint for section-specific processing
-            const response = await fetch(`/api/workflow/posts/${postId}/${stage}/${substage}/writing_llm`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    step: step,
-                    selected_section_ids: selectedSectionIds,
-                    inputs: {
-                        prompt: message,
-                        output_field: outputMapping.field,
-                        output_table: outputMapping.table
-                    }
-                })
-            });
-
-            const data = await response.json();
+        // Handle Planning vs Writing stages differently
+        if (stage === 'planning') {
+            // Planning stage: No sections, use planning-specific endpoint
+            console.log('[ENHANCED_LLM] Planning stage detected - bypassing section selection');
             
-            if (data.success) {
-                alert(`LLM processing completed! Processed ${data.parameters.sections_processed.length} sections.`);
-            } else {
-                throw new Error(data.error || 'Unknown error');
+            // Show loading state
+            const runBtn = document.getElementById('run-llm-btn');
+            if (runBtn) {
+                runBtn.textContent = 'Processing...';
+                runBtn.disabled = true;
             }
             
-            return data;
-        } catch (error) {
-            console.error('[ENHANCED_LLM] LLM run error:', error);
-            alert('LLM run failed: ' + error.message);
-            throw error;
-        } finally {
+            try {
+                // Use Planning stage endpoint
+                const response = await fetch(`/api/workflow/posts/${postId}/${stage}/${substage}/llm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        step: step,
+                        inputs: {
+                            prompt: message
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('LLM processing completed!');
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('[ENHANCED_LLM] LLM run error:', error);
+                alert('LLM run failed: ' + error.message);
+                throw error;
+            } finally {
+                if (runBtn) {
+                    runBtn.textContent = 'Run LLM';
+                    runBtn.disabled = false;
+                }
+            }
+        } else {
+            // Writing stage: Use sections and output field mapping
+            console.log('[ENHANCED_LLM] Writing stage detected - using section selection');
+            
+            // Get selected sections and output field mapping
+            const selectedSectionIds = this.getSelectedSectionIds();
+            const outputMapping = this.getOutputFieldMapping();
+            
+            if (selectedSectionIds.length === 0) {
+                throw new Error('No sections selected for processing');
+            }
+            
+            console.log('[ENHANCED_LLM] Processing sections:', selectedSectionIds);
+            console.log('[ENHANCED_LLM] Output mapping:', outputMapping);
+            
+            // Show loading state
+            const runBtn = document.getElementById('run-llm-btn');
             if (runBtn) {
-                runBtn.textContent = 'Run LLM';
-                runBtn.disabled = false;
+                runBtn.textContent = `Processing ${selectedSectionIds.length} sections...`;
+                runBtn.disabled = true;
+            }
+            
+            try {
+                // Use Writing stage endpoint for section-specific processing
+                const response = await fetch(`/api/workflow/posts/${postId}/${stage}/${substage}/writing_llm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        step: step,
+                        selected_section_ids: selectedSectionIds,
+                        inputs: {
+                            prompt: message,
+                            output_field: outputMapping.field,
+                            output_table: outputMapping.table
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`LLM processing completed! Processed ${data.parameters.sections_processed.length} sections.`);
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('[ENHANCED_LLM] LLM run error:', error);
+                alert('LLM run failed: ' + error.message);
+                throw error;
+            } finally {
+                if (runBtn) {
+                    runBtn.textContent = 'Run LLM';
+                    runBtn.disabled = false;
+                }
             }
         }
     }
