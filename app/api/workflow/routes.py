@@ -99,9 +99,12 @@ def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_p
         start_time = datetime.now()
         
         try:
-            # Get section data for context (for logging only)
+            # Get section data for context - fetch all available fields
             cur.execute("""
-                SELECT section_heading, section_description, draft, ideas_to_include, facts_to_include
+                SELECT 
+                    section_heading, section_description, draft, ideas_to_include, facts_to_include,
+                    polished, highlighting, image_concepts, image_prompts, watermarking,
+                    image_meta_descriptions, image_captions, image_generation_metadata
                 FROM post_section 
                 WHERE id = %s AND post_id = %s
             """, (section_id, post_id))
@@ -126,6 +129,22 @@ def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_p
             section_description_pattern = r'Section Description: .*'
             actual_section_description = f"Section Description: {section_data['section_description']}"
             llm_prompt = re.sub(section_description_pattern, actual_section_description, llm_prompt)
+            
+            # Dynamically replace all section-specific input fields
+            # Look for patterns like "Field Name: [content]" and replace with actual section data
+            for field_name, field_value in section_data.items():
+                if field_value and field_name not in ['section_heading', 'section_description']:
+                    # Convert field name to display format (e.g., 'ideas_to_include' -> 'Ideas to Include')
+                    display_name = field_name.replace('_', ' ').title()
+                    
+                    # Look for the field in the prompt and replace it
+                    field_pattern = rf'{display_name}: .*?(?=\n|$)'
+                    actual_field_content = f"{display_name}: {field_value}"
+                    
+                    # Use multiline flag to handle newlines properly
+                    llm_prompt = re.sub(field_pattern, actual_field_content, llm_prompt, flags=re.MULTILINE)
+                    
+                    print(f"[PROCESS_SECTIONS] Replaced {display_name} with section-specific data for section {section_id}")
             
             print(f"[PROCESS_SECTIONS] Section {section_id} ({section_data['section_heading']}) - Updated prompt with section-specific data")
             print(f"[PROCESS_SECTIONS] LLM prompt for section {section_id}: {llm_prompt[:300]}...")
