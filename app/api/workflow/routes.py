@@ -113,38 +113,68 @@ def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_p
             if not section_data:
                 raise Exception(f"Section {section_id} not found")
             
-            # Update the frontend prompt with section-specific data
-            llm_prompt = frontend_prompt
+            # Check if this is a template prompt (contains placeholders) or pre-populated prompt
+            is_template = '[SECTION_HEADING_PLACEHOLDER]' in frontend_prompt or '[IDEAS_TO_INCLUDE_PLACEHOLDER]' in frontend_prompt
             
-            # Replace the generic section heading and description with the actual section data
-            # Use regex to find and replace the section heading and description lines
-            import re
-            
-            # Replace section heading
-            section_heading_pattern = r'Section Heading: .*'
-            actual_section_heading = f"Section Heading: {section_data['section_heading']}"
-            llm_prompt = re.sub(section_heading_pattern, actual_section_heading, llm_prompt)
-            
-            # Replace section description
-            section_description_pattern = r'Section Description: .*'
-            actual_section_description = f"Section Description: {section_data['section_description']}"
-            llm_prompt = re.sub(section_description_pattern, actual_section_description, llm_prompt)
-            
-            # Dynamically replace all section-specific input fields
-            # Look for patterns like "Field Name: [content]" and replace with actual section data
-            for field_name, field_value in section_data.items():
-                if field_value and field_name not in ['section_heading', 'section_description']:
-                    # Convert field name to display format (e.g., 'ideas_to_include' -> 'Ideas to Include')
-                    display_name = field_name.replace('_', ' ').title()
-                    
-                    # Look for the field in the prompt and replace it
-                    field_pattern = rf'{display_name}: .*?(?=\n|$)'
-                    actual_field_content = f"{display_name}: {field_value}"
-                    
-                    # Use multiline flag to handle newlines properly
-                    llm_prompt = re.sub(field_pattern, actual_field_content, llm_prompt, flags=re.MULTILINE)
-                    
-                    print(f"[PROCESS_SECTIONS] Replaced {display_name} with section-specific data for section {section_id}")
+            if is_template:
+                # Template prompt - replace placeholders with section-specific data
+                llm_prompt = frontend_prompt
+                
+                # Define field mappings: database_field -> placeholder -> display_name
+                field_mappings = {
+                    'section_heading': ('[SECTION_HEADING_PLACEHOLDER]', 'Section Heading'),
+                    'section_description': ('[SECTION_DESCRIPTION_PLACEHOLDER]', 'Section Description'),
+                    'ideas_to_include': ('[IDEAS_TO_INCLUDE_PLACEHOLDER]', 'Ideas to Include'),
+                    'facts_to_include': ('[FACTS_TO_INCLUDE_PLACEHOLDER]', 'Facts to Include'),
+                    'draft': ('[DRAFT_PLACEHOLDER]', 'Draft'),
+                    'polished': ('[POLISHED_PLACEHOLDER]', 'Polished'),
+                    'highlighting': ('[HIGHLIGHTING_PLACEHOLDER]', 'Highlighting'),
+                    'image_concepts': ('[IMAGE_CONCEPTS_PLACEHOLDER]', 'Image Concepts'),
+                    'image_prompts': ('[IMAGE_PROMPTS_PLACEHOLDER]', 'Image Prompts'),
+                    'watermarking': ('[WATERMARKING_PLACEHOLDER]', 'Watermarking'),
+                    'image_meta_descriptions': ('[IMAGE_META_DESCRIPTIONS_PLACEHOLDER]', 'Image Meta Descriptions'),
+                    'image_captions': ('[IMAGE_CAPTIONS_PLACEHOLDER]', 'Image Captions'),
+                    'image_generation_metadata': ('[IMAGE_GENERATION_METADATA_PLACEHOLDER]', 'Image Generation Metadata')
+                }
+                
+                # Replace all placeholders with actual section data
+                for field_name, (placeholder, display_name) in field_mappings.items():
+                    if field_name in section_data and section_data[field_name]:
+                        field_value = str(section_data[field_name])
+                        llm_prompt = llm_prompt.replace(placeholder, field_value)
+                        print(f"[PROCESS_SECTIONS] Replaced {placeholder} with section {section_id} data: {field_name}")
+                    elif placeholder in llm_prompt:
+                        # Replace placeholder with empty/default value
+                        llm_prompt = llm_prompt.replace(placeholder, 'No data available')
+                        print(f"[PROCESS_SECTIONS] Replaced {placeholder} with default value for section {section_id}")
+                
+                print(f"[PROCESS_SECTIONS] Template processing complete for section {section_id}")
+                
+            else:
+                # Legacy pre-populated prompt - use existing replacement logic
+                llm_prompt = frontend_prompt
+                
+                # Replace the generic section heading and description with the actual section data
+                import re
+                
+                # Replace section heading
+                section_heading_pattern = r'Section Heading: .*'
+                actual_section_heading = f"Section Heading: {section_data['section_heading']}"
+                llm_prompt = re.sub(section_heading_pattern, actual_section_heading, llm_prompt)
+                
+                # Replace section description
+                section_description_pattern = r'Section Description: .*'
+                actual_section_description = f"Section Description: {section_data['section_description']}"
+                llm_prompt = re.sub(section_description_pattern, actual_section_description, llm_prompt)
+                
+                # Dynamically replace all section-specific input fields
+                for field_name, field_value in section_data.items():
+                    if field_value and field_name not in ['section_heading', 'section_description']:
+                        display_name = field_name.replace('_', ' ').title()
+                        field_pattern = rf'{display_name}: .*?(?=\n|$)'
+                        actual_field_content = f"{display_name}: {field_value}"
+                        llm_prompt = re.sub(field_pattern, actual_field_content, llm_prompt, flags=re.MULTILINE)
+                        print(f"[PROCESS_SECTIONS] Legacy replacement: {display_name} for section {section_id}")
             
             print(f"[PROCESS_SECTIONS] Section {section_id} ({section_data['section_heading']}) - Updated prompt with section-specific data")
             print(f"[PROCESS_SECTIONS] LLM prompt for section {section_id}: {llm_prompt[:300]}...")

@@ -1819,6 +1819,117 @@ class EnhancedLLMMessageManager {
         };
     }
 
+    isMultiSectionWritingStage() {
+        // Check if we're in writing stage with multiple sections selected
+        const selectedSectionIds = this.getSelectedSectionIds();
+        const pathParts = window.location.pathname.split('/');
+        const stage = pathParts[4];
+        
+        return stage === 'writing' && selectedSectionIds.length > 1;
+    }
+
+    getTemplatePrompt() {
+        console.log('[ENHANCED_LLM] Assembling template prompt...');
+        
+        // Get the assembled content from the modal (without section-specific data)
+        const enabledElements = [];
+        const container = document.getElementById('all-elements-container');
+        
+        if (!container) {
+            console.error('[ENHANCED_LLM] Modal container not found for template assembly');
+            return null;
+        }
+        
+        const allElements = container.querySelectorAll('.message-accordion, .message-element[data-element-type="instruction"]');
+        
+        allElements.forEach(element => {
+            const toggle = element.querySelector('.element-toggle');
+            if (toggle && toggle.checked) {
+                const elementType = element.getAttribute('data-element-type');
+                
+                if (elementType === 'instruction') {
+                    // Handle instruction elements
+                    const content = element.querySelector('.element-content');
+                    if (content && content.textContent.trim() && content.textContent !== 'Click to edit your instruction...') {
+                        enabledElements.push({
+                            label: 'INSTRUCTION',
+                            content: content.textContent.trim()
+                        });
+                    }
+                } else {
+                    // Handle accordion elements (system prompt, basic idea, etc.)
+                    const label = element.querySelector('.accordion-header span')?.textContent || 'Unknown';
+                    const color = element.querySelector('.accordion-header span')?.className || '';
+                    
+                    // Get field elements within this accordion
+                    const fieldElements = element.querySelectorAll('.message-element[data-element-type="field"]');
+                    
+                    if (fieldElements.length > 0) {
+                        // This accordion contains individual field elements - create placeholders
+                        const inputFields = [];
+                        
+                        fieldElements.forEach(fieldElement => {
+                            const fieldToggle = fieldElement.querySelector('.element-toggle');
+                            if (fieldToggle && fieldToggle.checked) {
+                                const fieldLabel = fieldElement.querySelector('.element-label');
+                                const label = fieldLabel ? fieldLabel.textContent : 'Field';
+                                
+                                // Create placeholder for this field
+                                const placeholder = `[${label.toUpperCase().replace(/\s+/g, '_')}_PLACEHOLDER]`;
+                                inputFields.push(`${label}: ${placeholder}`);
+                            }
+                        });
+                        
+                        if (inputFields.length > 0) {
+                            enabledElements.push({
+                                label: label,
+                                color: color,
+                                content: inputFields.join('\n')
+                            });
+                        }
+                    } else {
+                        // This accordion contains static content (system prompt, basic idea, etc.)
+                        const content = element.querySelector('.accordion-content');
+                        if (content && content.textContent.trim()) {
+                            enabledElements.push({
+                                label: label,
+                                color: color,
+                                content: content.textContent.trim()
+                            });
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Assemble the template prompt
+        let templatePrompt = '';
+        
+        enabledElements.forEach(element => {
+            if (element.label === 'SYSTEM PROMPT') {
+                templatePrompt += `=== SYSTEM PROMPT ===\n${element.content}\n\n`;
+            } else if (element.label === 'BASIC IDEA') {
+                templatePrompt += `=== BASIC IDEA ===\n${element.content}\n\n`;
+            } else if (element.label === 'SECTION HEADINGS') {
+                templatePrompt += `=== SECTION HEADINGS ===\n${element.content}\n\n`;
+            } else if (element.label === 'TASK PROMPT') {
+                templatePrompt += `=== TASK PROMPT ===\n${element.content}\n\n`;
+            } else if (element.label === 'INPUT FIELDS') {
+                templatePrompt += `=== INPUT FIELDS ===\n${element.content}\n\n`;
+            } else if (element.label === 'INSTRUCTION') {
+                templatePrompt += `=== INSTRUCTION ===\n${element.content}\n\n`;
+            } else {
+                templatePrompt += `=== ${element.label} ===\n${element.content}\n\n`;
+            }
+        });
+        
+        // Add settings section
+        templatePrompt += `=== SETTINGS ===\nModel: llama3.2:latest, Temperature: 0.7, Max Tokens: 1000, Timeout: 360s`;
+        
+        console.log('[ENHANCED_LLM] Template prompt assembled:', templatePrompt.substring(0, 200) + '...');
+        return templatePrompt;
+    }
+
     async executeLLMRequest(message) {
         const pathParts = window.location.pathname.split('/');
         const postId = pathParts[3];
@@ -1887,6 +1998,26 @@ class EnhancedLLMMessageManager {
             console.log('[ENHANCED_LLM] Processing sections:', selectedSectionIds);
             console.log('[ENHANCED_LLM] Output mapping:', outputMapping);
             
+            // Check if this is multi-section writing stage
+            const isMultiSection = this.isMultiSectionWritingStage();
+            console.log('[ENHANCED_LLM] Multi-section mode:', isMultiSection);
+            
+            // Determine which prompt to send
+            let promptToSend = message;
+            if (isMultiSection) {
+                // For multi-section, use template prompt with placeholders
+                const templatePrompt = this.getTemplatePrompt();
+                if (templatePrompt) {
+                    promptToSend = templatePrompt;
+                    console.log('[ENHANCED_LLM] Using template prompt for multi-section processing');
+                } else {
+                    console.warn('[ENHANCED_LLM] Template prompt generation failed, falling back to original message');
+                }
+            } else {
+                // For single section, use original message (current behavior)
+                console.log('[ENHANCED_LLM] Using original message for single section processing');
+            }
+            
             // Show loading state
             const runBtn = document.getElementById('run-llm-btn');
             if (runBtn) {
@@ -1903,7 +2034,7 @@ class EnhancedLLMMessageManager {
                         step: step,
                         selected_section_ids: selectedSectionIds,
                         inputs: {
-                            prompt: message,
+                            prompt: promptToSend,
                             output_field: outputMapping.field,
                             output_table: outputMapping.table
                         }
