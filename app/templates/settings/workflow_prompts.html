@@ -13,6 +13,53 @@
     .prompt-field {
         background-color: #0a0c12 !important;
     }
+
+    /* Force dark backgrounds on accordion headers */
+    .bg-\[#23273a\] {
+        background-color: #23273a !important;
+    }
+
+    /* Ensure accordion header text is white */
+    .bg-\[#23273a\] h3,
+    .bg-\[#23273a\] h5 {
+        color: #ffffff !important;
+        background-color: transparent !important;
+    }
+
+    /* Force dark background on accordion header divs */
+    .bg-\[#23273a\] > div:first-child {
+        background-color: #23273a !important;
+    }
+
+    /* Ensure hover states maintain dark background */
+    .hover\:bg-\[#2a2f45\]:hover {
+        background-color: #2a2f45 !important;
+    }
+
+    /* Additional specificity for accordion headers */
+    div[onclick*="togglePrompt"] {
+        background-color: #23273a !important;
+    }
+
+    div[onclick*="togglePrompt"]:hover {
+        background-color: #2a2f45 !important;
+    }
+
+    /* Ensure all text in accordion headers is white */
+    div[onclick*="togglePrompt"] h3,
+    div[onclick*="togglePrompt"] h5 {
+        color: #ffffff !important;
+        background-color: transparent !important;
+    }
+
+    /* Force dark background on cursor-pointer divs (accordion headers) */
+    .cursor-pointer {
+        background-color: #23273a !important;
+    }
+
+    .cursor-pointer:hover {
+        background-color: #2a2f45 !important;
+    }
 </style>
 {% endblock %}
 
