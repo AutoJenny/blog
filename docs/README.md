@@ -39,6 +39,7 @@ Welcome to the documentation for the Blog Content Management System (CMS). This 
    - [LLM API Endpoints](api/llm.md)
    - [Database API](api/database.md)
    - [Monitoring & Health](api/monitoring.md)
+   - **[Flask Logging Guide](reference/flask_logging_guide.md)** - Critical for debugging and development
 
 6. **Database**
    - [Database Models](database/README.md)

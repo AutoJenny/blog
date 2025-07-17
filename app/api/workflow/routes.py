@@ -6,6 +6,8 @@ import json
 # Removed import of deprecated llm_processor module
 # Functions will be implemented directly in this file as needed
 from datetime import datetime
+import sys
+import logging
 
 from . import bp
 
@@ -1319,6 +1321,23 @@ def get_field_selection(step_id):
 
 @bp.route('/posts/<int:post_id>/<stage>/<substage>/llm', methods=['POST'])
 def run_workflow_llm(post_id, stage, substage):
+    # DIRECT FILE LOGGING - GUARANTEED TO WORK
+    import os
+    from datetime import datetime
+    
+    # Create logs directory if it doesn't exist
+    os.makedirs('logs', exist_ok=True)
+    
+    # Write immediate function entry log
+    with open('logs/planning_stage_direct.log', 'a') as f:
+        f.write(f"[{datetime.now().isoformat()}] FUNCTION CALLED - post_id: {post_id}, stage: {stage}, substage: {substage}\n")
+        f.write(f"[{datetime.now().isoformat()}] Request method: {request.method}\n")
+        f.write(f"[{datetime.now().isoformat()}] Request headers: {dict(request.headers)}\n")
+        f.flush()  # Force immediate write
+    
+    # FORCE LOGGING TEST
+    current_app.logger.error("=== FORCE LOGGING TEST - FUNCTION CALLED ===")
+    print("=== PRINT TEST - FUNCTION CALLED ===")
     """Run LLM processing for a workflow step using Live Preview content."""
     try:
         data = request.get_json()
@@ -1334,34 +1353,6 @@ def run_workflow_llm(post_id, stage, substage):
         # Convert step name from URL format to database format
         import re
         step_db = re.sub(r'\b\w', lambda m: m.group(0).upper(), step.replace('_', ' '))
-        
-        print(f"[PLANNING_LLM] Processing step: {step} -> {step_db}")
-        print(f"[PLANNING_LLM] Preview content length: {len(preview_content) if preview_content else 0}")
-        
-        # Log diagnostic information
-        import os
-        from datetime import datetime
-        
-        diagnostic_log = f"""# LLM Message Diagnostic Log (Planning Stage)
-# Post ID: {post_id}
-# Stage: {stage}
-# Substage: {substage}
-# Step: {step} -> {step_db}
-# Timestamp: {datetime.now().isoformat()}
-# Log Type: llm_message_planning_stage
-
-=== FRONTEND PROMPT ===
-{preview_content}
-
-=== STEP MAPPING ===
-URL Format: {step}
-Database Format: {step_db}
-"""
-        
-        # Write diagnostic log
-        os.makedirs('logs', exist_ok=True)
-        with open('logs/workflow_diagnostic_llm_message.txt', 'w') as f:
-            f.write(diagnostic_log)
         
         # Get LLM configuration from database
         with get_db_conn() as conn:
@@ -1405,58 +1396,131 @@ Database Format: {step_db}
         output = result.get('response', '')
         
         # Save output to database
+        output_field = None
+        output_table = None
+        step_result = None
+        config_data = None
+        output_mapping = None
+        
+        # DIRECT FILE LOGGING - VARIABLE INITIALIZATION
+        with open('logs/planning_stage_direct.log', 'a') as f:
+            f.write(f"[{datetime.now().isoformat()}] VARIABLE INIT - output_field: {output_field}, output_table: {output_table}\n")
+            f.write(f"[{datetime.now().isoformat()}] Step DB name: {step_db}\n")
+            f.flush()
+        
+        current_app.logger.info(f"[PLANNING_LLM] Starting output mapping extraction for step: {step_db}")
+        
         try:
             with get_db_conn() as conn:
                 cur = conn.cursor()
                 # Get step configuration to determine output field
+                current_app.logger.info(f"[PLANNING_LLM] Executing database query for step: {step_db}")
                 cur.execute("""
                     SELECT config FROM workflow_step_entity 
                     WHERE name ILIKE %s
                 """, (step_db,))
                 step_result = cur.fetchone()
                 
-                if step_result and step_result[0]:
-                    config_data = step_result[0]
-                    output_mapping = config_data.get('settings', {}).get('llm', {}).get('user_output_mapping', {})
+                # DIRECT FILE LOGGING - DATABASE QUERY RESULT
+                with open('logs/planning_stage_direct.log', 'a') as f:
+                    f.write(f"[{datetime.now().isoformat()}] DB QUERY RESULT - step_result found: {step_result is not None}\n")
+                    f.write(f"[{datetime.now().isoformat()}] step_result type: {type(step_result)}\n")
+                    if step_result:
+                        f.write(f"[{datetime.now().isoformat()}] step_result keys: {list(step_result.keys())}\n")
+                        f.write(f"[{datetime.now().isoformat()}] step_result['config'] type: {type(step_result['config'])}\n")
+                        f.write(f"[{datetime.now().isoformat()}] step_result['config'] value: {step_result['config']}\n")
+                    f.flush()
+                
+                current_app.logger.info(f"[PLANNING_LLM] Step result found: {step_result is not None}")
+                
+                if step_result and step_result['config']:
+                    # DIRECT FILE LOGGING - CONFIG PARSING
+                    with open('logs/planning_stage_direct.log', 'a') as f:
+                        f.write(f"[{datetime.now().isoformat()}] CONFIG PARSING - step_result['config'] type: {type(step_result['config'])}\n")
+                        f.write(f"[{datetime.now().isoformat()}] CONFIG PARSING - step_result['config'] value: {step_result['config']}\n")
+                        f.flush()
+                    
+                    current_app.logger.info(f"[PLANNING_LLM] Step result['config'] type: {type(step_result['config'])}")
+                    current_app.logger.info(f"[PLANNING_LLM] Step result['config'] value: {step_result['config']}")
+                    
+                    # Handle both string and dict types
+                    if isinstance(step_result['config'], str):
+                        import json
+                        config_data = json.loads(step_result['config'])
+                        current_app.logger.info(f"[PLANNING_LLM] Parsed config from string, type: {type(config_data)}")
+                    else:
+                        config_data = step_result['config']
+                        current_app.logger.info(f"[PLANNING_LLM] Using config directly as dict, type: {type(config_data)}")
+                    
+                    current_app.logger.info(f"[PLANNING_LLM] Config data keys: {list(config_data.keys()) if config_data else 'None'}")
+                    
+                    # DIRECT FILE LOGGING - CONFIG DATA
+                    with open('logs/planning_stage_direct.log', 'a') as f:
+                        f.write(f"[{datetime.now().isoformat()}] CONFIG DATA - keys: {list(config_data.keys()) if config_data else 'None'}\n")
+                        f.flush()
+                    
+                    settings = config_data.get('settings', {})
+                    current_app.logger.info(f"[PLANNING_LLM] Settings found: {settings is not None}")
+                    current_app.logger.info(f"[PLANNING_LLM] Settings keys: {list(settings.keys()) if settings else 'None'}")
+                    
+                    # DIRECT FILE LOGGING - SETTINGS
+                    with open('logs/planning_stage_direct.log', 'a') as f:
+                        f.write(f"[{datetime.now().isoformat()}] SETTINGS - found: {settings is not None}\n")
+                        f.write(f"[{datetime.now().isoformat()}] SETTINGS - keys: {list(settings.keys()) if settings else 'None'}\n")
+                        f.flush()
+                    
+                    llm_settings = settings.get('llm', {})
+                    current_app.logger.info(f"[PLANNING_LLM] LLM settings found: {llm_settings is not None}")
+                    current_app.logger.info(f"[PLANNING_LLM] LLM settings keys: {list(llm_settings.keys()) if llm_settings else 'None'}")
+                    
+                    # DIRECT FILE LOGGING - LLM SETTINGS
+                    with open('logs/planning_stage_direct.log', 'a') as f:
+                        f.write(f"[{datetime.now().isoformat()}] LLM SETTINGS - found: {llm_settings is not None}\n")
+                        f.write(f"[{datetime.now().isoformat()}] LLM SETTINGS - keys: {list(llm_settings.keys()) if llm_settings else 'None'}\n")
+                        f.flush()
+                    
+                    output_mapping = llm_settings.get('user_output_mapping', {})
+                    current_app.logger.info(f"[PLANNING_LLM] Output mapping extracted: {output_mapping}")
+                    
+                    # DIRECT FILE LOGGING - OUTPUT MAPPING
+                    with open('logs/planning_stage_direct.log', 'a') as f:
+                        f.write(f"[{datetime.now().isoformat()}] OUTPUT MAPPING - extracted: {output_mapping}\n")
+                        f.flush()
+                    
                     output_field = output_mapping.get('field')
                     output_table = output_mapping.get('table', 'post_development')
                     
+                    # DIRECT FILE LOGGING - FINAL VARIABLES
+                    with open('logs/planning_stage_direct.log', 'a') as f:
+                        f.write(f"[{datetime.now().isoformat()}] FINAL VARIABLES - output_field: {output_field}\n")
+                        f.write(f"[{datetime.now().isoformat()}] FINAL VARIABLES - output_table: {output_table}\n")
+                        f.write(f"[{datetime.now().isoformat()}] output_mapping: {output_mapping}\n")
+                        f.flush()
+                    
+                    current_app.logger.info(f"[PLANNING_LLM] Final output_field: {output_field}")
+                    current_app.logger.info(f"[PLANNING_LLM] Final output_table: {output_table}")
+                    
                     if output_field and output_table:
-                        if output_table == 'post_development':
-                            cur.execute(f"""
-                                UPDATE post_development 
-                                SET {output_field} = %s 
-                                WHERE post_id = %s
-                            """, (output, post_id))
-                            
-                            # If this is the section_headings field, sync to post_section table
-                            if output_field == 'section_headings':
-                                # Clear existing sections
-                                cur.execute("DELETE FROM post_section WHERE post_id = %s", (post_id,))
-                                
-                                try:
-                                    # Parse the output as JSON
-                                    headings_data = json.loads(output)
-                                    if isinstance(headings_data, list):
-                                        # Insert new sections
-                                        for i, heading in enumerate(headings_data):
-                                            if isinstance(heading, dict):
-                                                title = heading.get('title', heading.get('heading', f'Section {i+1}'))
-                                                description = heading.get('description', '')
-                                                
-                                                cur.execute("""
-                                                    INSERT INTO post_section (
-                                                        post_id, section_order, section_heading, section_description, status
-                                                    ) VALUES (%s, %s, %s, %s, %s)
-                                                """, (post_id, i+1, title, description, 'draft'))
-                                except Exception as e:
-                                    current_app.logger.error(f"Error syncing sections after LLM output: {str(e)}")
-                            
+                        current_app.logger.info(f"[PLANNING_LLM] Both field and table found, executing database update")
+                        update_sql = f"UPDATE {output_table} SET {output_field} = %s WHERE post_id = %s"
+                        current_app.logger.info(f"[PLANNING_LLM] Update SQL: {update_sql}")
+                        cur.execute(update_sql, (output, post_id))
                         conn.commit()
+                        current_app.logger.info(f"[PLANNING_LLM] Database update completed successfully")
+                    else:
+                        current_app.logger.info(f"[PLANNING_LLM] Missing field or table - field: {output_field}, table: {output_table}")
+                else:
+                    current_app.logger.info(f"[PLANNING_LLM] No step result found or step result is empty")
         except Exception as e:
+            current_app.logger.error(f"[PLANNING_LLM] Error in database operations: {str(e)}")
             current_app.logger.error(f"Error saving output: {str(e)}")
         
         # Log response diagnostic information
+        import os
+        from datetime import datetime
+        
+        print(f"[PLANNING_LLM] Writing diagnostic log - output_field: {output_field}, output_table: {output_table}")
+        
         response_log = f"""# LLM Response Diagnostic Log (Planning Stage)
 # Post ID: {post_id}
 # Stage: {stage}
@@ -1469,16 +1533,36 @@ Database Format: {step_db}
 {output}
 
 === OUTPUT MAPPING ===
-Field: {output_field if 'output_field' in locals() else 'Not found'}
-Table: {output_table if 'output_table' in locals() else 'Not found'}
+Field: {output_field}
+Table: {output_table}
+
+=== DEBUG INFO ===
+Step DB Name: {step_db}
+Step Result Found: {step_result is not None}
+Config Data Type: {type(config_data) if config_data else 'Not set'}
+Output Mapping: {output_mapping}
+Raw Config Data: {config_data}
+
+=== COMPREHENSIVE LOGGING ===
+Variables at log time:
+- output_field: {output_field}
+- output_table: {output_table}
+- step_result: {step_result is not None}
+- config_data: {type(config_data) if config_data else 'None'}
+- output_mapping: {output_mapping}
 """
         
         # Write response diagnostic log
+        os.makedirs('logs', exist_ok=True)
         with open('logs/workflow_diagnostic_llm_response.txt', 'w') as f:
             f.write(response_log)
         
-        print(f"[PLANNING_LLM] Result success: True")
-        print(f"[PLANNING_LLM] Output length: {len(output) if output else 0}")
+        # DIRECT FILE LOGGING - FUNCTION COMPLETION
+        with open('logs/planning_stage_direct.log', 'a') as f:
+            f.write(f"[{datetime.now().isoformat()}] FUNCTION COMPLETED SUCCESSFULLY\n")
+            f.write(f"[{datetime.now().isoformat()}] Final output_field: {output_field}\n")
+            f.write(f"[{datetime.now().isoformat()}] Final output_table: {output_table}\n")
+            f.flush()
         
         return jsonify({
             'success': True,
@@ -1858,6 +1942,12 @@ def save_context_config(step_id):
             conn.commit()
     return jsonify({'success': True}) 
 
+@bp.route('/test-logging', methods=['GET'])
+def test_logging():
+    current_app.logger.error("=== TEST LOGGING ENDPOINT CALLED ===")
+    print("=== PRINT TEST ENDPOINT CALLED ===")
+    return jsonify({"status": "logging test"})
+
 @bp.route('/llm/direct', methods=['POST'])
 @handle_workflow_errors
 def direct_llm_call():
@@ -1962,7 +2052,8 @@ def direct_llm_call():
                 step_result = cur.fetchone()
                 
                 if step_result and step_result[0]:
-                    config_data = step_result[0]
+                    import json
+                    config_data = json.loads(step_result[0])
                     output_mapping = config_data.get('settings', {}).get('llm', {}).get('user_output_mapping', {})
                     output_field = output_mapping.get('field')
                     output_table = output_mapping.get('table', 'post_development')
@@ -2020,3 +2111,24 @@ def direct_llm_call():
     except Exception as e:
         current_app.logger.error(f"Error in direct LLM call: {str(e)}")
         return jsonify({'error': str(e)}), 500 
+
+@bp.route('/test-direct-file', methods=['GET'])
+def test_direct_file():
+    with open('logs/direct_file_test.log', 'a') as f:
+        f.write('Direct file write test - route executed\n')
+    return jsonify({"status": "direct file write test"})
+
+@bp.route('/test-logging-advanced', methods=['GET'])
+def test_logging_advanced():
+    # Print to stdout
+    print('PRINT STDOUT: test_logging_advanced called')
+    # Print to stderr
+    sys.stderr.write('PRINT STDERR: test_logging_advanced called\n')
+    # Add a new file handler at runtime
+    handler = logging.FileHandler('logs/runtime_added_handler.log')
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s'))
+    current_app.logger.addHandler(handler)
+    current_app.logger.info('RUNTIME LOGGER: test_logging_advanced called')
+    handler.flush()
+    return jsonify({'status': 'logging advanced test'})

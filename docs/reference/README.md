@@ -73,6 +73,8 @@ All API endpoints follow this standard response format:
 - [Deprecated APIs](api/deprecated/)
 - [Current Routes](routes/current/)
 - [Deprecated Routes](routes/deprecated/)
+- **[Flask Logging Guide](flask_logging_guide.md)** - Critical for debugging and development
+- **[Logging Quick Reference](logging_quick_reference.md)** - Fast reference for immediate use
 
 ## Usage Guidelines
 
@@ -93,6 +95,12 @@ All API endpoints follow this standard response format:
    - Document all test cases
    - Include error scenarios
    - Verify response formats
+
+4. **Logging Requirements**
+   - **ALWAYS use direct file logging for debugging** (see [Flask Logging Guide](flask_logging_guide.md))
+   - Never rely on Flask's built-in logging system
+   - Test logging before claiming functionality works
+   - Use descriptive log messages with timestamps
 
 ## Support
 
