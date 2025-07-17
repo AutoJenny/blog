@@ -31,6 +31,13 @@
                 {# Middle column - Sections (33%) #}
                 <div id="workflow-sections" style="background-color: #013828; width: 33%;"
                     class="rounded-lg p-6 shadow-lg transition-all duration-300">
+                    {# Manual Sync Button #}
+                    <div class="mb-4 flex justify-center">
+                        <button id="manual-sync-sections-btn" 
+                                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow-lg transition-colors duration-200 text-sm">
+                            🔄 Manual Sync Sections
+                        </button>
+                    </div>
                     <div id="sections-panel-content" class="text-gray-200">
                         <p>Loading sections...</p>
                     </div>
@@ -52,6 +59,13 @@
                 {# Right column - Sections #}
                 <div id="workflow-sections" style="background-color: #013828; width: 50%;"
                     class="rounded-lg p-6 shadow-lg">
+                    {# Manual Sync Button #}
+                    <div class="mb-4 flex justify-center">
+                        <button id="manual-sync-sections-btn"
+                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow-lg transition-colors duration-200 text-sm">
+                            🔄 Manual Sync Sections
+                        </button>
+                    </div>
                     <div id="sections-panel-content" class="text-gray-200">
                         <p>Loading sections...</p>
                     </div>
@@ -67,21 +81,72 @@
                 const postId = pathParts[3];
                 const apiUrl = `/api/workflow/posts/${postId}/sections`;
                 const panel = document.getElementById('sections-panel-content');
-                try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) throw new Error('Failed to fetch sections');
-                    const data = await response.json();
-                    // Structure expected by renderStructure: { post: {id}, sections: [...] }
-                    const structure = { post: { id: postId }, sections: data.sections || [] };
-                    panel.innerHTML = sectionPanel.renderStructure(structure);
-                    sectionPanel.initAccordions();
-                    sectionPanel.initSectionSelectionUI();
-                    // Dynamically import SectionDragDrop after rendering
-                    const { default: SectionDragDrop } = await import('/static/js/workflow/section_drag_drop.js');
-                    const dragDrop = new SectionDragDrop();
-                    dragDrop.init('sections-sortable-container', postId, structure.sections);
-                } catch (e) {
-                    panel.innerHTML = `<div class='text-red-400'>Error loading sections: ${e.message}</div>`;
+                
+                // Function to load sections
+                async function loadSections() {
+                    try {
+                        const response = await fetch(apiUrl);
+                        if (!response.ok) throw new Error('Failed to fetch sections');
+                        const data = await response.json();
+                        // Structure expected by renderStructure: { post: {id}, sections: [...] }
+                        const structure = { post: { id: postId }, sections: data.sections || [] };
+                        panel.innerHTML = sectionPanel.renderStructure(structure);
+                        sectionPanel.initAccordions();
+                        sectionPanel.initSectionSelectionUI();
+                        // Dynamically import SectionDragDrop after rendering
+                        const { default: SectionDragDrop } = await import('/static/js/workflow/section_drag_drop.js');
+                        const dragDrop = new SectionDragDrop();
+                        dragDrop.init('sections-sortable-container', postId, structure.sections);
+                    } catch (e) {
+                        panel.innerHTML = `<div class='text-red-400'>Error loading sections: ${e.message}</div>`;
+                    }
+                }
+                
+                // Initial load
+                await loadSections();
+                
+                // Manual sync button functionality
+                const syncButton = document.getElementById('manual-sync-sections-btn');
+                if (syncButton) {
+                    syncButton.addEventListener('click', async () => {
+                        try {
+                            syncButton.disabled = true;
+                            syncButton.textContent = '🔄 Syncing...';
+                            
+                            const response = await fetch(`/api/workflow/posts/${postId}/sync-sections`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ direction: 'to_sections' })
+                            });
+                            
+                            if (!response.ok) {
+                                throw new Error(`Sync failed: ${response.statusText}`);
+                            }
+                            
+                            const result = await response.json();
+                            console.log('Sync result:', result);
+                            
+                            // Reload sections after successful sync
+                            await loadSections();
+                            
+                            // Show success message
+                            syncButton.textContent = '✅ Synced!';
+                            setTimeout(() => {
+                                syncButton.textContent = '🔄 Manual Sync Sections';
+                                syncButton.disabled = false;
+                            }, 2000);
+                            
+                        } catch (error) {
+                            console.error('Sync error:', error);
+                            syncButton.textContent = '❌ Sync Failed';
+                            setTimeout(() => {
+                                syncButton.textContent = '🔄 Manual Sync Sections';
+                                syncButton.disabled = false;
+                            }, 3000);
+                        }
+                    });
                 }
             });
         </script>
