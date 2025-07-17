@@ -1,0 +1,65 @@
+<!-- Task Section -->
+<div class="border border-dark-border rounded-lg p-4 mb-4">
+    <h2 class="text-xl font-medium text-dark-text mb-4">Task</h2>
+
+    <!-- Task Mini-Panel -->
+    <div class="bg-dark-hover rounded-lg p-3 mb-3">
+        <h3 class="text-sm font-medium text-blue-500 mb-2">Task</h3>
+        <div class="flex flex-col space-y-2">
+            <select id="task_prompt_select"
+                class="w-full bg-dark-bg text-dark-text border border-dark-border rounded p-1 text-sm">
+                <option value="">Select task prompt...</option>
+            </select>
+            <textarea id="task_prompt"
+                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-2 text-sm" rows="2"
+                placeholder="Enter task prompt..."></textarea>
+        </div>
+    </div>
+
+    {% if step_config.prompt %}
+    <div class="mb-4">
+        <h3 class="text-lg font-medium mb-2 text-dark-text">Prompt Template</h3>
+        <pre class="bg-dark-hover p-4 rounded-lg text-sm text-dark-text">{{ step_config.prompt }}</pre>
+    </div>
+    {% else %}
+    <p class="text-gray-400">No prompt configured for this step.</p>
+    {% endif %}
+</div>
+
+<!-- Initialize Prompt Selector -->
+<script type="module">
+    import { PromptSelector } from "/static/modules/llm_panel/js/prompt_selector.js";
+
+    window.addEventListener('DOMContentLoaded', () => {
+        // Get current workflow context from URL
+        const pathParts = window.location.pathname.split('/');
+        const postId = pathParts[3];
+        const stage = pathParts[4];
+        const substage = pathParts[5];
+        const step = new URLSearchParams(window.location.search).get('step') || 'initial';
+
+        // Get step_id from the parent element's data attributes
+        const panel = document.querySelector('[data-current-stage]');
+        const stepId = panel ? panel.dataset.stepId : null;
+
+        // Initialize prompt selector with stepId
+        if (stepId) {
+            const promptSelector = new PromptSelector(postId, stepId);
+        } else {
+            console.warn('Step ID not found, cannot initialize prompt selector');
+        }
+    });
+</script>
+
+<style>
+    .format-mapping {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .input-formats,
+    .output-formats {
+        flex: 1;
+    }
+</style>

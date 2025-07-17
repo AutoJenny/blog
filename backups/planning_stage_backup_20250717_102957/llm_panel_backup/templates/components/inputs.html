@@ -1,0 +1,69 @@
+<!-- Inputs Section -->
+<div class="border border-dark-border rounded-lg p-4 mb-4">
+    <h2 class="text-xl font-medium text-dark-text mb-4">Inputs</h2>
+
+    <div id="inputs-container" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}">
+        {% if step_config and step_config.inputs %}
+        {% for input_id, input_config in step_config.inputs.items() %}
+        <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="{{ input_id }}">
+            <div class="flex justify-between items-center mb-2">
+                <label for="input_{{ input_id }}" class="block text-sm font-medium text-blue-500">
+                    [{{ input_id }}]
+                </label>
+                {% if loop.index > 1 %}
+                <button type="button" class="remove-input-btn text-red-500 hover:text-red-400 text-sm">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+                {% endif %}
+            </div>
+            <div class="flex gap-2 mb-2">
+                <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 flex-1"
+                    data-target="input_{{ input_id }}" data-section="inputs"
+                    data-current-substage="{{ current_substage }}">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <select id="input_format_select_{{ input_id }}"
+                    class="format-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-48"
+                    data-section="input">
+                    <option value="">Input Format</option>
+                </select>
+            </div>
+            <textarea id="input_{{ input_id }}" name="{{ input_id }}"
+                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                data-db-field="{{ input_config.db_field }}" data-db-table="{{ input_config.db_table }}" rows="4"
+                placeholder="{{ input_config.placeholder|default('Enter text...') }}"></textarea>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="input1">
+            <div class="flex justify-between items-center mb-2">
+                <label for="input_input1" class="block text-sm font-medium text-blue-500">
+                    [input1]
+                </label>
+            </div>
+            <div class="flex gap-2 mb-2">
+                <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 flex-1"
+                    data-target="input_input1" data-section="inputs" data-current-substage="{{ current_substage }}">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <select id="input_format_select_input1"
+                    class="format-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-48"
+                    data-section="input">
+                    <option value="">Input Format</option>
+                </select>
+            </div>
+            <textarea id="input_input1" name="input1"
+                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4" data-db-field=""
+                data-db-table="post_development" rows="4" placeholder="Enter text..."></textarea>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Add Input Button -->
+    <div class="mt-4">
+        <button type="button" id="add-input-btn"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors duration-200">
+            <i class="fas fa-plus mr-2"></i>Add Input Field
+        </button>
+    </div>
+</div>

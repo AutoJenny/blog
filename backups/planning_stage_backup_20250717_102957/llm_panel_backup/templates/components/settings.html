@@ -1,0 +1,337 @@
+<!-- Settings Section -->
+<div class="border border-dark-border rounded-lg p-4 mb-4">
+    <h2 class="text-xl font-medium text-dark-text mb-4">Settings</h2>
+    {% if step_config.settings and step_config.settings.llm %}
+    <form id="llm-settings-form" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Model</label>
+                <div class="flex gap-2">
+                    <select name="model" id="llm-model-select"
+                        class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+                        <option value="">Loading models...</option>
+                    </select>
+                    <button type="button" id="refresh-models-btn"
+                        class="mt-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                        title="Check which models are available in Ollama">
+                        🔄
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Temperature</label>
+                <input type="number" name="temperature" value="{{ step_config.settings.llm.parameters.temperature }}"
+                    min="0.0" max="1.0" step="0.1"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Max tokens</label>
+                <input type="number" name="max_tokens" value="{{ step_config.settings.llm.parameters.max_tokens }}"
+                    min="1" max="32768"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Top P</label>
+                <input type="number" name="top_p" value="{{ step_config.settings.llm.parameters.top_p }}" min="0.0"
+                    max="1.0" step="0.1"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Frequency Penalty</label>
+                <input type="number" name="frequency_penalty"
+                    value="{{ step_config.settings.llm.parameters.frequency_penalty }}" min="0.0" max="1.0" step="0.1"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500">Presence Penalty</label>
+                <input type="number" name="presence_penalty"
+                    value="{{ step_config.settings.llm.parameters.presence_penalty }}" min="0.0" max="1.0" step="0.1"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-blue-500" for="llm-timeout">Timeout (seconds)
+                    <span title="Maximum time allowed for LLM response. Must be 1–600 seconds."
+                        class="ml-1 text-xs text-gray-400 cursor-help">?</span>
+                </label>
+                <input type="number" name="timeout" id="llm-timeout" min="1" max="600" step="1"
+                    value="{{ step_config.settings.llm.timeout if step_config.settings and step_config.settings.llm and step_config.settings.llm.timeout else 60 }}"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text"
+                    placeholder="60">
+            </div>
+        </div>
+        <div class="flex justify-end">
+            <button type="submit"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition-colors">
+                Save Settings
+            </button>
+        </div>
+    </form>
+    {% elif step_config.settings %}
+    <form id="llm-settings-form" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            {% for setting, value in step_config.settings.items() %}
+            <div>
+                <label class="block text-sm font-medium text-blue-500">{{ setting }}</label>
+                <input type="text" name="{{ setting }}" value="{{ value }}"
+                    class="mt-1 bg-dark-bg border border-dark-border rounded p-2 w-full text-dark-text">
+            </div>
+            {% endfor %}
+        </div>
+        <div class="flex justify-end">
+            <button type="submit"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition-colors">
+                Save Settings
+            </button>
+        </div>
+    </form>
+    {% else %}
+    <p class="text-gray-400">No settings configured for this step.</p>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('llm-settings-form');
+        if (!form) return;
+
+        // Load LLM models for dropdown
+        const modelSelect = document.getElementById('llm-model-select');
+        const refreshBtn = document.getElementById('refresh-models-btn');
+
+        if (modelSelect) {
+            loadLLMModels();
+        }
+
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', refreshAvailableModels);
+        }
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Get step ID from the panel data attribute
+            const panel = document.querySelector('[data-step-id]');
+            const stepId = panel ? panel.dataset.stepId : null;
+
+            if (!stepId) {
+                console.error('No step ID found');
+                return;
+            }
+
+            // Check if a model is selected
+            const selectedModel = modelSelect.value;
+            if (!selectedModel || selectedModel.trim() === '') {
+                alert('Please select a model before saving settings');
+                return;
+            }
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Saving...';
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData(form);
+
+                // Debug: Log all form data
+                console.log('All form data:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}: ${value}`);
+                }
+
+                const data = {
+                    model: formData.get('model'),
+                    temperature: parseFloat(formData.get('temperature') || '0.7'),
+                    max_tokens: parseInt(formData.get('max_tokens') || '1000'),
+                    top_p: parseFloat(formData.get('top_p') || '0.9'),
+                    frequency_penalty: parseFloat(formData.get('frequency_penalty') || '0.0'),
+                    presence_penalty: parseFloat(formData.get('presence_penalty') || '0.0'),
+                    timeout: parseInt(formData.get('timeout') || '60')
+                };
+
+                // Debug logging
+                console.log('Form data being sent:', data);
+                console.log('Model value type:', typeof data.model);
+                console.log('Model value length:', data.model ? data.model.length : 'null/undefined');
+
+                // Validate all numeric fields are valid numbers
+                const numericFields = ['temperature', 'max_tokens', 'top_p', 'frequency_penalty', 'presence_penalty', 'timeout'];
+                for (const field of numericFields) {
+                    if (isNaN(data[field])) {
+                        throw new Error(`${field} must be a valid number`);
+                    }
+                }
+
+                // Validate ranges
+                if (data.temperature < 0.0 || data.temperature > 1.0) {
+                    throw new Error('Temperature must be between 0.0 and 1.0');
+                }
+                if (data.max_tokens < 1 || data.max_tokens > 32768) {
+                    throw new Error('Max tokens must be between 1 and 32768');
+                }
+                if (data.top_p < 0.0 || data.top_p > 1.0) {
+                    throw new Error('Top P must be between 0.0 and 1.0');
+                }
+                if (data.frequency_penalty < 0.0 || data.frequency_penalty > 1.0) {
+                    throw new Error('Frequency penalty must be between 0.0 and 1.0');
+                }
+                if (data.presence_penalty < 0.0 || data.presence_penalty > 1.0) {
+                    throw new Error('Presence penalty must be between 0.0 and 1.0');
+                }
+                if (data.timeout < 1 || data.timeout > 600) {
+                    throw new Error('Timeout must be between 1 and 600 seconds');
+                }
+
+                // Validate model is selected
+                if (!data.model || data.model.trim() === '') {
+                    throw new Error('Please select a model before saving settings');
+                }
+
+                const response = await fetch(`/api/workflow/steps/${stepId}/llm_settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                console.log('API response:', result);
+
+                if (result.success) {
+                    // Show success message
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'mt-2 p-2 bg-green-100 border border-green-400 text-green-700 rounded';
+                    successMsg.textContent = 'Settings saved successfully!';
+                    form.appendChild(successMsg);
+
+                    // Remove success message after 3 seconds
+                    setTimeout(() => {
+                        successMsg.remove();
+                    }, 3000);
+                } else {
+                    throw new Error(result.error || result.errors ? JSON.stringify(result.errors) : 'Failed to save settings');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
+
+                // Show error message
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'mt-2 p-2 bg-red-100 border border-red-400 text-red-700 rounded';
+                errorMsg.textContent = `Error: ${error.message}`;
+                form.appendChild(errorMsg);
+
+                // Remove error message after 5 seconds
+                setTimeout(() => {
+                    errorMsg.remove();
+                }, 5000);
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        async function loadLLMModels() {
+            try {
+                const response = await fetch('/api/workflow/llm/models');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch models');
+                }
+
+                const models = await response.json();
+                const currentModel = '{{ step_config.settings.llm.model if step_config.settings and step_config.settings.llm and step_config.settings.llm.model else "" }}';
+
+                // Clear loading option
+                modelSelect.innerHTML = '<option value="">Select a model...</option>';
+
+                // Add model options
+                models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.name;
+                    option.textContent = `${model.name} (${model.description || 'No description'})`;
+                    option.dataset.modelId = model.id;
+                    option.dataset.providerType = model.provider_type;
+                    option.dataset.description = model.description || 'No description';
+                    if (model.name === currentModel) {
+                        option.selected = true;
+                    }
+                    modelSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading LLM models:', error);
+                modelSelect.innerHTML = '<option value="">Error loading models</option>';
+            }
+        }
+
+        async function refreshAvailableModels() {
+            const refreshBtn = document.getElementById('refresh-models-btn');
+            const originalText = refreshBtn.textContent;
+
+            try {
+                refreshBtn.textContent = '⏳';
+                refreshBtn.disabled = true;
+
+                // Get available models from Ollama
+                const ollamaResponse = await fetch('http://localhost:11434/api/tags', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!ollamaResponse.ok) {
+                    throw new Error('Failed to connect to Ollama');
+                }
+
+                const ollamaData = await ollamaResponse.json();
+                const availableModels = new Set(ollamaData.models.map(m => m.name));
+
+                // Update dropdown to highlight available models
+                const options = modelSelect.querySelectorAll('option');
+                options.forEach(option => {
+                    // Normalize provider_type to lowercase and check if it contains 'ollama'
+                    if (option.value && option.dataset.providerType && option.dataset.providerType.toLowerCase().includes('ollama')) {
+                        const originalValue = option.value; // Preserve the original value
+                        if (availableModels.has(option.value)) {
+                            option.textContent = `✅ ${option.value} (${option.dataset.description || 'Available in Ollama'})`;
+                            option.style.fontWeight = 'bold';
+                            option.style.color = '#10b981'; // green-500
+                        } else {
+                            option.textContent = `❌ ${option.value} (${option.dataset.description || 'Not available in Ollama'})`;
+                            option.style.color = '#6b7280'; // gray-500
+                        }
+                        option.value = originalValue; // Ensure value is preserved
+                    }
+                });
+
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.className = 'mt-2 p-2 bg-blue-100 border border-blue-400 text-blue-700 rounded text-sm';
+                successMsg.textContent = `Found ${availableModels.size} models available in Ollama`;
+                modelSelect.parentElement.appendChild(successMsg);
+
+                // Remove success message after 3 seconds
+                setTimeout(() => {
+                    successMsg.remove();
+                }, 3000);
+
+            } catch (error) {
+                console.error('Error refreshing models:', error);
+
+                // Show error message
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'mt-2 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm';
+                errorMsg.textContent = `Error: ${error.message}`;
+                modelSelect.parentElement.appendChild(errorMsg);
+
+                // Remove error message after 5 seconds
+                setTimeout(() => {
+                    errorMsg.remove();
+                }, 5000);
+            } finally {
+                refreshBtn.textContent = originalText;
+                refreshBtn.disabled = false;
+            }
+        }
+    });
+</script>

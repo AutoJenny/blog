@@ -1,0 +1,429 @@
+<!-- TEST MARKER 3: PANEL TEMPLATE VERIFICATION -->
+<!-- LLM Panel Content -->
+<div class="space-y-4 p-4 rounded-lg shadow-md" style="background-color: #2D0A50;"
+    data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}"
+    data-current-step="{{ current_step }}" data-step-id="{{ step_id }}" data-post-id="{{ current_post_id }}">
+    <!-- Run LLM Button -->
+    <div class="mb-4 flex justify-center items-center gap-4">
+        <button id="run-llm-btn" data-action="run-llm"
+            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-colors duration-200 min-w-[200px]">
+            Run LLM
+        </button>
+
+
+
+        <!-- Enhanced LLM Message Management Button -->
+        <button id="enhanced-llm-message-btn" data-action="enhanced-llm-message"
+            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded shadow-lg transition-colors duration-200">
+            Manage LLM Message
+        </button>
+
+        <!-- Sync Sections Button - Only show for section_headings step -->
+        <button id="sync-sections-btn" data-action="sync-sections"
+            class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded shadow-lg transition-colors duration-200 min-w-[200px] hidden">
+            Sync to Sections
+        </button>
+
+        <a href="#" onclick="startOllama(event)" class="text-blue-400 hover:text-blue-300 text-sm underline">Start
+            Ollama</a>
+    </div>
+
+    <!-- Context -->
+    <div class="border border-dark-border rounded-lg p-4 mb-4">
+        <h2 class="text-xl font-medium text-dark-text mb-4">Context</h2>
+
+        <!-- System Prompt -->
+        <div class="bg-dark-hover rounded-lg p-3 mb-3">
+            <h3 class="text-sm font-medium text-blue-500 mb-2">System Prompt</h3>
+            <div class="flex flex-col space-y-2">
+                <select id="system_prompt_select"
+                    class="w-full bg-dark-bg text-dark-text border border-dark-border rounded p-1 text-sm">
+                    <option value="">Select system prompt...</option>
+                </select>
+                <textarea id="system_prompt"
+                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-2 text-sm" rows="2"
+                    placeholder="Enter system prompt..."></textarea>
+            </div>
+        </div>
+
+        <!-- Context Fields -->
+        <div id="context-container">
+            <!-- Basic Idea -->
+            <div class="context-field-group mb-4 p-3 border border-gray-600 rounded" data-context-id="basic_idea">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="context_basic_idea" class="block text-sm font-medium text-blue-500">
+                        Basic Idea
+                    </label>
+                    <button type="button" class="remove-context-btn text-red-500 hover:text-red-400 text-sm">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                <select
+                    class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                    data-target="context_basic_idea" data-section="context"
+                    data-current-substage="{{ current_substage }}">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <textarea id="context_basic_idea" name="basic_idea"
+                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                    data-db-field="basic_idea" data-db-table="post_development" rows="3"
+                    placeholder="Basic idea content..."></textarea>
+            </div>
+
+            <!-- Section Headings (JSON list from post_development) -->
+            <div class="context-field-group mb-4 p-3 border border-gray-600 rounded" data-context-id="section_headings">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="context_section_headings" class="block text-sm font-medium text-blue-500">
+                        Section Headings (JSON)
+                    </label>
+                    <button type="button" class="remove-context-btn text-red-500 hover:text-red-400 text-sm">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                <select
+                    class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                    data-target="context_section_headings" data-section="context"
+                    data-current-substage="{{ current_substage }}">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <textarea id="context_section_headings" name="section_headings"
+                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                    data-db-field="section_headings" data-db-table="post_development" rows="3"
+                    placeholder="JSON list of section headings..."></textarea>
+            </div>
+
+            <!-- Idea Scope -->
+            <div class="context-field-group mb-4 p-3 border border-gray-600 rounded" data-context-id="idea_scope">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="context_idea_scope" class="block text-sm font-medium text-blue-500">
+                        Idea Scope
+                    </label>
+                    <button type="button" class="remove-context-btn text-red-500 hover:text-red-400 text-sm">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                <select
+                    class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-full mb-2"
+                    data-target="context_idea_scope" data-section="context"
+                    data-current-substage="{{ current_substage }}">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <textarea id="context_idea_scope" name="idea_scope"
+                    class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+                    data-db-field="idea_scope" data-db-table="post_development" rows="3"
+                    placeholder="Idea scope content..."></textarea>
+            </div>
+        </div>
+
+        <!-- Add Context Button -->
+        <div class="mt-4">
+            <button type="button" id="add-context-btn"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors duration-200">
+                <i class="fas fa-plus mr-2"></i>Add Context Field
+            </button>
+        </div>
+    </div>
+
+    <!-- Task -->
+    {% include 'modules/llm_panel/templates/components/prompt.html' %}
+
+    <!-- Inputs -->
+    {% include 'modules/llm_panel/templates/components/inputs.html' %}
+
+    <!-- Settings -->
+    {% include 'modules/llm_panel/templates/components/settings.html' %}
+
+    <!-- Outputs -->
+    {% include 'modules/llm_panel/templates/components/outputs.html' %}
+</div>
+
+<!-- Enhanced LLM Message Management Modal -->
+{% include 'modules/llm_panel/templates/enhanced_llm_message_modal.html' %}
+
+<!-- Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='modules/llm_panel/css/panels.css') }}">
+
+<!-- Scripts -->
+<script type="module">
+    import { FieldSelector } from "/static/modules/llm_panel/js/field_selector.js";
+    // runLLM functionality now provided by EnhancedLLMMessageManager
+    import { FormatSelector } from "/static/js/format_selector.js";
+    import { MultiInputManager } from "/static/modules/llm_panel/js/multi_input_manager.js";
+    import sectionPanel from "/static/js/workflow/template_view.js";
+    import EnhancedLLMMessageManager from "/static/js/enhanced_llm_message_manager.js";
+
+    // Initialize field selector
+    window.addEventListener('DOMContentLoaded', () => {
+        console.log('[PANEL] DOM loaded, initializing components...');
+
+        // Restore hidden context fields on page load
+        const stepId = document.querySelector('[data-step-id]')?.dataset.stepId || 'unknown';
+        const storageKey = `hidden_context_${stepId}`;
+        const hiddenContexts = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+        hiddenContexts.forEach(contextId => {
+            const contextGroup = document.querySelector(`[data-context-id="${contextId}"]`);
+            if (contextGroup) {
+                contextGroup.style.display = 'none';
+                console.log('[PANEL] Restored hidden context field:', contextId);
+            }
+        });
+
+        // Get current workflow context from URL
+        const pathParts = window.location.pathname.split('/');
+        const postId = pathParts[3];
+        const stage = pathParts[4];
+        const substage = pathParts[5];
+
+        if (postId) {
+            console.log('[PANEL] Initializing FieldSelector...');
+            const fieldSelector = new FieldSelector(postId, stage, substage);
+            window.fieldSelector = fieldSelector;
+        } else {
+            console.warn('[PANEL] Post ID not found, cannot initialize field selector');
+        }
+
+        // Initialize MultiInputManager
+        console.log('[PANEL] Initializing MultiInputManager...');
+        const multiInputManager = new MultiInputManager('inputs-container', stage, substage);
+        window.multiInputManager = multiInputManager;
+
+        // Initialize FormatSelector
+        console.log('[PANEL] Initializing FormatSelector...');
+        const formatSelector = new FormatSelector();
+        window.formatSelector = formatSelector;
+
+
+
+        // Initialize EnhancedLLMMessageManager
+        console.log('[PANEL] Initializing EnhancedLLMMessageManager...');
+        const enhancedLLMMessageManager = new EnhancedLLMMessageManager();
+        window.enhancedLLMMessageManager = enhancedLLMMessageManager;
+        console.log('[PANEL] EnhancedLLMMessageManager created and assigned to window:', window.enhancedLLMMessageManager);
+
+
+
+        // Initialize Enhanced LLM Message Management button
+        const enhancedLLMMessageBtn = document.getElementById('enhanced-llm-message-btn');
+        if (enhancedLLMMessageBtn) {
+            console.log('[PANEL] Found enhanced LLM message button, adding event listener');
+            enhancedLLMMessageBtn.addEventListener('click', async () => {
+                console.log('[PANEL] Enhanced LLM message button clicked');
+                console.log('[PANEL] window.enhancedLLMMessageManager:', window.enhancedLLMMessageManager);
+                if (window.enhancedLLMMessageManager) {
+                    console.log('[PANEL] enhancedLLMMessageManager found, opening modal');
+                    await window.enhancedLLMMessageManager.openModal();
+                } else {
+                    console.error('[PANEL] enhancedLLMMessageManager not found');
+                }
+            });
+        } else {
+            console.error('[PANEL] Enhanced LLM message button not found');
+        }
+
+
+
+        // Initialize LLM button
+        const runLLMBtn = document.getElementById('run-llm-btn');
+        if (runLLMBtn) {
+            runLLMBtn.addEventListener('click', async function () {
+                try {
+                    // Get current workflow context from URL and panel data attributes
+                    const pathParts = window.location.pathname.split('/');
+                    const postId = pathParts[3];
+                    const stage = pathParts[4];
+                    const substage = pathParts[5];
+
+                    // Get step from panel data attributes (most reliable) or URL params
+                    const panel = document.querySelector('[data-current-stage]');
+                    let step = null;
+
+                    if (panel && panel.dataset.currentStep) {
+                        // Use the step from the panel data attributes (this is what the backend set)
+                        step = panel.dataset.currentStep;
+                        console.log('[PANEL] Using step from panel data:', step);
+                    } else {
+                        // Fallback to URL params
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const urlStep = urlParams.get('step');
+                        if (urlStep) {
+                            // Convert URL format (lowercase with underscores) to database format (title case with spaces)
+                            step = urlStep.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            console.log('[PANEL] Using step from URL params:', step);
+                        } else {
+                            throw new Error('No step found in panel data or URL parameters');
+                        }
+                    }
+
+                    console.log('[PANEL] step after conversion:', step);
+                    console.log('[PANEL] Running LLM with params:', { postId, stage, substage, step });
+
+                    // Use the enhanced LLM message manager's runLLM method
+                    let result;
+                    if (window.enhancedLLMMessageManager) {
+                        result = await window.enhancedLLMMessageManager.runLLM();
+                    } else {
+                        throw new Error('Enhanced LLM Message Manager not available');
+                    }
+
+                    console.log('[PANEL] LLM result:', result);
+
+                    if (!result.success) {
+                        throw new Error(result.error || 'Unknown error occurred');
+                    }
+                } catch (error) {
+                    console.error('Error running LLM:', error);
+                    alert('Error running LLM: ' + error.message);
+                }
+            });
+        }
+
+        // Initialize Sync Sections button - only show for section_headings step
+        const syncSectionsBtn = document.getElementById('sync-sections-btn');
+        if (syncSectionsBtn) {
+            // Get current step to determine if we should show the sync button
+            const panel = document.querySelector('[data-current-stage]');
+            let currentStep = null;
+
+            if (panel && panel.dataset.currentStep) {
+                currentStep = panel.dataset.currentStep;
+            } else {
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlStep = urlParams.get('step');
+                if (urlStep) {
+                    currentStep = urlStep.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                }
+            }
+
+            // Show sync button only for Section Headings step
+            if (currentStep === 'Section Headings') {
+                syncSectionsBtn.classList.remove('hidden');
+                console.log('[PANEL] Showing sync button for Section Headings step');
+
+                // Add click handler for sync button
+                syncSectionsBtn.addEventListener('click', async function () {
+                    try {
+                        const pathParts = window.location.pathname.split('/');
+                        const postId = pathParts[3];
+
+                        console.log('[PANEL] Syncing sections for post:', postId);
+
+                        // Call the sync API
+                        const response = await fetch(`/api/workflow/posts/${postId}/sync-sections`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ direction: 'to_sections' })
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            alert('Sections synced successfully!');
+                            // Refresh the sections panel
+                            const sectionsPanel = document.getElementById('sections-panel-content');
+                            if (sectionsPanel) {
+                                const sectionResponse = await fetch(`/api/workflow/posts/${postId}/sections`);
+                                if (sectionResponse.ok) {
+                                    const sectionData = await sectionResponse.json();
+                                    const structure = { post: { id: postId }, sections: sectionData.sections || [] };
+                                    sectionsPanel.innerHTML = sectionPanel.renderStructure(structure);
+                                }
+                            }
+                        } else {
+                            throw new Error(result.error || 'Sync failed');
+                        }
+                    } catch (error) {
+                        console.error('Error syncing sections:', error);
+                        alert('Error syncing sections: ' + error.message);
+                    }
+                });
+            }
+        }
+
+        // Handle remove context buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-context-btn') || e.target.closest('.remove-context-btn')) {
+                const removeBtn = e.target.classList.contains('remove-context-btn') ?
+                    e.target : e.target.closest('.remove-context-btn');
+                const contextGroup = removeBtn.closest('.context-field-group');
+
+                if (contextGroup) {
+                    // Hide the entire context field group
+                    contextGroup.style.display = 'none';
+
+                    // Save the hidden state to localStorage
+                    const contextId = contextGroup.dataset.contextId;
+                    const stepId = document.querySelector('[data-step-id]')?.dataset.stepId || 'unknown';
+                    const storageKey = `hidden_context_${stepId}`;
+
+                    let hiddenContexts = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                    if (!hiddenContexts.includes(contextId)) {
+                        hiddenContexts.push(contextId);
+                        localStorage.setItem(storageKey, JSON.stringify(hiddenContexts));
+                    }
+
+                    console.log('[PANEL] Removed context field:', contextId);
+                }
+            }
+        });
+
+
+    });
+
+    // Make startOllama available globally
+    window.startOllama = async function (event) {
+        event.preventDefault();
+        const link = event.target;
+        const originalText = link.textContent;
+
+        link.textContent = 'Starting...';
+        link.style.pointerEvents = 'none';
+
+        try {
+            const response = await fetch('/api/v1/llm/providers/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && (data.status === 'started' || data.status === 'already_running')) {
+                link.textContent = data.status === 'already_running' ? 'Already Running' : 'Started!';
+                link.style.color = '#10b981'; // emerald-500
+                setTimeout(() => {
+                    link.textContent = originalText;
+                    link.style.color = '';
+                    link.style.pointerEvents = '';
+                }, 2000);
+            } else {
+                throw new Error(data.message || 'Failed to start Ollama');
+            }
+        } catch (error) {
+            link.textContent = 'Failed';
+            link.style.color = '#ef4444'; // red-500
+            alert('Error starting Ollama: ' + error.message);
+            setTimeout(() => {
+                link.textContent = originalText;
+                link.style.color = '';
+                link.style.pointerEvents = '';
+            }, 3000);
+        }
+    };
+</script>
+
+<!-- Styles -->
+<style>
+    #run-llm-btn {
+        background-color: #6B46C1;
+        border: 1px solid #805AD5;
+    }
+
+    #run-llm-btn:hover {
+        background-color: #553C9A;
+    }
+
+    #run-llm-btn:disabled {
+        background-color: #4A5568;
+        cursor: not-allowed;
+    }
+</style>

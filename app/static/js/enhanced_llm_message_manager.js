@@ -27,9 +27,14 @@ class EnhancedLLMMessageManager {
         this.setupEventListeners();
         this.initializeAccordions();
         this.initializeSortable();
-        this.loadInstructionsFromStorage();
+        // DISABLED: Automatic loading of instructions from storage
+        // this.loadInstructionsFromStorage();
         this.updatePreview();
         console.log('[ENHANCED_LLM] Initialization complete');
+        
+        // Make clearAllInstructions available globally for manual use
+        window.clearAllInstructions = () => this.clearAllInstructions();
+        console.log('[ENHANCED_LLM] Manual clear function available: window.clearAllInstructions()');
         
         // Debug: Check if modal and accordions are properly set up
         setTimeout(() => {
@@ -66,6 +71,11 @@ class EnhancedLLMMessageManager {
         // Add instruction button
         document.getElementById('add-instruction-btn')?.addEventListener('click', () => {
             this.addInstruction();
+        });
+
+        // Clear all instructions button
+        document.getElementById('clear-instructions-btn')?.addEventListener('click', () => {
+            this.clearAllInstructions();
         });
 
         // Refresh button
@@ -152,10 +162,10 @@ class EnhancedLLMMessageManager {
         // Edit buttons
         this.modal.addEventListener('click', (e) => {
             if (e.target.classList.contains('edit-element-btn')) {
-                this.editElement(e.target.closest('.message-accordion'));
+                this.editElement(e.target.closest('.message-accordion, .message-element'));
             }
             if (e.target.classList.contains('remove-element-btn')) {
-                this.removeElement(e.target.closest('.message-accordion'));
+                this.removeElement(e.target.closest('.message-accordion, .message-element'));
             }
         });
 
@@ -249,6 +259,10 @@ class EnhancedLLMMessageManager {
             
             console.log('[ENHANCED_LLM] Loading configuration...');
             this.loadConfiguration();
+            
+            // DISABLED: Automatic loading of instructions from storage
+            // console.log('[ENHANCED_LLM] Loading instructions from storage...');
+            // this.loadInstructionsFromStorage();
             
             console.log('[ENHANCED_LLM] Updating preview...');
             this.updatePreview();
@@ -928,13 +942,41 @@ class EnhancedLLMMessageManager {
     }
 
     removeElement(element) {
+        if (!element) {
+            console.error('[ENHANCED_LLM] removeElement called with null element');
+            return;
+        }
+        
         if (element.getAttribute('data-element-type') === 'instruction') {
+            console.log('[ENHANCED_LLM] Removing instruction element:', element.getAttribute('data-element-id'));
             element.remove();
             this.updatePreview();
             this.updateSummary();
             this.saveInstructionsToStorage();
             this.saveElementOrder();
         }
+    }
+
+    clearAllInstructions() {
+        console.log('[ENHANCED_LLM] Clearing all instruction elements...');
+        const instructionElements = this.modal.querySelectorAll('.message-element[data-element-type="instruction"]');
+        console.log('[ENHANCED_LLM] Found', instructionElements.length, 'instruction elements to remove');
+        
+        instructionElements.forEach(element => {
+            console.log('[ENHANCED_LLM] Removing instruction element:', element.getAttribute('data-element-id'));
+            element.remove();
+        });
+        
+        // Clear from localStorage
+        const storageKey = `llm_instructions_${this.getCurrentStepId()}`;
+        localStorage.removeItem(storageKey);
+        console.log('[ENHANCED_LLM] Cleared instructions from localStorage:', storageKey);
+        
+        this.updatePreview();
+        this.updateSummary();
+        this.saveElementOrder();
+        
+        console.log('[ENHANCED_LLM] All instruction elements cleared');
     }
 
     saveInstructionsToStorage() {

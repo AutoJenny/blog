@@ -1,0 +1,57 @@
+<!-- Outputs Section -->
+<div class="border border-dark-border rounded-lg p-4 mb-4">
+    <h2 class="text-xl font-medium text-dark-text mb-4">Outputs</h2>
+    {% if step_config.outputs %}
+    {% for output_id, output_config in step_config.outputs.items() %}
+    <div class="mb-4">
+        <label for="{{ output_id }}" class="block text-sm font-medium text-blue-500 mb-2">
+            Output
+        </label>
+        <div class="flex gap-2 mb-2">
+            <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 flex-1"
+                data-target="{{ output_id }}" data-section="outputs" data-current-substage="{{ current_substage }}">
+                <!-- Options will be populated by JavaScript -->
+            </select>
+            <select id="output_format_select_{{ output_id }}"
+                class="format-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-48"
+                data-section="output">
+                <option value="">Output Format</option>
+            </select>
+        </div>
+        {% if output_values and output_id in output_values %}
+        <textarea id="{{ output_id }}" name="{{ output_id }}"
+            class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+            data-db-field="{{ output_config.db_field }}" data-db-table="{{ output_config.db_table }}"
+            data-section="outputs" rows="4"
+            placeholder="{{ output_config.placeholder|default('Enter text...') }}">{{ output_values[output_id] }}</textarea>
+        {% else %}
+        <textarea id="{{ output_id }}" name="{{ output_id }}"
+            class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4"
+            data-db-field="{{ output_config.db_field }}" data-db-table="{{ output_config.db_table }}"
+            data-section="outputs" rows="4"
+            placeholder="{{ output_config.placeholder|default('Enter text...') }}">None</textarea>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="mb-4">
+        <label for="output1" class="block text-sm font-medium text-blue-500 mb-2">
+            Output
+        </label>
+        <div class="flex gap-2 mb-2">
+            <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 flex-1"
+                data-target="output1" data-section="outputs" data-current-substage="{{ current_substage }}">
+                <!-- Options will be populated by JavaScript -->
+            </select>
+            <select id="output_format_select_output1"
+                class="format-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-48"
+                data-section="output">
+                <option value="">Output Format</option>
+            </select>
+        </div>
+        <textarea id="output1" name="output1"
+            class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4" data-db-field=""
+            data-db-table="post_development" data-section="outputs" rows="4" placeholder="Enter text..."></textarea>
+    </div>
+    {% endif %}
+</div>
