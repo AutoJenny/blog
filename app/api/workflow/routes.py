@@ -114,7 +114,7 @@ def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_p
                 raise Exception(f"Section {section_id} not found")
             
             # Check if this is a template prompt (contains placeholders) or pre-populated prompt
-            is_template = '[SECTION_HEADING_PLACEHOLDER]' in frontend_prompt or '[IDEAS_TO_INCLUDE_PLACEHOLDER]' in frontend_prompt
+            is_template = '[SECTION_HEADING_PLACEHOLDER]' in frontend_prompt or '[IDEAS_TO_INCLUDE_PLACEHOLDER]' in frontend_prompt or '[DRAFT_CONTENT_PLACEHOLDER]' in frontend_prompt
             
             if is_template:
                 # Template prompt - replace placeholders with section-specific data
@@ -126,8 +126,8 @@ def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_p
                     'section_description': ('[SECTION_DESCRIPTION_PLACEHOLDER]', 'Section Description'),
                     'ideas_to_include': ('[IDEAS_TO_INCLUDE_PLACEHOLDER]', 'Ideas to Include'),
                     'facts_to_include': ('[FACTS_TO_INCLUDE_PLACEHOLDER]', 'Facts to Include'),
-                    'draft': ('[DRAFT_PLACEHOLDER]', 'Draft'),
-                    'polished': ('[POLISHED_PLACEHOLDER]', 'Polished'),
+                    'draft': ('[DRAFT_CONTENT_PLACEHOLDER]', 'Draft Content'),
+                    'polished': ('[POLISHED_CONTENT_PLACEHOLDER]', 'Polished Content'),
                     'highlighting': ('[HIGHLIGHTING_PLACEHOLDER]', 'Highlighting'),
                     'image_concepts': ('[IMAGE_CONCEPTS_PLACEHOLDER]', 'Image Concepts'),
                     'image_prompts': ('[IMAGE_PROMPTS_PLACEHOLDER]', 'Image Prompts'),
@@ -139,16 +139,23 @@ def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_p
                 
                 # Replace all placeholders with actual section data
                 for field_name, (placeholder, display_name) in field_mappings.items():
+                    print(f"[PROCESS_SECTIONS] Checking field: {field_name}, placeholder: {placeholder}")
+                    print(f"[PROCESS_SECTIONS] Section data for {field_name}: {section_data.get(field_name, 'NOT FOUND')}")
+                    
                     if field_name in section_data and section_data[field_name]:
                         field_value = str(section_data[field_name])
                         llm_prompt = llm_prompt.replace(placeholder, field_value)
                         print(f"[PROCESS_SECTIONS] Replaced {placeholder} with section {section_id} data: {field_name}")
+                        print(f"[PROCESS_SECTIONS] Field value length: {len(field_value)}")
                     elif placeholder in llm_prompt:
                         # Replace placeholder with empty/default value
                         llm_prompt = llm_prompt.replace(placeholder, 'No data available')
                         print(f"[PROCESS_SECTIONS] Replaced {placeholder} with default value for section {section_id}")
+                    else:
+                        print(f"[PROCESS_SECTIONS] Placeholder {placeholder} not found in prompt")
                 
                 print(f"[PROCESS_SECTIONS] Template processing complete for section {section_id}")
+                print(f"[PROCESS_SECTIONS] Final prompt contains [DRAFT_CONTENT_PLACEHOLDER]: {'[DRAFT_CONTENT_PLACEHOLDER]' in llm_prompt}")
                 
             else:
                 # Legacy pre-populated prompt - use existing replacement logic
