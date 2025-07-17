@@ -2188,3 +2188,154 @@ def test_logging_advanced():
     current_app.logger.info('RUNTIME LOGGER: test_logging_advanced called')
     handler.flush()
     return jsonify({'status': 'logging advanced test'})
+
+def process_planning_step(post_id, stage, substage, step, frontend_inputs):
+    """Process a Planning stage step - COMPLETELY SEPARATE from writing stage processing."""
+    try:
+        conn = get_db_conn()
+        step_id = get_step_id(conn, stage, substage, step)
+        
+        # Extract output field mapping and prompt from frontend inputs
+        output_field = frontend_inputs.get('output_field') if frontend_inputs else None
+        output_table = frontend_inputs.get('output_table', 'post_development') if frontend_inputs else 'post_development'
+        frontend_prompt = frontend_inputs.get('prompt') if frontend_inputs else None
+        
+        print(f"[PROCESS_PLANNING_STEP] Frontend inputs: {frontend_inputs}")
+        print(f"[PROCESS_PLANNING_STEP] Frontend prompt: {frontend_prompt[:200] if frontend_prompt else 'None'}...")
+        
+        if not output_field:
+            raise Exception("No output field specified")
+        
+        if not frontend_prompt:
+            raise Exception("Frontend prompt is required - no fallback to database prompts")
+        
+        # PLANNING STAGE: Use direct LLM call without section processing
+        # Get LLM configuration
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute("""
+            SELECT provider_type, model_name, api_base
+            FROM llm_config
+            WHERE is_active = true
+            ORDER BY id DESC
+            LIMIT 1
+        """)
+        config = cur.fetchone()
+        if not config:
+            config = {
+                'provider_type': 'ollama',
+                'model_name': 'llama3.1:70b',
+                'api_base': 'http://localhost:11434'
+            }
+        
+        # Call LLM directly with the frontend prompt (no section processing)
+        import requests
+        llm_request = {
+            "model": config['model_name'],
+            "prompt": frontend_prompt,
+            "temperature": 0.7,
+            "max_tokens": 1000,
+            "stream": False
+        }
+        
+        response = requests.post(
+            f"{config['api_base']}/api/generate",
+            json=llm_request,
+            timeout=300
+        )
+        
+        if response.status_code != 200:
+            raise Exception(f"LLM request failed: {response.text}")
+        
+        result = response.json()
+        output = result.get('response', '').strip()
+        
+        # Save output to database
+        cur.execute(f"""
+            UPDATE {output_table} 
+            SET {output_field} = %s 
+            WHERE post_id = %s
+        """, (output, post_id))
+        
+        conn.commit()
+        conn.close()
+        
+        return {
+            'success': True,
+            'result': output,
+            'parameters': {
+                'output_field': output_field,
+                'output_table': output_table,
+                'model': config['model_name']
+            }
+        }
+        
+    except Exception as e:
+        if 'conn' in locals():
+            conn.close()
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+def process_writing_step(post_id, stage, substage, step, section_ids, frontend_inputs):
+    """Process a Writing stage step with section-specific handling."""
+    try:
+        conn = get_db_conn()
+        step_id = get_step_id(conn, stage, substage, step)
+        
+        # Extract output field mapping and prompt from frontend inputs
+        output_field = frontend_inputs.get('output_field') if frontend_inputs else None
+        output_table = frontend_inputs.get('output_table', 'post_section') if frontend_inputs else 'post_section'
+        frontend_prompt = frontend_inputs.get('prompt') if frontend_inputs else None
+        
+        print(f"[PROCESS_WRITING_STEP] Frontend inputs: {frontend_inputs}")
+        print(f"[PROCESS_WRITING_STEP] Frontend prompt: {frontend_prompt[:200] if frontend_prompt else 'None'}...")
+        
+        if not output_field:
+            raise Exception("No output field specified")
+        
+        if not frontend_prompt:
+            raise Exception("Frontend prompt is required - no fallback to database prompts")
+        
+        # If section_ids are provided, use sequential processing
+        if section_ids:
+            timeout_per_section = frontend_inputs.get('timeout_per_section', 300) if frontend_inputs else 300
+            
+            result = process_sections_sequentially(
+                conn, post_id, step_id, section_ids, timeout_per_section, 
+                output_field, output_table, frontend_prompt
+            )
+            
+            conn.close()
+            
+            return {
+                'success': True,
+                'results': result['results'],
+                'summary': result['summary'],
+                'parameters': {
+                    'sections_processed': section_ids,
+                    'timeout_per_section': timeout_per_section,
+                    'output_field': output_field,
+                    'output_table': output_table,
+                    'total_time': result['total_time']
+                }
+            }
+        else:
+            # Fallback to standard processing if no sections specified
+            result = process_step(post_id, stage, substage, step, frontend_inputs)
+            conn.close()
+            
+            return {
+                'success': True,
+                'results': [{'output': result}],
+                'parameters': {'sections_processed': []}
+            }
+        
+    except Exception as e:
+        if 'conn' in locals():
+            conn.close()
+        return {
+            'success': False,
+            'error': str(e),
+            'sections_processed': section_ids if section_ids else []
+        }

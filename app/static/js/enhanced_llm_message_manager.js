@@ -1998,14 +1998,25 @@ class EnhancedLLMMessageManager {
             console.log('[ENHANCED_LLM] Processing sections:', selectedSectionIds);
             console.log('[ENHANCED_LLM] Output mapping:', outputMapping);
             
-            // For Writing stage, always use template prompt with placeholders
-            // The backend will replace placeholders with actual section data
-            const templatePrompt = this.getTemplatePrompt();
-            if (!templatePrompt) {
-                throw new Error('Failed to generate template prompt');
-            }
+            // Check if this is multi-section writing stage
+            const isMultiSection = this.isMultiSectionWritingStage();
+            console.log('[ENHANCED_LLM] Multi-section mode:', isMultiSection);
             
-            console.log('[ENHANCED_LLM] Using template prompt for Writing stage processing');
+            // Determine which prompt to send
+            let promptToSend = message;
+            if (isMultiSection) {
+                // For multi-section, use template prompt with placeholders
+                const templatePrompt = this.getTemplatePrompt();
+                if (templatePrompt) {
+                    promptToSend = templatePrompt;
+                    console.log('[ENHANCED_LLM] Using template prompt for multi-section processing');
+                } else {
+                    console.warn('[ENHANCED_LLM] Template prompt generation failed, falling back to original message');
+                }
+            } else {
+                // For single section, use original message (current behavior)
+                console.log('[ENHANCED_LLM] Using original message for single section processing');
+            }
             
             // Show loading state
             const runBtn = document.getElementById('run-llm-btn');
@@ -2023,7 +2034,7 @@ class EnhancedLLMMessageManager {
                         step: step,
                         selected_section_ids: selectedSectionIds,
                         inputs: {
-                            prompt: templatePrompt,
+                            prompt: promptToSend,
                             output_field: outputMapping.field,
                             output_table: outputMapping.table
                         }
