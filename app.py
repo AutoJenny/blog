@@ -13,7 +13,7 @@ def create_app():
     load_dotenv()
 
     # Initialize Flask app
-    app = Flask(__name__, template_folder="app/templates")
+    app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
     app.config.from_object(get_config())
 
     # Ensure logs directory exists
@@ -33,13 +33,13 @@ def create_app():
     app.logger.setLevel(logging.INFO)
     app.logger.info('Application startup')
 
-    # Register blueprints
-    from app.main import bp as main_bp
-    app.register_blueprint(main_bp)
-    from app.blog import bp as blog_bp
-    app.register_blueprint(blog_bp, url_prefix='/blog')
-    from app.llm import bp as llm_bp
-    app.register_blueprint(llm_bp, url_prefix='/llm')
+    # Register blueprints - SIMPLIFIED FOR BLOG-WORKFLOW
+    # from app.main import bp as main_bp
+    # app.register_blueprint(main_bp)
+    # from app.blog import bp as blog_bp
+    # app.register_blueprint(blog_bp, url_prefix='/blog')
+    # from app.llm import bp as llm_bp
+    # app.register_blueprint(llm_bp, url_prefix='/llm')
     
     # Initialize workflow module (includes workflow_bp and api_workflow_bp registration)
     from app.workflow import init_workflow
@@ -71,6 +71,11 @@ def create_app():
     @app.route('/')
     def index():
         return redirect(url_for('blog.latest'))
+    
+    @app.route('/test-simple')
+    def test_simple():
+        """Simple test route to check if Flask is working."""
+        return jsonify({'message': 'Flask is working', 'status': 'ok'})
 
     # Error handlers
     @app.errorhandler(404)

@@ -16,3 +16,58 @@ This file is included by all workflow substages. It expects:
     {% include 'modules/llm_panel/templates/panel.html' %}
     {% endwith %}
 </div>
+
+<!-- Manual field population script -->
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        // Get post ID from the data attribute
+        const postId = document.querySelector('#llm-workflow-root').dataset.postId;
+
+        if (!postId) {
+            console.error('No post ID found');
+            return;
+        }
+
+        try {
+            // Fetch field values from the API
+            const response = await fetch(`/api/workflow/posts/${postId}/fields`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const fieldData = await response.json();
+            console.log('Field data loaded:', fieldData);
+
+            // Populate idea_seed field if it exists
+            if (fieldData.idea_seed) {
+                const ideaSeedTextarea = document.querySelector('textarea[data-db-field="idea_seed"]');
+                if (ideaSeedTextarea) {
+                    ideaSeedTextarea.value = fieldData.idea_seed;
+                    console.log('Populated idea_seed field with:', fieldData.idea_seed);
+                } else {
+                    console.log('idea_seed textarea not found');
+                }
+            }
+
+            // Populate other common fields
+            const fieldMappings = {
+                'basic_idea': fieldData.basic_idea,
+                'idea_scope': fieldData.idea_scope,
+                'section_headings': fieldData.section_headings
+            };
+
+            Object.entries(fieldMappings).forEach(([fieldName, value]) => {
+                if (value) {
+                    const textarea = document.querySelector(`textarea[data-db-field="${fieldName}"]`);
+                    if (textarea) {
+                        textarea.value = value;
+                        console.log(`Populated ${fieldName} field with:`, value.substring(0, 50) + '...');
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Error loading field data:', error);
+        }
+    });
+</script>

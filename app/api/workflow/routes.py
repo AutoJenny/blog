@@ -208,6 +208,13 @@ def process_sections_sequentially(conn, post_id, step_id, section_ids, timeout_p
             result = response.json()
             output = result.get('response', '').strip()
             
+            # Clean output by removing markdown code blocks
+            import re
+            # Remove ```html ... ``` or ``` ... ``` patterns
+            output = re.sub(r'```html\s*\n?(.*?)\n?\s*```', r'\1', output, flags=re.DOTALL)
+            output = re.sub(r'```\s*\n?(.*?)\n?\s*```', r'\1', output, flags=re.DOTALL)
+            output = output.strip()
+            
             # Save output to specific section
             if output_table == 'post_section':
                 cur.execute(f"""
@@ -2081,6 +2088,13 @@ def direct_llm_call():
         output = output.strip()
         if output.endswith('%'):
             output = output[:-1].strip()
+        
+        # Clean output by removing markdown code blocks
+        import re
+        # Remove ```html ... ``` or ``` ... ``` patterns
+        output = re.sub(r'```html\s*\n?(.*?)\n?\s*```', r'\1', output, flags=re.DOTALL)
+        output = re.sub(r'```\s*\n?(.*?)\n?\s*```', r'\1', output, flags=re.DOTALL)
+        output = output.strip()
             
         # For preview, return the raw text
         preview_output = output
@@ -2248,6 +2262,13 @@ def process_planning_step(post_id, stage, substage, step, frontend_inputs):
         
         result = response.json()
         output = result.get('response', '').strip()
+        
+        # Clean output by removing markdown code blocks
+        import re
+        # Remove ```html ... ``` or ``` ... ``` patterns
+        output = re.sub(r'```html\s*\n?(.*?)\n?\s*```', r'\1', output, flags=re.DOTALL)
+        output = re.sub(r'```\s*\n?(.*?)\n?\s*```', r'\1', output, flags=re.DOTALL)
+        output = output.strip()
         
         # Save output to database
         cur.execute(f"""

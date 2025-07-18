@@ -7,7 +7,7 @@ import psycopg2
 import psycopg2.extras
 from flask import render_template, request, jsonify, abort, redirect, url_for, Blueprint, current_app
 from app.db import get_db_conn
-from app.api.workflow.decorators import deprecated_endpoint
+from app.utils.decorators import deprecated_endpoint
 from . import bp, api_workflow_bp
 
 # Use proper nav module instead
@@ -16,7 +16,24 @@ from app.services.shared import get_workflow_stages_from_db, get_all_posts_from_
 import subprocess
 import sys
 import os
-from app.llm.services import execute_llm_request
+# from app.llm.services import execute_llm_request
+
+# TEST ROUTE - Simple template test
+@bp.route('/test')
+def test_template():
+    """Simple test route to check template rendering."""
+    try:
+        return render_template('workflow/index.html', 
+                             current_stage='planning',
+                             current_substage='idea',
+                             post={'id': 53},
+                             step_config={},
+                             field_values={},
+                             step_id=1,
+                             current_step='test',
+                             context={})
+    except Exception as e:
+        return jsonify({'error': str(e), 'type': type(e).__name__}), 500
 
 # Mapping of substage names to Font Awesome icons
 SUBSTAGE_ICONS = {
