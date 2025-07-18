@@ -47,10 +47,20 @@ All endpoints return JSON responses with the following structure:
 - **[Post Management](posts.md)** - Post development, structure planning, and content management
 - **[Field Mapping](fields.md)** - Database field relationships and UI component mapping
 - **[Format Templates](formats.md)** - Structured data format definitions and validation
+- **[Image Management](images.md)** - Image generation, settings, styles, and ComfyUI integration
 
-### Workflow-Specific Documentation
-For workflow-specific endpoints and detailed examples, see:
-- **[Workflow Endpoints](../workflow/endpoints.md)** - Comprehensive workflow system API reference
+### API Path Structure
+The system uses multiple API path prefixes:
+- `/api/llm/` - Core LLM functionality (providers, models, actions)
+- `/api/workflow/` - Workflow-specific operations (posts, sections, stages)
+- `/api/images/` - Image generation and management
+- `/api/v1/` - Legacy endpoints (deprecated but still functional)
+
+### Migration Notes
+- Legacy `/api/v1/` endpoints are still functional but deprecated
+- New development should use current endpoint paths
+- Both endpoint sets provide the same functionality
+- Migration to current endpoints is recommended for new features
 
 ## Common Error Codes
 
