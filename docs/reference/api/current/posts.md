@@ -1,6 +1,6 @@
 # Post-Related API Endpoints
 
-All post-related endpoints are now under the `/api/workflow/posts/` base path.
+**Note:** This system has both current `/api/workflow/` endpoints and legacy `/api/v1/` endpoints. Both are documented below.
 
 ## Post Creation Endpoints
 
@@ -35,10 +35,10 @@ All post-related endpoints are now under the `/api/workflow/posts/` base path.
 
 ## Development Endpoints
 
-### Get Post Development Data
-- **URL**: `/api/workflow/posts/<post_id>/development`
+### Get Post Development Data (Legacy v1)
+- **URL**: `/api/v1/post/<post_id>/development`
 - **Method**: `GET`
-- **Description**: Retrieves development data for a specific post
+- **Description**: Retrieves development data for a specific post (legacy endpoint)
 - **URL Parameters**:
   - `post_id`: ID of the post
 - **Response**:
@@ -53,10 +53,10 @@ All post-related endpoints are now under the `/api/workflow/posts/` base path.
   - `200`: Success
   - `404`: Post not found
 
-### Update Post Development
-- **URL**: `/api/workflow/posts/<post_id>/development`
+### Update Post Development (Legacy v1)
+- **URL**: `/api/v1/post/<post_id>/development`
 - **Method**: `POST`
-- **Description**: Updates development data for a specific post
+- **Description**: Updates development data for a specific post (legacy endpoint)
 - **URL Parameters**:
   - `post_id`: ID of the post
 - **Request Body**:
@@ -77,51 +77,35 @@ All post-related endpoints are now under the `/api/workflow/posts/` base path.
   - `400`: Invalid request data
   - `404`: Post not found
 
-## Structure Endpoints
-
-### Plan Post Structure
-- **URL**: `/api/workflow/posts/<post_id>/structure/plan`
-- **Method**: `POST`
-- **Description**: Plans the structure for a post
+### Get Post Development Data (Current)
+- **URL**: `/api/workflow/posts/<post_id>/development`
+- **Method**: `GET`
+- **Description**: Retrieves development data for a specific post (current endpoint)
 - **URL Parameters**:
   - `post_id`: ID of the post
-- **Request Body**:
-  ```json
-  {
-    "topic": "string",
-    "keywords": ["string"]
-  }
-  ```
 - **Response**:
   ```json
   {
-    "sections": [
-      {
-        "title": "string",
-        "content": "string"
-      }
-    ]
+    "title": "string",
+    "content": "string",
+    // ... other development fields
   }
   ```
 - **Status Codes**:
   - `200`: Success
-  - `400`: Invalid request data
+  - `404`: Post not found
 
-### Save Post Structure
-- **URL**: `/api/workflow/posts/<post_id>/structure/save`
+### Update Post Development (Current)
+- **URL**: `/api/workflow/posts/<post_id>/development`
 - **Method**: `POST`
-- **Description**: Saves the structure for a post
+- **Description**: Updates development data for a specific post (current endpoint)
 - **URL Parameters**:
   - `post_id`: ID of the post
 - **Request Body**:
   ```json
   {
-    "sections": [
-      {
-        "title": "string",
-        "content": "string"
-      }
-    ]
+    "title": "string",
+    "content": "string"
   }
   ```
 - **Response**:
@@ -133,39 +117,14 @@ All post-related endpoints are now under the `/api/workflow/posts/` base path.
 - **Status Codes**:
   - `200`: Success
   - `400`: Invalid request data
-
-## Image Generation Endpoints
-
-### Generate Images
-- **URL**: `/api/workflow/posts/<post_id>/images/generate`
-- **Method**: `POST`
-- **Description**: Generates images for a post
-- **URL Parameters**:
-  - `post_id`: ID of the post
-- **Request Body**:
-  ```json
-  {
-    "prompt": "string",
-    "count": "integer"
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "image_urls": ["string"]
-  }
-  ```
-- **Status Codes**:
-  - `200`: Success
-  - `400`: Invalid request data
-  - `500`: Image generation error
+  - `404`: Post not found
 
 ## Section Endpoints
 
-### Get Post Sections
-- **URL**: `/api/workflow/posts/<post_id>/sections`
+### Get Post Sections (Legacy v1)
+- **URL**: `/api/v1/post/<post_id>/sections`
 - **Method**: `GET`
-- **Description**: Retrieves all sections for a post
+- **Description**: Retrieves all sections for a post (legacy endpoint)
 - **URL Parameters**:
   - `post_id`: ID of the post
 - **Response**:
@@ -182,10 +141,98 @@ All post-related endpoints are now under the `/api/workflow/posts/` base path.
   - `200`: Success
   - `404`: Post not found
 
-### Get Section
+### Get Post Sections (Current)
+- **URL**: `/api/workflow/posts/<post_id>/sections`
+- **Method**: `GET`
+- **Description**: Retrieves all sections for a post (current endpoint)
+- **URL Parameters**:
+  - `post_id`: ID of the post
+- **Response**:
+  ```json
+  [
+    {
+      "id": "integer",
+      "title": "string",
+      "content": "string"
+    }
+  ]
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `404`: Post not found
+
+### Create Section (Legacy v1)
+- **URL**: `/api/v1/post/<post_id>/sections`
+- **Method**: `POST`
+- **Description**: Creates a new section for a post (legacy endpoint)
+- **URL Parameters**:
+  - `post_id`: ID of the post
+- **Request Body**:
+  ```json
+  {
+    "title": "string",
+    "content": "string"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "id": "integer",
+    "title": "string",
+    "content": "string"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `400`: Invalid request data
+
+### Create Section (Current)
+- **URL**: `/api/workflow/posts/<post_id>/sections`
+- **Method**: `POST`
+- **Description**: Creates a new section for a post (current endpoint)
+- **URL Parameters**:
+  - `post_id`: ID of the post
+- **Request Body**:
+  ```json
+  {
+    "title": "string",
+    "content": "string"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "id": "integer",
+    "title": "string",
+    "content": "string"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `400`: Invalid request data
+
+### Get Section (Legacy v1)
+- **URL**: `/api/v1/section/<section_id>`
+- **Method**: `GET`
+- **Description**: Retrieves a specific section (legacy endpoint)
+- **URL Parameters**:
+  - `section_id`: ID of the section
+- **Response**:
+  ```json
+  {
+    "id": "integer",
+    "title": "string",
+    "content": "string"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `404`: Section not found
+
+### Get Section (Current)
 - **URL**: `/api/workflow/posts/<post_id>/sections/<section_id>`
 - **Method**: `GET`
-- **Description**: Retrieves a specific section
+- **Description**: Retrieves a specific section (current endpoint)
 - **URL Parameters**:
   - `post_id`: ID of the post
   - `section_id`: ID of the section
@@ -195,6 +242,88 @@ All post-related endpoints are now under the `/api/workflow/posts/` base path.
     "id": "integer",
     "title": "string",
     "content": "string"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `404`: Section not found
+
+### Update Section (Legacy v1)
+- **URL**: `/api/v1/section/<section_id>`
+- **Method**: `PUT`
+- **Description**: Updates a specific section (legacy endpoint)
+- **URL Parameters**:
+  - `section_id`: ID of the section
+- **Request Body**:
+  ```json
+  {
+    "title": "string",
+    "content": "string"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "status": "success"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `400`: Invalid request data
+  - `404`: Section not found
+
+### Update Section (Current)
+- **URL**: `/api/workflow/posts/<post_id>/sections/<section_id>`
+- **Method**: `PUT`
+- **Description**: Updates a specific section (current endpoint)
+- **URL Parameters**:
+  - `post_id`: ID of the post
+  - `section_id`: ID of the section
+- **Request Body**:
+  ```json
+  {
+    "title": "string",
+    "content": "string"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "status": "success"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `400`: Invalid request data
+  - `404`: Section not found
+
+### Delete Section (Legacy v1)
+- **URL**: `/api/v1/section/<section_id>`
+- **Method**: `DELETE`
+- **Description**: Deletes a specific section (legacy endpoint)
+- **URL Parameters**:
+  - `section_id`: ID of the section
+- **Response**:
+  ```json
+  {
+    "status": "success"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `404`: Section not found
+
+### Delete Section (Current)
+- **URL**: `/api/workflow/posts/<post_id>/sections/<section_id>`
+- **Method**: `DELETE`
+- **Description**: Deletes a specific section (current endpoint)
+- **URL Parameters**:
+  - `post_id`: ID of the post
+  - `section_id`: ID of the section
+- **Response**:
+  ```json
+  {
+    "status": "success"
   }
   ```
 - **Status Codes**:
@@ -223,12 +352,65 @@ All post-related endpoints are now under the `/api/workflow/posts/` base path.
   - `200`: Success
   - `404`: Section not found
 
-## Stage Endpoints
+## Workflow LLM Endpoints
 
-### Get Post Stages
-- **URL**: `/api/workflow/posts/<post_id>/stages`
-- **Method**: `GET`
-- **Description**: Retrieves all stages for a post
+### Run Workflow LLM
+- **URL**: `/api/workflow/posts/<post_id>/<stage>/<substage>/llm`
+- **Method**: `POST`
+- **Description**: Executes LLM processing for a specific workflow stage/substage
+- **URL Parameters**:
+  - `post_id`: ID of the post
+  - `stage`: Workflow stage name
+  - `substage`: Workflow substage name
+- **Request Body**:
+  ```json
+  {
+    "prompt": "string",
+    "output_field": "string",
+    "output_table": "string",
+    "section_ids": ["integer"]
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "status": "success",
+    "result": "string"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `400`: Invalid request
+  - `404`: Post or stage not found
+
+### Run Writing LLM
+- **URL**: `/api/workflow/posts/<post_id>/<stage>/<substage>/writing_llm`
+- **Method**: `POST`
+- **Description**: Executes LLM processing specifically for writing stage
+- **URL Parameters**:
+  - `post_id`: ID of the post
+  - `stage`: Workflow stage name
+  - `substage`: Workflow substage name
+- **Request Body**:
+  ```json
+  {
+    "prompt": "string",
+    "output_field": "string",
+    "output_table": "string",
+    "section_ids": ["integer"]
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "status": "success",
+    "result": "string"
+  }
+  ```
+- **Status Codes**:
+  - `200`: Success
+  - `400`: Invalid request
+  - `404`: Post or stage not found
 
 ## Post Section Text Fields Endpoint
 
@@ -292,6 +474,13 @@ All post-related endpoints are now under the `/api/workflow/posts/` base path.
     ]
 }
 ```
+
+## Migration Notes
+
+- Legacy `/api/v1/` endpoints are still functional but deprecated
+- New development should use `/api/workflow/` endpoints
+- Both endpoint sets provide the same functionality
+- Migration to current endpoints is recommended for new features
 
 ## Related Documentation
 
