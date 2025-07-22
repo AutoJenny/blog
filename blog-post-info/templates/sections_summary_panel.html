@@ -1,20 +1,48 @@
-<a href="/workflow/posts/{{ post_id }}/writing/sections/ideas_to_include" style="display:block;text-decoration:none;">
-  <div style="background:#013828; border-radius:8px; border:1px solid #065f46; padding:20px; color:#e5e7eb; min-height:150px; cursor:pointer; transition:box-shadow 0.2s; box-shadow:0 2px 12px rgba(0,0,0,0.10);">
-    {% if sections and sections|length > 0 %}
-      <ul style="list-style:none; padding:0; margin:0;">
-        {% for s in sections %}
-          <li style="margin-bottom:1.5em;">
-            <div style="font-size:1.1rem; font-weight:500; color:#bef264; margin-bottom:0.2em;">
-              {{ loop.index }}. {{ s.section_heading or 'Untitled Section' }}
-            </div>
-            {% if s.section_description %}
-              <div style="font-size:0.98rem; color:#e0e7ce; margin-left:1.2em;">{{ s.section_description }}</div>
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <div style="color:#f87171; text-align:center;">No sections defined for this post.</div>
-    {% endif %}
-  </div>
-</a> 
+<div style="background:#013828; border-radius:8px; border:1px solid #065f46; padding:20px; color:#e5e7eb; min-height:150px; cursor:pointer; transition:box-shadow 0.2s; box-shadow:0 2px 12px rgba(0,0,0,0.10);" onclick="window.parent.location.href='/workflow/posts/{{ post_id }}/writing/sections/ideas_to_include'">
+  {% if sections and sections|length > 0 %}
+    <ul style="list-style:none; padding:0; margin:0;">
+      {% for s in sections %}
+        <li style="margin-bottom:1.5em;">
+          <div style="font-size:1.1rem; font-weight:500; color:#bef264; margin-bottom:0.2em;">
+            {{ loop.index }}. {{ s.section_heading or 'Untitled Section' }}
+          </div>
+          {% if s.section_description %}
+            <div style="font-size:0.98rem; color:#e0e7ce; margin-left:1.2em;">{{ s.section_description }}</div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div style="color:#f87171; text-align:center;">No sections defined for this post.</div>
+  {% endif %}
+</div>
+
+<script>
+// Auto-resize iframe to fit content
+function resizeIframe() {
+  const body = document.body;
+  const html = document.documentElement;
+  const height = Math.max(
+    body.scrollHeight,
+    body.offsetHeight,
+    html.clientHeight,
+    html.scrollHeight,
+    html.offsetHeight
+  );
+  
+  // Send height to parent iframe
+  if (window.parent && window.parent.postMessage) {
+    window.parent.postMessage({
+      type: 'resize',
+      height: height + 20 // Add some padding
+    }, '*');
+  }
+}
+
+// Resize on load and when content changes
+window.addEventListener('load', resizeIframe);
+window.addEventListener('resize', resizeIframe);
+
+// Initial resize after a short delay to ensure content is rendered
+setTimeout(resizeIframe, 100);
+</script> 
