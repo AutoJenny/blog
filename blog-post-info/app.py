@@ -278,6 +278,25 @@ def headers_panel():
         logger.error(f"Error getting headers: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+@app.route('/sections-summary')
+def sections_summary_panel():
+    post_id = request.args.get('post_id', type=int)
+    if not post_id:
+        return '<div style="color:red;padding:1em;">Post ID required</div>', 400
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur.execute("""
+                SELECT section_order, section_heading, section_description
+                FROM post_section
+                WHERE post_id = %s
+                ORDER BY section_order
+            """, (post_id,))
+            sections = cur.fetchall()
+        return render_template('sections_summary_panel.html', sections=sections, post_id=post_id)
+    except Exception as e:
+        return f'<div style="color:red;padding:1em;">Error loading sections: {e}</div>', 500
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5004))
     app.run(debug=True, host='0.0.0.0', port=port) 
