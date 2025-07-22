@@ -46,9 +46,9 @@ def get_post_with_development(post_id):
     with get_db_conn() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
-        # Get post data
+        # Get post data, alias post.id as post_id
         cur.execute("""
-            SELECT p.*, pd.*
+            SELECT p.id AS post_id, p.*, pd.*
             FROM post p
             LEFT JOIN post_development pd ON pd.post_id = p.id
             WHERE p.id = %s
@@ -67,7 +67,10 @@ def get_post_with_development(post_id):
             if header_image:
                 post['header_image'] = dict(header_image)
         
-        return dict(post)
+        post_dict = dict(post)
+        # Always use post_id for the edit link
+        post_dict['id'] = post_dict['post_id']
+        return post_dict
 
 def get_post_sections_with_images(post_id):
     """Fetch sections with complete image metadata."""
