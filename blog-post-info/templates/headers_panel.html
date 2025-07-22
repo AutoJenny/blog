@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Headers Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #1e3a8a;
+            color: #e5e7eb;
+        }
+        
+        .headers-container {
+            padding: 16px;
+            height: 100%;
+            background-color: #1e3a8a;
+        }
+        
+        .header-section {
+            margin-bottom: 16px;
+        }
+        
+        .header-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #93c5fd;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        
+        .section-content {
+            background-color: #1e40af;
+            border: 1px solid #3b82f6;
+            border-radius: 6px;
+            padding: 8px 12px;
+            min-height: 20px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .section-content.empty {
+            color: #9ca3af;
+            font-style: italic;
+        }
+        
+        .title-content {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .subtitle-content {
+            font-size: 14px;
+            color: #d1d5db;
+        }
+        
+        .intro-content {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #3b82f6;
+        }
+        
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e5e7eb;
+        }
+        
+        .panel-icon {
+            color: #60a5fa;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="headers-container">
+        <div class="panel-header">
+            <i class="fas fa-heading panel-icon"></i>
+            <span class="panel-title">Post Headers</span>
+        </div>
+        
+        <div class="header-section">
+            <div class="section-label">Main Title</div>
+            <div class="section-content title-content {% if not post.main_title %}empty{% endif %}">
+                {{ post.main_title or 'No main title set' }}
+            </div>
+        </div>
+        
+        <div class="header-section">
+            <div class="section-label">Subtitle</div>
+            <div class="section-content subtitle-content {% if not post.subtitle %}empty{% endif %}">
+                {{ post.subtitle or 'No subtitle set' }}
+            </div>
+        </div>
+        
+        <div class="header-section">
+            <div class="section-label">Introduction</div>
+            <div class="section-content intro-content {% if not post.intro_blurb %}empty{% endif %}">
+                {{ post.intro_blurb or 'No introduction set' }}
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

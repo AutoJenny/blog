@@ -248,6 +248,36 @@ def list_posts_info():
         logger.error(f"Error listing posts info: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+@app.route('/headers')
+def headers_panel():
+    """Headers panel for Post Info substage."""
+    post_id = request.args.get('post_id', type=int)
+    if not post_id:
+        return jsonify({'error': 'Post ID required'}), 400
+    
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get post header information
+            cur.execute("""
+                SELECT p.title, p.summary,
+                       pd.main_title, pd.subtitle, pd.intro_blurb
+                FROM post p
+                LEFT JOIN post_development pd ON pd.post_id = p.id
+                WHERE p.id = %s
+            """, (post_id,))
+            
+            post_data = cur.fetchone()
+            if not post_data:
+                return jsonify({'error': 'Post not found'}), 404
+            
+            return render_template('headers_panel.html', post=dict(post_data), post_id=post_id)
+            
+    except Exception as e:
+        logger.error(f"Error getting headers: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5004))
     app.run(debug=True, host='0.0.0.0', port=port) 
