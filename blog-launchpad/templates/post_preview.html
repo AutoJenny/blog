@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }} | Preview</title>
+    <!-- Google Fonts: Lato and Open Sans -->
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,900|Open+Sans:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Clan.com blog-matching CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
+</head>
+<body>
+    <!-- Edit Button - Top Right -->
+    <div class="edit-button-container">
+        <a href="/workflow/posts/{{ post.id }}/planning/idea/initial_concept" class="edit-button">
+            <i class="fas fa-edit"></i> Edit Post
+        </a>
+    </div>
+    
+    <!-- Site Header -->
+    <div class="site-header">
+        <img src="{{ url_for('static', filename='site/header.jpg') }}" alt="Site Header">
+    </div>
+    
+    <div class="preview-container">
+        <a href="/posts" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Posts
+        </a>
+        <header class="preview-header">
+            <h1>{{ post.title or 'Untitled Post' }}</h1>
+            <div class="post-meta">
+                <span class="post-meta__date">
+                    Created: {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}
+                </span>
+                <span class="post-meta__separator"> | </span>
+                <span class="post-meta__date">
+                    Updated: {{ post.updated_at.strftime('%B %d, %Y') if post.updated_at else 'Unknown date' }}
+                </span>
+                {% if post.status %}
+                <span class="post-meta__separator"> | </span>
+                <span class="status-badge {{ post.status }}">{{ post.status }}</span>
+                {% endif %}
+            </div>
+        </header>
+        {% if post.idea_seed %}
+        <div class="idea-seed">
+            <strong>Idea Seed:</strong><br>
+            {{ post.idea_seed }}
+        </div>
+        {% endif %}
+        {% if post.intro_blurb %}
+        <div class="preview-content">
+            <strong>Introduction:</strong><br>
+            {{ post.intro_blurb }}
+        </div>
+        {% endif %}
+        {% if sections %}
+        <div class="sections">
+            <h2>Post Sections</h2>
+            {% for section in sections %}
+            <div class="section">
+                <h3>{{ section.section_heading or 'Untitled Section' }}</h3>
+                <div class="section-content">
+                    {% if section.polished %}
+                        {{ section.polished|safe }}
+                    {% elif section.draft %}
+                        {{ section.draft|safe }}
+                    {% elif section.content %}
+                        {{ section.content|safe }}
+                    {% else %}
+                        <em>No content available for this section.</em>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if not post.idea_seed and not post.intro_blurb and not sections %}
+        <div class="preview-content">
+            <p><em>No content available for this post yet. Use the workflow to add content.</em></p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Site Footer -->
+    <div class="site-footer">
+        <img src="{{ url_for('static', filename='site/footer.jpg') }}" alt="Site Footer">
+    </div>
+</body>
+</html> 
