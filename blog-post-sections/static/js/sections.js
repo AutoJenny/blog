@@ -1,180 +1,259 @@
-import { navigateToWorkflow } from '../workflow_nav.js';
+// sections.js - Main sections rendering and interaction logic
 
-function goToTemplate(postId) {
-    navigateToWorkflow(postId, 'template');
-}
+// Global variables
+let currentPostId = null;
+let sectionsData = null;
 
-function goToPreview(postId) {
-    navigateToWorkflow(postId, 'preview');
-}
-
-function goToEdit(postId, section) {
-    navigateToWorkflow(postId, 'edit', null, section);
-}
-
-// Utility: pretty-print JSON or arrays
-function prettyValue(value) {
-    if (value === null || value === undefined || value === '') {
-        return '<span style="color:#888">(empty)</span>';
-    } else if (Array.isArray(value)) {
-        if (value.length === 0) return '<span style="color:#888">(empty)</span>';
-        return '<ul style="margin:0.5em 0 0 1.5em;">' + value.map(v => `<li>${v}</li>`).join('') + '</ul>';
-    } else if (typeof value === 'object') {
-        return `<pre style="background:#1a232a;color:#b9e0ff;padding:0.5em 1em;border-radius:0.3em;overflow-x:auto;">${JSON.stringify(value, null, 2)}</pre>`;
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Sections.js loaded');
+    
+    // Get post ID from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    currentPostId = urlParams.get('post_id');
+    
+    if (currentPostId) {
+        loadSections(currentPostId);
     } else {
-        return `<span style="color:#e0e6ed;">${value}</span>`;
+        console.error('No post_id parameter found in URL');
+        document.getElementById('sections-panel-content').innerHTML = 
+            '<p style="color: #ef4444;">Error: No post ID specified</p>';
+    }
+    
+    // Set up manual sync button
+    const syncBtn = document.getElementById('manual-sync-sections-btn');
+    if (syncBtn) {
+        syncBtn.addEventListener('click', () => {
+            if (currentPostId) {
+                loadSections(currentPostId);
+            }
+        });
+    }
+});
+
+// Load sections from API
+async function loadSections(postId) {
+    try {
+        console.log('Loading sections for post:', postId);
+        const response = await fetch(`/api/sections/${postId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        sectionsData = data;
+        
+        console.log('Sections data loaded:', data);
+        renderSections(data);
+        
+    } catch (error) {
+        console.error('Error loading sections:', error);
+        document.getElementById('sections-panel-content').innerHTML = 
+            `<p style="color: #ef4444;">Error loading sections: ${error.message}</p>`;
     }
 }
 
-// Group field definitions
-const GROUPS = [
-    {
-        name: 'Content',
-        fields: [
-            { key: 'title', label: 'Title' },
-            { key: 'subtitle', label: 'Subtitle' },
-            { key: 'description', label: 'Description' },
-            { key: 'content', label: 'Main Content' },
-            { key: 'elements.facts', label: 'Facts' },
-            { key: 'elements.ideas', label: 'Ideas' },
-            { key: 'elements.themes', label: 'Themes' },
-        ]
-    },
-    {
-        name: 'Resources',
-        fields: [
-            { key: 'image_id', label: 'Image' },
-            { key: 'video_url', label: 'Video URL' },
-            { key: 'audio_url', label: 'Audio URL' },
-            { key: 'duration', label: 'Duration' },
-        ]
-    },
-    {
-        name: 'Images',
-        fields: [
-            { key: 'image_id', label: 'Image Preview' },
-            { key: 'section_metadata.image_captions', label: 'Image Captions' },
-            { key: 'section_metadata.alt_text', label: 'Alt Text' },
-        ]
-    },
-    {
-        name: 'Meta / SEO',
-        fields: [
-            { key: 'keywords', label: 'Keywords' },
-            { key: 'section_metadata', label: 'Section Metadata' },
-            { key: 'social_media_snippets', label: 'Social Media Snippets' },
-        ]
-    },
-    {
-        name: 'Advanced / System',
-        fields: [
-            { key: 'content_type', label: 'Content Type' },
-            { key: 'position', label: 'Position' },
-            { key: 'is_conclusion', label: 'Is Conclusion' },
-            { key: 'created_at', label: 'Created At' },
-            { key: 'updated_at', label: 'Updated At' },
-        ]
+// Render sections in the panel
+function renderSections(data) {
+    const panel = document.getElementById('sections-panel-content');
+    
+    if (!data.sections || data.sections.length === 0) {
+        panel.innerHTML = '<p style="color: #9ca3af;">No sections found for this post.</p>';
+        return;
     }
-];
-
-// Helper to get nested field values (e.g., 'elements.facts')
-function getField(section, key) {
-    return key.split('.').reduce((obj, k) => (obj && obj[k] !== undefined ? obj[k] : undefined), section);
-}
-
-function renderSectionGroups(section, sectionIndex) {
-    // Render all groups as headings with their fields, no internal accordions
-    return `
-      <div class="section-groups">
-        ${GROUPS.map((group, gi) => {
-            const fieldsHtml = group.fields.map(f => {
-                const val = getField(section, f.key);
-                const isEmpty = val === null || val === undefined || val === '' || (Array.isArray(val) && val.length === 0);
-                const fieldStyle = isEmpty
-                  ? 'margin-bottom:0.5em;border:2px solid #374151;background:#23272e;padding:0.5em 1em;border-radius:0.4em;opacity:0.6;'
-                  : 'margin-bottom:0.5em;border:2px solid #4ade80;background:#1e293b;padding:0.5em 1em;border-radius:0.4em;';
-                const labelStyle = isEmpty
-                  ? 'color:#a3a3a3;font-weight:500;margin-right:0.5em;'
-                  : 'color:#aaffaa;font-weight:500;margin-right:0.5em;';
-                const valueStyle = isEmpty
-                  ? 'color:#6b7280;font-style:italic;'
-                  : 'color:#fff;';
-                return `<div class="field" style="${fieldStyle}">
-                  <span class="label" style="${labelStyle}">[FIELD] ${f.label}:</span> 
-                  <span class="value" style="${valueStyle}">${prettyValue(val)}</span>
-                </div>`;
-            }).join('');
-            return `
-              <div class="group-block" style="margin-bottom:1.5em;">
-                <div class="group-heading" style="color:#7dd3fc;font-size:1.2rem;font-weight:bold;margin-bottom:0.5em;">${group.name}</div>
-                ${fieldsHtml}
-              </div>
-            `;
-        }).join('')}
-      </div>
+    
+    const sectionsHtml = data.sections.map((section, index) => {
+        return renderSection(section, index, data.sections.length);
+    }).join('');
+    
+    panel.innerHTML = `
+        <div class="sections-container" style="display: flex; flex-direction: column; gap: 1rem;">
+            ${sectionsHtml}
+        </div>
     `;
+    
+    // Initialize interactive elements
+    initAccordions();
+    initReorderButtons();
+    initSectionSelection();
 }
 
-function renderStructure(structure) {
-    console.log('[DEBUG] renderStructure called with structure:', structure);
-    function sectionId(i) { return `section-accordion-${i}`; }
-    const containerId = 'sections-sortable-container';
+// Render individual section
+function renderSection(section, index, totalSections) {
+    const sectionId = section.id;
+    const accordionId = `section-accordion-${index}`;
+    const heading = section.title || section.section_heading || `Section ${index + 1}`;
+    const description = section.description || section.section_description || '';
+    const content = section.draft || section.content || '';
+    const ideas = section.ideas_to_include || '';
+    const facts = section.facts_to_include || '';
+    
+    // Thumbnail if available
+    const thumbnail = section.generated_image_url 
+        ? `<img src="${section.generated_image_url}" alt="Section Image" style="width: 32px; height: 32px; object-fit: cover; border-radius: 0.3em; margin-right: 0.75em; border: 2px solid #4ade80; vertical-align: middle;">`
+        : '';
+    
     return `
-        <div id="${containerId}" class="sections" style="display:flex;flex-direction:column;gap:2rem;">
-            ${structure.sections.map((s, i) => {
-                const number = i + 1;
-                const heading = s.title || '(No heading)';
-                const desc = s.description || '';
-                const accId = sectionId(i);
-                return `
-                    <div class="section" data-section-id="${s.id}" style="background:#14342b;border-radius:1rem;box-shadow:0 2px 12px #0004;">
-                        <button class="section-accordion-trigger" type="button" aria-expanded="false" aria-controls="${accId}" style="display:flex;align-items:center;width:100%;background:none;border:none;cursor:pointer;padding:1.5rem 2rem;text-align:left;">
-                            <span class="section-drag-handle" style="cursor:grab;margin-right:1rem;color:#b9e0ff;font-size:1.5rem;user-select:none;">&#x2630;</span>
-                            <h2 style="color:#7dd3fc;font-size:1.5rem;font-weight:bold;flex:1;margin:0;">${number}. ${heading}</h2>
-                            <span class="section-arrow" style="color:#b9e0ff;font-size:1.5rem;user-select:none;transition:transform 0.2s;">&#x25BC;</span>
-                        </button>
-                        <div style="padding:0 2rem 1.5rem 2rem;" onclick="event.stopPropagation();">
-                            <div style="color:#b9e0ff;font-size:1.1rem;margin-bottom:0.5rem;">${desc}</div>
-                        </div>
-                        <div id="${accId}" style="display:none;padding:0 2rem 2rem 2rem;">
-                            ${renderSectionGroups(s, i)}
-                        </div>
-                    </div>
-                `;
-            }).join('')}
+        <div class="section" data-section-id="${sectionId}" style="background: #14342b; border-radius: 0.5rem; border: 1px solid #065f46; overflow: hidden;">
+            <!-- Section Header -->
+            <div class="section-header" style="display: flex; align-items: center; padding: 1rem; background: #0f2e23; border-bottom: 1px solid #065f46;">
+                <!-- Reorder Controls -->
+                <div class="section-reorder-controls" style="display: flex; flex-direction: column; margin-right: 0.75rem; gap: 0.25rem;">
+                    <button class="reorder-btn reorder-up" data-section-id="${sectionId}" title="Move Up" 
+                            style="background: #059669; color: white; border: none; border-radius: 0.25rem; width: 24px; height: 24px; cursor: pointer; font-size: 12px; ${index === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                        ▲
+                    </button>
+                    <button class="reorder-btn reorder-down" data-section-id="${sectionId}" title="Move Down" 
+                            style="background: #059669; color: white; border: none; border-radius: 0.25rem; width: 24px; height: 24px; cursor: pointer; font-size: 12px; ${index === totalSections - 1 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                        ▼
+                    </button>
+                </div>
+                
+                <!-- Section Number and Thumbnail -->
+                <div style="display: flex; align-items: center; margin-right: 0.75rem;">
+                    ${thumbnail}
+                    <span style="color: #4ade80; font-weight: bold; font-size: 0.875rem; min-width: 2rem;">${index + 1}</span>
+                </div>
+                
+                <!-- Section Title -->
+                <div style="flex: 1;">
+                    <h3 style="margin: 0; color: #e5e7eb; font-size: 1rem; font-weight: 600;">${heading}</h3>
+                    ${description ? `<p style="margin: 0.25rem 0 0 0; color: #9ca3af; font-size: 0.875rem;">${description}</p>` : ''}
+                </div>
+                
+                <!-- Accordion Toggle -->
+                <button class="section-accordion-trigger" aria-controls="${accordionId}" aria-expanded="false" 
+                        style="background: none; border: none; color: #4ade80; cursor: pointer; padding: 0.5rem; font-size: 1.25rem;">
+                    <span class="section-arrow">▼</span>
+                </button>
+            </div>
+            
+            <!-- Section Content (Accordion) -->
+            <div id="${accordionId}" class="section-content" style="display: none; padding: 1rem; background: #14342b;">
+                <!-- Content Tabs -->
+                <div class="section-tabs" style="display: flex; border-bottom: 1px solid #065f46; margin-bottom: 1rem;">
+                    <button class="tab-btn active" data-tab="content" style="background: #059669; color: white; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Content</button>
+                    <button class="tab-btn" data-tab="ideas" style="background: #374151; color: #9ca3af; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Ideas</button>
+                    <button class="tab-btn" data-tab="facts" style="background: #374151; color: #9ca3af; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Facts</button>
+                </div>
+                
+                <!-- Tab Content -->
+                <div class="tab-content active" data-tab="content" style="color: #e5e7eb; line-height: 1.6;">
+                    ${content ? content.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No content available</em>'}
+                </div>
+                
+                <div class="tab-content" data-tab="ideas" style="display: none; color: #e5e7eb; line-height: 1.6;">
+                    ${ideas ? ideas.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No ideas specified</em>'}
+                </div>
+                
+                <div class="tab-content" data-tab="facts" style="display: none; color: #e5e7eb; line-height: 1.6;">
+                    ${facts ? facts.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No facts specified</em>'}
+                </div>
+            </div>
         </div>
     `;
 }
 
-// Call this after rendering to attach accordion event listeners
+// Initialize accordion functionality
 function initAccordions() {
-    console.log('[DEBUG] initAccordions called');
-    // Section accordions
     document.querySelectorAll('.section-accordion-trigger').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
             const section = btn.closest('.section');
-            const accId = btn.getAttribute('aria-controls');
-            const content = document.getElementById(accId);
+            const accordionId = btn.getAttribute('aria-controls');
+            const content = document.getElementById(accordionId);
             const arrow = btn.querySelector('.section-arrow');
             const expanded = btn.getAttribute('aria-expanded') === 'true';
+            
+            // Toggle state
             btn.setAttribute('aria-expanded', !expanded);
+            
+            // Toggle content visibility
             if (content) {
                 content.style.display = expanded ? 'none' : 'block';
             }
+            
+            // Update arrow
             if (arrow) {
-                arrow.innerHTML = expanded ? '&#x25BC;' : '&#x25B2;'; // ▼/▲
+                arrow.innerHTML = expanded ? '▼' : '▲';
             }
         });
     });
-    // No more group accordions
-    const triggers = document.querySelectorAll('.accordion-trigger');
-    console.log('[DEBUG] Found triggers:', triggers.length);
 }
 
-export default {
-    renderStructure,
-    goToTemplate,
-    goToPreview,
-    goToEdit,
-    initAccordions // <-- Call this after rendering
-}; 
+// Initialize reorder buttons
+function initReorderButtons() {
+    document.querySelectorAll('.reorder-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            const sectionId = btn.dataset.sectionId;
+            const direction = btn.classList.contains('reorder-up') ? 'up' : 'down';
+            
+            if (!btn.disabled) {
+                moveSection(sectionId, direction);
+            }
+        });
+    });
+}
+
+// Initialize tab functionality
+function initSectionSelection() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            const section = btn.closest('.section');
+            const tabName = btn.dataset.tab;
+            
+            // Update active tab button
+            section.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active');
+                b.style.background = '#374151';
+                b.style.color = '#9ca3af';
+            });
+            btn.classList.add('active');
+            btn.style.background = '#059669';
+            btn.style.color = 'white';
+            
+            // Update active tab content
+            section.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+                content.style.display = 'none';
+            });
+            section.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            section.querySelector(`[data-tab="${tabName}"]`).style.display = 'block';
+        });
+    });
+}
+
+// Move section up or down
+async function moveSection(sectionId, direction) {
+    try {
+        console.log(`Moving section ${sectionId} ${direction}`);
+        
+        const response = await fetch(`/api/sections/${currentPostId}/reorder`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                section_id: sectionId,
+                direction: direction
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Reload sections to show new order
+        await loadSections(currentPostId);
+        
+    } catch (error) {
+        console.error('Error moving section:', error);
+        alert(`Error moving section: ${error.message}`);
+    }
+} 
