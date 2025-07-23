@@ -179,9 +179,15 @@ function renderSection(section, index, totalSections) {
 
 // Initialize accordion functionality
 function initAccordions() {
-    document.querySelectorAll('.section-accordion-trigger').forEach(btn => {
+    console.log('Initializing accordions...');
+    const accordionTriggers = document.querySelectorAll('.section-accordion-trigger');
+    console.log('Found accordion triggers:', accordionTriggers.length);
+    
+    accordionTriggers.forEach((btn, index) => {
+        console.log(`Setting up accordion ${index + 1}:`, btn);
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
+            console.log('Accordion clicked:', this);
             
             const section = btn.closest('.section');
             const accordionId = btn.getAttribute('aria-controls');
@@ -189,17 +195,21 @@ function initAccordions() {
             const arrow = btn.querySelector('.section-arrow');
             const expanded = btn.getAttribute('aria-expanded') === 'true';
             
+            console.log('Accordion state:', { accordionId, expanded, content: !!content, arrow: !!arrow });
+            
             // Toggle state
             btn.setAttribute('aria-expanded', !expanded);
             
             // Toggle content visibility
             if (content) {
                 content.style.display = expanded ? 'none' : 'block';
+                console.log('Content display set to:', content.style.display);
             }
             
             // Update arrow
             if (arrow) {
                 arrow.innerHTML = expanded ? '▼' : '▲';
+                console.log('Arrow updated to:', arrow.innerHTML);
             }
         });
     });
@@ -221,8 +231,9 @@ function initReorderButtons() {
     });
 }
 
-// Initialize tab functionality
+// Initialize tab functionality and checkbox selection
 function initSectionSelection() {
+    // Initialize tab functionality
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -249,6 +260,35 @@ function initSectionSelection() {
             section.querySelector(`[data-tab="${tabName}"]`).style.display = 'block';
         });
     });
+    
+    // Initialize checkbox selection
+    document.querySelectorAll('.section-select-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectedCount();
+        });
+    });
+    
+    // Initialize select all checkbox if it exists
+    const selectAllCheckbox = document.getElementById('select-all-sections');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            document.querySelectorAll('.section-select-checkbox').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            updateSelectedCount();
+        });
+    }
+}
+
+// Update the selected count display
+function updateSelectedCount() {
+    const selectedCheckboxes = document.querySelectorAll('.section-select-checkbox:checked');
+    const countElement = document.getElementById('selected-section-count');
+    
+    if (countElement) {
+        countElement.textContent = `${selectedCheckboxes.length} selected`;
+    }
 }
 
 // Move section up or down
