@@ -28,7 +28,10 @@
             <i class="fas fa-arrow-left"></i> Back to Posts
         </a>
         <header class="preview-header">
-            <h1>{{ post.title or 'Untitled Post' }}</h1>
+            <h1>{{ post.title or post.idea_seed or 'Untitled Post' }}</h1>
+            {% if post.subtitle %}
+            <div class="blog-post__subtitle">{{ post.subtitle }}</div>
+            {% endif %}
             <div class="post-meta">
                 <span class="post-meta__date">
                     Created: {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}
@@ -43,12 +46,6 @@
                 {% endif %}
             </div>
         </header>
-        {% if post.idea_seed %}
-        <div class="idea-seed">
-            <strong>Idea Seed:</strong><br>
-            {{ post.idea_seed }}
-        </div>
-        {% endif %}
         {% if post.intro_blurb %}
         <div class="preview-content">
             <strong>Introduction:</strong><br>
@@ -57,7 +54,6 @@
         {% endif %}
         {% if sections %}
         <div class="sections">
-            <h2>Post Sections</h2>
             {% for section in sections %}
             <div class="section">
                 <h3>{{ section.section_heading or 'Untitled Section' }}</h3>

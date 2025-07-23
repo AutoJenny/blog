@@ -48,7 +48,8 @@ def get_post_with_development(post_id):
         
         # Get post data, alias post.id as post_id
         cur.execute("""
-            SELECT p.id AS post_id, p.*, pd.*
+            SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
+                   pd.idea_seed, pd.intro_blurb, pd.main_title, pd.subtitle as dev_subtitle
             FROM post p
             LEFT JOIN post_development pd ON pd.post_id = p.id
             WHERE p.id = %s
