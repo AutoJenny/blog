@@ -139,6 +139,10 @@
                 const data = {};
                 data[field] = value;
                 
+                console.log(`DEBUG: Saving ${field} = "${value}" to ${endpoint}`);
+                console.log(`DEBUG: Request data:`, data);
+                console.log(`DEBUG: JSON data:`, JSON.stringify(data));
+                
                 fetch(endpoint, {
                     method: 'PATCH',
                     headers: {
@@ -147,6 +151,7 @@
                     body: JSON.stringify(data)
                 })
                 .then(response => {
+                    console.log(`DEBUG: Response status: ${response.status} ${response.statusText}`);
                     if (response.ok) {
                         console.log(`${field} saved successfully:`, value);
                         // Update the display to show the selected value
@@ -159,6 +164,9 @@
                         }
                     } else {
                         console.error(`Error saving ${field}:`, response.statusText);
+                        return response.text().then(text => {
+                            console.error(`Response body:`, text);
+                        });
                     }
                 })
                 .catch(error => {
