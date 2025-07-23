@@ -24,6 +24,17 @@ app.config['DATABASE_URL'] = os.getenv('DATABASE_URL', 'postgresql://nickfiddes@
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Custom Jinja filter to parse JSON
+@app.template_filter('from_json')
+def from_json_filter(value):
+    """Parse JSON string to Python object."""
+    if not value:
+        return []
+    try:
+        return json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        return []
+
 def get_db_conn():
     """Get database connection."""
     try:
@@ -259,10 +270,10 @@ def headers_panel():
         with get_db_conn() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
-            # Get post header information
+            # Get post header information including title_choices
             cur.execute("""
-                SELECT p.title, p.summary,
-                       pd.main_title, pd.subtitle, pd.intro_blurb
+                SELECT p.title, p.summary, p.title_choices, p.subtitle,
+                       pd.main_title, pd.subtitle as dev_subtitle, pd.intro_blurb
                 FROM post p
                 LEFT JOIN post_development pd ON pd.post_id = p.id
                 WHERE p.id = %s
