@@ -131,15 +131,16 @@
             });
             
             function saveTitleSelection(field, value) {
-                // Determine which table to update based on field
-                const endpoint = field === 'main_title' ? 
-                    `http://localhost:5000/api/workflow/posts/${postId}/development` :
-                    `http://localhost:5002/api/workflow/posts/${postId}/post`;
+                // Both main_title and subtitle should be saved to the post table
+                const endpoint = `http://localhost:5002/api/workflow/posts/${postId}/post`;
                 
                 const data = {};
-                data[field] = value;
+                // Map main_title to title for the post table
+                const postField = field === 'main_title' ? 'title' : field;
+                data[postField] = value;
                 
-
+                console.log(`Sending data for ${field}:`, data);
+                console.log(`Request body:`, JSON.stringify(data));
                 
                 fetch(endpoint, {
                     method: 'PATCH',
@@ -155,9 +156,17 @@
                         if (field === 'main_title') {
                             mainTitleSelect.style.color = '#e5e7eb';
                             mainTitleSelect.classList.remove('empty');
+                            // Refresh the page to show the updated selection
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 500);
                         } else if (field === 'subtitle') {
                             subtitleSelect.style.color = '#e5e7eb';
                             subtitleSelect.classList.remove('empty');
+                            // Refresh the page to show the updated selection
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 500);
                         }
                     } else {
                         console.error(`Error saving ${field}:`, response.statusText);
@@ -187,7 +196,7 @@
                 {% if post.title_choices %}
                     {% set title_choices = post.title_choices|from_json %}
                     {% for choice in title_choices %}
-                        <option value="{{ choice.title }}" {% if post.main_title == choice.title %}selected{% endif %}>
+                        <option value="{{ choice.title }}" {% if post.title == choice.title %}selected{% endif %}>
                             {{ choice.title }}
                         </option>
                     {% endfor %}
