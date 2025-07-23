@@ -74,19 +74,17 @@ function renderSections(data) {
     const panel = document.getElementById('sections-panel-content');
     
     if (!data.sections || data.sections.length === 0) {
-        panel.innerHTML = '<p style="color: #9ca3af;">No sections found for this post.</p>';
+        panel.innerHTML = '<p>No sections found for this post.</p>';
         return;
     }
     
-    const sectionsHtml = data.sections.map((section, index) => {
-        return renderSection(section, index, data.sections.length);
-    }).join('');
+    let sectionsHtml = '';
     
-    panel.innerHTML = `
-        <div style="display: block; width: 100%;">
-            ${sectionsHtml}
-        </div>
-    `;
+    data.sections.forEach((section, index) => {
+        sectionsHtml += renderSection(section, index, data.sections.length);
+    });
+    
+    panel.innerHTML = sectionsHtml;
     
     // Initialize interactive elements
     initAccordions();
@@ -113,95 +111,85 @@ function renderSection(section, index, totalSections) {
     const generatedImageUrl = section.generated_image_url || '';
     const status = section.status || 'draft';
     
-    // Thumbnail if available
-    const thumbnail = generatedImageUrl 
-        ? `<img src="${generatedImageUrl}" alt="Section Image" style="width: 32px; height: 32px; object-fit: cover; border-radius: 0.3em; margin-right: 0.75em; border: 2px solid #4ade80; vertical-align: middle;">`
-        : '';
-    
     return `
         <div style="
-            background: #14342b; 
-            border: 1px solid #065f46; 
-            border-radius: 8px; 
-            margin-bottom: 20px; 
-            padding: 0; 
-            width: 100%; 
-            box-sizing: border-box;
-            display: block;
+            background: #14342b;
+            border: 1px solid #065f46;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 0;
+            width: 100%;
         " data-section-id="${sectionId}">
             
             <!-- Section Header -->
             <div style="
-                display: flex; 
-                align-items: flex-start; 
-                gap: 15px; 
-                padding: 20px; 
+                display: flex;
+                align-items: flex-start;
+                gap: 15px;
+                padding: 20px;
                 border-bottom: 1px solid #065f46;
             ">
                 <!-- Reorder Controls -->
-                <div style="display: flex; flex-direction: column; gap: 5px; flex-shrink: 0;">
+                <div style="display: flex; flex-direction: column; gap: 5px;">
                     <button class="reorder-btn reorder-up" data-section-id="${sectionId}" title="Move Up" 
                             style="
-                                background: #059669; 
-                                color: white; 
-                                border: none; 
-                                border-radius: 4px; 
-                                width: 28px; 
-                                height: 28px; 
-                                cursor: pointer; 
-                                font-size: 12px; 
+                                background: #059669;
+                                color: white;
+                                border: none;
+                                border-radius: 4px;
+                                width: 28px;
+                                height: 28px;
+                                cursor: pointer;
+                                font-size: 12px;
                                 ${index === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}
                             ">
                         ▲
                     </button>
                     <button class="reorder-btn reorder-down" data-section-id="${sectionId}" title="Move Down" 
                             style="
-                                background: #059669; 
-                                color: white; 
-                                border: none; 
-                                border-radius: 4px; 
-                                width: 28px; 
-                                height: 28px; 
-                                cursor: pointer; 
-                                font-size: 12px; 
+                                background: #059669;
+                                color: white;
+                                border: none;
+                                border-radius: 4px;
+                                width: 28px;
+                                height: 28px;
+                                cursor: pointer;
+                                font-size: 12px;
                                 ${index === totalSections - 1 ? 'opacity: 0.5; cursor: not-allowed;' : ''}
                             ">
                         ▼
                     </button>
                 </div>
                 
-                <!-- Section Number and Thumbnail -->
-                <div style="display: flex; align-items: center; flex-shrink: 0; min-width: 50px;">
-                    ${thumbnail}
-                    <span style="color: #4ade80; font-weight: bold; font-size: 24px; text-align: center;">${index + 1}</span>
+                <!-- Section Number -->
+                <div style="display: flex; align-items: center; min-width: 50px;">
+                    <span style="color: #4ade80; font-weight: bold; font-size: 24px;">${index + 1}</span>
                 </div>
                 
                 <!-- Section Checkbox -->
-                <div style="flex-shrink: 0; margin: 0 15px;">
-                    <input type="checkbox" class="section-select-checkbox" data-section-id="${sectionId}" style="width: 18px; height: 18px; cursor: pointer;">
+                <div style="margin: 0 15px;">
+                    <input type="checkbox" class="section-select-checkbox" data-section-id="${sectionId}" style="width: 18px; height: 18px;">
                 </div>
                 
                 <!-- Section Title and Description -->
                 <div class="section-title-area" style="
-                    flex: 1; 
-                    margin: 0 15px; 
+                    flex: 1;
+                    margin: 0 15px;
                     cursor: pointer;
                 " data-accordion-id="${accordionId}">
-                    <h2 style="margin: 0 0 10px 0; color: #7dd3fc; font-size: 20px; font-weight: bold; line-height: 1.3;">${heading}</h2>
-                    ${description ? `<p style="margin: 0; color: #b9e0ff; font-size: 16px; line-height: 1.5;">${description}</p>` : ''}
+                    <h2 style="margin: 0 0 10px 0; color: #7dd3fc; font-size: 20px; font-weight: bold;">${heading}</h2>
+                    ${description ? `<p style="margin: 0; color: #b9e0ff; font-size: 16px;">${description}</p>` : ''}
                 </div>
                 
                 <!-- Accordion Toggle -->
-                <div style="flex-shrink: 0; margin-left: auto;">
+                <div>
                     <button class="section-accordion-trigger" aria-controls="${accordionId}" aria-expanded="false" 
                             style="
-                                background: none; 
-                                border: none; 
-                                color: #b9e0ff; 
-                                cursor: pointer; 
-                                font-size: 20px; 
-                                user-select: none; 
-                                transition: transform 0.2s; 
+                                background: none;
+                                border: none;
+                                color: #b9e0ff;
+                                cursor: pointer;
+                                font-size: 20px;
                                 padding: 10px;
                             ">
                         <span class="section-arrow">▼</span>
@@ -211,11 +199,11 @@ function renderSection(section, index, totalSections) {
             
             <!-- Section Content (Accordion) -->
             <div id="${accordionId}" class="section-content" style="
-                display: none; 
-                padding: 20px; 
+                display: none;
+                padding: 20px;
                 background: #14342b;
             ">
-                <div style="color: #e5e7eb; line-height: 1.6;">
+                <div style="color: #e5e7eb;">
                     <div style="margin-bottom: 20px;">
                         <h4 style="color: #7dd3fc; margin-bottom: 10px;">Draft Content:</h4>
                         <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
