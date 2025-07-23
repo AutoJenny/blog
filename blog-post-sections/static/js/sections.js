@@ -98,15 +98,24 @@ function renderSections(data) {
 function renderSection(section, index, totalSections) {
     const sectionId = section.id;
     const accordionId = `section-accordion-${index}`;
-    const heading = section.title || section.section_heading || `Section ${index + 1}`;
-    const description = section.description || section.section_description || '';
-    const content = section.draft || section.content || '';
+    const heading = section.section_heading || section.title || `Section ${index + 1}`;
+    const description = section.section_description || section.description || '';
+    const draft = section.draft || '';
+    const polished = section.polished || '';
     const ideas = section.ideas_to_include || '';
     const facts = section.facts_to_include || '';
+    const highlighting = section.highlighting || '';
+    const imageConcepts = section.image_concepts || '';
+    const imagePrompts = section.image_prompts || '';
+    const watermarking = section.watermarking || '';
+    const imageMetaDescriptions = section.image_meta_descriptions || '';
+    const imageCaptions = section.image_captions || '';
+    const generatedImageUrl = section.generated_image_url || '';
+    const status = section.status || 'draft';
     
     // Thumbnail if available
-    const thumbnail = section.generated_image_url 
-        ? `<img src="${section.generated_image_url}" alt="Section Image" style="width: 32px; height: 32px; object-fit: cover; border-radius: 0.3em; margin-right: 0.75em; border: 2px solid #4ade80; vertical-align: middle;">`
+    const thumbnail = generatedImageUrl 
+        ? `<img src="${generatedImageUrl}" alt="Section Image" style="width: 32px; height: 32px; object-fit: cover; border-radius: 0.3em; margin-right: 0.75em; border: 2px solid #4ade80; vertical-align: middle;">`
         : '';
     
     return `
@@ -158,6 +167,7 @@ function renderSection(section, index, totalSections) {
                     <button class="tab-btn active" data-tab="content" style="background: #059669; color: white; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Content</button>
                     <button class="tab-btn" data-tab="ideas" style="background: #374151; color: #9ca3af; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Ideas</button>
                     <button class="tab-btn" data-tab="facts" style="background: #374151; color: #9ca3af; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Facts</button>
+                    <button class="tab-btn" data-tab="images" style="background: #374151; color: #9ca3af; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Images</button>
                 </div>
                 
                 <!-- Tab Content -->
@@ -165,21 +175,21 @@ function renderSection(section, index, totalSections) {
                     <div style="margin-bottom: 1rem;">
                         <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Draft Content:</h4>
                         <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
-                            ${content ? content.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No draft content available</em>'}
+                            ${draft ? draft.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No draft content available</em>'}
                         </div>
                     </div>
                     
                     <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Final Content:</h4>
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Polished Content:</h4>
                         <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
-                            ${section.final_content ? section.final_content.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No final content available</em>'}
+                            ${polished ? polished.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No polished content available</em>'}
                         </div>
                     </div>
                     
                     <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Section Summary:</h4>
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Highlighting:</h4>
                         <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
-                            ${section.section_summary ? section.section_summary.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No summary available</em>'}
+                            ${highlighting ? highlighting.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No highlighting available</em>'}
                         </div>
                     </div>
                 </div>
@@ -191,20 +201,6 @@ function renderSection(section, index, totalSections) {
                             ${ideas ? ideas.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No ideas specified</em>'}
                         </div>
                     </div>
-                    
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Key Points:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
-                            ${section.key_points ? section.key_points.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No key points specified</em>'}
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Research Notes:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
-                            ${section.research_notes ? section.research_notes.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No research notes available</em>'}
-                        </div>
-                    </div>
                 </div>
                 
                 <div class="tab-content" data-tab="facts" style="display: none; color: #e5e7eb; line-height: 1.6;">
@@ -214,18 +210,41 @@ function renderSection(section, index, totalSections) {
                             ${facts ? facts.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No facts specified</em>'}
                         </div>
                     </div>
-                    
+                </div>
+                
+                <div class="tab-content" data-tab="images" style="display: none; color: #e5e7eb; line-height: 1.6;">
                     <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Statistics:</h4>
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Image Concepts:</h4>
                         <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
-                            ${section.statistics ? section.statistics.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No statistics available</em>'}
+                            ${imageConcepts ? imageConcepts.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image concepts available</em>'}
                         </div>
                     </div>
                     
                     <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Sources:</h4>
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Image Prompts:</h4>
                         <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
-                            ${section.sources ? section.sources.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No sources available</em>'}
+                            ${imagePrompts ? imagePrompts.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image prompts available</em>'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Watermarking:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${watermarking ? watermarking.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No watermarking info available</em>'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Image Meta Descriptions:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${imageMetaDescriptions ? imageMetaDescriptions.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No meta descriptions available</em>'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Image Captions:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${imageCaptions ? imageCaptions.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image captions available</em>'}
                         </div>
                     </div>
                 </div>
