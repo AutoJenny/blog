@@ -83,7 +83,7 @@ function renderSections(data) {
     }).join('');
     
     panel.innerHTML = `
-        <div id="sections-sortable-container" class="sections" style="display: flex; flex-direction: column; gap: 2rem;">
+        <div id="sections-sortable-container" class="sections" style="display: flex; flex-direction: column; gap: 2.5rem;">
             ${sectionsHtml}
         </div>
     `;
@@ -112,39 +112,43 @@ function renderSection(section, index, totalSections) {
     return `
         <div class="section" data-section-id="${sectionId}">
             <!-- Section Header Row -->
-            <div class="section-header-row" style="display: flex; align-items: center; gap: 1em; padding: 1.2rem 2rem 0 2rem;">
+            <div class="section-header-row" style="display: flex; align-items: flex-start; gap: 1.5rem; padding: 1.5rem 2rem 0 2rem;">
                 <!-- Reorder Controls -->
-                <div class="section-reorder-controls" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                <div class="section-reorder-controls" style="display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0;">
                     <button class="reorder-btn reorder-up" data-section-id="${sectionId}" title="Move Up" 
-                            style="background: #059669; color: white; border: none; border-radius: 0.25rem; width: 24px; height: 24px; cursor: pointer; font-size: 12px; ${index === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                            style="background: #059669; color: white; border: none; border-radius: 0.25rem; width: 28px; height: 28px; cursor: pointer; font-size: 12px; ${index === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
                         ▲
                     </button>
                     <button class="reorder-btn reorder-down" data-section-id="${sectionId}" title="Move Down" 
-                            style="background: #059669; color: white; border: none; border-radius: 0.25rem; width: 24px; height: 24px; cursor: pointer; font-size: 12px; ${index === totalSections - 1 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                            style="background: #059669; color: white; border: none; border-radius: 0.25rem; width: 28px; height: 28px; cursor: pointer; font-size: 12px; ${index === totalSections - 1 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
                         ▼
                     </button>
                 </div>
                 
                 <!-- Section Number and Thumbnail -->
-                <div style="display: flex; align-items: center; margin-right: 0.75rem;">
+                <div style="display: flex; align-items: center; flex-shrink: 0; min-width: 3rem;">
                     ${thumbnail}
-                    <span style="color: #4ade80; font-weight: bold; font-size: 1.2rem; min-width: 2rem;">${index + 1}</span>
+                    <span style="color: #4ade80; font-weight: bold; font-size: 1.5rem; text-align: center; min-width: 2.5rem;">${index + 1}</span>
                 </div>
                 
                 <!-- Section Checkbox -->
-                <input type="checkbox" class="section-select-checkbox" data-section-id="${sectionId}" style="width: 1.2em; height: 1.2em; cursor: pointer;">
+                <div style="flex-shrink: 0; margin: 0 1rem;">
+                    <input type="checkbox" class="section-select-checkbox" data-section-id="${sectionId}" style="width: 1.3em; height: 1.3em; cursor: pointer;">
+                </div>
                 
                 <!-- Section Title and Description -->
-                <div style="flex: 1; margin-left: 0.5rem;">
-                    <h2 style="margin: 0; color: #7dd3fc; font-size: 1.5rem; font-weight: bold;">${heading}</h2>
-                    ${description ? `<p style="margin: 0.5rem 0 0 0; color: #b9e0ff; font-size: 1.1rem; line-height: 1.4;">${description}</p>` : ''}
+                <div style="flex: 1; margin: 0 1.5rem;">
+                    <h2 style="margin: 0 0 0.75rem 0; color: #7dd3fc; font-size: 1.5rem; font-weight: bold; line-height: 1.3;">${heading}</h2>
+                    ${description ? `<p style="margin: 0; color: #b9e0ff; font-size: 1.1rem; line-height: 1.5;">${description}</p>` : ''}
                 </div>
                 
                 <!-- Accordion Toggle -->
-                <button class="section-accordion-trigger" aria-controls="${accordionId}" aria-expanded="false" 
-                        style="background: none; border: none; color: #b9e0ff; cursor: pointer; font-size: 1.5rem; user-select: none; transition: transform 0.2s;">
-                    <span class="section-arrow">▼</span>
-                </button>
+                <div style="flex-shrink: 0; margin-left: auto;">
+                    <button class="section-accordion-trigger" aria-controls="${accordionId}" aria-expanded="false" 
+                            style="background: none; border: none; color: #b9e0ff; cursor: pointer; font-size: 1.5rem; user-select: none; transition: transform 0.2s; padding: 0.5rem;">
+                        <span class="section-arrow">▼</span>
+                    </button>
+                </div>
             </div>
             
             <!-- Section Content (Accordion) -->
