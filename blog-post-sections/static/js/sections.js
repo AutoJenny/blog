@@ -83,7 +83,7 @@ function renderSections(data) {
     }).join('');
     
     panel.innerHTML = `
-        <div class="sections-container" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div id="sections-sortable-container" class="sections" style="display: flex; flex-direction: column; gap: 2rem;">
             ${sectionsHtml}
         </div>
     `;
@@ -110,11 +110,11 @@ function renderSection(section, index, totalSections) {
         : '';
     
     return `
-        <div class="section" data-section-id="${sectionId}" style="background: #14342b; border-radius: 0.5rem; border: 1px solid #065f46; overflow: hidden;">
-            <!-- Section Header -->
-            <div class="section-header" style="display: flex; align-items: center; padding: 1rem; background: #0f2e23; border-bottom: 1px solid #065f46;">
+        <div class="section" data-section-id="${sectionId}">
+            <!-- Section Header Row -->
+            <div class="section-header-row" style="display: flex; align-items: center; gap: 1em; padding: 1.2rem 2rem 0 2rem;">
                 <!-- Reorder Controls -->
-                <div class="section-reorder-controls" style="display: flex; flex-direction: column; margin-right: 0.75rem; gap: 0.25rem;">
+                <div class="section-reorder-controls" style="display: flex; flex-direction: column; gap: 0.25rem;">
                     <button class="reorder-btn reorder-up" data-section-id="${sectionId}" title="Move Up" 
                             style="background: #059669; color: white; border: none; border-radius: 0.25rem; width: 24px; height: 24px; cursor: pointer; font-size: 12px; ${index === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
                         ▲
@@ -128,24 +128,27 @@ function renderSection(section, index, totalSections) {
                 <!-- Section Number and Thumbnail -->
                 <div style="display: flex; align-items: center; margin-right: 0.75rem;">
                     ${thumbnail}
-                    <span style="color: #4ade80; font-weight: bold; font-size: 0.875rem; min-width: 2rem;">${index + 1}</span>
+                    <span style="color: #4ade80; font-weight: bold; font-size: 1.2rem; min-width: 2rem;">${index + 1}</span>
                 </div>
                 
-                <!-- Section Title -->
-                <div style="flex: 1;">
-                    <h3 style="margin: 0; color: #e5e7eb; font-size: 1rem; font-weight: 600;">${heading}</h3>
-                    ${description ? `<p style="margin: 0.25rem 0 0 0; color: #9ca3af; font-size: 0.875rem;">${description}</p>` : ''}
+                <!-- Section Checkbox -->
+                <input type="checkbox" class="section-select-checkbox" data-section-id="${sectionId}" style="width: 1.2em; height: 1.2em; cursor: pointer;">
+                
+                <!-- Section Title and Description -->
+                <div style="flex: 1; margin-left: 0.5rem;">
+                    <h2 style="margin: 0; color: #7dd3fc; font-size: 1.5rem; font-weight: bold;">${heading}</h2>
+                    ${description ? `<p style="margin: 0.5rem 0 0 0; color: #b9e0ff; font-size: 1.1rem; line-height: 1.4;">${description}</p>` : ''}
                 </div>
                 
                 <!-- Accordion Toggle -->
                 <button class="section-accordion-trigger" aria-controls="${accordionId}" aria-expanded="false" 
-                        style="background: none; border: none; color: #4ade80; cursor: pointer; padding: 0.5rem; font-size: 1.25rem;">
+                        style="background: none; border: none; color: #b9e0ff; cursor: pointer; font-size: 1.5rem; user-select: none; transition: transform 0.2s;">
                     <span class="section-arrow">▼</span>
                 </button>
             </div>
             
             <!-- Section Content (Accordion) -->
-            <div id="${accordionId}" class="section-content" style="display: none; padding: 1rem; background: #14342b;">
+            <div id="${accordionId}" class="section-content" style="display: none; padding: 0 2rem 2rem 2rem;">
                 <!-- Content Tabs -->
                 <div class="section-tabs" style="display: flex; border-bottom: 1px solid #065f46; margin-bottom: 1rem;">
                     <button class="tab-btn active" data-tab="content" style="background: #059669; color: white; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Content</button>
