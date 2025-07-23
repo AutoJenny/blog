@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Sections</title>
+</head>
+<body>
+    <h1>Debug Sections</h1>
+    <div id="sections-panel-content">
+        <p>Loading sections...</p>
+    </div>
+
+    <script>
+        // Test if basic JavaScript is working
+        console.log('Debug test loaded');
+        
+        // Test API call and render sections
+        fetch('http://localhost:5003/api/sections/22')
+            .then(response => response.json())
+            .then(data => {
+                console.log('API response:', data);
+                
+                // Test the renderSections function
+                if (typeof renderSections === 'function') {
+                    console.log('renderSections function found, calling it...');
+                    renderSections(data);
+                } else {
+                    console.log('renderSections function not found');
+                    document.getElementById('sections-panel-content').innerHTML = 
+                        '<p style="color: red;">renderSections function not found</p>';
+                }
+            })
+            .catch(error => {
+                console.error('API error:', error);
+                document.getElementById('sections-panel-content').innerHTML = 
+                    `<p style="color: red;">API error: ${error.message}</p>`;
+            });
+    </script>
+    
+    <!-- Include our JS files -->
+    <script src="http://localhost:5003/static/js/sections.js"></script>
+</body>
+</html> 

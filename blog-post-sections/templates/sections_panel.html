@@ -22,16 +22,4 @@
 <!-- Include our CSS and JS files -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/sections.css') }}">
 <script src="{{ url_for('static', filename='js/sections.js') }}"></script>
-<script src="{{ url_for('static', filename='js/section_drag_drop.js') }}"></script>
-
-<script>
-    // Immediate test to see if JavaScript is working
-    console.log('Template script loaded');
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Template DOM loaded');
-        const panel = document.getElementById('sections-panel-content');
-        if (panel) {
-            panel.innerHTML = '<p style="color: #10b981;">Template JavaScript is working! Loading sections...</p>';
-        }
-    });
-</script> 
+<script src="{{ url_for('static', filename='js/section_drag_drop.js') }}"></script> 

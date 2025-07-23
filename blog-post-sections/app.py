@@ -53,6 +53,12 @@ def test_sections():
 def test_minimal():
     return send_file('test_minimal.html')
 
+@app.route('/test-debug')
+def test_debug():
+    return send_file('test_debug.html')
+
+
+
 @app.route('/test-db')
 def test_db():
     if test_db_connection():
