@@ -83,7 +83,7 @@ function renderSections(data) {
     }).join('');
     
     panel.innerHTML = `
-        <div id="sections-sortable-container" style="display: flex; flex-direction: column; gap: 2rem; padding: 1rem; width: 100%;">
+        <div style="display: block; width: 100%;">
             ${sectionsHtml}
         </div>
     `;
@@ -119,124 +119,176 @@ function renderSection(section, index, totalSections) {
         : '';
     
     return `
-        <div class="section" data-section-id="${sectionId}" style="background: #14342b; border-radius: 0.5rem; border: 1px solid #065f46; margin-bottom: 2rem; padding: 0; overflow: hidden; width: 100%;">
-            <!-- Section Header Row -->
-            <div class="section-header-row" style="display: flex; align-items: flex-start; gap: 1.5rem; padding: 1.5rem 2rem 0 2rem;">
+        <div style="
+            background: #14342b; 
+            border: 1px solid #065f46; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            padding: 0; 
+            width: 100%; 
+            box-sizing: border-box;
+            display: block;
+        " data-section-id="${sectionId}">
+            
+            <!-- Section Header -->
+            <div style="
+                display: flex; 
+                align-items: flex-start; 
+                gap: 15px; 
+                padding: 20px; 
+                border-bottom: 1px solid #065f46;
+            ">
                 <!-- Reorder Controls -->
-                <div class="section-reorder-controls" style="display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0;">
+                <div style="display: flex; flex-direction: column; gap: 5px; flex-shrink: 0;">
                     <button class="reorder-btn reorder-up" data-section-id="${sectionId}" title="Move Up" 
-                            style="background: #059669; color: white; border: none; border-radius: 0.25rem; width: 28px; height: 28px; cursor: pointer; font-size: 12px; ${index === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                            style="
+                                background: #059669; 
+                                color: white; 
+                                border: none; 
+                                border-radius: 4px; 
+                                width: 28px; 
+                                height: 28px; 
+                                cursor: pointer; 
+                                font-size: 12px; 
+                                ${index === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}
+                            ">
                         ▲
                     </button>
                     <button class="reorder-btn reorder-down" data-section-id="${sectionId}" title="Move Down" 
-                            style="background: #059669; color: white; border: none; border-radius: 0.25rem; width: 28px; height: 28px; cursor: pointer; font-size: 12px; ${index === totalSections - 1 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                            style="
+                                background: #059669; 
+                                color: white; 
+                                border: none; 
+                                border-radius: 4px; 
+                                width: 28px; 
+                                height: 28px; 
+                                cursor: pointer; 
+                                font-size: 12px; 
+                                ${index === totalSections - 1 ? 'opacity: 0.5; cursor: not-allowed;' : ''}
+                            ">
                         ▼
                     </button>
                 </div>
                 
                 <!-- Section Number and Thumbnail -->
-                <div style="display: flex; align-items: center; flex-shrink: 0; min-width: 3rem;">
+                <div style="display: flex; align-items: center; flex-shrink: 0; min-width: 50px;">
                     ${thumbnail}
-                    <span style="color: #4ade80; font-weight: bold; font-size: 1.5rem; text-align: center; min-width: 2.5rem;">${index + 1}</span>
+                    <span style="color: #4ade80; font-weight: bold; font-size: 24px; text-align: center;">${index + 1}</span>
                 </div>
                 
                 <!-- Section Checkbox -->
-                <div style="flex-shrink: 0; margin: 0 1rem;">
-                    <input type="checkbox" class="section-select-checkbox" data-section-id="${sectionId}" style="width: 1.3em; height: 1.3em; cursor: pointer;">
+                <div style="flex-shrink: 0; margin: 0 15px;">
+                    <input type="checkbox" class="section-select-checkbox" data-section-id="${sectionId}" style="width: 18px; height: 18px; cursor: pointer;">
                 </div>
                 
-                <!-- Section Title and Description - CLICKABLE FOR ACCORDION -->
-                <div class="section-title-area" style="flex: 1; margin: 0 1.5rem; cursor: pointer;" data-accordion-id="${accordionId}">
-                    <h2 style="margin: 0 0 0.75rem 0; color: #7dd3fc; font-size: 1.5rem; font-weight: bold; line-height: 1.3;">${heading}</h2>
-                    ${description ? `<p style="margin: 0; color: #b9e0ff; font-size: 1.1rem; line-height: 1.5;">${description}</p>` : ''}
+                <!-- Section Title and Description -->
+                <div class="section-title-area" style="
+                    flex: 1; 
+                    margin: 0 15px; 
+                    cursor: pointer;
+                " data-accordion-id="${accordionId}">
+                    <h2 style="margin: 0 0 10px 0; color: #7dd3fc; font-size: 20px; font-weight: bold; line-height: 1.3;">${heading}</h2>
+                    ${description ? `<p style="margin: 0; color: #b9e0ff; font-size: 16px; line-height: 1.5;">${description}</p>` : ''}
                 </div>
                 
                 <!-- Accordion Toggle -->
                 <div style="flex-shrink: 0; margin-left: auto;">
                     <button class="section-accordion-trigger" aria-controls="${accordionId}" aria-expanded="false" 
-                            style="background: none; border: none; color: #b9e0ff; cursor: pointer; font-size: 1.5rem; user-select: none; transition: transform 0.2s; padding: 0.5rem;">
+                            style="
+                                background: none; 
+                                border: none; 
+                                color: #b9e0ff; 
+                                cursor: pointer; 
+                                font-size: 20px; 
+                                user-select: none; 
+                                transition: transform 0.2s; 
+                                padding: 10px;
+                            ">
                         <span class="section-arrow">▼</span>
                     </button>
                 </div>
             </div>
             
             <!-- Section Content (Accordion) -->
-            <div id="${accordionId}" class="section-content" style="display: none; padding: 0 2rem 2rem 2rem; background: #14342b;">
-                <!-- All Section Fields -->
+            <div id="${accordionId}" class="section-content" style="
+                display: none; 
+                padding: 20px; 
+                background: #14342b;
+            ">
                 <div style="color: #e5e7eb; line-height: 1.6;">
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Draft Content:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Draft Content:</h4>
+                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
                             ${draft ? draft.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No draft content available</em>'}
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Polished Content:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Polished Content:</h4>
+                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
                             ${polished ? polished.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No polished content available</em>'}
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Ideas to Include:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Ideas to Include:</h4>
+                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
                             ${ideas ? ideas.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No ideas specified</em>'}
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Facts to Include:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Facts to Include:</h4>
+                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
                             ${facts ? facts.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No facts specified</em>'}
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Highlighting:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Highlighting:</h4>
+                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
                             ${highlighting ? highlighting.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No highlighting available</em>'}
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Image Concepts:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Concepts:</h4>
+                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
                             ${imageConcepts ? imageConcepts.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image concepts available</em>'}
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Image Prompts:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Prompts:</h4>
+                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
                             ${imagePrompts ? imagePrompts.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image prompts available</em>'}
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Watermarking:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Watermarking:</h4>
+                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
                             ${watermarking ? watermarking.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No watermarking info available</em>'}
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Image Meta Descriptions:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Meta Descriptions:</h4>
+                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
                             ${imageMetaDescriptions ? imageMetaDescriptions.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No meta descriptions available</em>'}
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Image Captions:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Captions:</h4>
+                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
                             ${imageCaptions ? imageCaptions.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image captions available</em>'}
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Status:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Status:</h4>
+                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
                             <span style="color: #10b981; font-weight: bold;">${status}</span>
                         </div>
                     </div>
