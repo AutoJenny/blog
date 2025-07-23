@@ -3,47 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Post Info - Post Metadata Management</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Blog Post Preview Hub - Post Metadata Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f8fafc;
-            color: #1e293b;
-            line-height: 1.6;
-        }
-        
-        .container {
+        /* Additional styles for dashboard */
+        .dashboard-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
         }
         
-        .header {
-            background: white;
+        .dashboard-header {
+            background: #F7F3E8;
             padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
             margin-bottom: 2rem;
+            text-align: center;
+            border-bottom: 2px solid #b80000;
         }
         
-        .header h1 {
-            color: #0f172a;
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
+        .dashboard-header h1 {
+            font-size: 2.6rem;
+            font-weight: 900;
+            color: #222;
+            margin: 0 0 1.2rem;
+            line-height: 1.1;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-family: 'Lato', Arial, sans-serif;
         }
         
-        .header p {
-            color: #64748b;
-            font-size: 1.1rem;
+        .dashboard-header p {
+            font-size: 1.15rem;
+            color: #222;
+            font-family: 'Open Sans', Arial, sans-serif;
         }
         
         .stats-grid {
@@ -54,47 +49,52 @@
         }
         
         .stat-card {
-            background: white;
+            background: #F7F3E8;
             padding: 1.5rem;
             border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid #3b82f6;
+            box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+            border-left: 4px solid #b80000;
         }
         
         .stat-card h3 {
-            color: #64748b;
+            color: #888;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 0.5rem;
+            font-family: 'Lato', Arial, sans-serif;
         }
         
         .stat-card .value {
-            color: #0f172a;
+            color: #222;
             font-size: 2rem;
-            font-weight: 700;
+            font-weight: 900;
+            font-family: 'Lato', Arial, sans-serif;
         }
         
         .posts-section {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            background: #F7F3E8;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
             overflow: hidden;
         }
         
         .section-header {
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 2px solid #b80000;
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
         }
         
         .section-header h2 {
-            color: #0f172a;
-            font-size: 1.25rem;
-            font-weight: 600;
+            color: #222;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-family: 'Lato', Arial, sans-serif;
         }
         
         .posts-grid {
@@ -158,36 +158,62 @@
         }
         
         .btn {
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.25rem;
             border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
+            font-size: 0.95rem;
+            font-weight: 700;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
             transition: all 0.2s ease;
             border: none;
             cursor: pointer;
+            font-family: 'Lato', Arial, sans-serif;
         }
         
         .btn-primary {
-            background: #3b82f6;
+            background: #b80000;
             color: white;
+            box-shadow: 0 2px 8px rgba(184, 0, 0, 0.3);
         }
         
         .btn-primary:hover {
-            background: #2563eb;
+            background: #900;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(184, 0, 0, 0.4);
         }
         
         .btn-secondary {
-            background: #f1f5f9;
-            color: #475569;
-            border: 1px solid #cbd5e1;
+            background: #888;
+            color: white;
+            box-shadow: 0 2px 8px rgba(136, 136, 136, 0.3);
         }
         
         .btn-secondary:hover {
-            background: #e2e8f0;
+            background: #666;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(136, 136, 136, 0.4);
+        }
+        
+        .btn-success {
+            background: #388e3c;
+            color: white;
+            box-shadow: 0 2px 8px rgba(56, 142, 60, 0.3);
+        }
+        
+        .btn-success:hover {
+            background: #2e7d32;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(56, 142, 60, 0.4);
         }
         
         .loading {
@@ -219,8 +245,8 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
+    <div class="dashboard-container">
+        <div class="dashboard-header">
             <h1><i class="fas fa-eye"></i> Blog Post Preview Hub</h1>
             <p>Preview posts, manage metadata, titles, descriptions, tags, and SEO information</p>
         </div>
