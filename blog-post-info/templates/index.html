@@ -221,8 +221,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-info-circle"></i> Blog Post Info</h1>
-            <p>Manage post metadata, titles, descriptions, tags, and SEO information</p>
+            <h1><i class="fas fa-eye"></i> Blog Post Preview Hub</h1>
+            <p>Preview posts, manage metadata, titles, descriptions, tags, and SEO information</p>
         </div>
         
         <div class="stats-grid">
@@ -246,7 +246,7 @@
         
         <div class="posts-section">
             <div class="section-header">
-                <h2>Post Metadata</h2>
+                <h2>Post Previews & Metadata</h2>
                 <div class="post-actions">
                     <button class="btn btn-secondary" onclick="refreshPosts()">
                         <i class="fas fa-sync-alt"></i> Refresh
@@ -302,12 +302,19 @@
                                 </div>
                             ` : ''}
                             <div class="post-actions">
-                                <a href="/edit/${post.id}" class="btn btn-primary">
+                                <a href="/preview/${post.id}" class="btn btn-primary" target="_blank">
+                                    <i class="fas fa-eye"></i> Preview Post
+                                </a>
+                                <a href="/edit/${post.id}" class="btn btn-secondary">
                                     <i class="fas fa-edit"></i> Edit Metadata
                                 </a>
                                 <a href="http://localhost:5000/workflow/posts/${post.id}/planning/idea/initial_concept" 
                                    class="btn btn-secondary" target="_blank">
                                     <i class="fas fa-external-link-alt"></i> Open in Workflow
+                                </a>
+                                <a href="http://localhost:5003/sections?post_id=${post.id}" 
+                                   class="btn btn-success" target="_blank">
+                                    <i class="fas fa-list"></i> Manage Sections
                                 </a>
                             </div>
                         </div>
