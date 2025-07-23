@@ -306,7 +306,9 @@ def preview_post(post_id):
             
             # Get post data with development info
             cur.execute("""
-                SELECT p.*, pd.*
+                SELECT p.id, p.title, p.summary, p.created_at, p.updated_at, p.status,
+                       pd.main_title, pd.subtitle, pd.intro_blurb, pd.tags, pd.categories,
+                       pd.idea_seed, pd.basic_metadata, pd.seo_optimization
                 FROM post p
                 LEFT JOIN post_development pd ON pd.post_id = p.id
                 WHERE p.id = %s
