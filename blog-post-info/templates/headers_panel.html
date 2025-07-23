@@ -185,7 +185,7 @@
                 {% if post.title_choices %}
                     {% set title_choices = post.title_choices|from_json %}
                     {% for choice in title_choices %}
-                        <option value="{{ choice.title }}" {% if post.main_title == choice.title or post.title == choice.title %}selected{% endif %}>
+                        <option value="{{ choice.title }}" {% if post.main_title == choice.title %}selected{% endif %}>
                             {{ choice.title }}
                         </option>
                     {% endfor %}
@@ -200,7 +200,7 @@
                 {% if post.title_choices %}
                     {% set title_choices = post.title_choices|from_json %}
                     {% for choice in title_choices %}
-                        <option value="{{ choice.subtitle }}" {% if post.subtitle == choice.subtitle or post.dev_subtitle == choice.subtitle %}selected{% endif %}>
+                        <option value="{{ choice.subtitle }}" {% if post.subtitle == choice.subtitle %}selected{% endif %}>
                             {{ choice.subtitle }}
                         </option>
                     {% endfor %}
