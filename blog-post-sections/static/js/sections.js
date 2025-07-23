@@ -23,11 +23,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                     return;
                 }
             }
-            document.getElementById('sections-panel-content').innerHTML = '<p style="color: #ef4444;">Error: Could not determine most recent post.</p>';
+            // Fallback to id=22 if endpoint fails
+            window.location.href = '/sections?post_id=22';
+            return;
         } catch (err) {
-            document.getElementById('sections-panel-content').innerHTML = `<p style="color: #ef4444;">Error: ${err.message}</p>`;
+            // Fallback to id=22 if fetch fails
+            window.location.href = '/sections?post_id=22';
+            return;
         }
-        return;
     }
     
     loadSections(currentPostId);
