@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Launchpad - Post Preview Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #1e293b;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #0f172a;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #64748b;
+            font-size: 1.2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-card h3 {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .value {
+            color: #0f172a;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .posts-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .section-header h2 {
+            color: #0f172a;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+        
+        .post-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+        
+        .post-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        .post-meta {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+        
+        .post-summary {
+            color: #475569;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        
+        .post-tags {
+            margin-bottom: 1rem;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .post-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+        
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #3b82f6;
+        }
+        
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.draft {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-badge.published {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-badge.review {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-rocket"></i> Blog Launchpad</h1>
+            <p>Preview and manage your blog posts before publishing</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Posts</h3>
+                <div class="value" id="total-posts">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Draft Posts</h3>
+                <div class="value" id="draft-posts">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Published Posts</h3>
+                <div class="value" id="published-posts">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Service Status</h3>
+                <div class="value" id="service-status">Healthy</div>
+            </div>
+        </div>
+        
+        <div class="posts-section">
+            <div class="section-header">
+                <h2>Post Previews</h2>
+                <div class="post-actions">
+                    <button class="btn btn-secondary" onclick="refreshPosts()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <div id="posts-container" class="posts-grid">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <div>Loading posts...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Load posts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPosts();
+            updateStats();
+        });
+        
+        function loadPosts() {
+            fetch('/api/posts')
+                .then(response => response.json())
+                .then(posts => {
+                    const container = document.getElementById('posts-container');
+                    
+                    if (posts.length === 0) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-file-alt"></i>
+                                <h3>No posts found</h3>
+                                <p>Create some posts in the main blog system to see them here.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    const postsHTML = posts.map(post => `
+                        <div class="post-card">
+                            <div class="post-title">${post.title || post.main_title || 'Untitled Post'}</div>
+                            <div class="post-meta">
+                                ID: ${post.id} | Created: ${new Date(post.created_at).toLocaleDateString()}
+                                ${post.status ? ` | <span class="status-badge ${post.status}">${post.status}</span>` : ''}
+                            </div>
+                            <div class="post-summary">
+                                ${post.intro_blurb || post.summary || 'No description available.'}
+                            </div>
+                            ${post.tags ? `
+                                <div class="post-tags">
+                                    ${post.tags.split(',').map(tag => `<span class="tag">${tag.trim()}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                            <div class="post-actions">
+                                <a href="/preview/${post.id}" class="btn btn-primary" target="_blank">
+                                    <i class="fas fa-eye"></i> Preview Post
+                                </a>
+                                <a href="http://localhost:5000/workflow/posts/${post.id}/planning/idea/initial_concept" 
+                                   class="btn btn-secondary" target="_blank">
+                                    <i class="fas fa-edit"></i> Edit in Workflow
+                                </a>
+                                <a href="http://localhost:5003/sections?post_id=${post.id}" 
+                                   class="btn btn-success" target="_blank">
+                                    <i class="fas fa-list"></i> Manage Sections
+                                </a>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    container.innerHTML = postsHTML;
+                })
+                .catch(error => {
+                    console.error('Error loading posts:', error);
+                    document.getElementById('posts-container').innerHTML = `
+                        <div class="error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Error loading posts: ${error.message}
+                        </div>
+                    `;
+                });
+        }
+        
+        function updateStats() {
+            fetch('/api/posts')
+                .then(response => response.json())
+                .then(posts => {
+                    document.getElementById('total-posts').textContent = posts.length;
+                    
+                    const draftPosts = posts.filter(post => post.status === 'draft').length;
+                    document.getElementById('draft-posts').textContent = draftPosts;
+                    
+                    const publishedPosts = posts.filter(post => post.status === 'published').length;
+                    document.getElementById('published-posts').textContent = publishedPosts;
+                })
+                .catch(error => {
+                    console.error('Error updating stats:', error);
+                });
+        }
+        
+        function refreshPosts() {
+            loadPosts();
+            updateStats();
+        }
+    </script>
+</body>
+</html> 
