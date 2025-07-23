@@ -162,16 +162,8 @@ function renderSection(section, index, totalSections) {
             
             <!-- Section Content (Accordion) -->
             <div id="${accordionId}" class="section-content" style="display: none; padding: 0 2rem 2rem 2rem;">
-                <!-- Content Tabs -->
-                <div class="section-tabs" style="display: flex; border-bottom: 1px solid #065f46; margin-bottom: 1rem;">
-                    <button class="tab-btn active" data-tab="content" style="background: #059669; color: white; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Content</button>
-                    <button class="tab-btn" data-tab="ideas" style="background: #374151; color: #9ca3af; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Ideas</button>
-                    <button class="tab-btn" data-tab="facts" style="background: #374151; color: #9ca3af; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Facts</button>
-                    <button class="tab-btn" data-tab="images" style="background: #374151; color: #9ca3af; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 0.25rem 0.25rem 0 0;">Images</button>
-                </div>
-                
-                <!-- Tab Content -->
-                <div class="tab-content active" data-tab="content" style="color: #e5e7eb; line-height: 1.6;">
+                <!-- All Section Fields -->
+                <div style="color: #e5e7eb; line-height: 1.6;">
                     <div style="margin-bottom: 1rem;">
                         <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Draft Content:</h4>
                         <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
@@ -187,32 +179,26 @@ function renderSection(section, index, totalSections) {
                     </div>
                     
                     <div style="margin-bottom: 1rem;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Highlighting:</h4>
-                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
-                            ${highlighting ? highlighting.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No highlighting available</em>'}
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="tab-content" data-tab="ideas" style="display: none; color: #e5e7eb; line-height: 1.6;">
-                    <div style="margin-bottom: 1rem;">
                         <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Ideas to Include:</h4>
                         <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
                             ${ideas ? ideas.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No ideas specified</em>'}
                         </div>
                     </div>
-                </div>
-                
-                <div class="tab-content" data-tab="facts" style="display: none; color: #e5e7eb; line-height: 1.6;">
+                    
                     <div style="margin-bottom: 1rem;">
                         <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Facts to Include:</h4>
                         <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
                             ${facts ? facts.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No facts specified</em>'}
                         </div>
                     </div>
-                </div>
-                
-                <div class="tab-content" data-tab="images" style="display: none; color: #e5e7eb; line-height: 1.6;">
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Highlighting:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${highlighting ? highlighting.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No highlighting available</em>'}
+                        </div>
+                    </div>
+                    
                     <div style="margin-bottom: 1rem;">
                         <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Image Concepts:</h4>
                         <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
@@ -245,6 +231,13 @@ function renderSection(section, index, totalSections) {
                         <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Image Captions:</h4>
                         <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
                             ${imageCaptions ? imageCaptions.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image captions available</em>'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Status:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            <span style="color: #10b981; font-weight: bold;">${status}</span>
                         </div>
                     </div>
                 </div>
@@ -346,34 +339,6 @@ function initReorderButtons() {
 
 // Initialize tab functionality and checkbox selection
 function initSectionSelection() {
-    // Initialize tab functionality
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            
-            const section = btn.closest('.section');
-            const tabName = btn.dataset.tab;
-            
-            // Update active tab button
-            section.querySelectorAll('.tab-btn').forEach(b => {
-                b.classList.remove('active');
-                b.style.background = '#374151';
-                b.style.color = '#9ca3af';
-            });
-            btn.classList.add('active');
-            btn.style.background = '#059669';
-            btn.style.color = 'white';
-            
-            // Update active tab content
-            section.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-                content.style.display = 'none';
-            });
-            section.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-            section.querySelector(`[data-tab="${tabName}"]`).style.display = 'block';
-        });
-    });
-    
     // Initialize checkbox selection
     document.querySelectorAll('.section-select-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
