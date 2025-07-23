@@ -4,248 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ post.title or post.main_title or 'Untitled Post' }} | Preview</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f8fafc;
-            color: #1e293b;
-            line-height: 1.6;
-        }
-        
-        .preview-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .preview-header {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .preview-header h1 {
-            color: #0f172a;
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            line-height: 1.2;
-        }
-        
-        .post-meta {
-            color: #64748b;
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-        }
-        
-        .post-meta__date {
-            margin-right: 1rem;
-        }
-        
-        .post-meta__separator {
-            color: #cbd5e1;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            text-transform: uppercase;
-        }
-        
-        .status-badge.draft {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .status-badge.published {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        
-        .status-badge.review {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .idea-seed {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-        }
-        
-        .idea-seed strong {
-            color: #0369a1;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        
-        .preview-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .preview-content strong {
-            color: #0f172a;
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-        
-        .sections {
-            margin-top: 2rem;
-        }
-        
-        .sections h2 {
-            color: #0f172a;
-            font-size: 1.875rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        
-        .section {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 1.5rem;
-        }
-        
-        .section h3 {
-            color: #0f172a;
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .section-content {
-            color: #475569;
-            line-height: 1.7;
-        }
-        
-        .section-content p {
-            margin-bottom: 1rem;
-        }
-        
-        .section-content h4 {
-            color: #0f172a;
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin: 1.5rem 0 0.75rem 0;
-        }
-        
-        .section-content ul, .section-content ol {
-            margin: 1rem 0;
-            padding-left: 1.5rem;
-        }
-        
-        .section-content li {
-            margin-bottom: 0.5rem;
-        }
-        
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #3b82f6;
-            text-decoration: none;
-            font-weight: 500;
-            margin-bottom: 2rem;
-            padding: 0.75rem 1.25rem;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
-        }
-        
-        .back-link:hover {
-            background: #f8fafc;
-            transform: translateY(-1px);
-        }
-        
-        .edit-button-container {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            z-index: 1000;
-        }
-        
-        .edit-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #3b82f6;
-            color: white;
-            text-decoration: none;
-            padding: 0.75rem 1.25rem;
-            border-radius: 8px;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-            transition: all 0.2s ease;
-        }
-        
-        .edit-button:hover {
-            background: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
-        }
-        
-        .no-content {
-            text-align: center;
-            padding: 3rem;
-            color: #64748b;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .no-content i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-        
-        .section-image {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin: 1rem 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .section-description {
-            color: #64748b;
-            font-style: italic;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            background: #f8fafc;
-            border-radius: 6px;
-            border-left: 4px solid #3b82f6;
-        }
-    </style>
 </head>
 <body>
+    <!-- Clan.com Header -->
+    <div class="site-header">
+        <img src="{{ url_for('static', filename='site/header.jpg') }}" alt="Clan.com Header">
+    </div>
+    
     <!-- Edit Button - Top Right -->
     <div class="edit-button-container">
         <a href="http://localhost:5000/workflow/posts/{{ post.id }}/planning/idea/initial_concept" class="edit-button" target="_blank">
@@ -274,7 +41,7 @@
                 {% endif %}
             </div>
             {% if post.subtitle %}
-            <h2 style="color: #64748b; font-size: 1.25rem; font-weight: 400; margin-top: 1rem;">{{ post.subtitle }}</h2>
+            <h2 style="color: #888; font-size: 1.25rem; font-weight: 400; margin-top: 1rem;">{{ post.subtitle }}</h2>
             {% endif %}
         </header>
         
@@ -328,6 +95,11 @@
             <p>This post doesn't have any content yet. Use the workflow to add content and sections.</p>
         </div>
         {% endif %}
+    </div>
+    
+    <!-- Clan.com Footer -->
+    <div class="site-footer">
+        <img src="{{ url_for('static', filename='site/footer.jpg') }}" alt="Clan.com Footer">
     </div>
 </body>
 </html> 
