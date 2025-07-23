@@ -57,7 +57,7 @@ class SectionDragDrop {
         // Load SortableJS if not available
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = '/static/js/lib/sortable.min.js';
+            script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js';
             script.onload = () => {
                 console.log('SortableJS loaded successfully');
                 resolve();
@@ -133,21 +133,16 @@ class SectionDragDrop {
                     console.warn(`No section data found for id ${sectionId}`);
                     continue;
                 }
-                // Update orderIndex
-                section.orderIndex = i;
-                // Prepare payload
-                const payload = {
-                    title: section.title,
-                    description: section.description,
-                    orderIndex: section.orderIndex,
-                    elements: section.elements || {}
-                };
-                const response = await fetch(`/api/workflow/posts/${this.postId}/sections/${sectionId}`, {
+                
+                // Update the section order in the database
+                const response = await fetch(`/api/sections/${sectionId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        orderIndex: i + 1  // section_order is 1-based
+                    })
                 });
 
                 if (!response.ok) {
@@ -174,4 +169,23 @@ class SectionDragDrop {
             console.log('Section drag-and-drop destroyed');
         }
     }
-} 
+}
+
+// Initialize drag and drop when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for sections to be rendered
+    setTimeout(() => {
+        const container = document.getElementById('sections-sortable-container');
+        if (container) {
+            // Get post ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('post_id');
+            
+            if (postId) {
+                // Initialize drag and drop
+                window.sectionDragDrop = new SectionDragDrop();
+                window.sectionDragDrop.init('sections-sortable-container', postId);
+            }
+        }
+    }, 1000);
+}); 

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sections - Post {{ post_id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sections.css') }}">
+</head>
+<body>
+    <div id="sections-panel" style="background-color: #013828; min-height: 400px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
+        <!-- Manual Sync Button -->
+        <div class="mb-4 flex justify-center" style="margin-bottom: 1rem; display: flex; justify-content: center;">
+            <button id="manual-sync-sections-btn" 
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow-lg transition-colors duration-200 text-sm"
+                    style="background-color: #059669; color: white; font-weight: bold; padding: 0.5rem 1rem; border-radius: 0.25rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: background-color 0.2s; font-size: 0.875rem;">
+                🔄 Manual Sync Sections
+            </button>
+        </div>
+        
+        <!-- Select All Section -->
+        <div style="display:flex;align-items:center;gap:1em;margin-bottom:1.5em;padding: 0 2rem;">
+            <input type="checkbox" id="select-all-sections" checked style="width:1.2em;height:1.2em;">
+            <label for="select-all-sections" style="color:#7dd3fc;font-size:1.1rem;font-weight:bold;cursor:pointer;">Select All Sections</label>
+            <span id="selected-section-count" style="color:#b9e0ff;font-size:1rem;margin-left:1em;">All selected</span>
+        </div>
+        
+        <!-- Sections Container -->
+        <div id="sections-sortable-container" class="sections" style="display:flex;flex-direction:column;gap:2rem;padding: 0 2rem 2rem 2rem;">
+            {% for section in sections %}
+            <div class="section" data-section-id="{{ section.id }}" style="background:#14342b;border-radius:1rem;box-shadow:0 2px 12px #0004;">
+                <div style="display:flex;align-items:center;gap:1em;padding:1.2rem 2rem 0 2rem;">
+                    <input type="checkbox" class="section-select-checkbox" data-section-id="{{ section.id }}" checked style="width:1.2em;height:1.2em;">
+                    <button class="section-accordion-trigger" type="button" aria-expanded="false" aria-controls="section-accordion-{{ loop.index0 }}" style="display:flex;align-items:center;width:100%;background:none;border:none;cursor:pointer;padding:0;text-align:left;">
+                        <span class="section-drag-handle" style="cursor:grab;margin-right:1rem;color:#b9e0ff;font-size:1.5rem;user-select:none;">&#x2630;</span>
+                        <h2 style="color:#7dd3fc;font-size:1.5rem;font-weight:bold;flex:1;margin:0;display:inline-block;vertical-align:middle;">{{ loop.index }}. {{ section.section_heading or section.title or 'Section ' + loop.index|string }}</h2>
+                        <span class="section-arrow" style="color:#b9e0ff;font-size:1.5rem;user-select:none;transition:transform 0.2s;">&#x25BC;</span>
+                    </button>
+                </div>
+                <div style="padding:0 2rem 1.5rem 2rem;" onclick="event.stopPropagation();">
+                    <div style="color:#b9e0ff;font-size:1.1rem;margin-bottom:0.5rem;">{{ section.section_description or section.description or '' }}</div>
+                </div>
+                <div id="section-accordion-{{ loop.index0 }}" style="display:none;padding:0 2rem 2rem 2rem;">
+                    <div style="color: #e5e7eb;">
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Draft Content:</h4>
+                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                {% if section.draft %}
+                                    {{ section.draft|replace('\n', '<br>')|safe }}
+                                {% else %}
+                                    <em style="color: #9ca3af;">No draft content available</em>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Status:</h4>
+                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                <span style="color: #10b981; font-weight: bold;">{{ section.status or 'draft' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        // Simple accordion functionality
+        document.querySelectorAll('.section-accordion-trigger').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const accId = btn.getAttribute('aria-controls');
+                const content = document.getElementById(accId);
+                const arrow = btn.querySelector('.section-arrow');
+                const expanded = btn.getAttribute('aria-expanded') === 'true';
+                btn.setAttribute('aria-expanded', !expanded);
+                if (content) {
+                    content.style.display = expanded ? 'none' : 'block';
+                }
+                if (arrow) {
+                    arrow.innerHTML = expanded ? '&#x25BC;' : '&#x25B2;'; // ▼/▲
+                }
+            });
+        });
+
+        // Simple select all functionality
+        const selectAll = document.getElementById('select-all-sections');
+        const checkboxes = Array.from(document.querySelectorAll('.section-select-checkbox'));
+        const countSpan = document.getElementById('selected-section-count');
+        
+        function updateCount() {
+            const selected = checkboxes.filter(cb => cb.checked).length;
+            if (selected === checkboxes.length) {
+                countSpan.textContent = 'All selected';
+            } else if (selected === 0) {
+                countSpan.textContent = 'None selected';
+            } else {
+                countSpan.textContent = `${selected} selected`;
+            }
+        }
+        
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => { cb.checked = selectAll.checked; });
+                updateCount();
+            });
+        }
+        
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (!cb.checked) selectAll.checked = false;
+                else if (checkboxes.every(c => c.checked)) selectAll.checked = true;
+                updateCount();
+            });
+        });
+        
+        updateCount();
+    </script>
+</body>
+</html> 
