@@ -136,8 +136,8 @@ function renderSection(section, index, totalSections) {
                     <input type="checkbox" class="section-select-checkbox" data-section-id="${sectionId}" style="width: 1.3em; height: 1.3em; cursor: pointer;">
                 </div>
                 
-                <!-- Section Title and Description -->
-                <div style="flex: 1; margin: 0 1.5rem;">
+                <!-- Section Title and Description - CLICKABLE FOR ACCORDION -->
+                <div class="section-title-area" style="flex: 1; margin: 0 1.5rem; cursor: pointer;" data-accordion-id="${accordionId}">
                     <h2 style="margin: 0 0 0.75rem 0; color: #7dd3fc; font-size: 1.5rem; font-weight: bold; line-height: 1.3;">${heading}</h2>
                     ${description ? `<p style="margin: 0; color: #b9e0ff; font-size: 1.1rem; line-height: 1.5;">${description}</p>` : ''}
                 </div>
@@ -162,15 +162,72 @@ function renderSection(section, index, totalSections) {
                 
                 <!-- Tab Content -->
                 <div class="tab-content active" data-tab="content" style="color: #e5e7eb; line-height: 1.6;">
-                    ${content ? content.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No content available</em>'}
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Draft Content:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${content ? content.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No draft content available</em>'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Final Content:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${section.final_content ? section.final_content.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No final content available</em>'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Section Summary:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${section.section_summary ? section.section_summary.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No summary available</em>'}
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="tab-content" data-tab="ideas" style="display: none; color: #e5e7eb; line-height: 1.6;">
-                    ${ideas ? ideas.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No ideas specified</em>'}
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Ideas to Include:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${ideas ? ideas.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No ideas specified</em>'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Key Points:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${section.key_points ? section.key_points.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No key points specified</em>'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Research Notes:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${section.research_notes ? section.research_notes.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No research notes available</em>'}
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="tab-content" data-tab="facts" style="display: none; color: #e5e7eb; line-height: 1.6;">
-                    ${facts ? facts.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No facts specified</em>'}
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Facts to Include:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${facts ? facts.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No facts specified</em>'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Statistics:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${section.statistics ? section.statistics.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No statistics available</em>'}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <h4 style="color: #7dd3fc; margin-bottom: 0.5rem;">Sources:</h4>
+                        <div style="background: #1f2937; padding: 1rem; border-radius: 0.5rem; border: 1px solid #374151;">
+                            ${section.sources ? section.sources.replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No sources available</em>'}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -180,14 +237,51 @@ function renderSection(section, index, totalSections) {
 // Initialize accordion functionality
 function initAccordions() {
     console.log('Initializing accordions...');
+    
+    // Handle clicks on the title area
+    const titleAreas = document.querySelectorAll('.section-title-area');
+    console.log('Found title areas:', titleAreas.length);
+    
+    titleAreas.forEach((titleArea, index) => {
+        console.log(`Setting up title area ${index + 1}:`, titleArea);
+        titleArea.addEventListener('click', function(e) {
+            e.stopPropagation();
+            console.log('Title area clicked:', this);
+            
+            const accordionId = this.getAttribute('data-accordion-id');
+            const content = document.getElementById(accordionId);
+            const arrow = this.closest('.section').querySelector('.section-arrow');
+            const trigger = this.closest('.section').querySelector('.section-accordion-trigger');
+            const expanded = trigger.getAttribute('aria-expanded') === 'true';
+            
+            console.log('Accordion state from title click:', { accordionId, expanded, content: !!content, arrow: !!arrow });
+            
+            // Toggle state
+            trigger.setAttribute('aria-expanded', !expanded);
+            
+            // Toggle content visibility
+            if (content) {
+                content.style.display = expanded ? 'none' : 'block';
+                console.log('Content display set to:', content.style.display);
+            }
+            
+            // Update arrow
+            if (arrow) {
+                arrow.innerHTML = expanded ? '▼' : '▲';
+                console.log('Arrow updated to:', arrow.innerHTML);
+            }
+        });
+    });
+    
+    // Handle clicks on the arrow button
     const accordionTriggers = document.querySelectorAll('.section-accordion-trigger');
     console.log('Found accordion triggers:', accordionTriggers.length);
     
     accordionTriggers.forEach((btn, index) => {
-        console.log(`Setting up accordion ${index + 1}:`, btn);
+        console.log(`Setting up accordion trigger ${index + 1}:`, btn);
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            console.log('Accordion clicked:', this);
+            console.log('Accordion trigger clicked:', this);
             
             const section = btn.closest('.section');
             const accordionId = btn.getAttribute('aria-controls');
@@ -195,7 +289,7 @@ function initAccordions() {
             const arrow = btn.querySelector('.section-arrow');
             const expanded = btn.getAttribute('aria-expanded') === 'true';
             
-            console.log('Accordion state:', { accordionId, expanded, content: !!content, arrow: !!arrow });
+            console.log('Accordion state from trigger click:', { accordionId, expanded, content: !!content, arrow: !!arrow });
             
             // Toggle state
             btn.setAttribute('aria-expanded', !expanded);
