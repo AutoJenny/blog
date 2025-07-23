@@ -174,7 +174,4 @@ class SectionDragDrop {
             console.log('Section drag-and-drop destroyed');
         }
     }
-}
-
-// Export for use in other modules
-export default SectionDragDrop; 
+} 

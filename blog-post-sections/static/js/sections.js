@@ -5,20 +5,32 @@ let currentPostId = null;
 let sectionsData = null;
 
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('Sections.js loaded');
     
     // Get post ID from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     currentPostId = urlParams.get('post_id');
     
-    if (currentPostId) {
-        loadSections(currentPostId);
-    } else {
-        console.error('No post_id parameter found in URL');
-        document.getElementById('sections-panel-content').innerHTML = 
-            '<p style="color: #ef4444;">Error: No post ID specified</p>';
+    if (!currentPostId) {
+        // Fetch most recent post and redirect
+        try {
+            const resp = await fetch('/api/posts/most_recent');
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data && data.id) {
+                    window.location.href = `/sections?post_id=${data.id}`;
+                    return;
+                }
+            }
+            document.getElementById('sections-panel-content').innerHTML = '<p style="color: #ef4444;">Error: Could not determine most recent post.</p>';
+        } catch (err) {
+            document.getElementById('sections-panel-content').innerHTML = `<p style="color: #ef4444;">Error: ${err.message}</p>`;
+        }
+        return;
     }
+    
+    loadSections(currentPostId);
     
     // Set up manual sync button
     const syncBtn = document.getElementById('manual-sync-sections-btn');
