@@ -308,50 +308,7 @@ def sections_summary_panel():
     except Exception as e:
         return f'<div style="color:red;padding:1em;">Error loading sections: {e}</div>', 500
 
-@app.route('/preview/<int:post_id>')
-def preview_post(post_id):
-    """Preview a specific post with full content."""
-    try:
-        with get_db_conn() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            
-            # Get post data with development info
-            cur.execute("""
-                SELECT p.id, p.title, p.summary, p.created_at, p.updated_at, p.status,
-                       pd.main_title, pd.subtitle, pd.intro_blurb, pd.tags, pd.categories,
-                       pd.idea_seed, pd.basic_metadata, pd.seo_optimization
-                FROM post p
-                LEFT JOIN post_development pd ON pd.post_id = p.id
-                WHERE p.id = %s
-            """, (post_id,))
-            
-            post = cur.fetchone()
-            if not post:
-                return "Post not found", 404
-            
-            # Get sections with content
-            cur.execute("""
-                SELECT 
-                    id, post_id, section_order, 
-                    section_heading, section_description, 
-                    ideas_to_include, facts_to_include,
-                    draft, polished, highlighting, 
-                    image_concepts, image_prompts, 
-                    watermarking, image_meta_descriptions, 
-                    image_captions, generated_image_url, 
-                    image_generation_metadata, image_id, status
-                FROM post_section 
-                WHERE post_id = %s 
-                ORDER BY section_order
-            """, (post_id,))
-            
-            sections = [dict(row) for row in cur.fetchall()]
-            
-            return render_template('post_preview.html', post=dict(post), sections=sections)
-            
-    except Exception as e:
-        logger.error(f"Error previewing post: {str(e)}")
-        return f"Error previewing post: {str(e)}", 500
+
 
 @app.route('/api/posts')
 def get_posts_for_preview():
