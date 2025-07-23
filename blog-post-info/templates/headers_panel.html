@@ -86,7 +86,87 @@
             color: #60a5fa;
             font-size: 16px;
         }
+        
+        /* Dropdown styling */
+        select {
+            cursor: pointer;
+            outline: none;
+        }
+        
+        select:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+        }
+        
+        select option {
+            background-color: #1e40af;
+            color: #e5e7eb;
+            padding: 8px;
+        }
+        
+        select option:hover {
+            background-color: #3b82f6;
+        }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainTitleSelect = document.getElementById('main-title-select');
+            const subtitleSelect = document.getElementById('subtitle-select');
+            const postId = {{ post_id }};
+            
+            // Handle main title selection
+            mainTitleSelect.addEventListener('change', function() {
+                const selectedTitle = this.value;
+                if (selectedTitle) {
+                    saveTitleSelection('main_title', selectedTitle);
+                }
+            });
+            
+            // Handle subtitle selection
+            subtitleSelect.addEventListener('change', function() {
+                const selectedSubtitle = this.value;
+                if (selectedSubtitle) {
+                    saveTitleSelection('subtitle', selectedSubtitle);
+                }
+            });
+            
+            function saveTitleSelection(field, value) {
+                // Determine which table to update based on field
+                const endpoint = field === 'main_title' ? 
+                    `http://localhost:5000/api/workflow/posts/${postId}/development` :
+                    `http://localhost:5002/api/workflow/posts/${postId}/post`;
+                
+                const data = {};
+                data[field] = value;
+                
+                fetch(endpoint, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log(`${field} saved successfully:`, value);
+                        // Update the display to show the selected value
+                        if (field === 'main_title') {
+                            mainTitleSelect.style.color = '#e5e7eb';
+                            mainTitleSelect.classList.remove('empty');
+                        } else if (field === 'subtitle') {
+                            subtitleSelect.style.color = '#e5e7eb';
+                            subtitleSelect.classList.remove('empty');
+                        }
+                    } else {
+                        console.error(`Error saving ${field}:`, response.statusText);
+                    }
+                })
+                .catch(error => {
+                    console.error(`Error saving ${field}:`, error);
+                });
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="headers-container">
@@ -97,16 +177,32 @@
         
         <div class="header-section">
             <div class="section-label">Main Title</div>
-            <div class="section-content title-content {% if not post.main_title %}empty{% endif %}">
-                {{ post.main_title or 'No main title set' }}
-            </div>
+            <select id="main-title-select" class="section-content title-content" style="width: 100%; border: none; background: transparent; color: inherit; font-size: inherit; font-weight: inherit;">
+                <option value="">Select a title...</option>
+                {% if post.title_choices %}
+                    {% set title_choices = post.title_choices|from_json %}
+                    {% for choice in title_choices %}
+                        <option value="{{ choice.title }}" {% if post.main_title == choice.title or post.title == choice.title %}selected{% endif %}>
+                            {{ choice.title }}
+                        </option>
+                    {% endfor %}
+                {% endif %}
+            </select>
         </div>
         
         <div class="header-section">
             <div class="section-label">Subtitle</div>
-            <div class="section-content subtitle-content {% if not post.subtitle %}empty{% endif %}">
-                {{ post.subtitle or 'No subtitle set' }}
-            </div>
+            <select id="subtitle-select" class="section-content subtitle-content" style="width: 100%; border: none; background: transparent; color: inherit; font-size: inherit;">
+                <option value="">Select a subtitle...</option>
+                {% if post.title_choices %}
+                    {% set title_choices = post.title_choices|from_json %}
+                    {% for choice in title_choices %}
+                        <option value="{{ choice.subtitle }}" {% if post.subtitle == choice.subtitle or post.dev_subtitle == choice.subtitle %}selected{% endif %}>
+                            {{ choice.subtitle }}
+                        </option>
+                    {% endfor %}
+                {% endif %}
+            </select>
         </div>
         
         <div class="header-section">
