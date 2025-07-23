@@ -83,7 +83,7 @@ function renderSections(data) {
     }).join('');
     
     panel.innerHTML = `
-        <div id="sections-sortable-container" class="sections" style="display: flex; flex-direction: column; gap: 2.5rem;">
+        <div id="sections-sortable-container" style="display: flex; flex-direction: column; gap: 2rem; padding: 1rem;">
             ${sectionsHtml}
         </div>
     `;
@@ -119,7 +119,7 @@ function renderSection(section, index, totalSections) {
         : '';
     
     return `
-        <div class="section" data-section-id="${sectionId}">
+        <div class="section" data-section-id="${sectionId}" style="background: #14342b; border-radius: 0.5rem; border: 1px solid #065f46; margin-bottom: 0; padding: 0; overflow: hidden;">
             <!-- Section Header Row -->
             <div class="section-header-row" style="display: flex; align-items: flex-start; gap: 1.5rem; padding: 1.5rem 2rem 0 2rem;">
                 <!-- Reorder Controls -->
@@ -161,7 +161,7 @@ function renderSection(section, index, totalSections) {
             </div>
             
             <!-- Section Content (Accordion) -->
-            <div id="${accordionId}" class="section-content" style="display: none; padding: 0 2rem 2rem 2rem;">
+            <div id="${accordionId}" class="section-content" style="display: none; padding: 0 2rem 2rem 2rem; background: #14342b;">
                 <!-- All Section Fields -->
                 <div style="color: #e5e7eb; line-height: 1.6;">
                     <div style="margin-bottom: 1rem;">
