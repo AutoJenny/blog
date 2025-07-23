@@ -1,0 +1,370 @@
+/* sections.css: Complete Green Panel Sections UI styles (extracted from legacy) */
+
+/* Base panel styles */
+#sections-panel {
+    background-color: #013828 !important;
+    min-height: 400px;
+    border-radius: 8px;
+    padding: 0;
+    border: 1px solid #065f46;
+    overflow: visible;
+    /* Ensure iframe content is isolated */
+    isolation: isolate;
+}
+
+/* Manual Sync Button */
+#manual-sync-sections-btn {
+    background-color: #059669;
+    color: white;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s;
+    font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
+}
+
+#manual-sync-sections-btn:hover {
+    background-color: #047857;
+}
+
+#manual-sync-sections-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Sections Panel Content */
+#sections-panel-content {
+    color: #e5e7eb;
+    padding: 1rem;
+}
+
+/* Select All Section */
+#select-all-sections {
+    width: 1.2em;
+    height: 1.2em;
+    cursor: pointer;
+}
+
+#select-all-sections + label {
+    color: #7dd3fc;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 0.5rem;
+}
+
+#selected-section-count {
+    color: #b9e0ff;
+    font-size: 1rem;
+    margin-left: 1em;
+}
+
+/* Sections Container */
+#sections-sortable-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+/* Individual Section */
+.section {
+    background: #14342b;
+    border-radius: 1rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+    transition: all 0.2s ease;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    text-indent: 0 !important;
+}
+
+.section:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* Section Header */
+.section > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    padding: 1.2rem 2rem 0 2rem;
+}
+
+/* Section Checkbox */
+.section-select-checkbox {
+    width: 1.2em;
+    height: 1.2em;
+    cursor: pointer;
+}
+
+/* Section Accordion Trigger */
+.section-accordion-trigger {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+}
+
+/* Section Reorder Controls */
+.section-reorder-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-left: 8px;
+}
+
+.reorder-btn {
+    background: #374151;
+    border: 1px solid #4b5563;
+    color: #d1d5db;
+    width: 24px;
+    height: 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: all 0.2s ease;
+}
+
+.reorder-btn:hover:not(.disabled) {
+    background: #4b5563;
+    border-color: #6b7280;
+    color: #f9fafb;
+}
+
+.reorder-btn:active:not(.disabled) {
+    background: #1f2937;
+    transform: scale(0.95);
+}
+
+.reorder-btn.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: #1f2937;
+    border-color: #374151;
+}
+
+.reorder-btn i {
+    font-size: 8px;
+}
+
+/* Hide drag handles since we're using buttons now */
+.section-drag-handle {
+    display: none;
+}
+
+/* Section Title */
+.section-accordion-trigger h2 {
+    color: #7dd3fc;
+    font-size: 1.5rem;
+    font-weight: bold;
+    flex: 1;
+    margin: 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Section Arrow */
+.section-arrow {
+    color: #b9e0ff;
+    font-size: 1.5rem;
+    user-select: none;
+    transition: transform 0.2s;
+}
+
+/* Section Description */
+.section > div:nth-child(2) {
+    padding: 0 2rem 1.5rem 2rem;
+}
+
+.section > div:nth-child(2) > div {
+    color: #b9e0ff;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Section Accordion Content */
+.section > div:last-child {
+    padding: 0 2rem 2rem 2rem;
+}
+
+/* Section Groups */
+.section-groups {
+    /* Container for field groups */
+}
+
+.section-groups > div {
+    margin-bottom: 1.5rem;
+}
+
+/* Group Headers */
+.section-groups h3 {
+    color: #4ade80;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #374151;
+    padding-bottom: 0.5rem;
+}
+
+/* Field Items */
+.section-groups > div > div {
+    margin-bottom: 0.5em;
+    padding: 0.5em 1em;
+    border-radius: 0.4em;
+}
+
+/* Filled Fields */
+.section-groups > div > div:has(span:first-child[style*="color:#aaffaa"]) {
+    border: 2px solid #4ade80;
+    background: #1e293b;
+}
+
+/* Empty Fields */
+.section-groups > div > div:has(span:first-child[style*="color:#a3a3a3"]) {
+    border: 2px solid #374151;
+    background: #23272e;
+    opacity: 0.6;
+}
+
+/* Field Labels */
+.section-groups span:first-child {
+    font-weight: 500;
+    margin-right: 0.5em;
+}
+
+/* Filled Field Labels */
+.section-groups > div > div:has(span:first-child[style*="color:#aaffaa"]) span:first-child {
+    color: #aaffaa;
+}
+
+/* Empty Field Labels */
+.section-groups > div > div:has(span:first-child[style*="color:#a3a3a3"]) span:first-child {
+    color: #a3a3a3;
+}
+
+/* Field Values */
+.section-groups span:last-child {
+    color: #e0e6ed;
+}
+
+/* Empty Field Values */
+.section-groups > div > div:has(span:first-child[style*="color:#a3a3a3"]) span:last-child {
+    color: #888;
+}
+
+/* Drag & Drop Styles */
+.sortable-ghost {
+    opacity: 0.5;
+    background: #1e3a8a !important;
+    border: 2px dashed #3b82f6 !important;
+}
+
+.sortable-chosen {
+    background: #1e3a8a !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+    transform: rotate(2deg);
+    z-index: 1000 !important;
+}
+
+.sortable-drag {
+    background: #1e3a8a !important;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6) !important;
+    transform: rotate(5deg);
+    z-index: 9999 !important;
+}
+
+.dragging {
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+/* Ensure only dragged section is highlighted */
+.section.dragging {
+    background: #1e3a8a !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Prevent other sections from being highlighted during drag */
+.section:not(.dragging) .sortable-chosen,
+.section:not(.dragging) .sortable-drag {
+    background: #14342b !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Iframe-specific drag & drop fixes */
+.sortable-fallback {
+    background: #1e3a8a !important;
+    border: 2px solid #3b82f6 !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+    z-index: 9999 !important;
+}
+
+/* Ensure drag handle is always clickable in iframe */
+
+/* Prevent parent window from interfering with iframe drag events */
+#sections-panel {
+    background-color: #013828 !important;
+    min-height: 400px;
+    border-radius: 8px;
+    padding: 0;
+    border: 1px solid #065f46;
+    overflow: visible;
+    /* Ensure iframe content is isolated */
+    isolation: isolate;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .section > div:first-child {
+        padding: 1rem 1rem 0 1rem;
+    }
+    
+    .section > div:nth-child(2) {
+        padding: 0 1rem 1rem 1rem;
+    }
+    
+    .section > div:last-child {
+        padding: 0 1rem 1.5rem 1rem;
+    }
+    
+    .section-accordion-trigger h2 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Utility Classes */
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.gap-1em {
+    gap: 1em;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.text-gray-200 {
+    color: #e5e7eb;
+} 
