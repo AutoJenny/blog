@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal Sections Test</title>
+</head>
+<body>
+    <h1>Minimal Sections Test</h1>
+    <div id="sections-panel-content">
+        <p>Loading sections...</p>
+    </div>
+
+    <script>
+        // Test if basic JavaScript is working
+        console.log('Minimal test loaded');
+        
+        // Test API call
+        fetch('http://localhost:5003/api/sections/22')
+            .then(response => response.json())
+            .then(data => {
+                console.log('API response:', data);
+                document.getElementById('sections-panel-content').innerHTML = 
+                    `<p style="color: green;">API working! Found ${data.sections.length} sections</p>`;
+            })
+            .catch(error => {
+                console.error('API error:', error);
+                document.getElementById('sections-panel-content').innerHTML = 
+                    `<p style="color: red;">API error: ${error.message}</p>`;
+            });
+    </script>
+</body>
+</html> 

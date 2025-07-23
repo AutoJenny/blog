@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Sections Browser</title>
+</head>
+<body>
+    <h1>Test Sections</h1>
+    <div id="sections-panel" style="background-color: #013828; min-height: 400px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
+        <!-- Manual Sync Button -->
+        <div class="mb-4 flex justify-center" style="margin-bottom: 1rem; display: flex; justify-content: center;">
+            <button id="manual-sync-sections-btn" 
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow-lg transition-colors duration-200 text-sm"
+                    style="background-color: #059669; color: white; font-weight: bold; padding: 0.5rem 1rem; border-radius: 0.25rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: background-color 0.2s; font-size: 0.875rem;">
+                🔄 Manual Sync Sections
+            </button>
+        </div>
+        <!-- Sections Panel Content (populated by JS) -->
+        <div id="sections-panel-content" class="text-gray-200" style="color: #e5e7eb;">
+            <p>Loading sections...</p>
+        </div>
+    </div>
+
+    <!-- Include our CSS and JS files -->
+    <link rel="stylesheet" href="http://localhost:5003/static/css/sections.css">
+    <script src="http://localhost:5003/static/js/sections.js"></script>
+    <script src="http://localhost:5003/static/js/section_drag_drop.js"></script>
+    
+    <script>
+        // Test if JavaScript is working
+        console.log('Test browser page loaded');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded in test browser page');
+        });
+    </script>
+</body>
+</html> 

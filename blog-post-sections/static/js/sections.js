@@ -6,34 +6,31 @@ let sectionsData = null;
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Sections.js loaded');
+    console.log('Sections.js loaded - DOM Content Loaded event fired');
+    
+    // Add immediate visual feedback
+    const panel = document.getElementById('sections-panel-content');
+    if (panel) {
+        panel.innerHTML = '<p style="color: #10b981;">JavaScript is working! Loading sections...</p>';
+    }
     
     // Get post ID from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     currentPostId = urlParams.get('post_id');
     
     if (!currentPostId) {
-        // Fetch most recent post and redirect
-        try {
-            const resp = await fetch('/api/posts/most_recent');
-            if (resp.ok) {
-                const data = await resp.json();
-                if (data && data.id) {
-                    window.location.href = `/sections?post_id=${data.id}`;
-                    return;
-                }
-            }
-            // Fallback to id=22 if endpoint fails
-            window.location.href = '/sections?post_id=22';
-            return;
-        } catch (err) {
-            // Fallback to id=22 if fetch fails
-            window.location.href = '/sections?post_id=22';
-            return;
-        }
+        console.log('No post_id found in URL, using default post_id=22');
+        currentPostId = '22';
     }
     
-    loadSections(currentPostId);
+    console.log('About to load sections for post:', currentPostId);
+    loadSections(currentPostId).catch(error => {
+        console.error('Failed to load sections:', error);
+        const panel = document.getElementById('sections-panel-content');
+        if (panel) {
+            panel.innerHTML = `<p style="color: #ef4444;">Failed to load sections: ${error.message}</p>`;
+        }
+    });
     
     // Set up manual sync button
     const syncBtn = document.getElementById('manual-sync-sections-btn');
@@ -60,7 +57,9 @@ async function loadSections(postId) {
         sectionsData = data;
         
         console.log('Sections data loaded:', data);
+        console.log('About to render sections...');
         renderSections(data);
+        console.log('Sections rendered');
         
     } catch (error) {
         console.error('Error loading sections:', error);
@@ -78,12 +77,25 @@ function renderSections(data) {
         return;
     }
     
-    let sectionsHtml = '';
+    // Add Select All checkbox and selection count
+    let selectAllHtml = `
+        <div style="display:flex;align-items:center;gap:1em;margin-bottom:1.5em;">
+            <input type="checkbox" id="select-all-sections" checked style="width:1.2em;height:1.2em;">
+            <label for="select-all-sections" style="color:#7dd3fc;font-size:1.1rem;font-weight:bold;cursor:pointer;">Select All Sections</label>
+            <span id="selected-section-count" style="color:#b9e0ff;font-size:1rem;margin-left:1em;">All selected</span>
+        </div>
+    `;
+    
+    const containerId = 'sections-sortable-container';
+    let sectionsHtml = selectAllHtml + `
+        <div id="${containerId}" class="sections" style="display:flex;flex-direction:column;gap:2rem;">
+    `;
     
     data.sections.forEach((section, index) => {
         sectionsHtml += renderSection(section, index, data.sections.length);
     });
     
+    sectionsHtml += '</div>';
     panel.innerHTML = sectionsHtml;
     
     // Initialize interactive elements
@@ -111,98 +123,26 @@ function renderSection(section, index, totalSections) {
     const generatedImageUrl = section.generated_image_url || '';
     const status = section.status || 'draft';
     
+    // Add thumbnail if available
+    const thumbnail = generatedImageUrl
+        ? `<img src="${generatedImageUrl}" alt="Section Image" style="width:32px;height:32px;object-fit:cover;border-radius:0.3em;margin-right:0.75em;border:2px solid #4ade80;vertical-align:middle;">`
+        : '';
+    
     return `
-        <div style="
-            background: #14342b;
-            border: 1px solid #065f46;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            padding: 0;
-            width: 100%;
-        " data-section-id="${sectionId}">
-            
-            <!-- Section Header -->
-            <div style="
-                display: flex;
-                align-items: flex-start;
-                gap: 15px;
-                padding: 20px;
-                border-bottom: 1px solid #065f46;
-            ">
-                <!-- Reorder Controls -->
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <button class="reorder-btn reorder-up" data-section-id="${sectionId}" title="Move Up" 
-                            style="
-                                background: #059669;
-                                color: white;
-                                border: none;
-                                border-radius: 4px;
-                                width: 28px;
-                                height: 28px;
-                                cursor: pointer;
-                                font-size: 12px;
-                                ${index === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}
-                            ">
-                        ▲
-                    </button>
-                    <button class="reorder-btn reorder-down" data-section-id="${sectionId}" title="Move Down" 
-                            style="
-                                background: #059669;
-                                color: white;
-                                border: none;
-                                border-radius: 4px;
-                                width: 28px;
-                                height: 28px;
-                                cursor: pointer;
-                                font-size: 12px;
-                                ${index === totalSections - 1 ? 'opacity: 0.5; cursor: not-allowed;' : ''}
-                            ">
-                        ▼
-                    </button>
-                </div>
-                
-                <!-- Section Number -->
-                <div style="display: flex; align-items: center; min-width: 50px;">
-                    <span style="color: #4ade80; font-weight: bold; font-size: 24px;">${index + 1}</span>
-                </div>
-                
-                <!-- Section Checkbox -->
-                <div style="margin: 0 15px;">
-                    <input type="checkbox" class="section-select-checkbox" data-section-id="${sectionId}" style="width: 18px; height: 18px;">
-                </div>
-                
-                <!-- Section Title and Description -->
-                <div class="section-title-area" style="
-                    flex: 1;
-                    margin: 0 15px;
-                    cursor: pointer;
-                " data-accordion-id="${accordionId}">
-                    <h2 style="margin: 0 0 10px 0; color: #7dd3fc; font-size: 20px; font-weight: bold;">${heading}</h2>
-                    ${description ? `<p style="margin: 0; color: #b9e0ff; font-size: 16px;">${description}</p>` : ''}
-                </div>
-                
-                <!-- Accordion Toggle -->
-                <div>
-                    <button class="section-accordion-trigger" aria-controls="${accordionId}" aria-expanded="false" 
-                            style="
-                                background: none;
-                                border: none;
-                                color: #b9e0ff;
-                                cursor: pointer;
-                                font-size: 20px;
-                                padding: 10px;
-                            ">
-                        <span class="section-arrow">▼</span>
-                    </button>
-                </div>
+        <div class="section" data-section-id="${sectionId}" style="background:#14342b;border-radius:1rem;box-shadow:0 2px 12px #0004;">
+            <div style="display:flex;align-items:center;gap:1em;padding:1.2rem 2rem 0 2rem;">
+                <input type="checkbox" class="section-select-checkbox" data-section-id="${sectionId}" checked style="width:1.2em;height:1.2em;">
+                <button class="section-accordion-trigger" type="button" aria-expanded="false" aria-controls="${accordionId}" style="display:flex;align-items:center;width:100%;background:none;border:none;cursor:pointer;padding:0;text-align:left;">
+                    <span class="section-drag-handle" style="cursor:grab;margin-right:1rem;color:#b9e0ff;font-size:1.5rem;user-select:none;">&#x2630;</span>
+                    ${thumbnail}
+                    <h2 style="color:#7dd3fc;font-size:1.5rem;font-weight:bold;flex:1;margin:0;display:inline-block;vertical-align:middle;">${index + 1}. ${heading}</h2>
+                    <span class="section-arrow" style="color:#b9e0ff;font-size:1.5rem;user-select:none;transition:transform 0.2s;">&#x25BC;</span>
+                </button>
             </div>
-            
-            <!-- Section Content (Accordion) -->
-            <div id="${accordionId}" class="section-content" style="
-                display: none;
-                padding: 20px;
-                background: #14342b;
-            ">
+            <div style="padding:0 2rem 1.5rem 2rem;" onclick="event.stopPropagation();">
+                <div style="color:#b9e0ff;font-size:1.1rem;margin-bottom:0.5rem;">${description}</div>
+            </div>
+            <div id="${accordionId}" style="display:none;padding:0 2rem 2rem 2rem;">
                 <div style="color: #e5e7eb;">
                     <div style="margin-bottom: 20px;">
                         <h4 style="color: #7dd3fc; margin-bottom: 10px;">Draft Content:</h4>
@@ -290,131 +230,72 @@ function renderSection(section, index, totalSections) {
 function initAccordions() {
     console.log('Initializing accordions...');
     
-    // Handle clicks on the title area
-    const titleAreas = document.querySelectorAll('.section-title-area');
-    console.log('Found title areas:', titleAreas.length);
-    
-    titleAreas.forEach((titleArea, index) => {
-        console.log(`Setting up title area ${index + 1}:`, titleArea);
-        titleArea.addEventListener('click', function(e) {
-            e.stopPropagation();
-            console.log('Title area clicked:', this);
-            
-            const accordionId = this.getAttribute('data-accordion-id');
-            const content = document.getElementById(accordionId);
-            const arrow = this.closest('.section').querySelector('.section-arrow');
-            const trigger = this.closest('.section').querySelector('.section-accordion-trigger');
-            const expanded = trigger.getAttribute('aria-expanded') === 'true';
-            
-            console.log('Accordion state from title click:', { accordionId, expanded, content: !!content, arrow: !!arrow });
-            
-            // Toggle state
-            trigger.setAttribute('aria-expanded', !expanded);
-            
-            // Toggle content visibility
-            if (content) {
-                content.style.display = expanded ? 'none' : 'block';
-                console.log('Content display set to:', content.style.display);
-            }
-            
-            // Update arrow
-            if (arrow) {
-                arrow.innerHTML = expanded ? '▼' : '▲';
-                console.log('Arrow updated to:', arrow.innerHTML);
-            }
-        });
-    });
-    
-    // Handle clicks on the arrow button
-    const accordionTriggers = document.querySelectorAll('.section-accordion-trigger');
-    console.log('Found accordion triggers:', accordionTriggers.length);
-    
-    accordionTriggers.forEach((btn, index) => {
-        console.log(`Setting up accordion trigger ${index + 1}:`, btn);
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            console.log('Accordion trigger clicked:', this);
-            
+    // Section accordions
+    document.querySelectorAll('.section-accordion-trigger').forEach(btn => {
+        btn.addEventListener('click', function() {
             const section = btn.closest('.section');
-            const accordionId = btn.getAttribute('aria-controls');
-            const content = document.getElementById(accordionId);
+            const accId = btn.getAttribute('aria-controls');
+            const content = document.getElementById(accId);
             const arrow = btn.querySelector('.section-arrow');
             const expanded = btn.getAttribute('aria-expanded') === 'true';
-            
-            console.log('Accordion state from trigger click:', { accordionId, expanded, content: !!content, arrow: !!arrow });
-            
-            // Toggle state
             btn.setAttribute('aria-expanded', !expanded);
-            
-            // Toggle content visibility
             if (content) {
                 content.style.display = expanded ? 'none' : 'block';
-                console.log('Content display set to:', content.style.display);
             }
-            
-            // Update arrow
             if (arrow) {
-                arrow.innerHTML = expanded ? '▼' : '▲';
-                console.log('Arrow updated to:', arrow.innerHTML);
+                arrow.innerHTML = expanded ? '&#x25BC;' : '&#x25B2;'; // ▼/▲
             }
         });
     });
 }
 
-// Initialize reorder buttons
+// Initialize reorder buttons (for up/down arrows)
 function initReorderButtons() {
-    document.querySelectorAll('.reorder-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            
-            const sectionId = btn.dataset.sectionId;
-            const direction = btn.classList.contains('reorder-up') ? 'up' : 'down';
-            
-            if (!btn.disabled) {
-                moveSection(sectionId, direction);
-            }
-        });
-    });
+    // This will be handled by the drag and drop functionality
+    console.log('Reorder buttons initialized (drag and drop)');
 }
 
-// Initialize tab functionality and checkbox selection
+// Initialize section selection functionality
 function initSectionSelection() {
-    // Initialize checkbox selection
-    document.querySelectorAll('.section-select-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            updateSelectedCount();
+    const selectAll = document.getElementById('select-all-sections');
+    const checkboxes = Array.from(document.querySelectorAll('.section-select-checkbox'));
+    const countSpan = document.getElementById('selected-section-count');
+    
+    function updateCount() {
+        const selected = checkboxes.filter(cb => cb.checked).length;
+        if (selected === checkboxes.length) {
+            countSpan.textContent = 'All selected';
+        } else if (selected === 0) {
+            countSpan.textContent = 'None selected';
+        } else {
+            countSpan.textContent = `${selected} selected`;
+        }
+    }
+    
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => { cb.checked = selectAll.checked; });
+            updateCount();
+        });
+    }
+    
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (!cb.checked) selectAll.checked = false;
+            else if (checkboxes.every(c => c.checked)) selectAll.checked = true;
+            updateCount();
         });
     });
     
-    // Initialize select all checkbox if it exists
-    const selectAllCheckbox = document.getElementById('select-all-sections');
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            const isChecked = this.checked;
-            document.querySelectorAll('.section-select-checkbox').forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
-            updateSelectedCount();
-        });
-    }
+    updateCount();
 }
 
-// Update the selected count display
-function updateSelectedCount() {
-    const selectedCheckboxes = document.querySelectorAll('.section-select-checkbox:checked');
-    const countElement = document.getElementById('selected-section-count');
-    
-    if (countElement) {
-        countElement.textContent = `${selectedCheckboxes.length} selected`;
-    }
-}
-
-// Move section up or down
+// Move section up or down (legacy function for up/down buttons)
 async function moveSection(sectionId, direction) {
     try {
         console.log(`Moving section ${sectionId} ${direction}`);
         
-        const response = await fetch(`/api/sections/${currentPostId}/reorder`, {
+        const response = await fetch(`/api/sections/reorder`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

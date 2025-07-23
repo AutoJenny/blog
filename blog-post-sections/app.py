@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, send_file
 import os
 from database import test_db_connection
 from api.sections import bp as sections_bp
@@ -31,9 +31,27 @@ def index():
 def sections_panel():
     return render_template('sections_panel.html')
 
+@app.route('/sections-static/<int:post_id>')
+def sections_static(post_id):
+    """Server-side rendered sections page for testing"""
+    try:
+        from api.sections import get_sections_by_post_id
+        sections = get_sections_by_post_id(post_id)
+        return render_template('sections_static.html', sections=sections, post_id=post_id)
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+
 @app.route('/test')
 def test():
     return render_template('test.html')
+
+@app.route('/test-sections')
+def test_sections():
+    return render_template('test_sections.html')
+
+@app.route('/test-minimal')
+def test_minimal():
+    return send_file('test_minimal.html')
 
 @app.route('/test-db')
 def test_db():

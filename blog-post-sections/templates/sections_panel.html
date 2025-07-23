@@ -14,10 +14,24 @@
     <!-- Sections Panel Content (populated by JS) -->
     <div id="sections-panel-content" class="text-gray-200" style="color: #e5e7eb;">
         <p>Loading sections...</p>
+        <p style="color: #10b981; font-size: 12px;">If you see this message, JavaScript is not working properly.</p>
+        <p><a href="/sections-static/22" style="color: #7dd3fc;">Click here for static version</a></p>
     </div>
 </div>
 
 <!-- Include our CSS and JS files -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/sections.css') }}">
 <script src="{{ url_for('static', filename='js/sections.js') }}"></script>
-<script src="{{ url_for('static', filename='js/section_drag_drop.js') }}"></script> 
+<script src="{{ url_for('static', filename='js/section_drag_drop.js') }}"></script>
+
+<script>
+    // Immediate test to see if JavaScript is working
+    console.log('Template script loaded');
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Template DOM loaded');
+        const panel = document.getElementById('sections-panel-content');
+        if (panel) {
+            panel.innerHTML = '<p style="color: #10b981;">Template JavaScript is working! Loading sections...</p>';
+        }
+    });
+</script> 
