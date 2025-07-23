@@ -83,7 +83,7 @@ function renderSections(data) {
     }).join('');
     
     panel.innerHTML = `
-        <div id="sections-sortable-container" style="display: flex; flex-direction: column; gap: 2rem; padding: 1rem;">
+        <div id="sections-sortable-container" style="display: flex; flex-direction: column; gap: 2rem; padding: 1rem; width: 100%;">
             ${sectionsHtml}
         </div>
     `;
@@ -119,7 +119,7 @@ function renderSection(section, index, totalSections) {
         : '';
     
     return `
-        <div class="section" data-section-id="${sectionId}" style="background: #14342b; border-radius: 0.5rem; border: 1px solid #065f46; margin-bottom: 0; padding: 0; overflow: hidden;">
+        <div class="section" data-section-id="${sectionId}" style="background: #14342b; border-radius: 0.5rem; border: 1px solid #065f46; margin-bottom: 2rem; padding: 0; overflow: hidden; width: 100%;">
             <!-- Section Header Row -->
             <div class="section-header-row" style="display: flex; align-items: flex-start; gap: 1.5rem; padding: 1.5rem 2rem 0 2rem;">
                 <!-- Reorder Controls -->
