@@ -39,21 +39,107 @@
                 </div>
                 <div id="section-accordion-{{ loop.index0 }}" style="display:none;padding:0 2rem 2rem 2rem;">
                     <div style="color: #e5e7eb;">
-                        <div style="margin-bottom: 20px;">
-                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Draft Content:</h4>
-                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                                {% if section.draft %}
-                                    {{ section.draft|replace('\n', '<br>')|safe }}
-                                {% else %}
-                                    <em style="color: #9ca3af;">No draft content available</em>
-                                {% endif %}
+                        <!-- Tab Navigation -->
+                        <div style="display: flex; border-bottom: 1px solid #374151; margin-bottom: 20px;">
+                            <button class="section-tab-btn active" data-tab="research" style="background: #1f2937; color: #7dd3fc; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px 6px 0 0; margin-right: 2px; font-weight: bold;">Research</button>
+                            <button class="section-tab-btn" data-tab="content" style="background: #374151; color: #9ca3af; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px 6px 0 0; margin-right: 2px;">Content</button>
+                            <button class="section-tab-btn" data-tab="image-texts" style="background: #374151; color: #9ca3af; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px 6px 0 0;">Image Texts</button>
+                        </div>
+                        
+                        <!-- Research Tab -->
+                        <div class="section-tab-content active" data-tab="research">
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #7dd3fc; margin-bottom: 10px;">Ideas to Include:</h4>
+                                <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                    {% if section.ideas_to_include %}
+                                        {{ section.ideas_to_include|replace('\n', '<br>')|safe }}
+                                    {% else %}
+                                        <em style="color: #9ca3af;">No ideas specified</em>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #7dd3fc; margin-bottom: 10px;">Facts to Include:</h4>
+                                <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                    {% if section.facts_to_include %}
+                                        {{ section.facts_to_include|replace('\n', '<br>')|safe }}
+                                    {% else %}
+                                        <em style="color: #9ca3af;">No facts specified</em>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         
-                        <div style="margin-bottom: 20px;">
-                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Status:</h4>
-                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                                <span style="color: #10b981; font-weight: bold;">{{ section.status or 'draft' }}</span>
+                        <!-- Content Tab -->
+                        <div class="section-tab-content" data-tab="content" style="display: none;">
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #7dd3fc; margin-bottom: 10px;">Draft Content:</h4>
+                                <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                    {% if section.draft %}
+                                        {{ section.draft|replace('\n', '<br>')|safe }}
+                                    {% else %}
+                                        <em style="color: #9ca3af;">No draft content available</em>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #7dd3fc; margin-bottom: 10px;">Polished Content:</h4>
+                                <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                    {% if section.polished %}
+                                        {{ section.polished|replace('\n', '<br>')|safe }}
+                                    {% else %}
+                                        <em style="color: #9ca3af;">No polished content available</em>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Image Texts Tab -->
+                        <div class="section-tab-content" data-tab="image-texts" style="display: none;">
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Concepts:</h4>
+                                <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                    {% if section.image_concepts %}
+                                        {{ section.image_concepts|replace('\n', '<br>')|safe }}
+                                    {% else %}
+                                        <em style="color: #9ca3af;">No image concepts available</em>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Prompts:</h4>
+                                <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                    {% if section.image_prompts %}
+                                        {{ section.image_prompts|replace('\n', '<br>')|safe }}
+                                    {% else %}
+                                        <em style="color: #9ca3af;">No image prompts available</em>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Meta Descriptions:</h4>
+                                <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                    {% if section.image_meta_descriptions %}
+                                        {{ section.image_meta_descriptions|replace('\n', '<br>')|safe }}
+                                    {% else %}
+                                        <em style="color: #9ca3af;">No meta descriptions available</em>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Captions:</h4>
+                                <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                    {% if section.image_captions %}
+                                        {{ section.image_captions|replace('\n', '<br>')|safe }}
+                                    {% else %}
+                                        <em style="color: #9ca3af;">No image captions available</em>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -113,6 +199,49 @@
         });
         
         updateCount();
+        
+        // Initialize tab functionality
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('section-tab-btn')) {
+                const btn = e.target;
+                const tabName = btn.getAttribute('data-tab');
+                const accordionId = btn.closest('[id^="section-accordion-"]').id;
+                
+                console.log('Tab clicked:', tabName, 'in accordion:', accordionId);
+                
+                // Reset all tabs in this accordion
+                const accordion = document.getElementById(accordionId);
+                if (!accordion) return;
+                
+                // Reset all tab buttons in this accordion
+                accordion.querySelectorAll('.section-tab-btn').forEach(btn => {
+                    btn.style.background = '#374151';
+                    btn.style.color = '#9ca3af';
+                    btn.classList.remove('active');
+                });
+                
+                // Reset all tab contents in this accordion
+                accordion.querySelectorAll('.section-tab-content').forEach(content => {
+                    content.style.display = 'none';
+                    content.classList.remove('active');
+                });
+                
+                // Activate clicked tab
+                btn.style.background = '#1f2937';
+                btn.style.color = '#7dd3fc';
+                btn.classList.add('active');
+                
+                // Show corresponding content
+                const content = accordion.querySelector(`.section-tab-content[data-tab="${tabName}"]`);
+                if (content) {
+                    content.style.display = 'block';
+                    content.classList.add('active');
+                    console.log('Tab content shown:', tabName);
+                } else {
+                    console.error('Tab content not found for:', tabName);
+                }
+            }
+        });
     </script>
 </body>
 </html> 
