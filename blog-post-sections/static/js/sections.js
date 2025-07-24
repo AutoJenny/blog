@@ -4,6 +4,28 @@
 let currentPostId = null;
 let sectionsData = null;
 
+// Iframe Communication Setup for LLM Actions Integration
+// Listen for requests from purple panel (LLM Actions)
+window.addEventListener('message', (event) => {
+    if (event.data.type === 'GET_SELECTED_SECTIONS') {
+        console.log('Received GET_SELECTED_SECTIONS request from LLM Actions');
+        const selectedIds = getSelectedSectionIds();
+        console.log('Sending selected section IDs:', selectedIds);
+        event.source.postMessage({
+            type: 'SELECTED_SECTIONS_RESPONSE',
+            sectionIds: selectedIds
+        }, '*');
+    }
+});
+
+// Function to get selected section IDs for LLM Actions
+function getSelectedSectionIds() {
+    const checkboxes = document.querySelectorAll('.section-select-checkbox:checked');
+    const selectedIds = Array.from(checkboxes).map(cb => cb.dataset.sectionId);
+    console.log('getSelectedSectionIds called, found:', selectedIds);
+    return selectedIds;
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('Sections.js loaded - DOM Content Loaded event fired');
