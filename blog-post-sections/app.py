@@ -35,6 +35,11 @@ def index():
 def sections_panel():
     return render_template('sections_panel.html')
 
+@app.route('/sections-images')
+def sections_panel_images():
+    """Sections panel specifically for Image substage with image placeholders"""
+    return render_template('sections_panel_images.html')
+
 @app.route('/sections-static/<int:post_id>')
 def sections_static(post_id):
     """Server-side rendered sections page for testing"""
