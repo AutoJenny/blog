@@ -142,29 +142,7 @@ function renderSections(data) {
     console.log('Generated HTML length:', sectionsHtml.length);
     console.log('Number of opening <div class="section":', (sectionsHtml.match(/<div class="section"/g) || []).length);
     console.log('Number of closing </div>:', (sectionsHtml.match(/<\/div>/g) || []).length);
-    console.log('Opening divs total:', (sectionsHtml.match(/<div/g) || []).length);
-    console.log('Closing divs total:', (sectionsHtml.match(/<\/div>/g) || []).length);
-    
-    // Check for potential HTML structure issues
-    const sectionDivs = sectionsHtml.match(/<div class="section"/g) || [];
-    const sectionClosingDivs = sectionsHtml.match(/<\/div>/g) || [];
-    const totalOpeningDivs = sectionsHtml.match(/<div/g) || [];
-    
-    console.log('Section divs count:', sectionDivs.length);
-    console.log('Total closing divs:', sectionClosingDivs.length);
-    console.log('Total opening divs:', totalOpeningDivs.length);
-    
-    if (sectionDivs.length !== sectionClosingDivs.length) {
-        console.error('WARNING: Mismatch between section divs and closing divs!');
-    }
-    
-    if (totalOpeningDivs.length !== sectionClosingDivs.length) {
-        console.error('WARNING: Mismatch between total opening divs and closing divs!');
-        console.error('This indicates malformed HTML structure!');
-    }
-    
-    console.log('Full HTML:', sectionsHtml);
-    console.log('=== END FINAL DEBUG ===');
+    console.log('Rendered sections HTML length:', sectionsHtml.length);
     
     panel.innerHTML = sectionsHtml;
     
@@ -311,14 +289,7 @@ function renderSection(section, index, totalSections) {
         </div>
     `;
     
-    // DEBUG: Log each section's HTML to check for malformed structure
-    console.log(`=== SECTION ${index + 1} DEBUG ===`);
-    console.log('Section ID:', sectionId);
-    console.log('Section HTML length:', sectionHtml.length);
-    console.log('Opening divs:', (sectionHtml.match(/<div/g) || []).length);
-    console.log('Closing divs:', (sectionHtml.match(/<\/div>/g) || []).length);
-    console.log('Section HTML:', sectionHtml);
-    console.log(`=== END SECTION ${index + 1} DEBUG ===`);
+    console.log(`Section ${index + 1} rendered (ID: ${sectionId})`);
     
     return sectionHtml;
 }

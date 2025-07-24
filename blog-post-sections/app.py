@@ -1,9 +1,13 @@
 from flask import Flask, render_template, redirect, url_for, request, send_file
+from flask_cors import CORS
 import os
 from database import test_db_connection
 from api.sections import bp as sections_bp
 
 app = Flask(__name__)
+
+# Enable CORS for all routes
+CORS(app, origins=['http://localhost:5000', 'http://localhost:5001', 'http://localhost:5002', 'http://localhost:5003'])
 
 # Register blueprints
 app.register_blueprint(sections_bp)
