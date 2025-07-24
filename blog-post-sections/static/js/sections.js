@@ -7,14 +7,20 @@ let sectionsData = null;
 // Iframe Communication Setup for LLM Actions Integration
 // Listen for requests from purple panel (LLM Actions)
 window.addEventListener('message', (event) => {
+    console.log('Green panel received message:', event.data);
     if (event.data.type === 'GET_SELECTED_SECTIONS') {
         console.log('Received GET_SELECTED_SECTIONS request from LLM Actions');
         const selectedIds = getSelectedSectionIds();
         console.log('Sending selected section IDs:', selectedIds);
-        event.source.postMessage({
-            type: 'SELECTED_SECTIONS_RESPONSE',
-            sectionIds: selectedIds
-        }, '*');
+        try {
+            event.source.postMessage({
+                type: 'SELECTED_SECTIONS_RESPONSE',
+                sectionIds: selectedIds
+            }, '*');
+            console.log('Response sent successfully');
+        } catch (error) {
+            console.error('Error sending response:', error);
+        }
     }
 });
 
