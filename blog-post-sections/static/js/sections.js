@@ -176,14 +176,11 @@ function renderSection(section, index, totalSections) {
     const polished = section.polished || '';
     const ideas = section.ideas_to_include || '';
     const facts = section.facts_to_include || '';
-    const highlighting = section.highlighting || '';
     const imageConcepts = section.image_concepts || '';
     const imagePrompts = section.image_prompts || '';
-    const watermarking = section.watermarking || '';
     const imageMetaDescriptions = section.image_meta_descriptions || '';
     const imageCaptions = section.image_captions || '';
     const generatedImageUrl = section.generated_image_url || '';
-    const status = section.status || 'draft';
     
     // Add thumbnail if available
     const thumbnail = generatedImageUrl
@@ -210,80 +207,75 @@ function renderSection(section, index, totalSections) {
             </div>
             <div id="${accordionId}" style="display:none;padding:0 2rem 2rem 2rem;">
                 <div style="color: #e5e7eb;">
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Draft Content:</h4>
-                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                            ${draft ? escapeHtml(draft).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No draft content available</em>'}
+                    <!-- Tab Navigation -->
+                    <div style="display: flex; border-bottom: 1px solid #374151; margin-bottom: 20px;">
+                        <button class="section-tab-btn active" data-tab="research" style="background: #1f2937; color: #7dd3fc; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px 6px 0 0; margin-right: 2px; font-weight: bold;">Research</button>
+                        <button class="section-tab-btn" data-tab="content" style="background: #374151; color: #9ca3af; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px 6px 0 0; margin-right: 2px;">Content</button>
+                        <button class="section-tab-btn" data-tab="image-texts" style="background: #374151; color: #9ca3af; border: none; padding: 10px 20px; cursor: pointer; border-radius: 6px 6px 0 0;">Image Texts</button>
+                    </div>
+                    
+                    <!-- Research Tab -->
+                    <div class="section-tab-content active" data-tab="research">
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Ideas to Include:</h4>
+                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                ${ideas ? escapeHtml(ideas).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No ideas specified</em>'}
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Facts to Include:</h4>
+                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                ${facts ? escapeHtml(facts).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No facts specified</em>'}
+                            </div>
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Polished Content:</h4>
-                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                            ${polished ? escapeHtml(polished).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No polished content available</em>'}
+                    <!-- Content Tab -->
+                    <div class="section-tab-content" data-tab="content" style="display: none;">
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Draft Content:</h4>
+                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                ${draft ? escapeHtml(draft).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No draft content available</em>'}
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Polished Content:</h4>
+                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                ${polished ? escapeHtml(polished).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No polished content available</em>'}
+                            </div>
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Ideas to Include:</h4>
-                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                            ${ideas ? escapeHtml(ideas).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No ideas specified</em>'}
+                    <!-- Image Texts Tab -->
+                    <div class="section-tab-content" data-tab="image-texts" style="display: none;">
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Concepts:</h4>
+                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                ${imageConcepts ? escapeHtml(imageConcepts).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image concepts available</em>'}
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Facts to Include:</h4>
-                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                            ${facts ? escapeHtml(facts).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No facts specified</em>'}
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Prompts:</h4>
+                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                ${imagePrompts ? escapeHtml(imagePrompts).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image prompts available</em>'}
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Highlighting:</h4>
-                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                            ${highlighting ? escapeHtml(highlighting).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No highlighting available</em>'}
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Meta Descriptions:</h4>
+                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                ${imageMetaDescriptions ? escapeHtml(imageMetaDescriptions).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No meta descriptions available</em>'}
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Concepts:</h4>
-                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                            ${imageConcepts ? escapeHtml(imageConcepts).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image concepts available</em>'}
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Prompts:</h4>
-                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                            ${imagePrompts ? escapeHtml(imagePrompts).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image prompts available</em>'}
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Watermarking:</h4>
-                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                            ${watermarking ? escapeHtml(watermarking).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No watermarking info available</em>'}
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Meta Descriptions:</h4>
-                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                            ${imageMetaDescriptions ? escapeHtml(imageMetaDescriptions).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No meta descriptions available</em>'}
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Captions:</h4>
-                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                            ${imageCaptions ? escapeHtml(imageCaptions).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image captions available</em>'}
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <h4 style="color: #7dd3fc; margin-bottom: 10px;">Status:</h4>
-                        <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                            <span style="color: #10b981; font-weight: bold;">${escapeHtml(status)}</span>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Captions:</h4>
+                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
+                                ${imageCaptions ? escapeHtml(imageCaptions).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image captions available</em>'}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -340,6 +332,88 @@ function initAccordions() {
             localStorage.setItem(storageKey, JSON.stringify(currentAccordion));
         });
     });
+    
+    // Initialize tab functionality
+    initTabs();
+}
+
+// Initialize tab functionality
+function initTabs() {
+    console.log('Initializing tabs...');
+    
+    // Load saved tab states from localStorage
+    const storageKey = `sections_tabs_post_${currentPostId}`;
+    const savedTabs = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    
+    // Use event delegation for better performance and to handle dynamically created elements
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('section-tab-btn')) {
+            const btn = e.target;
+            const tabName = btn.getAttribute('data-tab');
+            const accordionId = btn.closest('[id^="section-accordion-"]').id;
+            
+            console.log('Tab clicked:', tabName, 'in accordion:', accordionId);
+            
+            switchTab(btn, tabName, accordionId);
+            
+            // Save tab state
+            const currentTabs = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            currentTabs[accordionId] = tabName;
+            localStorage.setItem(storageKey, JSON.stringify(currentTabs));
+        }
+    });
+    
+    // Apply saved states after a short delay to ensure DOM is ready
+    setTimeout(() => {
+        document.querySelectorAll('.section-tab-btn').forEach(btn => {
+            const tabName = btn.getAttribute('data-tab');
+            const accordionId = btn.closest('[id^="section-accordion-"]').id;
+            
+            if (savedTabs[accordionId] === tabName) {
+                switchTab(btn, tabName, accordionId);
+            }
+        });
+    }, 100);
+}
+
+// Switch tab function
+function switchTab(clickedBtn, tabName, accordionId) {
+    console.log('Switching to tab:', tabName, 'in accordion:', accordionId);
+    
+    // Reset all tabs in this accordion
+    const accordion = document.getElementById(accordionId);
+    if (!accordion) {
+        console.error('Accordion not found:', accordionId);
+        return;
+    }
+    
+    // Reset all tab buttons in this accordion
+    accordion.querySelectorAll('.section-tab-btn').forEach(btn => {
+        btn.style.background = '#374151';
+        btn.style.color = '#9ca3af';
+        btn.classList.remove('active');
+    });
+    
+    // Reset all tab contents in this accordion
+    accordion.querySelectorAll('.section-tab-content').forEach(content => {
+        content.style.display = 'none';
+        content.classList.remove('active');
+    });
+    
+    // Activate clicked tab
+    clickedBtn.style.background = '#1f2937';
+    clickedBtn.style.color = '#7dd3fc';
+    clickedBtn.classList.add('active');
+    
+    // Show corresponding content
+    const content = accordion.querySelector(`.section-tab-content[data-tab="${tabName}"]`);
+    if (content) {
+        content.style.display = 'block';
+        content.classList.add('active');
+        console.log('Tab content shown:', tabName);
+    } else {
+        console.error('Tab content not found for:', tabName);
+    }
 }
 
 // Initialize reorder buttons (for up/down arrows)
