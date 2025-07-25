@@ -131,27 +131,43 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Render a single section with simple image placeholder for Image substage
+// Render a single section with image support for Image substage
 function renderSectionImage(section, index, totalSections) {
     const sectionId = section.id;
     const heading = escapeHtml(section.section_heading || section.title || `Section ${index + 1}`);
     const description = escapeHtml(section.section_description || section.description || '');
-    const generatedImageUrl = section.generated_image_url || '';
     
-    // Simple image placeholder or actual image
+    // Handle image display with new structure
     let imageContent = '';
-    if (generatedImageUrl) {
-        imageContent = `
-            <div style="text-align: center; margin: 1rem 0;">
-                <img src="${generatedImageUrl}" alt="Section Image" 
-                     style="max-width: 100%; max-height: 200px; border-radius: 0.5rem; border: 2px solid #10b981;">
-            </div>
-        `;
+    if (section.image) {
+        if (section.image.path && !section.image.placeholder) {
+            // Found actual image
+            imageContent = `
+                <div style="text-align: center; margin: 1rem 0;">
+                    <img src="http://localhost:5001${section.image.path}" 
+                         alt="${escapeHtml(section.image.alt_text || 'Section image')}" 
+                         style="max-width: 100%; max-height: 200px; border-radius: 0.5rem; border: 2px solid #10b981;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="image-error" style="display: none; color: #ef4444; background: #1f2937; padding: 0.5rem; border-radius: 0.25rem; margin: 0.5rem 0;">
+                        <small><strong>Image not found:</strong> ${escapeHtml(section.image.path)}</small>
+                    </div>
+                </div>
+            `;
+        } else {
+            // No image available - show placeholder
+            imageContent = `
+                <div style="text-align: center; padding: 2rem; background: #065f46; border: 2px dashed #10b981; border-radius: 0.5rem; margin: 1rem 0;">
+                    <i class="fas fa-image" style="font-size: 3rem; color: #a7f3d0; margin-bottom: 1rem;"></i>
+                    <p style="color: #a7f3d0;">${escapeHtml(section.image.alt_text || 'No image available')}</p>
+                </div>
+            `;
+        }
     } else {
+        // Fallback for sections without image data
         imageContent = `
             <div style="text-align: center; padding: 2rem; background: #065f46; border: 2px dashed #10b981; border-radius: 0.5rem; margin: 1rem 0;">
                 <i class="fas fa-image" style="font-size: 3rem; color: #a7f3d0; margin-bottom: 1rem;"></i>
-                <p style="color: #a7f3d0;">Image Placeholder</p>
+                <p style="color: #a7f3d0;">No image data available</p>
             </div>
         `;
     }
