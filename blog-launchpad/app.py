@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, redirect
+from flask import Flask, render_template, jsonify, request, send_file, redirect
 import requests
 import os
 from datetime import datetime
@@ -7,6 +7,19 @@ from humanize import naturaltime
 import psycopg2.extras
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+
+# Add route to serve blog-images static files
+@app.route('/static/content/posts/<int:post_id>/sections/<int:section_id>/<directory>/<filename>')
+def serve_section_image(post_id, section_id, directory, filename):
+    """Serve section images from the blog-images directory."""
+    import os
+    blog_images_static = "/Users/nickfiddes/Code/projects/blog/blog-images/static"
+    image_path = os.path.join(blog_images_static, "content", "posts", str(post_id), "sections", str(section_id), directory, filename)
+    
+    if os.path.exists(image_path):
+        return send_file(image_path)
+    else:
+        return "Image not found", 404
 
 # Database connection function (shared with blog-core)
 def get_db_conn():
@@ -73,6 +86,41 @@ def get_post_with_development(post_id):
         post_dict['id'] = post_dict['post_id']
         return post_dict
 
+def find_section_image(post_id, section_id):
+    """
+    Find the first available image for a section in the new directory structure.
+    Returns the image path or None if no image found.
+    """
+    import urllib.parse
+    
+    # Path to the blog-images static directory
+    blog_images_static = "/Users/nickfiddes/Code/projects/blog/blog-images/static"
+    image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
+
+    # 1. Look for images in the section's optimized directory first
+    section_optimized_path = os.path.join(blog_images_static, "content", "posts", str(post_id), "sections", str(section_id), "optimized")
+    if os.path.exists(section_optimized_path):
+        image_files = [f for f in os.listdir(section_optimized_path)
+                      if f.lower().endswith(image_extensions) and not f.startswith('.')]
+        if image_files:
+            image_filename = image_files[0]
+            # URL-encode the filename to handle spaces and special characters
+            encoded_filename = urllib.parse.quote(image_filename)
+            return f"/static/content/posts/{post_id}/sections/{section_id}/optimized/{encoded_filename}"
+
+    # 2. Fall back to raw directory if optimized is empty
+    section_raw_path = os.path.join(blog_images_static, "content", "posts", str(post_id), "sections", str(section_id), "raw")
+    if os.path.exists(section_raw_path):
+        image_files = [f for f in os.listdir(section_raw_path)
+                      if f.lower().endswith(image_extensions) and not f.startswith('.')]
+        if image_files:
+            image_filename = image_files[0]
+            # URL-encode the filename to handle spaces and special characters
+            encoded_filename = urllib.parse.quote(image_filename)
+            return f"/static/content/posts/{post_id}/sections/{section_id}/raw/{encoded_filename}"
+
+    return None
+
 def get_post_sections_with_images(post_id):
     """Fetch sections with complete image metadata."""
     with get_db_conn() as conn:
@@ -85,9 +133,8 @@ def get_post_sections_with_images(post_id):
                 section_heading,
                 section_description, ideas_to_include, facts_to_include,
                 draft, polished, highlighting, image_concepts,
-                image_prompts, watermarking,
-                image_meta_descriptions, image_captions, image_prompt_example_id,
-                generated_image_url, image_generation_metadata, image_id, status
+                image_prompts,
+                image_meta_descriptions, image_captions, status
             FROM post_section 
             WHERE post_id = %s 
             ORDER BY section_order
@@ -99,8 +146,17 @@ def get_post_sections_with_images(post_id):
         for section in raw_sections:
             section_dict = dict(section)
             
-            # Get section image if exists
-            if section.get('image_id'):
+            # Try to find image in the new directory structure first
+            image_path = find_section_image(post_id, section['id'])
+            
+            if image_path:
+                # Found image in new structure
+                section_dict['image'] = {
+                    'path': image_path,
+                    'alt_text': section.get('image_captions') or f"Image for {section.get('section_heading', 'section')}"
+                }
+            elif section.get('image_id'):
+                # Fallback to legacy image_id system
                 cur.execute("""
                     SELECT * FROM image WHERE id = %s
                 """, (section['image_id'],))
@@ -108,10 +164,17 @@ def get_post_sections_with_images(post_id):
                 if image:
                     section_dict['image'] = dict(image)
             elif section.get('generated_image_url'):
-                # Handle direct image URLs from generated_image_url
+                # Fallback to generated_image_url
                 section_dict['image'] = {
                     'path': section['generated_image_url'],
                     'alt_text': section.get('image_captions') or 'Section image'
+                }
+            else:
+                # No image found - provide placeholder info
+                section_dict['image'] = {
+                    'path': None,
+                    'alt_text': f"No image available for {section.get('section_heading', 'this section')}",
+                    'placeholder': True
                 }
             
             sections.append(section_dict)

@@ -9,6 +9,39 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Clan.com blog-matching CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
+    <style>
+        .section-image {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .section-image__img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .image-error {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .image-placeholder {
+            background: #f5f5f5;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+        }
+        .image-placeholder i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <!-- Edit Button - Top Right -->
@@ -58,6 +91,25 @@
             <div class="section">
                 <h3>{{ section.section_heading or 'Untitled Section' }}</h3>
                 <div class="section-content">
+                    {% if section.image %}
+                        {% if section.image.path and not section.image.placeholder %}
+                            <div class="section-image">
+                                <img src="{{ section.image.path }}" 
+                                     alt="{{ section.image.alt_text }}" 
+                                     class="section-image__img"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <div class="image-error" style="display: none;">
+                                    <small><strong>Image not found:</strong> {{ section.image.path }}</small>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="image-placeholder">
+                                <i class="fas fa-image"></i>
+                                <small>{{ section.image.alt_text }}</small>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                    
                     {% if section.polished %}
                         {{ section.polished|safe }}
                     {% elif section.draft %}

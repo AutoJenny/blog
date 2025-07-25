@@ -1,10 +1,36 @@
 import json
+import os
 import psycopg2
 import psycopg2.extras
 from flask import Blueprint, request, jsonify, render_template
 from database import get_db_conn
 
 bp = Blueprint('sections', __name__, url_prefix='/api/sections')
+
+def find_section_image(post_id, section_id):
+    """
+    Find the first available image for a section in the new directory structure.
+    Returns the image path or None if no image found.
+    """
+    # Path to the blog-images static directory
+    blog_images_static = "/Users/nickfiddes/Code/projects/blog/blog-images/static"
+    
+    # Look for images in the section's raw directory
+    section_raw_path = os.path.join(blog_images_static, "content", "posts", str(post_id), "sections", str(section_id), "raw")
+    
+    if os.path.exists(section_raw_path):
+        # Get all image files in the raw directory
+        image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
+        image_files = [f for f in os.listdir(section_raw_path) 
+                      if f.lower().endswith(image_extensions) and not f.startswith('.')]
+        
+        if image_files:
+            # Return the first image found
+            image_filename = image_files[0]
+            # Return path relative to blog-images static directory for serving
+            return f"/static/content/posts/{post_id}/sections/{section_id}/raw/{image_filename}"
+    
+    return None
 
 @bp.route('/<int:post_id>', methods=['GET'])
 def get_sections(post_id):
@@ -19,10 +45,42 @@ def get_sections(post_id):
                 """, (post_id,))
                 sections = cur.fetchall()
                 
-                # Convert to list of dictionaries
+                # Convert to list of dictionaries and add image information
                 sections_list = []
                 for section in sections:
                     section_dict = dict(section)
+                    
+                    # Try to find image in the new directory structure first
+                    image_path = find_section_image(post_id, section['id'])
+                    
+                    if image_path:
+                        # Found image in new structure
+                        section_dict['image'] = {
+                            'path': image_path,
+                            'alt_text': section.get('image_captions') or f"Image for {section.get('section_heading', 'section')}"
+                        }
+                    elif section.get('image_id'):
+                        # Fallback to legacy image_id system
+                        cur.execute("""
+                            SELECT * FROM image WHERE id = %s
+                        """, (section['image_id'],))
+                        image = cur.fetchone()
+                        if image:
+                            section_dict['image'] = dict(image)
+                    elif section.get('generated_image_url'):
+                        # Fallback to generated_image_url
+                        section_dict['image'] = {
+                            'path': section['generated_image_url'],
+                            'alt_text': section.get('image_captions') or 'Section image'
+                        }
+                    else:
+                        # No image found - provide placeholder info
+                        section_dict['image'] = {
+                            'path': None,
+                            'alt_text': f"No image available for {section.get('section_heading', 'this section')}",
+                            'placeholder': True
+                        }
+                    
                     sections_list.append(section_dict)
                 
                 return jsonify({'sections': sections_list})
