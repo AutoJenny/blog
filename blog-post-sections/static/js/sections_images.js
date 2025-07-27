@@ -111,11 +111,20 @@ function renderSections(data) {
         return;
     }
     
+    // Add Select All checkbox and selection count
+    let selectAllHtml = `
+        <div style="display:flex;align-items:center;gap:1em;margin-bottom:1.5em;">
+            <input type="checkbox" id="select-all-sections" checked style="width:1.2em;height:1.2em;">
+            <label for="select-all-sections" style="color:#7dd3fc;font-size:1.1rem;font-weight:bold;cursor:pointer;">Select All Sections</label>
+            <span id="selected-section-count" style="color:#b9e0ff;font-size:1rem;margin-left:1em;">All selected</span>
+        </div>
+    `;
+    
     const sectionsHtml = data.sections.map((section, index) => 
         renderSectionImage(section, index, data.sections.length)
     ).join('');
     
-    panel.innerHTML = sectionsHtml;
+    panel.innerHTML = selectAllHtml + sectionsHtml;
     
     // Initialize functionality
     initSectionSelection();
@@ -233,38 +242,63 @@ function initAccordions() {
 function initSectionSelection() {
     console.log('Initializing section selection for images...');
     
-    const checkboxes = document.querySelectorAll('.section-select-checkbox');
+    const selectAll = document.getElementById('select-all-sections');
+    const checkboxes = Array.from(document.querySelectorAll('.section-select-checkbox'));
+    const countSpan = document.getElementById('selected-section-count');
     
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            updateSelectionCount();
+    // Load saved checkbox states from localStorage
+    const storageKey = `sections_selection_post_${currentPostId}`;
+    const savedSelection = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    
+    // Apply saved states to checkboxes
+    checkboxes.forEach(cb => {
+        const sectionId = cb.getAttribute('data-section-id');
+        if (savedSelection[sectionId] !== undefined) {
+            cb.checked = savedSelection[sectionId];
+        }
+    });
+    
+    function updateCount() {
+        const selected = checkboxes.filter(cb => cb.checked).length;
+        if (selected === checkboxes.length) {
+            countSpan.textContent = 'All selected';
+        } else if (selected === 0) {
+            countSpan.textContent = 'None selected';
+        } else {
+            countSpan.textContent = `${selected} selected`;
+        }
+    }
+    
+    function saveSelection() {
+        const selection = {};
+        checkboxes.forEach(cb => {
+            const sectionId = cb.getAttribute('data-section-id');
+            selection[sectionId] = cb.checked;
+        });
+        localStorage.setItem(storageKey, JSON.stringify(selection));
+    }
+    
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => { cb.checked = selectAll.checked; });
+            updateCount();
+            saveSelection();
+        });
+    }
+    
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (!cb.checked) selectAll.checked = false;
+            else if (checkboxes.every(c => c.checked)) selectAll.checked = true;
+            updateCount();
             saveSelection();
         });
     });
     
-    updateSelectionCount();
+    updateCount();
 }
 
-// Update the selection count display
-function updateSelectionCount() {
-    const checkboxes = document.querySelectorAll('.section-select-checkbox');
-    const checkedBoxes = document.querySelectorAll('.section-select-checkbox:checked');
-    
-    console.log(`Section selection updated: ${checkedBoxes.length}/${checkboxes.length} sections selected`);
-}
 
-// Save selection to localStorage
-function saveSelection() {
-    const checkboxes = document.querySelectorAll('.section-select-checkbox');
-    const selection = {};
-    
-    checkboxes.forEach(checkbox => {
-        selection[checkbox.dataset.sectionId] = checkbox.checked;
-    });
-    
-    localStorage.setItem(`section-selection-${currentPostId}`, JSON.stringify(selection));
-    console.log('Section selection saved to localStorage');
-}
 
 // Initialize reorder buttons
 function initReorderButtons() {
