@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-07-27T14:59:24.140652",
+  "post_id": "53",
+  "section_id": "713",
+  "llm_input_data": {
+    "system_prompt": "",
+    "task_prompt": "Generate an intricately detailed scene in the soft, vibrant styles of inkwash and watercolour. Use soft brushstrokes that naturally end before the edges of the canvas, blending the image as a part of the white background paper.",
+    "image_prompts": " In a tranquil and verdant Scottish glen, the sun sets behind craggy cliffs adorned with ancient runes, casting long shadows over the scene. A lively gathering gathers around a crackling bonfire, their faces aglow with the warm, flickering light. The air is filled with the sweet aroma of freshly baked scones and the sound of children's laughter as they listen intently to an elder's tale.\n\nAt the heart of this community lies the power of story-telling. Here, tradition is woven into every thread of daily life. The Selkies, mystical beings who could transform from seals to humans, are a beloved tale passed down through generations. Stories like these, rich with nature and folklore, are the threads that bind this community together.\n\nA young boy sits eagerly at his desk in a quaint Scottish schoolhouse, engrossed in an illustrated book depicting the magical adventures of The Brownie \u2013 a supernatural creature known to help households while humans slept. This educational institution continues the legacy of story-telling, preserving the tales that define Scotland's cultural heritage.\n\nBeyond the classroom, festivals and events like the Edinburgh International Festival of Storytelling celebrate these ancient traditions. The streets come alive with colorful parades, lively music, and engaging performances that captivate both locals and visitors alike. Museums and galleries, such as the National Museum of Scotland, showcase the rich history of story-telling through interactive exhibits, bringing these tales to life in a new way.\n\nModern advertising campaigns pay homage to Scotland's folklore by weaving traditional stories into their messaging. The art of story-quilts, where tales are told through intricate textiles, continues the tradition passed down from generations. Collaborative story-making projects, like The Scotsman's Hame, bring communities together to create and share their own stories, fostering a strong sense of unity and connection.\n\nAs the sun rises over this magical land, Scotland's rich history and folklore live on \u2013 not just in the tales told around bonfires but in every aspect of life. Through story-telling, this proud nation continues to preserve its traditions while inspiring future generations with the captivating tales that have shaped its identity for centuries."
+  },
+  "llm_output": {
+    "success": true,
+    "response": {
+      "created": 1753624764,
+      "data": [
+        {
+          "revised_prompt": "Visualize an intricately detailed scene giving the impression of a serene and green Scottish valley. The setting sun quenches the sky behind rugged cliffs decorated with archaic symbols, projecting elongated shadows across the landscape. There is a dynamic gathering around a roaring bonfire, seemingly soaking up the luminous, quivering light. The area is fragrant with the sweet scent of fresh scones and filled with the sound of youthful laughter while they listen keenly to an elder's tale. A young Caucasian boy is seen sat at his desk, totally engrossed in a vivid-looking book of magical adventures of a supernatural being known for helping in homes. In this scene, also recall and depict events like cultural festivals and community projects like The Scotsman's Hame, that bring out the liveliness and unity of the place. The quaint atmosphere of a classroom and important institutions like museums alongside ad campaigns reflect the storytelling tradition prevalent in every corner of Scotland's culture.",
+          "url": "https://oaidalleapiprodscus.blob.core.windows.net/private/org-x1WZ8HGCkZErVsb8sETpeg5c/user-avYypuH89YAwc7WK0zQ78m91/img-JLmuqxhQoOcjg3vrai0tDUut.png?st=2025-07-27T12%3A59%3A23Z&se=2025-07-27T14%3A59%3A23Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=52f8f7b3-ca8d-4b21-9807-8b9df114d84c&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-27T13%3A59%3A23Z&ske=2025-07-28T13%3A59%3A23Z&sks=b&skv=2024-08-04&sig=NIcyeGlpkVMEG2e6M0XFL/4%2Ba/PHSndTdq1eM6cQ990%3D"
+        }
+      ]
+    },
+    "image_url": "https://oaidalleapiprodscus.blob.core.windows.net/private/org-x1WZ8HGCkZErVsb8sETpeg5c/user-avYypuH89YAwc7WK0zQ78m91/img-JLmuqxhQoOcjg3vrai0tDUut.png?st=2025-07-27T12%3A59%3A23Z&se=2025-07-27T14%3A59%3A23Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=52f8f7b3-ca8d-4b21-9807-8b9df114d84c&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-27T13%3A59%3A23Z&ske=2025-07-28T13%3A59%3A23Z&sks=b&skv=2024-08-04&sig=NIcyeGlpkVMEG2e6M0XFL/4%2Ba/PHSndTdq1eM6cQ990%3D"
+  },
+  "local_image_path": "../blog-images/static/content/posts/53/sections/713/raw/generated_image_20250727_145924.png",
+  "local_image_filename": "generated_image_20250727_145924.png"
+}

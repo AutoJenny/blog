@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-07-27T14:57:24.269493",
+  "post_id": "53",
+  "section_id": "712",
+  "llm_input_data": {
+    "system_prompt": "",
+    "task_prompt": "Generate an intricately detailed scene in the soft, vibrant styles of inkwash and watercolour. Use soft brushstrokes that naturally end before the edges of the canvas, blending the image as a part of the white background paper.",
+    "image_prompts": " Image Description:\n\nThree influential Scottish literary masters, Robert Louis Stevenson, J.M. Barrie, and Neil Gaiman, are depicted against a richly textured backdrop of an ancient Scottish library. Stevenson, with his signature beard and quill in hand, sits at a wooden desk surrounded by books and parchment, his intense gaze focused on the page. A copy of \"Treasure Island\" rests open before him, its pages filled with intricate illustrations of pirate ships and treasures.\n\nBarrie, clad in a tweed jacket and waistcoat, is shown seated at a grand piano, lost in thought as his fingers dance above the keys. The melody wafting through the air carries the essence of Neverland and the Lost Boys' mischievous adventures. Peter Pan himself hovers playfully nearby, a pixie-like figure with a mischievous smile, holding onto a feathered thought balloon inscribed with \"Freedom!\"\n\nGaiman, dressed casually in a plaid shirt and jeans, sits comfortably on an overstuffed armchair. A collection of books and graphic novels surround him, each one a testament to his diverse body of work. As he looks up from the pages before him, the magical realms and fantastical beings that populate his stories seem to materialize in the air around him.\n\nThe atmosphere is filled with the warm glow of antique lanterns casting long shadows across the ancient bookshelves, their spines adorned with gold lettering. A sense of adventure, magic, and a strong connection to Scotland's rich literary heritage pervades the scene. The setting, both real and fantastical, serves as a testament to the authors' profound impact on both Scottish literature and the global literary landscape."
+  },
+  "llm_output": {
+    "success": true,
+    "response": {
+      "created": 1753624644,
+      "data": [
+        {
+          "revised_prompt": "Craft an intricately structured scene in the soft, vibrant styles of inkwash and watercolour. Utilize gentle brushstrokes that naturally peter out before reaching the edges of the canvas, seamlessly integrating the scene into the confines of the white background paper. Portray three influential literary masters, each engrossed in an activity pertinent to their craft: An bearded scholar with a quill concentrating on his writing, a gentleman clad in tweed overlooking piano keys with a thought-filled gaze, and a casually dressed man surrounded by an array of books and graphic novels, tales from their pages seemingly coming to life around him. Set them in a richly textured, antiquarian library illuminated by the warm glow of ancient lanterns, their golden rays casting long, mystic shadows across the bookshelves ornamented by gold lettering. Imbue the atmosphere with elements of adventure, magic, and a profound Scottish literay heritage.",
+          "url": "https://oaidalleapiprodscus.blob.core.windows.net/private/org-x1WZ8HGCkZErVsb8sETpeg5c/user-avYypuH89YAwc7WK0zQ78m91/img-DiFjKjAW1J5GZtQVmV1x2BMY.png?st=2025-07-27T12%3A57%3A24Z&se=2025-07-27T14%3A57%3A24Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=52f8f7b3-ca8d-4b21-9807-8b9df114d84c&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-27T08%3A21%3A54Z&ske=2025-07-28T08%3A21%3A54Z&sks=b&skv=2024-08-04&sig=AntELNP39ppmGJQ8tOPGqkdC4UQArngE0w48MzzX3TQ%3D"
+        }
+      ]
+    },
+    "image_url": "https://oaidalleapiprodscus.blob.core.windows.net/private/org-x1WZ8HGCkZErVsb8sETpeg5c/user-avYypuH89YAwc7WK0zQ78m91/img-DiFjKjAW1J5GZtQVmV1x2BMY.png?st=2025-07-27T12%3A57%3A24Z&se=2025-07-27T14%3A57%3A24Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=52f8f7b3-ca8d-4b21-9807-8b9df114d84c&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-27T08%3A21%3A54Z&ske=2025-07-28T08%3A21%3A54Z&sks=b&skv=2024-08-04&sig=AntELNP39ppmGJQ8tOPGqkdC4UQArngE0w48MzzX3TQ%3D"
+  },
+  "local_image_path": "../blog-images/static/content/posts/53/sections/712/raw/generated_image_20250727_145724.png",
+  "local_image_filename": "generated_image_20250727_145724.png"
+}
