@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-07-28T07:04:45.582290",
+  "post_id": 53,
+  "section_id": 1,
+  "llm_input_data": {
+    "system_prompt": "You are a helpful assistant, expert in social media blogging and online marketing",
+    "task_prompt": "Convert the following image concept into a concise, vivid, and fully formed image description prompt for an image generation model. The output MUST include:\r\n\r\n1. A complete and details summary of the visual scene, characters, setting, and mood described, using vivid and visual language suitable for image generation.\r\n2. Tone: aim for literal representation of a single key idea. Avoid romanticism, clich\u00e9 or stereotypes, and avoid multiculturalism unless specifically called for.\r\n3. Be true to historic period, using modern settings for contemporary themes and more romantic settings for older times.\r\n\r\nOnly return the final prompt string suitable for image generation, NOT explanations. Note that image FORMAT such as style and dimensions is provided to the LLM separately so do NOT include any.  Now, here is the image description to summarise:\r\n",
+    "image_prompts": null
+  },
+  "llm_output": {
+    "success": false,
+    "error": "DALL-E API request failed with status 400: {\n  \"error\": {\n    \"message\": \"Your request was rejected as a result of our safety system. Your prompt may contain text that is not allowed by our safety system.\",\n    \"type\": \"image_generation_user_error\",\n    \"param\": null,\n    \"code\": \"content_policy_violation\"\n  }\n}",
+    "response": "{\n  \"error\": {\n    \"message\": \"Your request was rejected as a result of our safety system. Your prompt may contain text that is not allowed by our safety system.\",\n    \"type\": \"image_generation_user_error\",\n    \"param\": null,\n    \"code\": \"content_policy_violation\"\n  }\n}"
+  }
+}
