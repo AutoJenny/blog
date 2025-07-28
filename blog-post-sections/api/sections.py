@@ -87,6 +87,51 @@ def get_sections(post_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/section/<int:section_id>', methods=['GET'])
+def get_section(section_id):
+    """Get a single section by its ID."""
+    try:
+        section = get_section_by_id(section_id)
+        if not section:
+            return jsonify({'error': 'Section not found'}), 404
+        
+        # Add image information
+        post_id = section['post_id']
+        image_path = find_section_image(post_id, section_id)
+        
+        if image_path:
+            section['image'] = {
+                'path': image_path,
+                'alt_text': section.get('image_captions') or f"Image for {section.get('section_heading', 'section')}"
+            }
+        elif section.get('image_id'):
+            # Fallback to legacy image_id system
+            with get_db_conn() as conn:
+                with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                    cur.execute("""
+                        SELECT * FROM image WHERE id = %s
+                    """, (section['image_id'],))
+                    image = cur.fetchone()
+                    if image:
+                        section['image'] = dict(image)
+        elif section.get('generated_image_url'):
+            # Fallback to generated_image_url
+            section['image'] = {
+                'path': section['generated_image_url'],
+                'alt_text': section.get('image_captions') or 'Section image'
+            }
+        else:
+            # No image found - provide placeholder info
+            section['image'] = {
+                'path': None,
+                'alt_text': f"No image available for {section.get('section_heading', 'section')}",
+                'placeholder': True
+            }
+        
+        return jsonify(section)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/', methods=['POST'])
 def create_section():
     """Create a new section."""
