@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sections Summary</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #013828;
+            color: #e5e7eb;
+        }
+        .sections-container {
+            padding: 15px;
+        }
+        .section-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #bef264;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #bef264;
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+        .section-description {
+            font-size: 12px;
+            color: #d1d5db;
+            font-style: italic;
+            line-height: 1.4;
+            margin: 0;
+        }
+        .no-sections {
+            text-align: center;
+            color: #f87171;
+            font-size: 14px;
+            padding: 20px;
+        }
+        .section-number {
+            color: #9ca3af;
+            font-size: 11px;
+            margin-bottom: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sections-container">
+        {% if sections and sections|length > 0 %}
+            {% for section in sections %}
+                <div class="section-item">
+                    <div class="section-number">{{ loop.index }}.</div>
+                    <div class="section-title">{{ section.section_heading or 'Untitled Section' }}</div>
+                    {% if section.section_description %}
+                        <p class="section-description">{{ section.section_description }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-sections">No sections defined for this post.</div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Auto-resize iframe to fit content
+        function resizeIframe() {
+            const contentDiv = document.querySelector('.sections-container');
+            const height = contentDiv.offsetHeight;
+            
+            // Send height to parent iframe
+            if (window.parent && window.parent.postMessage) {
+                window.parent.postMessage({
+                    type: 'resize',
+                    height: height + 30 // Add some padding
+                }, '*');
+            }
+        }
+
+        // Resize on load
+        window.addEventListener('load', resizeIframe);
+
+        // Initial resize after a short delay to ensure content is rendered
+        setTimeout(resizeIframe, 100);
+    </script>
+</body>
+</html>
