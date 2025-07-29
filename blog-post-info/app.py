@@ -421,6 +421,58 @@ def get_post_development_data(post_id):
         logger.error(f"Error getting post development data: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+@app.route('/titles-editor')
+def titles_editor():
+    """Titles editor page for managing post titles and subtitles."""
+    post_id = request.args.get('post_id', type=int)
+    if not post_id:
+        return jsonify({'error': 'post_id parameter required'}), 400
+    
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get PROVISIONAL_TITLE data from post_development
+            cur.execute("""
+                SELECT provisional_title
+                FROM post_development
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            result = cur.fetchone()
+            if not result:
+                return jsonify({'error': 'Post development data not found'}), 404
+            
+            provisional_title = result['provisional_title']
+            
+            # Parse the JSON data
+            if provisional_title:
+                try:
+                    title_data = json.loads(provisional_title)
+                    # Handle array of objects with title/subtitle properties
+                    if isinstance(title_data, list):
+                        titles = [item.get('title', '') for item in title_data if item.get('title')]
+                        subtitles = [item.get('subtitle', '') for item in title_data if item.get('subtitle')]
+                    else:
+                        # Fallback for object format
+                        titles = title_data.get('title', [])
+                        subtitles = title_data.get('subtitle', [])
+                except (json.JSONDecodeError, TypeError):
+                    titles = []
+                    subtitles = []
+            else:
+                titles = []
+                subtitles = []
+            
+            return render_template('titles-editor.html', 
+                                 post_id=post_id,
+                                 titles=titles,
+                                 subtitles=subtitles)
+            
+    except Exception as e:
+        logger.error(f"Error loading titles editor: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5004))
     app.run(debug=True, host='0.0.0.0', port=port) 
