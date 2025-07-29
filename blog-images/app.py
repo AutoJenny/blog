@@ -4,40 +4,17 @@ Blog Images - Image Generation and Management Application
 """
 
 import os
-from flask import Flask, jsonify, render_template, request
-from dotenv import load_dotenv
+from flask import Flask, render_template, request
 
-load_dotenv()
+app = Flask(__name__)
 
-def create_app():
-    """Application factory for blog-images."""
-    app = Flask(__name__, static_folder='static', static_url_path='/static')
-    
-    # Configuration
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
-    app.config['DATABASE_URL'] = os.getenv('DATABASE_URL', 'postgresql://localhost/blog')
-    app.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
-    
-    # Main route for image generation interface
-    @app.route('/')
-    def index():
-        """Main image generation interface."""
-        post_id = request.args.get('post_id', '')
-        return render_template('index.html', post_id=post_id)
-    
-    # Health check endpoint
-    @app.route('/health')
-    def health_check():
-        """Health check endpoint for the images application."""
-        return jsonify({
-            'status': 'healthy',
-            'service': 'blog-images',
-            'version': '1.0.0'
-        })
-    
-    return app
+# Configure port
+port = int(os.environ.get('PORT', 5005))
+
+@app.route('/')
+def index():
+    post_id = request.args.get('post_id', '1')
+    return render_template('index.html', post_id=post_id)
 
 if __name__ == '__main__':
-    app = create_app()
-    port = int(os.getenv('PORT', 5002))
-    app.run(host='0.0.0.0', port=port, debug=app.config['DEBUG']) 
+    app.run(debug=True, host='0.0.0.0', port=port) 
