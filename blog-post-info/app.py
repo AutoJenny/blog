@@ -259,6 +259,11 @@ def list_posts_info():
         logger.error(f"Error listing posts info: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+@app.route('/test-headers')
+def test_headers():
+    """Test route for headers."""
+    return jsonify({'message': 'Headers test route working', 'post_id': request.args.get('post_id')})
+
 @app.route('/headers')
 def headers_panel():
     """Headers panel for Post Info substage."""
