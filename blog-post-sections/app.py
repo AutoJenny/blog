@@ -35,6 +35,20 @@ def index():
 def sections_panel():
     return render_template('sections_panel.html')
 
+@app.route('/sections-summary')
+def sections_summary():
+    """Simplified sections view showing only titles and descriptions for the green iframe"""
+    post_id = request.args.get('post_id')
+    if not post_id:
+        return '<div style="color:red;padding:1em;">Post ID required</div>', 400
+    
+    try:
+        from api.sections import get_sections_by_post_id
+        sections = get_sections_by_post_id(post_id)
+        return render_template('sections_summary.html', sections=sections, post_id=post_id)
+    except Exception as e:
+        return f'<div style="color:red;padding:1em;">Error loading sections: {e}</div>', 500
+
 @app.route('/sections-images')
 def sections_panel_images():
     """Sections panel specifically for Image substage with image placeholders"""
