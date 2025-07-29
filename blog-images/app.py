@@ -4,7 +4,7 @@ Blog Images - Image Generation and Management Application
 """
 
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template, request
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,6 +17,13 @@ def create_app():
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
     app.config['DATABASE_URL'] = os.getenv('DATABASE_URL', 'postgresql://localhost/blog')
     app.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    
+    # Main route for image generation interface
+    @app.route('/')
+    def index():
+        """Main image generation interface."""
+        post_id = request.args.get('post_id', '')
+        return render_template('index.html', post_id=post_id)
     
     # Health check endpoint
     @app.route('/health')
