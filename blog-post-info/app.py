@@ -398,6 +398,57 @@ def get_post_data(post_id):
         logger.error(f"Error getting post data: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+@app.route('/api/post/<int:post_id>', methods=['PUT'])
+def update_post_data(post_id):
+    """Update post data for a specific post."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        with get_db_conn() as conn:
+            cur = conn.cursor()
+            
+            # Build dynamic UPDATE query based on provided fields
+            update_fields = []
+            values = []
+            
+            # Define allowed fields for the post table
+            allowed_fields = [
+                'title', 'subtitle', 'slug', 'summary', 'title_choices', 
+                'status', 'substage_id', 'header_image_id'
+            ]
+            
+            for field, value in data.items():
+                if field in allowed_fields:
+                    update_fields.append(f"{field} = %s")
+                    values.append(value)
+            
+            if not update_fields:
+                return jsonify({'error': 'No valid fields to update'}), 400
+            
+            # Add post_id to values
+            values.append(post_id)
+            
+            query = f"""
+                UPDATE post 
+                SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """
+            
+            cur.execute(query, values)
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': f'Post {post_id} updated successfully',
+                'updated_fields': list(data.keys())
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating post data: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
 @app.route('/api/post_development/<int:post_id>', methods=['GET'])
 def get_post_development_data(post_id):
     """Get post_development data for a specific post."""
@@ -419,6 +470,58 @@ def get_post_development_data(post_id):
             
     except Exception as e:
         logger.error(f"Error getting post development data: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/post_development/<int:post_id>', methods=['PUT'])
+def update_post_development_data(post_id):
+    """Update post_development data for a specific post."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        with get_db_conn() as conn:
+            cur = conn.cursor()
+            
+            # Build dynamic UPDATE query based on provided fields
+            update_fields = []
+            values = []
+            
+            # Define allowed fields for the post_development table
+            allowed_fields = [
+                'main_title', 'subtitle', 'intro_blurb', 'basic_idea', 
+                'expanded_idea', 'basic_metadata', 'allocated_facts', 
+                'categories', 'tags', 'seo_optimization', 'provisional_title'
+            ]
+            
+            for field, value in data.items():
+                if field in allowed_fields:
+                    update_fields.append(f"{field} = %s")
+                    values.append(value)
+            
+            if not update_fields:
+                return jsonify({'error': 'No valid fields to update'}), 400
+            
+            # Add post_id to values
+            values.append(post_id)
+            
+            query = f"""
+                UPDATE post_development 
+                SET {', '.join(update_fields)}
+                WHERE post_id = %s
+            """
+            
+            cur.execute(query, values)
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': f'Post development {post_id} updated successfully',
+                'updated_fields': list(data.keys())
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating post development data: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/titles-editor')

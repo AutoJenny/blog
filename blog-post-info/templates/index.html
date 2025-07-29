@@ -221,6 +221,96 @@
         .tab-content::-webkit-scrollbar-thumb:hover {
             background: #fbbf24;
         }
+        
+        /* Editable field styles */
+        .editable-field {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #60a5fa;
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.9);
+            color: #e2e8f0;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .editable-field:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+            background: rgba(15, 23, 42, 1);
+        }
+        
+        .editable-field:hover {
+            border-color: #93c5fd;
+        }
+        
+        .editable-field:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .json-field {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        .readonly-field {
+            color: #9ca3af;
+            font-style: italic;
+            padding: 8px 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 6px;
+            border: 1px solid #374151;
+        }
+        
+        /* Saving state indicators */
+        .editable-field.saving {
+            background-color: #fef3c7 !important;
+            border-color: #f59e0b !important;
+        }
+        
+        .editable-field.saved {
+            background-color: #d1fae5 !important;
+            border-color: #10b981 !important;
+        }
+        
+        .editable-field.error {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+        }
+        
+        /* Save status indicator */
+        .save-status {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .save-status.saving {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid #f59e0b;
+        }
+        
+        .save-status.saved {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid #059669;
+        }
+        
+        .save-status.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #dc2626;
+        }
     </style>
 </head>
 <body>
@@ -228,6 +318,9 @@
         <div class="header">
             <h1><i class="fas fa-database"></i> Blog Post Database Viewer</h1>
             <p>View and manage post and post_development table contents</p>
+            <div id="save-status" class="save-status" style="display: none;">
+                <i class="fas fa-save"></i> <span id="save-message"></span>
+            </div>
         </div>
         
         {% if error %}
@@ -347,11 +440,21 @@
                         <div class="field-value ${value === null || value === undefined ? 'null-value' : ''}">`;
                     
                     if (value === null || value === undefined) {
-                        html += 'NULL';
+                        html += `<input type="text" class="editable-field" data-field="${field}" data-table="${tableName}" value="" placeholder="NULL" onchange="saveField('${field}', this.value, '${tableName}')">`;
                     } else if (typeof value === 'object') {
-                        html += `<pre>${JSON.stringify(value, null, 2)}</pre>`;
+                        html += `<textarea class="editable-field json-field" data-field="${field}" data-table="${tableName}" onchange="saveField('${field}', this.value, '${tableName}')" rows="4">${JSON.stringify(value, null, 2)}</textarea>`;
+                    } else if (field === 'created_at' || field === 'updated_at' || field.includes('_at')) {
+                        // Read-only for timestamp fields
+                        html += `<span class="readonly-field">${String(value)}</span>`;
+                    } else if (field === 'id' || field === 'post_id') {
+                        // Read-only for ID fields
+                        html += `<span class="readonly-field">${String(value)}</span>`;
+                    } else if (typeof value === 'string' && value.length > 100) {
+                        // Textarea for long text fields
+                        html += `<textarea class="editable-field" data-field="${field}" data-table="${tableName}" onchange="saveField('${field}', this.value, '${tableName}')" rows="3">${String(value)}</textarea>`;
                     } else {
-                        html += String(value);
+                        // Regular input for short text fields
+                        html += `<input type="text" class="editable-field" data-field="${field}" data-table="${tableName}" value="${String(value)}" onchange="saveField('${field}', this.value, '${tableName}')">`;
                     }
                     
                     html += `</div></div>`;
@@ -430,6 +533,88 @@
                 'Development Data': 'fa-code-branch'
             };
             return icons[groupName] || 'fa-tag';
+        }
+        
+        function saveField(field, value, tableName) {
+            const postId = document.getElementById('post-select').value;
+            
+            // Show saving indicator
+            const fieldElement = event.target;
+            const originalValue = fieldElement.value;
+            const saveStatus = document.getElementById('save-status');
+            const saveMessage = document.getElementById('save-message');
+            
+            // Show field saving indicator
+            fieldElement.style.backgroundColor = '#fef3c7';
+            fieldElement.disabled = true;
+            
+            // Show header saving indicator
+            saveStatus.style.display = 'flex';
+            saveStatus.className = 'save-status saving';
+            saveMessage.textContent = `Saving ${field}...`;
+            
+            // Validate JSON for JSON fields
+            if (fieldElement.classList.contains('json-field')) {
+                try {
+                    JSON.parse(value);
+                } catch (e) {
+                    // Show error indicators
+                    fieldElement.style.backgroundColor = '#fee2e2';
+                    fieldElement.value = originalValue;
+                    fieldElement.disabled = false;
+                    saveStatus.className = 'save-status error';
+                    saveMessage.textContent = `Invalid JSON in ${field}`;
+                    setTimeout(() => {
+                        fieldElement.style.backgroundColor = '';
+                        saveStatus.style.display = 'none';
+                    }, 3000);
+                    console.error('Invalid JSON:', e);
+                    return;
+                }
+            }
+            
+            // Prepare the data to send
+            const updateData = {};
+            updateData[field] = value;
+            
+            fetch(`/api/${tableName}/${postId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success indicators
+                    fieldElement.style.backgroundColor = '#d1fae5';
+                    saveStatus.className = 'save-status saved';
+                    saveMessage.textContent = `${field} saved successfully!`;
+                    
+                    setTimeout(() => {
+                        fieldElement.style.backgroundColor = '';
+                        fieldElement.disabled = false;
+                        saveStatus.style.display = 'none';
+                    }, 2000);
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            })
+            .catch(error => {
+                // Show error indicators
+                fieldElement.style.backgroundColor = '#fee2e2';
+                fieldElement.value = originalValue;
+                fieldElement.disabled = false;
+                saveStatus.className = 'save-status error';
+                saveMessage.textContent = `Error saving ${field}: ${error.message}`;
+                
+                setTimeout(() => {
+                    fieldElement.style.backgroundColor = '';
+                    saveStatus.style.display = 'none';
+                }, 3000);
+                console.error('Error saving field:', error);
+            });
         }
         
         // Load initial data
