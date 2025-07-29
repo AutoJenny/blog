@@ -48,7 +48,43 @@ def get_db_conn():
 @app.route('/')
 def index():
     """Main page for blog-post-info microservice."""
-    return render_template('index.html')
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get all posts
+            cur.execute("""
+                SELECT id, title, status, created_at, updated_at
+                FROM post
+                WHERE status != 'deleted'
+                ORDER BY created_at DESC
+            """)
+            posts = cur.fetchall()
+            
+            # Get post_development data for the first post (default post_id=1)
+            default_post_id = 1
+            if posts:
+                default_post_id = posts[0]['id']
+            
+            cur.execute("""
+                SELECT *
+                FROM post_development
+                WHERE post_id = %s
+            """, (default_post_id,))
+            post_development = cur.fetchone()
+            
+            return render_template('index.html', 
+                                 posts=posts, 
+                                 selected_post_id=default_post_id,
+                                 post_development=post_development)
+            
+    except Exception as e:
+        logger.error(f"Error loading index page: {str(e)}")
+        return render_template('index.html', 
+                             posts=[], 
+                             selected_post_id=1,
+                             post_development=None,
+                             error=str(e))
 
 @app.route('/health')
 def health():
@@ -337,6 +373,52 @@ def get_posts_for_preview():
             
     except Exception as e:
         logger.error(f"Error getting posts for preview: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/post/<int:post_id>', methods=['GET'])
+def get_post_data(post_id):
+    """Get post data for a specific post."""
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            cur.execute("""
+                SELECT *
+                FROM post
+                WHERE id = %s
+            """, (post_id,))
+            
+            post = cur.fetchone()
+            if not post:
+                return jsonify({'error': 'Post not found'}), 404
+            
+            return jsonify(dict(post))
+            
+    except Exception as e:
+        logger.error(f"Error getting post data: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/post_development/<int:post_id>', methods=['GET'])
+def get_post_development_data(post_id):
+    """Get post_development data for a specific post."""
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            cur.execute("""
+                SELECT *
+                FROM post_development
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            post_development = cur.fetchone()
+            if not post_development:
+                return jsonify({'error': 'Post development data not found'}), 404
+            
+            return jsonify(dict(post_development))
+            
+    except Exception as e:
+        logger.error(f"Error getting post development data: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
