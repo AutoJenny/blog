@@ -473,6 +473,125 @@ def titles_editor():
         logger.error(f"Error loading titles editor: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
+@app.route('/api/save-titles', methods=['POST'])
+def save_titles():
+    """Save selected title and subtitle to the post table."""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        title_index = data.get('title_index')
+        subtitle_index = data.get('subtitle_index')
+        
+        if not post_id:
+            return jsonify({'error': 'post_id required'}), 400
+        
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get the provisional_title data to extract the selected values
+            cur.execute("""
+                SELECT provisional_title
+                FROM post_development
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            result = cur.fetchone()
+            if not result:
+                return jsonify({'error': 'Post development data not found'}), 404
+            
+            provisional_title = result['provisional_title']
+            
+            if provisional_title:
+                try:
+                    title_data = json.loads(provisional_title)
+                    if isinstance(title_data, list):
+                        selected_title = title_data[title_index].get('title', '') if title_index is not None and 0 <= title_index < len(title_data) else ''
+                        selected_subtitle = title_data[subtitle_index].get('subtitle', '') if subtitle_index is not None and 0 <= subtitle_index < len(title_data) else ''
+                    else:
+                        selected_title = title_data.get('title', [''])[title_index] if title_index is not None else ''
+                        selected_subtitle = title_data.get('subtitle', [''])[subtitle_index] if subtitle_index is not None else ''
+                except (json.JSONDecodeError, TypeError, IndexError):
+                    selected_title = ''
+                    selected_subtitle = ''
+            else:
+                selected_title = ''
+                selected_subtitle = ''
+            
+            # Update the post table with the selected title and subtitle
+            cur.execute("""
+                UPDATE post
+                SET title = %s, subtitle = %s
+                WHERE id = %s
+            """, (selected_title, selected_subtitle, post_id))
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Titles saved successfully',
+                'title': selected_title,
+                'subtitle': selected_subtitle
+            })
+            
+    except Exception as e:
+        logger.error(f"Error saving titles: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/get-current-titles/<int:post_id>', methods=['GET'])
+def get_current_titles(post_id):
+    """Get current title and subtitle from the post table."""
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get current title and subtitle from post table
+            cur.execute("""
+                SELECT title, subtitle
+                FROM post
+                WHERE id = %s
+            """, (post_id,))
+            
+            post = cur.fetchone()
+            if not post:
+                return jsonify({'error': 'Post not found'}), 404
+            
+            # Get provisional_title data to find the indices
+            cur.execute("""
+                SELECT provisional_title
+                FROM post_development
+                WHERE post_id = %s
+            """, (post_id,))
+            
+            result = cur.fetchone()
+            provisional_title = result['provisional_title'] if result else None
+            
+            title_index = None
+            subtitle_index = None
+            
+            if provisional_title:
+                try:
+                    title_data = json.loads(provisional_title)
+                    if isinstance(title_data, list):
+                        # Find the index of the current title and subtitle
+                        for i, item in enumerate(title_data):
+                            if item.get('title') == post['title']:
+                                title_index = i
+                            if item.get('subtitle') == post['subtitle']:
+                                subtitle_index = i
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            
+            return jsonify({
+                'title': post['title'],
+                'subtitle': post['subtitle'],
+                'title_index': title_index,
+                'subtitle_index': subtitle_index
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting current titles: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5004))
     app.run(debug=True, host='0.0.0.0', port=port) 
