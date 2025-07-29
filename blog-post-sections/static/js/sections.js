@@ -32,6 +32,54 @@ function getSelectedSectionIds() {
     return selectedIds;
 }
 
+// Function to save individual section fields
+async function saveSectionField(sectionId, field, value) {
+    console.log(`Saving field ${field} for section ${sectionId}:`, value);
+    
+    // Show saving indicator
+    const fieldElement = event.target;
+    const originalValue = fieldElement.value;
+    fieldElement.style.backgroundColor = '#fef3c7';
+    fieldElement.style.borderColor = '#f59e0b';
+    fieldElement.disabled = true;
+    
+    try {
+        const response = await fetch(`/api/sections/${sectionId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                [field]: value
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            // Show success indicator
+            fieldElement.style.backgroundColor = '#d1fae5';
+            fieldElement.style.borderColor = '#10b981';
+            console.log(`Field ${field} saved successfully for section ${sectionId}`);
+        } else {
+            throw new Error(data.error || 'Unknown error');
+        }
+    } catch (error) {
+        // Show error indicator
+        fieldElement.style.backgroundColor = '#fee2e2';
+        fieldElement.style.borderColor = '#ef4444';
+        fieldElement.value = originalValue;
+        console.error(`Error saving field ${field} for section ${sectionId}:`, error);
+    } finally {
+        // Reset field state after a delay
+        setTimeout(() => {
+            fieldElement.style.backgroundColor = '';
+            fieldElement.style.borderColor = '';
+            fieldElement.disabled = false;
+        }, 2000);
+    }
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('Sections.js loaded - DOM Content Loaded event fired');
@@ -209,7 +257,19 @@ function renderSection(section, index, totalSections) {
                 </div>
             </div>
             <div style="padding:0 2rem 1.5rem 2rem;" onclick="event.stopPropagation();">
-                <div style="color:#b9e0ff;font-size:1.1rem;margin-bottom:0.5rem;">${description}</div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="color: #7dd3fc; font-size: 0.9rem; font-weight: bold; display: block; margin-bottom: 0.5rem;">Section Heading:</label>
+                    <input type="text" class="editable-field" data-field="section_heading" data-section-id="${sectionId}" 
+                        value="${heading}" 
+                        style="width: 100%; background: #1f2937; color: #e5e7eb; border: 2px solid #374151; border-radius: 6px; padding: 8px 12px; font-family: inherit; font-size: 1rem;"
+                        onchange="saveSectionField('${sectionId}', 'section_heading', this.value)">
+                </div>
+                <div>
+                    <label style="color: #7dd3fc; font-size: 0.9rem; font-weight: bold; display: block; margin-bottom: 0.5rem;">Section Description:</label>
+                    <textarea class="editable-field" data-field="section_description" data-section-id="${sectionId}" 
+                        style="width: 100%; background: #1f2937; color: #e5e7eb; border: 2px solid #374151; border-radius: 6px; padding: 8px 12px; font-family: inherit; font-size: 0.9rem; min-height: 60px; resize: vertical;"
+                        onchange="saveSectionField('${sectionId}', 'section_description', this.value)">${description}</textarea>
+                </div>
             </div>
             <div id="${accordionId}" style="display:none;padding:0 2rem 2rem 2rem;">
                 <div style="color: #e5e7eb;">
@@ -224,16 +284,16 @@ function renderSection(section, index, totalSections) {
                     <div class="section-tab-content active" data-tab="research">
                         <div style="margin-bottom: 20px;">
                             <h4 style="color: #7dd3fc; margin-bottom: 10px;">Ideas to Include:</h4>
-                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                                ${ideas ? escapeHtml(ideas).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No ideas specified</em>'}
-                            </div>
+                            <textarea class="editable-field" data-field="ideas_to_include" data-section-id="${sectionId}" 
+                                style="width: 100%; background: #1f2937; color: #e5e7eb; border: 2px solid #374151; border-radius: 6px; padding: 12px; font-family: inherit; font-size: 0.9rem; min-height: 100px; resize: vertical;"
+                                onchange="saveSectionField('${sectionId}', 'ideas_to_include', this.value)">${ideas || ''}</textarea>
                         </div>
                         
                         <div style="margin-bottom: 20px;">
                             <h4 style="color: #7dd3fc; margin-bottom: 10px;">Facts to Include:</h4>
-                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                                ${facts ? escapeHtml(facts).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No facts specified</em>'}
-                            </div>
+                            <textarea class="editable-field" data-field="facts_to_include" data-section-id="${sectionId}" 
+                                style="width: 100%; background: #1f2937; color: #e5e7eb; border: 2px solid #374151; border-radius: 6px; padding: 12px; font-family: inherit; font-size: 0.9rem; min-height: 100px; resize: vertical;"
+                                onchange="saveSectionField('${sectionId}', 'facts_to_include', this.value)">${facts || ''}</textarea>
                         </div>
                     </div>
                     
@@ -241,16 +301,16 @@ function renderSection(section, index, totalSections) {
                     <div class="section-tab-content" data-tab="content" style="display: none;">
                         <div style="margin-bottom: 20px;">
                             <h4 style="color: #7dd3fc; margin-bottom: 10px;">Draft Content:</h4>
-                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                                ${draft ? escapeHtml(draft).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No draft content available</em>'}
-                            </div>
+                            <textarea class="editable-field" data-field="draft" data-section-id="${sectionId}" 
+                                style="width: 100%; background: #1f2937; color: #e5e7eb; border: 2px solid #374151; border-radius: 6px; padding: 12px; font-family: inherit; font-size: 0.9rem; min-height: 150px; resize: vertical;"
+                                onchange="saveSectionField('${sectionId}', 'draft', this.value)">${draft || ''}</textarea>
                         </div>
                         
                         <div style="margin-bottom: 20px;">
                             <h4 style="color: #7dd3fc; margin-bottom: 10px;">Polished Content:</h4>
-                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                                ${polished ? escapeHtml(polished).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No polished content available</em>'}
-                            </div>
+                            <textarea class="editable-field" data-field="polished" data-section-id="${sectionId}" 
+                                style="width: 100%; background: #1f2937; color: #e5e7eb; border: 2px solid #374151; border-radius: 6px; padding: 12px; font-family: inherit; font-size: 0.9rem; min-height: 150px; resize: vertical;"
+                                onchange="saveSectionField('${sectionId}', 'polished', this.value)">${polished || ''}</textarea>
                         </div>
                     </div>
                     
@@ -258,30 +318,30 @@ function renderSection(section, index, totalSections) {
                     <div class="section-tab-content" data-tab="image-texts" style="display: none;">
                         <div style="margin-bottom: 20px;">
                             <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Concepts:</h4>
-                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                                ${imageConcepts ? escapeHtml(imageConcepts).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image concepts available</em>'}
-                            </div>
+                            <textarea class="editable-field" data-field="image_concepts" data-section-id="${sectionId}" 
+                                style="width: 100%; background: #1f2937; color: #e5e7eb; border: 2px solid #374151; border-radius: 6px; padding: 12px; font-family: inherit; font-size: 0.9rem; min-height: 80px; resize: vertical;"
+                                onchange="saveSectionField('${sectionId}', 'image_concepts', this.value)">${imageConcepts || ''}</textarea>
                         </div>
                         
                         <div style="margin-bottom: 20px;">
                             <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Prompts:</h4>
-                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                                ${imagePrompts ? escapeHtml(imagePrompts).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image prompts available</em>'}
-                            </div>
+                            <textarea class="editable-field" data-field="image_prompts" data-section-id="${sectionId}" 
+                                style="width: 100%; background: #1f2937; color: #e5e7eb; border: 2px solid #374151; border-radius: 6px; padding: 12px; font-family: inherit; font-size: 0.9rem; min-height: 80px; resize: vertical;"
+                                onchange="saveSectionField('${sectionId}', 'image_prompts', this.value)">${imagePrompts || ''}</textarea>
                         </div>
                         
                         <div style="margin-bottom: 20px;">
                             <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Meta Descriptions:</h4>
-                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                                ${imageMetaDescriptions ? escapeHtml(imageMetaDescriptions).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No meta descriptions available</em>'}
-                            </div>
+                            <textarea class="editable-field" data-field="image_meta_descriptions" data-section-id="${sectionId}" 
+                                style="width: 100%; background: #1f2937; color: #e5e7eb; border: 2px solid #374151; border-radius: 6px; padding: 12px; font-family: inherit; font-size: 0.9rem; min-height: 80px; resize: vertical;"
+                                onchange="saveSectionField('${sectionId}', 'image_meta_descriptions', this.value)">${imageMetaDescriptions || ''}</textarea>
                         </div>
                         
                         <div style="margin-bottom: 20px;">
                             <h4 style="color: #7dd3fc; margin-bottom: 10px;">Image Captions:</h4>
-                            <div style="background: #1f2937; padding: 15px; border-radius: 6px; border: 1px solid #374151;">
-                                ${imageCaptions ? escapeHtml(imageCaptions).replace(/\n/g, '<br>') : '<em style="color: #9ca3af;">No image captions available</em>'}
-                            </div>
+                            <textarea class="editable-field" data-field="image_captions" data-section-id="${sectionId}" 
+                                style="width: 100%; background: #1f2937; color: #e5e7eb; border: 2px solid #374151; border-radius: 6px; padding: 12px; font-family: inherit; font-size: 0.9rem; min-height: 60px; resize: vertical;"
+                                onchange="saveSectionField('${sectionId}', 'image_captions', this.value)">${imageCaptions || ''}</textarea>
                         </div>
                     </div>
                 </div>

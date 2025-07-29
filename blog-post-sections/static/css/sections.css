@@ -367,4 +367,53 @@
 
 .text-gray-200 {
     color: #e5e7eb;
+}
+
+/* Editable field styles for sections */
+.editable-field {
+    width: 100%;
+    background: #1f2937;
+    color: #e5e7eb;
+    border: 2px solid #374151;
+    border-radius: 6px;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    resize: vertical;
+}
+
+.editable-field:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+    background: #1f2937;
+}
+
+.editable-field:hover {
+    border-color: #6b7280;
+}
+
+.editable-field:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Saving state indicators for sections */
+.editable-field.saving {
+    background-color: #fef3c7 !important;
+    border-color: #f59e0b !important;
+    color: #92400e !important;
+}
+
+.editable-field.saved {
+    background-color: #d1fae5 !important;
+    border-color: #10b981 !important;
+    color: #065f46 !important;
+}
+
+.editable-field.error {
+    background-color: #fee2e2 !important;
+    border-color: #ef4444 !important;
+    color: #991b1b !important;
 } 
