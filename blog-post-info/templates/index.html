@@ -3,217 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Post Preview Hub - Post Metadata Management</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
+    <title>Blog Post Info - Database Viewer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* Additional styles for dashboard */
-        .dashboard-container {
-            max-width: 1200px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
         }
         
-        .dashboard-header {
-            background: #F7F3E8;
+        .header {
+            background: rgba(255, 255, 255, 0.95);
             padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
             text-align: center;
-            border-bottom: 2px solid #b80000;
         }
         
-        .dashboard-header h1 {
-            font-size: 2.6rem;
-            font-weight: 900;
-            color: #222;
-            margin: 0 0 1.2rem;
-            line-height: 1.1;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            font-family: 'Lato', Arial, sans-serif;
+        .header h1 {
+            color: #1e3a8a;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
         }
         
-        .dashboard-header p {
-            font-size: 1.15rem;
-            color: #222;
-            font-family: 'Open Sans', Arial, sans-serif;
+        .header p {
+            color: #64748b;
+            font-size: 1.1rem;
         }
         
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+        .post-selector {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
         }
         
-        .stat-card {
-            background: #F7F3E8;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
-            border-left: 4px solid #b80000;
-        }
-        
-        .stat-card h3 {
-            color: #888;
-            font-size: 0.875rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        .post-selector label {
+            display: block;
+            color: #1e3a8a;
+            font-weight: 600;
             margin-bottom: 0.5rem;
-            font-family: 'Lato', Arial, sans-serif;
+            font-size: 1.1rem;
         }
         
-        .stat-card .value {
-            color: #222;
-            font-size: 2rem;
-            font-weight: 900;
-            font-family: 'Lato', Arial, sans-serif;
-        }
-        
-        .posts-section {
-            background: #F7F3E8;
+        .post-selector select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
             border-radius: 8px;
-            box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+            font-size: 1rem;
+            background: white;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        .post-selector select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .tabs {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
         
-        .section-header {
-            padding: 1.5rem 2rem;
-            border-bottom: 2px solid #b80000;
+        .tab-buttons {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .section-header h2 {
-            color: #222;
-            font-size: 1.3rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            font-family: 'Lato', Arial, sans-serif;
-        }
-        
-        .posts-grid {
-            display: grid;
-            gap: 1rem;
-            padding: 1.5rem;
-        }
-        
-        .post-card {
             background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 1.5rem;
-            transition: all 0.2s ease;
+            border-bottom: 2px solid #e2e8f0;
         }
         
-        .post-card:hover {
-            border-color: #3b82f6;
-            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
-        }
-        
-        .post-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 0.5rem;
-        }
-        
-        .post-meta {
-            color: #64748b;
-            font-size: 0.875rem;
-            margin-bottom: 0.75rem;
-        }
-        
-        .post-summary {
-            color: #475569;
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-            line-height: 1.5;
-        }
-        
-        .post-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .tag {
-            background: #dbeafe;
-            color: #1e40af;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
-        .post-actions {
-            display: flex;
-            gap: 0.75rem;
-        }
-        
-        .btn {
-            padding: 0.75rem 1.25rem;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
-            transition: all 0.2s ease;
+        .tab-button {
+            flex: 1;
+            padding: 1rem 2rem;
+            background: none;
             border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #64748b;
             cursor: pointer;
-            font-family: 'Lato', Arial, sans-serif;
+            transition: all 0.3s ease;
         }
         
-        .btn-primary {
-            background: #b80000;
-            color: white;
-            box-shadow: 0 2px 8px rgba(184, 0, 0, 0.3);
+        .tab-button.active {
+            background: white;
+            color: #1e3a8a;
+            border-bottom: 3px solid #3b82f6;
         }
         
-        .btn-primary:hover {
-            background: #900;
-            color: white;
-            text-decoration: none;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(184, 0, 0, 0.4);
+        .tab-button:hover:not(.active) {
+            background: #f1f5f9;
+            color: #475569;
         }
         
-        .btn-secondary {
-            background: #888;
-            color: white;
-            box-shadow: 0 2px 8px rgba(136, 136, 136, 0.3);
+        .tab-content {
+            display: none;
+            padding: 2rem;
         }
         
-        .btn-secondary:hover {
-            background: #666;
-            color: white;
-            text-decoration: none;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(136, 136, 136, 0.4);
+        .tab-content.active {
+            display: block;
         }
         
-        .btn-success {
-            background: #388e3c;
-            color: white;
-            box-shadow: 0 2px 8px rgba(56, 142, 60, 0.3);
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
         }
         
-        .btn-success:hover {
-            background: #2e7d32;
-            color: white;
-            text-decoration: none;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(56, 142, 60, 0.4);
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e3a8a;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        tr:hover {
+            background: #f8fafc;
+        }
+        
+        .field-value {
+            max-width: 300px;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .null-value {
+            color: #94a3b8;
+            font-style: italic;
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+            margin-bottom: 1rem;
         }
         
         .loading {
@@ -222,164 +182,150 @@
             color: #64748b;
         }
         
-        .error {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 1rem;
-            border-radius: 6px;
+        .loading i {
+            font-size: 2rem;
             margin-bottom: 1rem;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #64748b;
-        }
-        
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
         }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <div class="dashboard-header">
-            <h1><i class="fas fa-eye"></i> Blog Post Preview Hub</h1>
-            <p>Preview posts, manage metadata, titles, descriptions, tags, and SEO information</p>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-database"></i> Blog Post Database Viewer</h1>
+            <p>View and manage post and post_development table contents</p>
         </div>
         
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Posts</h3>
-                <div class="value" id="total-posts">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Posts with Tags</h3>
-                <div class="value" id="posts-with-tags">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Posts with SEO</h3>
-                <div class="value" id="posts-with-seo">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Service Status</h3>
-                <div class="value" id="service-status">Healthy</div>
-            </div>
+        {% if error %}
+        <div class="error-message">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+        
+        <div class="post-selector">
+            <label for="post-select">Select Post:</label>
+            <select id="post-select" onchange="loadPostData(this.value)">
+                {% for post in posts %}
+                <option value="{{ post.id }}" {% if post.id == selected_post_id %}selected{% endif %}>
+                    ID {{ post.id }}: {{ post.title or 'Untitled' }} ({{ post.status }})
+                </option>
+                {% endfor %}
+            </select>
         </div>
         
-        <div class="posts-section">
-            <div class="section-header">
-                <h2>Post Previews & Metadata</h2>
-                <div class="post-actions">
-                    <button class="btn btn-secondary" onclick="refreshPosts()">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                </div>
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="showTab('post')">
+                    <i class="fas fa-file-alt"></i> Post Table
+                </button>
+                <button class="tab-button" onclick="showTab('post_development')">
+                    <i class="fas fa-code-branch"></i> Post Development Table
+                </button>
             </div>
             
-            <div id="posts-container" class="posts-grid">
-                <div class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> Loading posts...
+            <div id="post-tab" class="tab-content active">
+                <div class="loading" id="post-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading post data...</p>
                 </div>
+                <div id="post-content" style="display: none;"></div>
+            </div>
+            
+            <div id="post_development-tab" class="tab-content">
+                <div class="loading" id="post_development-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading post development data...</p>
+                </div>
+                <div id="post_development-content" style="display: none;"></div>
             </div>
         </div>
     </div>
     
     <script>
-        // Load posts on page load
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Load data for the selected tab
+            loadTabData(tabName);
+        }
+        
+        function loadPostData(postId) {
+            // Load data for both tabs
+            loadTabData('post', postId);
+            loadTabData('post_development', postId);
+        }
+        
+        function loadTabData(tabName, postId = null) {
+            if (!postId) {
+                postId = document.getElementById('post-select').value;
+            }
+            
+            const loadingEl = document.getElementById(tabName + '-loading');
+            const contentEl = document.getElementById(tabName + '-content');
+            
+            loadingEl.style.display = 'block';
+            contentEl.style.display = 'none';
+            
+            fetch(`/api/${tabName}/${postId}`)
+                .then(response => response.json())
+                .then(data => {
+                    loadingEl.style.display = 'none';
+                    contentEl.style.display = 'block';
+                    contentEl.innerHTML = createTableHTML(data, tabName);
+                })
+                .catch(error => {
+                    loadingEl.style.display = 'none';
+                    contentEl.style.display = 'block';
+                    contentEl.innerHTML = `<div class="error-message">Error loading ${tabName} data: ${error.message}</div>`;
+                });
+        }
+        
+        function createTableHTML(data, tableName) {
+            if (!data || Object.keys(data).length === 0) {
+                return `<div class="error-message">No data found for ${tableName}</div>`;
+            }
+            
+            let html = '<div class="table-container"><table><thead><tr>';
+            
+            // Create headers
+            Object.keys(data).forEach(key => {
+                html += `<th>${key}</th>`;
+            });
+            html += '</tr></thead><tbody><tr>';
+            
+            // Create data row
+            Object.values(data).forEach(value => {
+                if (value === null || value === undefined) {
+                    html += '<td class="field-value null-value">NULL</td>';
+                } else if (typeof value === 'object') {
+                    html += `<td class="field-value">${JSON.stringify(value, null, 2)}</td>`;
+                } else {
+                    html += `<td class="field-value">${String(value)}</td>`;
+                }
+            });
+            
+            html += '</tr></tbody></table></div>';
+            return html;
+        }
+        
+        // Load initial data
         document.addEventListener('DOMContentLoaded', function() {
-            loadPosts();
-            updateStats();
+            loadTabData('post');
+            loadTabData('post_development');
         });
-        
-        function loadPosts() {
-            fetch('/api/post-info')
-                .then(response => response.json())
-                .then(posts => {
-                    const container = document.getElementById('posts-container');
-                    
-                    if (posts.length === 0) {
-                        container.innerHTML = `
-                            <div class="empty-state">
-                                <i class="fas fa-file-alt"></i>
-                                <h3>No posts found</h3>
-                                <p>Create some posts in the main blog system to see them here.</p>
-                            </div>
-                        `;
-                        return;
-                    }
-                    
-                    const postsHTML = posts.map(post => `
-                        <div class="post-card">
-                            <div class="post-title">${post.title || post.main_title || 'Untitled Post'}</div>
-                            <div class="post-meta">
-                                ID: ${post.id} | Created: ${new Date(post.created_at).toLocaleDateString()}
-                                ${post.status ? ` | Status: ${post.status}` : ''}
-                            </div>
-                            <div class="post-summary">
-                                ${post.intro_blurb || post.summary || 'No description available.'}
-                            </div>
-                            ${post.tags ? `
-                                <div class="post-tags">
-                                    ${post.tags.split(',').map(tag => `<span class="tag">${tag.trim()}</span>`).join('')}
-                                </div>
-                            ` : ''}
-                            <div class="post-actions">
-                                <a href="/preview/${post.id}" class="btn btn-primary" target="_blank">
-                                    <i class="fas fa-eye"></i> Preview Post
-                                </a>
-                                <a href="/edit/${post.id}" class="btn btn-secondary">
-                                    <i class="fas fa-edit"></i> Edit Metadata
-                                </a>
-                                <a href="http://localhost:5000/workflow/posts/${post.id}/planning/idea/initial_concept" 
-                                   class="btn btn-secondary" target="_blank">
-                                    <i class="fas fa-external-link-alt"></i> Open in Workflow
-                                </a>
-                                <a href="http://localhost:5003/sections?post_id=${post.id}" 
-                                   class="btn btn-success" target="_blank">
-                                    <i class="fas fa-list"></i> Manage Sections
-                                </a>
-                            </div>
-                        </div>
-                    `).join('');
-                    
-                    container.innerHTML = postsHTML;
-                })
-                .catch(error => {
-                    console.error('Error loading posts:', error);
-                    document.getElementById('posts-container').innerHTML = `
-                        <div class="error">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            Error loading posts: ${error.message}
-                        </div>
-                    `;
-                });
-        }
-        
-        function updateStats() {
-            fetch('/api/post-info')
-                .then(response => response.json())
-                .then(posts => {
-                    document.getElementById('total-posts').textContent = posts.length;
-                    
-                    const postsWithTags = posts.filter(post => post.tags && post.tags.trim()).length;
-                    document.getElementById('posts-with-tags').textContent = postsWithTags;
-                    
-                    const postsWithSEO = posts.filter(post => post.seo_optimization && post.seo_optimization.trim()).length;
-                    document.getElementById('posts-with-seo').textContent = postsWithSEO;
-                })
-                .catch(error => {
-                    console.error('Error updating stats:', error);
-                });
-        }
-        
-        function refreshPosts() {
-            loadPosts();
-            updateStats();
-        }
     </script>
 </body>
 </html> 
