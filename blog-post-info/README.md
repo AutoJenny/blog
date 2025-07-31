@@ -1,5 +1,35 @@
 # Blog Post Info Microservice
 
+**Microservice that manages post metadata, designed to be embedded as an iframe within the main workflow interface.**
+
+## ⚠️ CRITICAL: Iframe-Based Architecture
+
+**This service is designed to work ONLY when embedded as an iframe within the main workflow interface:**
+
+- **Main Workflow URL**: `http://localhost:5000/workflow/posts/1/planning/idea/initial_concept`
+- **Iframe Embedding**: The main workflow embeds this service as an iframe with URL parameters
+- **Required Parameters**: `stage`, `substage`, `step`, `post_id`
+- **Direct Access**: Accessing `http://localhost:5004` directly will fail with missing parameters
+
+### How It Works
+
+1. **Main Workflow** (`http://localhost:5000/workflow/posts/1/planning/idea/initial_concept`) loads
+2. **blog-core** embeds this service as an iframe with proper URL parameters when needed
+3. **This service** receives context from URL parameters and initializes properly
+4. **Direct access** to `http://localhost:5004` will fail because no parameters are provided
+
+### Testing
+
+**✅ CORRECT WAY TO TEST:**
+```
+http://localhost:5000/workflow/posts/1/planning/idea/initial_concept
+```
+
+**❌ INCORRECT WAY TO TEST:**
+```
+http://localhost:5004
+```
+
 ## Overview
 
 The `blog-post-info` microservice is responsible for managing post metadata, including titles, subtitles, descriptions, tags, categories, and SEO information. It provides a centralized API for post metadata operations and a web interface for managing this information.
