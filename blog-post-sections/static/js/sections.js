@@ -6,22 +6,79 @@ let sectionsData = null;
 
 // Iframe Communication Setup for LLM Actions Integration
 // Listen for requests from purple panel (LLM Actions)
+console.log('=== SECTIONS IFRAME LOADED ===');
+console.log('Sections iframe message handler registered');
+
 window.addEventListener('message', (event) => {
-    console.log('Green panel received message:', event.data);
+    console.log('=== SECTIONS IFRAME DIAGNOSTICS ===');
+    console.log('Green panel received message:', {
+        origin: event.origin,
+        data: event.data,
+        timestamp: Date.now()
+    });
+    
     if (event.data.type === 'GET_SELECTED_SECTIONS') {
-        console.log('Received GET_SELECTED_SECTIONS request from LLM Actions');
+        console.log('✅ Processing GET_SELECTED_SECTIONS request from LLM Actions');
         const selectedIds = getSelectedSectionIds();
-        console.log('Sending selected section IDs:', selectedIds);
+        console.log('Selected section IDs found:', selectedIds);
+        
         try {
-            event.source.postMessage({
+            // Send response back to the parent window (workflow)
+            const response = {
                 type: 'SELECTED_SECTIONS_RESPONSE',
-                sectionIds: selectedIds
-            }, '*');
-            console.log('Response sent successfully');
+                sectionIds: selectedIds,
+                timestamp: Date.now(),
+                source: 'sections-iframe'
+            };
+            
+            console.log('Sending response to parent:', response);
+            window.parent.postMessage(response, '*');
+            console.log('✅ Response sent successfully to parent');
         } catch (error) {
-            console.error('Error sending response:', error);
+            console.error('❌ Error sending response:', error);
         }
+    } else if (event.data.type === 'get-sections') {
+        console.log('✅ Processing get-sections request from LLM Actions');
+        console.log('Request data:', event.data);
+        
+        try {
+            // Get all sections data (this would need to be implemented based on your sections data structure)
+            // For now, we'll send an empty response
+            const response = {
+                type: 'sections-response',
+                sections: [],
+                timestamp: Date.now(),
+                source: 'sections-iframe'
+            };
+            
+            console.log('Sending sections response to parent:', response);
+            window.parent.postMessage(response, '*');
+            console.log('✅ Sections response sent successfully to parent');
+        } catch (error) {
+            console.error('❌ Error sending sections response:', error);
+        }
+    } else if (event.data.type === 'TEST_MESSAGE') {
+        console.log('✅ Received TEST_MESSAGE from workflow:', event.data.message);
+        console.log('✅ Sections iframe is receiving messages correctly');
+        
+        // Send a test response back
+        try {
+            const testResponse = {
+                type: 'TEST_RESPONSE',
+                message: 'Hello from sections iframe',
+                timestamp: Date.now(),
+                source: 'sections-iframe'
+            };
+            console.log('Sending test response to parent:', testResponse);
+            window.parent.postMessage(testResponse, '*');
+            console.log('✅ Test response sent successfully to parent');
+        } catch (error) {
+            console.error('❌ Error sending test response:', error);
+        }
+    } else {
+        console.log('Received message but wrong type:', event.data?.type);
     }
+    console.log('=== SECTIONS IFRAME DIAGNOSTICS END ===');
 });
 
 // Function to get selected section IDs for LLM Actions
