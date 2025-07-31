@@ -538,6 +538,17 @@ function initSectionSelection() {
             selection[sectionId] = cb.checked;
         });
         localStorage.setItem(storageKey, JSON.stringify(selection));
+        
+        // Notify parent window (LLM Actions) that section selection changed
+        try {
+            window.parent.postMessage({
+                type: 'SECTION_SELECTION_CHANGED',
+                sectionIds: getSelectedSectionIds()
+            }, '*');
+            console.log('Notified parent window of section selection change');
+        } catch (error) {
+            console.warn('Failed to notify parent window:', error);
+        }
     }
     
     if (selectAll) {

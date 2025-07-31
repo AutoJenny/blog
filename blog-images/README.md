@@ -1,5 +1,35 @@
 # Blog Images - Image Generation and Management
 
+**Microservice that handles image generation and processing, designed to be embedded as an iframe within the main workflow interface.**
+
+## ⚠️ CRITICAL: Iframe-Based Architecture
+
+**This service is designed to work ONLY when embedded as an iframe within the main workflow interface:**
+
+- **Main Workflow URL**: `http://localhost:5000/workflow/posts/1/planning/idea/initial_concept`
+- **Iframe Embedding**: The main workflow embeds this service as an iframe with URL parameters
+- **Required Parameters**: `stage`, `substage`, `step`, `post_id`
+- **Direct Access**: Accessing `http://localhost:5005` directly will fail with missing parameters
+
+### How It Works
+
+1. **Main Workflow** (`http://localhost:5000/workflow/posts/1/planning/idea/initial_concept`) loads
+2. **blog-core** embeds this service as an iframe with proper URL parameters when needed
+3. **This service** receives context from URL parameters and initializes properly
+4. **Direct access** to `http://localhost:5005` will fail because no parameters are provided
+
+### Testing
+
+**✅ CORRECT WAY TO TEST:**
+```
+http://localhost:5000/workflow/posts/1/planning/idea/initial_concept
+```
+
+**❌ INCORRECT WAY TO TEST:**
+```
+http://localhost:5005
+```
+
 ## Overview
 The blog-images project handles all image generation, processing, and management for the blog system. It supports multiple LLM providers, social media syndication, and automated image optimization workflows.
 
