@@ -129,7 +129,6 @@ function renderSections(data) {
     // Initialize functionality
     initSectionSelection();
     initReorderButtons();
-    initAccordions();
 }
 
 // Escape HTML to prevent XSS
@@ -185,20 +184,19 @@ function renderSectionImage(section, index, totalSections) {
         <div class="section" data-section-id="${sectionId}" style="background:#14342b;border-radius:1rem;box-shadow:0 2px 12px #0004;margin-bottom:1.5rem;">
             <div style="display:flex;align-items:center;gap:1em;padding:1.2rem 2rem 0 2rem;">
                 <input type="checkbox" class="section-select-checkbox" data-section-id="${sectionId}" checked style="width:1.2em;height:1.2em;">
-                <button class="section-accordion-trigger" type="button" aria-expanded="false" aria-controls="section-accordion-${index}" style="display:flex;align-items:center;width:100%;background:none;border:none;cursor:pointer;padding:0;text-align:left;">
+                <div style="display:flex;align-items:center;width:100%;">
                     <span class="section-drag-handle" style="cursor:grab;margin-right:1rem;color:#b9e0ff;font-size:1.5rem;user-select:none;">&#x2630;</span>
                     <h2 style="color:#7dd3fc;font-size:1.5rem;font-weight:bold;flex:1;margin:0;display:inline-block;vertical-align:middle;">${index + 1}. ${heading}</h2>
-                    <span class="section-arrow" style="color:#b9e0ff;font-size:1.5rem;user-select:none;transition:transform 0.2s;">&#x25BC;</span>
-                </button>
+                </div>
                 <div style="display:flex;flex-direction:column;gap:0.25rem;">
                     <button class="section-reorder-btn" data-section-id="${sectionId}" data-direction="up" ${index === 0 ? 'disabled' : ''} style="background:none;border:none;color:#b9e0ff;cursor:pointer;font-size:1rem;padding:0.25rem;${index === 0 ? 'opacity:0.5;cursor:not-allowed;' : ''}">&#x25B2;</button>
                     <button class="section-reorder-btn" data-section-id="${sectionId}" data-direction="down" ${index === totalSections - 1 ? 'disabled' : ''} style="background:none;border:none;color:#b9e0ff;cursor:pointer;font-size:1rem;padding:0.25rem;${index === totalSections - 1 ? 'opacity:0.5;cursor:not-allowed;' : ''}">&#x25BC;</button>
                 </div>
             </div>
             <div style="padding:0 2rem 1.5rem 2rem;" onclick="event.stopPropagation();">
-                <div style="color:#b9e0ff;font-size:1.1rem;margin-bottom:0.5rem;">${description}</div>
+                <!-- Image display area - images will be shown here -->
             </div>
-            <div id="section-accordion-${index}" style="display:none;padding:0 2rem 2rem 2rem;">
+            <div style="padding:0 2rem 2rem 2rem;">
                 <div style="color: #e5e7eb;">
                     ${imageContent}
                 </div>
