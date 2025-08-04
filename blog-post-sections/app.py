@@ -33,7 +33,12 @@ def index():
 
 @app.route('/sections')
 def sections_panel():
-    return render_template('sections_panel.html')
+    # Check if this is for the section_illustrations step
+    step = request.args.get('step')
+    if step == 'section_illustrations':
+        return render_template('sections_panel_images.html')
+    else:
+        return render_template('sections_panel.html')
 
 @app.route('/sections-summary')
 def sections_summary():
