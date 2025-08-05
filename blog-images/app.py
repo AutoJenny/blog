@@ -33,6 +33,11 @@ def index():
     post_id = request.args.get('post_id', '1')
     return render_template('index.html', post_id=post_id)
 
+@app.route('/mockup')
+def mockup():
+    """Mockup of unified image processing interface"""
+    return render_template('mockup.html')
+
 @app.route('/api/upload', methods=['POST'])
 def upload_image():
     """Handle image upload for a specific section"""
