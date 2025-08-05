@@ -35,10 +35,10 @@ Transform the current blog-images service (port 5005) from a basic upload interf
 **Dependencies**: None  
 
 #### **1.1 Add Section API to blog-images Service**
-- [ ] **File**: `blog-images/app.py`
-- [ ] **Endpoint**: `GET /api/sections/<post_id>`
-- [ ] **Purpose**: Eliminate dependency on port 5000 for section data
-- [ ] **Implementation**: 
+- [x] **File**: `blog-images/app.py`
+- [x] **Endpoint**: `GET /api/sections/<post_id>`
+- [x] **Purpose**: Eliminate dependency on port 5000 for section data
+- [x] **Implementation**: 
   ```python
   @app.route('/api/sections/<int:post_id>')
   def get_sections(post_id):
@@ -46,14 +46,14 @@ Transform the current blog-images service (port 5005) from a basic upload interf
       # Query post_section table directly
       # Return JSON with sections array
   ```
-- [ ] **Database Query**: 
+- [x] **Database Query**: 
   ```sql
   SELECT id, section_heading, section_description, section_order, status
   FROM post_section 
   WHERE post_id = %s 
   ORDER BY section_order
   ```
-- [ ] **Response Format**: 
+- [x] **Response Format**: 
   ```json
   {
     "sections": [
@@ -69,10 +69,10 @@ Transform the current blog-images service (port 5005) from a basic upload interf
   ```
 
 #### **1.2 Extend Upload API for Unified Interface**
-- [ ] **File**: `blog-images/app.py`
-- [ ] **Enhance**: Existing `/api/upload` endpoint
-- [ ] **Add Parameters**: `image_type` (header, section, featured)
-- [ ] **Update Logic**: 
+- [x] **File**: `blog-images/app.py`
+- [x] **Enhance**: Existing `/api/upload` endpoint
+- [x] **Add Parameters**: `image_type` (header, section, featured)
+- [x] **Update Logic**: 
   ```python
   def get_upload_path(post_id, image_type, section_id=None):
       if image_type == 'header':
@@ -82,19 +82,19 @@ Transform the current blog-images service (port 5005) from a basic upload interf
       elif image_type == 'featured':
           return f"static/content/posts/{post_id}/featured/raw"
   ```
-- [ ] **Maintain Backward Compatibility**: Default to section upload if no type specified
-- [ ] **Validation**: Ensure section_id provided for section uploads
+- [x] **Maintain Backward Compatibility**: Default to section upload if no type specified
+- [x] **Validation**: Ensure section_id provided for section uploads
 
 #### **1.3 Add Image Management APIs**
-- [ ] **File**: `blog-images/app.py`
-- [ ] **New Endpoints**:
-  - [ ] `GET /api/images/<post_id>` - Get all images for a post
-  - [ ] `GET /api/images/<post_id>/<image_type>` - Get images by type
+- [x] **File**: `blog-images/app.py`
+- [x] **New Endpoints**:
+  - [x] `GET /api/images/<post_id>` - Get all images for a post
+  - [x] `GET /api/images/<post_id>/<image_type>` - Get images by type
   - [ ] `POST /api/images/batch-process` - Batch processing
   - [ ] `DELETE /api/images/<image_id>` - Delete images
-  - [ ] `GET /api/images/stats/<post_id>` - Get image statistics
+  - [x] `GET /api/images/stats/<post_id>` - Get image statistics
 
-- [ ] **Implementation Details**:
+- [x] **Implementation Details**:
   ```python
   @app.route('/api/images/<int:post_id>')
   def get_all_images(post_id):
@@ -114,12 +114,12 @@ Transform the current blog-images service (port 5005) from a basic upload interf
   ```
 
 #### **1.4 Database Integration**
-- [ ] **File**: `blog-images/app.py`
-- [ ] **Add**: Database connection function
-- [ ] **Import**: `psycopg2` for PostgreSQL access
-- [ ] **Environment Variables**: 
+- [x] **File**: `blog-images/app.py`
+- [x] **Add**: Database connection function
+- [x] **Import**: `psycopg2` for PostgreSQL access
+- [x] **Environment Variables**: 
   - `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
-- [ ] **Connection Function**:
+- [x] **Connection Function**:
   ```python
   def get_db_conn():
       return psycopg2.connect(
