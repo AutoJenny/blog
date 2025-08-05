@@ -62,6 +62,12 @@ def index():
     post_id = request.args.get('post_id', '1')
     return render_template('index.html', post_id=post_id)
 
+@app.route('/upload')
+def upload():
+    """Dedicated upload interface for workflow integration"""
+    post_id = request.args.get('post_id', '1')
+    return render_template('upload.html', post_id=post_id)
+
 @app.route('/mockup')
 def mockup():
     """Mockup of unified image processing interface"""
