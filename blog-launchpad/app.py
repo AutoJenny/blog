@@ -22,10 +22,14 @@ def strip_html_doc(content):
     
     # Remove html, head, and body tags, keeping only the content inside body
     content = re.sub(r'<html[^>]*>', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'</html>', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'</html[^>]*>', '', content, flags=re.IGNORECASE)  # Handle both </html> and </html
     content = re.sub(r'<head[^>]*>.*?</head>', '', content, flags=re.IGNORECASE | re.DOTALL)
     content = re.sub(r'<body[^>]*>', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'</body>', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'</body[^>]*>', '', content, flags=re.IGNORECASE)  # Handle both </body> and </body
+    
+    # Remove any remaining malformed HTML closing tags
+    content = re.sub(r'</html[^>]*', '', content, flags=re.IGNORECASE)  # Remove </html without >
+    content = re.sub(r'</body[^>]*', '', content, flags=re.IGNORECASE)  # Remove </body without >
     
     # Clean up any remaining whitespace and newlines
     content = re.sub(r'\s+', ' ', content)
