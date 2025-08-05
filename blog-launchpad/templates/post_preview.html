@@ -106,11 +106,11 @@
                 <h3>{{ section.section_heading or 'Untitled Section' }}</h3>
                 <div class="section-content">
                     {% if section.polished %}
-                        {{ section.polished|safe }}
+                        {{ section.polished|strip_html_doc|safe }}
                     {% elif section.draft %}
-                        {{ section.draft|safe }}
+                        {{ section.draft|strip_html_doc|safe }}
                     {% elif section.content %}
-                        {{ section.content|safe }}
+                        {{ section.content|strip_html_doc|safe }}
                     {% else %}
                         <em>No content available for this section.</em>
                     {% endif %}
