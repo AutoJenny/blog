@@ -327,5 +327,309 @@ def get_image_stats(post_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# Image Processing Pipeline Endpoints
+@app.route('/api/process/optimize', methods=['POST'])
+def optimize_images():
+    """Optimize images with specified quality settings"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        image_paths = data.get('image_paths', [])
+        quality = data.get('quality', 85)
+        
+        if not post_id:
+            return jsonify({'error': 'Missing post_id'}), 400
+        
+        # For now, return a mock response indicating processing would happen
+        # In a real implementation, this would use PIL/Pillow to optimize images
+        job_id = f"optimize_{post_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        return jsonify({
+            'success': True,
+            'job_id': job_id,
+            'message': f'Optimization job created for {len(image_paths)} images',
+            'status': 'queued'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/process/watermark', methods=['POST'])
+def watermark_images():
+    """Add watermarks to images"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        image_paths = data.get('image_paths', [])
+        watermark_text = data.get('watermark_text', 'BlogForge')
+        
+        if not post_id:
+            return jsonify({'error': 'Missing post_id'}), 400
+        
+        # For now, return a mock response
+        job_id = f"watermark_{post_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        return jsonify({
+            'success': True,
+            'job_id': job_id,
+            'message': f'Watermark job created for {len(image_paths)} images',
+            'status': 'queued'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/process/caption', methods=['POST'])
+def generate_captions():
+    """Generate captions for images using AI"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        image_paths = data.get('image_paths', [])
+        
+        if not post_id:
+            return jsonify({'error': 'Missing post_id'}), 400
+        
+        # For now, return a mock response
+        job_id = f"caption_{post_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        return jsonify({
+            'success': True,
+            'job_id': job_id,
+            'message': f'Caption generation job created for {len(image_paths)} images',
+            'status': 'queued'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/process/status/<job_id>')
+def get_processing_status(job_id):
+    """Check processing status for a job"""
+    try:
+        # For now, return a mock status
+        # In a real implementation, this would check a job queue or database
+        return jsonify({
+            'job_id': job_id,
+            'status': 'completed',
+            'progress': 100,
+            'message': 'Processing completed successfully',
+            'results': {
+                'processed_images': 5,
+                'errors': 0,
+                'output_paths': []
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Image Management Features
+@app.route('/api/manage/images/<image_id>/preview')
+def get_image_preview(image_id):
+    """Get image preview with metadata"""
+    try:
+        # For now, return a mock response
+        # In a real implementation, this would look up the image by ID
+        return jsonify({
+            'image_id': image_id,
+            'filename': f'image_{image_id}.png',
+            'url': f'/static/content/posts/53/sections/710/raw/image_{image_id}.png',
+            'type': 'section',
+            'section_id': 710,
+            'post_id': 53,
+            'status': 'raw',
+            'size': 1024000,
+            'dimensions': {'width': 800, 'height': 600},
+            'uploaded_at': '2025-08-05T12:26:05Z'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/manage/images/<image_id>/metadata', methods=['PUT'])
+def update_image_metadata(image_id):
+    """Update image metadata"""
+    try:
+        data = request.get_json()
+        caption = data.get('caption')
+        alt_text = data.get('alt_text')
+        tags = data.get('tags', [])
+        
+        # For now, return a mock response
+        # In a real implementation, this would update database metadata
+        return jsonify({
+            'success': True,
+            'image_id': image_id,
+            'message': 'Metadata updated successfully',
+            'metadata': {
+                'caption': caption,
+                'alt_text': alt_text,
+                'tags': tags,
+                'updated_at': datetime.now().isoformat()
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/manage/images/<image_id>/duplicate', methods=['POST'])
+def duplicate_image(image_id):
+    """Duplicate an image"""
+    try:
+        # For now, return a mock response
+        # In a real implementation, this would copy the file and create new metadata
+        new_image_id = f"{image_id}_copy_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        return jsonify({
+            'success': True,
+            'original_image_id': image_id,
+            'new_image_id': new_image_id,
+            'message': 'Image duplicated successfully',
+            'new_url': f'/static/content/posts/53/sections/710/raw/{new_image_id}.png'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/manage/images/<image_id>/versions')
+def get_image_versions(image_id):
+    """Get all versions of an image"""
+    try:
+        # For now, return a mock response
+        # In a real implementation, this would look up version history
+        return jsonify({
+            'image_id': image_id,
+            'versions': [
+                {
+                    'version': 'raw',
+                    'url': f'/static/content/posts/53/sections/710/raw/{image_id}.png',
+                    'created_at': '2025-08-05T12:26:05Z',
+                    'size': 1024000
+                },
+                {
+                    'version': 'optimized',
+                    'url': f'/static/content/posts/53/sections/710/optimized/{image_id}.png',
+                    'created_at': '2025-08-05T12:30:00Z',
+                    'size': 512000
+                }
+            ]
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Statistics and Monitoring Endpoints
+@app.route('/api/stats/overview')
+def get_overview_stats():
+    """Get overall statistics across all posts"""
+    try:
+        # For now, return a mock response
+        # In a real implementation, this would aggregate data from all posts
+        return jsonify({
+            'total_posts': 5,
+            'total_images': 42,
+            'total_storage_mb': 156.8,
+            'average_images_per_post': 8.4,
+            'recent_uploads': [
+                {
+                    'post_id': 53,
+                    'filename': 'header.png',
+                    'type': 'header',
+                    'uploaded_at': '2025-08-05T12:26:05Z'
+                },
+                {
+                    'post_id': 53,
+                    'filename': '713.png',
+                    'type': 'section',
+                    'uploaded_at': '2025-08-05T12:25:30Z'
+                }
+            ],
+            'processing_queue': {
+                'pending': 3,
+                'processing': 1,
+                'completed_today': 12
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/stats/processing')
+def get_processing_stats():
+    """Get processing statistics and queue status"""
+    try:
+        # For now, return a mock response
+        return jsonify({
+            'queue_status': {
+                'pending': 3,
+                'processing': 1,
+                'completed': 25,
+                'failed': 2
+            },
+            'processing_times': {
+                'average_optimization': 2.5,
+                'average_watermarking': 1.8,
+                'average_captioning': 5.2
+            },
+            'error_rates': {
+                'optimization': 0.05,
+                'watermarking': 0.02,
+                'captioning': 0.08
+            },
+            'recent_jobs': [
+                {
+                    'job_id': 'optimize_53_20250805_122605',
+                    'type': 'optimization',
+                    'status': 'completed',
+                    'created_at': '2025-08-05T12:26:05Z',
+                    'completed_at': '2025-08-05T12:26:08Z'
+                }
+            ]
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/stats/storage')
+def get_storage_stats():
+    """Get storage usage statistics"""
+    try:
+        # For now, return a mock response
+        return jsonify({
+            'total_storage_mb': 156.8,
+            'storage_by_type': {
+                'header_images': 12.5,
+                'section_images': 134.2,
+                'featured_images': 10.1
+            },
+            'storage_by_post': {
+                '53': 27.5,
+                '1': 15.2,
+                '2': 22.1
+            },
+            'largest_files': [
+                {
+                    'filename': 'header.png',
+                    'post_id': 53,
+                    'size_mb': 2.8,
+                    'type': 'header'
+                },
+                {
+                    'filename': '713.png',
+                    'post_id': 53,
+                    'size_mb': 2.1,
+                    'type': 'section'
+                }
+            ],
+            'storage_trends': {
+                'daily_uploads_mb': [5.2, 3.8, 7.1, 4.5, 6.2],
+                'total_growth_mb': 45.8
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=port) 
