@@ -43,6 +43,7 @@ def health():
     return jsonify({'status': 'healthy', 'service': 'blog-launchpad'})
 
 @app.route('/preview/<int:post_id>')
+@app.route('/preview/<int:post_id>/')
 def preview_post(post_id):
     """Preview a specific post."""
     # Get post data from database
@@ -62,7 +63,7 @@ def get_post_with_development(post_id):
         # Get post data, alias post.id as post_id
         cur.execute("""
             SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
-                   pd.idea_seed, pd.intro_blurb, pd.main_title, pd.subtitle as dev_subtitle
+                   pd.idea_seed, pd.intro_blurb, pd.main_title
             FROM post p
             LEFT JOIN post_development pd ON pd.post_id = p.id
             WHERE p.id = %s
