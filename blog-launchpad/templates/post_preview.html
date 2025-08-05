@@ -57,9 +57,6 @@
     </div>
     
     <div class="preview-container">
-        <a href="/posts" class="back-link">
-            <i class="fas fa-arrow-left"></i> Back to Posts
-        </a>
         <header class="preview-header">
             <h1>{{ post.title or post.idea_seed or 'Untitled Post' }}</h1>
             {% if post.subtitle %}
@@ -79,12 +76,6 @@
                 {% endif %}
             </div>
         </header>
-        {% if post.intro_blurb %}
-        <div class="preview-content">
-            <strong>Introduction:</strong><br>
-            {{ post.intro_blurb }}
-        </div>
-        {% endif %}
         {% if sections %}
         <div class="sections">
             {% for section in sections %}
