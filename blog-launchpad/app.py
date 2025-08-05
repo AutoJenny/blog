@@ -8,6 +8,31 @@ import psycopg2.extras
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
+# Custom Jinja2 filter to strip HTML document structure
+@app.template_filter('strip_html_doc')
+def strip_html_doc(content):
+    """Strip HTML document structure and return only body content."""
+    if not content:
+        return content
+    
+    import re
+    
+    # Remove DOCTYPE declaration
+    content = re.sub(r'<!DOCTYPE[^>]*>', '', content, flags=re.IGNORECASE)
+    
+    # Remove html, head, and body tags, keeping only the content inside body
+    content = re.sub(r'<html[^>]*>', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'</html>', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'<head[^>]*>.*?</head>', '', content, flags=re.IGNORECASE | re.DOTALL)
+    content = re.sub(r'<body[^>]*>', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'</body>', '', content, flags=re.IGNORECASE)
+    
+    # Clean up any remaining whitespace and newlines
+    content = re.sub(r'\s+', ' ', content)
+    content = re.sub(r'>\s+<', '><', content)
+    
+    return content.strip()
+
 # Add route to serve blog-images static files
 @app.route('/static/content/posts/<int:post_id>/sections/<int:section_id>/<directory>/<filename>')
 def serve_section_image(post_id, section_id, directory, filename):
