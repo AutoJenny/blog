@@ -10,6 +10,16 @@
     <!-- Clan.com blog-matching CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
     <style>
+        .header-image {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .header-image__img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
         .section-image {
             margin: 20px 0;
             text-align: center;
@@ -62,6 +72,19 @@
             {% if post.subtitle %}
             <div class="blog-post__subtitle">{{ post.subtitle }}</div>
             {% endif %}
+            
+            {% if post.header_image %}
+                <div class="header-image">
+                    <img src="{{ post.header_image.path }}" 
+                         alt="{{ post.header_image.alt_text }}" 
+                         class="header-image__img"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="image-error" style="display: none;">
+                        <small><strong>Header image not found:</strong> {{ post.header_image.path }}</small>
+                    </div>
+                </div>
+            {% endif %}
+            
             <div class="post-meta">
                 <span class="post-meta__date">
                     Created: {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}

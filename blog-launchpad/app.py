@@ -21,6 +21,18 @@ def serve_section_image(post_id, section_id, directory, filename):
     else:
         return "Image not found", 404
 
+@app.route('/static/content/posts/<int:post_id>/header/<directory>/<filename>')
+def serve_header_image(post_id, directory, filename):
+    """Serve header images from the blog-images directory."""
+    import os
+    blog_images_static = "/Users/nickfiddes/Code/projects/blog/blog-images/static"
+    image_path = os.path.join(blog_images_static, "content", "posts", str(post_id), "header", directory, filename)
+    
+    if os.path.exists(image_path):
+        return send_file(image_path)
+    else:
+        return "Image not found", 404
+
 # Database connection function (shared with blog-core)
 def get_db_conn():
     """Get database connection."""
@@ -52,6 +64,14 @@ def preview_post(post_id):
         return "Post not found", 404
     
     sections = get_post_sections_with_images(post_id)
+    
+    # Find header image
+    header_image_path = find_header_image(post_id)
+    if header_image_path:
+        post['header_image'] = {
+            'path': header_image_path,
+            'alt_text': f"Header image for {post.get('title', 'this post')}"
+        }
     
     return render_template('post_preview.html', post=post, sections=sections)
 
@@ -86,6 +106,41 @@ def get_post_with_development(post_id):
         # Always use post_id for the edit link
         post_dict['id'] = post_dict['post_id']
         return post_dict
+
+def find_header_image(post_id):
+    """
+    Find the first available header image for a post in the new directory structure.
+    Returns the image path or None if no image found.
+    """
+    import urllib.parse
+    
+    # Path to the blog-images static directory
+    blog_images_static = "/Users/nickfiddes/Code/projects/blog/blog-images/static"
+    image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp')
+
+    # 1. Look for images in the header's optimized directory first
+    header_optimized_path = os.path.join(blog_images_static, "content", "posts", str(post_id), "header", "optimized")
+    if os.path.exists(header_optimized_path):
+        image_files = [f for f in os.listdir(header_optimized_path)
+                      if f.lower().endswith(image_extensions) and not f.startswith('.')]
+        if image_files:
+            image_filename = image_files[0]
+            # URL-encode the filename to handle spaces and special characters
+            encoded_filename = urllib.parse.quote(image_filename)
+            return f"/static/content/posts/{post_id}/header/optimized/{encoded_filename}"
+
+    # 2. Fall back to raw directory if optimized is empty
+    header_raw_path = os.path.join(blog_images_static, "content", "posts", str(post_id), "header", "raw")
+    if os.path.exists(header_raw_path):
+        image_files = [f for f in os.listdir(header_raw_path)
+                      if f.lower().endswith(image_extensions) and not f.startswith('.')]
+        if image_files:
+            image_filename = image_files[0]
+            # URL-encode the filename to handle spaces and special characters
+            encoded_filename = urllib.parse.quote(image_filename)
+            return f"/static/content/posts/{post_id}/header/raw/{encoded_filename}"
+
+    return None
 
 def find_section_image(post_id, section_id):
     """
