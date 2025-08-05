@@ -3,341 +3,623 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Studio - BlogForge</title>
+    <title>Unified Image Processing Interface - BlogForge</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #B22222 100%);
-            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 20px;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: rgba(139, 0, 0, 0.9);
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .header {
-            text-align: center;
             margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #FF6B6B;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-        
+
         .header h1 {
-            font-size: 2.5rem;
+            color: #2c3e50;
+            font-size: 2.5em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
         }
-        
+
         .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
+            color: #7f8c8d;
+            text-align: center;
+            font-size: 1.1em;
         }
-        
-        /* Tab Navigation */
-        .tab-navigation {
-            display: flex;
-            background: rgba(220, 20, 60, 0.8);
-            border-radius: 10px;
-            margin-bottom: 25px;
-            border: 1px solid #FF6B6B;
-            overflow: hidden;
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+            height: calc(100vh - 200px);
         }
-        
-        .tab-button {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #FFE4E1;
-            padding: 15px 20px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .tab-button:hover {
-            background: rgba(255, 107, 107, 0.3);
-        }
-        
-        .tab-button.active {
-            background: rgba(255, 107, 107, 0.8);
-            color: white;
-        }
-        
-        /* Tab Content */
-        .tab-content {
-            display: none;
-            background: rgba(220, 20, 60, 0.8);
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
             padding: 25px;
-            border-radius: 10px;
-            border: 1px solid #FF6B6B;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-        
-        .tab-content.active {
+
+        .content-area {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .post-selector {
+            margin-bottom: 30px;
+        }
+
+        .post-selector label {
             display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
         }
-        
-        .tab-content h2 {
-            margin-bottom: 20px;
-            color: #FFE4E1;
-            font-size: 1.5rem;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #FFE4E1;
-        }
-        
-        input[type="text"], textarea, select {
+
+        .post-selector select {
             width: 100%;
             padding: 12px;
-            border: 2px solid #FF6B6B;
+            border: 2px solid #e0e6ed;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.9);
-            color: #333;
-            font-size: 1rem;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s;
         }
-        
-        input[type="text"]:focus, textarea:focus, select:focus {
+
+        .post-selector select:focus {
             outline: none;
-            border-color: #FFE4E1;
-            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+            border-color: #667eea;
         }
-        
-        .btn {
-            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
-            color: white;
-            padding: 12px 25px;
-            border: none;
+
+        .image-types {
+            margin-bottom: 30px;
+        }
+
+        .image-types h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .type-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 12px;
+            border: 2px solid #e0e6ed;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
+        }
+
+        .type-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .type-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .type-option input[type="radio"] {
             margin-right: 10px;
         }
-        
-        .btn:hover {
-            background: linear-gradient(45deg, #FF8E8E, #FF6B6B);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+
+        .section-selector {
+            margin-bottom: 30px;
         }
-        
-        .btn:active {
-            transform: translateY(0);
+
+        .section-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
         }
-        
-        .btn-secondary {
-            background: linear-gradient(45deg, #666, #888);
-        }
-        
-        .btn-secondary:hover {
-            background: linear-gradient(45deg, #888, #666);
-        }
-        
-        .status {
-            padding: 15px;
+
+        .section-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e6ed;
             border-radius: 8px;
-            margin: 20px 0;
-            font-weight: bold;
+            font-size: 14px;
+            background: white;
         }
-        
-        .status.success {
-            background: rgba(34, 139, 34, 0.8);
-            border: 1px solid #32CD32;
-        }
-        
-        .status.error {
-            background: rgba(220, 20, 60, 0.8);
-            border: 1px solid #FF6B6B;
-        }
-        
-        .status.info {
-            background: rgba(30, 144, 255, 0.8);
-            border: 1px solid #87CEEB;
-        }
-        
-        .coming-soon {
+
+        .upload-area {
+            border: 3px dashed #e0e6ed;
+            border-radius: 12px;
+            padding: 40px 20px;
             text-align: center;
-            padding: 60px 20px;
-            color: #FFE4E1;
-        }
-        
-        .coming-soon h3 {
-            font-size: 2rem;
             margin-bottom: 20px;
-            color: #FFE4E1;
+            transition: all 0.3s;
+            cursor: pointer;
         }
-        
-        .coming-soon p {
-            font-size: 1.2rem;
-            line-height: 1.6;
-            opacity: 0.8;
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
         }
-        
-        .file-upload-area {
-            border: 2px dashed #FF6B6B;
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.05);
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
         }
-        
-        .file-upload-area:hover {
-            border-color: #FFE4E1;
-            background: rgba(255, 255, 255, 0.1);
+
+        .upload-area p {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #7f8c8d;
         }
-        
-        .file-upload-area.dragover {
-            border-color: #FFE4E1;
-            background: rgba(255, 255, 255, 0.15);
+
+        .upload-area .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #bdc3c7;
         }
-        
+
         .file-input {
             display: none;
         }
-        
-        .upload-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: #FF6B6B;
-        }
-        
-        .image-preview {
-            max-width: 100%;
-            max-height: 300px;
+
+        .upload-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
             border-radius: 8px;
-            margin-top: 20px;
-            border: 2px solid #FF6B6B;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-right: 10px;
         }
-        
+
+        .upload-button:hover {
+            background: #5a6fd8;
+        }
+
+        .upload-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .clear-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .clear-button:hover {
+            background: #c0392b;
+        }
+
+        .image-preview-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .image-preview {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
         .hidden {
             display: none;
+        }
+
+        .existing-images-container {
+            margin-top: 30px;
+        }
+
+        .existing-images-container h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .existing-image {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px;
+            border: 1px solid #e0e6ed;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .existing-image img {
+            max-width: 150px;
+            max-height: 100px;
+            border-radius: 4px;
+        }
+
+        .existing-image p {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .stats-panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .content-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e6ed;
+        }
+
+        .content-tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #7f8c8d;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .content-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .content-tab:hover {
+            color: #667eea;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎨 Image Studio</h1>
-            <p>Generate and upload images for your blog posts</p>
+            <h1>🎨 Unified Image Processing Interface</h1>
+            <p>Streamlined image management for blog posts - upload, process, and organize images across all content types</p>
         </div>
-        
-        <!-- Tab Navigation -->
-        <div class="tab-navigation">
-            <button class="tab-button active" onclick="switchTab('generate')">🚀 Generate</button>
-            <button class="tab-button" onclick="switchTab('upload')">📁 Upload</button>
-        </div>
-        
-        <!-- Generate Tab -->
-        <div id="generate-tab" class="tab-content active">
-            <div class="coming-soon">
-                <h3>🚧 Coming Soon</h3>
-                <p>AI-powered image generation functionality is currently under development.</p>
-                <p>This feature will allow you to create stunning visuals for your blog posts using advanced AI models.</p>
-                <p>Stay tuned for updates!</p>
-            </div>
-        </div>
-        
-        <!-- Upload Tab -->
-        <div id="upload-tab" class="tab-content">
-            <h2>📁 Upload Image</h2>
-            
-            <div class="form-group">
-                <label for="section-select">Select Section:</label>
-                <select id="section-select">
-                    <option value="">Loading sections...</option>
-                </select>
-            </div>
-            
-            <div class="file-upload-area" id="upload-area">
-                <div class="upload-icon">📁</div>
-                <p>Drag and drop an image here, or click to browse</p>
-                <input type="file" id="file-input" class="file-input" accept="image/*">
-                <button class="btn" onclick="document.getElementById('file-input').click()">Choose File</button>
-            </div>
-            
-            <div id="image-preview-container" class="hidden">
-                <img id="image-preview" class="image-preview" alt="Preview">
-                <div style="margin-top: 15px;">
-                    <button class="btn" onclick="uploadImage()">📤 Upload Image</button>
-                    <button class="btn btn-secondary" onclick="clearUpload()">🗑️ Clear</button>
+
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Post Selector -->
+                <div class="post-selector">
+                    <label for="post-select">📝 Select Post:</label>
+                    <select id="post-select">
+                        <option value="53">Post 53 - Scottish Story-telling</option>
+                        <option value="1">Post 1 - Default</option>
+                    </select>
+                </div>
+
+                <!-- Image Type Selection -->
+                <div class="image-types">
+                    <h3>🖼️ Image Type:</h3>
+                    <div class="type-option" onclick="selectImageType('header')">
+                        <input type="radio" name="image-type" value="header" id="type-header">
+                        <label for="type-header">Header Image</label>
+                    </div>
+                    <div class="type-option" onclick="selectImageType('section')">
+                        <input type="radio" name="image-type" value="section" id="type-section" checked>
+                        <label for="type-section">Section Image</label>
+                    </div>
+                    <div class="type-option" onclick="selectImageType('featured')">
+                        <input type="radio" name="image-type" value="featured" id="type-featured">
+                        <label for="type-featured">Featured Image</label>
+                    </div>
+                </div>
+
+                <!-- Section Selector (for section images) -->
+                <div class="section-selector" id="section-selector">
+                    <label for="section-select">📄 Select Section:</label>
+                    <select id="section-select">
+                        <option value="">Select a section...</option>
+                    </select>
+                </div>
+
+                <!-- Upload Area -->
+                <div class="upload-area" id="upload-area">
+                    <div class="icon">📁</div>
+                    <p>Drag & drop an image here<br>or click to browse</p>
+                    <input type="file" id="file-input" class="file-input" accept="image/*">
+                </div>
+
+                <!-- Upload Controls -->
+                <div style="text-align: center;">
+                    <button class="upload-button" onclick="uploadImage()" id="upload-btn" disabled>📤 Upload Image</button>
+                    <button class="clear-button" onclick="clearUpload()">🗑️ Clear</button>
+                </div>
+
+                <!-- Status Messages -->
+                <div id="status" class="status hidden"></div>
+
+                <!-- Image Preview -->
+                <div id="image-preview-container" class="image-preview-container hidden">
+                    <img id="image-preview" class="image-preview" alt="Preview">
                 </div>
             </div>
-            
-                               <div id="status" class="status hidden"></div>
-                   
-                   <!-- Container for existing images -->
-                   <div id="existing-images-container" class="hidden"></div>
-               </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Content Tabs -->
+                <div class="content-tabs">
+                    <button class="content-tab active" onclick="switchContentTab('stats')">📊 Statistics</button>
+                    <button class="content-tab" onclick="switchContentTab('images')">🖼️ All Images</button>
+                    <button class="content-tab" onclick="switchContentTab('processing')">⚙️ Processing</button>
+                </div>
+
+                <!-- Statistics Panel -->
+                <div id="stats-panel" class="tab-panel active">
+                    <div class="stats-panel">
+                        <h3>📊 Image Statistics</h3>
+                        <div class="stats-grid" id="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-number" id="total-images">-</div>
+                                <div class="stat-label">Total Images</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="header-images">-</div>
+                                <div class="stat-label">Header Images</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="section-images">-</div>
+                                <div class="stat-label">Section Images</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="featured-images">-</div>
+                                <div class="stat-label">Featured Images</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="total-size">-</div>
+                                <div class="stat-label">Total Size (MB)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Images Panel -->
+                <div id="images-panel" class="tab-panel">
+                    <h3>🖼️ All Images</h3>
+                    <div id="all-images-container">
+                        <p>Loading images...</p>
+                    </div>
+                </div>
+
+                <!-- Processing Panel -->
+                <div id="processing-panel" class="tab-panel">
+                    <h3>⚙️ Processing Pipeline</h3>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <p><strong>Processing Features Coming Soon:</strong></p>
+                        <ul style="margin-top: 15px; line-height: 1.6;">
+                            <li>🔄 Batch image optimization</li>
+                            <li>🎨 Automatic watermarking</li>
+                            <li>📝 AI-powered captioning</li>
+                            <li>🏷️ Metadata generation</li>
+                            <li>📐 Smart cropping and resizing</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Existing Images Container -->
+                <div id="existing-images-container" class="existing-images-container hidden"></div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Global variables
         let selectedFile = null;
         let sections = [];
-        
-        // Tab switching functionality
-        function switchTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Remove active class from all tab buttons
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active');
-            });
-            
-            // Show selected tab content
-            document.getElementById(tabName + '-tab').classList.add('active');
-            
-            // Add active class to clicked button
-            event.target.classList.add('active');
-        }
-        
-        // Load sections from API
-        async function loadSections() {
+        let currentPostId = '53';
+        let currentImageType = 'section';
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get post ID from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const postId = urlParams.get('post_id') || '53';
+            currentPostId = postId;
             
+            // Set post selector
+            document.getElementById('post-select').value = postId;
+            
+            // Load initial data
+            loadSections();
+            loadImageStats();
+            loadAllImages();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Update iframe height for workflow integration
+            updateIframeHeight();
+        });
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Post selector change
+            document.getElementById('post-select').addEventListener('change', function() {
+                currentPostId = this.value;
+                loadSections();
+                loadImageStats();
+                loadAllImages();
+                clearExistingImages();
+            });
+
+            // File input change
+            document.getElementById('file-input').addEventListener('change', handleFileSelect);
+
+            // Upload area click
+            document.getElementById('upload-area').addEventListener('click', function() {
+                document.getElementById('file-input').click();
+            });
+
+            // Drag and drop functionality
+            const uploadArea = document.getElementById('upload-area');
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type.startsWith('image/')) {
+                    selectedFile = files[0];
+                    previewImage(files[0]);
+                } else {
+                    showStatus('Please drop a valid image file', 'error');
+                }
+            });
+        }
+
+        // Image type selection
+        function selectImageType(type) {
+            currentImageType = type;
+            
+            // Update radio button
+            document.querySelector(`input[value="${type}"]`).checked = true;
+            
+            // Update type option styling
+            document.querySelectorAll('.type-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // Show/hide section selector
+            const sectionSelector = document.getElementById('section-selector');
+            if (type === 'section') {
+                sectionSelector.style.display = 'block';
+                loadSections();
+            } else {
+                sectionSelector.style.display = 'none';
+                clearExistingImages();
+            }
+            
+            // Load images for selected type
+            if (type === 'header' || type === 'featured') {
+                loadImagesByType(type);
+            }
+        }
+
+        // Load sections from API (using new blog-images API)
+        async function loadSections() {
             try {
-                const response = await fetch(`http://localhost:5000/api/sections/${postId}`);
+                const response = await fetch(`/api/sections/${currentPostId}`);
                 if (response.ok) {
                     const data = await response.json();
                     sections = data.sections || [];
                     populateSectionDropdown();
-                    console.log(`[LoadSections] Loaded ${sections.length} sections for post ${postId}`);
+                    console.log(`[LoadSections] Loaded ${sections.length} sections for post ${currentPostId}`);
                 } else {
-                    console.warn('[LoadSections] Failed to load sections from API, using mock data');
-                    loadMockSections();
+                    console.warn('[LoadSections] Failed to load sections from API');
+                    showStatus('Failed to load sections', 'error');
                 }
             } catch (error) {
-                console.warn('[LoadSections] Error loading sections from API, using mock data:', error);
-                loadMockSections();
+                console.warn('[LoadSections] Error loading sections from API:', error);
+                showStatus('Error loading sections', 'error');
             }
         }
-        
+
         // Populate section dropdown
         function populateSectionDropdown() {
             const select = document.getElementById('section-select');
@@ -346,8 +628,7 @@
             sections.forEach(section => {
                 const option = document.createElement('option');
                 option.value = section.id;
-                // Use section_heading as title, fallback to section ID if no heading
-                const title = section.section_heading || section.title || `Section ${section.id}`;
+                const title = section.section_heading || `Section ${section.id}`;
                 option.textContent = title;
                 select.appendChild(option);
             });
@@ -361,24 +642,9 @@
                     clearExistingImages();
                 }
             });
-            
-            console.log(`[PopulateSectionDropdown] Populated dropdown with ${sections.length} sections`);
         }
-        
-        // Load mock sections if API fails
-        function loadMockSections() {
-            sections = [
-                { id: 710, title: 'Introduction to AI and Machine Learning' },
-                { id: 711, title: 'The Future of Technology' },
-                { id: 712, title: 'Digital Transformation Strategies' },
-                { id: 713, title: 'Innovation in Business' }
-            ];
-            populateSectionDropdown();
-        }
-        
-        // File upload handling
-        document.getElementById('file-input').addEventListener('change', handleFileSelect);
-        
+
+        // File selection handling
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file && file.type.startsWith('image/')) {
@@ -388,51 +654,84 @@
                 showStatus('Please select a valid image file', 'error');
             }
         }
-        
-        // Drag and drop functionality
-        const uploadArea = document.getElementById('upload-area');
-        
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0 && files[0].type.startsWith('image/')) {
-                selectedFile = files[0];
-                previewImage(files[0]);
-            } else {
-                showStatus('Please drop a valid image file', 'error');
-            }
-        });
-        
+
+        // Preview image
         function previewImage(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const preview = document.getElementById('image-preview');
                 preview.src = e.target.result;
                 document.getElementById('image-preview-container').classList.remove('hidden');
+                document.getElementById('upload-btn').disabled = false;
             };
             reader.readAsDataURL(file);
         }
-        
-        // Load and display existing images for a section
-        async function loadSectionImages(sectionId) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get('post_id') || '53';
+
+        // Upload image
+        async function uploadImage() {
+            if (!selectedFile) {
+                showStatus('Please select an image first', 'error');
+                return;
+            }
+
+            // Validate section selection for section uploads
+            if (currentImageType === 'section') {
+                const sectionId = document.getElementById('section-select').value;
+                if (!sectionId) {
+                    showStatus('Please select a section first', 'error');
+                    return;
+                }
+            }
+
+            showStatus('📤 Uploading image...', 'info');
+
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+            formData.append('post_id', currentPostId);
+            formData.append('image_type', currentImageType);
             
+            // Add section_id for section uploads
+            if (currentImageType === 'section') {
+                const sectionId = document.getElementById('section-select').value;
+                formData.append('section_id', sectionId);
+            }
+
             try {
-                const response = await fetch(`/api/images/${postId}/${sectionId}`);
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
                 const result = await response.json();
-                
+
+                if (result.success) {
+                    showStatus('✅ Image uploaded successfully!', 'success');
+                    
+                    // Refresh data
+                    loadImageStats();
+                    loadAllImages();
+                    
+                    // Load specific images based on type
+                    if (currentImageType === 'section') {
+                        const sectionId = document.getElementById('section-select').value;
+                        loadSectionImages(sectionId);
+                    } else {
+                        loadImagesByType(currentImageType);
+                    }
+                } else {
+                    showStatus(`❌ Upload failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Upload failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Load section images
+        async function loadSectionImages(sectionId) {
+            try {
+                const response = await fetch(`/api/images/${currentPostId}/${sectionId}`);
+                const result = await response.json();
+
                 if (result.images && result.images.length > 0) {
                     displayExistingImages(result.images);
                 } else {
@@ -444,107 +743,174 @@
                 clearExistingImages();
             }
         }
-        
+
+        // Load images by type
+        async function loadImagesByType(type) {
+            try {
+                const response = await fetch(`/api/images/${currentPostId}/${type}`);
+                const result = await response.json();
+
+                if (result.images && result.images.length > 0) {
+                    displayExistingImages(result.images);
+                } else {
+                    clearExistingImages();
+                    showStatus(`No ${type} images found`, 'info');
+                }
+            } catch (error) {
+                console.warn('[LoadImagesByType] Error loading images:', error);
+                clearExistingImages();
+            }
+        }
+
         // Display existing images
         function displayExistingImages(images) {
             const container = document.getElementById('existing-images-container');
             container.innerHTML = '<h3>📁 Existing Images</h3>';
-            
+
             images.forEach(image => {
                 const imageDiv = document.createElement('div');
                 imageDiv.className = 'existing-image';
-                imageDiv.style.cssText = 'margin: 10px 0; padding: 10px; border: 1px solid #FF6B6B; border-radius: 8px; background: rgba(255, 255, 255, 0.1);';
-                
+
                 const img = document.createElement('img');
                 img.src = image.url;
                 img.alt = image.filename;
-                img.style.cssText = 'max-width: 200px; max-height: 150px; border-radius: 4px;';
-                
+
                 const filename = document.createElement('p');
                 filename.textContent = image.filename;
-                filename.style.cssText = 'margin: 5px 0; color: #FFE4E1; font-size: 0.9rem;';
-                
+
                 imageDiv.appendChild(img);
                 imageDiv.appendChild(filename);
                 container.appendChild(imageDiv);
             });
-            
+
             container.classList.remove('hidden');
         }
-        
+
         // Clear existing images display
         function clearExistingImages() {
             const container = document.getElementById('existing-images-container');
             container.innerHTML = '';
             container.classList.add('hidden');
         }
-        
-        async function uploadImage() {
-            if (!selectedFile) {
-                showStatus('Please select an image first', 'error');
-                return;
-            }
-            
-            const sectionId = document.getElementById('section-select').value;
-            if (!sectionId) {
-                showStatus('Please select a section first', 'error');
-                return;
-            }
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get('post_id') || '53';
-            
-            showStatus('📤 Uploading image...', 'info');
-            
-            const formData = new FormData();
-            formData.append('image', selectedFile);
-            formData.append('post_id', postId);
-            formData.append('section_id', sectionId);
-            
+
+        // Load image statistics
+        async function loadImageStats() {
             try {
-                const response = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await fetch(`/api/images/stats/${currentPostId}`);
+                const stats = await response.json();
+
+                document.getElementById('total-images').textContent = stats.total_images || 0;
+                document.getElementById('header-images').textContent = stats.header_images || 0;
+                document.getElementById('section-images').textContent = stats.section_images || 0;
+                document.getElementById('featured-images').textContent = stats.featured_images || 0;
                 
-                const result = await response.json();
-                
-                if (result.success) {
-                    showStatus('✅ Image uploaded successfully!', 'success');
-                    // Load and display the uploaded image
-                    loadSectionImages(sectionId);
-                } else {
-                    showStatus(`❌ Upload failed: ${result.error}`, 'error');
-                }
+                // Convert bytes to MB
+                const totalSizeMB = Math.round((stats.total_size || 0) / (1024 * 1024) * 10) / 10;
+                document.getElementById('total-size').textContent = totalSizeMB;
             } catch (error) {
-                showStatus(`❌ Upload failed: ${error.message}`, 'error');
+                console.warn('[LoadImageStats] Error loading stats:', error);
             }
         }
-        
+
+        // Load all images
+        async function loadAllImages() {
+            try {
+                const response = await fetch(`/api/images/${currentPostId}`);
+                const result = await response.json();
+
+                const container = document.getElementById('all-images-container');
+                
+                if (result.images && result.images.length > 0) {
+                    container.innerHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">';
+                    
+                    result.images.forEach(image => {
+                        const imageDiv = document.createElement('div');
+                        imageDiv.style.cssText = 'background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
+                        
+                        const img = document.createElement('img');
+                        img.src = image.url;
+                        img.alt = image.filename;
+                        img.style.cssText = 'width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;';
+                        
+                        const filename = document.createElement('p');
+                        filename.textContent = image.filename;
+                        filename.style.cssText = 'font-size: 0.9em; color: #7f8c8d; margin-bottom: 4px;';
+                        
+                        const type = document.createElement('p');
+                        type.textContent = `Type: ${image.type}`;
+                        type.style.cssText = 'font-size: 0.8em; color: #95a5a6;';
+                        
+                        imageDiv.appendChild(img);
+                        imageDiv.appendChild(filename);
+                        imageDiv.appendChild(type);
+                        container.appendChild(imageDiv);
+                    });
+                    
+                    container.innerHTML += '</div>';
+                } else {
+                    container.innerHTML = '<p>No images found for this post.</p>';
+                }
+            } catch (error) {
+                console.warn('[LoadAllImages] Error loading images:', error);
+                document.getElementById('all-images-container').innerHTML = '<p>Error loading images.</p>';
+            }
+        }
+
+        // Content tab switching
+        function switchContentTab(tabName) {
+            // Hide all tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.content-tab').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Show selected tab panel
+            document.getElementById(tabName + '-panel').classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Clear upload
         function clearUpload() {
             selectedFile = null;
             document.getElementById('file-input').value = '';
             document.getElementById('image-preview-container').classList.add('hidden');
+            document.getElementById('upload-btn').disabled = true;
             document.getElementById('status').classList.add('hidden');
         }
-        
+
+        // Show status message
         function showStatus(message, type) {
             const status = document.getElementById('status');
             status.textContent = message;
             status.className = `status ${type}`;
             status.classList.remove('hidden');
-            
+
             if (type === 'success' || type === 'error') {
                 setTimeout(() => {
                     status.classList.add('hidden');
                 }, 5000);
             }
         }
-        
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadSections();
-        });
+
+        // Update iframe height for workflow integration
+        function updateIframeHeight() {
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'resize',
+                    source: 'blog-images',
+                    height: document.body.scrollHeight
+                }, '*');
+            }
+        }
+
+        // Update iframe height on window resize
+        window.addEventListener('resize', updateIframeHeight);
     </script>
 </body>
 </html>
