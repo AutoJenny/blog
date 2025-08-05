@@ -105,6 +105,16 @@
             <div class="section">
                 <h3>{{ section.section_heading or 'Untitled Section' }}</h3>
                 <div class="section-content">
+                    {% if section.polished %}
+                        {{ section.polished|safe }}
+                    {% elif section.draft %}
+                        {{ section.draft|safe }}
+                    {% elif section.content %}
+                        {{ section.content|safe }}
+                    {% else %}
+                        <em>No content available for this section.</em>
+                    {% endif %}
+                    
                     {% if section.image %}
                         {% if section.image.path and not section.image.placeholder %}
                             <div class="section-image">
@@ -122,16 +132,6 @@
                                 <small>{{ section.image.alt_text }}</small>
                             </div>
                         {% endif %}
-                    {% endif %}
-                    
-                    {% if section.polished %}
-                        {{ section.polished|safe }}
-                    {% elif section.draft %}
-                        {{ section.draft|safe }}
-                    {% elif section.content %}
-                        {{ section.content|safe }}
-                    {% else %}
-                        <em>No content available for this section.</em>
                     {% endif %}
                 </div>
             </div>
