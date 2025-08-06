@@ -794,33 +794,39 @@
                     </div>
                 </div>
 
-                <div class="processing-pipeline mock-placeholder mock-pipeline">
+                <div class="processing-pipeline">
                     <h3>Processing Pipeline</h3>
-                    <div class="pipeline-step completed">
+                    <div class="pipeline-step" data-stage="raw">
                         <div class="step-info">
-                            <div class="step-icon completed">✓</div>
-                            <span>Image Generation</span>
+                            <div class="step-icon pending">○</div>
+                            <span>Raw</span>
                         </div>
                     </div>
-                    <div class="pipeline-step processing">
+                    <div class="pipeline-step" data-stage="selected">
                         <div class="step-info">
-                            <div class="step-icon processing">⟳</div>
+                            <div class="step-icon pending">○</div>
+                            <span>Selection</span>
+                        </div>
+                    </div>
+                    <div class="pipeline-step" data-stage="optimized">
+                        <div class="step-info">
+                            <div class="step-icon pending">○</div>
                             <span>Optimization</span>
                         </div>
                     </div>
-                    <div class="pipeline-step pending">
+                    <div class="pipeline-step" data-stage="watermarked">
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
                             <span>Watermarking</span>
                         </div>
                     </div>
-                    <div class="pipeline-step pending">
+                    <div class="pipeline-step" data-stage="captioned">
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
                             <span>Captioning</span>
                         </div>
                     </div>
-                    <div class="pipeline-step pending">
+                    <div class="pipeline-step" data-stage="metadata">
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
                             <span>Metadata</span>
@@ -1485,6 +1491,9 @@
                 document.getElementById('captioned-sections-count').textContent = '0';
                 document.getElementById('captioned-size').textContent = '0MB';
                 
+                // Update pipeline status based on the new statistics
+                await updatePipelineStatus();
+                
             } catch (error) {
                 console.error('Error updating statistics:', error);
             }
@@ -1518,18 +1527,35 @@
             loadImageType(currentImageType);
         }
 
-        // Update pipeline status
+        // Update pipeline status based on actual image counts
         async function updatePipelineStatus() {
             try {
+                // Get image counts for each stage
+                const rawResponse = await fetch(`/api/images/${currentPostId}/raw`);
+                const selectedResponse = await fetch(`/api/images/${currentPostId}/selected`);
+                const optimizedResponse = await fetch(`/api/images/${currentPostId}/optimized`);
+                
+                const rawData = await rawResponse.json();
+                const selectedData = await selectedResponse.json();
+                const optimizedData = await optimizedResponse.json();
+                
+                // Update pipeline steps based on actual data
+                updatePipelineStepsFromData({
+                    raw: rawData,
+                    selected: selectedData,
+                    optimized: optimizedData
+                });
+                
+                // Also check for existing jobs
                 const response = await fetch(`/api/pipeline/jobs/${currentPostId}`);
                 if (response.ok) {
                     const data = await response.json();
                     processingJobs = data.jobs || [];
                     
-                    // Update pipeline visualization
+                    // Update pipeline visualization for active jobs
                     if (processingJobs.length > 0) {
                         const latestJob = processingJobs[0];
-                        updatePipelineSteps(latestJob);
+                        updatePipelineStepsFromJob(latestJob);
                     }
                 }
             } catch (error) {
@@ -1537,21 +1563,59 @@
             }
         }
 
-        // Update pipeline steps visualization
-        function updatePipelineSteps(job) {
-            const steps = ['generation', 'optimization', 'watermarking', 'captioning', 'metadata'];
+        // Update pipeline steps based on actual image data
+        function updatePipelineStepsFromData(data) {
+            const pipelineSteps = [
+                { stage: 'raw', data: data.raw },
+                { stage: 'selected', data: data.selected },
+                { stage: 'optimized', data: data.optimized },
+                { stage: 'watermarked', data: { total: 0, header_count: 0, section_count: 0 } }, // Not implemented yet
+                { stage: 'captioned', data: { total: 0, header_count: 0, section_count: 0 } }, // Not implemented yet
+                { stage: 'metadata', data: { total: 0, header_count: 0, section_count: 0 } } // Not implemented yet
+            ];
+            
+            pipelineSteps.forEach(({ stage, data }) => {
+                const stepElement = document.querySelector(`[data-stage="${stage}"]`);
+                if (!stepElement) return;
+                
+                const stepIcon = stepElement.querySelector('.step-icon');
+                
+                // Check if this stage has images for both header and sections
+                const hasHeaderImages = data.header_count > 0;
+                const hasSectionImages = data.section_count > 0;
+                const hasImages = data.total > 0;
+                
+                // For now, we'll consider a step complete if it has any images
+                // In the future, we could make this more sophisticated
+                if (hasImages) {
+                    stepElement.className = 'pipeline-step completed';
+                    stepIcon.className = 'step-icon completed';
+                    stepIcon.textContent = '✓';
+                } else {
+                    stepElement.className = 'pipeline-step pending';
+                    stepIcon.className = 'step-icon pending';
+                    stepIcon.textContent = '○';
+                }
+            });
+        }
+
+        // Update pipeline steps visualization from job data
+        function updatePipelineStepsFromJob(job) {
+            const steps = ['raw', 'selected', 'optimized', 'watermarked', 'captioned', 'metadata'];
             const stepElements = document.querySelectorAll('.pipeline-step');
             
             steps.forEach((step, index) => {
                 const stepElement = stepElements[index];
+                if (!stepElement) return;
+                
                 const stepIcon = stepElement.querySelector('.step-icon');
                 
                 // Update step status based on job progress
-                if (job.progress >= (index + 1) * 20) {
+                if (job.progress >= (index + 1) * 16.67) { // 100% / 6 steps
                     stepElement.className = 'pipeline-step completed';
                     stepIcon.className = 'step-icon completed';
                     stepIcon.textContent = '✓';
-                } else if (job.progress >= index * 20) {
+                } else if (job.progress >= index * 16.67) {
                     stepElement.className = 'pipeline-step processing';
                     stepIcon.className = 'step-icon processing';
                     stepIcon.textContent = '⟳';
