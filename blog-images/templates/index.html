@@ -901,6 +901,8 @@
 
         // Switch image type
         function switchImageType(stage) {
+            console.log('switchImageType called with stage:', stage);
+            
             // Map stage names to API types
             const stageToApiType = {
                 'raw': 'section',
@@ -910,6 +912,8 @@
             };
             
             const apiType = stageToApiType[stage] || stage;
+            console.log('Mapped to API type:', apiType);
+            
             currentImageType = apiType;
             loadImageType(apiType);
             
