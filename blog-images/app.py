@@ -234,6 +234,32 @@ def get_images_by_type(post_id, image_type):
     """Get images for specific type (header, section, featured) or processing stage (raw, optimized, captioned)"""
     try:
         images = []
+        post_title = None
+        section_titles = {}
+        
+        # Get post title and section titles from database
+        try:
+            with get_db_conn() as conn:
+                with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                    # Get post title
+                    cur.execute("SELECT title FROM post WHERE id = %s", (post_id,))
+                    post_result = cur.fetchone()
+                    if post_result:
+                        post_title = post_result['title']
+                    
+                    # Get section titles
+                    cur.execute("""
+                        SELECT id, section_heading 
+                        FROM post_section 
+                        WHERE post_id = %s 
+                        ORDER BY section_order
+                    """, (post_id,))
+                    sections = cur.fetchall()
+                    for section in sections:
+                        section_titles[str(section['id'])] = section['section_heading']
+        except Exception as e:
+            print(f"Database error getting titles: {e}")
+            # Continue without titles if database fails
         
         # Handle processing stages (raw, optimized, captioned)
         if image_type in ['raw', 'optimized', 'captioned']:
@@ -249,6 +275,7 @@ def get_images_by_type(post_id, image_type):
                             'url': f'/static/content/posts/{post_id}/header/{processing_stage}/{filename}',
                             'type': 'header',
                             'section_id': None,
+                            'section_title': post_title,  # Header images get post title
                             'processing_stage': processing_stage,
                             'path': os.path.join(header_path, filename)
                         })
@@ -259,6 +286,7 @@ def get_images_by_type(post_id, image_type):
                 for section_dir in os.listdir(sections_path):
                     section_path = os.path.join(sections_path, section_dir, processing_stage)
                     if os.path.exists(section_path):
+                        section_title = section_titles.get(section_dir, f"Section {section_dir}")
                         for filename in os.listdir(section_path):
                             if allowed_file(filename):
                                 images.append({
@@ -266,6 +294,7 @@ def get_images_by_type(post_id, image_type):
                                     'url': f'/static/content/posts/{post_id}/sections/{section_dir}/{processing_stage}/{filename}',
                                     'type': 'section',
                                     'section_id': section_dir,
+                                    'section_title': section_title,
                                     'processing_stage': processing_stage,
                                     'path': os.path.join(section_path, filename)
                                 })
@@ -278,7 +307,8 @@ def get_images_by_type(post_id, image_type):
                 'images': images,
                 'total': len(images),
                 'header_count': header_count,
-                'section_count': section_count
+                'section_count': section_count,
+                'post_title': post_title
             })
         
         # Handle legacy image types (header, section, featured)
