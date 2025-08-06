@@ -729,6 +729,7 @@
 
         // Initialize the interface
         document.addEventListener('DOMContentLoaded', function() {
+            loadPosts();
             loadImageType(currentImageType);
             updateStatistics();
             updatePipelineStatus();
@@ -736,6 +737,46 @@
             // Set up iframe communication
             updateIframeHeight();
         });
+
+        // Load available posts from blog-core
+        async function loadPosts() {
+            console.log('Loading posts from blog-core...');
+            try {
+                const response = await fetch('http://localhost:5000/posts?debug=1');
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Posts data:', data);
+                    const posts = data.posts || [];
+                    
+                    // Populate the post selector dropdown
+                    const postSelect = document.getElementById('post-select');
+                    postSelect.innerHTML = '';
+                    
+                    posts.forEach(post => {
+                        const option = document.createElement('option');
+                        option.value = post.id;
+                        option.textContent = `Post ${post.id}: ${post.title}`;
+                        postSelect.appendChild(option);
+                    });
+                    
+                    // Set current post ID to the first post
+                    if (posts.length > 0) {
+                        currentPostId = posts[0].id;
+                        postSelect.value = currentPostId;
+                    }
+                    
+                    console.log(`Loaded ${posts.length} posts`);
+                } else {
+                    console.error('Response not ok:', response.status, response.statusText);
+                }
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                // Keep the default mock posts if loading fails
+            }
+        }
 
         // Switch image type
         function switchImageType(type) {
