@@ -849,6 +849,12 @@
             
             // Set up iframe communication
             updateIframeHeight();
+            
+            // Add click handlers for processing stage buttons
+            document.getElementById('raw-btn').addEventListener('click', () => switchImageType('section'));
+            document.getElementById('selected-btn').addEventListener('click', () => switchImageType('selected'));
+            document.getElementById('optimized-btn').addEventListener('click', () => switchImageType('optimized'));
+            document.getElementById('captioned-btn').addEventListener('click', () => switchImageType('captioned'));
         });
 
         // Load available posts from blog-core
@@ -893,68 +899,62 @@
 
         // Switch image type
         function switchImageType(type) {
-            console.log('switchImageType called with:', type);
             currentImageType = type;
-            
-            // Update active card
-            document.querySelectorAll('.image-type-card').forEach(card => {
-                card.classList.remove('active');
-            });
-            document.querySelector(`[data-type="${type}"]`).classList.add('active');
-            
-            // Update content title
-            const titles = {
-                'header': 'Header Images',
-                'section': 'Section Images',
-                'featured': 'Featured Images'
-            };
-            document.getElementById('content-title').textContent = `${titles[type]} - Post ${currentPostId}`;
-            
-            // Load images for this type
             loadImageType(type);
+            
+            // Update active state for processing stage buttons
+            document.querySelectorAll('.processing-stage-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`${type}-btn`).classList.add('active');
         }
 
         // Load images by type
         async function loadImageType(type) {
             try {
-                const response = await fetch(`/api/images/${currentPostId}/${type}`);
+                let url;
+                if (type === 'selected') {
+                    url = `/api/images/${currentPostId}/selected`;
+                } else {
+                    url = `/api/images/${currentPostId}/${type}`;
+                }
+                
+                const response = await fetch(url);
                 if (response.ok) {
                     const data = await response.json();
-                    displayImages(data.images || []);
-                } else {
-                    console.error('Error loading images:', response.status, response.statusText);
-                    displayImages([]);
+                    displayImages(data.images, type);
                 }
             } catch (error) {
                 console.error('Error loading images:', error);
-                displayImages([]);
             }
         }
 
         // Display images in grid
-        function displayImages(images) {
+        function displayImages(images, type) {
             const grid = document.getElementById('image-grid');
             
-            console.log('displayImages called with:', { images: images.length, currentImageType });
+            console.log('displayImages called with:', { images: images.length, currentImageType: type });
             
             if (images.length === 0) {
                 grid.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #7f8c8d;">
                         <div style="font-size: 3em; margin-bottom: 20px;">📷</div>
                         <h3>No images found</h3>
-                        <p>No ${currentImageType} images available for this post</p>
+                        <p>No ${type} images available for this post</p>
                     </div>
                 `;
                 return;
             }
             
             // For section images, group by section_id
-            if (currentImageType === 'section') {
+            if (type === 'section') {
                 console.log('Using section layout for', images.length, 'images');
                 displaySectionImages(images);
+            } else if (type === 'selected') {
+                console.log('Using selected layout for', images.length, 'images');
+                displaySelectedImages(images);
             } else {
-                console.log('Using regular layout for', images.length, 'images');
-                // For header/featured images, use regular grid layout
+                console.log('Using regular grid layout for', images.length, 'images');
                 displayRegularImages(images);
             }
         }
@@ -1025,6 +1025,38 @@
             grid.classList.remove('section-layout'); // Remove class for regular grid
         }
 
+        // Display selected images in a special layout
+        function displaySelectedImages(images) {
+            const grid = document.getElementById('image-grid');
+            
+            // Create a simple grid layout for selected images
+            let html = '';
+            images.forEach(image => {
+                html += createImageCardHTML(image, image.section_id);
+            });
+            
+            grid.innerHTML = html;
+            grid.classList.remove('section-layout'); // Remove section layout class
+            
+            // Add click handlers for image selection (even though these are already selected)
+            setTimeout(() => {
+                document.querySelectorAll('.image-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const sectionId = this.getAttribute('data-section-id');
+                        const filename = this.getAttribute('data-filename');
+                        if (sectionId && filename) {
+                            selectImage(sectionId, filename);
+                        }
+                    });
+                });
+                
+                // Show selected state for all images (they're all selected)
+                images.forEach(image => {
+                    updateImageSelection(image.section_id, image.filename);
+                });
+            }, 100);
+        }
+
         // Create image card HTML string for section layout
         function createImageCardHTML(image, sectionId) {
             // Determine status based on path (raw, optimized, etc.)
@@ -1075,58 +1107,36 @@
             return card;
         }
 
-        // Update statistics
+        // Update statistics display
         async function updateStatistics() {
             try {
-                const response = await fetch(`/api/images/stats/${currentPostId}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Handle the actual API response structure
-                    const totalImages = data.total_images || 0;
-                    const headerImages = data.header_images || 0;
-                    const sectionImages = data.section_images || 0;
-                    const featuredImages = data.featured_images || 0;
-                    const totalSizeBytes = data.total_size || 0;
-                    
-                    // Convert bytes to MB
-                    const totalSizeMB = totalSizeBytes / (1024 * 1024);
-                    const sizeDisplay = `${totalSizeMB.toFixed(1)}MB`;
-                    
-                    // Update processing stage statistics
-                    // For now, assume all images are raw (not yet processed)
-                    document.getElementById('raw-count').textContent = totalImages;
-                    document.getElementById('raw-size').textContent = sizeDisplay;
-                    
-                    // Update selected images count
-                    document.getElementById('selected-count').textContent = Object.values(selectedImageMap).length;
-                    document.getElementById('selected-size').textContent = '0MB'; // Mock size for now
-                    
-                    document.getElementById('optimized-count').textContent = '0';
-                    document.getElementById('optimized-size').textContent = '0MB';
-                    document.getElementById('captioned-count').textContent = '0';
-                    document.getElementById('captioned-size').textContent = '0MB';
-                    
-                    console.log(`Updated stats for post ${currentPostId}:`, {
-                        totalImages,
-                        headerImages,
-                        sectionImages,
-                        featuredImages,
-                        totalSizeBytes,
-                        sizeDisplay
-                    });
-                }
-            } catch (error) {
-                console.error('Error updating statistics:', error);
-                // Fall back to mock data if API fails
-                document.getElementById('raw-count').textContent = '8';
-                document.getElementById('raw-size').textContent = '26.3MB';
-                document.getElementById('selected-count').textContent = '0';
-                document.getElementById('selected-size').textContent = '0MB';
+                // Get general image stats
+                const statsResponse = await fetch(`/api/images/stats/${currentPostId}`);
+                const stats = await statsResponse.json();
+                
+                // Get selected images stats
+                const selectedResponse = await fetch(`/api/sections/${currentPostId}/selected/stats`);
+                const selectedStats = await selectedResponse.json();
+                
+                // Convert bytes to MB/GB
+                const totalSizeMB = (stats.total_size / (1024 * 1024)).toFixed(1);
+                const selectedSizeMB = (selectedStats.selected_size / (1024 * 1024)).toFixed(1);
+                
+                // Update processing stage buttons
+                document.getElementById('raw-count').textContent = stats.total_images;
+                document.getElementById('raw-size').textContent = totalSizeMB + 'MB';
+                
+                document.getElementById('selected-count').textContent = selectedStats.selected_count;
+                document.getElementById('selected-size').textContent = selectedSizeMB + 'MB';
+                
                 document.getElementById('optimized-count').textContent = '0';
                 document.getElementById('optimized-size').textContent = '0MB';
+                
                 document.getElementById('captioned-count').textContent = '0';
                 document.getElementById('captioned-size').textContent = '0MB';
+                
+            } catch (error) {
+                console.error('Error updating statistics:', error);
             }
         }
 
