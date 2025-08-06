@@ -490,7 +490,7 @@
 
         /* Grey out mock/placeholder functionality */
         .mock-placeholder {
-            opacity: 0.6;
+            opacity: 0.4;
             position: relative;
             pointer-events: none;
         }
@@ -564,7 +564,7 @@
                         <h4>📝 Section Images</h4>
                         <p>Content section illustrations</p>
                     </div>
-                    <div class="image-type-card" data-type="featured">
+                    <div class="image-type-card mock-placeholder mock-button" data-type="featured">
                         <h4>⭐ Featured Images</h4>
                         <p>Social media and highlights</p>
                     </div>
@@ -635,12 +635,12 @@
                     </div>
                 </div>
 
-                <div class="processing-controls" id="processing-controls">
+                <div class="processing-controls mock-placeholder mock-section" id="processing-controls">
                     <h3>Batch Processing Controls</h3>
                     <div class="control-group">
                         <div class="control-item">
                             <label>Processing Stage:</label>
-                            <select id="processing-stage">
+                            <select id="processing-stage" class="mock-placeholder">
                                 <option>All Stages</option>
                                 <option>Optimization Only</option>
                                 <option>Watermarking Only</option>
@@ -649,7 +649,7 @@
                         </div>
                         <div class="control-item">
                             <label>Quality Level:</label>
-                            <select id="quality-level">
+                            <select id="quality-level" class="mock-placeholder">
                                 <option>High (Web)</option>
                                 <option>Medium (Social)</option>
                                 <option>Low (Thumbnail)</option>
@@ -657,7 +657,7 @@
                         </div>
                         <div class="control-item">
                             <label>Watermark Style:</label>
-                            <select id="watermark-style">
+                            <select id="watermark-style" class="mock-placeholder">
                                 <option>Clan.com Logo</option>
                                 <option>Text Overlay</option>
                                 <option>Corner Badge</option>
@@ -667,7 +667,7 @@
                     </div>
                     <div class="control-item">
                         <label>Custom Prompt (for generation):</label>
-                        <textarea id="custom-prompt" placeholder="Enter custom image generation prompt...">Create a warm, inviting illustration featuring Scottish storytelling elements with books, a cozy fireplace, and Celtic design motifs in a library setting.</textarea>
+                        <textarea id="custom-prompt" class="mock-placeholder" placeholder="Enter custom image generation prompt...">Create a warm, inviting illustration featuring Scottish storytelling elements with books, a cozy fireplace, and Celtic design motifs in a library setting.</textarea>
                     </div>
                     <div class="batch-actions">
                         <button class="btn btn-primary" onclick="startBatchProcessing()">🚀 Start Processing</button>
