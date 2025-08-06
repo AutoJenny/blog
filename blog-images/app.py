@@ -1735,43 +1735,68 @@ def preview_optimization(post_id):
     try:
         preview = []
         
-        # Get post title
+        # Get post title and section titles
         with get_db_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
                 cur.execute("SELECT title FROM post WHERE id = %s", (post_id,))
                 post_result = cur.fetchone()
                 post_title = post_result['title'] if post_result else f"post_{post_id}"
                 
-                # Get selected header image
-                header_selection_file = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'selected_image.txt')
-                if os.path.exists(header_selection_file):
-                    with open(header_selection_file, 'r') as f:
-                        header_filename = f.read().strip()
-                        header_new_name = f"{generate_filename_from_title(post_title)}.png"
-                        preview.append({
-                            'type': 'header',
-                            'original': header_filename,
-                            'new_name': header_new_name
-                        })
-                
-                # Get selected section images
+                # Get section titles and selections
                 cur.execute("""
                     SELECT id, section_heading, image_filename 
                     FROM post_section 
-                    WHERE post_id = %s AND image_filename IS NOT NULL
+                    WHERE post_id = %s 
                     ORDER BY section_order
                 """, (post_id,))
-                
                 sections = cur.fetchall()
-                for section in sections:
-                    if section['image_filename']:
-                        section_new_name = f"{generate_filename_from_title(section['section_heading'])}.png"
-                        preview.append({
-                            'type': 'section',
-                            'section_id': section['id'],
-                            'original': section['image_filename'],
-                            'new_name': section_new_name
-                        })
+                section_titles = {str(section['id']): section['section_heading'] for section in sections}
+                section_selections = {str(section['id']): section['image_filename'] for section in sections if section['image_filename']}
+        
+        # Preview header image selection
+        header_selection_file = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'selected_image.txt')
+        selected_header_filename = None
+        if os.path.exists(header_selection_file):
+            with open(header_selection_file, 'r') as f:
+                selected_header_filename = f.read().strip()
+        
+        if selected_header_filename:
+            header_new_name = f"{generate_filename_from_title(post_title)}.png"
+            preview.append({
+                'type': 'header',
+                'original': selected_header_filename,
+                'new_name': header_new_name
+            })
+        
+        # Preview section image selections
+        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+        for section_id, selected_filename in section_selections.items():
+            section_title = section_titles.get(section_id, f"Section {section_id}")
+            section_new_name = f"{generate_filename_from_title(section_title)}.png"
+            preview.append({
+                'type': 'section',
+                'section_id': section_id,
+                'original': selected_filename,
+                'new_name': section_new_name
+            })
+        
+        # Add fallback images for sections without explicit selections
+        for section_id in section_titles.keys():
+            if section_id not in section_selections:
+                # Use first available image in raw directory
+                raw_dir = os.path.join(sections_path, section_id, 'raw')
+                if os.path.exists(raw_dir):
+                    for filename in os.listdir(raw_dir):
+                        if allowed_file(filename):
+                            section_title = section_titles.get(section_id, f"Section {section_id}")
+                            section_new_name = f"{generate_filename_from_title(section_title)}.png"
+                            preview.append({
+                                'type': 'section',
+                                'section_id': section_id,
+                                'original': filename,
+                                'new_name': section_new_name
+                            })
+                            break
         
         return jsonify({
             'success': True,
@@ -1787,54 +1812,105 @@ def optimize_rename_images(post_id):
     try:
         renamed_count = 0
         
-        # Get post title
+        # Get post title and section titles
         with get_db_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
                 cur.execute("SELECT title FROM post WHERE id = %s", (post_id,))
                 post_result = cur.fetchone()
                 post_title = post_result['title'] if post_result else f"post_{post_id}"
                 
-                # Process header image
-                header_selection_file = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'selected_image.txt')
-                if os.path.exists(header_selection_file):
-                    with open(header_selection_file, 'r') as f:
-                        header_filename = f.read().strip()
-                        header_old_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'raw', header_filename)
-                        header_new_name = f"{generate_filename_from_title(post_title)}.png"
-                        header_new_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized', header_new_name)
-                        
-                        # Create optimized directory
-                        os.makedirs(os.path.dirname(header_new_path), exist_ok=True)
-                        
-                        # Copy and rename file
-                        if os.path.exists(header_old_path):
-                            import shutil
-                            shutil.copy2(header_old_path, header_new_path)
-                            renamed_count += 1
-                
-                # Process section images
+                # Get section titles and selections
                 cur.execute("""
                     SELECT id, section_heading, image_filename 
                     FROM post_section 
-                    WHERE post_id = %s AND image_filename IS NOT NULL
+                    WHERE post_id = %s 
                     ORDER BY section_order
                 """, (post_id,))
-                
                 sections = cur.fetchall()
-                for section in sections:
-                    if section['image_filename']:
-                        section_old_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections', str(section['id']), 'raw', section['image_filename'])
-                        section_new_name = f"{generate_filename_from_title(section['section_heading'])}.png"
-                        section_new_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections', str(section['id']), 'optimized', section_new_name)
+                section_titles = {str(section['id']): section['section_heading'] for section in sections}
+                section_selections = {str(section['id']): section['image_filename'] for section in sections if section['image_filename']}
+        
+        # Process header image selection
+        header_selection_file = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'selected_image.txt')
+        selected_header_filename = None
+        if os.path.exists(header_selection_file):
+            with open(header_selection_file, 'r') as f:
+                selected_header_filename = f.read().strip()
+        
+        if selected_header_filename:
+            header_old_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'raw', selected_header_filename)
+            header_new_name = f"{generate_filename_from_title(post_title)}.png"
+            header_new_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized', header_new_name)
+            
+            # Create optimized directory
+            os.makedirs(os.path.dirname(header_new_path), exist_ok=True)
+            
+            # Copy and rename file
+            if os.path.exists(header_old_path):
+                import shutil
+                shutil.copy2(header_old_path, header_new_path)
+                renamed_count += 1
+        
+        # Process section images using the same logic as the selected endpoint
+        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+        for section_id in section_titles.keys():
+            selected_filename = section_selections.get(section_id)
+            section_processed = False
+            
+            if selected_filename:
+                # Try to use the selected filename from database
+                raw_path = os.path.join(sections_path, section_id, 'raw', selected_filename)
+                if os.path.exists(raw_path):
+                    section_old_path = raw_path
+                    section_title = section_titles.get(section_id, f"Section {section_id}")
+                    section_new_name = f"{generate_filename_from_title(section_title)}.png"
+                    section_new_path = os.path.join(sections_path, section_id, 'optimized', section_new_name)
+                    
+                    # Create optimized directory
+                    os.makedirs(os.path.dirname(section_new_path), exist_ok=True)
+                    
+                    # Copy and rename file
+                    import shutil
+                    shutil.copy2(section_old_path, section_new_path)
+                    renamed_count += 1
+                    section_processed = True
+                else:
+                    # Check optimized directory
+                    optimized_path = os.path.join(sections_path, section_id, 'optimized', selected_filename)
+                    if os.path.exists(optimized_path):
+                        section_old_path = optimized_path
+                        section_title = section_titles.get(section_id, f"Section {section_id}")
+                        section_new_name = f"{generate_filename_from_title(section_title)}.png"
+                        section_new_path = os.path.join(sections_path, section_id, 'optimized', section_new_name)
                         
                         # Create optimized directory
                         os.makedirs(os.path.dirname(section_new_path), exist_ok=True)
                         
                         # Copy and rename file
-                        if os.path.exists(section_old_path):
+                        import shutil
+                        shutil.copy2(section_old_path, section_new_path)
+                        renamed_count += 1
+                        section_processed = True
+            
+            # If not processed yet, use fallback to first available image
+            if not section_processed:
+                raw_dir = os.path.join(sections_path, section_id, 'raw')
+                if os.path.exists(raw_dir):
+                    for filename in os.listdir(raw_dir):
+                        if allowed_file(filename):
+                            section_old_path = os.path.join(raw_dir, filename)
+                            section_title = section_titles.get(section_id, f"Section {section_id}")
+                            section_new_name = f"{generate_filename_from_title(section_title)}.png"
+                            section_new_path = os.path.join(sections_path, section_id, 'optimized', section_new_name)
+                            
+                            # Create optimized directory
+                            os.makedirs(os.path.dirname(section_new_path), exist_ok=True)
+                            
+                            # Copy and rename file
                             import shutil
                             shutil.copy2(section_old_path, section_new_path)
                             renamed_count += 1
+                            break
         
         return jsonify({
             'success': True,
