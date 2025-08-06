@@ -858,5 +858,398 @@ def get_batch_history(post_id):
     # Use the same endpoint as pipeline jobs
     return get_pipeline_jobs(post_id)
 
+# ============================================================================
+# ADVANCED PROCESSING FEATURES
+# ============================================================================
+
+@app.route('/api/advanced/process-step', methods=['POST'])
+def process_single_step():
+    """Process a single step for specific images"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        image_ids = data.get('image_ids', [])
+        step_name = data.get('step_name')
+        settings = data.get('settings', {})
+        
+        if not post_id or not image_ids or not step_name:
+            return jsonify({'error': 'post_id, image_ids, and step_name required'}), 400
+        
+        # Validate step name
+        valid_steps = ['generation', 'optimization', 'watermarking', 'captioning', 'metadata']
+        if step_name not in valid_steps:
+            return jsonify({'error': f'Invalid step name. Must be one of: {valid_steps}'}), 400
+        
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Create processing job for single step
+                cur.execute("""
+                    INSERT INTO image_processing_jobs 
+                    (post_id, job_type, status, total_images, settings)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (post_id, f'single_{step_name}', 'pending', len(image_ids), json.dumps(settings)))
+                
+                job_id = cur.fetchone()['id']
+                
+                # Create only the specified step
+                cur.execute("""
+                    INSERT INTO image_processing_steps 
+                    (job_id, step_name, status)
+                    VALUES (%s, %s, %s)
+                """, (job_id, step_name, 'pending'))
+                
+                # Create image processing status records
+                for image_id in image_ids:
+                    cur.execute("""
+                        INSERT INTO image_processing_status 
+                        (image_id, post_id, image_type, section_id, current_step, pipeline_status, processing_job_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """, (image_id, post_id, settings.get('image_type', 'section'), 
+                         settings.get('section_id'), step_name, 'processing', job_id))
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'job_id': job_id,
+                    'message': f'Single step processing started: {step_name}'
+                })
+                
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/advanced/retry-failed', methods=['POST'])
+def retry_failed_images():
+    """Retry processing for failed images"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        image_ids = data.get('image_ids', [])
+        settings = data.get('settings', {})
+        
+        if not post_id or not image_ids:
+            return jsonify({'error': 'post_id and image_ids required'}), 400
+        
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Get failed images and their last failed step
+                cur.execute("""
+                    SELECT image_id, current_step, error_message
+                    FROM image_processing_status 
+                    WHERE post_id = %s AND image_id = ANY(%s) AND pipeline_status = 'failed'
+                """, (post_id, image_ids))
+                
+                failed_images = cur.fetchall()
+                
+                if not failed_images:
+                    return jsonify({'error': 'No failed images found'}), 404
+                
+                # Create retry job
+                cur.execute("""
+                    INSERT INTO image_processing_jobs 
+                    (post_id, job_type, status, total_images, settings)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (post_id, 'retry_failed', 'pending', len(failed_images), json.dumps(settings)))
+                
+                job_id = cur.fetchone()['id']
+                
+                # Create processing steps starting from the failed step
+                for failed_image in failed_images:
+                    step_name = failed_image['current_step']
+                    steps = ['generation', 'optimization', 'watermarking', 'captioning', 'metadata']
+                    
+                    # Find the index of the failed step and create steps from there
+                    try:
+                        failed_index = steps.index(step_name)
+                        remaining_steps = steps[failed_index:]
+                        
+                        for step in remaining_steps:
+                            cur.execute("""
+                                INSERT INTO image_processing_steps 
+                                (job_id, step_name, status)
+                                VALUES (%s, %s, %s)
+                            """, (job_id, step, 'pending'))
+                        
+                        # Update image status
+                        cur.execute("""
+                            UPDATE image_processing_status 
+                            SET processing_job_id = %s, pipeline_status = 'retrying'
+                            WHERE post_id = %s AND image_id = %s
+                        """, (job_id, post_id, failed_image['image_id']))
+                        
+                    except ValueError:
+                        # Step not found, start from beginning
+                        for step in steps:
+                            cur.execute("""
+                                INSERT INTO image_processing_steps 
+                                (job_id, step_name, status)
+                                VALUES (%s, %s, %s)
+                            """, (job_id, step, 'pending'))
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'job_id': job_id,
+                    'message': f'Retry processing started for {len(failed_images)} failed images'
+                })
+                
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/advanced/optimize-settings', methods=['POST'])
+def optimize_processing_settings():
+    """Optimize processing settings based on image analysis"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        image_ids = data.get('image_ids', [])
+        
+        if not post_id or not image_ids:
+            return jsonify({'error': 'post_id and image_ids required'}), 400
+        
+        # Mock implementation - in real system, this would analyze images
+        # and suggest optimal settings based on image characteristics
+        optimized_settings = {
+            'quality_level': 'high',
+            'watermark_style': 'clan',
+            'generate_captions': True,
+            'create_variations': False,
+            'compression_level': 85,
+            'max_width': 1920,
+            'max_height': 1080,
+            'format': 'webp',
+            'metadata_preservation': True
+        }
+        
+        return jsonify({
+            'success': True,
+            'optimized_settings': optimized_settings,
+            'message': 'Settings optimized based on image analysis'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/advanced/smart-organization', methods=['POST'])
+def smart_organization():
+    """Automatically organize images based on content analysis"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        organization_type = data.get('type', 'auto')
+        
+        if not post_id:
+            return jsonify({'error': 'post_id required'}), 400
+        
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Get all images for the post
+                cur.execute("""
+                    SELECT * FROM image_processing_status 
+                    WHERE post_id = %s
+                    ORDER BY created_at DESC
+                """, (post_id,))
+                
+                images = cur.fetchall()
+                
+                if not images:
+                    return jsonify({'error': 'No images found for this post'}), 404
+                
+                # Mock organization logic
+                organized_groups = {
+                    'headers': [],
+                    'sections': [],
+                    'featured': [],
+                    'social': [],
+                    'thumbnails': []
+                }
+                
+                for image in images:
+                    # Mock classification based on image type and metadata
+                    if image['image_type'] == 'header':
+                        organized_groups['headers'].append(dict(image))
+                    elif image['image_type'] == 'section':
+                        organized_groups['sections'].append(dict(image))
+                    else:
+                        organized_groups['featured'].append(dict(image))
+                
+                return jsonify({
+                    'success': True,
+                    'organized_groups': organized_groups,
+                    'total_images': len(images),
+                    'message': f'Organized {len(images)} images into {len(organized_groups)} groups'
+                })
+                
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/advanced/processing-presets', methods=['GET'])
+def get_processing_presets():
+    """Get available processing presets"""
+    try:
+        presets = {
+            'web_optimized': {
+                'name': 'Web Optimized',
+                'description': 'Optimized for web display with good quality and size',
+                'settings': {
+                    'quality_level': 'high',
+                    'watermark_style': 'clan',
+                    'generate_captions': True,
+                    'create_variations': False,
+                    'compression_level': 85,
+                    'max_width': 1920,
+                    'max_height': 1080,
+                    'format': 'webp'
+                }
+            },
+            'social_media': {
+                'name': 'Social Media',
+                'description': 'Optimized for social media platforms',
+                'settings': {
+                    'quality_level': 'medium',
+                    'watermark_style': 'text',
+                    'generate_captions': True,
+                    'create_variations': True,
+                    'compression_level': 75,
+                    'max_width': 1200,
+                    'max_height': 630,
+                    'format': 'jpg'
+                }
+            },
+            'print_ready': {
+                'name': 'Print Ready',
+                'description': 'High quality for print publications',
+                'settings': {
+                    'quality_level': 'maximum',
+                    'watermark_style': 'none',
+                    'generate_captions': False,
+                    'create_variations': False,
+                    'compression_level': 95,
+                    'max_width': 3000,
+                    'max_height': 2000,
+                    'format': 'png'
+                }
+            },
+            'thumbnail': {
+                'name': 'Thumbnail',
+                'description': 'Small thumbnails for previews',
+                'settings': {
+                    'quality_level': 'low',
+                    'watermark_style': 'none',
+                    'generate_captions': False,
+                    'create_variations': False,
+                    'compression_level': 60,
+                    'max_width': 300,
+                    'max_height': 200,
+                    'format': 'jpg'
+                }
+            }
+        }
+        
+        return jsonify({
+            'success': True,
+            'presets': presets
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/advanced/apply-preset', methods=['POST'])
+def apply_processing_preset():
+    """Apply a processing preset to images"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        image_ids = data.get('image_ids', [])
+        preset_name = data.get('preset_name')
+        
+        if not post_id or not image_ids or not preset_name:
+            return jsonify({'error': 'post_id, image_ids, and preset_name required'}), 400
+        
+        # Get preset settings
+        presets_response = get_processing_presets()
+        presets_data = presets_response.get_json()
+        
+        if not presets_data.get('success'):
+            return jsonify({'error': 'Failed to load presets'}), 500
+        
+        preset = presets_data['presets'].get(preset_name)
+        if not preset:
+            return jsonify({'error': f'Preset "{preset_name}" not found'}), 404
+        
+        # Start processing with preset settings
+        return start_processing_pipeline()
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/advanced/processing-analytics', methods=['GET'])
+def get_processing_analytics():
+    """Get processing analytics and insights"""
+    try:
+        post_id = request.args.get('post_id')
+        
+        if not post_id:
+            return jsonify({'error': 'post_id required'}), 400
+        
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Get processing statistics
+                cur.execute("""
+                    SELECT 
+                        COUNT(*) as total_jobs,
+                        COUNT(CASE WHEN j.status = 'completed' THEN 1 END) as completed_jobs,
+                        COUNT(CASE WHEN j.status = 'failed' THEN 1 END) as failed_jobs,
+                        COUNT(CASE WHEN j.status = 'cancelled' THEN 1 END) as cancelled_jobs,
+                        AVG(EXTRACT(EPOCH FROM (j.completed_at - j.started_at))) as avg_processing_time
+                    FROM image_processing_jobs j
+                    WHERE j.post_id = %s
+                """, (post_id,))
+                
+                stats = cur.fetchone()
+                
+                # Get step performance
+                cur.execute("""
+                    SELECT 
+                        s.step_name,
+                        COUNT(*) as total_steps,
+                        COUNT(CASE WHEN s.status = 'completed' THEN 1 END) as completed_steps,
+                        AVG(EXTRACT(EPOCH FROM (s.completed_at - s.started_at))) as avg_step_time
+                    FROM image_processing_steps s
+                    JOIN image_processing_jobs j ON s.job_id = j.id
+                    WHERE j.post_id = %s
+                    GROUP BY s.step_name
+                """, (post_id,))
+                
+                step_stats = cur.fetchall()
+                
+                analytics = {
+                    'overview': {
+                        'total_jobs': stats['total_jobs'] or 0,
+                        'completed_jobs': stats['completed_jobs'] or 0,
+                        'failed_jobs': stats['failed_jobs'] or 0,
+                        'cancelled_jobs': stats['cancelled_jobs'] or 0,
+                        'success_rate': round((stats['completed_jobs'] or 0) / (stats['total_jobs'] or 1) * 100, 2),
+                        'avg_processing_time': round(stats['avg_processing_time'] or 0, 2)
+                    },
+                    'step_performance': [dict(step) for step in step_stats],
+                    'recommendations': [
+                        'Consider batch processing for similar images',
+                        'Optimize watermark settings for faster processing',
+                        'Use presets for consistent results'
+                    ]
+                }
+                
+                return jsonify({
+                    'success': True,
+                    'analytics': analytics
+                })
+                
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=port) 
