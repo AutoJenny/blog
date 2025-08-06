@@ -1948,6 +1948,10 @@
                 const optimizedResponse = await fetch(`/api/images/optimized/stats/${currentPostId}`);
                 const optimizedStats = await optimizedResponse.json();
                 
+                // Store stats in window object for pipeline function to access
+                window.currentStats = stats;
+                window.currentOptimizedStats = optimizedStats;
+                
                 // Convert bytes to MB/GB
                 const totalSizeMB = (stats.total_size / (1024 * 1024)).toFixed(1);
                 // For selected images, use optimized size since they're the same files
@@ -2095,16 +2099,18 @@
                 }
                 
                 if (stepSizeElement && data.total > 0) {
-                    // Calculate size based on stage (this would come from API in real implementation)
-                    const sizes = {
-                        raw: '60.0MB',
-                        selected: '7.5MB', 
-                        optimized: '28.5MB',
-                        watermarked: '0MB',
-                        captioned: '0MB',
-                        metadata: '0MB'
-                    };
-                    stepSizeElement.textContent = `${sizes[stage]} total size`;
+                    // Calculate size based on stage
+                    let sizeText = '0MB';
+                    if (stage === 'raw') {
+                        // Use total size from general stats
+                        const totalSizeMB = (window.currentStats?.total_size || 0) / (1024 * 1024);
+                        sizeText = `${totalSizeMB.toFixed(1)}MB`;
+                    } else if (stage === 'selected' || stage === 'optimized') {
+                        // Use optimized size for both selected and optimized
+                        const optimizedSizeMB = (window.currentOptimizedStats?.optimized_size || 0) / (1024 * 1024);
+                        sizeText = `${optimizedSizeMB.toFixed(1)}MB`;
+                    }
+                    stepSizeElement.textContent = `${sizeText} total size`;
                 }
                 
                 // For now, we'll consider a step complete if it has any images
