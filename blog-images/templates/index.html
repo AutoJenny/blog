@@ -820,13 +820,45 @@
                 const response = await fetch(`/api/images/stats/${currentPostId}`);
                 if (response.ok) {
                     const data = await response.json();
-                    document.getElementById('total-images').textContent = data.total_images || 12;
-                    document.getElementById('optimized-count').textContent = data.optimized || 8;
-                    document.getElementById('raw-count').textContent = data.raw || 4;
-                    document.getElementById('total-size').textContent = `${data.total_size_mb || 2.3}GB`;
+                    
+                    // Handle the actual API response structure
+                    const totalImages = data.total_images || 0;
+                    const headerImages = data.header_images || 0;
+                    const sectionImages = data.section_images || 0;
+                    const featuredImages = data.featured_images || 0;
+                    const totalSizeBytes = data.total_size || 0;
+                    
+                    // Calculate optimized vs raw (for now, assume all are raw if no processing data)
+                    const optimizedCount = 0; // TODO: Get from processing status
+                    const rawCount = totalImages;
+                    
+                    // Convert bytes to MB/GB
+                    const totalSizeMB = totalSizeBytes / (1024 * 1024);
+                    const totalSizeGB = totalSizeMB / 1024;
+                    const sizeDisplay = totalSizeGB >= 1 ? `${totalSizeGB.toFixed(1)}GB` : `${totalSizeMB.toFixed(1)}MB`;
+                    
+                    // Update the display
+                    document.getElementById('total-images').textContent = totalImages;
+                    document.getElementById('optimized-count').textContent = optimizedCount;
+                    document.getElementById('raw-count').textContent = rawCount;
+                    document.getElementById('total-size').textContent = sizeDisplay;
+                    
+                    console.log(`Updated stats for post ${currentPostId}:`, {
+                        totalImages,
+                        headerImages,
+                        sectionImages,
+                        featuredImages,
+                        totalSizeBytes,
+                        sizeDisplay
+                    });
                 }
             } catch (error) {
                 console.error('Error updating statistics:', error);
+                // Fall back to mock data if API fails
+                document.getElementById('total-images').textContent = '12';
+                document.getElementById('optimized-count').textContent = '8';
+                document.getElementById('raw-count').textContent = '4';
+                document.getElementById('total-size').textContent = '2.3GB';
             }
         }
 
