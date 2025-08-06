@@ -637,5 +637,226 @@ def get_storage_stats():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# ============================================================================
+# PROCESSING PIPELINE ENDPOINTS
+# ============================================================================
+
+@app.route('/api/pipeline/start', methods=['POST'])
+def start_processing_pipeline():
+    """Start processing pipeline for images"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        image_ids = data.get('image_ids', [])
+        settings = data.get('settings', {})
+        job_type = data.get('job_type', 'pipeline')
+        
+        if not post_id or not image_ids:
+            return jsonify({'error': 'post_id and image_ids required'}), 400
+        
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Create processing job
+                cur.execute("""
+                    INSERT INTO image_processing_jobs 
+                    (post_id, job_type, status, total_images, settings)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (post_id, job_type, 'pending', len(image_ids), json.dumps(settings)))
+                
+                job_id = cur.fetchone()['id']
+                
+                # Create processing steps
+                steps = ['generation', 'optimization', 'watermarking', 'captioning', 'metadata']
+                for step in steps:
+                    cur.execute("""
+                        INSERT INTO image_processing_steps 
+                        (job_id, step_name, status)
+                        VALUES (%s, %s, %s)
+                    """, (job_id, step, 'pending'))
+                
+                # Create image processing status records
+                for image_id in image_ids:
+                    cur.execute("""
+                        INSERT INTO image_processing_status 
+                        (image_id, post_id, image_type, section_id, current_step, pipeline_status, processing_job_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """, (image_id, post_id, settings.get('image_type', 'section'), 
+                         settings.get('section_id'), 'generation', 'raw', job_id))
+                
+                conn.commit()
+                
+                # Start processing (mock implementation)
+                # In real implementation, this would queue the job for background processing
+                
+                return jsonify({
+                    'success': True,
+                    'job_id': job_id,
+                    'message': f'Processing pipeline started for {len(image_ids)} images'
+                })
+                
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/pipeline/status/<int:job_id>')
+def get_pipeline_status(job_id):
+    """Get real-time processing status for a job"""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Get job details
+                cur.execute("""
+                    SELECT * FROM image_processing_jobs WHERE id = %s
+                """, (job_id,))
+                job = cur.fetchone()
+                
+                if not job:
+                    return jsonify({'error': 'Job not found'}), 404
+                
+                # Get processing steps
+                cur.execute("""
+                    SELECT * FROM image_processing_steps 
+                    WHERE job_id = %s 
+                    ORDER BY id
+                """, (job_id,))
+                steps = cur.fetchall()
+                
+                # Get image status
+                cur.execute("""
+                    SELECT * FROM image_processing_status 
+                    WHERE processing_job_id = %s
+                """, (job_id,))
+                images = cur.fetchall()
+                
+                # Calculate overall progress
+                total_steps = len(steps)
+                completed_steps = sum(1 for step in steps if step['status'] == 'completed')
+                overall_progress = int((completed_steps / total_steps) * 100) if total_steps > 0 else 0
+                
+                return jsonify({
+                    'job_id': job_id,
+                    'status': job['status'],
+                    'overall_progress': overall_progress,
+                    'total_images': job['total_images'],
+                    'processed_images': job['processed_images'],
+                    'steps': [dict(step) for step in steps],
+                    'images': [dict(image) for image in images],
+                    'created_at': job['created_at'].isoformat() if job['created_at'] else None,
+                    'started_at': job['started_at'].isoformat() if job['started_at'] else None,
+                    'completed_at': job['completed_at'].isoformat() if job['completed_at'] else None
+                })
+                
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/pipeline/cancel/<int:job_id>', methods=['POST'])
+def cancel_processing_job(job_id):
+    """Cancel a processing job"""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Update job status
+                cur.execute("""
+                    UPDATE image_processing_jobs 
+                    SET status = 'cancelled', completed_at = NOW()
+                    WHERE id = %s
+                """, (job_id,))
+                
+                # Update step status
+                cur.execute("""
+                    UPDATE image_processing_steps 
+                    SET status = 'cancelled'
+                    WHERE job_id = %s AND status IN ('pending', 'processing')
+                """, (job_id,))
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Job {job_id} cancelled successfully'
+                })
+                
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/pipeline/jobs/<int:post_id>')
+def get_pipeline_jobs(post_id):
+    """Get all processing jobs for a post"""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT j.*, 
+                           COUNT(s.id) as total_steps,
+                           COUNT(CASE WHEN s.status = 'completed' THEN 1 END) as completed_steps
+                    FROM image_processing_jobs j
+                    LEFT JOIN image_processing_steps s ON j.id = s.job_id
+                    WHERE j.post_id = %s
+                    GROUP BY j.id
+                    ORDER BY j.created_at DESC
+                """, (post_id,))
+                
+                jobs = cur.fetchall()
+                
+                jobs_list = []
+                for job in jobs:
+                    progress = int((job['completed_steps'] / job['total_steps']) * 100) if job['total_steps'] > 0 else 0
+                    jobs_list.append({
+                        'id': job['id'],
+                        'job_type': job['job_type'],
+                        'status': job['status'],
+                        'progress': progress,
+                        'total_images': job['total_images'],
+                        'processed_images': job['processed_images'],
+                        'created_at': job['created_at'].isoformat() if job['created_at'] else None,
+                        'started_at': job['started_at'].isoformat() if job['started_at'] else None,
+                        'completed_at': job['completed_at'].isoformat() if job['completed_at'] else None
+                    })
+                
+                return jsonify({'jobs': jobs_list})
+                
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ============================================================================
+# BATCH PROCESSING ENDPOINTS
+# ============================================================================
+
+@app.route('/api/batch/start', methods=['POST'])
+def start_batch_processing():
+    """Start batch processing for multiple images"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        image_ids = data.get('image_ids', [])
+        settings = data.get('settings', {})
+        
+        if not post_id or not image_ids:
+            return jsonify({'error': 'post_id and image_ids required'}), 400
+        
+        # Use the pipeline system for batch processing
+        return start_processing_pipeline()
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/batch/status/<int:batch_id>')
+def get_batch_status(batch_id):
+    """Get batch processing status"""
+    # Batch processing uses the same system as pipeline
+    return get_pipeline_status(batch_id)
+
+@app.route('/api/batch/cancel/<int:batch_id>', methods=['POST'])
+def cancel_batch(batch_id):
+    """Cancel batch processing"""
+    # Batch processing uses the same system as pipeline
+    return cancel_processing_job(batch_id)
+
+@app.route('/api/batch/history/<int:post_id>')
+def get_batch_history(post_id):
+    """Get batch processing history for a post"""
+    # Use the same endpoint as pipeline jobs
+    return get_pipeline_jobs(post_id)
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=port) 

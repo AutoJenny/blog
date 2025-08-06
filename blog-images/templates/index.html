@@ -101,804 +101,1017 @@
         }
 
         .image-types h3 {
-            margin-bottom: 15px;
             color: #2c3e50;
+            margin-bottom: 15px;
             font-size: 1.2em;
         }
 
-        .type-option {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            padding: 12px;
+        .image-type-card {
+            background: white;
             border: 2px solid #e0e6ed;
-            border-radius: 8px;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.3s;
         }
 
-        .type-option:hover {
+        .image-type-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .image-type-card.active {
             border-color: #667eea;
             background: #f8f9ff;
         }
 
-        .type-option.selected {
-            border-color: #667eea;
+        .image-type-card h4 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .image-type-card p {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .processing-pipeline {
+            margin-bottom: 30px;
+        }
+
+        .processing-pipeline h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .pipeline-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e6ed;
+        }
+
+        .step-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .step-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .step-icon.completed {
+            background: #27ae60;
+            color: white;
+        }
+
+        .step-icon.processing {
+            background: #f39c12;
+            color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        .step-icon.pending {
+            background: #bdc3c7;
+            color: white;
+        }
+
+        .step-progress {
+            width: 100px;
+            height: 6px;
+            background: #e0e6ed;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-left: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s ease;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .content-header h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
             background: #667eea;
             color: white;
         }
 
-        .type-option input[type="radio"] {
-            margin-right: 10px;
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
         }
 
-        .section-selector {
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .statistics-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
             margin-bottom: 30px;
         }
 
-        .section-selector label {
-            display: block;
-            margin-bottom: 10px;
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .processing-controls {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .processing-controls h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .control-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-item label {
+            margin-bottom: 5px;
             font-weight: 600;
             color: #2c3e50;
         }
 
-        .section-selector select {
-            width: 100%;
-            padding: 12px;
+        .control-item select,
+        .control-item input {
+            padding: 8px 12px;
             border: 2px solid #e0e6ed;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 14px;
+        }
+
+        .control-item select:focus,
+        .control-item input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .image-card {
             background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .image-preview {
+            height: 200px;
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview .placeholder {
+            color: #bdc3c7;
+            font-size: 3em;
+        }
+
+        .image-info {
+            padding: 15px;
+        }
+
+        .image-info h4 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .image-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .image-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .status-raw {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-processing {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-optimized {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-final {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
         }
 
         .upload-area {
-            border: 3px dashed #e0e6ed;
+            border: 2px dashed #667eea;
             border-radius: 12px;
-            padding: 40px 20px;
+            padding: 40px;
             text-align: center;
+            background: rgba(102, 126, 234, 0.05);
             margin-bottom: 20px;
             transition: all 0.3s;
-            cursor: pointer;
         }
 
         .upload-area:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
+            border-color: #5a6fd8;
+            background: rgba(102, 126, 234, 0.1);
         }
 
         .upload-area.dragover {
-            border-color: #667eea;
-            background: #667eea;
-            color: white;
+            border-color: #5a6fd8;
+            background: rgba(102, 126, 234, 0.15);
         }
 
-        .upload-area p {
-            margin-bottom: 15px;
-            font-size: 1.1em;
-            color: #7f8c8d;
-        }
-
-        .upload-area .icon {
+        .upload-icon {
             font-size: 3em;
+            color: #667eea;
             margin-bottom: 15px;
-            color: #bdc3c7;
         }
 
         .file-input {
             display: none;
         }
 
-        .upload-button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 24px;
+        .status-message {
+            padding: 15px;
             border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background 0.3s;
-            margin-right: 10px;
-        }
-
-        .upload-button:hover {
-            background: #5a6fd8;
-        }
-
-        .upload-button:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-        }
-
-        .clear-button {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .clear-button:hover {
-            background: #c0392b;
-        }
-
-        .image-preview-container {
             margin: 20px 0;
-            text-align: center;
+            font-weight: bold;
         }
 
-        .image-preview {
-            max-width: 300px;
-            max-height: 200px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        .status-message.success {
+            background: rgba(39, 174, 96, 0.1);
+            border: 1px solid #27ae60;
+            color: #27ae60;
         }
 
-        .status {
-            padding: 12px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-weight: 500;
+        .status-message.error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
         }
 
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+        .status-message.info {
+            background: rgba(52, 152, 219, 0.1);
+            border: 1px solid #3498db;
+            color: #3498db;
         }
 
         .hidden {
             display: none;
         }
 
-        .existing-images-container {
-            margin-top: 30px;
-        }
-
-        .existing-images-container h3 {
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-
-        .existing-image {
+        .loading {
             display: inline-block;
-            margin: 10px;
-            padding: 15px;
-            border: 1px solid #e0e6ed;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .existing-image img {
-            max-width: 150px;
-            max-height: 100px;
-            border-radius: 4px;
-        }
-
-        .existing-image p {
-            margin-top: 8px;
-            font-size: 0.9em;
-            color: #7f8c8d;
-        }
-
-        .stats-panel {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-number {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-label {
-            font-size: 0.9em;
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-
-        .content-tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e0e6ed;
-        }
-
-        .content-tab {
-            padding: 12px 24px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            color: #7f8c8d;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .content-tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-
-        .content-tab:hover {
-            color: #667eea;
-        }
-
-        .tab-panel {
-            display: none;
-        }
-
-        .tab-panel.active {
-            display: block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎨 Unified Image Processing Interface</h1>
-            <p>Streamlined image management for blog posts - upload, process, and organize images across all content types</p>
+            <h1>🖼️ Unified Image Processing Interface</h1>
+            <p>Comprehensive image management and processing for all your blog content</p>
         </div>
 
         <div class="main-content">
             <!-- Sidebar -->
             <div class="sidebar">
-                <!-- Post Selector -->
                 <div class="post-selector">
-                    <label for="post-select">📝 Select Post:</label>
-                    <select id="post-select">
-                        <option value="53">Post 53 - Scottish Story-telling</option>
-                        <option value="1">Post 1 - Default</option>
+                    <label for="post-selector">Select Post:</label>
+                    <select id="post-selector">
+                        <option value="">Loading posts...</option>
                     </select>
                 </div>
 
-                <!-- Image Type Selection -->
                 <div class="image-types">
-                    <h3>🖼️ Image Type:</h3>
-                    <div class="type-option" onclick="selectImageType('header')">
-                        <input type="radio" name="image-type" value="header" id="type-header">
-                        <label for="type-header">Header Image</label>
+                    <h3>Image Types</h3>
+                    <div class="image-type-card active" data-type="header">
+                        <h4>📰 Headers</h4>
+                        <p>Post title images</p>
                     </div>
-                    <div class="type-option" onclick="selectImageType('section')">
-                        <input type="radio" name="image-type" value="section" id="type-section" checked>
-                        <label for="type-section">Section Image</label>
+                    <div class="image-type-card" data-type="section">
+                        <h4>📝 Sections</h4>
+                        <p>Content illustrations</p>
                     </div>
-                    <div class="type-option" onclick="selectImageType('featured')">
-                        <input type="radio" name="image-type" value="featured" id="type-featured">
-                        <label for="type-featured">Featured Image</label>
+                    <div class="image-type-card" data-type="featured">
+                        <h4>⭐ Featured</h4>
+                        <p>Social media and highlights</p>
                     </div>
                 </div>
 
-                <!-- Section Selector (for section images) -->
-                <div class="section-selector" id="section-selector">
-                    <label for="section-select">📄 Select Section:</label>
-                    <select id="section-select">
-                        <option value="">Select a section...</option>
-                    </select>
-                </div>
-
-                <!-- Upload Area -->
-                <div class="upload-area" id="upload-area">
-                    <div class="icon">📁</div>
-                    <p>Drag & drop an image here<br>or click to browse</p>
-                    <input type="file" id="file-input" class="file-input" accept="image/*">
-                </div>
-
-                <!-- Upload Controls -->
-                <div style="text-align: center;">
-                    <button class="upload-button" onclick="uploadImage()" id="upload-btn" disabled>📤 Upload Image</button>
-                    <button class="clear-button" onclick="clearUpload()">🗑️ Clear</button>
-                </div>
-
-                <!-- Status Messages -->
-                <div id="status" class="status hidden"></div>
-
-                <!-- Image Preview -->
-                <div id="image-preview-container" class="image-preview-container hidden">
-                    <img id="image-preview" class="image-preview" alt="Preview">
-                </div>
-            </div>
-
-            <!-- Content Area -->
-            <div class="content-area">
-                <!-- Content Tabs -->
-                <div class="content-tabs">
-                    <button class="content-tab active" onclick="switchContentTab('stats')">📊 Statistics</button>
-                    <button class="content-tab" onclick="switchContentTab('images')">🖼️ All Images</button>
-                    <button class="content-tab" onclick="switchContentTab('processing')">⚙️ Processing</button>
-                </div>
-
-                <!-- Statistics Panel -->
-                <div id="stats-panel" class="tab-panel active">
-                    <div class="stats-panel">
-                        <h3>📊 Image Statistics</h3>
-                        <div class="stats-grid" id="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-number" id="total-images">-</div>
-                                <div class="stat-label">Total Images</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number" id="header-images">-</div>
-                                <div class="stat-label">Header Images</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number" id="section-images">-</div>
-                                <div class="stat-label">Section Images</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number" id="featured-images">-</div>
-                                <div class="stat-label">Featured Images</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-number" id="total-size">-</div>
-                                <div class="stat-label">Total Size (MB)</div>
-                            </div>
+                <div class="processing-pipeline">
+                    <h3>Processing Pipeline</h3>
+                    <div class="pipeline-step completed">
+                        <div class="step-info">
+                            <div class="step-icon completed">✓</div>
+                            <span>Image Generation</span>
+                        </div>
+                        <div class="step-progress">
+                            <div class="progress-bar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="pipeline-step processing">
+                        <div class="step-info">
+                            <div class="step-icon processing">⟳</div>
+                            <span>Optimization</span>
+                        </div>
+                        <div class="step-progress">
+                            <div class="progress-bar" style="width: 65%"></div>
+                        </div>
+                    </div>
+                    <div class="pipeline-step pending">
+                        <div class="step-info">
+                            <div class="step-icon pending">○</div>
+                            <span>Watermarking</span>
+                        </div>
+                        <div class="step-progress">
+                            <div class="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="pipeline-step pending">
+                        <div class="step-info">
+                            <div class="step-icon pending">○</div>
+                            <span>Captioning</span>
+                        </div>
+                        <div class="step-progress">
+                            <div class="progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="pipeline-step pending">
+                        <div class="step-info">
+                            <div class="step-icon pending">○</div>
+                            <span>Metadata</span>
+                        </div>
+                        <div class="step-progress">
+                            <div class="progress-bar" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Images Panel -->
-                <div id="images-panel" class="tab-panel">
-                    <h3>🖼️ All Images</h3>
-                    <div id="all-images-container">
-                        <p>Loading images...</p>
+            <!-- Main Content Area -->
+            <div class="content-area">
+                <div class="content-header">
+                    <h2 id="content-title">Header Images - Post 53</h2>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" onclick="showStatistics()">📊 View Stats</button>
+                        <button class="btn btn-primary" onclick="startBatchProcessing()">🔄 Batch Process</button>
+                        <button class="btn btn-success" onclick="showUploadArea()">➕ Upload New</button>
                     </div>
                 </div>
 
-                <!-- Processing Panel -->
-                <div id="processing-panel" class="tab-panel">
-                    <h3>⚙️ Processing Pipeline</h3>
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                        <p><strong>Processing Features Coming Soon:</strong></p>
-                        <ul style="margin-top: 15px; line-height: 1.6;">
-                            <li>🔄 Batch image optimization</li>
-                            <li>🎨 Automatic watermarking</li>
-                            <li>📝 AI-powered captioning</li>
-                            <li>🏷️ Metadata generation</li>
-                            <li>📐 Smart cropping and resizing</li>
-                        </ul>
+                <div class="statistics-dashboard">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-images">0</div>
+                        <div class="stat-label">Total Images</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="processing-count">0</div>
+                        <div class="stat-label">Processing</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="completed-count">0</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="storage-used">0 MB</div>
+                        <div class="stat-label">Storage Used</div>
                     </div>
                 </div>
 
-                <!-- Existing Images Container -->
-                <div id="existing-images-container" class="existing-images-container hidden"></div>
+                <div class="processing-controls hidden" id="processing-controls">
+                    <h3>Batch Processing Controls</h3>
+                    <div class="control-group">
+                        <div class="control-item">
+                            <label>Processing Stage:</label>
+                            <select id="processing-stage">
+                                <option value="all">All Stages</option>
+                                <option value="optimization">Optimization Only</option>
+                                <option value="watermarking">Watermarking Only</option>
+                                <option value="captioning">Captioning Only</option>
+                            </select>
+                        </div>
+                        <div class="control-item">
+                            <label>Quality Level:</label>
+                            <select id="quality-level">
+                                <option value="high">High (Web)</option>
+                                <option value="medium">Medium (Social)</option>
+                                <option value="low">Low (Thumbnail)</option>
+                            </select>
+                        </div>
+                        <div class="control-item">
+                            <label>Watermark Style:</label>
+                            <select id="watermark-style">
+                                <option value="clan">Clan.com Logo</option>
+                                <option value="text">Text Overlay</option>
+                                <option value="none">No Watermark</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-item">
+                            <label>
+                                <input type="checkbox" id="generate-captions"> Auto-generate captions
+                            </label>
+                        </div>
+                        <div class="control-item">
+                            <label>
+                                <input type="checkbox" id="create-variations"> Create social media variations
+                            </label>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="executeBatchProcessing()">🚀 Start Processing</button>
+                        <button class="btn btn-secondary" onclick="hideProcessingControls()">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="upload-area hidden" id="upload-area">
+                    <div class="upload-icon">📁</div>
+                    <p>Drag and drop images here, or click to browse</p>
+                    <input type="file" id="file-input" class="file-input" accept="image/*" multiple>
+                    <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">Choose Files</button>
+                    <button class="btn btn-secondary" onclick="hideUploadArea()">Cancel</button>
+                </div>
+
+                <div id="status-message" class="status-message hidden"></div>
+
+                <div class="image-grid" id="image-grid">
+                    <!-- Images will be loaded here dynamically -->
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         // Global variables
-        let selectedFile = null;
-        let sections = [];
-        let currentPostId = '53';
-        let currentImageType = 'section';
+        let currentPostId = 53;
+        let currentImageType = 'header';
+        let selectedImages = [];
+        let processingJobs = [];
 
-        // Initialize on page load
+        // Initialize the interface
         document.addEventListener('DOMContentLoaded', function() {
-            // Get post ID from URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get('post_id') || '53';
-            currentPostId = postId;
+            loadPosts();
+            loadImageType(currentImageType);
+            updateStatistics();
+            updatePipelineStatus();
             
-            // Set post selector
-            document.getElementById('post-select').value = postId;
-            
-            // Load initial data
-            loadSections();
-            loadImageStats();
-            loadAllImages();
-            
-            // Set up event listeners
-            setupEventListeners();
-            
-            // Update iframe height for workflow integration
+            // Set up iframe communication
             updateIframeHeight();
         });
 
-        // Set up event listeners
-        function setupEventListeners() {
-            // Post selector change
-            document.getElementById('post-select').addEventListener('change', function() {
-                currentPostId = this.value;
-                loadSections();
-                loadImageStats();
-                loadAllImages();
-                clearExistingImages();
-            });
-
-            // File input change
-            document.getElementById('file-input').addEventListener('change', handleFileSelect);
-
-            // Upload area click
-            document.getElementById('upload-area').addEventListener('click', function() {
-                document.getElementById('file-input').click();
-            });
-
-            // Drag and drop functionality
-            const uploadArea = document.getElementById('upload-area');
-            
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-            
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
-            
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                
-                const files = e.dataTransfer.files;
-                if (files.length > 0 && files[0].type.startsWith('image/')) {
-                    selectedFile = files[0];
-                    previewImage(files[0]);
-                } else {
-                    showStatus('Please drop a valid image file', 'error');
-                }
-            });
-        }
-
-        // Image type selection
-        function selectImageType(type) {
-            currentImageType = type;
-            
-            // Update radio button
-            document.querySelector(`input[value="${type}"]`).checked = true;
-            
-            // Update type option styling
-            document.querySelectorAll('.type-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            event.currentTarget.classList.add('selected');
-            
-            // Show/hide section selector
-            const sectionSelector = document.getElementById('section-selector');
-            if (type === 'section') {
-                sectionSelector.style.display = 'block';
-                loadSections();
-            } else {
-                sectionSelector.style.display = 'none';
-                clearExistingImages();
-            }
-            
-            // Load images for selected type
-            if (type === 'header' || type === 'featured') {
-                loadImagesByType(type);
-            }
-        }
-
-        // Load sections from API (using new blog-images API)
-        async function loadSections() {
+        // Load available posts
+        async function loadPosts() {
             try {
-                const response = await fetch(`/api/sections/${currentPostId}`);
+                const response = await fetch('/api/sections/53'); // Use current post for now
                 if (response.ok) {
                     const data = await response.json();
-                    sections = data.sections || [];
-                    populateSectionDropdown();
-                    console.log(`[LoadSections] Loaded ${sections.length} sections for post ${currentPostId}`);
-                } else {
-                    console.warn('[LoadSections] Failed to load sections from API');
-                    showStatus('Failed to load sections', 'error');
+                    const postSelector = document.getElementById('post-selector');
+                    postSelector.innerHTML = '<option value="53">Post 53</option>';
                 }
             } catch (error) {
-                console.warn('[LoadSections] Error loading sections from API:', error);
-                showStatus('Error loading sections', 'error');
+                console.error('Error loading posts:', error);
             }
         }
 
-        // Populate section dropdown
-        function populateSectionDropdown() {
-            const select = document.getElementById('section-select');
-            select.innerHTML = '<option value="">Select a section...</option>';
+        // Switch image type
+        function switchImageType(type) {
+            currentImageType = type;
             
-            sections.forEach(section => {
-                const option = document.createElement('option');
-                option.value = section.id;
-                const title = section.section_heading || `Section ${section.id}`;
-                option.textContent = title;
-                select.appendChild(option);
+            // Update active card
+            document.querySelectorAll('.image-type-card').forEach(card => {
+                card.classList.remove('active');
             });
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
             
-            // Add event listener to load images when section changes
-            select.addEventListener('change', function() {
-                const selectedSectionId = this.value;
-                if (selectedSectionId) {
-                    loadSectionImages(selectedSectionId);
+            // Update content title
+            const titles = {
+                'header': 'Header Images',
+                'section': 'Section Images',
+                'featured': 'Featured Images'
+            };
+            document.getElementById('content-title').textContent = `${titles[type]} - Post ${currentPostId}`;
+            
+            // Load images for this type
+            loadImageType(type);
+        }
+
+        // Load images by type
+        async function loadImageType(type) {
+            try {
+                const response = await fetch(`/api/images/${currentPostId}/${type}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    displayImages(data.images || []);
+                }
+            } catch (error) {
+                console.error('Error loading images:', error);
+                displayImages([]);
+            }
+        }
+
+        // Display images in grid
+        function displayImages(images) {
+            const grid = document.getElementById('image-grid');
+            grid.innerHTML = '';
+            
+            if (images.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">📷</div>
+                        <h3>No images found</h3>
+                        <p>Upload some images to get started</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            images.forEach(image => {
+                const card = createImageCard(image);
+                grid.appendChild(card);
+            });
+        }
+
+        // Create image card
+        function createImageCard(image) {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+            card.innerHTML = `
+                <div class="image-preview">
+                    <img src="${image.url}" alt="${image.filename}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="placeholder" style="display: none;">📷</div>
+                </div>
+                <div class="image-info">
+                    <h4>${image.filename}</h4>
+                    <div class="image-meta">
+                        <span class="image-status status-${image.status || 'raw'}">${image.status || 'Raw'}</span>
+                        <small>${image.size || 'Unknown'}</small>
+                    </div>
+                    <div class="image-actions">
+                        <button class="btn btn-small btn-primary" onclick="processImage('${image.id}')">Process</button>
+                        <button class="btn btn-small btn-secondary" onclick="previewImage('${image.id}')">Preview</button>
+                        <button class="btn btn-small btn-danger" onclick="deleteImage('${image.id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        // Update statistics
+        async function updateStatistics() {
+            try {
+                const response = await fetch(`/api/images/stats/${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('total-images').textContent = data.total_images || 0;
+                    document.getElementById('processing-count').textContent = data.processing || 0;
+                    document.getElementById('completed-count').textContent = data.completed || 0;
+                    document.getElementById('storage-used').textContent = `${data.total_size_mb || 0} MB`;
+                }
+            } catch (error) {
+                console.error('Error updating statistics:', error);
+            }
+        }
+
+        // Update pipeline status
+        async function updatePipelineStatus() {
+            try {
+                const response = await fetch(`/api/pipeline/jobs/${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    processingJobs = data.jobs || [];
+                    
+                    // Update pipeline visualization
+                    if (processingJobs.length > 0) {
+                        const latestJob = processingJobs[0];
+                        updatePipelineSteps(latestJob);
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating pipeline status:', error);
+            }
+        }
+
+        // Update pipeline steps visualization
+        function updatePipelineSteps(job) {
+            const steps = ['generation', 'optimization', 'watermarking', 'captioning', 'metadata'];
+            const stepElements = document.querySelectorAll('.pipeline-step');
+            
+            steps.forEach((step, index) => {
+                const stepElement = stepElements[index];
+                const stepIcon = stepElement.querySelector('.step-icon');
+                const progressBar = stepElement.querySelector('.progress-bar');
+                
+                // Update step status based on job progress
+                if (job.progress >= (index + 1) * 20) {
+                    stepIcon.className = 'step-icon completed';
+                    stepIcon.textContent = '✓';
+                    progressBar.style.width = '100%';
+                } else if (job.progress >= index * 20) {
+                    stepIcon.className = 'step-icon processing';
+                    stepIcon.textContent = '⟳';
+                    const stepProgress = ((job.progress - index * 20) / 20) * 100;
+                    progressBar.style.width = `${stepProgress}%`;
                 } else {
-                    clearExistingImages();
+                    stepIcon.className = 'step-icon pending';
+                    stepIcon.textContent = '○';
+                    progressBar.style.width = '0%';
                 }
             });
         }
 
-        // File selection handling
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                selectedFile = file;
-                previewImage(file);
-            } else {
-                showStatus('Please select a valid image file', 'error');
+        // Show processing controls
+        function showProcessingControls() {
+            document.getElementById('processing-controls').classList.remove('hidden');
+        }
+
+        // Hide processing controls
+        function hideProcessingControls() {
+            document.getElementById('processing-controls').classList.add('hidden');
+        }
+
+        // Show upload area
+        function showUploadArea() {
+            document.getElementById('upload-area').classList.remove('hidden');
+        }
+
+        // Hide upload area
+        function hideUploadArea() {
+            document.getElementById('upload-area').classList.add('hidden');
+        }
+
+        // Start batch processing
+        async function startBatchProcessing() {
+            showProcessingControls();
+        }
+
+        // Execute batch processing
+        async function executeBatchProcessing() {
+            const settings = {
+                processing_stage: document.getElementById('processing-stage').value,
+                quality_level: document.getElementById('quality-level').value,
+                watermark_style: document.getElementById('watermark-style').value,
+                generate_captions: document.getElementById('generate-captions').checked,
+                create_variations: document.getElementById('create-variations').checked
+            };
+            
+            try {
+                const response = await fetch('/api/pipeline/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: currentPostId,
+                        image_ids: selectedImages,
+                        settings: settings,
+                        job_type: 'batch'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus(`Batch processing started! Job ID: ${data.job_id}`, 'success');
+                    hideProcessingControls();
+                    
+                    // Start polling for status updates
+                    pollJobStatus(data.job_id);
+                } else {
+                    const error = await response.json();
+                    showStatus(`Error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Poll job status
+        async function pollJobStatus(jobId) {
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/pipeline/status/${jobId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
+                            clearInterval(interval);
+                            showStatus(`Job ${data.status}!`, data.status === 'completed' ? 'success' : 'error');
+                            updatePipelineStatus();
+                            updateStatistics();
+                        } else {
+                            updatePipelineSteps(data);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error polling job status:', error);
+                }
+            }, 2000); // Poll every 2 seconds
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('status-message');
+            statusElement.textContent = message;
+            statusElement.className = `status-message ${type}`;
+            statusElement.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusElement.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Process individual image
+        async function processImage(imageId) {
+            try {
+                const response = await fetch('/api/pipeline/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: currentPostId,
+                        image_ids: [imageId],
+                        settings: {
+                            image_type: currentImageType
+                        },
+                        job_type: 'single'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus(`Processing started for image! Job ID: ${data.job_id}`, 'success');
+                    pollJobStatus(data.job_id);
+                } else {
+                    const error = await response.json();
+                    showStatus(`Error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
             }
         }
 
         // Preview image
-        function previewImage(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.getElementById('image-preview');
-                preview.src = e.target.result;
-                document.getElementById('image-preview-container').classList.remove('hidden');
-                document.getElementById('upload-btn').disabled = false;
-            };
-            reader.readAsDataURL(file);
+        function previewImage(imageId) {
+            // Implementation for image preview
+            showStatus('Preview functionality coming soon!', 'info');
         }
 
-        // Upload image
-        async function uploadImage() {
-            if (!selectedFile) {
-                showStatus('Please select an image first', 'error');
-                return;
-            }
-
-            // Validate section selection for section uploads
-            if (currentImageType === 'section') {
-                const sectionId = document.getElementById('section-select').value;
-                if (!sectionId) {
-                    showStatus('Please select a section first', 'error');
-                    return;
+        // Delete image
+        async function deleteImage(imageId) {
+            if (confirm('Are you sure you want to delete this image?')) {
+                try {
+                    const response = await fetch(`/api/images/${imageId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        showStatus('Image deleted successfully!', 'success');
+                        loadImageType(currentImageType);
+                        updateStatistics();
+                    } else {
+                        const error = await response.json();
+                        showStatus(`Error: ${error.error}`, 'error');
+                    }
+                } catch (error) {
+                    showStatus(`Error: ${error.message}`, 'error');
                 }
             }
+        }
 
-            showStatus('📤 Uploading image...', 'info');
+        // Show statistics
+        function showStatistics() {
+            showStatus('Statistics dashboard coming soon!', 'info');
+        }
 
+        // File upload handling
+        document.getElementById('file-input').addEventListener('change', handleFileSelect);
+        
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                uploadFiles(files);
+            }
+        }
+
+        // Upload files
+        async function uploadFiles(files) {
+            for (let file of files) {
+                if (file.type.startsWith('image/')) {
+                    await uploadFile(file);
+                }
+            }
+        }
+
+        // Upload single file
+        async function uploadFile(file) {
             const formData = new FormData();
-            formData.append('image', selectedFile);
+            formData.append('image', file);
             formData.append('post_id', currentPostId);
             formData.append('image_type', currentImageType);
             
-            // Add section_id for section uploads
-            if (currentImageType === 'section') {
-                const sectionId = document.getElementById('section-select').value;
-                formData.append('section_id', sectionId);
-            }
-
             try {
                 const response = await fetch('/api/upload', {
                     method: 'POST',
                     body: formData
                 });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showStatus('✅ Image uploaded successfully!', 'success');
-                    
-                    // Refresh data
-                    loadImageStats();
-                    loadAllImages();
-                    
-                    // Load specific images based on type
-                    if (currentImageType === 'section') {
-                        const sectionId = document.getElementById('section-select').value;
-                        loadSectionImages(sectionId);
-                    } else {
-                        loadImagesByType(currentImageType);
-                    }
-                } else {
-                    showStatus(`❌ Upload failed: ${result.error}`, 'error');
-                }
-            } catch (error) {
-                showStatus(`❌ Upload failed: ${error.message}`, 'error');
-            }
-        }
-
-        // Load section images
-        async function loadSectionImages(sectionId) {
-            try {
-                const response = await fetch(`/api/images/${currentPostId}/${sectionId}`);
-                const result = await response.json();
-
-                if (result.images && result.images.length > 0) {
-                    displayExistingImages(result.images);
-                } else {
-                    clearExistingImages();
-                    showStatus('No images found for this section', 'info');
-                }
-            } catch (error) {
-                console.warn('[LoadSectionImages] Error loading images:', error);
-                clearExistingImages();
-            }
-        }
-
-        // Load images by type
-        async function loadImagesByType(type) {
-            try {
-                const response = await fetch(`/api/images/${currentPostId}/${type}`);
-                const result = await response.json();
-
-                if (result.images && result.images.length > 0) {
-                    displayExistingImages(result.images);
-                } else {
-                    clearExistingImages();
-                    showStatus(`No ${type} images found`, 'info');
-                }
-            } catch (error) {
-                console.warn('[LoadImagesByType] Error loading images:', error);
-                clearExistingImages();
-            }
-        }
-
-        // Display existing images
-        function displayExistingImages(images) {
-            const container = document.getElementById('existing-images-container');
-            container.innerHTML = '<h3>📁 Existing Images</h3>';
-
-            images.forEach(image => {
-                const imageDiv = document.createElement('div');
-                imageDiv.className = 'existing-image';
-
-                const img = document.createElement('img');
-                img.src = image.url;
-                img.alt = image.filename;
-
-                const filename = document.createElement('p');
-                filename.textContent = image.filename;
-
-                imageDiv.appendChild(img);
-                imageDiv.appendChild(filename);
-                container.appendChild(imageDiv);
-            });
-
-            container.classList.remove('hidden');
-        }
-
-        // Clear existing images display
-        function clearExistingImages() {
-            const container = document.getElementById('existing-images-container');
-            container.innerHTML = '';
-            container.classList.add('hidden');
-        }
-
-        // Load image statistics
-        async function loadImageStats() {
-            try {
-                const response = await fetch(`/api/images/stats/${currentPostId}`);
-                const stats = await response.json();
-
-                document.getElementById('total-images').textContent = stats.total_images || 0;
-                document.getElementById('header-images').textContent = stats.header_images || 0;
-                document.getElementById('section-images').textContent = stats.section_images || 0;
-                document.getElementById('featured-images').textContent = stats.featured_images || 0;
                 
-                // Convert bytes to MB
-                const totalSizeMB = Math.round((stats.total_size || 0) / (1024 * 1024) * 10) / 10;
-                document.getElementById('total-size').textContent = totalSizeMB;
-            } catch (error) {
-                console.warn('[LoadImageStats] Error loading stats:', error);
-            }
-        }
-
-        // Load all images
-        async function loadAllImages() {
-            try {
-                const response = await fetch(`/api/images/${currentPostId}`);
-                const result = await response.json();
-
-                const container = document.getElementById('all-images-container');
-                
-                if (result.images && result.images.length > 0) {
-                    container.innerHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">';
-                    
-                    result.images.forEach(image => {
-                        const imageDiv = document.createElement('div');
-                        imageDiv.style.cssText = 'background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);';
-                        
-                        const img = document.createElement('img');
-                        img.src = image.url;
-                        img.alt = image.filename;
-                        img.style.cssText = 'width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;';
-                        
-                        const filename = document.createElement('p');
-                        filename.textContent = image.filename;
-                        filename.style.cssText = 'font-size: 0.9em; color: #7f8c8d; margin-bottom: 4px;';
-                        
-                        const type = document.createElement('p');
-                        type.textContent = `Type: ${image.type}`;
-                        type.style.cssText = 'font-size: 0.8em; color: #95a5a6;';
-                        
-                        imageDiv.appendChild(img);
-                        imageDiv.appendChild(filename);
-                        imageDiv.appendChild(type);
-                        container.appendChild(imageDiv);
-                    });
-                    
-                    container.innerHTML += '</div>';
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus(`File ${file.name} uploaded successfully!`, 'success');
+                    loadImageType(currentImageType);
+                    updateStatistics();
                 } else {
-                    container.innerHTML = '<p>No images found for this post.</p>';
+                    const error = await response.json();
+                    showStatus(`Upload failed: ${error.error}`, 'error');
                 }
             } catch (error) {
-                console.warn('[LoadAllImages] Error loading images:', error);
-                document.getElementById('all-images-container').innerHTML = '<p>Error loading images.</p>';
+                showStatus(`Upload failed: ${error.message}`, 'error');
             }
         }
 
-        // Content tab switching
-        function switchContentTab(tabName) {
-            // Hide all tab panels
-            document.querySelectorAll('.tab-panel').forEach(panel => {
-                panel.classList.remove('active');
-            });
-
-            // Remove active class from all tab buttons
-            document.querySelectorAll('.content-tab').forEach(button => {
-                button.classList.remove('active');
-            });
-
-            // Show selected tab panel
-            document.getElementById(tabName + '-panel').classList.add('active');
-
-            // Add active class to clicked button
-            event.target.classList.add('active');
-        }
-
-        // Clear upload
-        function clearUpload() {
-            selectedFile = null;
-            document.getElementById('file-input').value = '';
-            document.getElementById('image-preview-container').classList.add('hidden');
-            document.getElementById('upload-btn').disabled = true;
-            document.getElementById('status').classList.add('hidden');
-        }
-
-        // Show status message
-        function showStatus(message, type) {
-            const status = document.getElementById('status');
-            status.textContent = message;
-            status.className = `status ${type}`;
-            status.classList.remove('hidden');
-
-            if (type === 'success' || type === 'error') {
-                setTimeout(() => {
-                    status.classList.add('hidden');
-                }, 5000);
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFiles(files);
             }
-        }
+        });
 
-        // Update iframe height for workflow integration
+        // Image type switching
+        document.querySelectorAll('.image-type-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const type = this.getAttribute('data-type');
+                switchImageType(type);
+            });
+        });
+
+        // Iframe communication
         function updateIframeHeight() {
             if (window.parent !== window) {
                 window.parent.postMessage({
@@ -909,8 +1122,9 @@
             }
         }
 
-        // Update iframe height on window resize
-        window.addEventListener('resize', updateIframeHeight);
+        // Update height when content changes
+        const observer = new MutationObserver(updateIframeHeight);
+        observer.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
 </html>
