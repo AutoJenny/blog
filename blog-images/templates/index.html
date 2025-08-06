@@ -628,6 +628,42 @@
             flex: 0 0 250px;
             min-width: 250px;
         }
+
+        /* Selection styles */
+        .image-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .image-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .image-card.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        }
+
+        .image-card.selected::before {
+            content: "✓";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -801,10 +837,12 @@
         let currentImageType = 'header';
         let selectedImages = [];
         let processingJobs = [];
+        let selectedImageMap = {}; // Map of section_id -> selected filename
 
         // Initialize the interface
         document.addEventListener('DOMContentLoaded', function() {
             loadPosts();
+            loadSelectedImages();
             loadImageType(currentImageType);
             updateStatistics();
             updatePipelineStatus();
@@ -947,7 +985,7 @@
                             <span class="section-count">${sectionImages.length} image${sectionImages.length > 1 ? 's' : ''}</span>
                         </div>
                         <div class="section-images">
-                            ${sectionImages.map(image => createImageCardHTML(image)).join('')}
+                            ${sectionImages.map(image => createImageCardHTML(image, sectionId)).join('')}
                         </div>
                     </div>
                 `;
@@ -955,6 +993,25 @@
             
             grid.innerHTML = html;
             grid.classList.add('section-layout'); // Add class for specific styling
+            
+            // Add click handlers for image selection
+            setTimeout(() => {
+                document.querySelectorAll('.image-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const sectionId = this.getAttribute('data-section-id');
+                        const filename = this.getAttribute('data-filename');
+                        if (sectionId && filename) {
+                            selectImage(sectionId, filename);
+                        }
+                    });
+                });
+                
+                // Show selected state for existing selections
+                Object.keys(selectedImageMap).forEach(sectionId => {
+                    const selectedFilename = selectedImageMap[sectionId];
+                    updateImageSelection(sectionId, selectedFilename);
+                });
+            }, 100);
         }
 
         // Display regular images in grid layout
@@ -969,7 +1026,7 @@
         }
 
         // Create image card HTML string for section layout
-        function createImageCardHTML(image) {
+        function createImageCardHTML(image, sectionId) {
             // Determine status based on path (raw, optimized, etc.)
             let status = 'raw';
             let statusClass = 'status-raw';
@@ -981,11 +1038,15 @@
                 statusClass = 'status-final';
             }
             
+            // Check if this image is selected
+            const isSelected = selectedImageMap[sectionId] === image.filename;
+            const selectedClass = isSelected ? 'selected' : '';
+            
             // Get file size (mock for now, could be enhanced with real file size)
             const fileSize = '1.2MB'; // TODO: Get actual file size
             
             return `
-                <div class="image-card">
+                <div class="image-card ${selectedClass}" data-section-id="${sectionId}" data-filename="${image.filename}">
                     <div class="image-preview">
                         <img src="${image.url}" alt="${image.filename}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <div class="placeholder" style="display: none;">🖼️</div>
@@ -1010,7 +1071,7 @@
         function createImageCard(image) {
             const card = document.createElement('div');
             card.className = 'image-card';
-            card.innerHTML = createImageCardHTML(image);
+            card.innerHTML = createImageCardHTML(image, 'dummy_section_id'); // Pass a dummy sectionId for regular images
             return card;
         }
 
@@ -1036,8 +1097,11 @@
                     // For now, assume all images are raw (not yet processed)
                     document.getElementById('raw-count').textContent = totalImages;
                     document.getElementById('raw-size').textContent = sizeDisplay;
-                    document.getElementById('selected-count').textContent = '0';
-                    document.getElementById('selected-size').textContent = '0MB';
+                    
+                    // Update selected images count
+                    document.getElementById('selected-count').textContent = Object.values(selectedImageMap).length;
+                    document.getElementById('selected-size').textContent = '0MB'; // Mock size for now
+                    
                     document.getElementById('optimized-count').textContent = '0';
                     document.getElementById('optimized-size').textContent = '0MB';
                     document.getElementById('captioned-count').textContent = '0';
@@ -1295,6 +1359,63 @@
             }
         }
 
+        // Load selected images for the current post
+        async function loadSelectedImages() {
+            try {
+                const response = await fetch(`/api/sections/${currentPostId}/selected`);
+                if (response.ok) {
+                    const data = await response.json();
+                    selectedImageMap = {};
+                    data.selected_images.forEach(item => {
+                        selectedImageMap[item.section_id] = item.selected_image;
+                    });
+                    console.log('Loaded selected images:', selectedImageMap);
+                }
+            } catch (error) {
+                console.error('Error loading selected images:', error);
+            }
+        }
+
+        // Select an image for a section
+        async function selectImage(sectionId, filename) {
+            try {
+                const response = await fetch(`/api/sections/${currentPostId}/${sectionId}/select`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ filename: filename })
+                });
+                
+                if (response.ok) {
+                    selectedImageMap[sectionId] = filename;
+                    console.log(`Selected ${filename} for section ${sectionId}`);
+                    
+                    // Update the display to show selection
+                    updateImageSelection(sectionId, filename);
+                    
+                    // Update statistics
+                    updateStatistics();
+                }
+            } catch (error) {
+                console.error('Error selecting image:', error);
+            }
+        }
+
+        // Update image selection display
+        function updateImageSelection(sectionId, selectedFilename) {
+            // Remove selection from all images in this section
+            document.querySelectorAll(`[data-section-id="${sectionId}"]`).forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to the selected image
+            const selectedCard = document.querySelector(`[data-section-id="${sectionId}"][data-filename="${selectedFilename}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+        }
+
         // Image type switching
         document.querySelectorAll('.image-type-card').forEach(card => {
             card.addEventListener('click', function() {
@@ -1306,6 +1427,7 @@
         // Post selector
         document.getElementById('post-select').addEventListener('change', function() {
             currentPostId = this.value;
+            loadSelectedImages();
             loadImageType(currentImageType);
             updateStatistics();
             updatePipelineStatus();
