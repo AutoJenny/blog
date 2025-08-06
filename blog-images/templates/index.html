@@ -22,48 +22,163 @@
         }
 
         /* BlogForge Header Styles */
-        .header-gradient {
+        .blogforge-header {
             background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+            border-bottom: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+            padding: 16px 0;
+            margin-bottom: 20px;
         }
 
-        .nav-dropdown {
+        .blogforge-nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #23273a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-text {
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-center {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-dropdown-container {
+            position: relative;
+        }
+
+        .nav-dropdown-btn {
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.3s;
+        }
+
+        .nav-dropdown-btn:hover {
+            color: #a5b4fc;
+        }
+
+        .nav-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
             background: #23273a;
             border: 1px solid #31364a;
+            border-radius: 8px;
             box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+            min-width: 180px;
+            z-index: 1000;
+            display: none;
+            margin-top: 8px;
         }
 
-        .nav-dropdown a {
-            color: #e0e0e0;
-        }
-
-        .nav-dropdown a:hover {
-            background: #23273a;
-            color: #a5b4fc;
-        }
-
-        .text-dark-text {
-            color: #e0e0e0;
-        }
-
-        .text-dark-accent {
-            color: #a5b4fc;
-        }
-
-        .bg-dark-accent {
-            background-color: #a5b4fc;
-        }
-
-        .bg-dark-bg {
-            background-color: #23273a;
-        }
-
-        .border-dark-border {
-            border-color: #31364a;
-        }
-
-        /* Show dropdown on hover */
-        .nav-group:hover .nav-dropdown {
+        .nav-dropdown-container:hover .nav-dropdown-menu {
             display: block;
+        }
+
+        .nav-dropdown-menu a {
+            display: block;
+            padding: 8px 16px;
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-dropdown-menu a:hover {
+            background: #31364a;
+            color: #a5b4fc;
+        }
+
+        .nav-dropdown-menu i {
+            margin-right: 8px;
+            width: 16px;
+        }
+
+        .nav-dropdown-menu a:nth-child(1) i { color: #a78bfa; }
+        .nav-dropdown-menu a:nth-child(2) i { color: #f472b6; }
+        .nav-dropdown-menu a:nth-child(3) i { color: #a5b4fc; }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-link {
+            color: #e0e0e0;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #a5b4fc;
+        }
+
+        .nav-button {
+            background: #a5b4fc;
+            color: white;
+            border: 1px solid #a5b4fc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .nav-button:hover {
+            background: #23273a;
+            transform: translateY(-1px);
         }
 
         .container {
@@ -319,57 +434,25 @@
 
         .action-center {
             background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px 20px;
-            margin-bottom: 15px;
-        }
-
-        .current-focus {
-            margin-bottom: 15px;
-        }
-
-        .current-focus h3 {
-            color: #2c3e50;
-            font-size: 1.4em;
-            margin-bottom: 8px;
-        }
-
-        .current-focus p {
-            color: #7f8c8d;
-            font-size: 1em;
-        }
-
-        .current-stage-info h4 {
-            color: #2c3e50;
-            font-size: 1.2em;
-            margin-bottom: 15px;
-        }
-
-        .stage-summary {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: white;
             border-radius: 8px;
-            border: 1px solid #e9ecef;
+            padding: 12px 16px;
+            margin-bottom: 15px;
         }
 
-        .summary-label {
-            color: #7f8c8d;
-            font-size: 0.9em;
+        .current-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
         }
 
-        .summary-value {
-            color: #2c3e50;
+        .status-focus {
             font-weight: 600;
-            font-size: 0.9em;
+            color: #2c3e50;
+        }
+
+        .status-details {
+            color: #7f8c8d;
         }
 
         /* Image Type Tabs */
@@ -1041,52 +1124,36 @@
 <body>
     <div class="container">
         <!-- BlogForge Header -->
-        <header class="header-gradient shadow-lg border-b border-dark-border py-4">
-            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
-                    <div class="flex items-center space-x-8 flex-1 min-w-0">
+        <header class="blogforge-header">
+            <nav class="blogforge-nav">
+                <div class="nav-container">
+                    <div class="nav-left">
                         <!-- Logo and Title -->
-                        <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
-                            <img src="http://localhost:5000/static/images/site/brand-logo.png" alt="BlogForge Logo"
-                                class="w-10 h-10 rounded-full shadow"
-                                style="background:#23273a; width: 40px; height: 40px;" />
-                            <span class="font-bold text-white">BlogForge</span>
+                        <a href="/" class="logo-link">
+                            <img src="http://localhost:5000/static/images/site/brand-logo.png" alt="BlogForge Logo" class="logo-img" />
+                            <span class="logo-text">BlogForge</span>
                         </a>
                     </div>
-                    <div class="flex items-center space-x-4 ml-8">
+                    <div class="nav-center">
                         <!-- Modules Dropdown -->
-                        <div class="relative group nav-group" tabindex="0">
-                            <button
-                                class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
-                                aria-haspopup="true" aria-expanded="false">
-                                <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down text-xs"></i>
+                        <div class="nav-dropdown-container">
+                            <button class="nav-dropdown-btn">
+                                <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down"></i>
                             </button>
-                            <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
-                                <a href="http://localhost:5000/db/"
-                                    class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
-                                        class="fa-solid fa-database text-purple-400"></i> Database</a>
-                                <a href="http://localhost:5000/llm/"
-                                    class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
-                                        class="fa-solid fa-brain text-pink-400"></i> AI</a>
-                                <a href="http://localhost:5005/"
-                                    class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
-                                        class="fa-solid fa-image text-dark-accent"></i> Images</a>
+                            <div class="nav-dropdown-menu">
+                                <a href="http://localhost:5000/db/"><i class="fa-solid fa-database"></i> Database</a>
+                                <a href="http://localhost:5000/llm/"><i class="fa-solid fa-brain"></i> AI</a>
+                                <a href="http://localhost:5005/"><i class="fa-solid fa-image"></i> Images</a>
                             </div>
                         </div>
                     </div>
-                    <div class="flex-shrink-0 flex items-center gap-4 ml-4">
-                        <a href="http://localhost:5000/posts"
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
-                        <button
-                            class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition"
-                            id="newPostBtn">
-                            <i class="fa-solid fa-plus"></i>
-                            New Post
+                    <div class="nav-right">
+                        <a href="http://localhost:5000/posts" class="nav-link">Posts</a>
+                        <button class="nav-button">
+                            <i class="fa-solid fa-plus"></i> New Post
                         </button>
-                        <a href="http://localhost:5000/docs/"
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Docs</a>
-                        <a href="http://localhost:5000/settings"
-                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Settings</a>
+                        <a href="http://localhost:5000/docs/" class="nav-link">Docs</a>
+                        <a href="http://localhost:5000/settings" class="nav-link">Settings</a>
                     </div>
                 </div>
             </nav>
@@ -1192,29 +1259,11 @@
                     </div>
                 </div>
 
-                <!-- Simplified Action Center -->
+                <!-- Minimal Action Center -->
                 <div class="action-center">
-                    <div class="current-focus">
-                        <h3>🎯 CURRENT FOCUS: <span id="current-focus-text">Section Images</span></h3>
-                        <p id="current-focus-description">Managing section images in optimized stage for Post 53</p>
-                    </div>
-
-                    <div class="current-stage-info">
-                        <h4>📊 Current Stage Overview</h4>
-                        <div class="stage-summary">
-                            <div class="summary-item">
-                                <span class="summary-label">Images in current stage:</span>
-                                <span class="summary-value" id="current-stage-count">8</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Total size:</span>
-                                <span class="summary-value" id="current-stage-size">28.5MB</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Processing status:</span>
-                                <span class="summary-value" id="current-stage-status">Ready</span>
-                            </div>
-                        </div>
+                    <div class="current-status">
+                        <span class="status-focus">🎯 <span id="current-focus-text">All Images</span></span>
+                        <span class="status-details">in <span id="current-pipeline-stage">raw</span> stage • <span id="current-stage-count">10</span> images • <span id="current-stage-size">60.0MB</span> • <span id="current-stage-status">Ready</span></span>
                     </div>
                 </div>
 
@@ -1968,7 +2017,7 @@
         // Update action center with current focus information
         function updateActionCenter() {
             const currentFocusText = document.getElementById('current-focus-text');
-            const currentFocusDescription = document.getElementById('current-focus-description');
+            const currentPipelineStageText = document.getElementById('current-pipeline-stage');
             const currentStageCount = document.getElementById('current-stage-count');
             const currentStageSize = document.getElementById('current-stage-size');
             const currentStageStatus = document.getElementById('current-stage-status');
@@ -1983,8 +2032,8 @@
                 currentFocusText.textContent = imageTypeNames[currentImageTypeTab] || 'Images';
             }
             
-            if (currentFocusDescription) {
-                currentFocusDescription.textContent = `Managing ${currentImageTypeTab} images in ${currentPipelineStage} stage for Post ${currentPostId}`;
+            if (currentPipelineStageText) {
+                currentPipelineStageText.textContent = currentPipelineStage;
             }
             
             // Update current stage info based on selected processing stage
