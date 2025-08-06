@@ -487,6 +487,52 @@
             border: 1px solid #3498db;
             color: #3498db;
         }
+
+        /* Grey out mock/placeholder functionality */
+        .mock-placeholder {
+            opacity: 0.6;
+            position: relative;
+            pointer-events: none;
+        }
+
+        .mock-placeholder::after {
+            content: "Mock";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .mock-placeholder:hover::after {
+            opacity: 1;
+        }
+
+        /* Specific styling for different types of mock elements */
+        .mock-placeholder.mock-button {
+            cursor: not-allowed;
+        }
+
+        .mock-placeholder.mock-section {
+            background: rgba(128, 128, 128, 0.1);
+            border: 1px dashed #ccc;
+        }
+
+        .mock-placeholder.mock-progress {
+            background: rgba(128, 128, 128, 0.2);
+        }
+
+        .mock-placeholder.mock-pipeline {
+            background: rgba(128, 128, 128, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -524,7 +570,7 @@
                     </div>
                 </div>
 
-                <div class="processing-pipeline">
+                <div class="processing-pipeline mock-placeholder mock-pipeline">
                     <h3>Processing Pipeline</h3>
                     <div class="pipeline-step completed">
                         <div class="step-info">
@@ -564,9 +610,9 @@
                 <div class="content-header">
                     <h2 id="content-title">Header Images - Post 53</h2>
                     <div class="action-buttons">
-                        <button class="btn btn-secondary" onclick="showStats()">📊 View Stats</button>
+                        <button class="btn btn-secondary mock-placeholder mock-button" onclick="showStats()">📊 View Stats</button>
                         <button class="btn btn-primary" onclick="showBatchControls()">🔄 Batch Process</button>
-                        <button class="btn btn-success" onclick="generateNew()">➕ Generate New</button>
+                        <button class="btn btn-success mock-placeholder mock-button" onclick="generateNew()">➕ Generate New</button>
                     </div>
                 </div>
 
@@ -625,12 +671,12 @@
                     </div>
                     <div class="batch-actions">
                         <button class="btn btn-primary" onclick="startBatchProcessing()">🚀 Start Processing</button>
-                        <button class="btn btn-secondary" onclick="pauseProcessing()">⏸️ Pause</button>
+                        <button class="btn btn-secondary mock-placeholder mock-button" onclick="pauseProcessing()">⏸️ Pause</button>
                         <button class="btn btn-secondary" onclick="retryFailed()">🔄 Retry Failed</button>
                     </div>
                 </div>
 
-                <div class="progress-section" id="progress-section">
+                <div class="progress-section mock-placeholder mock-progress" id="progress-section">
                     <h3>Processing Progress</h3>
                     <div class="progress-bar">
                         <div class="progress-fill" id="progress-fill"></div>
@@ -643,7 +689,7 @@
 
                 <div id="status-message" class="status-message hidden"></div>
 
-                <div class="image-grid" id="image-grid">
+                <div class="image-grid mock-placeholder mock-section" id="image-grid">
                     <div class="image-card">
                         <div class="image-preview">
                             <div class="placeholder">🖼️</div>
@@ -655,9 +701,9 @@
                                 <span>2.1MB</span>
                             </div>
                             <div class="image-actions">
-                                <button class="btn btn-small btn-primary" onclick="viewImage('header_main.png')">👁️ View</button>
-                                <button class="btn btn-small btn-secondary" onclick="editImage('header_main.png')">📝 Edit</button>
-                                <button class="btn btn-small btn-secondary" onclick="deleteImage('header_main.png')">🗑️ Delete</button>
+                                <button class="btn btn-small btn-primary mock-placeholder mock-button" onclick="viewImage('header_main.png')">👁️ View</button>
+                                <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="editImage('header_main.png')">📝 Edit</button>
+                                <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="deleteImage('header_main.png')">🗑️ Delete</button>
                             </div>
                         </div>
                     </div>
@@ -673,9 +719,9 @@
                                 <span>1.8MB</span>
                             </div>
                             <div class="image-actions">
-                                <button class="btn btn-small btn-primary" onclick="viewImage('header_optimized_v2.png')">👁️ View</button>
-                                <button class="btn btn-small btn-secondary" onclick="editImage('header_optimized_v2.png')">📝 Edit</button>
-                                <button class="btn btn-small btn-secondary" onclick="deleteImage('header_optimized_v2.png')">🗑️ Delete</button>
+                                <button class="btn btn-small btn-primary mock-placeholder mock-button" onclick="viewImage('header_optimized_v2.png')">👁️ View</button>
+                                <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="editImage('header_optimized_v2.png')">📝 Edit</button>
+                                <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="deleteImage('header_optimized_v2.png')">🗑️ Delete</button>
                             </div>
                         </div>
                     </div>
@@ -691,9 +737,9 @@
                                 <span>3.2MB</span>
                             </div>
                             <div class="image-actions">
-                                <button class="btn btn-small btn-primary" onclick="viewImage('header_raw_001.png')">👁️ View</button>
-                                <button class="btn btn-small btn-secondary" onclick="editImage('header_raw_001.png')">📝 Edit</button>
-                                <button class="btn btn-small btn-secondary" onclick="deleteImage('header_raw_001.png')">🗑️ Delete</button>
+                                <button class="btn btn-small btn-primary mock-placeholder mock-button" onclick="viewImage('header_raw_001.png')">👁️ View</button>
+                                <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="editImage('header_raw_001.png')">📝 Edit</button>
+                                <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="deleteImage('header_raw_001.png')">🗑️ Delete</button>
                             </div>
                         </div>
                     </div>
@@ -709,9 +755,9 @@
                                 <span>0.9MB</span>
                             </div>
                             <div class="image-actions">
-                                <button class="btn btn-small btn-primary" onclick="viewImage('header_social.png')">👁️ View</button>
-                                <button class="btn btn-small btn-secondary" onclick="editImage('header_social.png')">📝 Edit</button>
-                                <button class="btn btn-small btn-secondary" onclick="deleteImage('header_social.png')">🗑️ Delete</button>
+                                <button class="btn btn-small btn-primary mock-placeholder mock-button" onclick="viewImage('header_social.png')">👁️ View</button>
+                                <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="editImage('header_social.png')">📝 Edit</button>
+                                <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="deleteImage('header_social.png')">🗑️ Delete</button>
                             </div>
                         </div>
                     </div>
