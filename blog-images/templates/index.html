@@ -664,6 +664,99 @@
             font-size: 14px;
             z-index: 10;
         }
+
+        .processing-stage-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .processing-stage-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .processing-stage-btn.active {
+            background: linear-gradient(135deg, #4c63d2 0%, #5a4ba2 100%);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .stat-label {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .stat-breakdown {
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .breakdown-item.clickable {
+            cursor: pointer;
+        }
+
+        .breakdown-item.clickable:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .breakdown-item.active {
+            background-color: rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+        }
+
+        .breakdown-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .breakdown-count {
+            font-weight: bold;
+            color: white;
+        }
+
+        .stat-size {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .image-section {
+            margin-bottom: 30px;
+        }
+
+        .image-section .section-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .image-grid-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -749,23 +842,75 @@
 
                 <div class="stats-grid">
                     <div class="stat-card processing-stage-btn active" data-stage="raw">
-                        <div class="stat-number" id="raw-count">8</div>
                         <div class="stat-label">Raw</div>
-                        <div class="stat-size" id="raw-size">26.3MB</div>
+                        <div class="stat-breakdown">
+                            <div class="breakdown-item clickable" data-filter="all">
+                                <span class="breakdown-label">All:</span>
+                                <span class="breakdown-count" id="raw-all-count">8</span>
+                            </div>
+                            <div class="breakdown-item clickable" data-filter="header">
+                                <span class="breakdown-label">Header:</span>
+                                <span class="breakdown-count" id="raw-header-count">1</span>
+                            </div>
+                            <div class="breakdown-item clickable" data-filter="sections">
+                                <span class="breakdown-label">Sections:</span>
+                                <span class="breakdown-count" id="raw-sections-count">7</span>
+                            </div>
+                        </div>
+                        <div class="stat-size" id="raw-size">23MB</div>
                     </div>
                     <div class="stat-card processing-stage-btn" data-stage="selected">
-                        <div class="stat-number" id="selected-count">0</div>
                         <div class="stat-label">Selected</div>
-                        <div class="stat-size" id="selected-size">0MB</div>
+                        <div class="stat-breakdown">
+                            <div class="breakdown-item clickable" data-filter="all">
+                                <span class="breakdown-label">All:</span>
+                                <span class="breakdown-count" id="selected-all-count">7</span>
+                            </div>
+                            <div class="breakdown-item clickable" data-filter="header">
+                                <span class="breakdown-label">Header:</span>
+                                <span class="breakdown-count" id="selected-header-count">0</span>
+                            </div>
+                            <div class="breakdown-item clickable" data-filter="sections">
+                                <span class="breakdown-label">Sections:</span>
+                                <span class="breakdown-count" id="selected-sections-count">7</span>
+                            </div>
+                        </div>
+                        <div class="stat-size" id="selected-size">23.3MB</div>
                     </div>
                     <div class="stat-card processing-stage-btn" data-stage="optimized">
-                        <div class="stat-number" id="optimized-count">0</div>
                         <div class="stat-label">Optimized</div>
+                        <div class="stat-breakdown">
+                            <div class="breakdown-item clickable" data-filter="all">
+                                <span class="breakdown-label">All:</span>
+                                <span class="breakdown-count" id="optimized-all-count">0</span>
+                            </div>
+                            <div class="breakdown-item clickable" data-filter="header">
+                                <span class="breakdown-label">Header:</span>
+                                <span class="breakdown-count" id="optimized-header-count">0</span>
+                            </div>
+                            <div class="breakdown-item clickable" data-filter="sections">
+                                <span class="breakdown-label">Sections:</span>
+                                <span class="breakdown-count" id="optimized-sections-count">0</span>
+                            </div>
+                        </div>
                         <div class="stat-size" id="optimized-size">0MB</div>
                     </div>
                     <div class="stat-card processing-stage-btn" data-stage="captioned">
-                        <div class="stat-number" id="captioned-count">0</div>
                         <div class="stat-label">Captioned</div>
+                        <div class="stat-breakdown">
+                            <div class="breakdown-item clickable" data-filter="all">
+                                <span class="breakdown-label">All:</span>
+                                <span class="breakdown-count" id="captioned-all-count">0</span>
+                            </div>
+                            <div class="breakdown-item clickable" data-filter="header">
+                                <span class="breakdown-label">Header:</span>
+                                <span class="breakdown-count" id="captioned-header-count">0</span>
+                            </div>
+                            <div class="breakdown-item clickable" data-filter="sections">
+                                <span class="breakdown-label">Sections:</span>
+                                <span class="breakdown-count" id="captioned-sections-count">0</span>
+                            </div>
+                        </div>
                         <div class="stat-size" id="captioned-size">0MB</div>
                     </div>
                 </div>
@@ -835,6 +980,7 @@
         // Global variables
         let currentPostId = 53;
         let currentImageType = 'header';
+        let currentFilter = 'all'; // all, header, sections
         let selectedImages = [];
         let processingJobs = [];
         let selectedImageMap = {}; // Map of section_id -> selected filename
@@ -855,6 +1001,16 @@
                 btn.addEventListener('click', function() {
                     const stage = this.getAttribute('data-stage');
                     switchImageType(stage);
+                });
+            });
+            
+            // Add click handlers for breakdown items
+            document.querySelectorAll('.breakdown-item.clickable').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent triggering the parent button
+                    const filter = this.getAttribute('data-filter');
+                    const stage = this.closest('.processing-stage-btn').getAttribute('data-stage');
+                    switchFilter(stage, filter);
                 });
             });
         });
@@ -915,6 +1071,7 @@
             console.log('Mapped to API type:', apiType);
             
             currentImageType = apiType;
+            currentFilter = 'all'; // Reset filter when switching stages
             loadImageType(apiType);
             
             // Update active state for processing stage buttons
@@ -922,6 +1079,48 @@
                 btn.classList.remove('active');
             });
             document.querySelector(`[data-stage="${stage}"]`).classList.add('active');
+            
+            // Update active state for breakdown items
+            updateBreakdownActiveState(stage, 'all');
+        }
+
+        // Switch filter within a stage
+        function switchFilter(stage, filter) {
+            console.log('switchFilter called with stage:', filter, 'filter:', filter);
+            
+            currentFilter = filter;
+            
+            // Map stage names to API types
+            const stageToApiType = {
+                'raw': 'section',
+                'selected': 'selected',
+                'optimized': 'optimized',
+                'captioned': 'captioned'
+            };
+            
+            const apiType = stageToApiType[stage] || stage;
+            currentImageType = apiType;
+            
+            // Load images based on filter
+            loadImageTypeWithFilter(apiType, filter);
+            
+            // Update active state for breakdown items
+            updateBreakdownActiveState(stage, filter);
+        }
+
+        // Update active state for breakdown items
+        function updateBreakdownActiveState(stage, filter) {
+            // Remove active class from all breakdown items in this stage
+            const stageCard = document.querySelector(`[data-stage="${stage}"]`);
+            stageCard.querySelectorAll('.breakdown-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to the selected filter
+            const activeItem = stageCard.querySelector(`[data-filter="${filter}"]`);
+            if (activeItem) {
+                activeItem.classList.add('active');
+            }
         }
 
         // Load images by type
@@ -942,6 +1141,139 @@
             } catch (error) {
                 console.error('Error loading images:', error);
             }
+        }
+
+        // Load images by type with filter
+        async function loadImageTypeWithFilter(type, filter) {
+            try {
+                let url;
+                if (type === 'selected') {
+                    url = `/api/images/${currentPostId}/selected`;
+                } else {
+                    url = `/api/images/${currentPostId}/${type}`;
+                }
+                
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    let images = data.images || [];
+                    
+                    // Apply filter
+                    if (filter === 'header') {
+                        images = images.filter(img => img.type === 'header');
+                    } else if (filter === 'sections') {
+                        images = images.filter(img => img.type === 'section');
+                    }
+                    // 'all' shows all images
+                    
+                    displayImagesWithFilter(images, type, filter);
+                }
+            } catch (error) {
+                console.error('Error loading images:', error);
+            }
+        }
+
+        // Display images with filter support
+        function displayImagesWithFilter(images, type, filter) {
+            const grid = document.getElementById('image-grid');
+            
+            console.log('displayImagesWithFilter called with:', { images: images.length, type, filter });
+            
+            if (images.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-images">
+                        <div style="font-size: 3em; margin-bottom: 20px;">📷</div>
+                        <h3>No images found</h3>
+                        <p>No ${type} images available for ${filter} filter</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // For "all" filter with section images, show header first, then sections
+            if (filter === 'all' && type === 'section') {
+                displayAllImagesWithHeader(images);
+            } else if (type === 'section') {
+                displaySectionImages(images);
+            } else if (type === 'selected') {
+                displaySelectedImages(images);
+            } else {
+                displayRegularImages(images);
+            }
+        }
+
+        // Display all images with header first
+        function displayAllImagesWithHeader(images) {
+            const grid = document.getElementById('image-grid');
+            
+            // Separate header and section images
+            const headerImages = images.filter(img => img.type === 'header');
+            const sectionImages = images.filter(img => img.type === 'section');
+            
+            let html = '';
+            
+            // Add header images section if any exist
+            if (headerImages.length > 0) {
+                html += `
+                    <div class="image-section">
+                        <h3 class="section-title">Header Images</h3>
+                        <div class="image-grid-section">
+                            ${headerImages.map(image => createImageCardHTML(image, 'header')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Add section images
+            if (sectionImages.length > 0) {
+                // Group section images by section_id
+                const sections = {};
+                sectionImages.forEach(image => {
+                    if (!sections[image.section_id]) {
+                        sections[image.section_id] = [];
+                    }
+                    sections[image.section_id].push(image);
+                });
+                
+                Object.keys(sections).sort().forEach(sectionId => {
+                    const sectionImages = sections[sectionId];
+                    const sectionTitle = `Section ${sectionId}`;
+                    
+                    html += `
+                        <div class="section-row">
+                            <div class="section-title">
+                                <h3>${sectionTitle}</h3>
+                                <span class="section-count">${sectionImages.length} image${sectionImages.length > 1 ? 's' : ''}</span>
+                            </div>
+                            <div class="section-images">
+                                ${sectionImages.map(image => createImageCardHTML(image, sectionId)).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            grid.innerHTML = html;
+            grid.classList.add('section-layout');
+            
+            // Add click handlers
+            setTimeout(() => {
+                document.querySelectorAll('.image-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const sectionId = this.getAttribute('data-section-id');
+                        const filename = this.getAttribute('data-filename');
+                        if (sectionId && filename && sectionId !== 'header') {
+                            selectImage(sectionId, filename);
+                        }
+                    });
+                });
+                
+                // Show selected state for existing selections
+                Object.keys(selectedImageMap).forEach(sectionId => {
+                    const selectedFilename = selectedImageMap[sectionId];
+                    updateImageSelection(sectionId, selectedFilename);
+                });
+            }, 100);
         }
 
         // Display images in grid
@@ -1137,17 +1469,25 @@
                 const totalSizeMB = (stats.total_size / (1024 * 1024)).toFixed(1);
                 const selectedSizeMB = (selectedStats.selected_size / (1024 * 1024)).toFixed(1);
                 
-                // Update processing stage buttons
-                document.getElementById('raw-count').textContent = stats.total_images;
+                // Update breakdown counts
+                document.getElementById('raw-all-count').textContent = stats.total_images;
+                document.getElementById('raw-header-count').textContent = stats.header_images || 0;
+                document.getElementById('raw-sections-count').textContent = stats.section_images || 0;
                 document.getElementById('raw-size').textContent = totalSizeMB + 'MB';
                 
-                document.getElementById('selected-count').textContent = selectedStats.selected_count;
+                document.getElementById('selected-all-count').textContent = selectedStats.selected_count;
+                document.getElementById('selected-header-count').textContent = '0'; // No header images selected yet
+                document.getElementById('selected-sections-count').textContent = selectedStats.selected_count;
                 document.getElementById('selected-size').textContent = selectedSizeMB + 'MB';
                 
-                document.getElementById('optimized-count').textContent = '0';
+                document.getElementById('optimized-all-count').textContent = '0';
+                document.getElementById('optimized-header-count').textContent = '0';
+                document.getElementById('optimized-sections-count').textContent = '0';
                 document.getElementById('optimized-size').textContent = '0MB';
                 
-                document.getElementById('captioned-count').textContent = '0';
+                document.getElementById('captioned-all-count').textContent = '0';
+                document.getElementById('captioned-header-count').textContent = '0';
+                document.getElementById('captioned-sections-count').textContent = '0';
                 document.getElementById('captioned-size').textContent = '0MB';
                 
             } catch (error) {
