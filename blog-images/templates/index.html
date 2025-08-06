@@ -565,6 +565,64 @@
         .mock-placeholder.mock-pipeline {
             background: rgba(128, 128, 128, 0.1);
         }
+
+        /* New styles for section layout */
+        .section-row {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .section-title h3 {
+            margin-bottom: 0;
+        }
+
+        .section-count {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .section-images {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: #667eea #f0f0f0;
+        }
+
+        .section-images::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .section-images::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .section-images::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .section-images::-webkit-scrollbar-thumb:hover {
+            background: #5a6fd8;
+        }
+
+        .section-images .image-card {
+            flex: 0 0 250px;
+            min-width: 250px;
+        }
     </style>
 </head>
 <body>
@@ -844,6 +902,53 @@
                 return;
             }
             
+            // For section images, group by section_id
+            if (currentImageType === 'section') {
+                displaySectionImages(images);
+            } else {
+                // For header/featured images, use regular grid layout
+                displayRegularImages(images);
+            }
+        }
+
+        // Display section images in vertical layout with section titles
+        function displaySectionImages(images) {
+            const grid = document.getElementById('image-grid');
+            
+            // Group images by section_id
+            const sections = {};
+            images.forEach(image => {
+                if (!sections[image.section_id]) {
+                    sections[image.section_id] = [];
+                }
+                sections[image.section_id].push(image);
+            });
+            
+            // Create vertical layout with section rows
+            let html = '';
+            Object.keys(sections).sort().forEach(sectionId => {
+                const sectionImages = sections[sectionId];
+                const sectionTitle = `Section ${sectionId}`; // TODO: Get real section title
+                
+                html += `
+                    <div class="section-row">
+                        <div class="section-title">
+                            <h3>${sectionTitle}</h3>
+                            <span class="section-count">${sectionImages.length} image${sectionImages.length > 1 ? 's' : ''}</span>
+                        </div>
+                        <div class="section-images">
+                            ${sectionImages.map(image => createImageCardHTML(image)).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            grid.innerHTML = html;
+        }
+
+        // Display regular images in grid layout
+        function displayRegularImages(images) {
+            const grid = document.getElementById('image-grid');
             grid.innerHTML = '';
             images.forEach(image => {
                 const card = createImageCard(image);
@@ -851,11 +956,8 @@
             });
         }
 
-        // Create image card
-        function createImageCard(image) {
-            const card = document.createElement('div');
-            card.className = 'image-card';
-            
+        // Create image card HTML string for section layout
+        function createImageCardHTML(image) {
             // Determine status based on path (raw, optimized, etc.)
             let status = 'raw';
             let statusClass = 'status-raw';
@@ -870,24 +972,33 @@
             // Get file size (mock for now, could be enhanced with real file size)
             const fileSize = '1.2MB'; // TODO: Get actual file size
             
-            card.innerHTML = `
-                <div class="image-preview">
-                    <img src="${image.url}" alt="${image.filename}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <div class="placeholder" style="display: none;">🖼️</div>
-                </div>
-                <div class="image-info">
-                    <h4>${image.filename}</h4>
-                    <div class="image-meta">
-                        <span class="image-status ${statusClass}">${status}</span>
-                        <span>${fileSize}</span>
+            return `
+                <div class="image-card">
+                    <div class="image-preview">
+                        <img src="${image.url}" alt="${image.filename}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div class="placeholder" style="display: none;">🖼️</div>
                     </div>
-                    <div class="image-actions">
-                        <button class="btn btn-small btn-primary mock-placeholder mock-button" onclick="viewImage('${image.filename}')">👁️ View</button>
-                        <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="editImage('${image.filename}')">📝 Edit</button>
-                        <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="deleteImage('${image.filename}')">🗑️ Delete</button>
+                    <div class="image-info">
+                        <h4>${image.filename}</h4>
+                        <div class="image-meta">
+                            <span class="image-status ${statusClass}">${status}</span>
+                            <span>${fileSize}</span>
+                        </div>
+                        <div class="image-actions">
+                            <button class="btn btn-small btn-primary mock-placeholder mock-button" onclick="viewImage('${image.filename}')">👁️ View</button>
+                            <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="editImage('${image.filename}')">📝 Edit</button>
+                            <button class="btn btn-small btn-secondary mock-placeholder mock-button" onclick="deleteImage('${image.filename}')">🗑️ Delete</button>
+                        </div>
                     </div>
                 </div>
             `;
+        }
+
+        // Create image card for regular layout
+        function createImageCard(image) {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+            card.innerHTML = createImageCardHTML(image);
             return card;
         }
 
