@@ -324,6 +324,62 @@
             font-size: 0.9em;
         }
 
+        /* Image Type Tabs */
+        .image-type-tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            gap: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+        }
+
+        .tab:hover {
+            background: #e3f2fd;
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #5a6fd8;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-icon {
+            font-size: 1.2em;
+            margin-bottom: 4px;
+        }
+
+        .tab-label {
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .tab-count {
+            font-size: 0.75em;
+            opacity: 0.8;
+        }
+
+        .tab.active .tab-count {
+            opacity: 1;
+        }
+
         .content-header {
             display: flex;
             justify-content: space-between;
@@ -899,31 +955,7 @@
                     </select>
                 </div>
 
-                <!-- Image Types with counts -->
-                <div class="image-types">
-                    <h3>📁 IMAGE TYPES</h3>
-                    <div class="image-type-card active" data-type="header">
-                        <div class="type-info">
-                            <h4>📄 Header Images</h4>
-                            <p>Main post header visuals</p>
-                            <span class="type-count" id="header-type-count">(1 selected)</span>
-                        </div>
-                    </div>
-                    <div class="image-type-card" data-type="section">
-                        <div class="type-info">
-                            <h4>📝 Section Images</h4>
-                            <p>Content section illustrations</p>
-                            <span class="type-count" id="section-type-count">(7 selected)</span>
-                        </div>
-                    </div>
-                    <div class="image-type-card mock-placeholder mock-button" data-type="featured">
-                        <div class="type-info">
-                            <h4>⭐ Featured Images</h4>
-                            <p>Social media and highlights</p>
-                            <span class="type-count">(0 selected)</span>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Enhanced Processing Pipeline with details -->
                 <div class="processing-pipeline">
@@ -1036,6 +1068,30 @@
                     </div>
                 </div>
 
+                <!-- Image Type Tabs -->
+                <div class="image-type-tabs">
+                    <div class="tab active" data-type="all">
+                        <span class="tab-icon">📊</span>
+                        <span class="tab-label">All Images</span>
+                        <span class="tab-count" id="all-tab-count">(8)</span>
+                    </div>
+                    <div class="tab" data-type="header">
+                        <span class="tab-icon">📄</span>
+                        <span class="tab-label">Header</span>
+                        <span class="tab-count" id="header-tab-count">(1)</span>
+                    </div>
+                    <div class="tab" data-type="section">
+                        <span class="tab-icon">📝</span>
+                        <span class="tab-label">Sections</span>
+                        <span class="tab-count" id="section-tab-count">(7)</span>
+                    </div>
+                    <div class="tab mock-placeholder" data-type="featured">
+                        <span class="tab-icon">⭐</span>
+                        <span class="tab-label">Featured</span>
+                        <span class="tab-count">(0)</span>
+                    </div>
+                </div>
+
                 <div class="processing-controls mock-placeholder mock-section" id="processing-controls">
                     <h3>Batch Processing Controls</h3>
                     <div class="control-group">
@@ -1100,8 +1156,8 @@
     <script>
         // Global variables
         let currentPostId = 53;
-        let currentImageType = 'header';
-        let currentFilter = 'all'; // all, header, sections
+        let currentPipelineStage = 'raw'; // raw, selected, optimized, watermarked, captioned, metadata
+        let currentImageTypeTab = 'all'; // all, header, section, featured
         let selectedImages = [];
         let processingJobs = [];
         let selectedImageMap = {}; // Map of section_id -> selected filename
@@ -1110,12 +1166,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadPosts();
             loadSelectedImages();
-            loadImageType(currentImageType);
+            loadCurrentPipelineStage();
             updateStatistics();
             updatePipelineStatus();
             updateActionCenter();
-            updateImageTypeCounts();
+            updateTabCounts();
             setupSidebarInteractions();
+            setupTabInteractions();
             
             // Set up iframe communication
             updateIframeHeight();
@@ -1124,18 +1181,8 @@
             document.querySelectorAll('.processing-stage-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const stage = this.getAttribute('data-stage');
-                    switchImageType(stage);
+                    switchPipelineStage(stage);
                     updateActionCenter();
-                });
-            });
-            
-            // Add click handlers for breakdown items
-            document.querySelectorAll('.breakdown-item.clickable').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Prevent triggering the parent button
-                    const filter = this.getAttribute('data-filter');
-                    const stage = this.closest('.processing-stage-btn').getAttribute('data-stage');
-                    switchFilter(stage, filter);
                 });
             });
         });
@@ -1180,17 +1227,12 @@
             }
         }
 
-        // Switch image type
-        function switchImageType(stage) {
-            console.log('switchImageType called with stage:', stage);
+        // Switch pipeline stage
+        function switchPipelineStage(stage) {
+            console.log('switchPipelineStage called with stage:', stage);
             
-            // Use unified API endpoints directly
-            const apiType = stage; // raw, selected, optimized, captioned
-            console.log('Using API type:', apiType);
-            
-            currentImageType = apiType;
-            currentFilter = 'all'; // Reset filter when switching stages
-            loadImageType(apiType);
+            currentPipelineStage = stage;
+            loadCurrentPipelineStage();
             
             // Update active state for processing stage buttons
             document.querySelectorAll('.processing-stage-btn').forEach(btn => {
@@ -1198,73 +1240,38 @@
             });
             document.querySelector(`[data-stage="${stage}"]`).classList.add('active');
             
-            // Update active state for breakdown items
-            updateBreakdownActiveState(stage, 'all');
+            // Update tab counts and action center
+            updateTabCounts();
+            updateActionCenter();
+        }
+
+        // Switch image type tab
+        function switchImageTypeTab(type) {
+            console.log('switchImageTypeTab called with type:', type);
+            
+            currentImageTypeTab = type;
+            loadCurrentPipelineStage(); // This will apply the current filter
+            
+            // Update active state for tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
             
             // Update action center
             updateActionCenter();
         }
 
-        // Switch filter within a stage
-        function switchFilter(stage, filter) {
-            console.log('switchFilter called with stage:', stage, 'filter:', filter);
-            
-            currentFilter = filter;
-            
-            // Use unified API endpoints directly
-            const apiType = stage; // raw, selected, optimized, captioned
-            currentImageType = apiType;
-            
-            // Load images based on filter
-            loadImageTypeWithFilter(apiType, filter);
-            
-            // Update active state for breakdown items
-            updateBreakdownActiveState(stage, filter);
-        }
 
-        // Update active state for breakdown items
-        function updateBreakdownActiveState(stage, filter) {
-            // Remove active class from all breakdown items in this stage
-            const stageCard = document.querySelector(`[data-stage="${stage}"]`);
-            stageCard.querySelectorAll('.breakdown-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Add active class to the selected filter
-            const activeItem = stageCard.querySelector(`[data-filter="${filter}"]`);
-            if (activeItem) {
-                activeItem.classList.add('active');
-            }
-        }
 
-        // Load images by type
-        async function loadImageType(type) {
+        // Load current pipeline stage with combined filtering
+        async function loadCurrentPipelineStage() {
             try {
                 let url;
-                if (type === 'selected') {
+                if (currentPipelineStage === 'selected') {
                     url = `/api/images/${currentPostId}/selected`;
                 } else {
-                    url = `/api/images/${currentPostId}/${type}`;
-                }
-                
-                const response = await fetch(url);
-                if (response.ok) {
-                    const data = await response.json();
-                    displayImages(data.images, type);
-                }
-            } catch (error) {
-                console.error('Error loading images:', error);
-            }
-        }
-
-        // Load images by type with filter
-        async function loadImageTypeWithFilter(type, filter) {
-            try {
-                let url;
-                if (type === 'selected') {
-                    url = `/api/images/${currentPostId}/selected`;
-                } else {
-                    url = `/api/images/${currentPostId}/${type}`;
+                    url = `/api/images/${currentPostId}/${currentPipelineStage}`;
                 }
                 
                 const response = await fetch(url);
@@ -1272,42 +1279,48 @@
                     const data = await response.json();
                     let images = data.images || [];
                     
-                    // Apply filter
-                    if (filter === 'header') {
+                    // Apply image type filter
+                    if (currentImageTypeTab === 'header') {
                         images = images.filter(img => img.type === 'header');
-                    } else if (filter === 'sections') {
+                    } else if (currentImageTypeTab === 'section') {
                         images = images.filter(img => img.type === 'section');
                     }
-                    // 'all' shows all images
+                    // 'all' shows all images, 'featured' would be filtered when implemented
                     
-                    displayImagesWithFilter(images, type, filter);
+                    displayImagesWithCombinedFilter(images, currentPipelineStage, currentImageTypeTab);
                 }
             } catch (error) {
                 console.error('Error loading images:', error);
             }
         }
 
-        // Display images with filter support
-        function displayImagesWithFilter(images, type, filter) {
+
+
+        // Display images with combined filter support
+        function displayImagesWithCombinedFilter(images, pipelineStage, imageType) {
             const grid = document.getElementById('image-grid');
             
-            console.log('displayImagesWithFilter called with:', { images: images.length, type, filter });
+            console.log('displayImagesWithCombinedFilter called with:', { 
+                images: images.length, 
+                pipelineStage, 
+                imageType 
+            });
             
             if (images.length === 0) {
                 grid.innerHTML = `
                     <div class="no-images">
                         <div style="font-size: 3em; margin-bottom: 20px;">📷</div>
                         <h3>No images found</h3>
-                        <p>No ${type} images available for ${filter} filter</p>
+                        <p>No ${imageType} images available in ${pipelineStage} stage</p>
                     </div>
                 `;
                 return;
             }
             
-            // For "all" filter, show header first, then sections
-            if (filter === 'all') {
+            // For "all" image type, show header first, then sections
+            if (imageType === 'all') {
                 displayAllImagesWithHeader(images);
-            } else if (type === 'selected') {
+            } else if (pipelineStage === 'selected') {
                 displaySelectedImages(images);
             } else {
                 displaySectionImages(images);
@@ -1799,49 +1812,53 @@
             
             if (currentFocusText) {
                 const imageTypeNames = {
+                    all: 'All Images',
                     header: 'Header Images',
                     section: 'Section Images',
                     featured: 'Featured Images'
                 };
-                currentFocusText.textContent = imageTypeNames[currentImageType] || 'Images';
+                currentFocusText.textContent = imageTypeNames[currentImageTypeTab] || 'Images';
             }
             
             if (currentFocusDescription) {
-                currentFocusDescription.textContent = `Managing ${currentImageType} images for Post ${currentPostId}`;
+                currentFocusDescription.textContent = `Managing ${currentImageTypeTab} images in ${currentPipelineStage} stage for Post ${currentPostId}`;
             }
             
             // Update current stage info based on selected processing stage
-            const currentStage = document.querySelector('.processing-stage-btn.active');
-            if (currentStage) {
-                const stage = currentStage.dataset.stage;
-                const stageData = {
-                    raw: { count: 10, size: '60.0MB', status: 'Ready' },
-                    selected: { count: 8, size: '7.5MB', status: 'Ready' },
-                    optimized: { count: 8, size: '28.5MB', status: 'Ready' },
-                    captioned: { count: 0, size: '0MB', status: 'Not implemented' }
-                };
-                
-                const data = stageData[stage] || { count: 0, size: '0MB', status: 'Unknown' };
-                
-                if (currentStageCount) currentStageCount.textContent = data.count;
-                if (currentStageSize) currentStageSize.textContent = data.size;
-                if (currentStageStatus) currentStageStatus.textContent = data.status;
-            }
+            const stageData = {
+                raw: { count: 10, size: '60.0MB', status: 'Ready' },
+                selected: { count: 8, size: '7.5MB', status: 'Ready' },
+                optimized: { count: 8, size: '28.5MB', status: 'Ready' },
+                captioned: { count: 0, size: '0MB', status: 'Not implemented' }
+            };
+            
+            const data = stageData[currentPipelineStage] || { count: 0, size: '0MB', status: 'Unknown' };
+            
+            if (currentStageCount) currentStageCount.textContent = data.count;
+            if (currentStageSize) currentStageSize.textContent = data.size;
+            if (currentStageStatus) currentStageStatus.textContent = data.status;
         }
 
-        // Update image type counts in sidebar
-        function updateImageTypeCounts() {
-            const headerCountElement = document.getElementById('header-type-count');
-            const sectionCountElement = document.getElementById('section-type-count');
+        // Update tab counts
+        function updateTabCounts() {
+            const allCountElement = document.getElementById('all-tab-count');
+            const headerCountElement = document.getElementById('header-tab-count');
+            const sectionCountElement = document.getElementById('section-tab-count');
             
             // This would be populated from API data in a real implementation
-            if (headerCountElement) {
-                headerCountElement.textContent = '(1 selected)';
-            }
+            // For now, using static data based on current pipeline stage
+            const stageCounts = {
+                raw: { all: 10, header: 1, section: 9 },
+                selected: { all: 8, header: 1, section: 7 },
+                optimized: { all: 8, header: 1, section: 7 },
+                captioned: { all: 0, header: 0, section: 0 }
+            };
             
-            if (sectionCountElement) {
-                sectionCountElement.textContent = '(7 selected)';
-            }
+            const counts = stageCounts[currentPipelineStage] || { all: 0, header: 0, section: 0 };
+            
+            if (allCountElement) allCountElement.textContent = `(${counts.all})`;
+            if (headerCountElement) headerCountElement.textContent = `(${counts.header})`;
+            if (sectionCountElement) sectionCountElement.textContent = `(${counts.section})`;
         }
 
         // Add click handlers for sidebar elements
@@ -1853,21 +1870,23 @@
                     console.log(`Pipeline step clicked: ${stage}`);
                     
                     // Switch to this processing stage
-                    switchProcessingStage(stage);
+                    switchPipelineStage(stage);
                     
                     // Update action center
                     updateActionCenter();
                 });
             });
-            
-            // Image type clicks
-            document.querySelectorAll('.image-type-card').forEach(card => {
-                card.addEventListener('click', function() {
+        }
+
+        // Add click handlers for tab elements
+        function setupTabInteractions() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
                     const type = this.dataset.type;
-                    console.log(`Image type clicked: ${type}`);
+                    console.log(`Tab clicked: ${type}`);
                     
-                    // Switch to this image type
-                    switchImageType(type);
+                    // Switch to this image type tab
+                    switchImageTypeTab(type);
                     
                     // Update action center
                     updateActionCenter();
