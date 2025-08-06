@@ -835,6 +835,23 @@
             transform: translateY(-5px);
         }
 
+        .image-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 16px;
+            text-align: center;
+        }
+
+        .image-title h3 {
+            margin: 0;
+            font-size: 0.9em;
+            font-weight: 600;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .image-preview {
             height: 200px;
             background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
@@ -1685,7 +1702,8 @@
                 
                 Object.keys(sections).sort().forEach(sectionId => {
                     const sectionImages = sections[sectionId];
-                    const sectionTitle = `Section ${sectionId}`;
+                    // Use the first image's section_title if available, otherwise fallback to "Section X"
+                    const sectionTitle = sectionImages[0]?.section_title || `Section ${sectionId}`;
                     
                     html += `
                         <div class="section-row">
@@ -1771,7 +1789,8 @@
             let html = '';
             Object.keys(sections).sort().forEach(sectionId => {
                 const sectionImages = sections[sectionId];
-                const sectionTitle = `Section ${sectionId}`; // TODO: Get real section title
+                // Use the first image's section_title if available, otherwise fallback to "Section X"
+                const sectionTitle = sectionImages[0]?.section_title || `Section ${sectionId}`;
                 
                 html += `
                     <div class="section-row">
@@ -1878,8 +1897,19 @@
             // Get file size (mock for now, could be enhanced with real file size)
             const fileSize = '1.2MB'; // TODO: Get actual file size
             
+            // Get title for display
+            let title = '';
+            if (sectionId === 'header') {
+                title = image.section_title || 'Header Image'; // For header images, section_title contains post title
+            } else {
+                title = image.section_title || `Section ${sectionId}`;
+            }
+            
             return `
                 <div class="image-card ${selectedClass}" data-section-id="${sectionId}" data-filename="${image.filename}">
+                    <div class="image-title">
+                        <h3>${title}</h3>
+                    </div>
                     <div class="image-preview">
                         <img src="${image.url}" alt="${image.filename}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <div class="placeholder" style="display: none;">🖼️</div>
