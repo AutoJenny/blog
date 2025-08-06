@@ -1714,5 +1714,136 @@ def initialize_selections(post_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+def generate_filename_from_title(title, max_length=50):
+    """Generate a clean filename from a title."""
+    import re
+    
+    # Convert to lowercase and replace spaces/special chars with underscores
+    filename = re.sub(r'[^a-zA-Z0-9\s\-]', '', title.lower())
+    filename = re.sub(r'[\s\-]+', '_', filename)
+    filename = filename.strip('_')
+    
+    # Truncate if too long
+    if len(filename) > max_length:
+        filename = filename[:max_length].rstrip('_')
+    
+    return filename
+
+@app.route('/api/optimize/preview/<int:post_id>')
+def preview_optimization(post_id):
+    """Preview what files will be renamed during optimization."""
+    try:
+        preview = []
+        
+        # Get post title
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("SELECT title FROM post WHERE id = %s", (post_id,))
+                post_result = cur.fetchone()
+                post_title = post_result['title'] if post_result else f"post_{post_id}"
+                
+                # Get selected header image
+                header_selection_file = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'selected_image.txt')
+                if os.path.exists(header_selection_file):
+                    with open(header_selection_file, 'r') as f:
+                        header_filename = f.read().strip()
+                        header_new_name = f"{generate_filename_from_title(post_title)}.png"
+                        preview.append({
+                            'type': 'header',
+                            'original': header_filename,
+                            'new_name': header_new_name
+                        })
+                
+                # Get selected section images
+                cur.execute("""
+                    SELECT id, section_heading, image_filename 
+                    FROM post_section 
+                    WHERE post_id = %s AND image_filename IS NOT NULL
+                    ORDER BY section_order
+                """, (post_id,))
+                
+                sections = cur.fetchall()
+                for section in sections:
+                    if section['image_filename']:
+                        section_new_name = f"{generate_filename_from_title(section['section_heading'])}.png"
+                        preview.append({
+                            'type': 'section',
+                            'section_id': section['id'],
+                            'original': section['image_filename'],
+                            'new_name': section_new_name
+                        })
+        
+        return jsonify({
+            'success': True,
+            'preview': preview
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/optimize/rename/<int:post_id>', methods=['POST'])
+def optimize_rename_images(post_id):
+    """Rename selected images and move them to optimized stage."""
+    try:
+        renamed_count = 0
+        
+        # Get post title
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("SELECT title FROM post WHERE id = %s", (post_id,))
+                post_result = cur.fetchone()
+                post_title = post_result['title'] if post_result else f"post_{post_id}"
+                
+                # Process header image
+                header_selection_file = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'selected_image.txt')
+                if os.path.exists(header_selection_file):
+                    with open(header_selection_file, 'r') as f:
+                        header_filename = f.read().strip()
+                        header_old_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'raw', header_filename)
+                        header_new_name = f"{generate_filename_from_title(post_title)}.png"
+                        header_new_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized', header_new_name)
+                        
+                        # Create optimized directory
+                        os.makedirs(os.path.dirname(header_new_path), exist_ok=True)
+                        
+                        # Copy and rename file
+                        if os.path.exists(header_old_path):
+                            import shutil
+                            shutil.copy2(header_old_path, header_new_path)
+                            renamed_count += 1
+                
+                # Process section images
+                cur.execute("""
+                    SELECT id, section_heading, image_filename 
+                    FROM post_section 
+                    WHERE post_id = %s AND image_filename IS NOT NULL
+                    ORDER BY section_order
+                """, (post_id,))
+                
+                sections = cur.fetchall()
+                for section in sections:
+                    if section['image_filename']:
+                        section_old_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections', str(section['id']), 'raw', section['image_filename'])
+                        section_new_name = f"{generate_filename_from_title(section['section_heading'])}.png"
+                        section_new_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections', str(section['id']), 'optimized', section_new_name)
+                        
+                        # Create optimized directory
+                        os.makedirs(os.path.dirname(section_new_path), exist_ok=True)
+                        
+                        # Copy and rename file
+                        if os.path.exists(section_old_path):
+                            import shutil
+                            shutil.copy2(section_old_path, section_new_path)
+                            renamed_count += 1
+        
+        return jsonify({
+            'success': True,
+            'renamed_count': renamed_count,
+            'message': f'Successfully renamed and moved {renamed_count} images to optimized stage'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=port) 

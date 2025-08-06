@@ -2321,12 +2321,64 @@
         // Selected stage functions
         function startOptimization() {
             console.log('Starting optimization');
-            alert('Optimization process would begin');
+            
+            // Show loading state
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '🔄 Processing...';
+            button.disabled = true;
+            
+            // Call optimization API
+            fetch(`/api/optimize/rename/${currentPostId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Optimization complete! ${data.renamed_count} images renamed and moved to optimized stage.`);
+                    // Refresh the display
+                    loadCurrentPipelineStage();
+                    updateStatistics();
+                    updatePipelineStatus();
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Optimization error:', error);
+                alert('Error during optimization process');
+            })
+            .finally(() => {
+                // Restore button state
+                button.textContent = originalText;
+                button.disabled = false;
+            });
         }
 
         function previewOptimization() {
             console.log('Previewing optimization');
-            alert('Optimization preview would be shown');
+            
+            // Show preview of what will be renamed
+            fetch(`/api/optimize/preview/${currentPostId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let previewText = 'Files to be renamed:\n\n';
+                    data.preview.forEach(item => {
+                        previewText += `${item.original} → ${item.new_name}\n`;
+                    });
+                    alert(previewText);
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Preview error:', error);
+                alert('Error generating preview');
+            });
         }
 
         // Optimized stage functions
