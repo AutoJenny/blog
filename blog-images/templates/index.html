@@ -1679,9 +1679,10 @@
             
             // Add header images section if any exist
             if (headerImages.length > 0) {
+                const postTitle = headerImages[0]?.section_title || 'Header Images';
                 html += `
                     <div class="image-section">
-                        <h3 class="section-title">Header Images</h3>
+                        <h3 class="section-title">${postTitle}</h3>
                         <div class="image-grid-section">
                             ${headerImages.map(image => createImageCardHTML(image, 'header')).join('')}
                         </div>
@@ -1702,7 +1703,7 @@
                 
                 Object.keys(sections).sort().forEach(sectionId => {
                     const sectionImages = sections[sectionId];
-                    // Use the first image's section_title if available, otherwise fallback to "Section X"
+                    // Use the first image's section_title for the descriptive header
                     const sectionTitle = sectionImages[0]?.section_title || `Section ${sectionId}`;
                     
                     html += `
@@ -1789,7 +1790,7 @@
             let html = '';
             Object.keys(sections).sort().forEach(sectionId => {
                 const sectionImages = sections[sectionId];
-                // Use the first image's section_title if available, otherwise fallback to "Section X"
+                // Use the first image's section_title for the descriptive header
                 const sectionTitle = sectionImages[0]?.section_title || `Section ${sectionId}`;
                 
                 html += `
@@ -1897,12 +1898,12 @@
             // Get file size (mock for now, could be enhanced with real file size)
             const fileSize = '1.2MB'; // TODO: Get actual file size
             
-            // Get title for display
+            // Get title for display - use simple identifier for purple bar
             let title = '';
             if (sectionId === 'header') {
-                title = image.section_title || 'Header Image'; // For header images, section_title contains post title
+                title = 'Header'; // Simple identifier for header images
             } else {
-                title = image.section_title || `Section ${sectionId}`;
+                title = `Section ${sectionId}`; // Simple identifier with section number
             }
             
             return `
