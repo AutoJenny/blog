@@ -405,6 +405,11 @@
             margin-bottom: 30px;
         }
 
+        .image-grid.section-layout {
+            display: block;
+            grid-template-columns: none;
+        }
+
         .image-card {
             background: white;
             border-radius: 12px;
@@ -850,6 +855,7 @@
 
         // Switch image type
         function switchImageType(type) {
+            console.log('switchImageType called with:', type);
             currentImageType = type;
             
             // Update active card
@@ -891,6 +897,8 @@
         function displayImages(images) {
             const grid = document.getElementById('image-grid');
             
+            console.log('displayImages called with:', { images: images.length, currentImageType });
+            
             if (images.length === 0) {
                 grid.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #7f8c8d;">
@@ -904,8 +912,10 @@
             
             // For section images, group by section_id
             if (currentImageType === 'section') {
+                console.log('Using section layout for', images.length, 'images');
                 displaySectionImages(images);
             } else {
+                console.log('Using regular layout for', images.length, 'images');
                 // For header/featured images, use regular grid layout
                 displayRegularImages(images);
             }
@@ -944,6 +954,7 @@
             });
             
             grid.innerHTML = html;
+            grid.classList.add('section-layout'); // Add class for specific styling
         }
 
         // Display regular images in grid layout
@@ -954,6 +965,7 @@
                 const card = createImageCard(image);
                 grid.appendChild(card);
             });
+            grid.classList.remove('section-layout'); // Remove class for regular grid
         }
 
         // Create image card HTML string for section layout
