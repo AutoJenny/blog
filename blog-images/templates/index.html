@@ -74,11 +74,10 @@
             margin-bottom: 30px;
         }
 
-        .post-selector label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
+        .post-selector h3 {
+            margin-bottom: 15px;
             color: #2c3e50;
+            font-size: 1.2em;
         }
 
         .post-selector select {
@@ -126,14 +125,21 @@
             background: #e3f2fd;
         }
 
-        .image-type-card h4 {
+        .image-type-card .type-info h4 {
             color: #2c3e50;
             margin-bottom: 5px;
         }
 
-        .image-type-card p {
+        .image-type-card .type-info p {
             color: #7f8c8d;
             font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .image-type-card .type-count {
+            color: #667eea;
+            font-size: 0.85em;
+            font-weight: 600;
         }
 
         .processing-pipeline {
@@ -150,11 +156,16 @@
             background: #f8f9fa;
             border: 2px solid #e9ecef;
             border-radius: 8px;
-            padding: 12px;
+            padding: 15px;
             margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pipeline-step:hover {
+            background: #f0f8ff;
+            transform: translateX(5px);
+            border-color: #667eea;
         }
 
         .pipeline-step.completed {
@@ -174,8 +185,32 @@
 
         .step-info {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .step-details {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .step-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1em;
+        }
+
+        .step-count {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .step-size {
+            font-size: 0.8em;
+            color: #888;
+            font-style: italic;
         }
 
         .step-icon {
@@ -202,6 +237,91 @@
         .step-icon.pending {
             background: #bdc3c7;
             color: white;
+        }
+
+        .quick-actions {
+            margin-top: 30px;
+        }
+
+        .quick-actions h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .quick-action-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            background: white;
+            color: #2c3e50;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .quick-action-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .action-center {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .current-focus {
+            margin-bottom: 25px;
+        }
+
+        .current-focus h3 {
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 8px;
+        }
+
+        .current-focus p {
+            color: #7f8c8d;
+            font-size: 1em;
+        }
+
+        .current-stage-info h4 {
+            color: #2c3e50;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .stage-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .summary-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .summary-value {
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 0.9em;
         }
 
         .content-header {
@@ -767,10 +887,11 @@
         </div>
 
         <div class="main-content">
-            <!-- Sidebar -->
+            <!-- Enhanced Sidebar -->
             <div class="sidebar">
+                <!-- Post Selection -->
                 <div class="post-selector">
-                    <label for="post-select">Select Post:</label>
+                    <h3>📊 POST</h3>
                     <select id="post-select">
                         <option value="53">Post 53: Scottish Storytelling</option>
                         <option value="54">Post 54: Celtic Traditions</option>
@@ -778,60 +899,103 @@
                     </select>
                 </div>
 
+                <!-- Image Types with counts -->
                 <div class="image-types">
-                    <h3>Image Types</h3>
+                    <h3>📁 IMAGE TYPES</h3>
                     <div class="image-type-card active" data-type="header">
-                        <h4>📄 Header Images</h4>
-                        <p>Main post header visuals</p>
+                        <div class="type-info">
+                            <h4>📄 Header Images</h4>
+                            <p>Main post header visuals</p>
+                            <span class="type-count" id="header-type-count">(1 selected)</span>
+                        </div>
                     </div>
                     <div class="image-type-card" data-type="section">
-                        <h4>📝 Section Images</h4>
-                        <p>Content section illustrations</p>
+                        <div class="type-info">
+                            <h4>📝 Section Images</h4>
+                            <p>Content section illustrations</p>
+                            <span class="type-count" id="section-type-count">(7 selected)</span>
+                        </div>
                     </div>
                     <div class="image-type-card mock-placeholder mock-button" data-type="featured">
-                        <h4>⭐ Featured Images</h4>
-                        <p>Social media and highlights</p>
+                        <div class="type-info">
+                            <h4>⭐ Featured Images</h4>
+                            <p>Social media and highlights</p>
+                            <span class="type-count">(0 selected)</span>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Enhanced Processing Pipeline with details -->
                 <div class="processing-pipeline">
-                    <h3>Processing Pipeline</h3>
+                    <h3>🔄 PROCESSING PIPELINE</h3>
                     <div class="pipeline-step" data-stage="raw">
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
-                            <span>Raw</span>
+                            <div class="step-details">
+                                <span class="step-name">Raw</span>
+                                <span class="step-count" id="raw-step-count">(10 total: 1 header + 9 sections)</span>
+                                <span class="step-size" id="raw-step-size">60.0MB total size</span>
+                            </div>
                         </div>
                     </div>
                     <div class="pipeline-step" data-stage="selected">
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
-                            <span>Selection</span>
+                            <div class="step-details">
+                                <span class="step-name">Selection</span>
+                                <span class="step-count" id="selected-step-count">(8 total: 1 header + 7 sections)</span>
+                                <span class="step-size" id="selected-step-size">7.5MB total size</span>
+                            </div>
                         </div>
                     </div>
                     <div class="pipeline-step" data-stage="optimized">
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
-                            <span>Optimization</span>
+                            <div class="step-details">
+                                <span class="step-name">Optimization</span>
+                                <span class="step-count" id="optimized-step-count">(8 total: 1 header + 7 sections)</span>
+                                <span class="step-size" id="optimized-step-size">28.5MB total size</span>
+                            </div>
                         </div>
                     </div>
                     <div class="pipeline-step" data-stage="watermarked">
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
-                            <span>Watermarking</span>
+                            <div class="step-details">
+                                <span class="step-name">Watermarking</span>
+                                <span class="step-count">(0 total)</span>
+                                <span class="step-size">Not implemented yet</span>
+                            </div>
                         </div>
                     </div>
                     <div class="pipeline-step" data-stage="captioned">
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
-                            <span>Captioning</span>
+                            <div class="step-details">
+                                <span class="step-name">Captioning</span>
+                                <span class="step-count">(0 total)</span>
+                                <span class="step-size">Not implemented yet</span>
+                            </div>
                         </div>
                     </div>
                     <div class="pipeline-step" data-stage="metadata">
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
-                            <span>Metadata</span>
+                            <div class="step-details">
+                                <span class="step-name">Metadata</span>
+                                <span class="step-count">(0 total)</span>
+                                <span class="step-size">Not implemented yet</span>
+                            </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3>⚡ QUICK ACTIONS</h3>
+                    <button class="quick-action-btn" onclick="showUploadDialog()">📤 Upload New</button>
+                    <button class="quick-action-btn" onclick="showGenerateDialog()">🎨 Generate</button>
+                    <button class="quick-action-btn" onclick="showBatchDialog()">🔄 Batch Process</button>
                 </div>
             </div>
 
@@ -846,78 +1010,29 @@
                     </div>
                 </div>
 
-                <div class="stats-grid">
-                    <div class="stat-card processing-stage-btn active" data-stage="raw">
-                        <div class="stat-label">Raw</div>
-                        <div class="stat-breakdown">
-                            <div class="breakdown-item clickable" data-filter="all">
-                                <span class="breakdown-label">All:</span>
-                                <span class="breakdown-count" id="raw-all-count">8</span>
-                            </div>
-                            <div class="breakdown-item clickable" data-filter="header">
-                                <span class="breakdown-label">Header:</span>
-                                <span class="breakdown-count" id="raw-header-count">1</span>
-                            </div>
-                            <div class="breakdown-item clickable" data-filter="sections">
-                                <span class="breakdown-label">Sections:</span>
-                                <span class="breakdown-count" id="raw-sections-count">7</span>
-                            </div>
-                        </div>
-                        <div class="stat-size" id="raw-size">23MB</div>
+                <!-- Action Center -->
+                <div class="action-center">
+                    <div class="current-focus">
+                        <h3>🎯 CURRENT FOCUS: <span id="current-focus-text">Header Images</span></h3>
+                        <p id="current-focus-description">Managing header images for Post 53</p>
                     </div>
-                    <div class="stat-card processing-stage-btn" data-stage="selected">
-                        <div class="stat-label">Selected</div>
-                        <div class="stat-breakdown">
-                            <div class="breakdown-item clickable" data-filter="all">
-                                <span class="breakdown-label">All:</span>
-                                <span class="breakdown-count" id="selected-all-count">7</span>
+
+                    <div class="current-stage-info">
+                        <h4>📊 Current Stage Overview</h4>
+                        <div class="stage-summary">
+                            <div class="summary-item">
+                                <span class="summary-label">Images in current stage:</span>
+                                <span class="summary-value" id="current-stage-count">1</span>
                             </div>
-                            <div class="breakdown-item clickable" data-filter="header">
-                                <span class="breakdown-label">Header:</span>
-                                <span class="breakdown-count" id="selected-header-count">0</span>
+                            <div class="summary-item">
+                                <span class="summary-label">Total size:</span>
+                                <span class="summary-value" id="current-stage-size">2.1MB</span>
                             </div>
-                            <div class="breakdown-item clickable" data-filter="sections">
-                                <span class="breakdown-label">Sections:</span>
-                                <span class="breakdown-count" id="selected-sections-count">7</span>
-                            </div>
-                        </div>
-                        <div class="stat-size" id="selected-size">23.3MB</div>
-                    </div>
-                    <div class="stat-card processing-stage-btn" data-stage="optimized">
-                        <div class="stat-label">Optimized</div>
-                        <div class="stat-breakdown">
-                            <div class="breakdown-item clickable" data-filter="all">
-                                <span class="breakdown-label">All:</span>
-                                <span class="breakdown-count" id="optimized-all-count">0</span>
-                            </div>
-                            <div class="breakdown-item clickable" data-filter="header">
-                                <span class="breakdown-label">Header:</span>
-                                <span class="breakdown-count" id="optimized-header-count">0</span>
-                            </div>
-                            <div class="breakdown-item clickable" data-filter="sections">
-                                <span class="breakdown-label">Sections:</span>
-                                <span class="breakdown-count" id="optimized-sections-count">0</span>
+                            <div class="summary-item">
+                                <span class="summary-label">Processing status:</span>
+                                <span class="summary-value" id="current-stage-status">Ready</span>
                             </div>
                         </div>
-                        <div class="stat-size" id="optimized-size">0MB</div>
-                    </div>
-                    <div class="stat-card processing-stage-btn" data-stage="captioned">
-                        <div class="stat-label">Captioned</div>
-                        <div class="stat-breakdown">
-                            <div class="breakdown-item clickable" data-filter="all">
-                                <span class="breakdown-label">All:</span>
-                                <span class="breakdown-count" id="captioned-all-count">0</span>
-                            </div>
-                            <div class="breakdown-item clickable" data-filter="header">
-                                <span class="breakdown-label">Header:</span>
-                                <span class="breakdown-count" id="captioned-header-count">0</span>
-                            </div>
-                            <div class="breakdown-item clickable" data-filter="sections">
-                                <span class="breakdown-label">Sections:</span>
-                                <span class="breakdown-count" id="captioned-sections-count">0</span>
-                            </div>
-                        </div>
-                        <div class="stat-size" id="captioned-size">0MB</div>
                     </div>
                 </div>
 
@@ -998,6 +1113,9 @@
             loadImageType(currentImageType);
             updateStatistics();
             updatePipelineStatus();
+            updateActionCenter();
+            updateImageTypeCounts();
+            setupSidebarInteractions();
             
             // Set up iframe communication
             updateIframeHeight();
@@ -1007,6 +1125,7 @@
                 btn.addEventListener('click', function() {
                     const stage = this.getAttribute('data-stage');
                     switchImageType(stage);
+                    updateActionCenter();
                 });
             });
             
@@ -1081,6 +1200,9 @@
             
             // Update active state for breakdown items
             updateBreakdownActiveState(stage, 'all');
+            
+            // Update action center
+            updateActionCenter();
         }
 
         // Switch filter within a stage
@@ -1602,6 +1724,27 @@
                 
                 console.log(`Stage ${stage}: total=${data.total}, header=${data.header_count}, sections=${data.section_count}, hasImages=${hasImages}`);
                 
+                // Update step details
+                const stepCountElement = stepElement.querySelector('.step-count');
+                const stepSizeElement = stepElement.querySelector('.step-size');
+                
+                if (stepCountElement) {
+                    stepCountElement.textContent = `(${data.total} total: ${data.header_count} header + ${data.section_count} sections)`;
+                }
+                
+                if (stepSizeElement && data.total > 0) {
+                    // Calculate size based on stage (this would come from API in real implementation)
+                    const sizes = {
+                        raw: '60.0MB',
+                        selected: '7.5MB', 
+                        optimized: '28.5MB',
+                        watermarked: '0MB',
+                        captioned: '0MB',
+                        metadata: '0MB'
+                    };
+                    stepSizeElement.textContent = `${sizes[stage]} total size`;
+                }
+                
                 // For now, we'll consider a step complete if it has any images
                 // In the future, we could make this more sophisticated
                 if (hasImages) {
@@ -1644,6 +1787,110 @@
                     stepIcon.textContent = '○';
                 }
             });
+        }
+
+        // Update action center with current focus information
+        function updateActionCenter() {
+            const currentFocusText = document.getElementById('current-focus-text');
+            const currentFocusDescription = document.getElementById('current-focus-description');
+            const currentStageCount = document.getElementById('current-stage-count');
+            const currentStageSize = document.getElementById('current-stage-size');
+            const currentStageStatus = document.getElementById('current-stage-status');
+            
+            if (currentFocusText) {
+                const imageTypeNames = {
+                    header: 'Header Images',
+                    section: 'Section Images',
+                    featured: 'Featured Images'
+                };
+                currentFocusText.textContent = imageTypeNames[currentImageType] || 'Images';
+            }
+            
+            if (currentFocusDescription) {
+                currentFocusDescription.textContent = `Managing ${currentImageType} images for Post ${currentPostId}`;
+            }
+            
+            // Update current stage info based on selected processing stage
+            const currentStage = document.querySelector('.processing-stage-btn.active');
+            if (currentStage) {
+                const stage = currentStage.dataset.stage;
+                const stageData = {
+                    raw: { count: 10, size: '60.0MB', status: 'Ready' },
+                    selected: { count: 8, size: '7.5MB', status: 'Ready' },
+                    optimized: { count: 8, size: '28.5MB', status: 'Ready' },
+                    captioned: { count: 0, size: '0MB', status: 'Not implemented' }
+                };
+                
+                const data = stageData[stage] || { count: 0, size: '0MB', status: 'Unknown' };
+                
+                if (currentStageCount) currentStageCount.textContent = data.count;
+                if (currentStageSize) currentStageSize.textContent = data.size;
+                if (currentStageStatus) currentStageStatus.textContent = data.status;
+            }
+        }
+
+        // Update image type counts in sidebar
+        function updateImageTypeCounts() {
+            const headerCountElement = document.getElementById('header-type-count');
+            const sectionCountElement = document.getElementById('section-type-count');
+            
+            // This would be populated from API data in a real implementation
+            if (headerCountElement) {
+                headerCountElement.textContent = '(1 selected)';
+            }
+            
+            if (sectionCountElement) {
+                sectionCountElement.textContent = '(7 selected)';
+            }
+        }
+
+        // Add click handlers for sidebar elements
+        function setupSidebarInteractions() {
+            // Pipeline step clicks
+            document.querySelectorAll('.pipeline-step').forEach(step => {
+                step.addEventListener('click', function() {
+                    const stage = this.dataset.stage;
+                    console.log(`Pipeline step clicked: ${stage}`);
+                    
+                    // Switch to this processing stage
+                    switchProcessingStage(stage);
+                    
+                    // Update action center
+                    updateActionCenter();
+                });
+            });
+            
+            // Image type clicks
+            document.querySelectorAll('.image-type-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const type = this.dataset.type;
+                    console.log(`Image type clicked: ${type}`);
+                    
+                    // Switch to this image type
+                    switchImageType(type);
+                    
+                    // Update action center
+                    updateActionCenter();
+                });
+            });
+        }
+
+        // Quick action functions
+        function showUploadDialog() {
+            console.log('Upload dialog requested');
+            // This would open a file upload dialog
+            alert('Upload functionality would open here');
+        }
+
+        function showGenerateDialog() {
+            console.log('Generate dialog requested');
+            // This would open an image generation dialog
+            alert('Image generation dialog would open here');
+        }
+
+        function showBatchDialog() {
+            console.log('Batch dialog requested');
+            showBatchControls();
         }
 
         // Show batch controls
