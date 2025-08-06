@@ -1529,6 +1529,7 @@
 
         // Update pipeline status based on actual image counts
         async function updatePipelineStatus() {
+            console.log('updatePipelineStatus called for post:', currentPostId);
             try {
                 // Get image counts for each stage
                 const rawResponse = await fetch(`/api/images/${currentPostId}/raw`);
@@ -1538,6 +1539,8 @@
                 const rawData = await rawResponse.json();
                 const selectedData = await selectedResponse.json();
                 const optimizedData = await optimizedResponse.json();
+                
+                console.log('API responses:', { raw: rawData, selected: selectedData, optimized: optimizedData });
                 
                 // Update pipeline steps based on actual data
                 updatePipelineStepsFromData({
@@ -1552,10 +1555,13 @@
                     const data = await response.json();
                     processingJobs = data.jobs || [];
                     
-                    // Update pipeline visualization for active jobs
+                    // Update pipeline visualization for active jobs only
                     if (processingJobs.length > 0) {
                         const latestJob = processingJobs[0];
-                        updatePipelineStepsFromJob(latestJob);
+                        // Only override with job status if the job is actually processing
+                        if (latestJob.status === 'processing' && latestJob.progress > 0) {
+                            updatePipelineStepsFromJob(latestJob);
+                        }
                     }
                 }
             } catch (error) {
@@ -1565,6 +1571,8 @@
 
         // Update pipeline steps based on actual image data
         function updatePipelineStepsFromData(data) {
+            console.log('updatePipelineStepsFromData called with:', data);
+            
             const pipelineSteps = [
                 { stage: 'raw', data: data.raw },
                 { stage: 'selected', data: data.selected },
@@ -1576,14 +1584,23 @@
             
             pipelineSteps.forEach(({ stage, data }) => {
                 const stepElement = document.querySelector(`[data-stage="${stage}"]`);
-                if (!stepElement) return;
+                if (!stepElement) {
+                    console.log(`Step element not found for stage: ${stage}`);
+                    return;
+                }
                 
                 const stepIcon = stepElement.querySelector('.step-icon');
+                if (!stepIcon) {
+                    console.log(`Step icon not found for stage: ${stage}`);
+                    return;
+                }
                 
                 // Check if this stage has images for both header and sections
                 const hasHeaderImages = data.header_count > 0;
                 const hasSectionImages = data.section_count > 0;
                 const hasImages = data.total > 0;
+                
+                console.log(`Stage ${stage}: total=${data.total}, header=${data.header_count}, sections=${data.section_count}, hasImages=${hasImages}`);
                 
                 // For now, we'll consider a step complete if it has any images
                 // In the future, we could make this more sophisticated
@@ -1591,10 +1608,12 @@
                     stepElement.className = 'pipeline-step completed';
                     stepIcon.className = 'step-icon completed';
                     stepIcon.textContent = '✓';
+                    console.log(`Set ${stage} to completed`);
                 } else {
                     stepElement.className = 'pipeline-step pending';
                     stepIcon.className = 'step-icon pending';
                     stepIcon.textContent = '○';
+                    console.log(`Set ${stage} to pending`);
                 }
             });
         }
@@ -1912,4 +1931,5 @@
         observer.observe(document.body, { childList: true, subtree: true });
     </script>
 </body>
+</html>
 </html>
