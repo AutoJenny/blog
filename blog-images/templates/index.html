@@ -1393,16 +1393,22 @@
             // Determine status based on path (raw, optimized, etc.)
             let status = 'raw';
             let statusClass = 'status-raw';
-            if (image.path.includes('/optimized/')) {
+            if (image.path && image.path.includes('/optimized/')) {
                 status = 'optimized';
                 statusClass = 'status-optimized';
-            } else if (image.path.includes('/web/') || image.path.includes('/social/')) {
+            } else if (image.path && (image.path.includes('/web/') || image.path.includes('/social/'))) {
                 status = 'final';
                 statusClass = 'status-final';
             }
             
             // Check if this image is selected
-            const isSelected = selectedImageMap[sectionId] === image.filename;
+            let isSelected = false;
+            if (sectionId === 'header') {
+                // For header images, check if any header image is selected (simplified approach)
+                isSelected = image.is_selected || false;
+            } else {
+                isSelected = selectedImageMap[sectionId] === image.filename;
+            }
             const selectedClass = isSelected ? 'selected' : '';
             
             // Get file size (mock for now, could be enhanced with real file size)
@@ -1730,20 +1736,38 @@
             }
         }
 
-        // Select an image for a section
+        // Select an image for a section or header
         async function selectImage(sectionId, filename) {
             try {
-                const response = await fetch(`/api/sections/${currentPostId}/${sectionId}/select`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ filename: filename })
-                });
+                let response;
+                
+                if (sectionId === 'header') {
+                    // Select header image
+                    response = await fetch(`/api/header/${currentPostId}/select`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ filename: filename })
+                    });
+                } else {
+                    // Select section image
+                    response = await fetch(`/api/sections/${currentPostId}/${sectionId}/select`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ filename: filename })
+                    });
+                }
                 
                 if (response.ok) {
-                    selectedImageMap[sectionId] = filename;
-                    console.log(`Selected ${filename} for section ${sectionId}`);
+                    if (sectionId === 'header') {
+                        console.log(`Selected ${filename} for header`);
+                    } else {
+                        selectedImageMap[sectionId] = filename;
+                        console.log(`Selected ${filename} for section ${sectionId}`);
+                    }
                     
                     // Update the display to show selection
                     updateImageSelection(sectionId, filename);
@@ -1758,15 +1782,28 @@
 
         // Update image selection display
         function updateImageSelection(sectionId, selectedFilename) {
-            // Remove selection from all images in this section
-            document.querySelectorAll(`[data-section-id="${sectionId}"]`).forEach(card => {
-                card.classList.remove('selected');
-            });
-            
-            // Add selection to the selected image
-            const selectedCard = document.querySelector(`[data-section-id="${sectionId}"][data-filename="${selectedFilename}"]`);
-            if (selectedCard) {
-                selectedCard.classList.add('selected');
+            if (sectionId === 'header') {
+                // Remove selection from all header images
+                document.querySelectorAll(`[data-section-id="header"]`).forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // Add selection to the selected header image
+                const selectedCard = document.querySelector(`[data-section-id="header"][data-filename="${selectedFilename}"]`);
+                if (selectedCard) {
+                    selectedCard.classList.add('selected');
+                }
+            } else {
+                // Remove selection from all images in this section
+                document.querySelectorAll(`[data-section-id="${sectionId}"]`).forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // Add selection to the selected image
+                const selectedCard = document.querySelector(`[data-section-id="${sectionId}"][data-filename="${selectedFilename}"]`);
+                if (selectedCard) {
+                    selectedCard.classList.add('selected');
+                }
             }
         }
 
