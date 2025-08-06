@@ -1251,5 +1251,122 @@ def get_processing_analytics():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/sections/<int:post_id>/selected', methods=['GET'])
+def get_selected_images(post_id):
+    """Get selected images for all sections of a post."""
+    try:
+        conn = get_db_conn()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cursor.execute("""
+            SELECT id as section_id, image_filename as selected_image 
+            FROM post_section 
+            WHERE post_id = %s AND image_filename IS NOT NULL
+        """, (post_id,))
+        
+        selected_images = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'selected_images': [dict(row) for row in selected_images]
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/sections/<int:post_id>/<int:section_id>/select', methods=['POST'])
+def select_section_image(post_id, section_id):
+    """Select an image for a specific section."""
+    try:
+        data = request.get_json()
+        filename = data.get('filename')
+        
+        if not filename:
+            return jsonify({'error': 'Filename is required'}), 400
+        
+        conn = get_db_conn()
+        cursor = conn.cursor()
+        
+        # Update the image_filename for this section
+        cursor.execute("""
+            UPDATE post_section 
+            SET image_filename = %s 
+            WHERE post_id = %s AND id = %s
+        """, (filename, post_id, section_id))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'selected_image': filename})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/sections/<int:post_id>/selected/count', methods=['GET'])
+def get_selected_count(post_id):
+    """Get count of selected images for a post."""
+    try:
+        conn = get_db_conn()
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT COUNT(*) as count 
+            FROM post_section 
+            WHERE post_id = %s AND image_filename IS NOT NULL
+        """, (post_id,))
+        
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'selected_count': result[0] if result else 0})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/sections/<int:post_id>/initialize-selections', methods=['POST'])
+def initialize_selections(post_id):
+    """Initialize default selections (first image) for sections that don't have selected images."""
+    try:
+        conn = get_db_conn()
+        cursor = conn.cursor()
+        
+        # Get sections that don't have selected images
+        cursor.execute("""
+            SELECT id 
+            FROM post_section 
+            WHERE post_id = %s AND image_filename IS NULL
+        """, (post_id,))
+        
+        sections_without_selection = cursor.fetchall()
+        
+        # For each section, find the first image and set it as selected
+        for (section_id,) in sections_without_selection:
+            # Get the first image for this section
+            cursor.execute("""
+                SELECT filename 
+                FROM images 
+                WHERE post_id = %s AND section_id = %s 
+                ORDER BY filename 
+                LIMIT 1
+            """, (post_id, section_id))
+            
+            result = cursor.fetchone()
+            if result:
+                filename = result[0]
+                # Set this as the selected image
+                cursor.execute("""
+                    UPDATE post_section 
+                    SET image_filename = %s 
+                    WHERE id = %s
+                """, (filename, section_id))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'initialized': len(sections_without_selection)})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=port) 
