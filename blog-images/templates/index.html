@@ -566,6 +566,57 @@
             padding: 20px;
         }
 
+        /* Stage-specific content styles */
+        .stage-content {
+            display: block;
+        }
+
+        .stage-content.hidden {
+            display: none;
+        }
+
+        .stage-header {
+            margin-bottom: 20px;
+        }
+
+        .stage-header h4 {
+            color: #2c3e50;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+
+        .stage-header p {
+            color: #7f8c8d;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+
+        .selection-instructions {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .instruction-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #2c3e50;
+        }
+
+        .instruction-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .instruction-item i {
+            color: #667eea;
+            width: 16px;
+            text-align: center;
+        }
+
         .content-header {
             display: flex;
             justify-content: space-between;
@@ -1299,42 +1350,100 @@
                             <i class="fa fa-chevron-down accordion-icon" id="batch-controls-icon"></i>
                         </div>
                         <div class="accordion-content" id="batch-controls-content">
-                            <div class="control-group">
-                                <div class="control-item">
-                                    <label>Processing Stage:</label>
-                                    <select id="processing-stage" class="mock-placeholder">
-                                        <option>All Stages</option>
-                                        <option>Optimization Only</option>
-                                        <option>Watermarking Only</option>
-                                        <option>Captioning Only</option>
-                                    </select>
+                            <!-- Stage-specific content will be loaded here -->
+                            <div id="raw-stage-content" class="stage-content">
+                                <div class="stage-header">
+                                    <h4>📋 Selection Process</h4>
+                                    <p>Select the best image for each section below. Click on images to mark them as selected.</p>
                                 </div>
-                                <div class="control-item">
-                                    <label>Quality Level:</label>
-                                    <select id="quality-level" class="mock-placeholder">
-                                        <option>High (Web)</option>
-                                        <option>Medium (Social)</option>
-                                        <option>Low (Thumbnail)</option>
-                                    </select>
+                                <div class="selection-instructions">
+                                    <div class="instruction-item">
+                                        <i class="fa fa-check-circle"></i>
+                                        <span>Review all generated images for each section</span>
+                                    </div>
+                                    <div class="instruction-item">
+                                        <i class="fa fa-mouse-pointer"></i>
+                                        <span>Click on the best image for each section to select it</span>
+                                    </div>
+                                    <div class="instruction-item">
+                                        <i class="fa fa-arrow-right"></i>
+                                        <span>Selected images will be moved to the "Selected" stage</span>
+                                    </div>
                                 </div>
-                                <div class="control-item">
-                                    <label>Watermark Style:</label>
-                                    <select id="watermark-style" class="mock-placeholder">
-                                        <option>Clan.com Logo</option>
-                                        <option>Text Overlay</option>
-                                        <option>Corner Badge</option>
-                                        <option>None</option>
-                                    </select>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="processSelection()">✅ Complete Selection</button>
+                                    <button class="btn btn-secondary" onclick="autoSelectBest()">🤖 Auto-Select Best</button>
+                                    <button class="btn btn-secondary" onclick="clearAllSelections()">🗑️ Clear All</button>
                                 </div>
                             </div>
-                            <div class="control-item">
-                                <label>Custom Prompt (for generation):</label>
-                                <textarea id="custom-prompt" class="mock-placeholder" placeholder="Enter custom image generation prompt...">Create a warm, inviting illustration featuring Scottish storytelling elements with books, a cozy fireplace, and Celtic design motifs in a library setting.</textarea>
+                            
+                            <div id="selected-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>⚙️ Optimization Process</h4>
+                                    <p>Configure optimization settings for the selected images.</p>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-item">
+                                        <label>Quality Level:</label>
+                                        <select id="quality-level">
+                                            <option>High (Web)</option>
+                                            <option>Medium (Social)</option>
+                                            <option>Low (Thumbnail)</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-item">
+                                        <label>Output Format:</label>
+                                        <select id="output-format">
+                                            <option>JPEG</option>
+                                            <option>PNG</option>
+                                            <option>WebP</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="startOptimization()">🚀 Start Optimization</button>
+                                    <button class="btn btn-secondary" onclick="previewOptimization()">👁️ Preview</button>
+                                </div>
                             </div>
-                            <div class="batch-actions">
-                                <button class="btn btn-primary" onclick="startBatchProcessing()">🚀 Start Processing</button>
-                                <button class="btn btn-secondary mock-placeholder mock-button" onclick="pauseProcessing()">⏸️ Pause</button>
-                                <button class="btn btn-secondary" onclick="retryFailed()">🔄 Retry Failed</button>
+                            
+                            <div id="optimized-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>🏷️ Captioning Process</h4>
+                                    <p>Add captions and metadata to optimized images.</p>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-item">
+                                        <label>Caption Style:</label>
+                                        <select id="caption-style">
+                                            <option>Descriptive</option>
+                                            <option>Creative</option>
+                                            <option>Technical</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-item">
+                                        <label>Language:</label>
+                                        <select id="caption-language">
+                                            <option>English</option>
+                                            <option>Spanish</option>
+                                            <option>French</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="startCaptioning()">🚀 Start Captioning</button>
+                                    <button class="btn btn-secondary" onclick="previewCaptions()">👁️ Preview</button>
+                                </div>
+                            </div>
+                            
+                            <div id="captioned-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>✅ Final Review</h4>
+                                    <p>Review and approve all processed images.</p>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="approveAll()">✅ Approve All</button>
+                                    <button class="btn btn-secondary" onclick="exportImages()">📤 Export</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1383,6 +1492,7 @@
             updatePipelineStatus();
             updateActionCenter();
             updateTabCounts();
+            updateBatchControls();
             setupSidebarInteractions();
             setupTabInteractions();
             
@@ -1452,9 +1562,10 @@
             });
             document.querySelector(`[data-stage="${stage}"]`).classList.add('active');
             
-            // Update tab counts and action center
+            // Update tab counts, action center, and batch controls
             updateTabCounts();
             updateActionCenter();
+            updateBatchControls();
         }
 
         // Switch image type tab
@@ -2073,6 +2184,20 @@
             if (sectionCountElement) sectionCountElement.textContent = `(${counts.section})`;
         }
 
+        // Update batch controls based on current stage
+        function updateBatchControls() {
+            // Hide all stage content
+            document.querySelectorAll('.stage-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Show content for current stage
+            const currentStageContent = document.getElementById(`${currentPipelineStage}-stage-content`);
+            if (currentStageContent) {
+                currentStageContent.classList.remove('hidden');
+            }
+        }
+
         // Add click handlers for sidebar elements
         function setupSidebarInteractions() {
             // Pipeline step clicks
@@ -2144,6 +2269,55 @@
         // Show batch controls (now opens accordion)
         function showBatchControls() {
             toggleAccordion('batch-controls');
+        }
+
+        // Raw stage functions
+        function processSelection() {
+            console.log('Processing selection for raw stage');
+            alert('Selection processing would move selected images to the "Selected" stage');
+        }
+
+        function autoSelectBest() {
+            console.log('Auto-selecting best images');
+            alert('Auto-selection would use AI to pick the best image for each section');
+        }
+
+        function clearAllSelections() {
+            console.log('Clearing all selections');
+            alert('All selections would be cleared');
+        }
+
+        // Selected stage functions
+        function startOptimization() {
+            console.log('Starting optimization');
+            alert('Optimization process would begin');
+        }
+
+        function previewOptimization() {
+            console.log('Previewing optimization');
+            alert('Optimization preview would be shown');
+        }
+
+        // Optimized stage functions
+        function startCaptioning() {
+            console.log('Starting captioning');
+            alert('Captioning process would begin');
+        }
+
+        function previewCaptions() {
+            console.log('Previewing captions');
+            alert('Caption preview would be shown');
+        }
+
+        // Captioned stage functions
+        function approveAll() {
+            console.log('Approving all images');
+            alert('All images would be approved');
+        }
+
+        function exportImages() {
+            console.log('Exporting images');
+            alert('Images would be exported');
         }
 
         // Start batch processing
