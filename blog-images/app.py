@@ -1323,6 +1323,137 @@ def get_selected_count(post_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/sections/<int:post_id>/selected/stats', methods=['GET'])
+def get_selected_stats(post_id):
+    """Get count and total size of selected images for a post."""
+    try:
+        conn = get_db_conn()
+        cursor = conn.cursor()
+        
+        # Get selected images from post_section table
+        cursor.execute("""
+            SELECT id, image_filename 
+            FROM post_section 
+            WHERE post_id = %s AND image_filename IS NOT NULL
+            ORDER BY id
+        """, (post_id,))
+        
+        selected_sections = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        # Calculate total size of selected images
+        total_size = 0
+        valid_count = 0
+        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+        
+        for section in selected_sections:
+            section_id = section[0]  # id is first column
+            selected_filename = section[1]  # image_filename is second column
+            
+            # Check if the selected file exists in raw directory
+            raw_path = os.path.join(sections_path, str(section_id), 'raw', selected_filename)
+            if os.path.exists(raw_path):
+                total_size += os.path.getsize(raw_path)
+                valid_count += 1
+            else:
+                # Check optimized directory
+                optimized_path = os.path.join(sections_path, str(section_id), 'optimized', selected_filename)
+                if os.path.exists(optimized_path):
+                    total_size += os.path.getsize(optimized_path)
+                    valid_count += 1
+                else:
+                    # If selected file doesn't exist, try to find any image in the section
+                    raw_dir = os.path.join(sections_path, str(section_id), 'raw')
+                    if os.path.exists(raw_dir):
+                        for filename in os.listdir(raw_dir):
+                            if allowed_file(filename):
+                                file_path = os.path.join(raw_dir, filename)
+                                total_size += os.path.getsize(file_path)
+                                valid_count += 1
+                                break  # Use the first available image
+        
+        return jsonify({
+            'selected_count': valid_count,
+            'selected_size': total_size
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/images/<int:post_id>/selected', methods=['GET'])
+def get_selected_images_only(post_id):
+    """Get only the selected images for a post with their details."""
+    try:
+        conn = get_db_conn()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        # Get selected images from post_section table
+        cursor.execute("""
+            SELECT id, image_filename 
+            FROM post_section 
+            WHERE post_id = %s AND image_filename IS NOT NULL
+            ORDER BY id
+        """, (post_id,))
+        
+        selected_sections = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        # Get the actual image files from the file system
+        images = []
+        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+        
+        for section in selected_sections:
+            section_id = section['id']
+            selected_filename = section['image_filename']
+            
+            # Check if the selected file exists in raw directory
+            raw_path = os.path.join(sections_path, str(section_id), 'raw', selected_filename)
+            if os.path.exists(raw_path):
+                images.append({
+                    'filename': selected_filename,
+                    'url': f'/static/content/posts/{post_id}/sections/{section_id}/raw/{selected_filename}',
+                    'type': 'section',
+                    'section_id': str(section_id),
+                    'path': raw_path,
+                    'is_selected': True
+                })
+            else:
+                # Check optimized directory
+                optimized_path = os.path.join(sections_path, str(section_id), 'optimized', selected_filename)
+                if os.path.exists(optimized_path):
+                    images.append({
+                        'filename': selected_filename,
+                        'url': f'/static/content/posts/{post_id}/sections/{section_id}/optimized/{selected_filename}',
+                        'type': 'section',
+                        'section_id': str(section_id),
+                        'path': optimized_path,
+                        'is_selected': True
+                    })
+                else:
+                    # If selected file doesn't exist, try to find any image in the section
+                    raw_dir = os.path.join(sections_path, str(section_id), 'raw')
+                    if os.path.exists(raw_dir):
+                        for filename in os.listdir(raw_dir):
+                            if allowed_file(filename):
+                                images.append({
+                                    'filename': filename,
+                                    'url': f'/static/content/posts/{post_id}/sections/{section_id}/raw/{filename}',
+                                    'type': 'section',
+                                    'section_id': str(section_id),
+                                    'path': os.path.join(raw_dir, filename),
+                                    'is_selected': True,
+                                    'note': f'Selected file "{selected_filename}" not found, using "{filename}"'
+                                })
+                                break  # Use the first available image
+        
+        return jsonify({
+            'images': images,
+            'total': len(images)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/sections/<int:post_id>/initialize-selections', methods=['POST'])
 def initialize_selections(post_id):
     """Initialize default selections (first image) for sections that don't have selected images."""
