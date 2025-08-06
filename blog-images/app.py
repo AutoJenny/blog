@@ -1427,15 +1427,13 @@ def select_header_image(post_id):
         if not filename:
             return jsonify({'error': 'Filename is required'}), 400
         
-        # For now, we'll use a simple approach: store the selection in a session or cache
-        # Since the image table doesn't seem to be used for header images in this system,
-        # we'll implement a simpler solution that doesn't require database changes
-        
+        # Store header image selection in a simple file
         header_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'raw')
         if os.path.exists(os.path.join(header_path, filename)):
-            # Store the selection in a simple file or use a different approach
-            # For now, we'll just return success without persisting to database
-            # TODO: Implement proper header image selection persistence
+            # Create a selection file to track the selected header image
+            selection_file = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'selected_image.txt')
+            with open(selection_file, 'w') as f:
+                f.write(filename)
             
             return jsonify({'success': True, 'selected_image': filename})
         else:
@@ -1528,15 +1526,17 @@ def get_selected_images_unified(post_id):
     try:
         images = []
         
-        # Get header image selection from post table
+        # Get header image selection from file
+        header_selection_file = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'selected_image.txt')
+        selected_header_filename = None
+        if os.path.exists(header_selection_file):
+            with open(header_selection_file, 'r') as f:
+                selected_header_filename = f.read().strip()
+        
+        # Get section image selections from post_section table
         conn = get_db_conn()
         cursor = conn.cursor()
         
-        # For now, we'll assume no header image is selected since the database structure
-        # doesn't seem to support header image selection in the current system
-        # TODO: Implement proper header image selection persistence
-        
-        # Get section image selections from post_section table
         cursor.execute("""
             SELECT id, image_filename 
             FROM post_section 
@@ -1548,8 +1548,21 @@ def get_selected_images_unified(post_id):
         cursor.close()
         conn.close()
         
-        # For now, no header images are selected since the database structure
-        # doesn't support header image selection in the current implementation
+        # Add header image if selected
+        if selected_header_filename:
+            header_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'raw')
+            if os.path.exists(header_path):
+                for filename in os.listdir(header_path):
+                    if allowed_file(filename) and filename == selected_header_filename:
+                        images.append({
+                            'filename': filename,
+                            'url': f'/static/content/posts/{post_id}/header/raw/{filename}',
+                            'type': 'header',
+                            'section_id': None,
+                            'processing_stage': 'raw',
+                            'is_selected': True
+                        })
+                        break  # Use the selected header image
         
         # Add section images
         sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
