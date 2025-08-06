@@ -1059,16 +1059,9 @@
         function switchImageType(stage) {
             console.log('switchImageType called with stage:', stage);
             
-            // Map stage names to API types
-            const stageToApiType = {
-                'raw': 'section',
-                'selected': 'selected',
-                'optimized': 'optimized',
-                'captioned': 'captioned'
-            };
-            
-            const apiType = stageToApiType[stage] || stage;
-            console.log('Mapped to API type:', apiType);
+            // Use unified API endpoints directly
+            const apiType = stage; // raw, selected, optimized, captioned
+            console.log('Using API type:', apiType);
             
             currentImageType = apiType;
             currentFilter = 'all'; // Reset filter when switching stages
@@ -1086,19 +1079,12 @@
 
         // Switch filter within a stage
         function switchFilter(stage, filter) {
-            console.log('switchFilter called with stage:', filter, 'filter:', filter);
+            console.log('switchFilter called with stage:', stage, 'filter:', filter);
             
             currentFilter = filter;
             
-            // Map stage names to API types
-            const stageToApiType = {
-                'raw': 'section',
-                'selected': 'selected',
-                'optimized': 'optimized',
-                'captioned': 'captioned'
-            };
-            
-            const apiType = stageToApiType[stage] || stage;
+            // Use unified API endpoints directly
+            const apiType = stage; // raw, selected, optimized, captioned
             currentImageType = apiType;
             
             // Load images based on filter
@@ -1190,15 +1176,13 @@
                 return;
             }
             
-            // For "all" filter with section images, show header first, then sections
-            if (filter === 'all' && type === 'section') {
+            // For "all" filter, show header first, then sections
+            if (filter === 'all') {
                 displayAllImagesWithHeader(images);
-            } else if (type === 'section') {
-                displaySectionImages(images);
             } else if (type === 'selected') {
                 displaySelectedImages(images);
             } else {
-                displayRegularImages(images);
+                displaySectionImages(images);
             }
         }
 
@@ -1461,9 +1445,9 @@
                 const statsResponse = await fetch(`/api/images/stats/${currentPostId}`);
                 const stats = await statsResponse.json();
                 
-                // Get selected images stats
-                const selectedResponse = await fetch(`/api/sections/${currentPostId}/selected/stats`);
-                const selectedStats = await selectedResponse.json();
+                // Get selected images using unified API
+                const selectedResponse = await fetch(`/api/images/${currentPostId}/selected`);
+                const selectedData = await selectedResponse.json();
                 
                 // Get optimized images stats
                 const optimizedResponse = await fetch(`/api/images/optimized/stats/${currentPostId}`);
@@ -1471,7 +1455,7 @@
                 
                 // Convert bytes to MB/GB
                 const totalSizeMB = (stats.total_size / (1024 * 1024)).toFixed(1);
-                const selectedSizeMB = (selectedStats.selected_size / (1024 * 1024)).toFixed(1);
+                const selectedSizeMB = (selectedData.total > 0 ? (stats.total_size / selectedData.total / (1024 * 1024)).toFixed(1) : '0'); // Approximate
                 const optimizedSizeMB = (optimizedStats.optimized_size / (1024 * 1024)).toFixed(1);
                 
                 // Update breakdown counts
@@ -1480,9 +1464,9 @@
                 document.getElementById('raw-sections-count').textContent = stats.section_images || 0;
                 document.getElementById('raw-size').textContent = totalSizeMB + 'MB';
                 
-                document.getElementById('selected-all-count').textContent = selectedStats.selected_count;
-                document.getElementById('selected-header-count').textContent = '0'; // No header images selected yet
-                document.getElementById('selected-sections-count').textContent = selectedStats.selected_count;
+                document.getElementById('selected-all-count').textContent = selectedData.total || 0;
+                document.getElementById('selected-header-count').textContent = selectedData.header_count || 0;
+                document.getElementById('selected-sections-count').textContent = selectedData.section_count || 0;
                 document.getElementById('selected-size').textContent = selectedSizeMB + 'MB';
                 
                 document.getElementById('optimized-all-count').textContent = optimizedStats.optimized_images || 0;
