@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unified Image Processing Interface - BlogForge</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         * {
             margin: 0;
@@ -16,6 +19,51 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
+        }
+
+        /* BlogForge Header Styles */
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+
+        .text-dark-text {
+            color: #e0e0e0;
+        }
+
+        .text-dark-accent {
+            color: #a5b4fc;
+        }
+
+        .bg-dark-accent {
+            background-color: #a5b4fc;
+        }
+
+        .bg-dark-bg {
+            background-color: #23273a;
+        }
+
+        .border-dark-border {
+            border-color: #31364a;
+        }
+
+        /* Show dropdown on hover */
+        .nav-group:hover .nav-dropdown {
+            display: block;
         }
 
         .container {
@@ -50,7 +98,7 @@
             display: grid;
             grid-template-columns: 300px 1fr;
             gap: 30px;
-            height: calc(100vh - 200px);
+            height: calc(100vh - 120px);
         }
 
         .sidebar {
@@ -272,12 +320,12 @@
         .action-center {
             background: #f8f9fa;
             border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
         }
 
         .current-focus {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
         }
 
         .current-focus h3 {
@@ -378,6 +426,61 @@
 
         .tab.active .tab-count {
             opacity: 1;
+        }
+
+        /* Accordion Styles */
+        .accordion-container {
+            margin-bottom: 25px;
+        }
+
+        .accordion-item {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.3s;
+        }
+
+        .accordion-header:hover {
+            background: #e9ecef;
+        }
+
+        .accordion-header h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .accordion-icon {
+            transition: transform 0.3s;
+            color: #667eea;
+        }
+
+        .accordion-item.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: white;
+        }
+
+        .accordion-item.active .accordion-content {
+            max-height: 1000px;
+            padding: 20px;
         }
 
         .content-header {
@@ -937,10 +1040,57 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎨 Unified Image Processing Interface</h1>
-            <p>Streamlined image management for headers, sections, and all post assets</p>
-        </div>
+        <!-- BlogForge Header -->
+        <header class="header-gradient shadow-lg border-b border-dark-border py-4">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+                    <div class="flex items-center space-x-8 flex-1 min-w-0">
+                        <!-- Logo and Title -->
+                        <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+                            <img src="http://localhost:5000/static/images/site/brand-logo.png" alt="BlogForge Logo"
+                                class="w-10 h-10 rounded-full shadow"
+                                style="background:#23273a; width: 40px; height: 40px;" />
+                            <span class="font-bold text-white">BlogForge</span>
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-4 ml-8">
+                        <!-- Modules Dropdown -->
+                        <div class="relative group nav-group" tabindex="0">
+                            <button
+                                class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none"
+                                aria-haspopup="true" aria-expanded="false">
+                                <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down text-xs"></i>
+                            </button>
+                            <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                                <a href="http://localhost:5000/db/"
+                                    class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                        class="fa-solid fa-database text-purple-400"></i> Database</a>
+                                <a href="http://localhost:5000/llm/"
+                                    class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                        class="fa-solid fa-brain text-pink-400"></i> AI</a>
+                                <a href="http://localhost:5005/"
+                                    class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition"><i
+                                        class="fa-solid fa-image text-dark-accent"></i> Images</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+                        <a href="http://localhost:5000/posts"
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Posts</a>
+                        <button
+                            class="admin-button bg-dark-accent text-white hover:bg-dark-bg border border-dark-accent px-4 py-2 rounded-lg flex items-center gap-2 shadow transition"
+                            id="newPostBtn">
+                            <i class="fa-solid fa-plus"></i>
+                            New Post
+                        </button>
+                        <a href="http://localhost:5000/docs/"
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Docs</a>
+                        <a href="http://localhost:5000/settings"
+                            class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">Settings</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
 
         <div class="main-content">
             <!-- Enhanced Sidebar -->
@@ -1042,11 +1192,11 @@
                     </div>
                 </div>
 
-                <!-- Action Center -->
+                <!-- Simplified Action Center -->
                 <div class="action-center">
                     <div class="current-focus">
-                        <h3>🎯 CURRENT FOCUS: <span id="current-focus-text">Header Images</span></h3>
-                        <p id="current-focus-description">Managing header images for Post 53</p>
+                        <h3>🎯 CURRENT FOCUS: <span id="current-focus-text">Section Images</span></h3>
+                        <p id="current-focus-description">Managing section images in optimized stage for Post 53</p>
                     </div>
 
                     <div class="current-stage-info">
@@ -1054,11 +1204,11 @@
                         <div class="stage-summary">
                             <div class="summary-item">
                                 <span class="summary-label">Images in current stage:</span>
-                                <span class="summary-value" id="current-stage-count">1</span>
+                                <span class="summary-value" id="current-stage-count">8</span>
                             </div>
                             <div class="summary-item">
                                 <span class="summary-label">Total size:</span>
-                                <span class="summary-value" id="current-stage-size">2.1MB</span>
+                                <span class="summary-value" id="current-stage-size">28.5MB</span>
                             </div>
                             <div class="summary-item">
                                 <span class="summary-label">Processing status:</span>
@@ -1092,55 +1242,68 @@
                     </div>
                 </div>
 
-                <div class="processing-controls mock-placeholder mock-section" id="processing-controls">
-                    <h3>Batch Processing Controls</h3>
-                    <div class="control-group">
-                        <div class="control-item">
-                            <label>Processing Stage:</label>
-                            <select id="processing-stage" class="mock-placeholder">
-                                <option>All Stages</option>
-                                <option>Optimization Only</option>
-                                <option>Watermarking Only</option>
-                                <option>Captioning Only</option>
-                            </select>
+                <!-- Accordion for Batch Processing Controls -->
+                <div class="accordion-container">
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion('batch-controls')">
+                            <h3>🔄 Batch Processing Controls</h3>
+                            <i class="fa fa-chevron-down accordion-icon" id="batch-controls-icon"></i>
                         </div>
-                        <div class="control-item">
-                            <label>Quality Level:</label>
-                            <select id="quality-level" class="mock-placeholder">
-                                <option>High (Web)</option>
-                                <option>Medium (Social)</option>
-                                <option>Low (Thumbnail)</option>
-                            </select>
-                        </div>
-                        <div class="control-item">
-                            <label>Watermark Style:</label>
-                            <select id="watermark-style" class="mock-placeholder">
-                                <option>Clan.com Logo</option>
-                                <option>Text Overlay</option>
-                                <option>Corner Badge</option>
-                                <option>None</option>
-                            </select>
+                        <div class="accordion-content" id="batch-controls-content">
+                            <div class="control-group">
+                                <div class="control-item">
+                                    <label>Processing Stage:</label>
+                                    <select id="processing-stage" class="mock-placeholder">
+                                        <option>All Stages</option>
+                                        <option>Optimization Only</option>
+                                        <option>Watermarking Only</option>
+                                        <option>Captioning Only</option>
+                                    </select>
+                                </div>
+                                <div class="control-item">
+                                    <label>Quality Level:</label>
+                                    <select id="quality-level" class="mock-placeholder">
+                                        <option>High (Web)</option>
+                                        <option>Medium (Social)</option>
+                                        <option>Low (Thumbnail)</option>
+                                    </select>
+                                </div>
+                                <div class="control-item">
+                                    <label>Watermark Style:</label>
+                                    <select id="watermark-style" class="mock-placeholder">
+                                        <option>Clan.com Logo</option>
+                                        <option>Text Overlay</option>
+                                        <option>Corner Badge</option>
+                                        <option>None</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="control-item">
+                                <label>Custom Prompt (for generation):</label>
+                                <textarea id="custom-prompt" class="mock-placeholder" placeholder="Enter custom image generation prompt...">Create a warm, inviting illustration featuring Scottish storytelling elements with books, a cozy fireplace, and Celtic design motifs in a library setting.</textarea>
+                            </div>
+                            <div class="batch-actions">
+                                <button class="btn btn-primary" onclick="startBatchProcessing()">🚀 Start Processing</button>
+                                <button class="btn btn-secondary mock-placeholder mock-button" onclick="pauseProcessing()">⏸️ Pause</button>
+                                <button class="btn btn-secondary" onclick="retryFailed()">🔄 Retry Failed</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="control-item">
-                        <label>Custom Prompt (for generation):</label>
-                        <textarea id="custom-prompt" class="mock-placeholder" placeholder="Enter custom image generation prompt...">Create a warm, inviting illustration featuring Scottish storytelling elements with books, a cozy fireplace, and Celtic design motifs in a library setting.</textarea>
-                    </div>
-                    <div class="batch-actions">
-                        <button class="btn btn-primary" onclick="startBatchProcessing()">🚀 Start Processing</button>
-                        <button class="btn btn-secondary mock-placeholder mock-button" onclick="pauseProcessing()">⏸️ Pause</button>
-                        <button class="btn btn-secondary" onclick="retryFailed()">🔄 Retry Failed</button>
-                    </div>
-                </div>
 
-                <div class="progress-section mock-placeholder mock-progress" id="progress-section">
-                    <h3>Processing Progress</h3>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progress-fill"></div>
-                    </div>
-                    <div class="progress-text">
-                        <span id="processing-file">Processing: header_optimized_v2.png</span>
-                        <span id="progress-percentage">65% Complete</span>
+                    <div class="accordion-item">
+                        <div class="accordion-header" onclick="toggleAccordion('progress-section')">
+                            <h3>📊 Processing Progress</h3>
+                            <i class="fa fa-chevron-down accordion-icon" id="progress-section-icon"></i>
+                        </div>
+                        <div class="accordion-content" id="progress-section-content">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="processing-file">Processing: header_optimized_v2.png</span>
+                                <span id="progress-percentage">65% Complete</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1912,9 +2075,26 @@
             showBatchControls();
         }
 
-        // Show batch controls
+        // Toggle accordion
+        function toggleAccordion(id) {
+            const item = document.querySelector(`#${id}-content`).parentElement;
+            const icon = document.getElementById(`${id}-icon`);
+            
+            if (item.classList.contains('active')) {
+                item.classList.remove('active');
+            } else {
+                // Close all other accordion items
+                document.querySelectorAll('.accordion-item').forEach(accItem => {
+                    accItem.classList.remove('active');
+                });
+                // Open this one
+                item.classList.add('active');
+            }
+        }
+
+        // Show batch controls (now opens accordion)
         function showBatchControls() {
-            document.getElementById('processing-controls').classList.remove('hidden');
+            toggleAccordion('batch-controls');
         }
 
         // Start batch processing
