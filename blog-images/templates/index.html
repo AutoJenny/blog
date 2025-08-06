@@ -288,6 +288,38 @@
             font-size: 0.9em;
         }
 
+        .stat-size {
+            color: #667eea;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        /* Processing stage button styling */
+        .processing-stage-btn {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .processing-stage-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .processing-stage-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .processing-stage-btn.active .stat-number,
+        .processing-stage-btn.active .stat-label,
+        .processing-stage-btn.active .stat-size {
+            color: white;
+        }
+
         .processing-controls {
             background: #f8f9fa;
             border-radius: 10px;
@@ -617,21 +649,25 @@
                 </div>
 
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="total-images">12</div>
-                        <div class="stat-label">Total Images</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="optimized-count">8</div>
-                        <div class="stat-label">Optimized</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="raw-count">4</div>
+                    <div class="stat-card processing-stage-btn active" data-stage="raw">
+                        <div class="stat-number" id="raw-count">8</div>
                         <div class="stat-label">Raw</div>
+                        <div class="stat-size" id="raw-size">26.3MB</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="total-size">2.3GB</div>
-                        <div class="stat-label">Total Size</div>
+                    <div class="stat-card processing-stage-btn" data-stage="selected">
+                        <div class="stat-number" id="selected-count">0</div>
+                        <div class="stat-label">Selected</div>
+                        <div class="stat-size" id="selected-size">0MB</div>
+                    </div>
+                    <div class="stat-card processing-stage-btn" data-stage="optimized">
+                        <div class="stat-number" id="optimized-count">0</div>
+                        <div class="stat-label">Optimized</div>
+                        <div class="stat-size" id="optimized-size">0MB</div>
+                    </div>
+                    <div class="stat-card processing-stage-btn" data-stage="captioned">
+                        <div class="stat-number" id="captioned-count">0</div>
+                        <div class="stat-label">Captioned</div>
+                        <div class="stat-size" id="captioned-size">0MB</div>
                     </div>
                 </div>
 
@@ -869,20 +905,20 @@
                     const featuredImages = data.featured_images || 0;
                     const totalSizeBytes = data.total_size || 0;
                     
-                    // Calculate optimized vs raw (for now, assume all are raw if no processing data)
-                    const optimizedCount = 0; // TODO: Get from processing status
-                    const rawCount = totalImages;
-                    
-                    // Convert bytes to MB/GB
+                    // Convert bytes to MB
                     const totalSizeMB = totalSizeBytes / (1024 * 1024);
-                    const totalSizeGB = totalSizeMB / 1024;
-                    const sizeDisplay = totalSizeGB >= 1 ? `${totalSizeGB.toFixed(1)}GB` : `${totalSizeMB.toFixed(1)}MB`;
+                    const sizeDisplay = `${totalSizeMB.toFixed(1)}MB`;
                     
-                    // Update the display
-                    document.getElementById('total-images').textContent = totalImages;
-                    document.getElementById('optimized-count').textContent = optimizedCount;
-                    document.getElementById('raw-count').textContent = rawCount;
-                    document.getElementById('total-size').textContent = sizeDisplay;
+                    // Update processing stage statistics
+                    // For now, assume all images are raw (not yet processed)
+                    document.getElementById('raw-count').textContent = totalImages;
+                    document.getElementById('raw-size').textContent = sizeDisplay;
+                    document.getElementById('selected-count').textContent = '0';
+                    document.getElementById('selected-size').textContent = '0MB';
+                    document.getElementById('optimized-count').textContent = '0';
+                    document.getElementById('optimized-size').textContent = '0MB';
+                    document.getElementById('captioned-count').textContent = '0';
+                    document.getElementById('captioned-size').textContent = '0MB';
                     
                     console.log(`Updated stats for post ${currentPostId}:`, {
                         totalImages,
@@ -896,11 +932,43 @@
             } catch (error) {
                 console.error('Error updating statistics:', error);
                 // Fall back to mock data if API fails
-                document.getElementById('total-images').textContent = '12';
-                document.getElementById('optimized-count').textContent = '8';
-                document.getElementById('raw-count').textContent = '4';
-                document.getElementById('total-size').textContent = '2.3GB';
+                document.getElementById('raw-count').textContent = '8';
+                document.getElementById('raw-size').textContent = '26.3MB';
+                document.getElementById('selected-count').textContent = '0';
+                document.getElementById('selected-size').textContent = '0MB';
+                document.getElementById('optimized-count').textContent = '0';
+                document.getElementById('optimized-size').textContent = '0MB';
+                document.getElementById('captioned-count').textContent = '0';
+                document.getElementById('captioned-size').textContent = '0MB';
             }
+        }
+
+        // Switch processing stage
+        function switchProcessingStage(stage) {
+            // Update active button
+            document.querySelectorAll('.processing-stage-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-stage="${stage}"]`).classList.add('active');
+            
+            // Update content title to show current stage
+            const titles = {
+                'raw': 'Raw Images',
+                'selected': 'Selected Images',
+                'optimized': 'Optimized Images',
+                'captioned': 'Captioned Images'
+            };
+            const imageTypeTitles = {
+                'header': 'Header Images',
+                'section': 'Section Images',
+                'featured': 'Featured Images'
+            };
+            const currentImageTypeTitle = imageTypeTitles[currentImageType] || 'Images';
+            document.getElementById('content-title').textContent = `${currentImageTypeTitle} - ${titles[stage]} - Post ${currentPostId}`;
+            
+            // TODO: Filter images by processing stage
+            // For now, just reload current image type
+            loadImageType(currentImageType);
         }
 
         // Update pipeline status
@@ -1118,6 +1186,14 @@
             loadImageType(currentImageType);
             updateStatistics();
             updatePipelineStatus();
+        });
+
+        // Processing stage buttons
+        document.querySelectorAll('.processing-stage-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const stage = this.getAttribute('data-stage');
+                switchProcessingStage(stage);
+            });
         });
 
         // Iframe communication
