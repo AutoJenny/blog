@@ -1401,19 +1401,13 @@
                                 </div>
                                 <div class="control-group">
                                     <div class="control-item">
-                                        <label>Quality Level:</label>
-                                        <select id="quality-level">
-                                            <option>High (Web)</option>
-                                            <option>Medium (Social)</option>
-                                            <option>Low (Thumbnail)</option>
-                                        </select>
-                                    </div>
-                                    <div class="control-item">
-                                        <label>Output Format:</label>
-                                        <select id="output-format">
-                                            <option>JPEG</option>
-                                            <option>PNG</option>
-                                            <option>WebP</option>
+                                        <label>Optimization Settings:</label>
+                                        <select id="optimization-settings">
+                                            <option value="webp_1200_85" selected>WebP 1200px (Recommended)</option>
+                                            <option value="webp_800_85">WebP 800px (Mobile)</option>
+                                            <option value="webp_1600_85">WebP 1600px (High Res)</option>
+                                            <option value="jpeg_1200_85">JPEG 1200px</option>
+                                            <option value="png_1200_lossless">PNG 1200px (Lossless)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -2322,6 +2316,10 @@
         function startOptimization() {
             console.log('Starting optimization');
             
+            // Get optimization settings from dropdown
+            const settingsSelect = document.getElementById('optimization-settings');
+            const settings = settingsSelect ? settingsSelect.value : 'webp_1200_85';
+            
             // Show loading state
             const button = event.target;
             const originalText = button.textContent;
@@ -2333,12 +2331,15 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({
+                    settings: settings
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(`Optimization complete! ${data.renamed_count} images renamed and moved to optimized stage.`);
+                    alert(`Optimization complete! ${data.optimized_count} images optimized and moved to optimized stage.`);
                     // Refresh the display
                     loadCurrentPipelineStage();
                     updateStatistics();
@@ -2361,12 +2362,16 @@
         function previewOptimization() {
             console.log('Previewing optimization');
             
-            // Show preview of what will be renamed
-            fetch(`/api/optimize/preview/${currentPostId}`)
+            // Get optimization settings from dropdown
+            const settingsSelect = document.getElementById('optimization-settings');
+            const settings = settingsSelect ? settingsSelect.value : 'webp_1200_85';
+            
+            // Show preview of what will be optimized
+            fetch(`/api/optimize/preview/${currentPostId}?settings=${settings}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    let previewText = 'Files to be renamed:\n\n';
+                    let previewText = `Files to be optimized (${settings}):\n\n`;
                     data.preview.forEach(item => {
                         previewText += `${item.original} → ${item.new_name}\n`;
                     });

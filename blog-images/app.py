@@ -1729,11 +1729,54 @@ def generate_filename_from_title(title, max_length=50):
     
     return filename
 
+def optimize_image(input_path, output_path, settings):
+    """Optimize an image with the specified settings."""
+    from PIL import Image
+    
+    # Parse settings (format: format_width_quality)
+    parts = settings.split('_')
+    format_type = parts[0]  # webp, jpeg, png
+    max_width = int(parts[1])  # 800, 1200, 1600
+    quality = int(parts[2]) if len(parts) > 2 else 85  # 85, 100
+    
+    # Open image
+    with Image.open(input_path) as img:
+        # Convert to RGB if necessary (for JPEG/WebP)
+        if format_type in ['jpeg', 'webp'] and img.mode in ['RGBA', 'LA', 'P']:
+            # Create white background for transparent images
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            if img.mode == 'P':
+                img = img.convert('RGBA')
+            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            img = background
+        
+        # Calculate new dimensions
+        width, height = img.size
+        if width > max_width:
+            ratio = max_width / width
+            new_width = max_width
+            new_height = int(height * ratio)
+            img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+        
+        # Save with appropriate settings
+        if format_type == 'webp':
+            img.save(output_path, 'WEBP', quality=quality, method=6)
+        elif format_type == 'jpeg':
+            img.save(output_path, 'JPEG', quality=quality, optimize=True)
+        elif format_type == 'png':
+            if quality == 100:  # Lossless
+                img.save(output_path, 'PNG', optimize=True)
+            else:
+                img.save(output_path, 'PNG', optimize=True, compress_level=9)
+        
+        return True
+
 @app.route('/api/optimize/preview/<int:post_id>')
 def preview_optimization(post_id):
-    """Preview what files will be renamed during optimization."""
+    """Preview what files will be optimized during optimization."""
     try:
         preview = []
+        settings = request.args.get('settings', 'webp_1200_85')  # Default to recommended settings
         
         # Get post title and section titles
         with get_db_conn() as conn:
@@ -1753,6 +1796,10 @@ def preview_optimization(post_id):
                 section_titles = {str(section['id']): section['section_heading'] for section in sections}
                 section_selections = {str(section['id']): section['image_filename'] for section in sections if section['image_filename']}
         
+        # Determine file extension based on settings
+        format_type = settings.split('_')[0]
+        file_ext = format_type if format_type != 'jpeg' else 'jpg'
+        
         # Preview header image selection
         header_selection_file = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'selected_image.txt')
         selected_header_filename = None
@@ -1761,23 +1808,25 @@ def preview_optimization(post_id):
                 selected_header_filename = f.read().strip()
         
         if selected_header_filename:
-            header_new_name = f"{generate_filename_from_title(post_title)}.png"
+            header_new_name = f"{generate_filename_from_title(post_title)}.{file_ext}"
             preview.append({
                 'type': 'header',
                 'original': selected_header_filename,
-                'new_name': header_new_name
+                'new_name': header_new_name,
+                'settings': settings
             })
         
         # Preview section image selections
         sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
         for section_id, selected_filename in section_selections.items():
             section_title = section_titles.get(section_id, f"Section {section_id}")
-            section_new_name = f"{generate_filename_from_title(section_title)}.png"
+            section_new_name = f"{generate_filename_from_title(section_title)}.{file_ext}"
             preview.append({
                 'type': 'section',
                 'section_id': section_id,
                 'original': selected_filename,
-                'new_name': section_new_name
+                'new_name': section_new_name,
+                'settings': settings
             })
         
         # Add fallback images for sections without explicit selections
@@ -1789,12 +1838,13 @@ def preview_optimization(post_id):
                     for filename in os.listdir(raw_dir):
                         if allowed_file(filename):
                             section_title = section_titles.get(section_id, f"Section {section_id}")
-                            section_new_name = f"{generate_filename_from_title(section_title)}.png"
+                            section_new_name = f"{generate_filename_from_title(section_title)}.{file_ext}"
                             preview.append({
                                 'type': 'section',
                                 'section_id': section_id,
                                 'original': filename,
-                                'new_name': section_new_name
+                                'new_name': section_new_name,
+                                'settings': settings
                             })
                             break
         
@@ -1808,9 +1858,10 @@ def preview_optimization(post_id):
 
 @app.route('/api/optimize/rename/<int:post_id>', methods=['POST'])
 def optimize_rename_images(post_id):
-    """Rename selected images and move them to optimized stage."""
+    """Optimize selected images and move them to optimized stage."""
     try:
-        renamed_count = 0
+        optimized_count = 0
+        settings = request.json.get('settings', 'webp_1200_85') if request.json else 'webp_1200_85'
         
         # Get post title and section titles
         with get_db_conn() as conn:
@@ -1830,6 +1881,10 @@ def optimize_rename_images(post_id):
                 section_titles = {str(section['id']): section['section_heading'] for section in sections}
                 section_selections = {str(section['id']): section['image_filename'] for section in sections if section['image_filename']}
         
+        # Determine file extension based on settings
+        format_type = settings.split('_')[0]
+        file_ext = format_type if format_type != 'jpeg' else 'jpg'
+        
         # Process header image selection
         header_selection_file = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'selected_image.txt')
         selected_header_filename = None
@@ -1839,17 +1894,16 @@ def optimize_rename_images(post_id):
         
         if selected_header_filename:
             header_old_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'raw', selected_header_filename)
-            header_new_name = f"{generate_filename_from_title(post_title)}.png"
+            header_new_name = f"{generate_filename_from_title(post_title)}.{file_ext}"
             header_new_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized', header_new_name)
             
             # Create optimized directory
             os.makedirs(os.path.dirname(header_new_path), exist_ok=True)
             
-            # Copy and rename file
+            # Optimize and save image
             if os.path.exists(header_old_path):
-                import shutil
-                shutil.copy2(header_old_path, header_new_path)
-                renamed_count += 1
+                if optimize_image(header_old_path, header_new_path, settings):
+                    optimized_count += 1
         
         # Process section images using the same logic as the selected endpoint
         sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
@@ -1863,34 +1917,32 @@ def optimize_rename_images(post_id):
                 if os.path.exists(raw_path):
                     section_old_path = raw_path
                     section_title = section_titles.get(section_id, f"Section {section_id}")
-                    section_new_name = f"{generate_filename_from_title(section_title)}.png"
+                    section_new_name = f"{generate_filename_from_title(section_title)}.{file_ext}"
                     section_new_path = os.path.join(sections_path, section_id, 'optimized', section_new_name)
                     
                     # Create optimized directory
                     os.makedirs(os.path.dirname(section_new_path), exist_ok=True)
                     
-                    # Copy and rename file
-                    import shutil
-                    shutil.copy2(section_old_path, section_new_path)
-                    renamed_count += 1
-                    section_processed = True
+                    # Optimize and save image
+                    if optimize_image(section_old_path, section_new_path, settings):
+                        optimized_count += 1
+                        section_processed = True
                 else:
                     # Check optimized directory
                     optimized_path = os.path.join(sections_path, section_id, 'optimized', selected_filename)
                     if os.path.exists(optimized_path):
                         section_old_path = optimized_path
                         section_title = section_titles.get(section_id, f"Section {section_id}")
-                        section_new_name = f"{generate_filename_from_title(section_title)}.png"
+                        section_new_name = f"{generate_filename_from_title(section_title)}.{file_ext}"
                         section_new_path = os.path.join(sections_path, section_id, 'optimized', section_new_name)
                         
                         # Create optimized directory
                         os.makedirs(os.path.dirname(section_new_path), exist_ok=True)
                         
-                        # Copy and rename file
-                        import shutil
-                        shutil.copy2(section_old_path, section_new_path)
-                        renamed_count += 1
-                        section_processed = True
+                        # Optimize and save image
+                        if optimize_image(section_old_path, section_new_path, settings):
+                            optimized_count += 1
+                            section_processed = True
             
             # If not processed yet, use fallback to first available image
             if not section_processed:
@@ -1900,22 +1952,21 @@ def optimize_rename_images(post_id):
                         if allowed_file(filename):
                             section_old_path = os.path.join(raw_dir, filename)
                             section_title = section_titles.get(section_id, f"Section {section_id}")
-                            section_new_name = f"{generate_filename_from_title(section_title)}.png"
+                            section_new_name = f"{generate_filename_from_title(section_title)}.{file_ext}"
                             section_new_path = os.path.join(sections_path, section_id, 'optimized', section_new_name)
                             
                             # Create optimized directory
                             os.makedirs(os.path.dirname(section_new_path), exist_ok=True)
                             
-                            # Copy and rename file
-                            import shutil
-                            shutil.copy2(section_old_path, section_new_path)
-                            renamed_count += 1
-                            break
+                            # Optimize and save image
+                            if optimize_image(section_old_path, section_new_path, settings):
+                                optimized_count += 1
+                                break
         
         return jsonify({
             'success': True,
-            'renamed_count': renamed_count,
-            'message': f'Successfully renamed and moved {renamed_count} images to optimized stage'
+            'optimized_count': optimized_count,
+            'message': f'Successfully optimized and moved {optimized_count} images to optimized stage'
         })
         
     except Exception as e:
