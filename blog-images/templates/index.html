@@ -1480,10 +1480,10 @@
                 document.getElementById('selected-sections-count').textContent = selectedStats.selected_count;
                 document.getElementById('selected-size').textContent = selectedSizeMB + 'MB';
                 
-                document.getElementById('optimized-all-count').textContent = '0';
-                document.getElementById('optimized-header-count').textContent = '0';
-                document.getElementById('optimized-sections-count').textContent = '0';
-                document.getElementById('optimized-size').textContent = '0MB';
+                document.getElementById('optimized-all-count').textContent = stats.optimized_images || 0;
+                document.getElementById('optimized-header-count').textContent = stats.optimized_header_images || 0;
+                document.getElementById('optimized-sections-count').textContent = stats.optimized_section_images || 0;
+                document.getElementById('optimized-size').textContent = '0MB'; // TODO: Calculate optimized size separately
                 
                 document.getElementById('captioned-all-count').textContent = '0';
                 document.getElementById('captioned-header-count').textContent = '0';
