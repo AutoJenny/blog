@@ -1950,7 +1950,8 @@
                 
                 // Convert bytes to MB/GB
                 const totalSizeMB = (stats.total_size / (1024 * 1024)).toFixed(1);
-                const selectedSizeMB = (selectedData.total > 0 ? (stats.total_size / selectedData.total / (1024 * 1024)).toFixed(1) : '0'); // Approximate
+                // For selected images, use optimized size since they're the same files
+                const selectedSizeMB = (optimizedStats.optimized_size / (1024 * 1024)).toFixed(1);
                 const optimizedSizeMB = (optimizedStats.optimized_size / (1024 * 1024)).toFixed(1);
                 
                 // Update breakdown counts
