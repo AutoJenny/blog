@@ -231,11 +231,58 @@ def get_all_images(post_id):
 
 @app.route('/api/images/<int:post_id>/<image_type>')
 def get_images_by_type(post_id, image_type):
-    """Get images for specific type (header, section, featured)"""
+    """Get images for specific type (header, section, featured) or processing stage (raw, optimized, captioned)"""
     try:
         images = []
         
-        if image_type == 'header':
+        # Handle processing stages (raw, optimized, captioned)
+        if image_type in ['raw', 'optimized', 'captioned']:
+            processing_stage = image_type
+            
+            # Get header images for this processing stage
+            header_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', processing_stage)
+            if os.path.exists(header_path):
+                for filename in os.listdir(header_path):
+                    if allowed_file(filename):
+                        images.append({
+                            'filename': filename,
+                            'url': f'/static/content/posts/{post_id}/header/{processing_stage}/{filename}',
+                            'type': 'header',
+                            'section_id': None,
+                            'processing_stage': processing_stage,
+                            'path': os.path.join(header_path, filename)
+                        })
+            
+            # Get section images for this processing stage
+            sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+            if os.path.exists(sections_path):
+                for section_dir in os.listdir(sections_path):
+                    section_path = os.path.join(sections_path, section_dir, processing_stage)
+                    if os.path.exists(section_path):
+                        for filename in os.listdir(section_path):
+                            if allowed_file(filename):
+                                images.append({
+                                    'filename': filename,
+                                    'url': f'/static/content/posts/{post_id}/sections/{section_dir}/{processing_stage}/{filename}',
+                                    'type': 'section',
+                                    'section_id': section_dir,
+                                    'processing_stage': processing_stage,
+                                    'path': os.path.join(section_path, filename)
+                                })
+            
+            # Return unified response format
+            header_count = len([img for img in images if img['type'] == 'header'])
+            section_count = len([img for img in images if img['type'] == 'section'])
+            
+            return jsonify({
+                'images': images,
+                'total': len(images),
+                'header_count': header_count,
+                'section_count': section_count
+            })
+        
+        # Handle legacy image types (header, section, featured)
+        elif image_type == 'header':
             header_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'raw')
             if os.path.exists(header_path):
                 for filename in os.listdir(header_path):
@@ -273,35 +320,6 @@ def get_images_by_type(post_id, image_type):
                                     'type': 'section',
                                     'section_id': section_dir,
                                     'path': os.path.join(section_path, filename)
-                                })
-        
-        elif image_type == 'optimized':
-            # Get optimized header images
-            header_optimized_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized')
-            if os.path.exists(header_optimized_path):
-                for filename in os.listdir(header_optimized_path):
-                    if allowed_file(filename):
-                        images.append({
-                            'filename': filename,
-                            'url': f'/static/content/posts/{post_id}/header/optimized/{filename}',
-                            'type': 'header',
-                            'path': os.path.join(header_optimized_path, filename)
-                        })
-            
-            # Get optimized section images
-            sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
-            if os.path.exists(sections_path):
-                for section_dir in os.listdir(sections_path):
-                    section_optimized_path = os.path.join(sections_path, section_dir, 'optimized')
-                    if os.path.exists(section_optimized_path):
-                        for filename in os.listdir(section_optimized_path):
-                            if allowed_file(filename):
-                                images.append({
-                                    'filename': filename,
-                                    'url': f'/static/content/posts/{post_id}/sections/{section_dir}/optimized/{filename}',
-                                    'type': 'section',
-                                    'section_id': section_dir,
-                                    'path': os.path.join(section_optimized_path, filename)
                                 })
         
         return jsonify({'images': images})
@@ -1478,13 +1496,25 @@ def get_selected_stats(post_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/images/<int:post_id>/selected', methods=['GET'])
-def get_selected_images_only(post_id):
-    """Get only the selected images for a post with their details."""
+def get_selected_images_unified(post_id):
+    """Get all selected images (header + sections) for a post with unified response format"""
     try:
-        conn = get_db_conn()
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        images = []
         
-        # Get selected images from post_section table
+        # Get header image selection from post table
+        conn = get_db_conn()
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT header_image_id 
+            FROM post 
+            WHERE id = %s AND header_image_id IS NOT NULL
+        """, (post_id,))
+        
+        header_result = cursor.fetchone()
+        header_image_id = header_result[0] if header_result else None
+        
+        # Get section image selections from post_section table
         cursor.execute("""
             SELECT id, image_filename 
             FROM post_section 
@@ -1496,15 +1526,29 @@ def get_selected_images_only(post_id):
         cursor.close()
         conn.close()
         
-        # Get the actual image files from the file system
-        images = []
-        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+        # Add header image if selected
+        if header_image_id:
+            header_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'raw')
+            if os.path.exists(header_path):
+                for filename in os.listdir(header_path):
+                    if allowed_file(filename):
+                        images.append({
+                            'filename': filename,
+                            'url': f'/static/content/posts/{post_id}/header/raw/{filename}',
+                            'type': 'header',
+                            'section_id': None,
+                            'processing_stage': 'raw',
+                            'is_selected': True
+                        })
+                        break  # Use first header image
         
+        # Add section images
+        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
         for section in selected_sections:
-            section_id = section['id']
-            selected_filename = section['image_filename']
+            section_id = section[0]
+            selected_filename = section[1]
             
-            # Check if the selected file exists in raw directory
+            # Check raw directory first
             raw_path = os.path.join(sections_path, str(section_id), 'raw', selected_filename)
             if os.path.exists(raw_path):
                 images.append({
@@ -1512,7 +1556,7 @@ def get_selected_images_only(post_id):
                     'url': f'/static/content/posts/{post_id}/sections/{section_id}/raw/{selected_filename}',
                     'type': 'section',
                     'section_id': str(section_id),
-                    'path': raw_path,
+                    'processing_stage': 'raw',
                     'is_selected': True
                 })
             else:
@@ -1524,11 +1568,11 @@ def get_selected_images_only(post_id):
                         'url': f'/static/content/posts/{post_id}/sections/{section_id}/optimized/{selected_filename}',
                         'type': 'section',
                         'section_id': str(section_id),
-                        'path': optimized_path,
+                        'processing_stage': 'optimized',
                         'is_selected': True
                     })
                 else:
-                    # If selected file doesn't exist, try to find any image in the section
+                    # Fallback to first available image in raw directory
                     raw_dir = os.path.join(sections_path, str(section_id), 'raw')
                     if os.path.exists(raw_dir):
                         for filename in os.listdir(raw_dir):
@@ -1538,18 +1582,40 @@ def get_selected_images_only(post_id):
                                     'url': f'/static/content/posts/{post_id}/sections/{section_id}/raw/{filename}',
                                     'type': 'section',
                                     'section_id': str(section_id),
-                                    'path': os.path.join(raw_dir, filename),
+                                    'processing_stage': 'raw',
                                     'is_selected': True,
                                     'note': f'Selected file "{selected_filename}" not found, using "{filename}"'
                                 })
-                                break  # Use the first available image
+                                break
+        
+        # Return unified response format
+        header_count = len([img for img in images if img['type'] == 'header'])
+        section_count = len([img for img in images if img['type'] == 'section'])
         
         return jsonify({
             'images': images,
-            'total': len(images)
+            'total': len(images),
+            'header_count': header_count,
+            'section_count': section_count
         })
+        
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/images/<int:post_id>/raw')
+def get_raw_images(post_id):
+    """Get all raw images (header + sections) for a post"""
+    return get_images_by_type(post_id, 'raw')
+
+@app.route('/api/images/<int:post_id>/optimized')
+def get_optimized_images(post_id):
+    """Get all optimized images (header + sections) for a post"""
+    return get_images_by_type(post_id, 'optimized')
+
+@app.route('/api/images/<int:post_id>/captioned')
+def get_captioned_images(post_id):
+    """Get all captioned images (header + sections) for a post"""
+    return get_images_by_type(post_id, 'captioned')
 
 @app.route('/api/sections/<int:post_id>/initialize-selections', methods=['POST'])
 def initialize_selections(post_id):
