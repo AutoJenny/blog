@@ -851,10 +851,12 @@
             updateIframeHeight();
             
             // Add click handlers for processing stage buttons
-            document.getElementById('raw-btn').addEventListener('click', () => switchImageType('section'));
-            document.getElementById('selected-btn').addEventListener('click', () => switchImageType('selected'));
-            document.getElementById('optimized-btn').addEventListener('click', () => switchImageType('optimized'));
-            document.getElementById('captioned-btn').addEventListener('click', () => switchImageType('captioned'));
+            document.querySelectorAll('.processing-stage-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const stage = this.getAttribute('data-stage');
+                    switchImageType(stage);
+                });
+            });
         });
 
         // Load available posts from blog-core
@@ -898,15 +900,24 @@
         }
 
         // Switch image type
-        function switchImageType(type) {
-            currentImageType = type;
-            loadImageType(type);
+        function switchImageType(stage) {
+            // Map stage names to API types
+            const stageToApiType = {
+                'raw': 'section',
+                'selected': 'selected',
+                'optimized': 'optimized',
+                'captioned': 'captioned'
+            };
+            
+            const apiType = stageToApiType[stage] || stage;
+            currentImageType = apiType;
+            loadImageType(apiType);
             
             // Update active state for processing stage buttons
             document.querySelectorAll('.processing-stage-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            document.getElementById(`${type}-btn`).classList.add('active');
+            document.querySelector(`[data-stage="${stage}"]`).classList.add('active');
         }
 
         // Load images by type
