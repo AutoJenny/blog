@@ -630,8 +630,20 @@
                 </div>
 
                 <div class="processing-controls hidden" id="processing-controls">
-                    <h3>Batch Processing Controls</h3>
+                    <h3>Advanced Processing Controls</h3>
+                    
+                    <!-- Processing Presets -->
                     <div class="control-group">
+                        <div class="control-item">
+                            <label>Processing Preset:</label>
+                            <select id="processing-preset" onchange="loadPresetSettings()">
+                                <option value="">Custom Settings</option>
+                                <option value="web_optimized">Web Optimized</option>
+                                <option value="social_media">Social Media</option>
+                                <option value="print_ready">Print Ready</option>
+                                <option value="thumbnail">Thumbnail</option>
+                            </select>
+                        </div>
                         <div class="control-item">
                             <label>Processing Stage:</label>
                             <select id="processing-stage">
@@ -641,6 +653,10 @@
                                 <option value="captioning">Captioning Only</option>
                             </select>
                         </div>
+                    </div>
+                    
+                    <!-- Quality Settings -->
+                    <div class="control-group">
                         <div class="control-item">
                             <label>Quality Level:</label>
                             <select id="quality-level">
@@ -657,7 +673,17 @@
                                 <option value="none">No Watermark</option>
                             </select>
                         </div>
+                        <div class="control-item">
+                            <label>Output Format:</label>
+                            <select id="output-format">
+                                <option value="webp">WebP (Recommended)</option>
+                                <option value="jpg">JPEG</option>
+                                <option value="png">PNG</option>
+                            </select>
+                        </div>
                     </div>
+                    
+                    <!-- Advanced Options -->
                     <div class="control-group">
                         <div class="control-item">
                             <label>
@@ -669,7 +695,26 @@
                                 <input type="checkbox" id="create-variations"> Create social media variations
                             </label>
                         </div>
+                        <div class="control-item">
+                            <label>
+                                <input type="checkbox" id="preserve-metadata"> Preserve metadata
+                            </label>
+                        </div>
                     </div>
+                    
+                    <!-- Advanced Actions -->
+                    <div class="control-group">
+                        <div class="control-item">
+                            <button class="btn btn-secondary" onclick="optimizeSettings()">🔧 Optimize Settings</button>
+                        </div>
+                        <div class="control-item">
+                            <button class="btn btn-secondary" onclick="retryFailedImages()">🔄 Retry Failed</button>
+                        </div>
+                        <div class="control-item">
+                            <button class="btn btn-secondary" onclick="showAnalytics()">📊 View Analytics</button>
+                        </div>
+                    </div>
+                    
                     <div class="action-buttons">
                         <button class="btn btn-primary" onclick="executeBatchProcessing()">🚀 Start Processing</button>
                         <button class="btn btn-secondary" onclick="hideProcessingControls()">Cancel</button>
@@ -1033,6 +1078,163 @@
         // Show statistics
         function showStatistics() {
             showStatus('Statistics dashboard coming soon!', 'info');
+        }
+
+        // Load preset settings
+        async function loadPresetSettings() {
+            const presetName = document.getElementById('processing-preset').value;
+            if (!presetName) return;
+            
+            try {
+                const response = await fetch('/api/advanced/processing-presets');
+                if (response.ok) {
+                    const data = await response.json();
+                    const preset = data.presets[presetName];
+                    
+                    if (preset) {
+                        // Apply preset settings to form
+                        document.getElementById('quality-level').value = preset.settings.quality_level;
+                        document.getElementById('watermark-style').value = preset.settings.watermark_style;
+                        document.getElementById('output-format').value = preset.settings.format;
+                        document.getElementById('generate-captions').checked = preset.settings.generate_captions;
+                        document.getElementById('create-variations').checked = preset.settings.create_variations;
+                        document.getElementById('preserve-metadata').checked = preset.settings.metadata_preservation || false;
+                        
+                        showStatus(`Applied ${preset.name} preset`, 'success');
+                    }
+                }
+            } catch (error) {
+                showStatus('Error loading preset settings', 'error');
+            }
+        }
+
+        // Optimize settings based on image analysis
+        async function optimizeSettings() {
+            try {
+                const response = await fetch('/api/advanced/optimize-settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: currentPostId,
+                        image_ids: selectedImages
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const settings = data.optimized_settings;
+                    
+                    // Apply optimized settings
+                    document.getElementById('quality-level').value = settings.quality_level;
+                    document.getElementById('watermark-style').value = settings.watermark_style;
+                    document.getElementById('output-format').value = settings.format;
+                    document.getElementById('generate-captions').checked = settings.generate_captions;
+                    document.getElementById('create-variations').checked = settings.create_variations;
+                    document.getElementById('preserve-metadata').checked = settings.metadata_preservation;
+                    
+                    showStatus('Settings optimized based on image analysis', 'success');
+                } else {
+                    const error = await response.json();
+                    showStatus(`Error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Retry failed images
+        async function retryFailedImages() {
+            try {
+                const response = await fetch('/api/advanced/retry-failed', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: currentPostId,
+                        image_ids: selectedImages,
+                        settings: getCurrentSettings()
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus(`Retry processing started! Job ID: ${data.job_id}`, 'success');
+                    pollJobStatus(data.job_id);
+                } else {
+                    const error = await response.json();
+                    showStatus(`Error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Show processing analytics
+        async function showAnalytics() {
+            try {
+                const response = await fetch(`/api/advanced/processing-analytics?post_id=${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const analytics = data.analytics;
+                    
+                    // Create analytics modal
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                        background: rgba(0,0,0,0.8); z-index: 1000; display: flex;
+                        align-items: center; justify-content: center;
+                    `;
+                    
+                    modal.innerHTML = `
+                        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                            <h2>📊 Processing Analytics</h2>
+                            <div style="margin: 20px 0;">
+                                <h3>Overview</h3>
+                                <p><strong>Total Jobs:</strong> ${analytics.overview.total_jobs}</p>
+                                <p><strong>Completed:</strong> ${analytics.overview.completed_jobs}</p>
+                                <p><strong>Failed:</strong> ${analytics.overview.failed_jobs}</p>
+                                <p><strong>Success Rate:</strong> ${analytics.overview.success_rate}%</p>
+                                <p><strong>Avg Processing Time:</strong> ${analytics.overview.avg_processing_time}s</p>
+                            </div>
+                            <div style="margin: 20px 0;">
+                                <h3>Step Performance</h3>
+                                ${analytics.step_performance.map(step => `
+                                    <p><strong>${step.step_name}:</strong> ${step.completed_steps}/${step.total_steps} completed</p>
+                                `).join('')}
+                            </div>
+                            <div style="margin: 20px 0;">
+                                <h3>Recommendations</h3>
+                                <ul>
+                                    ${analytics.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <button class="btn btn-primary" onclick="this.parentElement.parentElement.remove()">Close</button>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                } else {
+                    const error = await response.json();
+                    showStatus(`Error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Get current settings from form
+        function getCurrentSettings() {
+            return {
+                quality_level: document.getElementById('quality-level').value,
+                watermark_style: document.getElementById('watermark-style').value,
+                output_format: document.getElementById('output-format').value,
+                generate_captions: document.getElementById('generate-captions').checked,
+                create_variations: document.getElementById('create-variations').checked,
+                preserve_metadata: document.getElementById('preserve-metadata').checked
+            };
         }
 
         // File upload handling
