@@ -275,6 +275,35 @@ def get_images_by_type(post_id, image_type):
                                     'path': os.path.join(section_path, filename)
                                 })
         
+        elif image_type == 'optimized':
+            # Get optimized header images
+            header_optimized_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized')
+            if os.path.exists(header_optimized_path):
+                for filename in os.listdir(header_optimized_path):
+                    if allowed_file(filename):
+                        images.append({
+                            'filename': filename,
+                            'url': f'/static/content/posts/{post_id}/header/optimized/{filename}',
+                            'type': 'header',
+                            'path': os.path.join(header_optimized_path, filename)
+                        })
+            
+            # Get optimized section images
+            sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+            if os.path.exists(sections_path):
+                for section_dir in os.listdir(sections_path):
+                    section_optimized_path = os.path.join(sections_path, section_dir, 'optimized')
+                    if os.path.exists(section_optimized_path):
+                        for filename in os.listdir(section_optimized_path):
+                            if allowed_file(filename):
+                                images.append({
+                                    'filename': filename,
+                                    'url': f'/static/content/posts/{post_id}/sections/{section_dir}/optimized/{filename}',
+                                    'type': 'section',
+                                    'section_id': section_dir,
+                                    'path': os.path.join(section_optimized_path, filename)
+                                })
+        
         return jsonify({'images': images})
         
     except Exception as e:
@@ -289,6 +318,9 @@ def get_image_stats(post_id):
             'header_images': 0,
             'section_images': 0,
             'featured_images': 0,
+            'optimized_images': 0,
+            'optimized_header_images': 0,
+            'optimized_section_images': 0,
             'total_size': 0
         }
         
@@ -328,8 +360,73 @@ def get_image_stats(post_id):
                             if os.path.exists(file_path):
                                 stats['total_size'] += os.path.getsize(file_path)
         
+        # Count optimized images
+        # Optimized header images
+        header_optimized_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized')
+        if os.path.exists(header_optimized_path):
+            for filename in os.listdir(header_optimized_path):
+                if allowed_file(filename):
+                    stats['optimized_header_images'] += 1
+                    stats['optimized_images'] += 1
+                    file_path = os.path.join(header_optimized_path, filename)
+                    if os.path.exists(file_path):
+                        stats['total_size'] += os.path.getsize(file_path)
+        
+        # Optimized section images
+        if os.path.exists(sections_path):
+            for section_dir in os.listdir(sections_path):
+                section_optimized_path = os.path.join(sections_path, section_dir, 'optimized')
+                if os.path.exists(section_optimized_path):
+                    for filename in os.listdir(section_optimized_path):
+                        if allowed_file(filename):
+                            stats['optimized_section_images'] += 1
+                            stats['optimized_images'] += 1
+                            file_path = os.path.join(section_optimized_path, filename)
+                            if os.path.exists(file_path):
+                                stats['total_size'] += os.path.getsize(file_path)
+        
         return jsonify(stats)
         
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/images/optimized/stats/<int:post_id>')
+def get_optimized_stats(post_id):
+    """Get optimized image count and sizes"""
+    try:
+        stats = {
+            'optimized_images': 0,
+            'optimized_header_images': 0,
+            'optimized_section_images': 0,
+            'optimized_size': 0
+        }
+        
+        # Count optimized header images
+        header_optimized_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized')
+        if os.path.exists(header_optimized_path):
+            for filename in os.listdir(header_optimized_path):
+                if allowed_file(filename):
+                    stats['optimized_header_images'] += 1
+                    stats['optimized_images'] += 1
+                    file_path = os.path.join(header_optimized_path, filename)
+                    if os.path.exists(file_path):
+                        stats['optimized_size'] += os.path.getsize(file_path)
+        
+        # Count optimized section images
+        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+        if os.path.exists(sections_path):
+            for section_dir in os.listdir(sections_path):
+                section_optimized_path = os.path.join(sections_path, section_dir, 'optimized')
+                if os.path.exists(section_optimized_path):
+                    for filename in os.listdir(section_optimized_path):
+                        if allowed_file(filename):
+                            stats['optimized_section_images'] += 1
+                            stats['optimized_images'] += 1
+                            file_path = os.path.join(section_optimized_path, filename)
+                            if os.path.exists(file_path):
+                                stats['optimized_size'] += os.path.getsize(file_path)
+        
+        return jsonify(stats)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
