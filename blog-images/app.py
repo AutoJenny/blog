@@ -681,7 +681,10 @@ def generate_caption_via_llm(context, image_info):
                 task_content = task_prompt.get('prompt_text', '')
                 
                 # Build context information
-                context_info = f"""Section: {context['section_heading'] if context['image_type'] != 'header' else 'Header'}"""
+                if context['image_type'] == 'header':
+                    context_info = f"""Post: {context['post_title']} - {context['post_subtitle']}"""
+                else:
+                    context_info = f"""Section: {context['section_heading']}"""
                 
                 # Combine system prompt, task prompt, and context
                 full_prompt = f"""{system_content}
