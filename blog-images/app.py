@@ -261,8 +261,8 @@ def get_images_by_type(post_id, image_type):
             print(f"Database error getting titles: {e}")
             # Continue without titles if database fails
         
-        # Handle processing stages (raw, optimized, captioned)
-        if image_type in ['raw', 'optimized', 'captioned']:
+        # Handle processing stages (raw, optimized, watermarked, captioned)
+        if image_type in ['raw', 'optimized', 'watermarked', 'captioned']:
             processing_stage = image_type
             
             # Get header images for this processing stage
@@ -1669,6 +1669,11 @@ def get_captioned_images(post_id):
     """Get all captioned images (header + sections) for a post"""
     return get_images_by_type(post_id, 'captioned')
 
+@app.route('/api/images/<int:post_id>/watermarked')
+def get_watermarked_images(post_id):
+    """Get all watermarked images (header + sections) for a post"""
+    return get_images_by_type(post_id, 'watermarked')
+
 @app.route('/api/sections/<int:post_id>/initialize-selections', methods=['POST'])
 def initialize_selections(post_id):
     """Initialize default selections (first image) for sections that don't have selected images."""
@@ -1967,6 +1972,416 @@ def optimize_rename_images(post_id):
             'success': True,
             'optimized_count': optimized_count,
             'message': f'Successfully optimized and moved {optimized_count} images to optimized stage'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def load_watermark(watermark_path):
+    """Load the watermark image."""
+    try:
+        from PIL import Image
+        watermark = Image.open(watermark_path)
+        return watermark
+    except Exception as e:
+        print(f"❌ Error loading watermark: {e}")
+        return None
+
+def get_font(size=20):
+    """Get a font for text rendering."""
+    try:
+        from PIL import ImageFont
+        # Try to use a system font
+        font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", size)
+    except:
+        try:
+            # Fallback to default font
+            font = ImageFont.load_default()
+        except:
+            # Last resort - no font
+            font = None
+    
+    return font
+
+def add_watermark(image, watermark, position='bottom-right'):
+    """Add watermark to image with 0% transparency against 80% transparent background."""
+    if watermark is None:
+        return image
+    
+    # Resize watermark to reasonable size (max 200px width)
+    watermark_width = min(200, image.width // 4)
+    watermark_height = int(watermark.height * (watermark_width / watermark.width))
+    watermark_resized = watermark.resize((watermark_width, watermark_height), Image.Resampling.LANCZOS)
+    
+    # Create watermark with 0% transparency (fully visible)
+    watermark_with_alpha = Image.new('RGBA', watermark_resized.size, (0, 0, 0, 0))
+    watermark_with_alpha.paste(watermark_resized, (0, 0))
+    
+    # Calculate position with 10px margins
+    margin = 10
+    if position == 'bottom-right':
+        x = image.width - watermark_width - margin
+        y = image.height - watermark_height - margin
+    else:
+        x = margin
+        y = image.height - watermark_height - margin
+    
+    # Create new image with alpha channel if needed
+    if image.mode != 'RGBA':
+        image = image.convert('RGBA')
+    
+    # Create grey background with 80% transparency (20% opacity)
+    grey_bg = Image.new('RGBA', (watermark_width + 20, watermark_height + 20), (128, 128, 128, 51))  # Grey with 20% alpha (80% transparent)
+    
+    # Paste grey background first
+    bg_x = x - 10
+    bg_y = y - 10
+    image.paste(grey_bg, (bg_x, bg_y), grey_bg)
+    
+    # Paste fully visible watermark
+    image.paste(watermark_with_alpha, (x, y), watermark_with_alpha)
+    
+    return image
+
+def add_ai_generated_text(image):
+    """Add 'AI-generated image' text to bottom left."""
+    from PIL import ImageDraw
+    draw = ImageDraw.Draw(image)
+    font = get_font(16)
+    
+    text = "AI-generated image"
+    text_color = (128, 128, 128, 180)  # Grey with transparency
+    
+    # Calculate text position (bottom left with padding)
+    if font:
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+    else:
+        text_width = len(text) * 8  # Approximate width
+        text_height = 16
+    
+    x = 20
+    y = image.height - text_height - 20
+    
+    # Draw text
+    if font:
+        draw.text((x, y), text, fill=text_color, font=font)
+    else:
+        # Fallback without font
+        draw.text((x, y), text, fill=text_color)
+    
+    return image
+
+def watermark_single_image(image_path, watermark, output_path):
+    """Process a single image with watermark and AI text."""
+    try:
+        from PIL import Image
+        print(f"🖼️  Processing: {os.path.basename(image_path)}")
+        print(f"DEBUG: Image path: {image_path}")
+        print(f"DEBUG: Image path exists: {os.path.exists(image_path)}")
+        print(f"DEBUG: Output path: {output_path}")
+        
+        # Load image
+        image = Image.open(image_path)
+        print(f"DEBUG: Image loaded successfully, size: {image.size}")
+        
+        # Add watermark
+        image = add_watermark(image, watermark, 'bottom-right')
+        print(f"DEBUG: Watermark added")
+        
+        # Add AI-generated text
+        image = add_ai_generated_text(image)
+        print(f"DEBUG: AI text added")
+        
+        # Save as WebP
+        if output_path.endswith('.webp'):
+            image.save(output_path, 'WEBP', quality=85, method=6)
+        else:
+            image.save(output_path, optimize=True)
+        
+        print(f"✅ Saved: {os.path.basename(output_path)}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error processing {os.path.basename(image_path)}: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+@app.route('/api/watermark/preview/<int:post_id>')
+def preview_watermarking(post_id):
+    """Preview what images will be watermarked."""
+    try:
+        # Get selected images using the same logic as optimization
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Get post title
+                cur.execute("SELECT title FROM post WHERE id = %s", (post_id,))
+                post_result = cur.fetchone()
+                post_title = post_result['title'] if post_result else f"Post {post_id}"
+                
+                # Get section titles and selections
+                cur.execute("""
+                    SELECT id, section_heading, image_filename
+                    FROM post_section 
+                    WHERE post_id = %s 
+                    ORDER BY section_order
+                """, (post_id,))
+                sections = cur.fetchall()
+                section_titles = {str(section['id']): section['section_heading'] for section in sections}
+                section_selections = {str(section['id']): section['image_filename'] for section in sections if section['image_filename']}
+        
+        preview_list = []
+        
+        # Process header image selection
+        header_selection_file = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'selected_image.txt')
+        selected_header_filename = None
+        if os.path.exists(header_selection_file):
+            with open(header_selection_file, 'r') as f:
+                selected_header_filename = f.read().strip()
+        
+        if selected_header_filename:
+            header_old_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized', selected_header_filename)
+            if os.path.exists(header_old_path):
+                header_new_name = f"{generate_filename_from_title(post_title)}.webp"
+                preview_list.append({
+                    'type': 'header',
+                    'original': selected_header_filename,
+                    'new_name': header_new_name,
+                    'title': post_title
+                })
+        
+        # Process section images
+        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+        for section_id in section_titles.keys():
+            selected_filename = section_selections.get(section_id)
+            section_processed = False
+            
+            if selected_filename:
+                # Try optimized directory first
+                optimized_path = os.path.join(sections_path, section_id, 'optimized', selected_filename)
+                if os.path.exists(optimized_path):
+                    section_title = section_titles.get(section_id, f"Section {section_id}")
+                    section_new_name = f"{generate_filename_from_title(section_title)}.webp"
+                    preview_list.append({
+                        'type': 'section',
+                        'section_id': section_id,
+                        'original': selected_filename,
+                        'new_name': section_new_name,
+                        'title': section_title
+                    })
+                    section_processed = True
+                else:
+                    # Try raw directory
+                    raw_path = os.path.join(sections_path, section_id, 'raw', selected_filename)
+                    if os.path.exists(raw_path):
+                        section_title = section_titles.get(section_id, f"Section {section_id}")
+                        section_new_name = f"{generate_filename_from_title(section_title)}.webp"
+                        preview_list.append({
+                            'type': 'section',
+                            'section_id': section_id,
+                            'original': selected_filename,
+                            'new_name': section_new_name,
+                            'title': section_title
+                        })
+                        section_processed = True
+            
+            # If not processed yet, use fallback to first available optimized image
+            if not section_processed:
+                optimized_dir = os.path.join(sections_path, section_id, 'optimized')
+                if os.path.exists(optimized_dir):
+                    for filename in os.listdir(optimized_dir):
+                        if allowed_file(filename):
+                            section_title = section_titles.get(section_id, f"Section {section_id}")
+                            section_new_name = f"{generate_filename_from_title(section_title)}.webp"
+                            preview_list.append({
+                                'type': 'section',
+                                'section_id': section_id,
+                                'original': filename,
+                                'new_name': section_new_name,
+                                'title': section_title
+                            })
+                            break
+        
+        return jsonify({
+            'success': True,
+            'preview': preview_list,
+            'count': len(preview_list)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/watermark/process/<int:post_id>', methods=['POST'])
+def process_watermarking(post_id):
+    """Process watermarking for a post."""
+    try:
+        from PIL import Image
+        
+        # Load watermark
+        watermark_path = os.path.join('static', 'images', 'site', 'clan-watermark.png')
+        watermark = load_watermark(watermark_path)
+        if watermark is None:
+            return jsonify({'error': 'Could not load watermark image'}), 500
+        
+        watermarked_count = 0
+        
+        # Get post and section data
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Get post title
+                cur.execute("SELECT title FROM post WHERE id = %s", (post_id,))
+                post_result = cur.fetchone()
+                post_title = post_result['title'] if post_result else f"Post {post_id}"
+                
+                # Get section titles and selections
+                cur.execute("""
+                    SELECT id, section_heading, image_filename
+                    FROM post_section 
+                    WHERE post_id = %s 
+                    ORDER BY section_order
+                """, (post_id,))
+                sections = cur.fetchall()
+                section_titles = {str(section['id']): section['section_heading'] for section in sections}
+                section_selections = {str(section['id']): section['image_filename'] for section in sections if section['image_filename']}
+        
+        # Process header image - process all optimized images
+        header_optimized_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized')
+        print(f"DEBUG: Processing header optimized dir: {header_optimized_dir}")
+        if os.path.exists(header_optimized_dir):
+            for filename in os.listdir(header_optimized_dir):
+                if allowed_file(filename):
+                    header_old_path = os.path.join(header_optimized_dir, filename)
+                    header_new_name = f"{generate_filename_from_title(post_title)}.webp"
+                    header_new_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'watermarked', header_new_name)
+                    
+                    print(f"DEBUG: Processing header image: {header_old_path} -> {header_new_path}")
+                    
+                    # Create watermarked directory
+                    os.makedirs(os.path.dirname(header_new_path), exist_ok=True)
+                    
+                    # Process image
+                    if watermark_single_image(header_old_path, watermark, header_new_path):
+                        watermarked_count += 1
+                        print(f"DEBUG: Successfully watermarked header image")
+                    else:
+                        print(f"DEBUG: Failed to watermark header image")
+        
+        # Process section images - process all optimized images
+        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+        print(f"DEBUG: Processing sections path: {sections_path}")
+        for section_id in section_titles.keys():
+            optimized_dir = os.path.join(sections_path, section_id, 'optimized')
+            print(f"DEBUG: Processing section {section_id} optimized dir: {optimized_dir}")
+            if os.path.exists(optimized_dir):
+                for filename in os.listdir(optimized_dir):
+                    if allowed_file(filename):
+                        section_old_path = os.path.join(optimized_dir, filename)
+                        section_title = section_titles.get(section_id, f"Section {section_id}")
+                        section_new_name = f"{generate_filename_from_title(section_title)}.webp"
+                        section_new_path = os.path.join(sections_path, section_id, 'watermarked', section_new_name)
+                        
+                        print(f"DEBUG: Processing section image: {section_old_path} -> {section_new_path}")
+                        
+                        # Create watermarked directory
+                        os.makedirs(os.path.dirname(section_new_path), exist_ok=True)
+                        
+                        # Process image
+                        if watermark_single_image(section_old_path, watermark, section_new_path):
+                            watermarked_count += 1
+                            print(f"DEBUG: Successfully watermarked section {section_id} image")
+                        else:
+                            print(f"DEBUG: Failed to watermark section {section_id} image")
+        
+        return jsonify({
+            'success': True,
+            'watermarked_count': watermarked_count,
+            'message': f'Successfully watermarked {watermarked_count} images'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/watermark/test/<int:post_id>')
+def test_watermark_loading(post_id):
+    """Test watermark loading and image processing."""
+    try:
+        from PIL import Image
+        
+        # Test watermark loading
+        watermark_path = os.path.join('static', 'images', 'site', 'clan-watermark.png')
+        print(f"DEBUG: Testing watermark path: {watermark_path}")
+        print(f"DEBUG: Watermark path exists: {os.path.exists(watermark_path)}")
+        
+        watermark = load_watermark(watermark_path)
+        if watermark is None:
+            return jsonify({'error': 'Could not load watermark image'}), 500
+        
+        # Test finding optimized images
+        header_optimized_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'optimized')
+        print(f"DEBUG: Header optimized dir: {header_optimized_dir}")
+        print(f"DEBUG: Header optimized dir exists: {os.path.exists(header_optimized_dir)}")
+        
+        if os.path.exists(header_optimized_dir):
+            files = os.listdir(header_optimized_dir)
+            print(f"DEBUG: Files in header optimized dir: {files}")
+        
+        # Test section images
+        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+        print(f"DEBUG: Sections path: {sections_path}")
+        print(f"DEBUG: Sections path exists: {os.path.exists(sections_path)}")
+        
+        if os.path.exists(sections_path):
+            for section_dir in os.listdir(sections_path):
+                optimized_dir = os.path.join(sections_path, section_dir, 'optimized')
+                if os.path.exists(optimized_dir):
+                    files = os.listdir(optimized_dir)
+                    print(f"DEBUG: Files in {section_dir}/optimized: {files}")
+        
+        return jsonify({
+            'success': True,
+            'watermark_loaded': watermark is not None,
+            'header_optimized_dir': header_optimized_dir,
+            'header_optimized_exists': os.path.exists(header_optimized_dir),
+            'sections_path': sections_path,
+            'sections_exists': os.path.exists(sections_path)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/watermark/stats/<int:post_id>')
+def get_watermarked_stats(post_id):
+    """Get statistics for watermarked images."""
+    try:
+        total_count = 0
+        total_size = 0
+        
+        # Count header watermarked images
+        header_watermarked_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'watermarked')
+        if os.path.exists(header_watermarked_dir):
+            for filename in os.listdir(header_watermarked_dir):
+                if allowed_file(filename):
+                    file_path = os.path.join(header_watermarked_dir, filename)
+                    total_count += 1
+                    total_size += os.path.getsize(file_path)
+        
+        # Count section watermarked images
+        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+        if os.path.exists(sections_path):
+            for section_dir in os.listdir(sections_path):
+                section_watermarked_dir = os.path.join(sections_path, section_dir, 'watermarked')
+                if os.path.exists(section_watermarked_dir):
+                    for filename in os.listdir(section_watermarked_dir):
+                        if allowed_file(filename):
+                            file_path = os.path.join(section_watermarked_dir, filename)
+                            total_count += 1
+                            total_size += os.path.getsize(file_path)
+        
+        return jsonify({
+            'watermarked_count': total_count,
+            'watermarked_size': total_size
         })
         
     except Exception as e:
