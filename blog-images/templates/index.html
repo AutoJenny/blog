@@ -2408,6 +2408,14 @@
                     watermarkedContent.classList.remove('hidden');
                 }
             }
+            
+            // Special handling for captioned stage (show captioning controls for metadata generation)
+            if (currentPipelineStage === 'captioned') {
+                const watermarkedContent = document.getElementById('watermarked-stage-content');
+                if (watermarkedContent) {
+                    watermarkedContent.classList.remove('hidden');
+                }
+            }
         }
 
         // Add click handlers for sidebar elements
