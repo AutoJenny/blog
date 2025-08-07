@@ -818,6 +818,15 @@ Return only the caption text, with no additional commentary or formatting."""
 def save_caption_to_database(image_info, caption, post_id):
     """Save caption to appropriate database field"""
     try:
+        # Post-process caption to enforce 6-8 word limit
+        words = caption.strip().split()
+        if len(words) > 8:
+            # Truncate to 8 words
+            caption = ' '.join(words[:8])
+        elif len(words) < 6:
+            # Try to expand if too short (but this shouldn't happen with our prompts)
+            pass
+        
         with get_db_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
                 if image_info['type'] == 'header':
@@ -836,7 +845,7 @@ def save_caption_to_database(image_info, caption, post_id):
                     """, (caption, post_id, image_info['section_id']))
                 
                 conn.commit()
-                print(f"Saved caption for {image_info['filename']}: {caption[:50]}...")
+                print(f"Saved caption for {image_info['filename']}: {caption} ({len(words)} words)")
                 
     except Exception as e:
         print(f"Error saving caption to database: {e}")
@@ -2770,9 +2779,7 @@ def get_caption_prompt():
                 task_content = task_prompt.get('prompt_text', '')
                 
                 # Build context information
-                context_info = f"""Post: {post_data['title']}
-Section: {section_heading}
-Style: {caption_style}"""
+                context_info = f"""Section: {section_heading}"""
                 
                 # Combine system prompt, task prompt, and context
                 full_prompt = f"""{system_content}
@@ -2781,7 +2788,7 @@ Style: {caption_style}"""
 
 {context_info}
 
-Please generate a caption for this image:"""
+Generate caption (6-8 words only):"""
                 
                 return jsonify({
                     'success': True,
