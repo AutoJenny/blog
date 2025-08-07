@@ -1474,8 +1474,8 @@
                             
                             <div id="captioned-stage-content" class="stage-content hidden">
                                 <div class="stage-header">
-                                    <h4>✅ Final Review</h4>
-                                    <p>Review and approve all processed images.</p>
+                                    <h4>📝 Captioned Images</h4>
+                                    <p>Review all images with their generated captions.</p>
                                 </div>
                                 <div class="batch-actions">
                                     <button class="btn btn-primary" onclick="approveAll()">✅ Approve All</button>
@@ -1630,6 +1630,9 @@
                 let url;
                 if (currentPipelineStage === 'selected') {
                     url = `/api/images/${currentPostId}/selected`;
+                } else if (currentPipelineStage === 'captioned') {
+                    // For captioned stage, load watermarked images and captions
+                    url = `/api/images/${currentPostId}/watermarked`;
                 } else {
                     url = `/api/images/${currentPostId}/${currentPipelineStage}`;
                 }
@@ -1649,8 +1652,8 @@
                     
                     displayImagesWithCombinedFilter(images, currentPipelineStage, currentImageTypeTab);
                     
-                    // Load captions if we're in watermarking stage
-                    if (currentPipelineStage === 'watermarked') {
+                    // Load captions if we're in watermarking or captioned stage
+                    if (currentPipelineStage === 'watermarked' || currentPipelineStage === 'captioned') {
                         await loadCaptions();
                     }
                 }
@@ -2088,12 +2091,42 @@
                 
                 console.log('API responses:', { raw: rawData, selected: selectedData, optimized: optimizedData, watermarked: watermarkedData });
                 
+                // Check for captions in database
+                let captionedData = { total: 0, header_count: 0, section_count: 0 };
+                try {
+                    const captionsResponse = await fetch(`/api/captions/${currentPostId}`);
+                    if (captionsResponse.ok) {
+                        const captionsData = await captionsResponse.json();
+                        if (captionsData.success) {
+                            // Count captions - if we have watermarked images and captions, consider it captioned
+                            if (watermarkedData.total > 0) {
+                                let captionCount = 0;
+                                if (captionsData.captions.header && captionsData.captions.header.caption) captionCount++;
+                                captionsData.captions.sections.forEach(section => {
+                                    if (section.caption) captionCount++;
+                                });
+                                
+                                if (captionCount > 0) {
+                                    captionedData = {
+                                        total: watermarkedData.total,
+                                        header_count: watermarkedData.header_count,
+                                        section_count: watermarkedData.section_count
+                                    };
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.log('Error checking captions:', error);
+                }
+                
                 // Update pipeline steps based on actual data
                 updatePipelineStepsFromData({
                     raw: rawData,
                     selected: selectedData,
                     optimized: optimizedData,
-                    watermarked: watermarkedData
+                    watermarked: watermarkedData,
+                    captioned: captionedData
                 });
                 
                 // Also check for existing jobs
@@ -2125,7 +2158,7 @@
                 { stage: 'selected', data: data.selected },
                 { stage: 'optimized', data: data.optimized },
                 { stage: 'watermarked', data: data.watermarked },
-                { stage: 'captioned', data: { total: 0, header_count: 0, section_count: 0 } }, // Not implemented yet
+                { stage: 'captioned', data: data.captioned || { total: 0, header_count: 0, section_count: 0 } },
                 { stage: 'metadata', data: { total: 0, header_count: 0, section_count: 0 } } // Not implemented yet
             ];
             
@@ -2626,17 +2659,17 @@
             if (!window.currentCaptions) return;
             
             // Update header caption if exists
-            const headerImages = document.querySelectorAll('.image-container[data-type="header"]');
+            const headerImages = document.querySelectorAll('.image-card[data-type="header"]');
             headerImages.forEach(container => {
                 const captionElement = container.querySelector('.image-caption');
-                if (captionElement && window.currentCaptions.header.caption) {
+                if (captionElement && window.currentCaptions.header && window.currentCaptions.header.caption) {
                     captionElement.textContent = window.currentCaptions.header.caption;
                     captionElement.style.display = 'block';
                 }
             });
             
             // Update section captions
-            const sectionImages = document.querySelectorAll('.image-container[data-type="section"]');
+            const sectionImages = document.querySelectorAll('.image-card[data-type="section"]');
             sectionImages.forEach(container => {
                 const sectionId = container.dataset.sectionId;
                 const captionElement = container.querySelector('.image-caption');

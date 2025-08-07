@@ -570,40 +570,45 @@ def generate_captions():
                 """, (post_id,))
                 sections = cur.fetchall()
         
-        # Get watermarked images
-        watermarked_images = []
+                # Get watermarked images
+                watermarked_images = []
+                
+                # Check header watermarked images
+                header_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'watermarked')
+                print(f"Checking header path: {header_path}")
+                if os.path.exists(header_path):
+                    for filename in os.listdir(header_path):
+                        if allowed_file(filename):
+                            watermarked_images.append({
+                                'type': 'header',
+                                'path': os.path.join(header_path, filename),
+                                'filename': filename,
+                                'section_id': None
+                            })
+                            print(f"Found header image: {filename}")
+                
+                # Check section watermarked images
+                sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+                for section in sections:
+                    section_watermarked_path = os.path.join(sections_path, str(section['id']), 'watermarked')
+                    print(f"Checking section path: {section_watermarked_path}")
+                    if os.path.exists(section_watermarked_path):
+                        for filename in os.listdir(section_watermarked_path):
+                            if allowed_file(filename):
+                                watermarked_images.append({
+                                    'type': 'section',
+                                    'path': os.path.join(section_watermarked_path, filename),
+                                    'filename': filename,
+                                    'section_id': section['id'],
+                                    'section_heading': section['section_heading']
+                                })
+                                print(f"Found section image: {filename}")
+                
+                print(f"Total watermarked images found: {len(watermarked_images)}")
+                if not watermarked_images:
+                    return jsonify({'error': 'No watermarked images found'}), 404
         
-        # Check header watermarked images
-        header_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'watermarked')
-        if os.path.exists(header_path):
-            for filename in os.listdir(header_path):
-                if allowed_file(filename):
-                    watermarked_images.append({
-                        'type': 'header',
-                        'path': os.path.join(header_path, filename),
-                        'filename': filename,
-                        'section_id': None
-                    })
-        
-        # Check section watermarked images
-        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
-        for section in sections:
-            section_watermarked_path = os.path.join(sections_path, str(section['id']), 'watermarked')
-            if os.path.exists(section_watermarked_path):
-                for filename in os.listdir(section_watermarked_path):
-                    if allowed_file(filename):
-                        watermarked_images.append({
-                            'type': 'section',
-                            'path': os.path.join(section_watermarked_path, filename),
-                            'filename': filename,
-                            'section_id': section['id'],
-                            'section_heading': section['section_heading']
-                        })
-        
-        if not watermarked_images:
-            return jsonify({'error': 'No watermarked images found'}), 404
-        
-        # Generate captions using LLM
+                # Generate captions using LLM
         captions_generated = 0
         captions_data = []
         
@@ -640,6 +645,9 @@ def generate_captions():
                 
             except Exception as e:
                 print(f"Error generating caption for {image_info['filename']}: {e}")
+                # If it's an Ollama connection error, stop processing and return error
+                if 'Ollama LLM service is not running' in str(e):
+                    return jsonify({'error': str(e)}), 503
                 continue
         
         return jsonify({
@@ -695,33 +703,35 @@ Generate a compelling, descriptive caption for this section image that:
 Keep the caption concise (1-2 sentences) and avoid redundancy.
 Return only the caption text, with no additional commentary or formatting."""
         
-        # Call blog-core LLM API
+        # Call LLM service directly via the test endpoint
         llm_response = requests.post(
-            'http://localhost:5000/api/workflow/llm/direct',
+            'http://localhost:5002/api/llm/test',
             json={
                 'prompt': prompt,
-                'post_id': context.get('post_id'),
-                'step': 'image_caption_generation'
+                'model': 'mistral'
             },
             timeout=30
         )
         
         if llm_response.status_code == 200:
             result = llm_response.json()
-            if result.get('success'):
-                return result.get('result', '').strip()
+            if result.get('status') == 'success':
+                return result.get('response', '').strip()
             else:
-                raise Exception(f"LLM API error: {result.get('error', 'Unknown error')}")
+                error_msg = result.get('error', 'Unknown error')
+                print(f"LLM API error: {error_msg}")
+                # Check if it's an Ollama connection error
+                if 'Connection refused' in error_msg or '11434' in error_msg:
+                    raise Exception("Ollama LLM service is not running. Please start Ollama to generate captions.")
+                else:
+                    raise Exception(f"LLM API error: {error_msg}")
         else:
             raise Exception(f"LLM API request failed: {llm_response.status_code}")
             
     except Exception as e:
         print(f"Error in generate_caption_via_llm: {e}")
-        # Return a fallback caption
-        if context['image_type'] == 'header':
-            return f"Header image for: {context['post_title']}"
-        else:
-            return f"Image for section: {context.get('section_heading', 'Unknown section')}"
+        # Re-raise the exception instead of returning fallback captions
+        raise e
 
 def save_caption_to_database(image_info, caption, post_id):
     """Save caption to appropriate database field"""
