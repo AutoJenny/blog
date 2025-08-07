@@ -969,6 +969,27 @@
             padding: 5px 10px;
             font-size: 12px;
         }
+        
+        .metadata-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        
+        .metadata-item {
+            margin-bottom: 5px;
+        }
+        
+        .metadata-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .metadata-item strong {
+            color: #495057;
+        }
 
         .hidden {
             display: none;
@@ -1520,6 +1541,10 @@
                                 <div class="batch-actions">
                                     <button class="btn btn-primary" onclick="startCaptioning()">🚀 Start Captioning</button>
                                     <button class="btn btn-secondary" onclick="previewCaptions()">👁️ Preview</button>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="startMetadataGeneration()">📋 Generate Metadata</button>
+                                    <button class="btn btn-secondary" onclick="previewMetadata()">👁️ Preview Metadata</button>
                                 </div>
                             </div>
                             
@@ -2711,6 +2736,140 @@
                         caption_language: captionLanguage
                     })
                 });
+
+        // Metadata generation functions
+        async function startMetadataGeneration() {
+            console.log('Starting metadata generation');
+            
+            try {
+                showStatus('Generating metadata...', 'info');
+                
+                const response = await fetch('/api/process/metadata', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: currentPostId
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showStatus(`Successfully generated metadata for ${data.metadata_generated} images!`, 'success');
+                        
+                        // Update the display to show metadata
+                        await loadMetadata();
+                        
+                        // Update pipeline status
+                        updatePipelineStatus();
+                        updateStatistics();
+                    } else {
+                        showStatus(`Error: ${data.error}`, 'error');
+                    }
+                } else {
+                    const error = await response.json();
+                    showStatus(`Error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function previewMetadata() {
+            console.log('Previewing metadata');
+            
+            try {
+                // Get metadata from database
+                const response = await fetch(`/api/metadata/${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        let previewText = 'Current Metadata:\n\n';
+                        
+                        if (data.metadata.header) {
+                            previewText += `Header:\n`;
+                            previewText += `  Alt: ${data.metadata.header.alt_text}\n`;
+                            previewText += `  Title: ${data.metadata.header.title_text}\n`;
+                            previewText += `  Size: ${data.metadata.header.width}x${data.metadata.header.height}\n\n`;
+                        }
+                        
+                        data.metadata.sections.forEach(section => {
+                            previewText += `${section.section_heading}:\n`;
+                            previewText += `  Alt: ${section.alt_text}\n`;
+                            previewText += `  Title: ${section.title_text}\n`;
+                            previewText += `  Size: ${section.width}x${section.height}\n\n`;
+                        });
+                        
+                        alert(previewText);
+                    } else {
+                        alert('No metadata found');
+                    }
+                } else {
+                    alert('Error loading metadata');
+                }
+            } catch (error) {
+                alert('Error previewing metadata');
+            }
+        }
+
+        async function loadMetadata() {
+            console.log('Loading metadata');
+            
+            try {
+                const response = await fetch(`/api/metadata/${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        updateMetadataDisplay(data.metadata);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading metadata:', error);
+            }
+        }
+
+        function updateMetadataDisplay(metadata) {
+            // Update the image cards to show metadata
+            const imageCards = document.querySelectorAll('.image-card');
+            
+            imageCards.forEach(card => {
+                const imagePath = card.querySelector('img').src;
+                const imageType = card.dataset.type;
+                const sectionId = card.dataset.sectionId;
+                
+                // Find matching metadata
+                let imageMetadata = null;
+                if (imageType === 'header' && metadata.header) {
+                    imageMetadata = metadata.header;
+                } else if (imageType === 'section' && metadata.sections) {
+                    imageMetadata = metadata.sections.find(s => s.section_id == sectionId);
+                }
+                
+                if (imageMetadata) {
+                    // Update or create metadata display
+                    let metadataDiv = card.querySelector('.metadata-display');
+                    if (!metadataDiv) {
+                        metadataDiv = document.createElement('div');
+                        metadataDiv.className = 'metadata-display';
+                        card.appendChild(metadataDiv);
+                    }
+                    
+                    metadataDiv.innerHTML = `
+                        <div class="metadata-item">
+                            <strong>Alt:</strong> ${imageMetadata.alt_text}
+                        </div>
+                        <div class="metadata-item">
+                            <strong>Title:</strong> ${imageMetadata.title_text}
+                        </div>
+                        <div class="metadata-item">
+                            <strong>Size:</strong> ${imageMetadata.width}x${imageMetadata.height}
+                        </div>
+                    `;
+                }
+            });
+        }
                 
                 if (response.ok) {
                     const data = await response.json();

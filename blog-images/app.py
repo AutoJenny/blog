@@ -3126,6 +3126,60 @@ def get_captions(post_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/metadata/<int:post_id>')
+def get_metadata(post_id):
+    """Get metadata for a post"""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Get header metadata
+                cur.execute("""
+                    SELECT header_image_title, header_image_width, header_image_height
+                    FROM post 
+                    WHERE id = %s
+                """, (post_id,))
+                header_data = cur.fetchone()
+                
+                # Get section metadata
+                cur.execute("""
+                    SELECT id, section_heading, image_title, image_width, image_height
+                    FROM post_section 
+                    WHERE post_id = %s
+                    ORDER BY section_order
+                """, (post_id,))
+                sections_data = cur.fetchall()
+                
+                # Format response
+                metadata = {
+                    'header': None,
+                    'sections': []
+                }
+                
+                if header_data and (header_data['header_image_title'] or header_data['header_image_width']):
+                    metadata['header'] = {
+                        'title_text': header_data['header_image_title'],
+                        'width': header_data['header_image_width'],
+                        'height': header_data['header_image_height']
+                    }
+                
+                for section in sections_data:
+                    if section['image_title'] or section['image_width']:
+                        metadata['sections'].append({
+                            'section_id': section['id'],
+                            'section_heading': section['section_heading'],
+                            'title_text': section['image_title'],
+                            'width': section['image_width'],
+                            'height': section['image_height']
+                        })
+                
+                return jsonify({
+                    'success': True,
+                    'metadata': metadata
+                })
+                
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/caption/prompt', methods=['POST'])
 def get_caption_prompt():
     """Get the current caption prompt that would be sent to the LLM"""
