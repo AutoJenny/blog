@@ -1310,11 +1310,21 @@
                 <!-- Enhanced Processing Pipeline with details -->
                 <div class="processing-pipeline">
                     <h3>🔄 PROCESSING PIPELINE</h3>
+                    <div class="pipeline-step" data-stage="upload">
+                        <div class="step-info">
+                            <div class="step-icon pending">○</div>
+                            <div class="step-details">
+                                <span class="step-name">Upload Raw</span>
+                                <span class="step-count" id="upload-step-count">(0 total)</span>
+                                <span class="step-size" id="upload-step-size">0MB total size</span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="pipeline-step" data-stage="raw">
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
                             <div class="step-details">
-                                <span class="step-name">Raw</span>
+                                <span class="step-name">Raw → Selected</span>
                                 <span class="step-count" id="raw-step-count">(10 total: 1 header + 9 sections)</span>
                                 <span class="step-size" id="raw-step-size">60.0MB total size</span>
                             </div>
@@ -1324,7 +1334,7 @@
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
                             <div class="step-details">
-                                <span class="step-name">Selection</span>
+                                <span class="step-name">Selected → Optimised</span>
                                 <span class="step-count" id="selected-step-count">(8 total: 1 header + 7 sections)</span>
                                 <span class="step-size" id="selected-step-size">7.5MB total size</span>
                             </div>
@@ -1334,7 +1344,7 @@
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
                             <div class="step-details">
-                                <span class="step-name">Optimization</span>
+                                <span class="step-name">Optimised → Watermarked</span>
                                 <span class="step-count" id="optimized-step-count">(8 total: 1 header + 7 sections)</span>
                                 <span class="step-size" id="optimized-step-size">28.5MB total size</span>
                             </div>
@@ -1344,29 +1354,9 @@
                         <div class="step-info">
                             <div class="step-icon pending">○</div>
                             <div class="step-details">
-                                <span class="step-name">Watermarking</span>
-                                <span class="step-count">(0 total)</span>
-                                <span class="step-size">Not implemented yet</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pipeline-step" data-stage="captioned">
-                        <div class="step-info">
-                            <div class="step-icon pending">○</div>
-                            <div class="step-details">
-                                <span class="step-name">Captioning</span>
-                                <span class="step-count">(0 total)</span>
-                                <span class="step-size">Not implemented yet</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pipeline-step" data-stage="metadata">
-                        <div class="step-info">
-                            <div class="step-icon pending">○</div>
-                            <div class="step-details">
-                                <span class="step-name">Metadata</span>
-                                <span class="step-count">(0 total)</span>
-                                <span class="step-size">Not implemented yet</span>
+                                <span class="step-name">Watermarked → Captioned</span>
+                                <span class="step-count" id="watermarked-step-count">(8 total: 1 header + 7 sections)</span>
+                                <span class="step-size" id="watermarked-step-size">1.7MB total size</span>
                             </div>
                         </div>
                     </div>
@@ -1459,10 +1449,33 @@
                                 </div>
                             </div>
                             
+                            <div id="upload-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>📤 Upload Raw Images</h4>
+                                    <p>Upload new images to begin processing.</p>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="showUploadDialog()">📤 Upload Images</button>
+                                    <button class="btn btn-secondary" onclick="showGenerateDialog()">🎨 Generate Images</button>
+                                </div>
+                            </div>
+                            
+                            <div id="raw-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>🎯 Raw → Selected</h4>
+                                    <p>Select the best images from raw uploads.</p>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="processSelection()">🎯 Process Selection</button>
+                                    <button class="btn btn-secondary" onclick="autoSelectBest()">🤖 Auto-Select Best</button>
+                                    <button class="btn btn-secondary" onclick="clearAllSelections()">🗑️ Clear All</button>
+                                </div>
+                            </div>
+                            
                             <div id="selected-stage-content" class="stage-content hidden">
                                 <div class="stage-header">
-                                    <h4>⚙️ Optimization Process</h4>
-                                    <p>Configure optimization settings for the selected images.</p>
+                                    <h4>⚙️ Selected → Optimised</h4>
+                                    <p>Optimize selected images for web use.</p>
                                 </div>
                                 <div class="control-group">
                                     <div class="control-item">
@@ -1484,104 +1497,80 @@
                             
                             <div id="optimized-stage-content" class="stage-content hidden">
                                 <div class="stage-header">
-                                    <h4>⚙️ Optimization Process</h4>
-                                    <p>Configure optimization settings for the selected images.</p>
+                                    <h4>🏷️ Optimised → Watermarked</h4>
+                                    <p>Add watermarks and AI-generated text to optimized images.</p>
                                 </div>
                                 <div class="control-group">
                                     <div class="control-item">
-                                        <label>Optimization Settings:</label>
-                                        <select id="optimization-settings-2">
-                                            <option value="webp_1200_85" selected>WebP 1200px (Recommended)</option>
-                                            <option value="webp_800_85">WebP 800px (Mobile)</option>
-                                            <option value="webp_1600_85">WebP 1600px (High Res)</option>
-                                            <option value="jpeg_1200_85">JPEG 1200px</option>
-                                            <option value="png_1200_lossless">PNG 1200px (Lossless)</option>
+                                        <label>Watermark Style:</label>
+                                        <select id="watermark-style">
+                                            <option value="clan">Clan Watermark (Default)</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-item">
+                                        <label>Watermark Position:</label>
+                                        <select id="watermark-position">
+                                            <option value="bottom-right" selected>Bottom Right</option>
+                                            <option value="bottom-left">Bottom Left</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="batch-actions">
-                                    <button class="btn btn-primary" onclick="startOptimization()">🚀 Start Optimization</button>
-                                    <button class="btn btn-secondary" onclick="previewOptimization()">👁️ Preview</button>
+                                    <button class="btn btn-primary" onclick="startWatermarking()">🚀 Start Watermarking</button>
+                                    <button class="btn btn-secondary" onclick="previewWatermarking()">👁️ Preview</button>
                                 </div>
                             </div>
                             
                             <div id="watermarked-stage-content" class="stage-content hidden">
                                 <div class="stage-header">
-                                    <h4>🏷️ Watermarking Process</h4>
-                    <p>Add watermarks and AI-generated text to optimized images.</p>
-                </div>
-                <div class="control-group">
-                    <div class="control-item">
-                        <label>Watermark Style:</label>
-                        <select id="watermark-style">
-                            <option value="clan">Clan Watermark (Default)</option>
-                        </select>
-                    </div>
-                    <div class="control-item">
-                        <label>Watermark Position:</label>
-                        <select id="watermark-position">
-                            <option value="bottom-right" selected>Bottom Right</option>
-                            <option value="bottom-left">Bottom Left</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="batch-actions">
-                    <button class="btn btn-primary" onclick="startWatermarking()">🚀 Start Watermarking</button>
-                    <button class="btn btn-secondary" onclick="previewWatermarking()">👁️ Preview</button>
-                </div>
-            </div>
-            
-            <div id="captioned-stage-content" class="stage-content hidden">
-                <div class="stage-header">
-                    <h4>🏷️ Captioning Process</h4>
-                    <p>Add captions and metadata to watermarked images.</p>
-                </div>
-                <div class="control-group">
-                    <div class="control-item">
-                        <label>Caption Style:</label>
-                        <select id="caption-style">
-                            <option>Descriptive</option>
-                            <option>Creative</option>
-                            <option>Technical</option>
-                        </select>
-                    </div>
-                    <div class="control-item">
-                        <label>Language:</label>
-                        <select id="caption-language">
-                            <option>English</option>
-                            <option>Spanish</option>
-                            <option>French</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="prompt-display">
-                    <label>Current Prompt:</label>
-                    <div class="prompt-content" id="current-prompt-display">
-                        <em>Click "Preview" to see the prompt that will be sent to the LLM</em>
-                    </div>
-                    <button class="btn btn-small" onclick="refreshPromptDisplay()">🔄 Refresh Prompt</button>
-                </div>
-                <div class="batch-actions">
-                    <button class="btn btn-primary" onclick="startCaptioning()">🚀 Start Captioning</button>
-                    <button class="btn btn-secondary" onclick="previewCaptions()">👁️ Preview</button>
-                </div>
-                <div class="batch-actions">
-                    <button class="btn btn-primary" onclick="startMetadataGeneration()">📋 Generate Metadata</button>
-                    <button class="btn btn-secondary" onclick="previewMetadata()">👁️ Preview Metadata</button>
-                </div>
-            </div>
-            
-            <div id="review-stage-content" class="stage-content hidden">
-                <div class="stage-header">
-                    <h4>📝 Captioned Images</h4>
-                    <p>Review all images with their generated captions.</p>
-                </div>
-                <div class="batch-actions">
-                    <button class="btn btn-primary" onclick="approveAll()">✅ Approve All</button>
-                    <button class="btn btn-secondary" onclick="exportImages()">📤 Export</button>
-                </div>
-            </div>
+                                    <h4>🏷️ Watermarked → Captioned</h4>
+                                    <p>Add captions and metadata to watermarked images.</p>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-item">
+                                        <label>Caption Style:</label>
+                                        <select id="caption-style">
+                                            <option>Descriptive</option>
+                                            <option>Creative</option>
+                                            <option>Technical</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-item">
+                                        <label>Language:</label>
+                                        <select id="caption-language">
+                                            <option>English</option>
+                                            <option>Spanish</option>
+                                            <option>French</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="prompt-display">
+                                    <label>Current Prompt:</label>
+                                    <div class="prompt-content" id="current-prompt-display">
+                                        <em>Click "Preview" to see the prompt that will be sent to the LLM</em>
+                                    </div>
+                                    <button class="btn btn-small" onclick="refreshPromptDisplay()">🔄 Refresh Prompt</button>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="startCaptioning()">🚀 Start Captioning</button>
+                                    <button class="btn btn-secondary" onclick="previewCaptions()">👁️ Preview</button>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="startMetadataGeneration()">📋 Generate Metadata</button>
+                                    <button class="btn btn-secondary" onclick="previewMetadata()">👁️ Preview Metadata</button>
+                                </div>
+                            </div>
                             
+                            <div id="captioned-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
+                                    <h4>📝 Captioned Images</h4>
+                                    <p>Review all images with their generated captions.</p>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="approveAll()">✅ Approve All</button>
+                                    <button class="btn btn-secondary" onclick="exportImages()">📤 Export</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1614,7 +1603,7 @@
     <script>
         // Global variables
         let currentPostId = 53;
-        let currentPipelineStage = 'raw'; // raw, selected, optimized, watermarked, captioned, metadata
+        let currentPipelineStage = 'upload'; // upload, raw, selected, optimized, watermarked
         let currentImageTypeTab = 'all'; // all, header, section, featured
         let selectedImages = [];
         let processingJobs = [];
@@ -2421,12 +2410,11 @@
             
             // Map pipeline stages to content sections
             const stageContentMap = {
+                'upload': 'upload-stage-content',
                 'raw': 'raw-stage-content',
                 'selected': 'selected-stage-content', 
                 'optimized': 'optimized-stage-content',
-                'watermarked': 'watermarked-stage-content',  // Watermarking controls
-                'captioned': 'captioned-stage-content',      // Captioning controls (with metadata)
-                'review': 'review-stage-content'             // Review controls
+                'watermarked': 'watermarked-stage-content'   // Captioning controls (with metadata)
             };
             
             // Show content for current stage
