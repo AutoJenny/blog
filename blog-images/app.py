@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 Blog Images - Image Generation and Management Application
