@@ -536,27 +536,219 @@ def watermark_images():
 
 @app.route('/api/process/caption', methods=['POST'])
 def generate_captions():
-    """Generate captions for images using AI"""
+    """Generate captions for images using LLM"""
     try:
         data = request.get_json()
         post_id = data.get('post_id')
-        image_paths = data.get('image_paths', [])
+        caption_style = data.get('caption_style', 'Descriptive')
+        caption_language = data.get('caption_language', 'English')
         
         if not post_id:
             return jsonify({'error': 'Missing post_id'}), 400
         
-        # For now, return a mock response
-        job_id = f"caption_{post_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        # Get post and section data for context
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Get post data
+                cur.execute("""
+                    SELECT p.title, p.subtitle, pd.basic_idea, pd.idea_scope
+                    FROM post p
+                    LEFT JOIN post_development pd ON p.id = pd.post_id
+                    WHERE p.id = %s
+                """, (post_id,))
+                post_data = cur.fetchone()
+                
+                if not post_data:
+                    return jsonify({'error': 'Post not found'}), 404
+                
+                # Get section data
+                cur.execute("""
+                    SELECT id, section_heading, section_description, image_filename
+                    FROM post_section
+                    WHERE post_id = %s
+                    ORDER BY section_order
+                """, (post_id,))
+                sections = cur.fetchall()
+        
+        # Get watermarked images
+        watermarked_images = []
+        
+        # Check header watermarked images
+        header_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'watermarked')
+        if os.path.exists(header_path):
+            for filename in os.listdir(header_path):
+                if allowed_file(filename):
+                    watermarked_images.append({
+                        'type': 'header',
+                        'path': os.path.join(header_path, filename),
+                        'filename': filename,
+                        'section_id': None
+                    })
+        
+        # Check section watermarked images
+        sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+        for section in sections:
+            section_watermarked_path = os.path.join(sections_path, str(section['id']), 'watermarked')
+            if os.path.exists(section_watermarked_path):
+                for filename in os.listdir(section_watermarked_path):
+                    if allowed_file(filename):
+                        watermarked_images.append({
+                            'type': 'section',
+                            'path': os.path.join(section_watermarked_path, filename),
+                            'filename': filename,
+                            'section_id': section['id'],
+                            'section_heading': section['section_heading']
+                        })
+        
+        if not watermarked_images:
+            return jsonify({'error': 'No watermarked images found'}), 404
+        
+        # Generate captions using LLM
+        captions_generated = 0
+        captions_data = []
+        
+        for image_info in watermarked_images:
+            try:
+                # Prepare context for LLM
+                context = {
+                    'post_title': post_data['title'],
+                    'post_subtitle': post_data['subtitle'],
+                    'basic_idea': post_data['basic_idea'],
+                    'idea_scope': post_data['idea_scope'],
+                    'image_type': image_info['type'],
+                    'caption_style': caption_style,
+                    'caption_language': caption_language
+                }
+                
+                if image_info['type'] == 'section':
+                    context['section_heading'] = image_info['section_heading']
+                
+                # Generate caption using LLM
+                caption = generate_caption_via_llm(context, image_info)
+                
+                # Save caption to database
+                save_caption_to_database(image_info, caption, post_id)
+                
+                captions_data.append({
+                    'image_path': image_info['path'],
+                    'caption': caption,
+                    'type': image_info['type'],
+                    'section_id': image_info.get('section_id')
+                })
+                
+                captions_generated += 1
+                
+            except Exception as e:
+                print(f"Error generating caption for {image_info['filename']}: {e}")
+                continue
         
         return jsonify({
             'success': True,
-            'job_id': job_id,
-            'message': f'Caption generation job created for {len(image_paths)} images',
-            'status': 'queued'
+            'captions_generated': captions_generated,
+            'total_images': len(watermarked_images),
+            'captions': captions_data,
+            'message': f'Successfully generated captions for {captions_generated} images'
         })
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+def generate_caption_via_llm(context, image_info):
+    """Generate caption using LLM via blog-core API"""
+    try:
+        # Prepare the prompt using existing caption prompt
+        if context['image_type'] == 'header':
+            prompt = f"""You are an expert image caption writer for blog posts.
+
+Given the post context:
+- Title: {context['post_title']}
+- Subtitle: {context['post_subtitle']}
+- Basic Idea: {context['basic_idea']}
+- Idea Scope: {context['idea_scope']}
+
+Generate a compelling, descriptive caption for this header image that:
+1. Accurately describes what's shown
+2. Connects to the blog post content
+3. Is engaging and informative
+4. Uses {context['caption_style'].lower()} style
+5. Is written in {context['caption_language']}
+
+Keep the caption concise (1-2 sentences) and avoid redundancy.
+Return only the caption text, with no additional commentary or formatting."""
+        else:
+            prompt = f"""You are an expert image caption writer for blog posts.
+
+Given the post context:
+- Title: {context['post_title']}
+- Subtitle: {context['post_subtitle']}
+- Basic Idea: {context['basic_idea']}
+- Idea Scope: {context['idea_scope']}
+- Section: {context['section_heading']}
+
+Generate a compelling, descriptive caption for this section image that:
+1. Accurately describes what's shown
+2. Connects to the section content
+3. Is engaging and informative
+4. Uses {context['caption_style'].lower()} style
+5. Is written in {context['caption_language']}
+
+Keep the caption concise (1-2 sentences) and avoid redundancy.
+Return only the caption text, with no additional commentary or formatting."""
+        
+        # Call blog-core LLM API
+        llm_response = requests.post(
+            'http://localhost:5000/api/workflow/llm/direct',
+            json={
+                'prompt': prompt,
+                'post_id': context.get('post_id'),
+                'step': 'image_caption_generation'
+            },
+            timeout=30
+        )
+        
+        if llm_response.status_code == 200:
+            result = llm_response.json()
+            if result.get('success'):
+                return result.get('result', '').strip()
+            else:
+                raise Exception(f"LLM API error: {result.get('error', 'Unknown error')}")
+        else:
+            raise Exception(f"LLM API request failed: {llm_response.status_code}")
+            
+    except Exception as e:
+        print(f"Error in generate_caption_via_llm: {e}")
+        # Return a fallback caption
+        if context['image_type'] == 'header':
+            return f"Header image for: {context['post_title']}"
+        else:
+            return f"Image for section: {context.get('section_heading', 'Unknown section')}"
+
+def save_caption_to_database(image_info, caption, post_id):
+    """Save caption to appropriate database field"""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                if image_info['type'] == 'header':
+                    # Save to post.header_image_caption
+                    cur.execute("""
+                        UPDATE post 
+                        SET header_image_caption = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (caption, post_id))
+                else:
+                    # Save to post_section.image_captions
+                    cur.execute("""
+                        UPDATE post_section 
+                        SET image_captions = %s
+                        WHERE post_id = %s AND id = %s
+                    """, (caption, post_id, image_info['section_id']))
+                
+                conn.commit()
+                print(f"Saved caption for {image_info['filename']}: {caption[:50]}...")
+                
+    except Exception as e:
+        print(f"Error saving caption to database: {e}")
+        raise
 
 @app.route('/api/process/status/<job_id>')
 def get_processing_status(job_id):
@@ -2386,6 +2578,52 @@ def get_watermarked_stats(post_id):
         return jsonify({
             'watermarked_count': total_count,
             'watermarked_size': total_size
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/captions/<int:post_id>')
+def get_captions(post_id):
+    """Get all captions for a post"""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Get post data with header caption
+                cur.execute("""
+                    SELECT p.title, p.header_image_caption
+                    FROM post p
+                    WHERE p.id = %s
+                """, (post_id,))
+                post_data = cur.fetchone()
+                
+                # Get section data with captions
+                cur.execute("""
+                    SELECT id, section_heading, image_captions
+                    FROM post_section
+                    WHERE post_id = %s
+                    ORDER BY section_order
+                """, (post_id,))
+                sections = cur.fetchall()
+        
+        captions = {
+            'header': {
+                'caption': post_data['header_image_caption'] if post_data else None,
+                'title': post_data['title'] if post_data else None
+            },
+            'sections': [
+                {
+                    'id': section['id'],
+                    'section_heading': section['section_heading'],
+                    'caption': section['image_captions']
+                }
+                for section in sections
+            ]
+        }
+        
+        return jsonify({
+            'success': True,
+            'captions': captions
         })
         
     except Exception as e:
