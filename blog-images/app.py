@@ -671,8 +671,8 @@ def generate_caption_via_llm(context, image_info):
             
             # Find the image captions system prompt (ID 110)
             system_prompt = next((p for p in prompts if p['id'] == 110), None)
-            # Find the image captions task prompt (ID 109)
-            task_prompt = next((p for p in prompts if p['id'] == 109), None)
+            # Find the image captions task prompt (ID 111)
+            task_prompt = next((p for p in prompts if p['id'] == 111), None)
             
             if system_prompt and task_prompt:
                 # Construct the full prompt using system and task prompts
@@ -680,28 +680,16 @@ def generate_caption_via_llm(context, image_info):
                 task_content = task_prompt.get('prompt_text', '')
                 
                 # Build context information
-                context_info = f"""Post Context:
-- Title: {context['post_title']}
-- Subtitle: {context['post_subtitle']}
-- Basic Idea: {context['basic_idea']}
-- Idea Scope: {context['idea_scope']}"""
-                
-                if context['image_type'] != 'header':
-                    context_info += f"\n- Section: {context['section_heading']}"
-                
-                context_info += f"""
-Caption Style: {context['caption_style']}
-Caption Language: {context['caption_language']}
-Image Type: {'Header' if context['image_type'] == 'header' else 'Section'}"""
+                context_info = f"""Section: {context['section_heading'] if context['image_type'] != 'header' else 'Header'}"""
                 
                 # Combine system prompt, task prompt, and context
-                prompt = f"""{system_content}
+                full_prompt = f"""{system_content}
 
 {task_content}
 
 {context_info}
 
-Please generate a caption for this image:"""
+Write exactly 6-8 words:"""
                 
                 print(f"Using workflow prompts for captioning: System={system_prompt['name']}, Task={task_prompt['name']}")
             else:
@@ -789,7 +777,7 @@ Return only the caption text, with no additional commentary or formatting."""
         llm_response = requests.post(
             'http://localhost:5002/api/llm/test',
             json={
-                'prompt': prompt,
+                'prompt': full_prompt,
                 'model': 'mistral'
             },
             timeout=30
