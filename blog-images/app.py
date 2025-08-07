@@ -664,9 +664,51 @@ def generate_captions():
 def generate_caption_via_llm(context, image_info):
     """Generate caption using LLM via blog-core API"""
     try:
-        # Prepare the prompt using existing caption prompt
-        if context['image_type'] == 'header':
-            prompt = f"""You are an expert image caption writer for blog posts.
+        # Fetch prompts from workflow system
+        system_prompt_response = requests.get('http://localhost:5000/api/workflow/prompts/all')
+        if system_prompt_response.status_code == 200:
+            prompts = system_prompt_response.json()
+            
+            # Find the image captions system prompt (ID 110)
+            system_prompt = next((p for p in prompts if p['id'] == 110), None)
+            # Find the image captions task prompt (ID 109)
+            task_prompt = next((p for p in prompts if p['id'] == 109), None)
+            
+            if system_prompt and task_prompt:
+                # Construct the full prompt using system and task prompts
+                system_content = system_prompt.get('prompt_text', '')
+                task_content = task_prompt.get('prompt_text', '')
+                
+                # Build context information
+                context_info = f"""Post Context:
+- Title: {context['post_title']}
+- Subtitle: {context['post_subtitle']}
+- Basic Idea: {context['basic_idea']}
+- Idea Scope: {context['idea_scope']}"""
+                
+                if context['image_type'] != 'header':
+                    context_info += f"\n- Section: {context['section_heading']}"
+                
+                context_info += f"""
+Caption Style: {context['caption_style']}
+Caption Language: {context['caption_language']}
+Image Type: {'Header' if context['image_type'] == 'header' else 'Section'}"""
+                
+                # Combine system prompt, task prompt, and context
+                prompt = f"""{system_content}
+
+{task_content}
+
+{context_info}
+
+Please generate a caption for this image:"""
+                
+                print(f"Using workflow prompts for captioning: System={system_prompt['name']}, Task={task_prompt['name']}")
+            else:
+                # Fallback to hardcoded prompts if workflow prompts not found
+                print("Workflow prompts not found, using fallback prompts")
+                if context['image_type'] == 'header':
+                    prompt = f"""You are an expert image caption writer for blog posts.
 
 Given the post context:
 - Title: {context['post_title']}
@@ -683,8 +725,48 @@ Generate a compelling, descriptive caption for this header image that:
 
 Keep the caption concise (1-2 sentences) and avoid redundancy.
 Return only the caption text, with no additional commentary or formatting."""
+                else:
+                    prompt = f"""You are an expert image caption writer for blog posts.
+
+Given the post context:
+- Title: {context['post_title']}
+- Subtitle: {context['post_subtitle']}
+- Basic Idea: {context['basic_idea']}
+- Idea Scope: {context['idea_scope']}
+- Section: {context['section_heading']}
+
+Generate a compelling, descriptive caption for this section image that:
+1. Accurately describes what's shown
+2. Connects to the section content
+3. Is engaging and informative
+4. Uses {context['caption_style'].lower()} style
+5. Is written in {context['caption_language']}
+
+Keep the caption concise (1-2 sentences) and avoid redundancy.
+Return only the caption text, with no additional commentary or formatting."""
         else:
-            prompt = f"""You are an expert image caption writer for blog posts.
+            # Fallback to hardcoded prompts if API call fails
+            print(f"Failed to fetch workflow prompts: {system_prompt_response.status_code}")
+            if context['image_type'] == 'header':
+                prompt = f"""You are an expert image caption writer for blog posts.
+
+Given the post context:
+- Title: {context['post_title']}
+- Subtitle: {context['post_subtitle']}
+- Basic Idea: {context['basic_idea']}
+- Idea Scope: {context['idea_scope']}
+
+Generate a compelling, descriptive caption for this header image that:
+1. Accurately describes what's shown
+2. Connects to the blog post content
+3. Is engaging and informative
+4. Uses {context['caption_style'].lower()} style
+5. Is written in {context['caption_language']}
+
+Keep the caption concise (1-2 sentences) and avoid redundancy.
+Return only the caption text, with no additional commentary or formatting."""
+            else:
+                prompt = f"""You are an expert image caption writer for blog posts.
 
 Given the post context:
 - Title: {context['post_title']}
