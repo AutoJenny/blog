@@ -2770,15 +2770,9 @@ def get_caption_prompt():
                 task_content = task_prompt.get('prompt_text', '')
                 
                 # Build context information
-                context_info = f"""Post Context:
-- Title: {post_data['title']}
-- Subtitle: {post_data['subtitle']}
-- Basic Idea: {post_data['basic_idea']}
-- Idea Scope: {post_data['idea_scope']}
-- Section: {section_heading}
-Caption Style: {caption_style}
-Caption Language: {caption_language}
-Image Type: Section"""
+                context_info = f"""Post: {post_data['title']}
+Section: {section_heading}
+Style: {caption_style}"""
                 
                 # Combine system prompt, task prompt, and context
                 full_prompt = f"""{system_content}
