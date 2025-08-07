@@ -2721,5 +2721,132 @@ def get_captions(post_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/caption/prompt', methods=['POST'])
+def get_caption_prompt():
+    """Get the current caption prompt that would be sent to the LLM"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        caption_style = data.get('caption_style', 'Descriptive')
+        caption_language = data.get('caption_language', 'English')
+        
+        # Get post context
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT p.title, p.subtitle, pd.basic_idea, pd.idea_scope
+                    FROM post p
+                    LEFT JOIN post_development pd ON p.id = pd.post_id
+                    WHERE p.id = %s
+                """, (post_id,))
+                post_data = cur.fetchone()
+                
+                if not post_data:
+                    return jsonify({'success': False, 'error': 'Post not found'}), 404
+                
+                # Get a sample section for context
+                cur.execute("""
+                    SELECT section_heading
+                    FROM post_section 
+                    WHERE post_id = %s
+                    LIMIT 1
+                """, (post_id,))
+                section_data = cur.fetchone()
+                section_heading = section_data['section_heading'] if section_data else "Sample Section"
+        
+        # Fetch prompts from workflow system
+        system_prompt_response = requests.get('http://localhost:5000/api/workflow/prompts/all')
+        if system_prompt_response.status_code == 200:
+            prompts = system_prompt_response.json()
+            
+            # Find the image captions system prompt (ID 110)
+            system_prompt = next((p for p in prompts if p['id'] == 110), None)
+            # Find the image captions task prompt (ID 111)
+            task_prompt = next((p for p in prompts if p['id'] == 111), None)
+            
+            if system_prompt and task_prompt:
+                # Construct the full prompt using system and task prompts
+                system_content = system_prompt.get('prompt_text', '')
+                task_content = task_prompt.get('prompt_text', '')
+                
+                # Build context information
+                context_info = f"""Post Context:
+- Title: {post_data['title']}
+- Subtitle: {post_data['subtitle']}
+- Basic Idea: {post_data['basic_idea']}
+- Idea Scope: {post_data['idea_scope']}
+- Section: {section_heading}
+Caption Style: {caption_style}
+Caption Language: {caption_language}
+Image Type: Section"""
+                
+                # Combine system prompt, task prompt, and context
+                full_prompt = f"""{system_content}
+
+{task_content}
+
+{context_info}
+
+Please generate a caption for this image:"""
+                
+                return jsonify({
+                    'success': True,
+                    'prompt': full_prompt
+                })
+            else:
+                # Fallback to hardcoded prompts
+                fallback_prompt = f"""You are an expert image caption writer for blog posts.
+
+Given the post context:
+- Title: {post_data['title']}
+- Subtitle: {post_data['subtitle']}
+- Basic Idea: {post_data['basic_idea']}
+- Idea Scope: {post_data['idea_scope']}
+- Section: {section_heading}
+
+Generate a compelling, descriptive caption for this section image that:
+1. Accurately describes what's shown
+2. Connects to the section content
+3. Is engaging and informative
+4. Uses {caption_style.lower()} style
+5. Is written in {caption_language}
+
+Keep the caption concise (1-2 sentences) and avoid redundancy.
+Return only the caption text, with no additional commentary or formatting."""
+                
+                return jsonify({
+                    'success': True,
+                    'prompt': fallback_prompt
+                })
+        else:
+            # Fallback to hardcoded prompts if API call fails
+            fallback_prompt = f"""You are an expert image caption writer for blog posts.
+
+Given the post context:
+- Title: {post_data['title']}
+- Subtitle: {post_data['subtitle']}
+- Basic Idea: {post_data['basic_idea']}
+- Idea Scope: {post_data['idea_scope']}
+- Section: {section_heading}
+
+Generate a compelling, descriptive caption for this section image that:
+1. Accurately describes what's shown
+2. Connects to the section content
+3. Is engaging and informative
+4. Uses {caption_style.lower()} style
+5. Is written in {caption_language}
+
+Keep the caption concise (1-2 sentences) and avoid redundancy.
+Return only the caption text, with no additional commentary or formatting."""
+            
+            return jsonify({
+                'success': True,
+                'prompt': fallback_prompt
+            })
+                
+    except Exception as e:
+        print(f"Error getting caption prompt: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=port) 
