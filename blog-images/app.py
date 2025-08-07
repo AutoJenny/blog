@@ -5,6 +5,7 @@ Blog Images - Image Generation and Management Application
 
 import os
 import json
+import re
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 import requests
@@ -806,6 +807,8 @@ Return only the caption text, with no additional commentary or formatting."""
 def save_caption_to_database(image_info, caption, post_id):
     """Save caption to appropriate database field"""
     try:
+        # Clean up the caption
+        caption = clean_caption(caption)
         words = caption.strip().split()
         
         with get_db_conn() as conn:
@@ -831,6 +834,40 @@ def save_caption_to_database(image_info, caption, post_id):
     except Exception as e:
         print(f"Error saving caption to database: {e}")
         raise
+
+def clean_caption(caption):
+    """Clean up caption by removing alternatives, quotes, and meta-commentary"""
+    if not caption:
+        return ""
+    
+    # Remove quotes at the beginning and end
+    caption = caption.strip().strip('"').strip("'")
+    
+    # Split on newlines and take only the first line
+    lines = caption.split('\n')
+    caption = lines[0].strip()
+    
+    # If there are alternatives (contains "or", "OR", "or:", etc.), take only the first one
+    if any(alt in caption.lower() for alt in [' or ', 'or:', 'or\r']):
+        # Split on common alternative markers and take the first part
+        parts = re.split(r'\s+or\s+|\s+OR\s+|or:|OR:', caption, flags=re.IGNORECASE)
+        caption = parts[0].strip()
+    
+    # Remove any remaining quotes
+    caption = caption.strip().strip('"').strip("'")
+    
+    # Remove any meta-commentary like word counts or explanations
+    if '(' in caption and ')' in caption:
+        # Remove parenthetical explanations
+        caption = re.sub(r'\s*\([^)]*\)', '', caption)
+    
+    # Remove any trailing punctuation that might be from alternatives
+    caption = caption.rstrip('.,;:')
+    
+    # Remove any notes or meta-commentary in square brackets
+    caption = re.sub(r'\s*\[[^\]]*\]', '', caption)
+    
+    return caption.strip()
 
 @app.route('/api/process/status/<job_id>')
 def get_processing_status(job_id):
