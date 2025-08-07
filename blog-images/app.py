@@ -62,6 +62,10 @@ def index():
     post_id = request.args.get('post_id', '1')
     return render_template('index.html', post_id=post_id)
 
+@app.route('/test')
+def test():
+    return jsonify({'status': 'ok', 'message': 'Flask app is working'})
+
 @app.route('/upload')
 def upload():
     """Dedicated upload interface for workflow integration"""
