@@ -818,14 +818,7 @@ Return only the caption text, with no additional commentary or formatting."""
 def save_caption_to_database(image_info, caption, post_id):
     """Save caption to appropriate database field"""
     try:
-        # Post-process caption to enforce 6-8 word limit
         words = caption.strip().split()
-        if len(words) > 8:
-            # Truncate to 8 words
-            caption = ' '.join(words[:8])
-        elif len(words) < 6:
-            # Try to expand if too short (but this shouldn't happen with our prompts)
-            pass
         
         with get_db_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
@@ -2788,7 +2781,7 @@ def get_caption_prompt():
 
 {context_info}
 
-Generate caption (6-8 words only):"""
+Write exactly 6-8 words:"""
                 
                 return jsonify({
                     'success': True,
