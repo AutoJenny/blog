@@ -1419,8 +1419,34 @@
                             
                             <div id="optimized-stage-content" class="stage-content hidden">
                                 <div class="stage-header">
+                                    <h4>🏷️ Watermarking Process</h4>
+                                    <p>Add watermarks and AI-generated text to optimized images.</p>
+                                </div>
+                                <div class="control-group">
+                                    <div class="control-item">
+                                        <label>Watermark Style:</label>
+                                        <select id="watermark-style">
+                                            <option value="clan">Clan Watermark (Default)</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-item">
+                                        <label>Watermark Position:</label>
+                                        <select id="watermark-position">
+                                            <option value="bottom-right" selected>Bottom Right</option>
+                                            <option value="bottom-left">Bottom Left</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="batch-actions">
+                                    <button class="btn btn-primary" onclick="startWatermarking()">🚀 Start Watermarking</button>
+                                    <button class="btn btn-secondary" onclick="previewWatermarking()">👁️ Preview</button>
+                                </div>
+                            </div>
+                            
+                            <div id="watermarked-stage-content" class="stage-content hidden">
+                                <div class="stage-header">
                                     <h4>🏷️ Captioning Process</h4>
-                                    <p>Add captions and metadata to optimized images.</p>
+                                    <p>Add captions and metadata to watermarked images.</p>
                                 </div>
                                 <div class="control-group">
                                     <div class="control-item">
@@ -1948,9 +1974,14 @@
                 const optimizedResponse = await fetch(`/api/images/optimized/stats/${currentPostId}`);
                 const optimizedStats = await optimizedResponse.json();
                 
+                // Get watermarked images stats
+                const watermarkedResponse = await fetch(`/api/watermark/stats/${currentPostId}`);
+                const watermarkedStats = await watermarkedResponse.json();
+                
                 // Store stats in window object for pipeline function to access
                 window.currentStats = stats;
                 window.currentOptimizedStats = optimizedStats;
+                window.currentWatermarkedStats = watermarkedStats;
                 
                 // Convert bytes to MB/GB
                 const totalSizeMB = (stats.total_size / (1024 * 1024)).toFixed(1);
@@ -1973,6 +2004,13 @@
                 document.getElementById('optimized-header-count').textContent = optimizedStats.optimized_header_images || 0;
                 document.getElementById('optimized-sections-count').textContent = optimizedStats.optimized_section_images || 0;
                 document.getElementById('optimized-size').textContent = optimizedSizeMB + 'MB';
+                
+                const watermarkedSizeMB = (watermarkedStats.watermarked_size / (1024 * 1024)).toFixed(1);
+                
+                document.getElementById('watermarked-all-count').textContent = watermarkedStats.watermarked_count || 0;
+                document.getElementById('watermarked-header-count').textContent = '0'; // TODO: Add header count
+                document.getElementById('watermarked-sections-count').textContent = '0'; // TODO: Add section count
+                document.getElementById('watermarked-size').textContent = watermarkedSizeMB + 'MB';
                 
                 document.getElementById('captioned-all-count').textContent = '0';
                 document.getElementById('captioned-header-count').textContent = '0';
@@ -2023,18 +2061,21 @@
                 const rawResponse = await fetch(`/api/images/${currentPostId}/raw`);
                 const selectedResponse = await fetch(`/api/images/${currentPostId}/selected`);
                 const optimizedResponse = await fetch(`/api/images/${currentPostId}/optimized`);
+                const watermarkedResponse = await fetch(`/api/images/${currentPostId}/watermarked`);
                 
                 const rawData = await rawResponse.json();
                 const selectedData = await selectedResponse.json();
                 const optimizedData = await optimizedResponse.json();
+                const watermarkedData = await watermarkedResponse.json();
                 
-                console.log('API responses:', { raw: rawData, selected: selectedData, optimized: optimizedData });
+                console.log('API responses:', { raw: rawData, selected: selectedData, optimized: optimizedData, watermarked: watermarkedData });
                 
                 // Update pipeline steps based on actual data
                 updatePipelineStepsFromData({
                     raw: rawData,
                     selected: selectedData,
-                    optimized: optimizedData
+                    optimized: optimizedData,
+                    watermarked: watermarkedData
                 });
                 
                 // Also check for existing jobs
@@ -2065,7 +2106,7 @@
                 { stage: 'raw', data: data.raw },
                 { stage: 'selected', data: data.selected },
                 { stage: 'optimized', data: data.optimized },
-                { stage: 'watermarked', data: { total: 0, header_count: 0, section_count: 0 } }, // Not implemented yet
+                { stage: 'watermarked', data: data.watermarked },
                 { stage: 'captioned', data: { total: 0, header_count: 0, section_count: 0 } }, // Not implemented yet
                 { stage: 'metadata', data: { total: 0, header_count: 0, section_count: 0 } } // Not implemented yet
             ];
@@ -2109,6 +2150,10 @@
                         // Use optimized size for both selected and optimized
                         const optimizedSizeMB = (window.currentOptimizedStats?.optimized_size || 0) / (1024 * 1024);
                         sizeText = `${optimizedSizeMB.toFixed(1)}MB`;
+                    } else if (stage === 'watermarked') {
+                        // Use watermarked size
+                        const watermarkedSizeMB = (window.currentWatermarkedStats?.watermarked_size || 0) / (1024 * 1024);
+                        sizeText = `${watermarkedSizeMB.toFixed(1)}MB`;
                     }
                     stepSizeElement.textContent = `${sizeText} total size`;
                 }
@@ -2227,6 +2272,14 @@
             const currentStageContent = document.getElementById(`${currentPipelineStage}-stage-content`);
             if (currentStageContent) {
                 currentStageContent.classList.remove('hidden');
+            }
+            
+            // Special handling for watermarked stage (show captioning controls)
+            if (currentPipelineStage === 'watermarked') {
+                const watermarkedContent = document.getElementById('watermarked-stage-content');
+                if (watermarkedContent) {
+                    watermarkedContent.classList.remove('hidden');
+                }
             }
         }
 
@@ -2393,7 +2446,70 @@
             });
         }
 
-        // Optimized stage functions
+        // Optimized stage functions (Watermarking)
+        function startWatermarking() {
+            console.log('Starting watermarking');
+            
+            // Show loading state
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '🔄 Processing...';
+            button.disabled = true;
+            
+            // Call watermarking API
+            fetch(`/api/watermark/process/${currentPostId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Watermarking complete! ${data.watermarked_count} images watermarked and moved to watermarked stage.`);
+                    // Refresh the display
+                    loadCurrentPipelineStage();
+                    updateStatistics();
+                    updatePipelineStatus();
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Watermarking error:', error);
+                alert('Error during watermarking process');
+            })
+            .finally(() => {
+                // Restore button state
+                button.textContent = originalText;
+                button.disabled = false;
+            });
+        }
+
+        function previewWatermarking() {
+            console.log('Previewing watermarking');
+            
+            // Show preview of what will be watermarked
+            fetch(`/api/watermark/preview/${currentPostId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let previewText = `Files to be watermarked:\n\n`;
+                    data.preview.forEach(item => {
+                        previewText += `${item.original} → ${item.new_name}\n`;
+                    });
+                    alert(previewText);
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Preview error:', error);
+                alert('Error generating preview');
+            });
+        }
+
+        // Watermarked stage functions (Captioning)
         function startCaptioning() {
             console.log('Starting captioning');
             alert('Captioning process would begin');
