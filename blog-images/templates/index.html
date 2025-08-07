@@ -1648,6 +1648,11 @@
                     // 'all' shows all images, 'featured' would be filtered when implemented
                     
                     displayImagesWithCombinedFilter(images, currentPipelineStage, currentImageTypeTab);
+                    
+                    // Load captions if we're in watermarking stage
+                    if (currentPipelineStage === 'watermarked') {
+                        await loadCaptions();
+                    }
                 }
             } catch (error) {
                 console.error('Error loading images:', error);
@@ -1927,13 +1932,16 @@
             }
             
             return `
-                <div class="image-card ${selectedClass}" data-section-id="${sectionId}" data-filename="${image.filename}">
+                <div class="image-card ${selectedClass}" data-section-id="${sectionId}" data-filename="${image.filename}" data-type="${sectionId === 'header' ? 'header' : 'section'}">
                     <div class="image-title">
                         <h3>${title}</h3>
                     </div>
                     <div class="image-preview">
                         <img src="${image.url}" alt="${image.filename}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <div class="placeholder" style="display: none;">🖼️</div>
+                    </div>
+                    <div class="image-caption" style="display: none; padding: 8px; background: #f8f9fa; border-top: 1px solid #dee2e6; font-size: 0.9em; color: #495057;">
+                        <em>Caption will appear here after generation</em>
                     </div>
                     <div class="image-info">
                         <h4>${image.filename}</h4>
@@ -1989,33 +1997,40 @@
                 const selectedSizeMB = (optimizedStats.optimized_size / (1024 * 1024)).toFixed(1);
                 const optimizedSizeMB = (optimizedStats.optimized_size / (1024 * 1024)).toFixed(1);
                 
-                // Update breakdown counts
-                document.getElementById('raw-all-count').textContent = stats.total_images;
-                document.getElementById('raw-header-count').textContent = stats.header_images || 0;
-                document.getElementById('raw-sections-count').textContent = stats.section_images || 0;
-                document.getElementById('raw-size').textContent = totalSizeMB + 'MB';
+                // Update breakdown counts with null checks
+                const updateElement = (id, value) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = value;
+                    }
+                };
                 
-                document.getElementById('selected-all-count').textContent = selectedData.total || 0;
-                document.getElementById('selected-header-count').textContent = selectedData.header_count || 0;
-                document.getElementById('selected-sections-count').textContent = selectedData.section_count || 0;
-                document.getElementById('selected-size').textContent = selectedSizeMB + 'MB';
+                updateElement('raw-all-count', stats.total_images);
+                updateElement('raw-header-count', stats.header_images || 0);
+                updateElement('raw-sections-count', stats.section_images || 0);
+                updateElement('raw-size', totalSizeMB + 'MB');
                 
-                document.getElementById('optimized-all-count').textContent = optimizedStats.optimized_images || 0;
-                document.getElementById('optimized-header-count').textContent = optimizedStats.optimized_header_images || 0;
-                document.getElementById('optimized-sections-count').textContent = optimizedStats.optimized_section_images || 0;
-                document.getElementById('optimized-size').textContent = optimizedSizeMB + 'MB';
+                updateElement('selected-all-count', selectedData.total || 0);
+                updateElement('selected-header-count', selectedData.header_count || 0);
+                updateElement('selected-sections-count', selectedData.section_count || 0);
+                updateElement('selected-size', selectedSizeMB + 'MB');
+                
+                updateElement('optimized-all-count', optimizedStats.optimized_images || 0);
+                updateElement('optimized-header-count', optimizedStats.optimized_header_images || 0);
+                updateElement('optimized-sections-count', optimizedStats.optimized_section_images || 0);
+                updateElement('optimized-size', optimizedSizeMB + 'MB');
                 
                 const watermarkedSizeMB = (watermarkedStats.watermarked_size / (1024 * 1024)).toFixed(1);
                 
-                document.getElementById('watermarked-all-count').textContent = watermarkedStats.watermarked_count || 0;
-                document.getElementById('watermarked-header-count').textContent = '0'; // TODO: Add header count
-                document.getElementById('watermarked-sections-count').textContent = '0'; // TODO: Add section count
-                document.getElementById('watermarked-size').textContent = watermarkedSizeMB + 'MB';
+                updateElement('watermarked-all-count', watermarkedStats.watermarked_count || 0);
+                updateElement('watermarked-header-count', '0'); // TODO: Add header count
+                updateElement('watermarked-sections-count', '0'); // TODO: Add section count
+                updateElement('watermarked-size', watermarkedSizeMB + 'MB');
                 
-                document.getElementById('captioned-all-count').textContent = '0';
-                document.getElementById('captioned-header-count').textContent = '0';
-                document.getElementById('captioned-sections-count').textContent = '0';
-                document.getElementById('captioned-size').textContent = '0MB';
+                updateElement('captioned-all-count', '0');
+                updateElement('captioned-header-count', '0');
+                updateElement('captioned-sections-count', '0');
+                updateElement('captioned-size', '0MB');
                 
                 // Update pipeline status based on the new statistics
                 await updatePipelineStatus();
@@ -2046,7 +2061,10 @@
                 'featured': 'Featured Images'
             };
             const currentImageTypeTitle = imageTypeTitles[currentImageType] || 'Images';
-            document.getElementById('content-title').textContent = `${currentImageTypeTitle} - ${titles[stage]} - Post ${currentPostId}`;
+            const contentTitleElement = document.getElementById('content-title');
+            if (contentTitleElement) {
+                contentTitleElement.textContent = `${currentImageTypeTitle} - ${titles[stage]} - Post ${currentPostId}`;
+            }
             
             // TODO: Filter images by processing stage
             // For now, just reload current image type
@@ -2510,14 +2528,125 @@
         }
 
         // Watermarked stage functions (Captioning)
-        function startCaptioning() {
+        async function startCaptioning() {
             console.log('Starting captioning');
-            alert('Captioning process would begin');
+            
+            const captionStyle = document.getElementById('caption-style').value;
+            const captionLanguage = document.getElementById('caption-language').value;
+            
+            try {
+                showStatus('Generating captions...', 'info');
+                
+                const response = await fetch('/api/process/caption', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: currentPostId,
+                        caption_style: captionStyle,
+                        caption_language: captionLanguage
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showStatus(`Successfully generated captions for ${data.captions_generated} images!`, 'success');
+                        
+                        // Update the display to show captions
+                        await loadCaptions();
+                        
+                        // Update pipeline status
+                        updatePipelineStatus();
+                        updateStatistics();
+                    } else {
+                        showStatus(`Error: ${data.error}`, 'error');
+                    }
+                } else {
+                    const error = await response.json();
+                    showStatus(`Error: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
         }
 
-        function previewCaptions() {
+        async function previewCaptions() {
             console.log('Previewing captions');
-            alert('Caption preview would be shown');
+            
+            try {
+                const response = await fetch(`/api/captions/${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        let previewText = 'Current Captions:\n\n';
+                        
+                        if (data.captions.header.caption) {
+                            previewText += `Header: ${data.captions.header.caption}\n\n`;
+                        }
+                        
+                        data.captions.sections.forEach(section => {
+                            if (section.caption) {
+                                previewText += `${section.section_heading}: ${section.caption}\n\n`;
+                            }
+                        });
+                        
+                        alert(previewText);
+                    } else {
+                        alert('No captions found');
+                    }
+                } else {
+                    alert('Error loading captions');
+                }
+            } catch (error) {
+                alert('Error previewing captions');
+            }
+        }
+
+        async function loadCaptions() {
+            try {
+                const response = await fetch(`/api/captions/${currentPostId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        // Store captions globally for display
+                        window.currentCaptions = data.captions;
+                        
+                        // Update caption display in watermarking stage
+                        updateCaptionDisplay();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading captions:', error);
+            }
+        }
+
+        function updateCaptionDisplay() {
+            if (!window.currentCaptions) return;
+            
+            // Update header caption if exists
+            const headerImages = document.querySelectorAll('.image-container[data-type="header"]');
+            headerImages.forEach(container => {
+                const captionElement = container.querySelector('.image-caption');
+                if (captionElement && window.currentCaptions.header.caption) {
+                    captionElement.textContent = window.currentCaptions.header.caption;
+                    captionElement.style.display = 'block';
+                }
+            });
+            
+            // Update section captions
+            const sectionImages = document.querySelectorAll('.image-container[data-type="section"]');
+            sectionImages.forEach(container => {
+                const sectionId = container.dataset.sectionId;
+                const captionElement = container.querySelector('.image-caption');
+                
+                const sectionCaption = window.currentCaptions.sections.find(s => s.id == sectionId);
+                if (captionElement && sectionCaption && sectionCaption.caption) {
+                    captionElement.textContent = sectionCaption.caption;
+                    captionElement.style.display = 'block';
+                }
+            });
         }
 
         // Captioned stage functions
