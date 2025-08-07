@@ -1484,80 +1484,104 @@
                             
                             <div id="optimized-stage-content" class="stage-content hidden">
                                 <div class="stage-header">
-                                    <h4>🏷️ Watermarking Process</h4>
-                                    <p>Add watermarks and AI-generated text to optimized images.</p>
+                                    <h4>⚙️ Optimization Process</h4>
+                                    <p>Configure optimization settings for the selected images.</p>
                                 </div>
                                 <div class="control-group">
                                     <div class="control-item">
-                                        <label>Watermark Style:</label>
-                                        <select id="watermark-style">
-                                            <option value="clan">Clan Watermark (Default)</option>
-                                        </select>
-                                    </div>
-                                    <div class="control-item">
-                                        <label>Watermark Position:</label>
-                                        <select id="watermark-position">
-                                            <option value="bottom-right" selected>Bottom Right</option>
-                                            <option value="bottom-left">Bottom Left</option>
+                                        <label>Optimization Settings:</label>
+                                        <select id="optimization-settings-2">
+                                            <option value="webp_1200_85" selected>WebP 1200px (Recommended)</option>
+                                            <option value="webp_800_85">WebP 800px (Mobile)</option>
+                                            <option value="webp_1600_85">WebP 1600px (High Res)</option>
+                                            <option value="jpeg_1200_85">JPEG 1200px</option>
+                                            <option value="png_1200_lossless">PNG 1200px (Lossless)</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="batch-actions">
-                                    <button class="btn btn-primary" onclick="startWatermarking()">🚀 Start Watermarking</button>
-                                    <button class="btn btn-secondary" onclick="previewWatermarking()">👁️ Preview</button>
+                                    <button class="btn btn-primary" onclick="startOptimization()">🚀 Start Optimization</button>
+                                    <button class="btn btn-secondary" onclick="previewOptimization()">👁️ Preview</button>
                                 </div>
                             </div>
                             
                             <div id="watermarked-stage-content" class="stage-content hidden">
                                 <div class="stage-header">
-                                    <h4>🏷️ Captioning Process</h4>
-                                    <p>Add captions and metadata to watermarked images.</p>
-                                </div>
-                                <div class="control-group">
-                                    <div class="control-item">
-                                        <label>Caption Style:</label>
-                                        <select id="caption-style">
-                                            <option>Descriptive</option>
-                                            <option>Creative</option>
-                                            <option>Technical</option>
-                                        </select>
-                                    </div>
-                                    <div class="control-item">
-                                        <label>Language:</label>
-                                        <select id="caption-language">
-                                            <option>English</option>
-                                            <option>Spanish</option>
-                                            <option>French</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="prompt-display">
-                                    <label>Current Prompt:</label>
-                                    <div class="prompt-content" id="current-prompt-display">
-                                        <em>Click "Preview" to see the prompt that will be sent to the LLM</em>
-                                    </div>
-                                    <button class="btn btn-small" onclick="refreshPromptDisplay()">🔄 Refresh Prompt</button>
-                                </div>
-                                <div class="batch-actions">
-                                    <button class="btn btn-primary" onclick="startCaptioning()">🚀 Start Captioning</button>
-                                    <button class="btn btn-secondary" onclick="previewCaptions()">👁️ Preview</button>
-                                </div>
-                                <div class="batch-actions">
-                                    <button class="btn btn-primary" onclick="startMetadataGeneration()">📋 Generate Metadata</button>
-                                    <button class="btn btn-secondary" onclick="previewMetadata()">👁️ Preview Metadata</button>
-                                </div>
-                            </div>
+                                    <h4>🏷️ Watermarking Process</h4>
+                    <p>Add watermarks and AI-generated text to optimized images.</p>
+                </div>
+                <div class="control-group">
+                    <div class="control-item">
+                        <label>Watermark Style:</label>
+                        <select id="watermark-style">
+                            <option value="clan">Clan Watermark (Default)</option>
+                        </select>
+                    </div>
+                    <div class="control-item">
+                        <label>Watermark Position:</label>
+                        <select id="watermark-position">
+                            <option value="bottom-right" selected>Bottom Right</option>
+                            <option value="bottom-left">Bottom Left</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="batch-actions">
+                    <button class="btn btn-primary" onclick="startWatermarking()">🚀 Start Watermarking</button>
+                    <button class="btn btn-secondary" onclick="previewWatermarking()">👁️ Preview</button>
+                </div>
+            </div>
+            
+            <div id="captioned-stage-content" class="stage-content hidden">
+                <div class="stage-header">
+                    <h4>🏷️ Captioning Process</h4>
+                    <p>Add captions and metadata to watermarked images.</p>
+                </div>
+                <div class="control-group">
+                    <div class="control-item">
+                        <label>Caption Style:</label>
+                        <select id="caption-style">
+                            <option>Descriptive</option>
+                            <option>Creative</option>
+                            <option>Technical</option>
+                        </select>
+                    </div>
+                    <div class="control-item">
+                        <label>Language:</label>
+                        <select id="caption-language">
+                            <option>English</option>
+                            <option>Spanish</option>
+                            <option>French</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="prompt-display">
+                    <label>Current Prompt:</label>
+                    <div class="prompt-content" id="current-prompt-display">
+                        <em>Click "Preview" to see the prompt that will be sent to the LLM</em>
+                    </div>
+                    <button class="btn btn-small" onclick="refreshPromptDisplay()">🔄 Refresh Prompt</button>
+                </div>
+                <div class="batch-actions">
+                    <button class="btn btn-primary" onclick="startCaptioning()">🚀 Start Captioning</button>
+                    <button class="btn btn-secondary" onclick="previewCaptions()">👁️ Preview</button>
+                </div>
+                <div class="batch-actions">
+                    <button class="btn btn-primary" onclick="startMetadataGeneration()">📋 Generate Metadata</button>
+                    <button class="btn btn-secondary" onclick="previewMetadata()">👁️ Preview Metadata</button>
+                </div>
+            </div>
+            
+            <div id="review-stage-content" class="stage-content hidden">
+                <div class="stage-header">
+                    <h4>📝 Captioned Images</h4>
+                    <p>Review all images with their generated captions.</p>
+                </div>
+                <div class="batch-actions">
+                    <button class="btn btn-primary" onclick="approveAll()">✅ Approve All</button>
+                    <button class="btn btn-secondary" onclick="exportImages()">📤 Export</button>
+                </div>
+            </div>
                             
-                            <div id="captioned-stage-content" class="stage-content hidden">
-                                <div class="stage-header">
-                                    <h4>📝 Captioned Images</h4>
-                                    <p>Review all images with their generated captions.</p>
-                                </div>
-                                <div class="batch-actions">
-                                    <button class="btn btn-primary" onclick="approveAll()">✅ Approve All</button>
-                                    <button class="btn btn-secondary" onclick="exportImages()">📤 Export</button>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -2395,25 +2419,22 @@
                 content.classList.add('hidden');
             });
             
+            // Map pipeline stages to content sections
+            const stageContentMap = {
+                'raw': 'raw-stage-content',
+                'selected': 'selected-stage-content', 
+                'optimized': 'optimized-stage-content',
+                'watermarked': 'watermarked-stage-content',  // Watermarking controls
+                'captioned': 'captioned-stage-content',      // Captioning controls (with metadata)
+                'review': 'review-stage-content'             // Review controls
+            };
+            
             // Show content for current stage
-            const currentStageContent = document.getElementById(`${currentPipelineStage}-stage-content`);
-            if (currentStageContent) {
-                currentStageContent.classList.remove('hidden');
-            }
-            
-            // Special handling for watermarked stage (show captioning controls)
-            if (currentPipelineStage === 'watermarked') {
-                const watermarkedContent = document.getElementById('watermarked-stage-content');
-                if (watermarkedContent) {
-                    watermarkedContent.classList.remove('hidden');
-                }
-            }
-            
-            // Special handling for captioned stage (show captioning controls for metadata generation)
-            if (currentPipelineStage === 'captioned') {
-                const watermarkedContent = document.getElementById('watermarked-stage-content');
-                if (watermarkedContent) {
-                    watermarkedContent.classList.remove('hidden');
+            const contentId = stageContentMap[currentPipelineStage];
+            if (contentId) {
+                const currentStageContent = document.getElementById(contentId);
+                if (currentStageContent) {
+                    currentStageContent.classList.remove('hidden');
                 }
             }
         }
