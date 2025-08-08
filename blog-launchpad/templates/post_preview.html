@@ -389,76 +389,56 @@
         async function loadWidgetData() {
             const widgets = document.querySelectorAll('.widget-preview');
             
-            // Get random live data for widgets
-            const randomData = await getRandomLiveData();
+            // Get cross-promotion data for this post
+            const postId = {{ post.id }};
+            const crossPromotionData = await getCrossPromotionData(postId);
             
             widgets.forEach(widget => {
                 const widgetType = widget.dataset.widgetType;
                 
                 if (widgetType === 'category') {
-                    // Use random category from live data
-                    if (randomData.categories.length > 0) {
-                        const randomCategory = randomData.categories[Math.floor(Math.random() * randomData.categories.length)];
-                        loadCategoryProducts(widget, randomCategory.id);
+                    // Use configured category from cross-promotion data
+                    if (crossPromotionData.category_id) {
+                        loadCategoryProducts(widget, crossPromotionData.category_id, crossPromotionData.category_title);
                     } else {
-                        // Fallback to mock category data
-                        loadCategoryProducts(widget, 24);
+                        widget.innerHTML = '<div class="widget-loading">No category configured for this post.</div>';
                     }
                 } else if (widgetType === 'product') {
-                    // Use random product from live data
-                    if (randomData.products.length > 0) {
-                        const randomProduct = randomData.products[Math.floor(Math.random() * randomData.products.length)];
-                        loadRelatedProducts(widget, randomProduct.id);
+                    // Use configured product from cross-promotion data
+                    if (crossPromotionData.product_id) {
+                        loadRelatedProducts(widget, crossPromotionData.product_id, crossPromotionData.product_title);
                     } else {
-                        // Fallback to mock product data
-                        loadRelatedProducts(widget, 52499);
+                        widget.innerHTML = '<div class="widget-loading">No product configured for this post.</div>';
                     }
                 }
             });
         }
         
-        async function getRandomLiveData() {
+        async function getCrossPromotionData(postId) {
             try {
-                // Fetch categories and products from live API with timeout
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-                
-                const [categoriesResponse, productsResponse] = await Promise.all([
-                    fetch('/api/clan/categories', { signal: controller.signal }),
-                    fetch('/api/clan/products?limit=20', { signal: controller.signal })
-                ]);
-                
-                clearTimeout(timeoutId);
-                
-                const categories = await categoriesResponse.json();
-                const products = await productsResponse.json();
-                
-                console.log('Live data loaded successfully:', { 
-                    categoriesCount: categories.length, 
-                    productsCount: products.length 
-                });
-                
-                return {
-                    categories: categories || [],
-                    products: products || []
-                };
+                const response = await fetch(`/api/cross-promotion/${postId}`);
+                const data = await response.json();
+                console.log('Cross-promotion data loaded:', data);
+                return data;
             } catch (error) {
-                console.error('Error fetching live data:', error);
-                // Return empty arrays if API fails
+                console.error('Error fetching cross-promotion data:', error);
                 return {
-                    categories: [],
-                    products: []
+                    category_id: null,
+                    category_title: null,
+                    product_id: null,
+                    product_title: null
                 };
             }
         }
         
-        async function loadCategoryProducts(widget, categoryId) {
+        async function loadCategoryProducts(widget, categoryId, categoryTitle) {
             try {
                 const response = await fetch(`/api/clan/category/${categoryId}/products`);
                 const products = await response.json();
                 
                 if (products && products.length > 0) {
                     widget.innerHTML = `
+                        <div class="widget-title">${categoryTitle || 'Category Products'}</div>
                         <div class="product-grid">
                             ${products.map(product => `
                                 <div class="product-card">
@@ -471,53 +451,28 @@
                         </div>
                     `;
                 } else {
-                    // Show mock data if no products found
                     widget.innerHTML = `
-                        <div class="product-grid">
-                            <div class="product-card">
-                                <div class="product-image-placeholder">🏴󠁧󠁢󠁳󠁣󠁴󠁿</div>
-                                <h4>Traditional Scottish Kilt</h4>
-                                <div class="price">£299.99</div>
-                                <a href="https://clan.com/product/traditional-scottish-kilt" target="_blank" class="btn btn-primary btn-sm">View Product</a>
-                            </div>
-                            <div class="product-card">
-                                <div class="product-image-placeholder">🧣</div>
-                                <h4>Tartan Scarf</h4>
-                                <div class="price">£45.99</div>
-                                <a href="https://clan.com/product/tartan-scarf" target="_blank" class="btn btn-primary btn-sm">View Product</a>
-                            </div>
-                        </div>
+                        <div class="widget-title">${categoryTitle || 'Category Products'}</div>
+                        <div class="widget-loading">No products found in this category.</div>
                     `;
                 }
             } catch (error) {
                 console.error('Error loading category products:', error);
-                // Show mock data on error
                 widget.innerHTML = `
-                    <div class="product-grid">
-                        <div class="product-card">
-                            <div class="product-image-placeholder">🏴󠁧󠁢󠁳󠁣󠁴󠁿</div>
-                            <h4>Traditional Scottish Kilt</h4>
-                            <div class="price">£299.99</div>
-                            <a href="https://clan.com/product/traditional-scottish-kilt" target="_blank" class="btn btn-primary btn-sm">View Product</a>
-                        </div>
-                        <div class="product-card">
-                            <div class="product-image-placeholder">🧣</div>
-                            <h4>Tartan Scarf</h4>
-                            <div class="price">£45.99</div>
-                            <a href="https://clan.com/product/tartan-scarf" target="_blank" class="btn btn-primary btn-sm">View Product</a>
-                        </div>
-                    </div>
+                    <div class="widget-title">${categoryTitle || 'Category Products'}</div>
+                    <div class="widget-loading">Error loading products. Please try again.</div>
                 `;
             }
         }
         
-        async function loadRelatedProducts(widget, productId) {
+        async function loadRelatedProducts(widget, productId, productTitle) {
             try {
                 const response = await fetch(`/api/clan/product/${productId}/related`);
                 const products = await response.json();
                 
                 if (products && products.length > 0) {
                     widget.innerHTML = `
+                        <div class="widget-title">${productTitle || 'Related Products'}</div>
                         <div class="product-grid">
                             ${products.map(product => `
                                 <div class="product-card">
@@ -530,42 +485,16 @@
                         </div>
                     `;
                 } else {
-                    // Show mock data if no products found
                     widget.innerHTML = `
-                        <div class="product-grid">
-                            <div class="product-card">
-                                <div class="product-image-placeholder">✝️</div>
-                                <h4>Celtic Cross Pendant</h4>
-                                <div class="price">£89.99</div>
-                                <a href="https://clan.com/product/celtic-cross-pendant" target="_blank" class="btn btn-primary btn-sm">View Product</a>
-                            </div>
-                            <div class="product-card">
-                                <div class="product-image-placeholder">🌺</div>
-                                <h4>Scottish Thistle Brooch</h4>
-                                <div class="price">£34.99</div>
-                                <a href="https://clan.com/product/scottish-thistle-brooch" target="_blank" class="btn btn-primary btn-sm">View Product</a>
-                            </div>
-                        </div>
+                        <div class="widget-title">${productTitle || 'Related Products'}</div>
+                        <div class="widget-loading">No related products found.</div>
                     `;
                 }
             } catch (error) {
                 console.error('Error loading related products:', error);
-                // Show mock data on error
                 widget.innerHTML = `
-                    <div class="product-grid">
-                        <div class="product-card">
-                            <div class="product-image-placeholder">✝️</div>
-                            <h4>Celtic Cross Pendant</h4>
-                            <div class="price">£89.99</div>
-                            <a href="https://clan.com/product/celtic-cross-pendant" target="_blank" class="btn btn-primary btn-sm">View Product</a>
-                        </div>
-                        <div class="product-card">
-                            <div class="product-image-placeholder">🌺</div>
-                            <h4>Scottish Thistle Brooch</h4>
-                            <div class="price">£34.99</div>
-                            <a href="https://clan.com/product/scottish-thistle-brooch" target="_blank" class="btn btn-primary btn-sm">View Product</a>
-                        </div>
-                    </div>
+                    <div class="widget-title">${productTitle || 'Related Products'}</div>
+                    <div class="widget-loading">Error loading products. Please try again.</div>
                 `;
             }
         }
