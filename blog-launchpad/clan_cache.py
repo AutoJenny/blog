@@ -220,7 +220,7 @@ class ClanCache:
             
             return categories
     
-    def get_random_products(self, count: int = 6) -> List[Dict]:
+    def get_random_products(self, count: int = 3) -> List[Dict]:
         """Get random products from PostgreSQL cache"""
         with self.get_db_conn() as conn:
             cursor = conn.cursor(cursor_factory=RealDictCursor)
