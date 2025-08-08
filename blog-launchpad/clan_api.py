@@ -100,8 +100,8 @@ def refresh_cache() -> Dict:
     if categories:
         clan_cache.store_categories(categories)
     
-    # Fetch and store products
-    products = clan_client.get_products(limit=100)  # Get more products for cache
+    # Fetch and store products (get a large batch for cache)
+    products = clan_client.get_products(limit=500)  # Get 500 products for cache
     if products:
         clan_cache.store_products(products)
     
