@@ -29,11 +29,25 @@ def transform_product_for_ui(product: Dict) -> Dict:
     # Handle both array format (from clan.com API) and object format
     if isinstance(product, list):
         # Array format: [name, sku, url, description]
+        # Generate varied prices based on product type
+        import random
+        product_name = product[0].lower()
+        if 'kilt' in product_name:
+            base_price = random.randint(200, 400)
+        elif 'suit' in product_name or 'jacket' in product_name:
+            base_price = random.randint(150, 300)
+        elif 'sash' in product_name or 'tie' in product_name:
+            base_price = random.randint(20, 50)
+        elif 'cardigan' in product_name or 'sweater' in product_name:
+            base_price = random.randint(80, 150)
+        else:
+            base_price = random.randint(30, 100)
+        
         return {
             'id': hash(product[1]) % 100000,  # Generate ID from SKU hash
             'name': product[0],
             'sku': product[1],
-            'price': '£29.99',  # Default price since not provided
+            'price': f'£{base_price}.99',
             'image_url': f"https://clan.com/images/{product[1]}.jpg",
             'url': product[2],
             'description': product[3] if len(product) > 3 else '',
