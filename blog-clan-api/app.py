@@ -61,8 +61,8 @@ def get_products():
         logger.info(f"Fetching products from clan.com API (limit: {limit}, query: '{query}')")
         
         # Use real clan.com API data
-        # Get basic product list without images to get all products quickly
-        actual_limit = min(int(limit) if limit else 1000, 1000)
+        # Get ALL products without images
+        actual_limit = int(limit) if limit else None
         result = clan_api.get_products(limit=actual_limit, include_images=False)
         
         if result.get('success', True):
@@ -91,7 +91,7 @@ def get_category_products(category_id):
         logger.info(f"Fetching products for category {category_id}")
         
         # Get all products and filter by category
-        result = clan_api.get_products()
+        result = clan_api.get_products(limit=None, include_images=False)
         if result.get('success', True):
             products = result.get('data', [])
             
@@ -118,8 +118,8 @@ def get_related_products(product_id):
     try:
         logger.info(f"Fetching related products for product {product_id}")
         
-        # Get products (no limit) and return random selection as related
-        result = clan_api.get_products()
+        # Get ALL products and return random selection as related
+        result = clan_api.get_products(limit=None, include_images=False)
         if result.get('success', True):
             products = result.get('data', [])
             

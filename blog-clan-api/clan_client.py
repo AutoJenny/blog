@@ -116,11 +116,38 @@ class ClanAPIClient:
                 'data': detailed_products
             }
         else:
-            # Basic product list without images
-            params = {}
-            if limit:
-                params['limit'] = limit
-            return self.make_api_request('/getProducts', params)
+            # Basic product list without images - get ALL products
+            all_products = []
+            offset = 0
+            batch_size = 100
+            
+            while True:
+                params = {'limit': batch_size, 'offset': offset}
+                result = self.make_api_request('/getProducts', params)
+                
+                if not result.get('success', True):
+                    break
+                
+                batch_products = result.get('data', [])
+                if not batch_products:
+                    break
+                
+                all_products.extend(batch_products)
+                offset += batch_size
+                
+                # Stop if we've reached the requested limit
+                if limit and len(all_products) >= limit:
+                    all_products = all_products[:limit]
+                    break
+                
+                # Small delay between batches
+                import time
+                time.sleep(0.1)
+            
+            return {
+                'success': True,
+                'data': all_products
+            }
     
     def get_category_tree(self) -> Dict:
         """Get complete category tree"""
