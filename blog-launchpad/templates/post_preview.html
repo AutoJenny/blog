@@ -456,9 +456,15 @@
                         <div class="product-grid">
                             ${products.map(product => `
                                 <div class="product-card">
-                                    <img src="${product.image_url}" alt="${product.name}" onerror="this.style.display='none'">
+                                    <div class="product-image">
+                                        <img src="${product.image_url}" alt="${product.name}" 
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                        <div class="image-placeholder" style="display:none; width:100px; height:100px; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:24px;">
+                                            🏴󠁧󠁢󠁳󠁣󠁴󠁿
+                                        </div>
+                                    </div>
                                     <h4>${product.name}</h4>
-                                    <div class="price">${product.price}</div>
+                                    <div class="price">${product.price || '£29.99'}</div>
                                     <a href="${product.url}" target="_blank" class="btn btn-primary btn-sm">View Product</a>
                                 </div>
                             `).join('')}
@@ -497,9 +503,15 @@
                         <div class="product-grid">
                             ${products.map(product => `
                                 <div class="product-card">
-                                    <img src="${product.image_url}" alt="${product.name}" onerror="this.style.display='none'">
+                                    <div class="product-image">
+                                        <img src="${product.image_url}" alt="${product.name}" 
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                        <div class="image-placeholder" style="display:none; width:100px; height:100px; background:#f0f0f0; display:flex; align-items:center; justify-content:center; font-size:24px;">
+                                            🏴󠁧󠁢󠁳󠁣󠁴󠁿
+                                        </div>
+                                    </div>
                                     <h4>${product.name}</h4>
-                                    <div class="price">${product.price}</div>
+                                    <div class="price">${product.price || '£29.99'}</div>
                                     <a href="${product.url}" target="_blank" class="btn btn-primary btn-sm">View Product</a>
                                 </div>
                             `).join('')}
