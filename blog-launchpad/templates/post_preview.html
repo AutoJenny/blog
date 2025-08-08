@@ -317,9 +317,6 @@
                     {{ "{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"" }}{{ post.cross_promotion.category_id }}{{ "\" title=\"" }}{{ post.cross_promotion.category_title }}{{ "\"}}" }}
                 {% else %}
                     <!-- Live data call for local preview -->
-                    {% if post.cross_promotion.category_title %}
-                    <div class="widget-title">{{ post.cross_promotion.category_title }}</div>
-                    {% endif %}
                     <div class="widget-preview" data-widget-type="category" 
                          data-category-id="{{ post.cross_promotion.category_id }}"
                          data-title="{{ post.cross_promotion.category_title }}">
@@ -338,9 +335,6 @@
                     {{ "{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"" }}{{ post.cross_promotion.product_id }}{{ "\" title=\"" }}{{ post.cross_promotion.product_title }}{{ "\"}}" }}
                 {% else %}
                     <!-- Live data call for local preview -->
-                    {% if post.cross_promotion.product_title %}
-                    <div class="widget-title">{{ post.cross_promotion.product_title }}</div>
-                    {% endif %}
                     <div class="widget-preview" data-widget-type="product" 
                          data-product-id="{{ post.cross_promotion.product_id }}"
                          data-title="{{ post.cross_promotion.product_title }}">
