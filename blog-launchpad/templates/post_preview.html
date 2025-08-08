@@ -51,6 +51,14 @@
             margin-bottom: 10px;
             display: block;
         }
+        .image-caption {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -82,6 +90,9 @@
                     <div class="image-error" style="display: none;">
                         <small><strong>Header image not found:</strong> {{ post.header_image.path }}</small>
                     </div>
+                    {% if post.header_image.caption %}
+                        <div class="image-caption">{{ post.header_image.caption }}</div>
+                    {% endif %}
                 </div>
             {% endif %}
             
@@ -125,6 +136,9 @@
                                 <div class="image-error" style="display: none;">
                                     <small><strong>Image not found:</strong> {{ section.image.path }}</small>
                                 </div>
+                                {% if section.image.caption %}
+                                    <div class="image-caption">{{ section.image.caption }}</div>
+                                {% endif %}
                             </div>
                         {% else %}
                             <div class="image-placeholder">
