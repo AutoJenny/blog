@@ -97,12 +97,19 @@ class ClanAPIClient:
             detailed_products = []
             
             # Get detailed data for each product (including images)
-            for product in products[:limit] if limit else products:
-                if isinstance(product, list) and len(product) > 1:
-                    sku = product[1]
-                    detailed_result = self.get_product_data(sku, all_images=True)
-                    if detailed_result.get('success', True):
-                        detailed_products.append(detailed_result.get('data'))
+            # Process in smaller batches to avoid timeouts
+            batch_size = 20
+            for i in range(0, len(products[:limit] if limit else products), batch_size):
+                batch = products[i:i + batch_size]
+                for product in batch:
+                    if isinstance(product, list) and len(product) > 1:
+                        sku = product[1]
+                        detailed_result = self.get_product_data(sku, all_images=True)
+                        if detailed_result.get('success', True):
+                            detailed_products.append(detailed_result.get('data'))
+                        # Small delay to avoid overwhelming the API
+                        import time
+                        time.sleep(0.1)
             
             return {
                 'success': True,
