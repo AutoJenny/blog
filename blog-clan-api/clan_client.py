@@ -84,12 +84,36 @@ class ClanAPIClient:
         }
         return self.make_api_request('/getProductData', params)
     
-    def get_products(self, limit: Optional[int] = None) -> Dict:
-        """Get multiple products"""
-        params = {}
-        if limit:
-            params['limit'] = limit
-        return self.make_api_request('/getProducts', params)
+    def get_products(self, limit: Optional[int] = None, include_images: bool = True) -> Dict:
+        """Get multiple products with optional image data"""
+        if include_images:
+            # For products with images, we need to get them individually
+            # First get the basic product list
+            basic_result = self.make_api_request('/getProducts', {'limit': limit})
+            if not basic_result.get('success', True):
+                return basic_result
+            
+            products = basic_result.get('data', [])
+            detailed_products = []
+            
+            # Get detailed data for each product (including images)
+            for product in products[:limit] if limit else products:
+                if isinstance(product, list) and len(product) > 1:
+                    sku = product[1]
+                    detailed_result = self.get_product_data(sku, all_images=True)
+                    if detailed_result.get('success', True):
+                        detailed_products.append(detailed_result.get('data'))
+            
+            return {
+                'success': True,
+                'data': detailed_products
+            }
+        else:
+            # Basic product list without images
+            params = {}
+            if limit:
+                params['limit'] = limit
+            return self.make_api_request('/getProducts', params)
     
     def get_category_tree(self) -> Dict:
         """Get complete category tree"""
