@@ -83,6 +83,11 @@ def cross_promotion():
     """Cross-promotion management page."""
     return render_template('cross_promotion.html')
 
+@app.route('/test-api')
+def test_api():
+    """Test API endpoint."""
+    return render_template('test_api.html')
+
 @app.route('/health')
 def health():
     """Health check endpoint."""
