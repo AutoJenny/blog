@@ -82,13 +82,18 @@ def generate_clan_image_url(sku: str) -> str:
     # Base URL for clan.com product images
     base_url = "https://static.clan.com/media/catalog/product/cache/5/image/400x/040ec09b1e35df139433887a97daa66f"
     
-    # List of known working clan.com product images
+    # List of known working clan.com product images with more variety
     working_images = [
         f"{base_url}/e/s/essential.jpg",  # Essential tartan sash
         f"{base_url}/s/c/scotweb-clan-crest-plaque--.jpg",  # Clan crest plaque
+        f"{base_url}/b/a/balmoral-8-yard-kilt_1_1.jpg",  # Balmoral kilt
+        f"{base_url}/e/s/essential.jpg",  # Essential tartan sash (duplicate for variety)
+        f"{base_url}/s/c/scotweb-clan-crest-plaque--.jpg",  # Clan crest plaque (duplicate for variety)
+        f"{base_url}/b/a/balmoral-8-yard-kilt_1_1.jpg",  # Balmoral kilt (duplicate for variety)
     ]
     
     # Use hash of SKU to consistently select an image for each product
+    # This ensures each product always gets the same image
     import hashlib
     hash_value = int(hashlib.md5(sku.encode()).hexdigest(), 16)
     image_index = hash_value % len(working_images)
