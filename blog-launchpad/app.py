@@ -414,33 +414,11 @@ def search_clan_products():
         if response.status_code == 200:
             return jsonify(response.json())
         else:
-            # Fallback to mock data if API is unavailable
-            products = [
-                {'id': 52499, 'name': 'Traditional Scottish Kilt', 'sku': 'KILT-001'},
-                {'id': 52500, 'name': 'Tartan Scarf', 'sku': 'SCARF-002'},
-                {'id': 52501, 'name': 'Celtic Cross Pendant', 'sku': 'JEWEL-003'},
-                {'id': 52502, 'name': 'Scottish Thistle Brooch', 'sku': 'BROOCH-004'},
-                {'id': 52503, 'name': 'Highland Whisky Glass Set', 'sku': 'GLASS-005'}
-            ]
-            
-            if query:
-                products = [p for p in products if query.lower() in p['name'].lower()]
-            
-            return jsonify(products)
+            # Return empty array if API is unavailable
+            return jsonify([])
     except Exception as e:
-        # Fallback to mock data if API is unavailable
-        products = [
-            {'id': 52499, 'name': 'Traditional Scottish Kilt', 'sku': 'KILT-001'},
-            {'id': 52500, 'name': 'Tartan Scarf', 'sku': 'SCARF-002'},
-            {'id': 52501, 'name': 'Celtic Cross Pendant', 'sku': 'JEWEL-003'},
-            {'id': 52502, 'name': 'Scottish Thistle Brooch', 'sku': 'BROOCH-004'},
-            {'id': 52503, 'name': 'Highland Whisky Glass Set', 'sku': 'GLASS-005'}
-        ]
-        
-        if query:
-            products = [p for p in products if query.lower() in p['name'].lower()]
-        
-        return jsonify(products)
+        # Return empty array if API is unavailable
+        return jsonify([])
 
 @app.route('/api/clan/category/<int:category_id>/products')
 def get_clan_category_products(category_id):
@@ -450,43 +428,11 @@ def get_clan_category_products(category_id):
         if response.status_code == 200:
             return jsonify(response.json())
         else:
-            # Fallback to mock data if API is unavailable
-            products = [
-                {
-                    'id': 52499,
-                    'name': 'Traditional Scottish Kilt',
-                    'price': '£299.99',
-                    'image_url': 'https://clan.com/images/kilt-001.jpg',
-                    'url': 'https://clan.com/product/traditional-scottish-kilt'
-                },
-                {
-                    'id': 52500,
-                    'name': 'Tartan Scarf',
-                    'price': '£45.99',
-                    'image_url': 'https://clan.com/images/scarf-002.jpg',
-                    'url': 'https://clan.com/product/tartan-scarf'
-                }
-            ]
-            return jsonify(products)
+            # Return empty array if API is unavailable
+            return jsonify([])
     except Exception as e:
-        # Fallback to mock data if API is unavailable
-        products = [
-            {
-                'id': 52499,
-                'name': 'Traditional Scottish Kilt',
-                'price': '£299.99',
-                'image_url': 'https://clan.com/images/kilt-001.jpg',
-                'url': 'https://clan.com/product/traditional-scottish-kilt'
-            },
-            {
-                'id': 52500,
-                'name': 'Tartan Scarf',
-                'price': '£45.99',
-                'image_url': 'https://clan.com/images/scarf-002.jpg',
-                'url': 'https://clan.com/product/tartan-scarf'
-            }
-        ]
-        return jsonify(products)
+        # Return empty array if API is unavailable
+        return jsonify([])
 
 @app.route('/api/clan/product/<int:product_id>/related')
 def get_clan_related_products(product_id):
@@ -496,43 +442,11 @@ def get_clan_related_products(product_id):
         if response.status_code == 200:
             return jsonify(response.json())
         else:
-            # Fallback to mock data if API is unavailable
-            products = [
-                {
-                    'id': 52501,
-                    'name': 'Celtic Cross Pendant',
-                    'price': '£89.99',
-                    'image_url': 'https://clan.com/images/pendant-003.jpg',
-                    'url': 'https://clan.com/product/celtic-cross-pendant'
-                },
-                {
-                    'id': 52502,
-                    'name': 'Scottish Thistle Brooch',
-                    'price': '£34.99',
-                    'image_url': 'https://clan.com/images/brooch-004.jpg',
-                    'url': 'https://clan.com/product/scottish-thistle-brooch'
-                }
-            ]
-            return jsonify(products)
+            # Return empty array if API is unavailable
+            return jsonify([])
     except Exception as e:
-        # Fallback to mock data if API is unavailable
-        products = [
-            {
-                'id': 52501,
-                'name': 'Celtic Cross Pendant',
-                'price': '£89.99',
-                'image_url': 'https://clan.com/images/pendant-003.jpg',
-                'url': 'https://clan.com/product/celtic-cross-pendant'
-            },
-            {
-                'id': 52502,
-                'name': 'Scottish Thistle Brooch',
-                'price': '£34.99',
-                'image_url': 'https://clan.com/images/brooch-004.jpg',
-                'url': 'https://clan.com/product/scottish-thistle-brooch'
-            }
-        ]
-        return jsonify(products)
+        # Return empty array if API is unavailable
+        return jsonify([])
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
