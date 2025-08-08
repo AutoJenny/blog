@@ -87,7 +87,7 @@ def transform_product_for_ui(product: Dict) -> Dict:
             'category_ids': []
         }
 
-def get_random_products(products: List[Dict], count: int = 6) -> List[Dict]:
+def get_random_products(products: List[Dict], count: int = 3) -> List[Dict]:
     """Get random products for preview display"""
     import random
     if len(products) <= count:
