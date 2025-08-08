@@ -36,17 +36,16 @@ def get_categories():
     try:
         logger.info("Fetching categories from clan.com API")
         
-        # For now, return mock categories to avoid API timeouts
-        mock_categories = [
-            {"id": 1, "name": "Tartan Accessories", "description": "Traditional tartan items"},
-            {"id": 2, "name": "Kilts and Highland Dress", "description": "Traditional Scottish kilts"},
-            {"id": 3, "name": "Clan Crest Jewelry", "description": "Sterling silver clan jewelry"},
-            {"id": 4, "name": "Scottish Gifts", "description": "Unique Scottish gifts"},
-            {"id": 5, "name": "Ties and Scarves", "description": "Wool tartan ties and scarves"}
-        ]
+        result = clan_api.get_category_tree()
         
-        logger.info(f"Successfully fetched {len(mock_categories)} categories")
-        return jsonify(mock_categories)
+        if result.get('success', True):
+            categories = result.get('data', [])
+            flat_categories = flatten_category_tree(categories)
+            logger.info(f"Successfully fetched {len(flat_categories)} categories")
+            return jsonify(flat_categories)
+        else:
+            logger.error(f"API error: {result.get('message', 'Unknown error')}")
+            return jsonify([]), 500
             
     except Exception as e:
         logger.error(f"Exception fetching categories: {str(e)}")
@@ -61,29 +60,23 @@ def get_products():
         
         logger.info(f"Fetching products from clan.com API (limit: {limit}, query: '{query}')")
         
-        # For now, return mock data to avoid API timeouts
-        # Using real clan.com SKUs for proper image mapping
-        mock_products = [
-            ["Essential Tartan Sash", "sr_esssw_tartan_sash_wool", "https://clan.com/essential-scotweb-tartan-sash", "Traditional tartan sash"],
-            ["Luxury Kilt and Flashes", "sr_swhdr_eightyardkilt_flashes", "https://clan.com/the-balmoral-kilt-traditional-8-yard-kilt-flashes", "8-yard traditional kilt"],
-            ["Scottish Clan Crest Ring", "sr_scres_plaque", "https://clan.com/clan-crest-wall-plaque", "Sterling silver clan ring"],
-            ["Tartan Tie Collection", "sr_prpfl_tartan_sherpa_blanket", "https://clan.com/tartan-sherpa-blanket", "Wool tartan ties"],
-            ["Highland Dress Jacket", "sr_lochc_abscp_scarf_lambswool", "https://clan.com/classic-lambswool-tartan-scarf", "Formal highland wear"],
-            ["Celtic Cross Pendant", "sr_esssw_tartan_sash_wool", "https://clan.com/essential-scotweb-tartan-sash", "Traditional Celtic design"]
-        ]
+        # Use real clan.com API data
+        result = clan_api.get_products(limit=int(limit) if limit else None)
         
-        # Limit the results
-        if limit:
-            mock_products = mock_products[:int(limit)]
-        
-        # Filter by query if provided
-        if query:
-            mock_products = [p for p in mock_products if query.lower() in p[0].lower()]
-        
-        # Transform products for UI
-        transformed_products = [transform_product_for_ui(p) for p in mock_products]
-        logger.info(f"Successfully fetched {len(transformed_products)} products")
-        return jsonify(transformed_products)
+        if result.get('success', True):
+            products = result.get('data', [])
+            
+            # Filter by query if provided
+            if query:
+                products = [p for p in products if query.lower() in p[0].lower()]
+            
+            # Transform products for UI
+            transformed_products = [transform_product_for_ui(p) for p in products]
+            logger.info(f"Successfully fetched {len(transformed_products)} products")
+            return jsonify(transformed_products)
+        else:
+            logger.error(f"API error: {result.get('message', 'Unknown error')}")
+            return jsonify([]), 500
             
     except Exception as e:
         logger.error(f"Exception fetching products: {str(e)}")
