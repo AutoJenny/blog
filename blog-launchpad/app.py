@@ -78,6 +78,11 @@ def index():
     """Main launchpad page."""
     return render_template('index.html')
 
+@app.route('/cross-promotion')
+def cross_promotion():
+    """Cross-promotion management page."""
+    return render_template('cross_promotion.html')
+
 @app.route('/health')
 def health():
     """Health check endpoint."""
