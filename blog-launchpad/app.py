@@ -101,7 +101,8 @@ def preview_post(post_id):
         with get_db_conn() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             cur.execute("""
-                SELECT header_image_caption FROM post WHERE id = %s
+                SELECT header_image_caption, header_image_title, header_image_width, header_image_height 
+                FROM post WHERE id = %s
             """, (post_id,))
             header_data = cur.fetchone()
             header_caption = header_data['header_image_caption'] if header_data and header_data['header_image_caption'] else None
@@ -109,7 +110,10 @@ def preview_post(post_id):
         post['header_image'] = {
             'path': header_image_path,
             'alt_text': f"Header image for {post.get('title', 'this post')}",
-            'caption': header_caption
+            'caption': header_caption,
+            'title': header_data['header_image_title'] if header_data and header_data['header_image_title'] else None,
+            'width': header_data['header_image_width'] if header_data and header_data['header_image_width'] else None,
+            'height': header_data['header_image_height'] if header_data and header_data['header_image_height'] else None
         }
     
     return render_template('post_preview.html', post=post, sections=sections)
@@ -229,7 +233,8 @@ def get_post_sections_with_images(post_id):
                 section_description, ideas_to_include, facts_to_include,
                 draft, polished, highlighting, image_concepts,
                 image_prompts,
-                image_meta_descriptions, image_captions, status
+                image_meta_descriptions, image_captions, status,
+                image_title, image_width, image_height
             FROM post_section 
             WHERE post_id = %s 
             ORDER BY section_order
@@ -249,7 +254,10 @@ def get_post_sections_with_images(post_id):
                 section_dict['image'] = {
                     'path': image_path,
                     'alt_text': section.get('image_captions') or f"Image for {section.get('section_heading', 'section')}",
-                    'caption': section.get('image_captions')
+                    'caption': section.get('image_captions'),
+                    'title': section.get('image_title'),
+                    'width': section.get('image_width'),
+                    'height': section.get('image_height')
                 }
             elif section.get('image_id'):
                 # Fallback to legacy image_id system
@@ -264,7 +272,10 @@ def get_post_sections_with_images(post_id):
                 section_dict['image'] = {
                     'path': section['generated_image_url'],
                     'alt_text': section.get('image_captions') or 'Section image',
-                    'caption': section.get('image_captions')
+                    'caption': section.get('image_captions'),
+                    'title': section.get('image_title'),
+                    'width': section.get('image_width'),
+                    'height': section.get('image_height')
                 }
             else:
                 # No image found - provide placeholder info

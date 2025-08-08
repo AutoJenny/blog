@@ -59,14 +59,74 @@
             font-size: 0.9em;
             line-height: 1.4;
         }
+        .edit-button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        .edit-button, .meta-button {
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .edit-button {
+            background-color: #28a745;
+            color: white;
+        }
+        .edit-button:hover {
+            background-color: #218838;
+        }
+        .meta-button {
+            background-color: #007bff;
+            color: white;
+        }
+        .meta-button:hover {
+            background-color: #0056b3;
+        }
+        .meta-button.active {
+            background-color: #0056b3;
+        }
+        .image-meta-panel {
+            display: none;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            text-align: left;
+        }
+        .image-meta-panel.show {
+            display: block;
+        }
+        .meta-item {
+            margin-bottom: 5px;
+        }
+        .meta-item:last-child {
+            margin-bottom: 0;
+        }
+        .meta-item strong {
+            color: #495057;
+        }
     </style>
 </head>
 <body>
-    <!-- Edit Button - Top Right -->
+    <!-- Edit and Meta Buttons - Top Right -->
     <div class="edit-button-container">
         <a href="http://localhost:5000/workflow/posts/{{ post.id }}/planning/idea/initial_concept" class="edit-button">
             <i class="fas fa-edit"></i> Edit Post
         </a>
+        <button class="meta-button" onclick="toggleMetaDisplay()">
+            <i class="fas fa-info-circle"></i> View Meta
+        </button>
     </div>
     
     <!-- Site Header -->
@@ -93,6 +153,21 @@
                     {% if post.header_image.caption %}
                         <div class="image-caption">{{ post.header_image.caption }}</div>
                     {% endif %}
+                    <div class="image-meta-panel" id="header-meta-panel">
+                        <div class="meta-item">
+                            <strong>Alt Text:</strong> {{ post.header_image.alt_text }}
+                        </div>
+                        {% if post.header_image.title %}
+                        <div class="meta-item">
+                            <strong>Title:</strong> {{ post.header_image.title }}
+                        </div>
+                        {% endif %}
+                        {% if post.header_image.width and post.header_image.height %}
+                        <div class="meta-item">
+                            <strong>Dimensions:</strong> {{ post.header_image.width }} × {{ post.header_image.height }}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             {% endif %}
             
@@ -139,6 +214,21 @@
                                 {% if section.image.caption %}
                                     <div class="image-caption">{{ section.image.caption }}</div>
                                 {% endif %}
+                                <div class="image-meta-panel" id="section-meta-panel-{{ section.id }}">
+                                    <div class="meta-item">
+                                        <strong>Alt Text:</strong> {{ section.image.alt_text }}
+                                    </div>
+                                    {% if section.image.title %}
+                                    <div class="meta-item">
+                                        <strong>Title:</strong> {{ section.image.title }}
+                                    </div>
+                                    {% endif %}
+                                    {% if section.image.width and section.image.height %}
+                                    <div class="meta-item">
+                                        <strong>Dimensions:</strong> {{ section.image.width }} × {{ section.image.height }}
+                                    </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         {% else %}
                             <div class="image-placeholder">
@@ -163,5 +253,28 @@
     <div class="site-footer">
         <img src="{{ url_for('static', filename='site/footer.jpg') }}" alt="Site Footer">
     </div>
+    
+    <script>
+        function toggleMetaDisplay() {
+            const metaButton = document.querySelector('.meta-button');
+            const metaPanels = document.querySelectorAll('.image-meta-panel');
+            
+            if (metaButton.classList.contains('active')) {
+                // Hide meta panels
+                metaPanels.forEach(panel => {
+                    panel.classList.remove('show');
+                });
+                metaButton.classList.remove('active');
+                metaButton.innerHTML = '<i class="fas fa-info-circle"></i> View Meta';
+            } else {
+                // Show meta panels
+                metaPanels.forEach(panel => {
+                    panel.classList.add('show');
+                });
+                metaButton.classList.add('active');
+                metaButton.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Meta';
+            }
+        }
+    </script>
 </body>
 </html> 
