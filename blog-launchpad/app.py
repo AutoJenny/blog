@@ -101,7 +101,9 @@ def preview_post(post_id):
         with get_db_conn() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             cur.execute("""
-                SELECT header_image_caption, header_image_title, header_image_width, header_image_height 
+                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                       cross_promotion_category_id, cross_promotion_category_title,
+                       cross_promotion_product_id, cross_promotion_product_title
                 FROM post WHERE id = %s
             """, (post_id,))
             header_data = cur.fetchone()
@@ -114,6 +116,14 @@ def preview_post(post_id):
             'title': header_data['header_image_title'] if header_data and header_data['header_image_title'] else None,
             'width': header_data['header_image_width'] if header_data and header_data['header_image_width'] else None,
             'height': header_data['header_image_height'] if header_data and header_data['header_image_height'] else None
+        }
+        
+        # Add cross-promotion data
+        post['cross_promotion'] = {
+            'category_id': header_data['cross_promotion_category_id'] if header_data and header_data['cross_promotion_category_id'] else None,
+            'category_title': header_data['cross_promotion_category_title'] if header_data and header_data['cross_promotion_category_title'] else None,
+            'product_id': header_data['cross_promotion_product_id'] if header_data and header_data['cross_promotion_product_id'] else None,
+            'product_title': header_data['cross_promotion_product_title'] if header_data and header_data['cross_promotion_product_title'] else None
         }
     
     return render_template('post_preview.html', post=post, sections=sections)
@@ -304,6 +314,132 @@ def get_posts():
         """)
         posts = cur.fetchall()
         return jsonify([dict(post) for post in posts])
+
+@app.route('/api/cross-promotion/<int:post_id>', methods=['GET'])
+def get_cross_promotion(post_id):
+    """Get cross-promotion data for a post."""
+    with get_db_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute("""
+            SELECT cross_promotion_category_id, cross_promotion_category_title,
+                   cross_promotion_product_id, cross_promotion_product_title
+            FROM post WHERE id = %s
+        """, (post_id,))
+        data = cur.fetchone()
+        
+        if data:
+            return jsonify({
+                'category_id': data['cross_promotion_category_id'],
+                'category_title': data['cross_promotion_category_title'],
+                'product_id': data['cross_promotion_product_id'],
+                'product_title': data['cross_promotion_product_title']
+            })
+        else:
+            return jsonify({'error': 'Post not found'}), 404
+
+@app.route('/api/cross-promotion/<int:post_id>', methods=['POST'])
+def update_cross_promotion(post_id):
+    """Update cross-promotion data for a post."""
+    data = request.get_json()
+    
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE post SET 
+                cross_promotion_category_id = %s,
+                cross_promotion_category_title = %s,
+                cross_promotion_product_id = %s,
+                cross_promotion_product_title = %s,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """, (
+            data.get('category_id'),
+            data.get('category_title'),
+            data.get('product_id'),
+            data.get('product_title'),
+            post_id
+        ))
+        conn.commit()
+        
+        if cur.rowcount > 0:
+            return jsonify({'success': True, 'message': 'Cross-promotion data updated'})
+        else:
+            return jsonify({'error': 'Post not found'}), 404
+
+@app.route('/api/clan/categories')
+def get_clan_categories():
+    """Get available categories from clan.com (mock data for now)."""
+    # TODO: Replace with actual clan.com API call
+    categories = [
+        {'id': 24, 'name': 'Scottish Clothing'},
+        {'id': 25, 'name': 'Tartan Accessories'},
+        {'id': 26, 'name': 'Celtic Jewelry'},
+        {'id': 27, 'name': 'Scottish Home Decor'},
+        {'id': 28, 'name': 'Traditional Gifts'}
+    ]
+    return jsonify(categories)
+
+@app.route('/api/clan/products')
+def search_clan_products():
+    """Search products from clan.com (mock data for now)."""
+    query = request.args.get('q', '')
+    # TODO: Replace with actual clan.com API call
+    products = [
+        {'id': 52499, 'name': 'Traditional Scottish Kilt', 'sku': 'KILT-001'},
+        {'id': 52500, 'name': 'Tartan Scarf', 'sku': 'SCARF-002'},
+        {'id': 52501, 'name': 'Celtic Cross Pendant', 'sku': 'JEWEL-003'},
+        {'id': 52502, 'name': 'Scottish Thistle Brooch', 'sku': 'BROOCH-004'},
+        {'id': 52503, 'name': 'Highland Whisky Glass Set', 'sku': 'GLASS-005'}
+    ]
+    
+    if query:
+        products = [p for p in products if query.lower() in p['name'].lower()]
+    
+    return jsonify(products)
+
+@app.route('/api/clan/category/<int:category_id>/products')
+def get_clan_category_products(category_id):
+    """Get products from a specific category (mock data for now)."""
+    # TODO: Replace with actual clan.com API call
+    products = [
+        {
+            'id': 52499,
+            'name': 'Traditional Scottish Kilt',
+            'price': '£299.99',
+            'image_url': 'https://clan.com/images/kilt-001.jpg',
+            'url': 'https://clan.com/product/traditional-scottish-kilt'
+        },
+        {
+            'id': 52500,
+            'name': 'Tartan Scarf',
+            'price': '£45.99',
+            'image_url': 'https://clan.com/images/scarf-002.jpg',
+            'url': 'https://clan.com/product/tartan-scarf'
+        }
+    ]
+    return jsonify(products)
+
+@app.route('/api/clan/product/<int:product_id>/related')
+def get_clan_related_products(product_id):
+    """Get related products for a specific product (mock data for now)."""
+    # TODO: Replace with actual clan.com API call
+    products = [
+        {
+            'id': 52501,
+            'name': 'Celtic Cross Pendant',
+            'price': '£89.99',
+            'image_url': 'https://clan.com/images/pendant-003.jpg',
+            'url': 'https://clan.com/product/celtic-cross-pendant'
+        },
+        {
+            'id': 52502,
+            'name': 'Scottish Thistle Brooch',
+            'price': '£34.99',
+            'image_url': 'https://clan.com/images/brooch-004.jpg',
+            'url': 'https://clan.com/product/scottish-thistle-brooch'
+        }
+    ]
+    return jsonify(products)
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
