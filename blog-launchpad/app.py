@@ -1,3 +1,5 @@
+
+
 from flask import Flask, render_template, jsonify, request, send_file, redirect
 import requests
 import os
@@ -431,6 +433,27 @@ def get_clan_cache_stats():
         return jsonify({
             'error': f'Failed to get cache stats: {str(e)}'
         }), 500
+
+@app.route('/api/clan/cache/save-product', methods=['POST'])
+def save_individual_product():
+    """Save a single product to the cache database"""
+    try:
+        product_data = request.json
+        if not product_data:
+            return jsonify({'success': False, 'error': 'No product data provided'}), 400
+        
+        # Import clan_cache and save the product
+        from clan_cache import ClanCache
+        cache = ClanCache()
+        
+        # Save single product
+        cache.store_single_product(product_data)
+        
+        return jsonify({'success': True, 'message': 'Product saved successfully'})
+        
+    except Exception as e:
+        logger.error(f"Error saving individual product: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
