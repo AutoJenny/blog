@@ -387,14 +387,18 @@
         
         // Load widget data when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, starting widget data load...');
             loadWidgetData();
         });
         
         async function loadWidgetData() {
+            console.log('loadWidgetData called');
             const widgets = document.querySelectorAll('.widget-preview');
+            console.log(`Found ${widgets.length} widgets`);
             
             // Get cross-promotion data for this post
             const postId = {{ post.id }};
+            console.log(`Post ID: ${postId}`);
             const crossPromotionData = await getCrossPromotionData(postId);
             
             widgets.forEach(widget => {
@@ -420,7 +424,14 @@
         
         async function getCrossPromotionData(postId) {
             try {
+                console.log(`Fetching cross-promotion data for post ${postId}...`);
                 const response = await fetch(`/api/cross-promotion/${postId}`);
+                console.log('Cross-promotion response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 console.log('Cross-promotion data loaded:', data);
                 return data;
@@ -468,10 +479,20 @@
         
         async function loadRelatedProducts(widget, productId, productTitle) {
             try {
+                console.log(`Loading related products for product ${productId}...`);
                 const response = await fetch(`/api/clan/product/${productId}/related`);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const products = await response.json();
+                console.log('Products received:', products);
+                console.log('Products length:', products ? products.length : 'null');
                 
                 if (products && products.length > 0) {
+                    console.log('Rendering products...');
                     widget.innerHTML = `
                         <div class="product-grid">
                             ${products.map(product => `
@@ -484,7 +505,9 @@
                             `).join('')}
                         </div>
                     `;
+                    console.log('Products rendered successfully');
                 } else {
+                    console.log('No products found, showing error message');
                     widget.innerHTML = `
                         <div class="widget-loading">No related products found.</div>
                     `;
@@ -492,7 +515,7 @@
             } catch (error) {
                 console.error('Error loading related products:', error);
                 widget.innerHTML = `
-                    <div class="widget-loading">Error loading products. Please try again.</div>
+                    <div class="widget-loading">Error loading products: ${error.message}</div>
                 `;
             }
         }
