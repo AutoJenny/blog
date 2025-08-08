@@ -48,7 +48,7 @@ def transform_product_for_ui(product: Dict) -> Dict:
             'name': product[0],
             'sku': product[1],
             'price': f'£{base_price}.99',
-            'image_url': f"https://clan.com/images/{product[1]}.jpg",
+            'image_url': f"https://via.placeholder.com/200x200/4A90E2/FFFFFF?text=🏴󠁧󠁢󠁳󠁣󠁴󠁿",
             'url': product[2],
             'description': product[3] if len(product) > 3 else '',
             'category_ids': []
