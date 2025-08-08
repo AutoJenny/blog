@@ -53,7 +53,27 @@ def get_products():
         limit = request.args.get('limit', 50)
         
         logger.info(f"Fetching products from clan.com API (limit: {limit}, query: '{query}')")
-        result = clan_api.get_products(limit=int(limit))
+        
+        # For high limits, make multiple calls to get all products
+        all_products = []
+        if limit and int(limit) > 100:
+            # Make multiple calls with smaller batches
+            batch_size = 100
+            total_fetched = 0
+            while total_fetched < int(limit):
+                current_batch_size = min(batch_size, int(limit) - total_fetched)
+                result = clan_api.get_products(limit=current_batch_size)
+                if result.get('success', True):
+                    batch_products = result.get('data', [])
+                    all_products.extend(batch_products)
+                    total_fetched += len(batch_products)
+                    if len(batch_products) < current_batch_size:
+                        break  # No more products available
+                else:
+                    break
+            result = {'success': True, 'data': all_products}
+        else:
+            result = clan_api.get_products(limit=int(limit) if limit else None)
         
         if result.get('success', True):
             products = result.get('data', [])
@@ -108,7 +128,7 @@ def get_related_products(product_id):
     try:
         logger.info(f"Fetching related products for product {product_id}")
         
-        # Get all products and return random selection as related
+        # Get products (no limit) and return random selection as related
         result = clan_api.get_products()
         if result.get('success', True):
             products = result.get('data', [])
