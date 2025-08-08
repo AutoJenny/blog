@@ -381,20 +381,50 @@
             loadWidgetData();
         });
         
-        function loadWidgetData() {
+        async function loadWidgetData() {
             const widgets = document.querySelectorAll('.widget-preview');
+            
+            // Get random live data for widgets
+            const randomData = await getRandomLiveData();
             
             widgets.forEach(widget => {
                 const widgetType = widget.dataset.widgetType;
-                const categoryId = widget.dataset.categoryId;
-                const productId = widget.dataset.productId;
                 
-                if (widgetType === 'category' && categoryId) {
-                    loadCategoryProducts(widget, categoryId);
-                } else if (widgetType === 'product' && productId) {
-                    loadRelatedProducts(widget, productId);
+                if (widgetType === 'category') {
+                    // Use random category from live data
+                    const randomCategory = randomData.categories[Math.floor(Math.random() * randomData.categories.length)];
+                    loadCategoryProducts(widget, randomCategory.id);
+                } else if (widgetType === 'product') {
+                    // Use random product from live data
+                    const randomProduct = randomData.products[Math.floor(Math.random() * randomData.products.length)];
+                    loadRelatedProducts(widget, randomProduct.id);
                 }
             });
+        }
+        
+        async function getRandomLiveData() {
+            try {
+                // Fetch categories and products from live API
+                const [categoriesResponse, productsResponse] = await Promise.all([
+                    fetch('/api/clan/categories'),
+                    fetch('/api/clan/products?limit=20')
+                ]);
+                
+                const categories = await categoriesResponse.json();
+                const products = await productsResponse.json();
+                
+                return {
+                    categories: categories || [],
+                    products: products || []
+                };
+            } catch (error) {
+                console.error('Error fetching live data:', error);
+                // Return empty arrays if API fails
+                return {
+                    categories: [],
+                    products: []
+                };
+            }
         }
         
         async function loadCategoryProducts(widget, categoryId) {
