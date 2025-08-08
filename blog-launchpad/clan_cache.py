@@ -276,5 +276,96 @@ class ClanCache:
                 'last_updates': updates
             }
 
+    def store_single_product(self, product_data: Dict) -> bool:
+        """Store a single product to the database"""
+        try:
+            conn = self.get_db_conn()
+            cursor = conn.cursor()
+            
+            # Extract product data
+            product_id = product_data.get('id')
+            name = product_data.get('name', '')
+            sku = product_data.get('sku', '')
+            url = product_data.get('url', '')
+            image_url = product_data.get('image_url', '')
+            price = product_data.get('price', '')
+            description = product_data.get('description', '')
+            has_detailed_data = product_data.get('has_detailed_data', True)  # Default to True for backward compatibility
+            
+            # Insert or update the product
+            cursor.execute("""
+                INSERT INTO clan_products (id, name, sku, url, image_url, price, description, has_detailed_data)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (id) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    sku = EXCLUDED.sku,
+                    url = EXCLUDED.url,
+                    image_url = EXCLUDED.image_url,
+                    price = EXCLUDED.price,
+                    description = EXCLUDED.description,
+                    has_detailed_data = EXCLUDED.has_detailed_data
+            """, (product_id, name, sku, url, image_url, price, description, has_detailed_data))
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error storing single product: {str(e)}")
+            return False
+
+    def truncate_products(self) -> bool:
+        """Truncate the products table to remove all data"""
+        try:
+            conn = self.get_db_conn()
+            cursor = conn.cursor()
+            
+            cursor.execute("TRUNCATE TABLE clan_products")
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            logger.info("Products table truncated successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error truncating products table: {str(e)}")
+            return False
+
+    def add_has_detailed_data_column(self) -> bool:
+        """Add has_detailed_data column to clan_products table if it doesn't exist"""
+        try:
+            conn = self.get_db_conn()
+            cursor = conn.cursor()
+            
+            # Check if column exists
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'clan_products' 
+                AND column_name = 'has_detailed_data'
+            """)
+            
+            if not cursor.fetchone():
+                # Add the column
+                cursor.execute("""
+                    ALTER TABLE clan_products 
+                    ADD COLUMN has_detailed_data BOOLEAN DEFAULT TRUE
+                """)
+                conn.commit()
+                logger.info("Added has_detailed_data column to clan_products table")
+            else:
+                logger.info("has_detailed_data column already exists")
+            
+            cursor.close()
+            conn.close()
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error adding has_detailed_data column: {str(e)}")
+            return False
+
 # Global cache instance
 clan_cache = ClanCache()

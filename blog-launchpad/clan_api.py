@@ -101,7 +101,7 @@ def refresh_cache() -> Dict:
         clan_cache.store_categories(categories)
     
     # Fetch and store products (get a large batch for cache)
-    products = clan_client.get_products(limit=None)  # Get ALL products for cache
+    products = clan_client.get_products(limit=1000)  # Get 1000+ products for cache
     logger.info(f"Fetched {len(products)} products from API")
     if products:
         # The products are already transformed by the blog-clan-api service

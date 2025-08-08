@@ -19,7 +19,7 @@ class ClanAPIClient:
         self.session.headers.update({
             'Content-Type': 'application/json'
         })
-        self.timeout = 10
+        self.timeout = 60
     
     def make_api_request(self, endpoint: str, params: Dict = None) -> Dict:
         """Make API request with fallback URL support"""
@@ -88,61 +88,49 @@ class ClanAPIClient:
         """Get multiple products with optional image data"""
         if include_images:
             # For products with images, we need to get them individually
-            # First get the basic product list
-            basic_result = self.make_api_request('/getProducts', {'limit': limit})
+            # Get ALL basic products in one call (API supports large limits)
+            params = {'limit': limit if limit else 10000}  # Get all products in one call
+            basic_result = self.make_api_request('/getProducts', params)
+            
             if not basic_result.get('success', True):
-                return basic_result
+                return {'success': False, 'data': []}
             
-            products = basic_result.get('data', [])
+            all_basic_products = basic_result.get('data', [])
+            logger.info(f"Fetched {len(all_basic_products)} basic products")
+            
+            # Now get detailed data for each product (including images)
             detailed_products = []
+            image_batch_size = 10  # Smaller batches for image API calls
             
-            # Get detailed data for each product (including images)
-            # Process in smaller batches to avoid timeouts
-            batch_size = 20
-            for i in range(0, len(products[:limit] if limit else products), batch_size):
-                batch = products[i:i + batch_size]
+            for i in range(0, len(all_basic_products), image_batch_size):
+                batch = all_basic_products[i:i + image_batch_size]
                 for product in batch:
                     if isinstance(product, list) and len(product) > 1:
                         sku = product[1]
                         detailed_result = self.get_product_data(sku, all_images=True)
                         if detailed_result.get('success', True):
                             detailed_products.append(detailed_result.get('data'))
-                        # Small delay to avoid overwhelming the API
+                        # Delay to avoid rate limiting
                         import time
-                        time.sleep(0.1)
+                        time.sleep(0.5)  # Increased delay to avoid 429 errors
+                
+                # Log progress
+                logger.info(f"Processed {len(detailed_products)} products with images...")
             
             return {
                 'success': True,
                 'data': detailed_products
             }
         else:
-            # Basic product list without images - get ALL products
-            all_products = []
-            offset = 0
-            batch_size = 100
+            # Basic product list without images - get ALL products in one call
+            params = {'limit': limit if limit else 10000}  # Get all products in one call
+            result = self.make_api_request('/getProducts', params)
             
-            while True:
-                params = {'limit': batch_size, 'offset': offset}
-                result = self.make_api_request('/getProducts', params)
-                
-                if not result.get('success', True):
-                    break
-                
-                batch_products = result.get('data', [])
-                if not batch_products:
-                    break
-                
-                all_products.extend(batch_products)
-                offset += batch_size
-                
-                # Stop if we've reached the requested limit
-                if limit and len(all_products) >= limit:
-                    all_products = all_products[:limit]
-                    break
-                
-                # Small delay between batches
-                import time
-                time.sleep(0.1)
+            if not result.get('success', True):
+                return {'success': False, 'data': []}
+            
+            all_products = result.get('data', [])
+            logger.info(f"Fetched {len(all_products)} basic products")
             
             return {
                 'success': True,
