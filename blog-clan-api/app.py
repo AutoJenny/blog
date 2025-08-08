@@ -61,7 +61,9 @@ def get_products():
         logger.info(f"Fetching products from clan.com API (limit: {limit}, query: '{query}')")
         
         # Use real clan.com API data
-        result = clan_api.get_products(limit=int(limit) if limit else None)
+        # Limit to 50 products for performance (individual API calls are slow)
+        actual_limit = min(int(limit) if limit else 50, 50)
+        result = clan_api.get_products(limit=actual_limit)
         
         if result.get('success', True):
             products = result.get('data', [])
