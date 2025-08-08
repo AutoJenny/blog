@@ -97,9 +97,19 @@ def preview_post(post_id):
     # Find header image
     header_image_path = find_header_image(post_id)
     if header_image_path:
+        # Get header image caption from database
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur.execute("""
+                SELECT header_image_caption FROM post WHERE id = %s
+            """, (post_id,))
+            header_data = cur.fetchone()
+            header_caption = header_data['header_image_caption'] if header_data and header_data['header_image_caption'] else None
+        
         post['header_image'] = {
             'path': header_image_path,
-            'alt_text': f"Header image for {post.get('title', 'this post')}"
+            'alt_text': f"Header image for {post.get('title', 'this post')}",
+            'caption': header_caption
         }
     
     return render_template('post_preview.html', post=post, sections=sections)
@@ -238,7 +248,8 @@ def get_post_sections_with_images(post_id):
                 # Found image in new structure
                 section_dict['image'] = {
                     'path': image_path,
-                    'alt_text': section.get('image_captions') or f"Image for {section.get('section_heading', 'section')}"
+                    'alt_text': section.get('image_captions') or f"Image for {section.get('section_heading', 'section')}",
+                    'caption': section.get('image_captions')
                 }
             elif section.get('image_id'):
                 # Fallback to legacy image_id system
@@ -252,7 +263,8 @@ def get_post_sections_with_images(post_id):
                 # Fallback to generated_image_url
                 section_dict['image'] = {
                     'path': section['generated_image_url'],
-                    'alt_text': section.get('image_captions') or 'Section image'
+                    'alt_text': section.get('image_captions') or 'Section image',
+                    'caption': section.get('image_captions')
                 }
             else:
                 # No image found - provide placeholder info
