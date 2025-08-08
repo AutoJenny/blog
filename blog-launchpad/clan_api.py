@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ClanAPIClient:
     """Client for interacting with the blog-clan-api microservice."""
     
-    def __init__(self, base_url: str = 'http://localhost:5006'):
+    def __init__(self, base_url: str = 'http://localhost:5007'):
         self.base_url = base_url
         self.timeout = 30  # Increased timeout for large product fetches
     
@@ -104,6 +104,7 @@ def refresh_cache() -> Dict:
     products = clan_client.get_products(limit=500)  # Get 500 products for cache
     logger.info(f"Fetched {len(products)} products from API")
     if products:
+        # The products are already transformed by the blog-clan-api service
         clan_cache.store_products(products)
         logger.info(f"Stored {len(products)} products in cache")
     else:
