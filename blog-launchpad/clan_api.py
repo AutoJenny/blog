@@ -16,7 +16,7 @@ class ClanAPIClient:
     
     def __init__(self, base_url: str = 'http://localhost:5006'):
         self.base_url = base_url
-        self.timeout = 5
+        self.timeout = 30  # Increased timeout for large product fetches
     
     def get_categories(self) -> List[Dict]:
         """Get available categories from clan.com API."""
@@ -102,8 +102,12 @@ def refresh_cache() -> Dict:
     
     # Fetch and store products (get a large batch for cache)
     products = clan_client.get_products(limit=500)  # Get 500 products for cache
+    logger.info(f"Fetched {len(products)} products from API")
     if products:
         clan_cache.store_products(products)
+        logger.info(f"Stored {len(products)} products in cache")
+    else:
+        logger.error("No products fetched from API")
     
     return clan_cache.get_cache_stats()
 
