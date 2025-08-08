@@ -2867,5 +2867,359 @@ Return only the caption text, with no additional commentary or formatting."""
         print(f"Error getting caption prompt: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/process/metadata', methods=['POST'])
+def generate_metadata():
+    """Generate alt text and title attributes for watermarked images using LLM"""
+    try:
+        data = request.get_json()
+        post_id = data.get('post_id')
+        
+        if not post_id:
+            return jsonify({'error': 'Missing post_id'}), 400
+        
+        # Get post and section data for context
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Get post data
+                cur.execute("""
+                    SELECT p.title, p.subtitle, pd.basic_idea, pd.idea_scope
+                    FROM post p
+                    LEFT JOIN post_development pd ON p.id = pd.post_id
+                    WHERE p.id = %s
+                """, (post_id,))
+                post_data = cur.fetchone()
+                
+                if not post_data:
+                    return jsonify({'error': 'Post not found'}), 404
+                
+                # Get section data
+                cur.execute("""
+                    SELECT id, section_heading, section_description, image_filename
+                    FROM post_section
+                    WHERE post_id = %s
+                    ORDER BY section_order
+                """, (post_id,))
+                sections = cur.fetchall()
+        
+                # Get watermarked images
+                watermarked_images = []
+                
+                # Check header watermarked images
+                header_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'header', 'watermarked')
+                if os.path.exists(header_path):
+                    for filename in os.listdir(header_path):
+                        if allowed_file(filename):
+                            watermarked_images.append({
+                                'type': 'header',
+                                'path': os.path.join(header_path, filename),
+                                'filename': filename,
+                                'section_id': None
+                            })
+                
+                # Check section watermarked images
+                sections_path = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id), 'sections')
+                for section in sections:
+                    section_watermarked_path = os.path.join(sections_path, str(section['id']), 'watermarked')
+                    if os.path.exists(section_watermarked_path):
+                        for filename in os.listdir(section_watermarked_path):
+                            if allowed_file(filename):
+                                watermarked_images.append({
+                                    'type': 'section',
+                                    'path': os.path.join(section_watermarked_path, filename),
+                                    'filename': filename,
+                                    'section_id': section['id'],
+                                    'section_heading': section['section_heading']
+                                })
+                
+                if not watermarked_images:
+                    return jsonify({'error': 'No watermarked images found'}), 404
+        
+                # Generate metadata using LLM
+                metadata_generated = 0
+                metadata_data = []
+                
+                for image_info in watermarked_images:
+                    try:
+                        # Get image dimensions
+                        width, height = get_image_dimensions(image_info['path'])
+                        
+                        # Prepare context for LLM
+                        context = {
+                            'post_title': post_data['title'],
+                            'post_subtitle': post_data['subtitle'],
+                            'image_type': image_info['type'],
+                            'image_width': width,
+                            'image_height': height
+                        }
+                        
+                        if image_info['type'] == 'section':
+                            context['section_heading'] = image_info['section_heading']
+                        
+                        # Generate alt text and title using LLM
+                        alt_text = generate_alt_text_via_llm(context, image_info)
+                        title_text = generate_title_via_llm(context, image_info)
+                        
+                        # Save metadata to database
+                        save_metadata_to_database(image_info, alt_text, title_text, width, height, post_id)
+                        
+                        metadata_data.append({
+                            'filename': image_info['filename'],
+                            'type': image_info['type'],
+                            'alt_text': alt_text,
+                            'title_text': title_text,
+                            'width': width,
+                            'height': height
+                        })
+                        
+                        metadata_generated += 1
+                        
+                    except Exception as e:
+                        print(f"Error generating metadata for {image_info['filename']}: {e}")
+                        continue
+        
+        return jsonify({
+            'success': True,
+            'metadata_generated': metadata_generated,
+            'metadata': metadata_data
+        })
+        
+    except Exception as e:
+        print(f"Error generating metadata: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/metadata/<int:post_id>')
+def get_metadata(post_id):
+    """Get stored metadata for a post"""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                # Get header metadata
+                cur.execute("""
+                    SELECT header_image_title, header_image_width, header_image_height
+                    FROM post
+                    WHERE id = %s
+                """, (post_id,))
+                header_data = cur.fetchone()
+                
+                # Get section metadata
+                cur.execute("""
+                    SELECT id, section_heading, image_title, image_width, image_height
+                    FROM post_section
+                    WHERE post_id = %s
+                    ORDER BY section_order
+                """, (post_id,))
+                sections_data = cur.fetchall()
+                
+                metadata = {
+                    'header': None,
+                    'sections': []
+                }
+                
+                if header_data and header_data['header_image_title']:
+                    metadata['header'] = {
+                        'alt_text': f"Header image for {header_data.get('header_image_title', 'post')}",
+                        'title_text': header_data['header_image_title'],
+                        'width': header_data['header_image_width'],
+                        'height': header_data['header_image_height']
+                    }
+                
+                for section in sections_data:
+                    if section['image_title']:
+                        metadata['sections'].append({
+                            'section_id': section['id'],
+                            'section_heading': section['section_heading'],
+                            'alt_text': f"Image for {section['section_heading']}",
+                            'title_text': section['image_title'],
+                            'width': section['image_width'],
+                            'height': section['image_height']
+                        })
+                
+                return jsonify({
+                    'success': True,
+                    'metadata': metadata
+                })
+                
+    except Exception as e:
+        print(f"Error getting metadata: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+def get_image_dimensions(image_path):
+    """Get image dimensions using Pillow"""
+    try:
+        from PIL import Image
+        with Image.open(image_path) as img:
+            return img.size
+    except Exception as e:
+        print(f"Error getting image dimensions for {image_path}: {e}")
+        return 800, 600  # Default fallback dimensions
+
+def generate_alt_text_via_llm(context, image_info):
+    """Generate alt text using LLM"""
+    try:
+        # Fetch prompts from workflow system
+        system_prompt_response = requests.get('http://localhost:5000/api/workflow/prompts/all')
+        if system_prompt_response.status_code == 200:
+            prompts = system_prompt_response.json()
+            
+            # Find the alt text prompts (IDs 112, 113)
+            system_prompt = next((p for p in prompts if p['id'] == 112), None)
+            task_prompt = next((p for p in prompts if p['id'] == 113), None)
+            
+            if system_prompt and task_prompt:
+                system_content = system_prompt.get('prompt_text', '')
+                task_content = task_prompt.get('prompt_text', '')
+                
+                # Build context information
+                if context['image_type'] == 'header':
+                    context_info = f"Post: {context['post_title']} - {context['post_subtitle']}"
+                else:
+                    context_info = f"Section: {context['section_heading']}"
+                
+                full_prompt = f"""{system_content}
+
+{task_content}
+
+{context_info}
+
+Write exactly 6-8 words:"""
+            else:
+                # Fallback prompt
+                full_prompt = f"""Generate a concise alt text (6-8 words) for an image in a blog post.
+
+Context: {context_info}
+Image type: {context['image_type']}
+Dimensions: {context['image_width']}x{context['image_height']}
+
+Write only the alt text, no quotes or additional text:"""
+        else:
+            # Fallback prompt if API call fails
+            full_prompt = f"""Generate a concise alt text (6-8 words) for an image in a blog post.
+
+Context: {context_info}
+Image type: {context['image_type']}
+Dimensions: {context['image_width']}x{context['image_height']}
+
+Write only the alt text, no quotes or additional text:"""
+        
+        # Call LLM service
+        llm_response = requests.post('http://localhost:5002/api/llm/test', json={
+            'prompt': full_prompt
+        }, timeout=30)
+        
+        if llm_response.status_code == 200:
+            response_data = llm_response.json()
+            if response_data.get('status') == 'success':
+                alt_text = response_data.get('response', '').strip()
+                return clean_caption(alt_text)
+            else:
+                raise Exception(f"LLM service error: {response_data.get('error', 'Unknown error')}")
+        else:
+            raise Exception(f"LLM service returned status {llm_response.status_code}")
+            
+    except Exception as e:
+        print(f"Error generating alt text: {e}")
+        # Fallback alt text
+        if context['image_type'] == 'header':
+            return f"Header image for {context['post_title']}"
+        else:
+            return f"Image for {context['section_heading']}"
+
+def generate_title_via_llm(context, image_info):
+    """Generate title attribute using LLM"""
+    try:
+        # Fetch prompts from workflow system
+        system_prompt_response = requests.get('http://localhost:5000/api/workflow/prompts/all')
+        if system_prompt_response.status_code == 200:
+            prompts = system_prompt_response.json()
+            
+            # Find the title prompts (IDs 114, 115)
+            system_prompt = next((p for p in prompts if p['id'] == 114), None)
+            task_prompt = next((p for p in prompts if p['id'] == 115), None)
+            
+            if system_prompt and task_prompt:
+                system_content = system_prompt.get('prompt_text', '')
+                task_content = task_prompt.get('prompt_text', '')
+                
+                # Build context information
+                if context['image_type'] == 'header':
+                    context_info = f"Post: {context['post_title']} - {context['post_subtitle']}"
+                else:
+                    context_info = f"Section: {context['section_heading']}"
+                
+                full_prompt = f"""{system_content}
+
+{task_content}
+
+{context_info}
+
+Write exactly 6-8 words:"""
+            else:
+                # Fallback prompt
+                full_prompt = f"""Generate a concise title attribute (6-8 words) for an image in a blog post.
+
+Context: {context_info}
+Image type: {context['image_type']}
+Dimensions: {context['image_width']}x{context['image_height']}
+
+Write only the title, no quotes or additional text:"""
+        else:
+            # Fallback prompt if API call fails
+            full_prompt = f"""Generate a concise title attribute (6-8 words) for an image in a blog post.
+
+Context: {context_info}
+Image type: {context['image_type']}
+Dimensions: {context['image_width']}x{context['image_height']}
+
+Write only the title, no quotes or additional text:"""
+        
+        # Call LLM service
+        llm_response = requests.post('http://localhost:5002/api/llm/test', json={
+            'prompt': full_prompt
+        }, timeout=30)
+        
+        if llm_response.status_code == 200:
+            response_data = llm_response.json()
+            if response_data.get('status') == 'success':
+                title_text = response_data.get('response', '').strip()
+                return clean_caption(title_text)
+            else:
+                raise Exception(f"LLM service error: {response_data.get('error', 'Unknown error')}")
+        else:
+            raise Exception(f"LLM service returned status {llm_response.status_code}")
+            
+    except Exception as e:
+        print(f"Error generating title: {e}")
+        # Fallback title
+        if context['image_type'] == 'header':
+            return f"Header image for {context['post_title']}"
+        else:
+            return f"Image for {context['section_heading']}"
+
+def save_metadata_to_database(image_info, alt_text, title_text, width, height, post_id):
+    """Save metadata to database"""
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                if image_info['type'] == 'header':
+                    # Update post table
+                    cur.execute("""
+                        UPDATE post 
+                        SET header_image_title = %s, header_image_width = %s, header_image_height = %s
+                        WHERE id = %s
+                    """, (title_text, width, height, post_id))
+                else:
+                    # Update post_section table
+                    cur.execute("""
+                        UPDATE post_section 
+                        SET image_title = %s, image_width = %s, image_height = %s
+                        WHERE id = %s AND post_id = %s
+                    """, (title_text, width, height, image_info['section_id'], post_id))
+                
+                conn.commit()
+                
+    except Exception as e:
+        print(f"Error saving metadata to database: {e}")
+        raise
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=port) 
