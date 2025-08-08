@@ -317,7 +317,9 @@
                     {{ "{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"" }}{{ post.cross_promotion.category_id }}{{ "\" title=\"" }}{{ post.cross_promotion.category_title }}{{ "\"}}" }}
                 {% else %}
                     <!-- Live data call for local preview -->
-                    <div class="widget-title">{{ post.cross_promotion.category_title or 'Category Products' }}</div>
+                    {% if post.cross_promotion.category_title %}
+                    <div class="widget-title">{{ post.cross_promotion.category_title }}</div>
+                    {% endif %}
                     <div class="widget-preview" data-widget-type="category" 
                          data-category-id="{{ post.cross_promotion.category_id }}"
                          data-title="{{ post.cross_promotion.category_title }}">
@@ -336,7 +338,9 @@
                     {{ "{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"" }}{{ post.cross_promotion.product_id }}{{ "\" title=\"" }}{{ post.cross_promotion.product_title }}{{ "\"}}" }}
                 {% else %}
                     <!-- Live data call for local preview -->
-                    <div class="widget-title">{{ post.cross_promotion.product_title or 'Related Products' }}</div>
+                    {% if post.cross_promotion.product_title %}
+                    <div class="widget-title">{{ post.cross_promotion.product_title }}</div>
+                    {% endif %}
                     <div class="widget-preview" data-widget-type="product" 
                          data-product-id="{{ post.cross_promotion.product_id }}"
                          data-title="{{ post.cross_promotion.product_title }}">
@@ -438,7 +442,6 @@
                 
                 if (products && products.length > 0) {
                     widget.innerHTML = `
-                        <div class="widget-title">${categoryTitle || 'Category Products'}</div>
                         <div class="product-grid">
                             ${products.map(product => `
                                 <div class="product-card">
@@ -452,14 +455,12 @@
                     `;
                 } else {
                     widget.innerHTML = `
-                        <div class="widget-title">${categoryTitle || 'Category Products'}</div>
                         <div class="widget-loading">No products found in this category.</div>
                     `;
                 }
             } catch (error) {
                 console.error('Error loading category products:', error);
                 widget.innerHTML = `
-                    <div class="widget-title">${categoryTitle || 'Category Products'}</div>
                     <div class="widget-loading">Error loading products. Please try again.</div>
                 `;
             }
@@ -472,7 +473,6 @@
                 
                 if (products && products.length > 0) {
                     widget.innerHTML = `
-                        <div class="widget-title">${productTitle || 'Related Products'}</div>
                         <div class="product-grid">
                             ${products.map(product => `
                                 <div class="product-card">
@@ -486,14 +486,12 @@
                     `;
                 } else {
                     widget.innerHTML = `
-                        <div class="widget-title">${productTitle || 'Related Products'}</div>
                         <div class="widget-loading">No related products found.</div>
                     `;
                 }
             } catch (error) {
                 console.error('Error loading related products:', error);
                 widget.innerHTML = `
-                    <div class="widget-title">${productTitle || 'Related Products'}</div>
                     <div class="widget-loading">Error loading products. Please try again.</div>
                 `;
             }
