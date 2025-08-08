@@ -82,13 +82,13 @@ def get_products(limit: int = 50, query: str = '') -> List[Dict]:
 def get_category_products(category_id: int) -> List[Dict]:
     """Get products from a specific category (random selection from cache)."""
     # Use cached products and return random selection
-    products = clan_cache.get_random_products(6)
+    products = clan_cache.get_random_products(3)
     return products
 
 def get_related_products(product_id: int) -> List[Dict]:
     """Get related products for a specific product (random selection from cache)."""
     # Use cached products and return random selection
-    products = clan_cache.get_random_products(6)
+    products = clan_cache.get_random_products(3)
     return products
 
 def refresh_cache() -> Dict:
