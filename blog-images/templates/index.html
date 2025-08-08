@@ -2753,6 +2753,22 @@
                         caption_language: captionLanguage
                     })
                 });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        promptDisplay.textContent = data.prompt;
+                    } else {
+                        promptDisplay.textContent = 'Error: Could not fetch prompt';
+                    }
+                } else {
+                    promptDisplay.textContent = 'Error: Could not fetch prompt';
+                }
+            } catch (error) {
+                console.error('Error fetching prompt:', error);
+                promptDisplay.textContent = 'Error: Could not fetch prompt';
+            }
+        }
 
         // Metadata generation functions
         async function startMetadataGeneration() {
@@ -2886,22 +2902,6 @@
                     `;
                 }
             });
-        }
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        promptDisplay.textContent = data.prompt;
-                    } else {
-                        promptDisplay.textContent = 'Error: Could not fetch prompt';
-                    }
-                } else {
-                    promptDisplay.textContent = 'Error: Could not fetch prompt';
-                }
-            } catch (error) {
-                console.error('Error fetching prompt:', error);
-                promptDisplay.textContent = 'Error: Could not fetch prompt';
-            }
         }
 
         async function loadCaptions() {
