@@ -25,6 +25,11 @@ def index():
         'version': '1.0.0'
     })
 
+@app.route('/test')
+def test():
+    """Simple test endpoint"""
+    return jsonify({'message': 'Test endpoint working'})
+
 @app.route('/api/categories')
 def get_categories():
     """Get all categories from clan.com"""
@@ -139,4 +144,4 @@ def get_related_products(product_id):
         return jsonify([]), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5006, debug=True)
+    app.run(host='0.0.0.0', port=5007, debug=False)
