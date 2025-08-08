@@ -372,7 +372,7 @@ def update_cross_promotion(post_id):
             return jsonify({'error': 'Post not found'}), 404
 
 # Clan API functionality moved to separate module
-from clan_api import get_categories, get_products, get_category_products, get_related_products
+from clan_api import get_categories, get_products, get_category_products, get_related_products, refresh_cache, get_cache_stats
 
 @app.route('/api/clan/categories')
 def clan_categories():
@@ -399,6 +399,33 @@ def clan_related_products(product_id):
     """Get related products for a specific product."""
     products = get_related_products(product_id)
     return jsonify(products)
+
+@app.route('/api/clan/cache/refresh', methods=['POST'])
+def refresh_clan_cache():
+    """Manually refresh the clan.com cache."""
+    try:
+        stats = refresh_cache()
+        return jsonify({
+            'success': True,
+            'message': 'Cache refreshed successfully',
+            'stats': stats
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Failed to refresh cache: {str(e)}'
+        }), 500
+
+@app.route('/api/clan/cache/stats')
+def get_clan_cache_stats():
+    """Get cache statistics."""
+    try:
+        stats = get_cache_stats()
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({
+            'error': f'Failed to get cache stats: {str(e)}'
+        }), 500
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))

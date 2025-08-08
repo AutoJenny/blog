@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
 Clan API functionality for blog-launchpad
-Handles communication with the blog-clan-api microservice
+Handles communication with the blog-clan-api microservice with local caching
 """
 
 import requests
 import logging
 from typing import Dict, List, Optional
+from clan_cache import clan_cache
 
 logger = logging.getLogger(__name__)
 
@@ -46,48 +47,66 @@ class ClanAPIClient:
         except Exception as e:
             logger.error(f"Exception fetching products: {str(e)}")
             return []
-    
-    def get_category_products(self, category_id: int) -> List[Dict]:
-        """Get products from a specific category."""
-        try:
-            response = requests.get(f'{self.base_url}/api/categories/{category_id}/products', timeout=self.timeout)
-            if response.status_code == 200:
-                return response.json()
-            else:
-                logger.warning(f"Failed to fetch category products: {response.status_code}")
-                return []
-        except Exception as e:
-            logger.error(f"Exception fetching category products: {str(e)}")
-            return []
-    
-    def get_related_products(self, product_id: int) -> List[Dict]:
-        """Get related products for a specific product."""
-        try:
-            response = requests.get(f'{self.base_url}/api/products/{product_id}/related', timeout=self.timeout)
-            if response.status_code == 200:
-                return response.json()
-            else:
-                logger.warning(f"Failed to fetch related products: {response.status_code}")
-                return []
-        except Exception as e:
-            logger.error(f"Exception fetching related products: {str(e)}")
-            return []
 
 # Global client instance
 clan_client = ClanAPIClient()
 
 def get_categories() -> List[Dict]:
-    """Get available categories."""
-    return clan_client.get_categories()
+    """Get available categories from cache or API."""
+    # Check if cache is fresh
+    if clan_cache.is_cache_fresh('categories'):
+        logger.info("Using cached categories")
+        return clan_cache.get_categories()
+    
+    # Fetch from API and cache
+    logger.info("Fetching categories from API")
+    categories = clan_client.get_categories()
+    if categories:
+        clan_cache.store_categories(categories)
+    return categories
 
 def get_products(limit: int = 50, query: str = '') -> List[Dict]:
-    """Search products."""
-    return clan_client.get_products(limit=limit, query=query)
+    """Search products from cache or API."""
+    # Check if cache is fresh
+    if clan_cache.is_cache_fresh('products'):
+        logger.info("Using cached products")
+        return clan_cache.get_products(limit=limit, query=query)
+    
+    # Fetch from API and cache
+    logger.info("Fetching products from API")
+    products = clan_client.get_products(limit=limit, query=query)
+    if products:
+        clan_cache.store_products(products)
+    return products
 
 def get_category_products(category_id: int) -> List[Dict]:
-    """Get products from a specific category."""
-    return clan_client.get_category_products(category_id)
+    """Get products from a specific category (random selection from cache)."""
+    # Use cached products and return random selection
+    products = clan_cache.get_random_products(6)
+    return products
 
 def get_related_products(product_id: int) -> List[Dict]:
-    """Get related products for a specific product."""
-    return clan_client.get_related_products(product_id)
+    """Get related products for a specific product (random selection from cache)."""
+    # Use cached products and return random selection
+    products = clan_cache.get_random_products(6)
+    return products
+
+def refresh_cache() -> Dict:
+    """Manually refresh the cache from the API."""
+    logger.info("Manually refreshing cache")
+    
+    # Fetch and store categories
+    categories = clan_client.get_categories()
+    if categories:
+        clan_cache.store_categories(categories)
+    
+    # Fetch and store products
+    products = clan_client.get_products(limit=100)  # Get more products for cache
+    if products:
+        clan_cache.store_products(products)
+    
+    return clan_cache.get_cache_stats()
+
+def get_cache_stats() -> Dict:
+    """Get cache statistics."""
+    return clan_cache.get_cache_stats()
