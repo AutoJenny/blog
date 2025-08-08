@@ -62,13 +62,14 @@ def get_products():
         logger.info(f"Fetching products from clan.com API (limit: {limit}, query: '{query}')")
         
         # For now, return mock data to avoid API timeouts
+        # Using real clan.com SKUs for proper image mapping
         mock_products = [
-            ["Essential Tartan Sash", "esssw_essential", "https://clan.com/essential-tartan-sash", "Traditional tartan sash"],
-            ["Luxury Kilt and Flashes", "luxkilt_8yard", "https://clan.com/luxury-kilt", "8-yard traditional kilt"],
-            ["Scottish Clan Crest Ring", "ring_crest", "https://clan.com/clan-crest-ring", "Sterling silver clan ring"],
-            ["Tartan Tie Collection", "tie_tartan", "https://clan.com/tartan-ties", "Wool tartan ties"],
-            ["Highland Dress Jacket", "jacket_highland", "https://clan.com/highland-jacket", "Formal highland wear"],
-            ["Celtic Cross Pendant", "pendant_celtic", "https://clan.com/celtic-pendant", "Traditional Celtic design"]
+            ["Essential Tartan Sash", "sr_esssw_tartan_sash_wool", "https://clan.com/essential-scotweb-tartan-sash", "Traditional tartan sash"],
+            ["Luxury Kilt and Flashes", "sr_swhdr_eightyardkilt_flashes", "https://clan.com/the-balmoral-kilt-traditional-8-yard-kilt-flashes", "8-yard traditional kilt"],
+            ["Scottish Clan Crest Ring", "sr_scres_plaque", "https://clan.com/clan-crest-wall-plaque", "Sterling silver clan ring"],
+            ["Tartan Tie Collection", "sr_prpfl_tartan_sherpa_blanket", "https://clan.com/tartan-sherpa-blanket", "Wool tartan ties"],
+            ["Highland Dress Jacket", "sr_lochc_abscp_scarf_lambswool", "https://clan.com/classic-lambswool-tartan-scarf", "Formal highland wear"],
+            ["Celtic Cross Pendant", "sr_esssw_tartan_sash_wool", "https://clan.com/essential-scotweb-tartan-sash", "Traditional Celtic design"]
         ]
         
         # Limit the results

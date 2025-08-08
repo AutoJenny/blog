@@ -114,6 +114,14 @@ class ClanCache:
                 cursor.execute('''
                     INSERT INTO clan_products (id, name, sku, price, image_url, url, description, category_ids)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (id) DO UPDATE SET
+                        name = EXCLUDED.name,
+                        sku = EXCLUDED.sku,
+                        price = EXCLUDED.price,
+                        image_url = EXCLUDED.image_url,
+                        url = EXCLUDED.url,
+                        description = EXCLUDED.description,
+                        category_ids = EXCLUDED.category_ids
                 ''', (
                     product.get('id'),
                     product.get('name'),
