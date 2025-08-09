@@ -90,6 +90,19 @@ def test_api():
     """Test API endpoint."""
     return render_template('test_api.html')
 
+@app.route('/docs/publishing')
+def publishing_docs():
+    """Serve publishing documentation."""
+    import os
+    docs_path = "/Users/nickfiddes/Code/projects/blog/blog-core/docs/reference/publishing/clan_com_publishing_system.md"
+    
+    if os.path.exists(docs_path):
+        with open(docs_path, 'r') as f:
+            content = f.read()
+        return render_template('markdown_viewer.html', content=content, title="Clan.com Publishing System")
+    else:
+        return "Documentation not found", 404
+
 @app.route('/health')
 def health():
     """Health check endpoint."""
