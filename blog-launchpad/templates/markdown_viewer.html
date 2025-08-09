@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Blog Launchpad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .header .breadcrumb {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .content {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Markdown Styling */
+        .markdown-content h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .markdown-content h2 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .markdown-content h3 {
+            color: #555;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        
+        .markdown-content h4 {
+            color: #666;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .markdown-content p {
+            margin-bottom: 15px;
+        }
+        
+        .markdown-content ul, .markdown-content ol {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+        
+        .markdown-content li {
+            margin-bottom: 5px;
+        }
+        
+        .markdown-content code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+        }
+        
+        .markdown-content pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .markdown-content pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin: 20px 0;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .markdown-content th, .markdown-content td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        
+        .markdown-content th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .markdown-content .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        
+        .markdown-content .warning {
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #dc3545;
+            margin: 20px 0;
+        }
+        
+        .markdown-content .success {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+            margin: 20px 0;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: #0056b3;
+            color: white;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .markdown-content pre {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="breadcrumb">
+                <a href="/" style="color: #007bff; text-decoration: none;">
+                    <i class="fas fa-home"></i> Blog Launchpad
+                </a>
+                <span style="margin: 0 8px;">/</span>
+                <span>Documentation</span>
+            </div>
+            <h1>{{ title }}</h1>
+        </div>
+        
+        <div class="content">
+            <div class="markdown-content">
+                {{ content | safe }}
+            </div>
+            
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
+                <a href="/" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Launchpad
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
