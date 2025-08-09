@@ -336,6 +336,7 @@ def get_posts():
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("""
             SELECT p.id, p.title, p.created_at, p.updated_at, p.status,
+                   p.clan_post_id, p.clan_status, p.clan_last_attempt, p.clan_error, p.clan_uploaded_url,
                    pd.idea_seed, pd.provisional_title, pd.intro_blurb
             FROM post p
             LEFT JOIN post_development pd ON p.id = pd.post_id
