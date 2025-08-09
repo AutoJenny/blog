@@ -233,191 +233,14 @@
                     </button>
                 </h3>
 
-                <!-- Post Card - Example 1: Not Published -->
-                <div class="post-card" data-post-id="1">
-                    <div class="row align-items-center">
-                        <div class="col-md-1">
-                            <input class="form-check-input post-checkbox" type="checkbox" value="1">
-                        </div>
-                        <div class="col-md-5">
-                            <h5 class="mb-1">The Evolution of Scottish Kilts</h5>
-                            <p class="text-muted mb-1">
-                                <small>
-                                    <i class="fas fa-calendar me-1"></i>Created: Jan 15, 2025
-                                    <i class="fas fa-edit ms-3 me-1"></i>Updated: Jan 20, 2025
-                                </small>
-                            </p>
-                            <div class="mb-2">
-                                <span class="badge bg-secondary me-1">History</span>
-                                <span class="badge bg-secondary me-1">Tartan</span>
-                                <span class="badge bg-secondary">Scottish</span>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <span class="status-badge status-not-published">
-                                <i class="fas fa-clock me-1"></i>Not Published
-                            </span>
-                        </div>
-                        <div class="col-md-2 text-center">
-                            <div class="text-muted">
-                                <small>Clan.com ID: --</small>
-                            </div>
-                        </div>
-                        <div class="col-md-2 text-end">
-                            <button class="btn publish-btn me-2" onclick="publishPost(1)">
-                                <i class="fas fa-upload me-1"></i>Publish
-                            </button>
-                            <button class="btn view-btn" onclick="previewPost(1)">
-                                <i class="fas fa-eye me-1"></i>Preview
-                            </button>
-                        </div>
-                    </div>
+                <!-- Posts will be loaded dynamically here -->
+                <div id="posts-loading" class="text-center p-4">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2 text-muted">Loading posts from database...</p>
                 </div>
-
-                <!-- Post Card - Example 2: Published -->
-                <div class="post-card" data-post-id="2">
-                    <div class="row align-items-center">
-                        <div class="col-md-1">
-                            <input class="form-check-input post-checkbox" type="checkbox" value="2">
-                        </div>
-                        <div class="col-md-5">
-                            <h5 class="mb-1">Clan Stewart's Highland Heritage</h5>
-                            <p class="text-muted mb-1">
-                                <small>
-                                    <i class="fas fa-calendar me-1"></i>Created: Jan 10, 2025
-                                    <i class="fas fa-edit ms-3 me-1"></i>Updated: Jan 18, 2025
-                                </small>
-                            </p>
-                            <div class="mb-2">
-                                <span class="badge bg-secondary me-1">Clans</span>
-                                <span class="badge bg-secondary me-1">Heritage</span>
-                                <span class="badge bg-secondary">Scotland</span>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <span class="status-badge status-published">
-                                <i class="fas fa-check me-1"></i>Published
-                            </span>
-                            <div class="success-message mt-2">
-                                <small>
-                                    <i class="fas fa-check-circle me-1"></i>
-                                    Published successfully on Jan 18, 2025
-                                </small>
-                            </div>
-                        </div>
-                        <div class="col-md-2 text-center">
-                            <div class="text-success">
-                                <small>
-                                    <strong>Clan.com ID: 12847</strong><br>
-                                    <a href="https://clan.com/blog/clan-stewart-highland-heritage" target="_blank" class="text-decoration-none">
-                                        <i class="fas fa-external-link-alt me-1"></i>View Live
-                                    </a>
-                                </small>
-                            </div>
-                        </div>
-                        <div class="col-md-2 text-end">
-                            <button class="btn publish-btn me-2" onclick="republishPost(2)">
-                                <i class="fas fa-sync me-1"></i>Update
-                            </button>
-                            <button class="btn view-btn" onclick="previewPost(2)">
-                                <i class="fas fa-eye me-1"></i>Preview
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Post Card - Example 3: Error -->
-                <div class="post-card" data-post-id="3">
-                    <div class="row align-items-center">
-                        <div class="col-md-1">
-                            <input class="form-check-input post-checkbox" type="checkbox" value="3">
-                        </div>
-                        <div class="col-md-5">
-                            <h5 class="mb-1">Traditional Tartan Weaving Techniques</h5>
-                            <p class="text-muted mb-1">
-                                <small>
-                                    <i class="fas fa-calendar me-1"></i>Created: Jan 12, 2025
-                                    <i class="fas fa-edit ms-3 me-1"></i>Updated: Jan 19, 2025
-                                </small>
-                            </p>
-                            <div class="mb-2">
-                                <span class="badge bg-secondary me-1">Crafts</span>
-                                <span class="badge bg-secondary me-1">Tartan</span>
-                                <span class="badge bg-secondary">Weaving</span>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <span class="status-badge status-error">
-                                <i class="fas fa-exclamation-triangle me-1"></i>Error
-                            </span>
-                            <div class="error-details mt-2">
-                                <small>
-                                    <strong>Last attempt:</strong> Jan 19, 2025 14:30<br>
-                                    <strong>Error:</strong> Image upload failed - file not found
-                                </small>
-                            </div>
-                        </div>
-                        <div class="col-md-2 text-center">
-                            <div class="text-muted">
-                                <small>Clan.com ID: --</small>
-                            </div>
-                        </div>
-                        <div class="col-md-2 text-end">
-                            <button class="btn retry-btn me-2" onclick="retryPublish(3)">
-                                <i class="fas fa-redo me-1"></i>Retry
-                            </button>
-                            <button class="btn view-btn" onclick="previewPost(3)">
-                                <i class="fas fa-eye me-1"></i>Preview
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Post Card - Example 4: Publishing (In Progress) -->
-                <div class="post-card" data-post-id="4">
-                    <div class="row align-items-center">
-                        <div class="col-md-1">
-                            <input class="form-check-input post-checkbox" type="checkbox" value="4" disabled>
-                        </div>
-                        <div class="col-md-5">
-                            <h5 class="mb-1">Modern Celtic Fashion Trends</h5>
-                            <p class="text-muted mb-1">
-                                <small>
-                                    <i class="fas fa-calendar me-1"></i>Created: Jan 16, 2025
-                                    <i class="fas fa-edit ms-3 me-1"></i>Updated: Jan 20, 2025
-                                </small>
-                            </p>
-                            <div class="mb-2">
-                                <span class="badge bg-secondary me-1">Fashion</span>
-                                <span class="badge bg-secondary me-1">Modern</span>
-                                <span class="badge bg-secondary">Celtic</span>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <span class="status-badge status-publishing">
-                                <i class="fas fa-spinner fa-spin me-1"></i>Publishing...
-                            </span>
-                            <div class="publishing-log mt-2">
-                                <div>2025-01-20 15:45:12 - Starting publish process...</div>
-                                <div>2025-01-20 15:45:15 - Uploading header image...</div>
-                                <div>2025-01-20 15:45:18 - Uploading section images (2/3)...</div>
-                                <div>2025-01-20 15:45:21 - Processing content...</div>
-                            </div>
-                        </div>
-                        <div class="col-md-2 text-center">
-                            <div class="text-muted">
-                                <small>Clan.com ID: --</small>
-                            </div>
-                        </div>
-                        <div class="col-md-2 text-end">
-                            <button class="btn publish-btn me-2" disabled>
-                                <i class="fas fa-spinner fa-spin me-1"></i>Publishing...
-                            </button>
-                            <button class="btn view-btn" onclick="previewPost(4)">
-                                <i class="fas fa-eye me-1"></i>Preview
-                            </button>
-                        </div>
-                    </div>
+                
+                <div id="posts-container" style="display: none;">
+                    <!-- Real posts will be rendered here by JavaScript -->
                 </div>
             </div>
         </div>
@@ -454,13 +277,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Mock data for demonstration
-        let posts = [
-            {id: 1, title: "The Evolution of Scottish Kilts", status: "not_published", clan_id: null},
-            {id: 2, title: "Clan Stewart's Highland Heritage", status: "published", clan_id: 12847},
-            {id: 3, title: "Traditional Tartan Weaving Techniques", status: "error", clan_id: null},
-            {id: 4, title: "Modern Celtic Fashion Trends", status: "publishing", clan_id: null}
-        ];
+        // Real data from database
+        let posts = [];
+        let publishingStats = {
+            total: 0,
+            published: 0,
+            pending: 0,
+            errors: 0
+        };
 
         // Publishing functions
         function publishPost(postId) {
@@ -520,22 +344,34 @@
 
         function refreshPosts() {
             showToast('Refreshing posts...', 'info');
-            // Mock refresh
-            setTimeout(() => {
-                showToast('Posts refreshed successfully!', 'success');
-            }, 1000);
+            
+            // Show loading again
+            const loadingDiv = document.getElementById('posts-loading');
+            const container = document.getElementById('posts-container');
+            if (loadingDiv) loadingDiv.style.display = 'block';
+            if (container) container.style.display = 'none';
+            
+            // Reload posts
+            loadPosts();
         }
 
-        // Checkbox handling
-        document.getElementById('select-all').addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.post-checkbox:not([disabled])');
-            checkboxes.forEach(cb => cb.checked = this.checked);
-            updateSelectionCount();
-        });
+        // Initialize event listeners (called after DOM is loaded)
+        function initializeEventListeners() {
+            // Checkbox handling
+            const selectAllCheckbox = document.getElementById('select-all');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.post-checkbox:not([disabled])');
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                    updateSelectionCount();
+                });
+            }
 
-        document.querySelectorAll('.post-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', updateSelectionCount);
-        });
+            // Individual checkbox handling (will be updated when posts are rendered)
+            document.querySelectorAll('.post-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectionCount);
+            });
+        }
 
         function updateSelectionCount() {
             const selectedCount = document.querySelectorAll('.post-checkbox:checked').length;
@@ -545,20 +381,28 @@
             bulkButtons.forEach(btn => btn.disabled = selectedCount === 0);
         }
 
-        // Bulk actions
-        document.getElementById('bulk-publish').addEventListener('click', function() {
-            const selectedPosts = Array.from(document.querySelectorAll('.post-checkbox:checked'))
-                .map(cb => cb.value);
-            console.log('Bulk publishing posts:', selectedPosts);
-            showToast(`Publishing ${selectedPosts.length} posts to Clan.com...`, 'info');
-        });
+        // Initialize bulk action listeners (called after DOM is loaded)
+        function initializeBulkActions() {
+            const bulkPublishBtn = document.getElementById('bulk-publish');
+            if (bulkPublishBtn) {
+                bulkPublishBtn.addEventListener('click', function() {
+                    const selectedPosts = Array.from(document.querySelectorAll('.post-checkbox:checked'))
+                        .map(cb => cb.value);
+                    console.log('Bulk publishing posts:', selectedPosts);
+                    showToast(`Publishing ${selectedPosts.length} posts to Clan.com...`, 'info');
+                });
+            }
 
-        document.getElementById('bulk-sync').addEventListener('click', function() {
-            const selectedPosts = Array.from(document.querySelectorAll('.post-checkbox:checked'))
-                .map(cb => cb.value);
-            console.log('Bulk syncing posts:', selectedPosts);
-            showToast(`Syncing status for ${selectedPosts.length} posts...`, 'info');
-        });
+            const bulkSyncBtn = document.getElementById('bulk-sync');
+            if (bulkSyncBtn) {
+                bulkSyncBtn.addEventListener('click', function() {
+                    const selectedPosts = Array.from(document.querySelectorAll('.post-checkbox:checked'))
+                        .map(cb => cb.value);
+                    console.log('Bulk syncing posts:', selectedPosts);
+                    showToast(`Syncing status for ${selectedPosts.length} posts...`, 'info');
+                });
+            }
+        }
 
         // Toast notification system
         function showToast(message, type = 'info') {
@@ -601,8 +445,251 @@
             return container;
         }
 
-        // Initialize selection count
-        updateSelectionCount();
+        // Load real posts data
+        async function loadPosts() {
+            try {
+                showToast('Loading posts...', 'info');
+                const response = await fetch('/api/posts');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                posts = data.map(post => ({
+                    ...post,
+                    // Use real clan publishing data from database
+                    clan_status: post.clan_status || 'not_published',
+                    clan_last_attempt: post.clan_last_attempt ? new Date(post.clan_last_attempt) : null
+                }));
+                
+                updateStatistics();
+                renderPosts();
+                showToast('Posts loaded successfully', 'success');
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                showToast('Error loading posts: ' + error.message, 'error');
+            }
+        }
+
+
+
+        function updateStatistics() {
+            publishingStats.total = posts.length;
+            publishingStats.published = posts.filter(p => p.clan_status === 'published').length;
+            publishingStats.pending = posts.filter(p => p.clan_status === 'not_published').length;
+            publishingStats.errors = posts.filter(p => p.clan_status === 'error').length;
+            
+            document.getElementById('total-posts').textContent = publishingStats.total;
+            document.getElementById('published-posts').textContent = publishingStats.published;
+            document.getElementById('pending-posts').textContent = publishingStats.pending;
+            document.getElementById('error-posts').textContent = publishingStats.errors;
+        }
+
+        function renderPosts() {
+            const loadingDiv = document.getElementById('posts-loading');
+            const container = document.getElementById('posts-container');
+            
+            if (!container) return;
+            
+            // Hide loading, show container
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            container.style.display = 'block';
+            
+            // Clear existing posts
+            container.innerHTML = '';
+            
+            // Render all posts or show empty state
+            if (posts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No posts found</h4>
+                        <p class="text-muted">Create your first blog post to get started with publishing.</p>
+                        <a href="http://localhost:5000/blog/new" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create New Post
+                        </a>
+                    </div>
+                `;
+            } else {
+                posts.forEach(post => {
+                    const postCard = createPostCard(post);
+                    container.appendChild(postCard);
+                });
+            }
+            
+            // Update selection count after rendering
+            updateSelectionCount();
+        }
+
+        function createPostCard(post) {
+            const div = document.createElement('div');
+            div.className = 'post-card';
+            div.setAttribute('data-post-id', post.id);
+            
+            const statusInfo = getStatusInfo(post);
+            const formattedDate = new Date(post.created_at).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+            const updatedDate = new Date(post.updated_at).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+            
+            div.innerHTML = `
+                <div class="row align-items-center">
+                    <div class="col-md-1">
+                        <input class="form-check-input post-checkbox" type="checkbox" value="${post.id}" ${post.clan_status === 'publishing' ? 'disabled' : ''}>
+                    </div>
+                    <div class="col-md-5">
+                        <h5 class="mb-1">${post.title || post.provisional_title || post.idea_seed || 'Untitled Post'}</h5>
+                        <p class="text-muted mb-1">
+                            <small>
+                                <i class="fas fa-calendar me-1"></i>Created: ${formattedDate}
+                                <i class="fas fa-edit ms-3 me-1"></i>Updated: ${updatedDate}
+                            </small>
+                        </p>
+                        <div class="mb-2">
+                            <span class="badge bg-secondary me-1">${post.status || 'draft'}</span>
+                            ${post.id ? '<span class="badge bg-secondary me-1">ID: ' + post.id + '</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <span class="status-badge ${statusInfo.class}">
+                            ${statusInfo.icon} ${statusInfo.text}
+                        </span>
+                        ${statusInfo.message ? `<div class="${statusInfo.messageClass} mt-2">${statusInfo.message}</div>` : ''}
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <div class="${post.clan_post_id ? 'text-success' : 'text-muted'}">
+                            <small>
+                                ${post.clan_post_id ? 
+                                    `<strong>Clan.com ID: ${post.clan_post_id}</strong><br>
+                                     <a href="https://clan.com/blog/${post.title?.toLowerCase().replace(/\s+/g, '-')}" target="_blank" class="text-decoration-none">
+                                         <i class="fas fa-external-link-alt me-1"></i>View Live
+                                     </a>` : 
+                                    'Clan.com ID: --'
+                                }
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        ${getActionButtons(post)}
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners for buttons
+            const publishBtn = div.querySelector('.publish-btn, .retry-btn');
+            if (publishBtn && !publishBtn.disabled) {
+                publishBtn.addEventListener('click', () => {
+                    if (post.clan_status === 'error') {
+                        retryPublish(post.id);
+                    } else if (post.clan_status === 'published') {
+                        republishPost(post.id);
+                    } else {
+                        publishPost(post.id);
+                    }
+                });
+            }
+            
+            const previewBtn = div.querySelector('.view-btn');
+            if (previewBtn) {
+                previewBtn.addEventListener('click', () => previewPost(post.id));
+            }
+            
+            const checkbox = div.querySelector('.post-checkbox');
+            if (checkbox) {
+                checkbox.addEventListener('change', updateSelectionCount);
+            }
+            
+            return div;
+        }
+
+        function getStatusInfo(post) {
+            switch (post.clan_status) {
+                case 'published':
+                    return {
+                        class: 'status-published',
+                        icon: '<i class="fas fa-check me-1"></i>',
+                        text: 'Published',
+                        message: `<small><i class="fas fa-check-circle me-1"></i>Published successfully</small>`,
+                        messageClass: 'success-message'
+                    };
+                case 'error':
+                    return {
+                        class: 'status-error',
+                        icon: '<i class="fas fa-exclamation-triangle me-1"></i>',
+                        text: 'Error',
+                        message: `<small><strong>Error:</strong> ${post.clan_error || 'Unknown error'}</small>`,
+                        messageClass: 'error-details'
+                    };
+                case 'publishing':
+                    return {
+                        class: 'status-publishing',
+                        icon: '<i class="fas fa-spinner fa-spin me-1"></i>',
+                        text: 'Publishing...',
+                        message: `<div class="publishing-log mt-2" style="max-height: 150px;">
+                                    <div>Processing content...</div>
+                                    <div>Uploading images...</div>
+                                  </div>`,
+                        messageClass: ''
+                    };
+                default:
+                    return {
+                        class: 'status-not-published',
+                        icon: '<i class="fas fa-clock me-1"></i>',
+                        text: 'Not Published',
+                        message: null,
+                        messageClass: ''
+                    };
+            }
+        }
+
+        function getActionButtons(post) {
+            if (post.clan_status === 'publishing') {
+                return `
+                    <button class="btn publish-btn me-2" disabled>
+                        <i class="fas fa-spinner fa-spin me-1"></i>Publishing...
+                    </button>
+                    <button class="btn view-btn">
+                        <i class="fas fa-eye me-1"></i>Preview
+                    </button>
+                `;
+            } else if (post.clan_status === 'error') {
+                return `
+                    <button class="btn retry-btn me-2">
+                        <i class="fas fa-redo me-1"></i>Retry
+                    </button>
+                    <button class="btn view-btn">
+                        <i class="fas fa-eye me-1"></i>Preview
+                    </button>
+                `;
+            } else if (post.clan_status === 'published') {
+                return `
+                    <button class="btn publish-btn me-2">
+                        <i class="fas fa-sync me-1"></i>Update
+                    </button>
+                    <button class="btn view-btn">
+                        <i class="fas fa-eye me-1"></i>Preview
+                    </button>
+                `;
+            } else {
+                return `
+                    <button class="btn publish-btn me-2">
+                        <i class="fas fa-upload me-1"></i>Publish
+                    </button>
+                    <button class="btn view-btn">
+                        <i class="fas fa-eye me-1"></i>Preview
+                    </button>
+                `;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            initializeBulkActions();
+            loadPosts();
+            updateSelectionCount();
+        });
     </script>
 </body>
 </html>
