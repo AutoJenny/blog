@@ -467,11 +467,11 @@
             </div>
         </header>
         {% if sections %}
-        <div class="sections">
+        <div class="blog-sections">
             {% for section in sections %}
-            <div class="section">
-                <h3>{{ section.section_heading or 'Untitled Section' }}</h3>
-                <div class="section-content">
+            <section class="blog-section" id="section-{{ loop.index }}">
+                <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
+                <div class="section-text">
                     {% if section.polished %}
                         {{ section.polished|strip_html_doc|safe }}
                     {% elif section.draft %}
@@ -484,16 +484,20 @@
                     
                     {% if section.image %}
                         {% if section.image.path and not section.image.placeholder %}
-                            <div class="section-image">
-                                <img src="{{ section.image.path }}" 
-                                     alt="{{ section.image.alt_text }}" 
-                                     class="section-image__img"
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <figure class="section-image">
+                                <a title="{{ section.image.caption or section.image.alt_text or 'Section image' }}" 
+                                   href="{{ section.image.path }}" 
+                                   rel="lightbox[mpblog_{{ post.id }}]" 
+                                   target="_blank">
+                                    <img alt="{{ section.image.alt_text }}" 
+                                         src="{{ section.image.path }}"
+                                         onerror="this.style.display='none'; this.closest('figure').querySelector('.image-error').style.display='block';">
+                                </a>
                                 <div class="image-error" style="display: none;">
                                     <small><strong>Image not found:</strong> {{ section.image.path }}</small>
                                 </div>
                                 {% if section.image.caption %}
-                                    <div class="image-caption">{{ section.image.caption }}</div>
+                                    <figcaption>{{ section.image.caption }}</figcaption>
                                 {% endif %}
                                 <div class="image-meta-panel" id="section-meta-panel-{{ section.id }}">
                                     <div class="meta-item">
@@ -519,7 +523,7 @@
                         {% endif %}
                     {% endif %}
                 </div>
-            </div>
+            </section>
             
             <!-- Insert category widget after 2nd section -->
             {% if loop.index == 2 and post.cross_promotion.category_id %}
