@@ -287,26 +287,61 @@
         };
 
         // Publishing functions
-        function publishPost(postId) {
+        async function publishPost(postId) {
             console.log('Publishing post:', postId);
             showToast('Publishing post to Clan.com...', 'info');
+            updatePostStatus(postId, 'publishing');
             
-            // Mock API call
-            setTimeout(() => {
-                showToast('Post published successfully!', 'success');
-                // Update UI status
-                updatePostStatus(postId, 'published');
-            }, 3000);
+            try {
+                const response = await fetch(`/api/publish/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`Post published successfully! Clan.com ID: ${result.clan_post_id}`, 'success');
+                    updatePostStatus(postId, 'published');
+                    
+                    // Update the post in our local list
+                    const postIndex = posts.findIndex(p => p.id === postId);
+                    if (postIndex !== -1) {
+                        posts[postIndex].clan_post_id = result.clan_post_id;
+                        posts[postIndex].clan_status = 'published';
+                        posts[postIndex].clan_uploaded_url = result.url;
+                        posts[postIndex].clan_error = null;
+                        updateStatistics();
+                        renderPosts();
+                    }
+                } else {
+                    throw new Error(result.error || 'Unknown error occurred');
+                }
+                
+            } catch (error) {
+                console.error('Publishing error:', error);
+                showToast(`Publishing failed: ${error.message}`, 'error');
+                updatePostStatus(postId, 'error');
+                
+                // Update the post in our local list
+                const postIndex = posts.findIndex(p => p.id === postId);
+                if (postIndex !== -1) {
+                    posts[postIndex].clan_status = 'error';
+                    posts[postIndex].clan_error = error.message;
+                    updateStatistics();
+                    renderPosts();
+                }
+            }
         }
 
         function republishPost(postId) {
             console.log('Republishing post:', postId);
             showToast('Updating post on Clan.com...', 'info');
             
-            // Mock API call
-            setTimeout(() => {
-                showToast('Post updated successfully!', 'success');
-            }, 2000);
+            // Use the same publish function - it will detect if it's an update
+            publishPost(postId);
         }
 
         function retryPublish(postId) {

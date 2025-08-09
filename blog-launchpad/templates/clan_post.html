@@ -1,0 +1,117 @@
+{% set total_chars = 0 %}
+{% set word_count = 0 %}
+{% for section in sections %}
+    {% if section.polished %}
+        {% set section_text = section.polished|strip_html_doc %}
+        {% set total_chars = total_chars + section_text|length %}
+        {% set word_count = word_count + (section_text.split()|length) %}
+    {% elif section.draft %}
+        {% set section_text = section.draft|strip_html_doc %}
+        {% set total_chars = total_chars + section_text|length %}
+        {% set word_count = word_count + (section_text.split()|length) %}
+    {% endif %}
+{% endfor %}
+{% set reading_time = ((word_count / 200) | round(0, 'ceil')) | int %}
+{% if reading_time < 1 %}{% set reading_time = 1 %}{% endif %}
+
+{# Blog post content for clan.com publishing #}
+<div class="mpblog-post">
+    <header class="blog-post-header">
+        <h1>{{ post.title or post.main_title or post.provisional_title or 'Untitled Post' }}</h1>
+        {% if post.subtitle %}
+        <div class="blog-post__subtitle">{{ post.subtitle }}</div>
+        {% endif %}
+        
+        <div class="post-meta">
+            <span class="post-meta__author">
+                By Caitrin Stewart
+            </span>
+            <span class="post-meta__separator"> | </span>
+            <span class="post-meta__date">
+                {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}
+            </span>
+            <span class="post-meta__separator"> | </span>
+            <span class="post-meta__reading-time">
+                {{ reading_time }} min read
+            </span>
+        </div>
+    </header>
+
+    {% if post.header_image %}
+    <figure class="blog-post-image">
+        <img src="{{ post.header_image.path }}" 
+             alt="{{ post.header_image.alt_text or 'Header image for ' + post.title }}"
+             {% if post.header_image.width %}width="{{ post.header_image.width }}"{% endif %}
+             {% if post.header_image.height %}height="{{ post.header_image.height }}"{% endif %}>
+        {% if post.header_image.caption %}
+        <figcaption>{{ post.header_image.caption }}</figcaption>
+        {% endif %}
+    </figure>
+    {% endif %}
+
+    {% if post.summary %}
+    <div class="blog-post__summary">
+        <p>{{ post.summary }}</p>
+    </div>
+    {% endif %}
+
+    {% if sections %}
+    <div class="blog-sections">
+        {% for section in sections %}
+        <section class="blog-section" id="section-{{ loop.index }}">
+            <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
+            <div class="section-text">
+                {% if section.polished %}
+                    {{ section.polished|strip_html_doc|safe }}
+                {% elif section.draft %}
+                    {{ section.draft|strip_html_doc|safe }}
+                {% elif section.content %}
+                    {{ section.content|strip_html_doc|safe }}
+                {% else %}
+                    <p>No content available for this section.</p>
+                {% endif %}
+            </div>
+            
+            {% if section.image and section.image.path and not section.image.placeholder %}
+            <figure class="section-image">
+                <a title="{{ section.image.caption or section.image.alt_text or 'Section image' }}" 
+                   href="{{ section.image.path }}" 
+                   rel="lightbox[mpblog_{{ post.id }}]" 
+                   target="_blank">
+                    <img alt="{{ section.image.alt_text }}" 
+                         src="{{ section.image.path }}"
+                         {% if section.image.width %}width="{{ section.image.width }}"{% endif %}
+                         {% if section.image.height %}height="{{ section.image.height }}"{% endif %}>
+                </a>
+                {% if section.image.caption %}
+                <figcaption>{{ section.image.caption }}</figcaption>
+                {% endif %}
+            </figure>
+            {% endif %}
+        </section>
+        
+        {# Insert cross-promotion widgets at strategic points #}
+        {% if loop.index == 2 and post.cross_promotion.category_id %}
+        {{widget type="swcatalog/widget_crossSell_category" category_id="{{ post.cross_promotion.category_id }}" title="{{ post.cross_promotion.category_title }}"}}
+        {% endif %}
+        
+        {% endfor %}
+        
+        {# Insert product widget after final section #}
+        {% if post.cross_promotion.product_id %}
+        {{widget type="swcatalog/widget_crossSell_product" product_id="{{ post.cross_promotion.product_id }}" title="{{ post.cross_promotion.product_title }}"}}
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <footer class="article-footer">
+        {% if post.keywords %}
+        <div class="article-tags">
+            <strong>Tags:</strong>
+            {% for keyword in post.keywords %}
+            <span class="tag">{{ keyword }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </footer>
+</div>

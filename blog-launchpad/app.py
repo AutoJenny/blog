@@ -3,10 +3,15 @@
 from flask import Flask, render_template, jsonify, request, send_file, redirect
 import requests
 import os
+import logging
 from datetime import datetime
 import pytz
 from humanize import naturaltime
 import psycopg2.extras
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
@@ -472,6 +477,106 @@ def save_individual_product():
         
     except Exception as e:
         logger.error(f"Error saving individual product: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/publish/<int:post_id>', methods=['POST'])
+def publish_post_to_clan(post_id):
+    """Publish a post to clan.com"""
+    try:
+        # Get post data
+        post = get_post_with_development(post_id)
+        if not post:
+            return jsonify({'success': False, 'error': 'Post not found'}), 404
+        
+        sections = get_post_sections_with_images(post_id)
+        
+        # Add header image if exists
+        header_image_path = find_header_image(post_id)
+        if header_image_path:
+            with get_db_conn() as conn:
+                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                cur.execute("""
+                    SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                           cross_promotion_category_id, cross_promotion_category_title,
+                           cross_promotion_product_id, cross_promotion_product_title
+                    FROM post WHERE id = %s
+                """, (post_id,))
+                header_data = cur.fetchone()
+                
+                post['header_image'] = {
+                    'path': header_image_path,
+                    'alt_text': f"Header image for {post.get('title', 'this post')}",
+                    'caption': header_data['header_image_caption'] if header_data else None,
+                    'title': header_data['header_image_title'] if header_data else None,
+                    'width': header_data['header_image_width'] if header_data else None,
+                    'height': header_data['header_image_height'] if header_data else None
+                }
+                
+                post['cross_promotion'] = {
+                    'category_id': header_data['cross_promotion_category_id'] if header_data else None,
+                    'category_title': header_data['cross_promotion_category_title'] if header_data else None,
+                    'product_id': header_data['cross_promotion_product_id'] if header_data else None,
+                    'product_title': header_data['cross_promotion_product_title'] if header_data else None
+                }
+        
+        # Import publishing function
+        from clan_publisher import publish_to_clan
+        
+        # Attempt to publish
+        result = publish_to_clan(post, sections)
+        
+        if result['success']:
+            # Update database with clan post details
+            with get_db_conn() as conn:
+                cur = conn.cursor()
+                cur.execute("""
+                    UPDATE post SET 
+                        clan_post_id = %s,
+                        clan_status = 'published',
+                        clan_last_attempt = CURRENT_TIMESTAMP,
+                        clan_error = NULL,
+                        clan_uploaded_url = %s
+                    WHERE id = %s
+                """, (result.get('clan_post_id'), result.get('url'), post_id))
+                conn.commit()
+            
+            return jsonify({
+                'success': True, 
+                'message': 'Post published successfully to clan.com',
+                'clan_post_id': result.get('clan_post_id'),
+                'url': result.get('url')
+            })
+        else:
+            # Update database with error
+            with get_db_conn() as conn:
+                cur = conn.cursor()
+                cur.execute("""
+                    UPDATE post SET 
+                        clan_status = 'error',
+                        clan_last_attempt = CURRENT_TIMESTAMP,
+                        clan_error = %s
+                    WHERE id = %s
+                """, (result.get('error'), post_id))
+                conn.commit()
+            
+            return jsonify({
+                'success': False, 
+                'error': result.get('error', 'Unknown error occurred')
+            }), 500
+        
+    except Exception as e:
+        # Update database with error
+        with get_db_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE post SET 
+                    clan_status = 'error',
+                    clan_last_attempt = CURRENT_TIMESTAMP,
+                    clan_error = %s
+                WHERE id = %s
+            """, (str(e), post_id))
+            conn.commit()
+        
         return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
