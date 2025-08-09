@@ -257,6 +257,74 @@ hr {
     display: block;
 } 
 
+/* Blog sections - clan.com compatibility */
+.blog-sections {
+    margin-top: 2rem;
+}
+
+.blog-section {
+    margin-bottom: 3rem;
+}
+
+.blog-section:last-of-type {
+    border-bottom: none;
+}
+
+.blog-section h2 {
+    font-family: Georgia, Times, serif !important;
+    color: #1a2a4d !important;
+    font-size: 1.75rem !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1rem !important;
+    border-bottom: 1px solid #e1e1e1 !important;
+    padding-bottom: 0.5rem;
+    letter-spacing: normal !important;
+}
+
+.section-text {
+    margin-bottom: 1.5rem;
+}
+
+.section-text p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.section-text p:last-child {
+    margin-bottom: 0;
+}
+
+.section-text b, .section-text strong {
+    font-weight: bold;
+    letter-spacing: normal;
+}
+
+.section-image {
+    margin: 1.5rem 0 1rem 0 !important;
+    padding: 0;
+    text-align: center;
+}
+
+.section-image img {
+    display: block !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 0 auto 0.5rem auto !important;
+    border: 1px solid #e1e1e1 !important;
+}
+
+.section-image figcaption {
+    display: block;
+    font-size: 0.9rem !important;
+    color: #666 !important;
+    text-align: center;
+    font-style: italic;
+    padding: 0 0.5rem;
+    line-height: 1.4;
+    letter-spacing: normal;
+    margin-top: 0.5rem;
+}
+
 /* Product Grid and Cards for Cross-Promotion */
 .product-grid {
     display: grid;
@@ -415,6 +483,18 @@ hr {
 
 /* Responsive design for smaller screens */
 @media (max-width: 768px) {
+    .blog-section {
+        margin-bottom: 2rem;
+    }
+    
+    .section-image {
+        margin-top: 1rem !important;
+    }
+    
+    .blog-section h2 {
+        font-size: 1.5rem !important;
+    }
+    
     .product-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 0.75rem;
