@@ -95,6 +95,11 @@ def publishing():
     """Publishing management page."""
     return render_template('publishing.html')
 
+@app.route('/syndication')
+def syndication():
+    """Social media syndication management page."""
+    return render_template('syndication.html')
+
 @app.route('/test-api')
 def test_api():
     """Test API endpoint."""
