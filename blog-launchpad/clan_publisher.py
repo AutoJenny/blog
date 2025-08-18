@@ -10,7 +10,6 @@ from flask import render_template
 from datetime import datetime
 import tempfile
 from pathlib import Path
-from credentials import get_clan_credentials
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -18,14 +17,12 @@ logger = logging.getLogger(__name__)
 
 class ClanPublisher:
     def __init__(self):
-        # Get credentials from credentials manager
-        creds = get_clan_credentials()
-        self.api_base_url = creds['api_base_url']
-        self.api_user = creds['api_user']
-        self.api_key = creds['api_key']
+        self.api_base_url = os.getenv('CLAN_API_BASE_URL', 'https://clan.com/clan/blog_api/')
+        self.api_user = os.getenv('CLAN_API_USER', 'blog')
+        self.api_key = os.getenv('CLAN_API_KEY')
         
         if not self.api_key:
-            raise ValueError("CLAN_API_KEY not found. Please set it in environment or .clan_credentials file")
+            raise ValueError("CLAN_API_KEY environment variable is required")
         
         # Ensure trailing slash
         if not self.api_base_url.endswith('/'):
