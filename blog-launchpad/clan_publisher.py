@@ -503,9 +503,26 @@ class ClanPublisher:
                 logger.info(f"Response headers: {dict(response.headers)}")
                 logger.info(f"Response text: {response.text}")
                 
-                if result.get('success'):
+                # Check for success status (clan.com uses 'status' field like with image uploads)
+                if result.get('status') == 'success' or result.get('success'):
+                    # Extract post ID from response
                     clan_post_id = result.get('post_id')
-                    post_url = result.get('url') or f"https://clan.com/blog/post-{clan_post_id}"
+                    
+                    # If no post_id field, try to extract from message like "Post created: 384"
+                    if not clan_post_id and result.get('message'):
+                        message = result.get('message', '')
+                        if 'Post created:' in message:
+                            try:
+                                clan_post_id = int(message.split(':')[-1].strip())
+                            except (ValueError, IndexError):
+                                logger.warning(f"Could not extract post ID from message: {message}")
+                        elif 'Post updated:' in message:
+                            try:
+                                clan_post_id = int(message.split(':')[-1].strip())
+                            except (ValueError, IndexError):
+                                logger.warning(f"Could not extract post ID from message: {message}")
+                    
+                    post_url = result.get('url') or f"https://clan.com/blog/post-{clan_post_id}" if clan_post_id else "https://clan.com/blog/"
                     
                     logger.info(f"Post {'updated' if is_update else 'created'} successfully: {post_url}")
                     return {
