@@ -161,3 +161,5 @@ Before attempting upload:
 - [ ] All required fields populated in json_args
 - [ ] Image uploads tested and working
 - [ ] Thumbnail paths updated with actual clan.com URLs
+
+

@@ -171,6 +171,7 @@ def get_post_with_development(post_id):
         # Get post data, alias post.id as post_id
         cur.execute("""
             SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
+                   p.clan_post_id, p.clan_status, p.clan_uploaded_url,
                    pd.idea_seed, pd.intro_blurb, pd.main_title
             FROM post p
             LEFT JOIN post_development pd ON pd.post_id = p.id
@@ -531,8 +532,8 @@ def publish_post_to_clan(post_id):
                     'product_title': header_data['cross_promotion_product_title'] if header_data else None
                 }
         
-        # Import publishing function
-        from clan_publisher import publish_to_clan
+        # Import publishing class
+        from clan_publisher import ClanPublisher
         
         # Debug: Log what we're about to send
         logger.info(f"=== FLASK ENDPOINT DEBUG ===")
@@ -542,8 +543,9 @@ def publish_post_to_clan(post_id):
         if sections:
             logger.info(f"Section IDs: {[s.get('id') for s in sections]}")
         
-        # Attempt to publish
-        result = publish_to_clan(post, sections)
+        # Create publisher instance and attempt to publish
+        publisher = ClanPublisher()
+        result = publisher.publish_to_clan(post, sections)
         
         # Debug: Log the result
         logger.info(f"Publishing result: {result}")
@@ -582,10 +584,15 @@ def publish_post_to_clan(post_id):
                 """, (result.get('error'), post_id))
                 conn.commit()
             
-            return jsonify({
-                'success': False, 
-                'error': result.get('error', 'Unknown error occurred')
-            }), 500
+                    # Check if it's a network connectivity issue
+        error_msg = result.get('error', 'Unknown error occurred')
+        if 'timeout' in error_msg.lower() or 'connection' in error_msg.lower():
+            error_msg = f"Network Error: Cannot connect to clan.com. Please check your internet connection and try again. (Details: {error_msg})"
+        
+        return jsonify({
+            'success': False, 
+            'error': error_msg
+        }), 500
         
     except Exception as e:
         # Update database with error

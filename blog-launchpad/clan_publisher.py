@@ -11,6 +11,8 @@ from datetime import datetime
 import tempfile
 from pathlib import Path
 from dotenv import load_dotenv
+import re
+import html
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -37,20 +39,28 @@ class ClanPublisher:
         import re
         import time
         
-        # Generate from title (don't use existing slug to avoid conflicts)
+        # If this is an update and we have an existing clan_post_id, try to preserve the URL
+        if post.get('clan_post_id'):
+            # For updates, we should ideally preserve the existing URL key
+            # But since we don't store it, we'll generate a consistent one
+            pass
+        
+        # Generate from title
         title = post.get('title', 'Untitled Post')
         # Convert to lowercase, replace spaces with hyphens, remove special chars
         url_key = re.sub(r'[^a-z0-9\s-]', '', title.lower())
         url_key = re.sub(r'\s+', '-', url_key).strip('-')
         
-        # Add timestamp for uniqueness to avoid conflicts with existing posts
-        timestamp = int(time.time())
+        # For consistency, use a fixed timestamp based on post ID instead of current time
+        # This ensures the same post always gets the same URL key
+        post_id = post.get('id', 0)
+        fixed_timestamp = 1755600000 + (post_id * 1000)  # Base timestamp + post ID offset
         
-        # Ensure it's not empty and add post ID + timestamp for uniqueness
+        # Ensure it's not empty and add post ID + fixed timestamp for consistency
         if not url_key:
-            url_key = f'post-{post["id"]}-{timestamp}'
+            url_key = f'post-{post_id}-{fixed_timestamp}'
         else:
-            url_key = f'{url_key}-{post["id"]}-{timestamp}'
+            url_key = f'{url_key}-{post_id}-{fixed_timestamp}'
         
         return url_key
     
@@ -144,7 +154,7 @@ class ClanPublisher:
                 logger.info(f"Uploading image: {filename} to {upload_url}")
                 logger.info(f"MIME type: {mime_type}")
                 logger.info(f"API data: {data}")
-                response = requests.post(upload_url, files=files, data=data, timeout=60)
+                response = requests.post(upload_url, files=files, data=data, timeout=15)
                 
                 logger.info(f"Upload response status: {response.status_code}")
                 logger.info(f"Upload response headers: {dict(response.headers)}")
@@ -190,61 +200,186 @@ class ClanPublisher:
     
     def process_images(self, post, sections):
         """Upload all images and update paths in the post content"""
+        import time
         uploaded_images = {}
         
-        # Import time module for timestamped filenames
-        import time
-        timestamp = int(time.time())
+        logger.info(f"=== PROCESS_IMAGES DEBUG START ===")
+        logger.info(f"Post ID: {post.get('id')}")
+        logger.info(f"Post header_image: {post.get('header_image')}")
+        logger.info(f"Post header_image_id: {post.get('header_image_id')}")
         
-        # Process header image
-        if post.get('header_image') and post['header_image'].get('path'):
-            header_path = post['header_image']['path']
-            # Generate unique filename with timestamp for cache busting
-            filename = f"header_{post['id']}_{timestamp}.jpg"
-            logger.info(f"Uploading header image with timestamped filename: {filename}")
-            uploaded_url = self.upload_image(header_path, filename)
-            if uploaded_url:
-                uploaded_images[header_path] = uploaded_url
-                post['header_image']['path'] = uploaded_url
-                logger.info(f"Header image uploaded successfully: {uploaded_url}")
+        # Process header image - use find_header_image function to discover it
+        from app import find_header_image
+        header_path = find_header_image(post['id'])
+        if header_path:
+            logger.info(f"✅ Found header image: {header_path}")
+            
+            # Check if file exists - convert web path to file system path
+            if header_path.startswith('/static/'):
+                # Convert /static/... to full file system path
+                fs_path = f"/Users/nickfiddes/Code/projects/blog/blog-images{header_path}"
+                if os.path.exists(fs_path):
+                    logger.info(f"✅ Header image file exists at: {fs_path}")
+                    logger.info(f"File size: {os.path.getsize(fs_path)} bytes")
+                else:
+                    logger.error(f"❌ Header image file NOT found at: {fs_path}")
+                    logger.error(f"Current working directory: {os.getcwd()}")
             else:
-                logger.error(f"Failed to upload header image: {header_path}")
+                # Already a file system path
+                if os.path.exists(header_path):
+                    logger.info(f"✅ Header image file exists at: {header_path}")
+                    logger.info(f"File size: {os.path.getsize(header_path)} bytes")
+                else:
+                    logger.error(f"❌ Header image file NOT found at: {header_path}")
+                    logger.error(f"Current working directory: {os.getcwd()}")
+            
+            # Generate unique filename with timestamp for cache busting
+            filename = f"header_{post['id']}_{int(time.time())}.jpg"
+            logger.info(f"Uploading header image with filename: {filename}")
+            
+            try:
+                # Convert web path to file system path for upload
+                if header_path.startswith('/static/'):
+                    fs_path = f"/Users/nickfiddes/Code/projects/blog/blog-images{header_path}"
+                    logger.info(f"Converting web path '{header_path}' to file system path '{fs_path}'")
+                else:
+                    fs_path = header_path
+                
+                uploaded_url = self.upload_image(fs_path, filename)
+                logger.info(f"upload_image returned: {uploaded_url}")
+                
+                if uploaded_url:
+                    uploaded_images[header_path] = uploaded_url
+                    logger.info(f"✅ Header image uploaded successfully: {header_path} -> {uploaded_url}")
+                    logger.info(f"✅ uploaded_images dictionary now contains: {uploaded_images}")
+                else:
+                    logger.error(f"❌ upload_image returned None/empty for: {header_path}")
+            except Exception as e:
+                logger.error(f"❌ Exception during header image upload: {str(e)}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
+        else:
+            logger.warning(f"❌ No header image found using find_header_image function")
         
         # Process section images
-        for section in sections:
+        logger.info(f"Processing {len(sections)} sections for images...")
+        for i, section in enumerate(sections):
+            logger.info(f"Section {i+1}: {section.get('title', 'No title')}")
+            logger.info(f"Section image data: {section.get('image')}")
+            
             if section.get('image') and section['image'].get('path') and not section['image'].get('placeholder'):
                 section_path = section['image']['path']
-                section_id = section.get('id', 'unknown')
-                # Generate unique filename with timestamp for cache busting
-                filename = f"section_{post['id']}_{section_id}_{timestamp}.jpg"
-                logger.info(f"Uploading section {section_id} image with timestamped filename: {filename}")
-                uploaded_url = self.upload_image(section_path, filename)
-                if uploaded_url:
-                    uploaded_images[section_path] = uploaded_url
-                    section['image']['path'] = uploaded_url
-                    logger.info(f"Section {section_id} image uploaded successfully: {uploaded_url}")
+                logger.info(f"Processing section image: {section_path}")
+                
+                # Check if file exists - convert web path to file system path
+                if section_path.startswith('/static/'):
+                    # Convert /static/... to full file system path
+                    fs_path = f"/Users/nickfiddes/Code/projects/blog/blog-images{section_path}"
+                    if os.path.exists(fs_path):
+                        logger.info(f"✅ Section image file exists at: {fs_path}")
+                        logger.info(f"File size: {os.path.getsize(fs_path)} bytes")
+                    else:
+                        logger.error(f"❌ Section image file NOT found at: {fs_path}")
+                        logger.error(f"Current working directory: {os.getcwd()}")
                 else:
-                    logger.error(f"Failed to upload section {section_id} image: {section_path}")
+                    # Already a file system path
+                    if os.path.exists(section_path):
+                        logger.info(f"✅ Section image file exists at: {section_path}")
+                        logger.info(f"File size: {os.path.getsize(section_path)} bytes")
+                    else:
+                        logger.error(f"❌ Section image file NOT found at: {section_path}")
+                        logger.error(f"Current working directory: {os.getcwd()}")
+                
+                # Generate unique filename
+                filename = f"section_{post['id']}_{i+1}_{int(time.time())}.jpg"
+                logger.info(f"Uploading section image with filename: {filename}")
+                
+                try:
+                    # Convert web path to file system path for upload
+                    if section_path.startswith('/static/'):
+                        fs_path = f"/Users/nickfiddes/Code/projects/blog/blog-images{section_path}"
+                        logger.info(f"Converting section web path '{section_path}' to file system path '{fs_path}'")
+                    else:
+                        fs_path = section_path
+                    
+                    uploaded_url = self.upload_image(fs_path, filename)
+                    if uploaded_url:
+                        uploaded_images[section_path] = uploaded_url
+                        logger.info(f"✅ Section image uploaded: {section_path} -> {uploaded_url}")
+                    else:
+                        logger.error(f"❌ Failed to upload section image: {section_path}")
+                except Exception as e:
+                    logger.error(f"❌ Exception during section image upload: {str(e)}")
+            else:
+                logger.info(f"No image for section {i+1}")
         
-        logger.info(f"Image processing complete. Uploaded {len(uploaded_images)} images.")
+        logger.info(f"=== PROCESS_IMAGES DEBUG END ===")
+        logger.info(f"Final uploaded_images dictionary: {uploaded_images}")
+        logger.info(f"Final uploaded_images count: {len(uploaded_images)}")
+        
         return uploaded_images
     
     def render_post_html(self, post, sections, uploaded_images=None):
         """Render the post HTML for clan.com publishing - COMPLETE VERSION matching preview"""
         try:
             import html
+            import re
             
             def safe_html(text):
-                """Safely escape HTML content to prevent XSS and breaking the blog"""
+                """Safely handle HTML content - detect if it's already HTML and clean it"""
                 if not text:
                     return ''
-                # Escape HTML special characters
-                return html.escape(str(text))
+                
+                text_str = str(text)
+                
+                # Check if content already contains HTML tags - be more specific
+                # Only treat as HTML if it contains actual HTML tag patterns
+                if re.search(r'<[a-z][^>]*>', text_str, re.IGNORECASE) or re.search(r'</[a-z][^>]*>', text_str, re.IGNORECASE):
+                    # Content has actual HTML tags - clean it but preserve structure
+                    # Remove DOCTYPE, html, head, body tags
+                    text_str = re.sub(r'<!DOCTYPE[^>]*>', '', text_str)
+                    text_str = re.sub(r'<html[^>]*>', '', text_str)
+                    text_str = re.sub(r'</html>', '', text_str)
+                    text_str = re.sub(r'<head[^>]*>.*?</head>', '', text_str, flags=re.DOTALL)
+                    text_str = re.sub(r'<body[^>]*>', '', text_str)
+                    text_str = re.sub(r'</body>', '', text_str)
+                    
+                    # Fix double paragraph tags: <p><p>content</p></p> -> <p>content</p>
+                    text_str = re.sub(r'<p>\s*<p>', '<p>', text_str)
+                    text_str = re.sub(r'</p>\s*</p>', '</p>', text_str)
+                    
+                    # Remove any remaining </html> tags
+                    text_str = re.sub(r'</html>', '', text_str)
+                    
+                    # More aggressive cleaning - remove any remaining HTML structure tags
+                    text_str = re.sub(r'<html[^>]*>', '', text_str)
+                    text_str = re.sub(r'</html[^>]*>', '', text_str)  # Match incomplete closing tags too
+                    text_str = re.sub(r'</html', '', text_str)  # Match even more incomplete tags
+                    text_str = re.sub(r'<head[^>]*>.*?</head>', '', text_str, flags=re.DOTALL)
+                    text_str = re.sub(r'<body[^>]*>', '', text_str)
+                    text_str = re.sub(r'</body>', '', text_str)
+                    
+                    # Clean up any remaining HTML entities that shouldn't be there
+                    text_str = re.sub(r'&lt;', '<', text_str)
+                    text_str = re.sub(r'&gt;', '>', text_str)
+                    
+                    # Clean up extra whitespace
+                    text_str = re.sub(r'\s+', ' ', text_str).strip()
+                    
+                    return text_str
+                else:
+                    # Plain text - escape HTML special characters
+                    return html.escape(text_str)
             
             def safe_url(url):
                 """Safely validate and escape URLs"""
                 if not url:
                     return ''
+                
+                # If we have uploaded_images mapping, use the clan.com URL
+                if uploaded_images and url in uploaded_images:
+                    return html.escape(uploaded_images[url])
+                
                 # Basic URL validation - only allow http/https URLs
                 if url.startswith(('http://', 'https://')):
                     return html.escape(url)
@@ -305,23 +440,24 @@ class ClanPublisher:
             html_parts.append('</header>')
             
             # Header image - WITH LIGHTBOX AND DIMENSIONS
-            if post.get('header_image') and post['header_image'].get('path'):
-                header_img = post['header_image']
-                safe_path = safe_url(header_img['path'])
-                if safe_path:
+            # Header image - use find_header_image function and uploaded_images
+            from app import find_header_image
+            header_path = find_header_image(post['id'])
+            if header_path and uploaded_images and header_path in uploaded_images:
+                # Use the clan.com media URL from uploaded_images
+                clan_url = uploaded_images[header_path]
+                if clan_url:
                     html_parts.append('<figure class="blog-post-image">')
                     # Add lightbox link
-                    html_parts.append(f'<a title="{safe_html(header_img.get("alt_text", "Header image"))}" href="{safe_path}" rel="lightbox[mpblog_{post.get("id", "unknown")}]" target="_blank">')
-                    html_parts.append(f'<img src="{safe_path}" alt="{safe_html(header_img.get("alt_text", "Header image"))}"')
-                    # Add dimensions if available
-                    if header_img.get('width'):
-                        html_parts.append(f' width="{header_img["width"]}"')
-                    if header_img.get('height'):
-                        html_parts.append(f' height="{header_img["height"]}"')
+                    html_parts.append(f'<a title="Header image" href="{clan_url}" rel="lightbox[mpblog_{post.get("id", "unknown")}]" target="_blank">')
+                    html_parts.append(f'<img src="{clan_url}" alt="Header image"')
+                    # Add dimensions if available (default to reasonable sizes)
+                    html_parts.append(' width="1200" height="800"')
                     html_parts.append('>')
                     html_parts.append('</a>')
-                    if header_img.get('caption'):
-                        html_parts.append(f'<figcaption>{safe_html(header_img["caption"])}</figcaption>')
+                    # Add caption if available in the image filename or use default
+                    caption = "Header image for " + post.get('title', 'this post')
+                    html_parts.append(f'<figcaption>{safe_html(caption)}</figcaption>')
                     html_parts.append('</figure>')
             
             # Summary
@@ -343,7 +479,15 @@ class ClanPublisher:
                     # Section content - safely escaped
                     html_parts.append('<div class="section-text">')
                     content = section.get('polished') or section.get('draft') or section.get('content') or 'No content available for this section.'
-                    html_parts.append(f'<p>{safe_html(content)}</p>')
+                    # Don't wrap in <p> tags if content already contains HTML structure
+                    cleaned_content = safe_html(content)
+                    if cleaned_content.startswith('<p>') and cleaned_content.endswith('</p>'):
+                        html_parts.append(cleaned_content)
+                    elif cleaned_content.startswith('<p>') or cleaned_content.endswith('</p>'):
+                        # Content has partial HTML structure, don't wrap
+                        html_parts.append(cleaned_content)
+                    else:
+                        html_parts.append(f'<p>{cleaned_content}</p>')
                     html_parts.append('</div>')
                     
                     # Section image - WITH LIGHTBOX AND DIMENSIONS
@@ -418,24 +562,45 @@ class ClanPublisher:
             if post.get('header_image') and post['header_image'].get('path'):
                 header_image_path = post['header_image']['path']
             
-            # Use uploaded image path for thumbnails if available, otherwise fallback to default
-            list_thumbnail = '/blog/default-thumbnail.jpg'
-            post_thumbnail = '/blog/default-thumbnail.jpg'
+            # Set thumbnails based on uploaded header image availability
+            # CRITICAL: These fields are MANDATORY according to clan.com API docs
+            list_thumbnail = '/blog/placeholder.jpg'  # Default fallback that should exist on clan.com
+            post_thumbnail = '/blog/placeholder.jpg'  # Default fallback that should exist on clan.com
+            
+            # Look for header image in uploaded_images
+            header_image_path = None
+            for path in uploaded_images.keys():
+                if 'header' in path:
+                    header_image_path = path
+                    break
             
             if uploaded_images and header_image_path and header_image_path in uploaded_images:
                 # Extract the filename from the clan.com URL and create the thumbnail path
                 uploaded_url = uploaded_images[header_image_path]
-                if uploaded_url and '/blog/' in uploaded_url:
+                if uploaded_url and '/media/blog/' in uploaded_url:
                     # Extract filename from URL like "https://static.clan.com/media/blog/header_53_1703123456.jpg"
-                    filename = uploaded_url.split('/')[-1]
-                    thumbnail_path = f"/blog/{filename}"
+                    # We need the path relative to /media, so extract everything after /media/
+                    media_path = uploaded_url.split('/media/')[-1]
+                    thumbnail_path = f"/{media_path}"  # This gives us /blog/header_53_1703123456.jpg
                     list_thumbnail = thumbnail_path
                     post_thumbnail = thumbnail_path
-                    logger.info(f"Using uploaded header image for thumbnails: {thumbnail_path}")
+                    logger.info(f"✅ Using uploaded header image for thumbnails: {thumbnail_path}")
                 else:
                     logger.warning(f"Unexpected uploaded URL format: {uploaded_url}")
+                    logger.info("Using default placeholder thumbnails due to unexpected URL format")
+            elif uploaded_images:
+                # Try to use any available image as thumbnail if no header image
+                first_image_url = list(uploaded_images.values())[0]
+                if first_image_url and '/media/blog/' in first_image_url:
+                    media_path = first_image_url.split('/media/')[-1]
+                    thumbnail_path = f"/{media_path}"
+                    list_thumbnail = thumbnail_path
+                    post_thumbnail = thumbnail_path
+                    logger.info(f"✅ Using first available image for thumbnails: {thumbnail_path}")
+                else:
+                    logger.info("No header image available, using default placeholder thumbnails")
             else:
-                logger.info("No uploaded header image available, using default thumbnails")
+                logger.info("No images available, using default placeholder thumbnails")
             
             # Common post metadata - matching the working PHP script exactly
             json_args.update({
@@ -487,24 +652,33 @@ class ClanPublisher:
             for field, value in json_args.items():
                 logger.info(f"Field '{field}': {value} (type: {type(value)})")
             
-            # Create a temporary HTML file
-            import tempfile
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as temp_file:
-                temp_file.write(html_content)
-                temp_file_path = temp_file.name
+            # Create HTML file in a known location that clan.com can access
+            import os
+            import time
+            html_filename = f"post_{post['id']}_{int(time.time())}.html"
+            html_filepath = os.path.join(os.getcwd(), html_filename)
             
             try:
-                # Send the request with the HTML file
-                with open(temp_file_path, 'rb') as html_file:
-                    files = {'html_file': ('post.html', html_file, 'text/html')}
-                    
-                    logger.info(f"{'Updating' if is_update else 'Creating'} post: {json_args['title']}")
-                    logger.info(f"HTML content length: {len(html_content)} characters")
-                    response = requests.post(endpoint, data=api_data, files=files, timeout=60)
+                # Write HTML content to file
+                with open(html_filepath, 'w', encoding='utf-8') as html_file:
+                    html_file.write(html_content)
+                
+                logger.info(f"{'Updating' if is_update else 'Creating'} post: {json_args['title']}")
+                logger.info(f"HTML content length: {len(html_content)} characters")
+                logger.info(f"HTML file created at: {html_filepath}")
+                
+                # Send the request with the actual HTML file content
+                with open(html_filepath, 'rb') as html_file:
+                    files = {'html_file': (html_filename, html_file, 'text/html')}
+                    response = requests.post(endpoint, data=api_data, files=files, timeout=15)
+                
             finally:
-                # Clean up the temporary file
-                import os
-                os.unlink(temp_file_path)
+                # Clean up the HTML file
+                try:
+                    os.unlink(html_filepath)
+                    logger.info(f"Cleaned up HTML file: {html_filepath}")
+                except Exception as e:
+                    logger.warning(f"Failed to clean up HTML file: {e}")
             
             if response.status_code == 200:
                 result = response.json()
@@ -532,7 +706,23 @@ class ClanPublisher:
                             except (ValueError, IndexError):
                                 logger.warning(f"Could not extract post ID from message: {message}")
                     
-                    post_url = result.get('url') or f"https://clan.com/blog/post-{clan_post_id}" if clan_post_id else "https://clan.com/blog/"
+                    # Construct the correct URL using the URL key (not post ID)
+                    url_key = self._generate_url_key(post)
+                    post_url = result.get('url') or f"https://clan.com/blog/{url_key}" if url_key else "https://clan.com/blog/"
+                    
+                    # Update the database with the clan_post_id if this was a new post
+                    if not is_update and clan_post_id:
+                        try:
+                            from app import get_db_conn
+                            conn = get_db_conn()
+                            cursor = conn.cursor()
+                            cursor.execute('UPDATE post SET clan_post_id = %s WHERE id = %s', (clan_post_id, post['id']))
+                            conn.commit()
+                            cursor.close()
+                            conn.close()
+                            logger.info(f"✅ Updated database: post {post['id']} now has clan_post_id {clan_post_id}")
+                        except Exception as e:
+                            logger.error(f"❌ Failed to update database with clan_post_id: {e}")
                     
                     logger.info(f"Post {'updated' if is_update else 'created'} successfully: {post_url}")
                     return {
@@ -565,106 +755,114 @@ class ClanPublisher:
                 'error': error_msg
             }
 
-def publish_to_clan(post, sections):
-    """Main function to publish a post to clan.com"""
-    try:
-        publisher = ClanPublisher()
+    def publish_to_clan(self, post, sections):
+        """Main method to publish a post to clan.com"""
+        logger.info(f"=== PUBLISH_TO_CLAN DEBUG START ===")
+        logger.info(f"Post ID: {post.get('id')}")
+        logger.info(f"Post header_image_id: {post.get('header_image_id')}")
+        logger.info(f"Post header_image: {post.get('header_image')}")
         
-        # Step 0: Populate image data from file system (CRITICAL FIX)
-        logger.info(f"Populating image data for post {post['id']}")
-        
-        # Import the image finding functions from app.py
-        import sys
-        import os
-        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-        from app import find_header_image, find_section_image
-        
-        # Find and populate header image
-        header_image_path = find_header_image(post['id'])
-        if header_image_path:
-            post['header_image'] = {
-                'path': header_image_path,
-                'alt_text': f"Header image for {post.get('title', 'Untitled Post')}",
-                'caption': post.get('header_image_caption', ''),
-                'width': post.get('header_image_width'),
-                'height': post.get('header_image_height')
-            }
-            logger.info(f"Found header image: {header_image_path}")
-        else:
-            logger.info("No header image found")
-        
-        # Find and populate section images
-        for section in sections:
-            section_id = section.get('id')
-            if section_id:
-                section_image_path = find_section_image(post['id'], section_id)
+        try:
+            # Step 0: Find and populate image paths from file system
+            logger.info("Step 0: Finding image paths from file system...")
+            from app import find_header_image, find_section_image
+            
+            header_image_path = find_header_image(post['id'])
+            logger.info(f"find_header_image returned: {header_image_path}")
+            
+            if header_image_path:
+                post['header_image'] = {'path': header_image_path}
+                logger.info(f"✅ Set post['header_image'] = {{'path': '{header_image_path}'}}")
+            else:
+                logger.warning("❌ No header image found")
+            
+            # Process sections to find images
+            for i, section in enumerate(sections):
+                section_image_path = find_section_image(post['id'], section['id'])
+                logger.info(f"Section {i+1} ({section.get('section_heading', 'No title')}): find_section_image returned: {section_image_path}")
+                
                 if section_image_path:
-                    section['image'] = {
-                        'path': section_image_path,
-                        'alt_text': f"Image for section: {section.get('section_heading', 'Untitled')}",
-                        'caption': section.get('image_captions', ''),
-                        'width': section.get('image_width'),
-                        'height': section.get('image_height'),
-                        'placeholder': False
-                    }
-                    logger.info(f"Found section {section_id} image: {section_image_path}")
+                    section['image'] = {'path': section_image_path}
+                    logger.info(f"✅ Set section[{i+1}]['image'] = {{'path': '{section_image_path}'}}")
                 else:
-                    logger.info(f"No image found for section {section_id}")
-        
-        # Step 1: Upload images and update paths
-        logger.info(f"Processing images for post {post['id']}")
-        try:
-            uploaded_images = publisher.process_images(post, sections)
-            logger.info(f"Image processing completed. Uploaded {len(uploaded_images)} images.")
-        except Exception as e:
-            logger.error(f"Error during image processing: {str(e)}")
-            import traceback
-            logger.error(f"Traceback: {traceback.format_exc()}")
-            return {
-                'success': False,
-                'error': f'Image processing failed: {str(e)}'
-            }
-        
-        # Step 2: Render HTML content
-        logger.info(f"Rendering HTML content for post {post['id']}")
-        try:
-            html_content = publisher.render_post_html(post, sections, uploaded_images)
-            if not html_content:
+                    logger.info(f"Section {i+1} has no image")
+            
+            # Step 1: Process and upload images
+            logger.info("Step 1: Processing and uploading images...")
+            try:
+                uploaded_images = self.process_images(post, sections)
+                logger.info(f"✅ Image processing completed. Uploaded {len(uploaded_images)} images.")
+                logger.info(f"uploaded_images dictionary: {uploaded_images}")
+            except Exception as e:
+                logger.error(f"❌ Error during image processing: {str(e)}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
                 return {
                     'success': False,
-                    'error': 'Failed to render post HTML'
+                    'error': f'Image processing failed: {str(e)}'
                 }
+            
+            # Step 2: Render HTML content
+            logger.info("Step 2: Rendering HTML content...")
+            try:
+                html_content = self.render_post_html(post, sections, uploaded_images)
+                if not html_content:
+                    return {
+                        'success': False,
+                        'error': 'Failed to render post HTML'
+                    }
+                logger.info(f"✅ HTML rendering completed. Content length: {len(html_content)}")
+            except Exception as e:
+                logger.error(f"❌ Error during HTML rendering: {str(e)}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
+                return {
+                    'success': False,
+                    'error': f'HTML rendering failed: {str(e)}'
+                }
+            
+            # Step 3: Map cross-promotion data
+            logger.info("Step 3: Mapping cross-promotion data...")
+            if post.get('cross_promotion_category_id'):
+                post['cross_promotion'] = {
+                    'category_id': post['cross_promotion_category_id'],
+                    'category_title': post.get('cross_promotion_category_title', ''),
+                    'product_id': post.get('cross_promotion_product_id'),
+                    'product_title': post.get('cross_promotion_product_title', '')
+                }
+                logger.info(f"✅ Mapped cross-promotion data: category_id={post['cross_promotion']['category_id']}, title='{post['cross_promotion']['category_title']}'")
+            else:
+                logger.info("No cross-promotion data found")
+            
+            # Step 4: Create or update post on clan.com
+            logger.info("Step 4: Creating/updating post on clan.com...")
+            is_update = bool(post.get('clan_post_id'))
+            logger.info(f"Is update: {is_update} (clan_post_id: {post.get('clan_post_id')})")
+            
+            try:
+                result = self.create_or_update_post(post, html_content, is_update, uploaded_images)
+                if result['success']:
+                    logger.info(f"✅ Successfully published post {post['id']} to clan.com")
+                    return result
+                else:
+                    logger.error(f"❌ Failed to publish post {post['id']}: {result.get('error', 'Unknown error')}")
+                    return result
+            except Exception as e:
+                logger.error(f"❌ Error during post creation/update: {str(e)}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
+                return {
+                    'success': False,
+                    'error': f'Post creation/update failed: {str(e)}'
+                }
+                
         except Exception as e:
-            logger.error(f"Error during HTML rendering: {str(e)}")
+            logger.error(f"❌ Unexpected error in publish_to_clan: {str(e)}")
             import traceback
             logger.error(f"Traceback: {traceback.format_exc()}")
             return {
                 'success': False,
-                'error': f'HTML rendering failed: {str(e)}'
+                'error': f'Unexpected error: {str(e)}'
             }
-        
-        # Step 3: Create or update post on clan.com
-        is_update = bool(post.get('clan_post_id'))
-        logger.info(f"{'Updating' if is_update else 'Creating'} post {post['id']} on clan.com")
-        
-        try:
-            result = publisher.create_or_update_post(post, html_content, is_update, uploaded_images)
-            if result['success']:
-                logger.info(f"Successfully published post {post['id']} to clan.com")
-            return result
-        except Exception as e:
-            logger.error(f"Error during post creation/update: {str(e)}")
-            import traceback
-            logger.error(f"Traceback: {traceback.format_exc()}")
-            return {
-                'success': False,
-                'error': f'Post creation/update failed: {str(e)}'
-            }
-        
-    except Exception as e:
-        error_msg = f"Publishing failed: {str(e)}"
-        logger.error(error_msg)
-        return {
-            'success': False,
-            'error': error_msg
-        }
+        finally:
+            logger.info("=== PUBLISH_TO_CLAN DEBUG END ===")
