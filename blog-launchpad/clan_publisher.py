@@ -284,7 +284,16 @@ class ClanPublisher:
             
             # Meta information - INCLUDING READING TIME
             created_at = post.get('created_at')
-            date_str = safe_html(created_at.strftime('%B %d, %Y') if created_at else 'Unknown date')
+            try:
+                if hasattr(created_at, 'strftime'):
+                    date_str = safe_html(created_at.strftime('%B %d, %Y'))
+                elif isinstance(created_at, str):
+                    date_str = safe_html(created_at)
+                else:
+                    date_str = safe_html(str(created_at) if created_at else 'Unknown date')
+            except Exception as e:
+                logger.warning(f"Date formatting failed: {e}, using fallback")
+                date_str = safe_html('Unknown date')
             html_parts.append('<div class="post-meta">')
             html_parts.append('<span class="post-meta__author">By Caitrin Stewart</span>')
             html_parts.append('<span class="post-meta__separator"> | </span>')
