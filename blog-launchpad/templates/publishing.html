@@ -348,11 +348,8 @@
             console.log('Retrying publish for post:', postId);
             showToast('Retrying publish to Clan.com...', 'info');
             
-            // Mock API call
-            setTimeout(() => {
-                showToast('Retry successful! Post published.', 'success');
-                updatePostStatus(postId, 'published');
-            }, 2500);
+            // Use the real publish function instead of mock
+            publishPost(postId);
         }
 
         function previewPost(postId) {
@@ -420,11 +417,24 @@
         function initializeBulkActions() {
             const bulkPublishBtn = document.getElementById('bulk-publish');
             if (bulkPublishBtn) {
-                bulkPublishBtn.addEventListener('click', function() {
+                bulkPublishBtn.addEventListener('click', async function() {
                     const selectedPosts = Array.from(document.querySelectorAll('.post-checkbox:checked'))
                         .map(cb => cb.value);
                     console.log('Bulk publishing posts:', selectedPosts);
                     showToast(`Publishing ${selectedPosts.length} posts to Clan.com...`, 'info');
+                    
+                    // Actually publish each selected post
+                    for (const postId of selectedPosts) {
+                        try {
+                            await publishPost(postId);
+                            // Small delay between posts to avoid overwhelming the API
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        } catch (error) {
+                            console.error(`Failed to publish post ${postId}:`, error);
+                        }
+                    }
+                    
+                    showToast(`Bulk publishing completed for ${selectedPosts.length} posts`, 'success');
                 });
             }
 
