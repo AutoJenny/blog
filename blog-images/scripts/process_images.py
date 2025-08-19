@@ -181,12 +181,21 @@ def process_single_image(image_path, watermark, output_dir):
         # Add AI-generated text
         image = add_ai_generated_text(image)
         
-        # Create output filename
-        stem = image_path.stem
-        if not stem.endswith('_processed'):
-            output_filename = f"{stem}_processed{image_path.suffix}"
+        # Check if this is a header image by examining the directory path
+        is_header = 'header' in str(output_dir)
+        
+        # Create output filename with appropriate extension
+        if is_header:
+            # Force JPG for header images
+            output_filename = f"{image_path.stem}_processed.jpg"
+            print(f"   📸 Header image detected - forcing JPG output: {output_filename}")
         else:
-            output_filename = f"{stem}{image_path.suffix}"
+            # Keep original format for section images
+            if not image_path.stem.endswith('_processed'):
+                output_filename = f"{image_path.stem}_processed{image_path.suffix}"
+            else:
+                output_filename = f"{image_path.stem}{image_path.suffix}"
+            print(f"   📸 Section image - keeping original format: {output_filename}")
         
         output_path = output_dir / output_filename
         
@@ -222,11 +231,19 @@ def process_all_images(base_path, watermark_path, dry_run=False, post_id=None):
             return
         
         raw_dirs = []
+        
+        # Process section raw directories
         for section_dir in post_path.glob("sections/*"):
             if section_dir.is_dir():
                 raw_dir = section_dir / "raw"
                 if raw_dir.exists() and raw_dir.is_dir():
                     raw_dirs.append(raw_dir)
+        
+        # Process header raw directory
+        header_raw_dir = post_path / "header" / "raw"
+        if header_raw_dir.exists() and header_raw_dir.is_dir():
+            raw_dirs.append(header_raw_dir)
+            print(f"   📁 Found header raw directory: {header_raw_dir}")
         
         print(f"📁 Found {len(raw_dirs)} raw directories for post {post_id}")
     else:
