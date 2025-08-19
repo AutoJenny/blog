@@ -490,6 +490,18 @@ def publish_post_to_clan(post_id):
         
         sections = get_post_sections_with_images(post_id)
         
+        # Fix field mapping - ensure post has the fields our function expects
+        if post.get('post_id') and not post.get('id'):
+            post['id'] = post['post_id']
+        
+        # Ensure summary field exists and has content
+        if not post.get('summary'):
+            post['summary'] = post.get('intro_blurb', 'No summary available')
+        
+        # Ensure created_at is handled properly
+        if post.get('created_at') and not isinstance(post['created_at'], str):
+            post['created_at'] = post['created_at'].isoformat() if hasattr(post['created_at'], 'isoformat') else str(post['created_at'])
+        
         # Add header image if exists
         header_image_path = find_header_image(post_id)
         if header_image_path:
@@ -522,8 +534,19 @@ def publish_post_to_clan(post_id):
         # Import publishing function
         from clan_publisher import publish_to_clan
         
+        # Debug: Log what we're about to send
+        logger.info(f"=== FLASK ENDPOINT DEBUG ===")
+        logger.info(f"Post data keys: {list(post.keys()) if post else 'NO POST'}")
+        logger.info(f"Post title: {post.get('title', 'NO TITLE') if post else 'NO POST'}")
+        logger.info(f"Number of sections: {len(sections) if sections else 0}")
+        if sections:
+            logger.info(f"Section IDs: {[s.get('id') for s in sections]}")
+        
         # Attempt to publish
         result = publish_to_clan(post, sections)
+        
+        # Debug: Log the result
+        logger.info(f"Publishing result: {result}")
         
         if result['success']:
             # Update database with clan post details
