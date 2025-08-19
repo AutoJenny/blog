@@ -34,22 +34,23 @@ class ClanPublisher:
     
     def _generate_url_key(self, post):
         """Generate a URL-friendly key for the post"""
-        # Use existing slug if available
-        if post.get('slug'):
-            return post['slug']
-        
-        # Generate from title
-        title = post.get('title', 'Untitled Post')
         import re
+        import time
+        
+        # Generate from title (don't use existing slug to avoid conflicts)
+        title = post.get('title', 'Untitled Post')
         # Convert to lowercase, replace spaces with hyphens, remove special chars
         url_key = re.sub(r'[^a-z0-9\s-]', '', title.lower())
         url_key = re.sub(r'\s+', '-', url_key).strip('-')
         
-        # Ensure it's not empty and add post ID for uniqueness
+        # Add timestamp for uniqueness to avoid conflicts with existing posts
+        timestamp = int(time.time())
+        
+        # Ensure it's not empty and add post ID + timestamp for uniqueness
         if not url_key:
-            url_key = f'post-{post["id"]}'
+            url_key = f'post-{post["id"]}-{timestamp}'
         else:
-            url_key = f'{url_key}-{post["id"]}'
+            url_key = f'{url_key}-{post["id"]}-{timestamp}'
         
         return url_key
     
