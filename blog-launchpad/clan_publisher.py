@@ -118,24 +118,62 @@ class ClanPublisher:
             # Upload to clan.com
             upload_url = f"{self.api_base_url}uploadImage"
             
+            # Determine MIME type based on file extension
+            import mimetypes
+            mime_type, _ = mimetypes.guess_type(filename)
+            if not mime_type or not mime_type.startswith('image/'):
+                # Fallback to common image types
+                if filename.lower().endswith('.png'):
+                    mime_type = 'image/png'
+                elif filename.lower().endswith('.jpg') or filename.lower().endswith('.jpeg'):
+                    mime_type = 'image/jpeg'
+                elif filename.lower().endswith('.webp'):
+                    mime_type = 'image/webp'
+                else:
+                    mime_type = 'image/jpeg'  # Default fallback
+            
             with open(image_path, 'rb') as f:
-                files = {'image': (filename, f, 'image/jpeg')}
+                files = {'image': (filename, f, mime_type)}
                 data = {
                     'api_user': self.api_user,
-                    'api_key': self.api_key
+                    'api_key': self.api_key,
+                    'json_args': '[]'  # Required by clan.com API (empty array for image uploads)
                 }
                 
-                logger.info(f"Uploading image: {filename}")
+                logger.info(f"Uploading image: {filename} to {upload_url}")
+                logger.info(f"MIME type: {mime_type}")
+                logger.info(f"API data: {data}")
                 response = requests.post(upload_url, files=files, data=data, timeout=60)
+                
+                logger.info(f"Upload response status: {response.status_code}")
+                logger.info(f"Upload response headers: {dict(response.headers)}")
+                logger.info(f"Upload response text: {response.text}")
                 
                 if response.status_code == 200:
                     result = response.json()
-                    if result.get('success'):
+                    logger.info(f"Upload response JSON: {result}")
+                    
+                    # Check for success status (clan.com uses 'status' field)
+                    if result.get('status') == 'success' or result.get('success'):
+                        # Extract URL from message or url field
                         uploaded_url = result.get('url')
-                        logger.info(f"Image uploaded successfully: {uploaded_url}")
-                        return uploaded_url
+                        if not uploaded_url and result.get('message'):
+                            # Extract URL from message like "File uploaded successfully: https://static.clan.com/media/blog/filename.jpg"
+                            message = result.get('message', '')
+                            if 'https://' in message:
+                                uploaded_url = message.split('https://')[-1]
+                                uploaded_url = 'https://' + uploaded_url
+                        
+                        if uploaded_url:
+                            logger.info(f"Image uploaded successfully: {uploaded_url}")
+                            return uploaded_url
+                        else:
+                            logger.error("Image upload succeeded but no URL found in response")
+                            return None
                     else:
-                        logger.error(f"Image upload failed: {result.get('error')}")
+                        error_msg = result.get('error', 'Unknown upload error')
+                        logger.error(f"Image upload failed: {error_msg}")
+                        logger.error(f"Full upload response: {result}")
                         return None
                 else:
                     logger.error(f"Image upload failed with status {response.status_code}: {response.text}")
@@ -153,26 +191,44 @@ class ClanPublisher:
         """Upload all images and update paths in the post content"""
         uploaded_images = {}
         
+        # Import time module for timestamped filenames
+        import time
+        timestamp = int(time.time())
+        
         # Process header image
         if post.get('header_image') and post['header_image'].get('path'):
             header_path = post['header_image']['path']
-            uploaded_url = self.upload_image(header_path, f"header_{post['id']}.jpg")
+            # Generate unique filename with timestamp for cache busting
+            filename = f"header_{post['id']}_{timestamp}.jpg"
+            logger.info(f"Uploading header image with timestamped filename: {filename}")
+            uploaded_url = self.upload_image(header_path, filename)
             if uploaded_url:
                 uploaded_images[header_path] = uploaded_url
                 post['header_image']['path'] = uploaded_url
+                logger.info(f"Header image uploaded successfully: {uploaded_url}")
+            else:
+                logger.error(f"Failed to upload header image: {header_path}")
         
         # Process section images
         for section in sections:
             if section.get('image') and section['image'].get('path') and not section['image'].get('placeholder'):
                 section_path = section['image']['path']
-                uploaded_url = self.upload_image(section_path, f"section_{post['id']}_{section.get('id', 'unknown')}.jpg")
+                section_id = section.get('id', 'unknown')
+                # Generate unique filename with timestamp for cache busting
+                filename = f"section_{post['id']}_{section_id}_{timestamp}.jpg"
+                logger.info(f"Uploading section {section_id} image with timestamped filename: {filename}")
+                uploaded_url = self.upload_image(section_path, filename)
                 if uploaded_url:
                     uploaded_images[section_path] = uploaded_url
                     section['image']['path'] = uploaded_url
+                    logger.info(f"Section {section_id} image uploaded successfully: {uploaded_url}")
+                else:
+                    logger.error(f"Failed to upload section {section_id} image: {section_path}")
         
+        logger.info(f"Image processing complete. Uploaded {len(uploaded_images)} images.")
         return uploaded_images
     
-    def render_post_html(self, post, sections):
+    def render_post_html(self, post, sections, uploaded_images=None):
         """Render the post HTML for clan.com publishing - COMPLETE VERSION matching preview"""
         try:
             import html
@@ -334,7 +390,7 @@ class ClanPublisher:
             logger.error(f"Error rendering post HTML: {str(e)}")
             return None
     
-    def create_or_update_post(self, post, html_content, is_update=False):
+    def create_or_update_post(self, post, html_content, is_update=False, uploaded_images=None):
         """Create or update a post on clan.com"""
         try:
             # Determine endpoint
@@ -347,6 +403,30 @@ class ClanPublisher:
                 endpoint = f"{self.api_base_url}createPost"
                 json_args = {}
             
+            # Get header image path for thumbnails
+            header_image_path = None
+            if post.get('header_image') and post['header_image'].get('path'):
+                header_image_path = post['header_image']['path']
+            
+            # Use uploaded image path for thumbnails if available, otherwise fallback to default
+            list_thumbnail = '/blog/default-thumbnail.jpg'
+            post_thumbnail = '/blog/default-thumbnail.jpg'
+            
+            if uploaded_images and header_image_path and header_image_path in uploaded_images:
+                # Extract the filename from the clan.com URL and create the thumbnail path
+                uploaded_url = uploaded_images[header_image_path]
+                if uploaded_url and '/blog/' in uploaded_url:
+                    # Extract filename from URL like "https://static.clan.com/media/blog/header_53_1703123456.jpg"
+                    filename = uploaded_url.split('/')[-1]
+                    thumbnail_path = f"/blog/{filename}"
+                    list_thumbnail = thumbnail_path
+                    post_thumbnail = thumbnail_path
+                    logger.info(f"Using uploaded header image for thumbnails: {thumbnail_path}")
+                else:
+                    logger.warning(f"Unexpected uploaded URL format: {uploaded_url}")
+            else:
+                logger.info("No uploaded header image available, using default thumbnails")
+            
             # Common post metadata - matching the working PHP script exactly
             json_args.update({
                 'title': post.get('title', 'Untitled Post'),  # required
@@ -354,8 +434,8 @@ class ClanPublisher:
                 'short_content': post.get('summary', '')[:200] if post.get('summary') else 'No summary available',  # required
                 'status': 2,  # required - 2 = enabled (not 'published' string)
                 'categories': [14, 15],  # required - note: 'categories' not 'category_ids'
-                'list_thumbnail': '/blog/default-thumbnail.jpg',  # required - path from /media
-                'post_thumbnail': '/blog/default-thumbnail.jpg',  # required - path from /media
+                'list_thumbnail': list_thumbnail,  # required - path from /media (now uses real uploaded image)
+                'post_thumbnail': post_thumbnail,  # required - path from /media (now uses real uploaded image)
                 'meta_title': post.get('title', 'Untitled Post'),  # required
                 'meta_tags': self._generate_meta_tags(post),  # required
                 'meta_description': post.get('summary', '')[:160] if post.get('summary') else 'No description available'  # required
@@ -419,6 +499,9 @@ class ClanPublisher:
             if response.status_code == 200:
                 result = response.json()
                 logger.info(f"Clan.com API response: {result}")
+                logger.info(f"Response status code: {response.status_code}")
+                logger.info(f"Response headers: {dict(response.headers)}")
+                logger.info(f"Response text: {response.text}")
                 
                 if result.get('success'):
                     clan_post_id = result.get('post_id')
@@ -434,6 +517,7 @@ class ClanPublisher:
                     error_msg = result.get('error', 'Unknown API error')
                     logger.error(f"Clan.com API error: {error_msg}")
                     logger.error(f"Full API response: {result}")
+                    logger.error(f"Response text: {response.text}")
                     return {
                         'success': False,
                         'error': f"Clan.com API error: {error_msg}"
@@ -502,28 +586,53 @@ def publish_to_clan(post, sections):
         
         # Step 1: Upload images and update paths
         logger.info(f"Processing images for post {post['id']}")
-        uploaded_images = publisher.process_images(post, sections)
+        try:
+            uploaded_images = publisher.process_images(post, sections)
+            logger.info(f"Image processing completed. Uploaded {len(uploaded_images)} images.")
+        except Exception as e:
+            logger.error(f"Error during image processing: {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            return {
+                'success': False,
+                'error': f'Image processing failed: {str(e)}'
+            }
         
         # Step 2: Render HTML content
         logger.info(f"Rendering HTML content for post {post['id']}")
-        html_content = publisher.render_post_html(post, sections)
-        
-        if not html_content:
+        try:
+            html_content = publisher.render_post_html(post, sections, uploaded_images)
+            if not html_content:
+                return {
+                    'success': False,
+                    'error': 'Failed to render post HTML'
+                }
+        except Exception as e:
+            logger.error(f"Error during HTML rendering: {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return {
                 'success': False,
-                'error': 'Failed to render post HTML'
+                'error': f'HTML rendering failed: {str(e)}'
             }
         
         # Step 3: Create or update post on clan.com
         is_update = bool(post.get('clan_post_id'))
         logger.info(f"{'Updating' if is_update else 'Creating'} post {post['id']} on clan.com")
         
-        result = publisher.create_or_update_post(post, html_content, is_update)
-        
-        if result['success']:
-            logger.info(f"Successfully published post {post['id']} to clan.com")
-        
-        return result
+        try:
+            result = publisher.create_or_update_post(post, html_content, is_update, uploaded_images)
+            if result['success']:
+                logger.info(f"Successfully published post {post['id']} to clan.com")
+            return result
+        except Exception as e:
+            logger.error(f"Error during post creation/update: {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            return {
+                'success': False,
+                'error': f'Post creation/update failed: {str(e)}'
+            }
         
     except Exception as e:
         error_msg = f"Publishing failed: {str(e)}"
