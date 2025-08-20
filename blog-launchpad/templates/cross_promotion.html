@@ -597,12 +597,10 @@
                                            placeholder="Related department"
                                            onchange="updateCategoryTitle(${post.id})">
                                 </div>
-                                ${post.cross_promotion?.category_id ? `
-                                    <div class="current-config">
-                                        <strong>Current:</strong> ${categories.find(c => c.id == post.cross_promotion.category_id)?.name || 'Unknown'} 
-                                        ${post.cross_promotion.category_title ? `- "${post.cross_promotion.category_title}"` : ''}
-                                    </div>
-                                ` : ''}
+                                <div class="current-config" draggable="true" data-widget-type="category" data-post-id="${post.id}">
+                                    <strong>Current:</strong> ${post.cross_promotion?.category_id && categories.find(c => c.id == post.cross_promotion.category_id) ? categories.find(c => c.id == post.cross_promotion.category_id).name : 'No category selected'} 
+                                    ${post.cross_promotion?.category_title ? `- "${post.cross_promotion.category_title}"` : ''}
+                                </div>
                             </div>
                             
                             <div class="config-section">
@@ -626,12 +624,10 @@
                                            placeholder="Related products"
                                            onchange="updateProductTitle(${post.id})">
                                 </div>
-                                ${post.cross_promotion?.product_id ? `
-                                    <div class="current-config">
-                                        <strong>Current:</strong> ${products.find(p => p.id == post.cross_promotion.product_id)?.name || 'Unknown'} 
-                                        ${post.cross_promotion.product_title ? `- "${post.cross_promotion.product_title}"` : ''}
-                                    </div>
-                                ` : ''}
+                                <div class="current-config" draggable="true" data-widget-type="product" data-post-id="${post.id}">
+                                    <strong>Current:</strong> ${post.cross_promotion?.product_id && products.find(p => p.id == post.cross_promotion.product_id) ? products.find(p => p.id == post.cross_promotion.product_id).name : 'No product selected'} 
+                                    ${post.cross_promotion.product_title ? `- "${post.cross_promotion.product_title}"` : ''}
+                                </div>
                             </div>
                         </div>
                         
