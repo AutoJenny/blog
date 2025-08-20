@@ -269,80 +269,7 @@
             color: #666;
         }
         
-        /* Article Footer */
-        .article-footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-        .article-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .article-tags {
-            flex: 1;
-        }
-        .article-tags strong {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        .tag {
-            display: inline-block;
-            background: #f8f9fa;
-            color: #495057;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            margin-right: 8px;
-            margin-bottom: 4px;
-            border: 1px solid #dee2e6;
-        }
-        .article-share {
-            text-align: right;
-        }
-        .article-share strong {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        .article-share a {
-            display: inline-block;
-            width: 32px;
-            height: 32px;
-            line-height: 32px;
-            text-align: center;
-            background: #007bff;
-            color: white;
-            border-radius: 4px;
-            margin-left: 8px;
-            text-decoration: none;
-            transition: background-color 0.2s ease;
-        }
-        .article-share a:hover {
-            background: #0056b3;
-        }
-        .article-share a[aria-label*="Twitter"] {
-            background: #1da1f2;
-        }
-        .article-share a[aria-label*="Twitter"]:hover {
-            background: #0d8bd9;
-        }
-        .article-share a[aria-label*="Facebook"] {
-            background: #4267b2;
-        }
-        .article-share a[aria-label*="Facebook"]:hover {
-            background: #365899;
-        }
-        .article-share a[aria-label*="LinkedIn"] {
-            background: #0077b5;
-        }
-        .article-share a[aria-label*="LinkedIn"]:hover {
-            background: #005885;
-        }
+
         
         /* Product styling moved to clan_blog.css */
     </style>
@@ -534,32 +461,7 @@
         </div>
         {% endif %}
         
-        <!-- Article Footer -->
-        <footer class="article-footer">
-            <div class="article-meta">
-                {% if post.keywords %}
-                <div class="article-tags">
-                    <strong>Tags:</strong>
-                    {% for keyword in post.keywords %}
-                    <span class="tag">{{ keyword }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <div class="article-share">
-                    <strong>Share this article:</strong>
-                    <a href="https://twitter.com/intent/tweet?text={{ post.title|urlencode }}&url={{ post.canonical_url|urlencode if post.canonical_url else '' }}" target="_blank" rel="noopener" aria-label="Share on Twitter">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ post.canonical_url|urlencode if post.canonical_url else '' }}" target="_blank" rel="noopener" aria-label="Share on Facebook">
-                        <i class="fab fa-facebook"></i>
-                    </a>
-                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ post.canonical_url|urlencode if post.canonical_url else '' }}" target="_blank" rel="noopener" aria-label="Share on LinkedIn">
-                        <i class="fab fa-linkedin"></i>
-                    </a>
-                </div>
-            </div>
-        </footer>
+
     </div>
     
     <!-- Site Footer -->

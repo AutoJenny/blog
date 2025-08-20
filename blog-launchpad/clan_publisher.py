@@ -773,7 +773,7 @@ class ClanPublisher:
                 for el in container.find_all(*sel):
                     el.decompose()
             
-            # Extract header, sections and footer exactly like preview
+            # Extract header and sections exactly like preview
             parts = []
             header = container.find('header', class_='preview-header')
             if header:
@@ -781,9 +781,6 @@ class ClanPublisher:
             blog_sections = container.find('div', class_='blog-sections')
             if blog_sections:
                 parts.append(str(blog_sections))
-            article_footer = container.find('footer', class_='article-footer')
-            if article_footer:
-                parts.append(str(article_footer))
             
             extracted_html = '\n'.join(parts)
             
