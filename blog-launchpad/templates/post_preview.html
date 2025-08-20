@@ -179,6 +179,43 @@
         .meta-button:hover {
             background-color: #0056b3;
         }
+        
+        /* Cross-promotion widget styles */
+        .cross-promotion-widget {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .cross-promotion-widget.category-widget {
+            background-color: #e3f2fd;
+            border: 2px solid #2196f3;
+        }
+        
+        .cross-promotion-widget.product-widget {
+            background-color: #f3e5f5;
+            border: 2px solid #9c27b0;
+        }
+        
+        .cross-promotion-widget h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+        
+        .cross-promotion-widget p {
+            margin: 0 0 8px 0;
+            font-size: 0.95em;
+        }
+        
+        .cross-promotion-widget small {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+        
+                .cross-promotion-widget i {
+            margin-right: 8px;
+        }
         .meta-button.active {
             background-color: #0056b3;
         }
@@ -396,6 +433,18 @@
         </header>
         {% if sections %}
         <div class="blog-sections">
+            <!-- Cross-promotion error handling -->
+            {% if not post.cross_promotion %}
+                <div class="cross-promotion-error" style="background-color: #ffebee; border: 2px solid #f44336; padding: 15px; margin: 20px 0; border-radius: 8px; color: #c62828;">
+                    <h4 style="margin: 0 0 10px 0; color: #d32f2f;">
+                        <i class="fas fa-exclamation-triangle"></i> Cross-Promotion Configuration Missing
+                    </h4>
+                    <p style="margin: 0; font-size: 0.9em;">
+                        No cross-promotion widgets are configured for this post. 
+                        <a href="http://localhost:5001/cross-promotion" style="color: #d32f2f; text-decoration: underline;">Configure widgets here</a>.
+                    </p>
+                </div>
+            {% endif %}
             {% for section in sections %}
             <section class="blog-section" id="section-{{ loop.index }}">
                 <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
@@ -452,7 +501,67 @@
                 </div>
             </section>
             
+            <!-- Cross-promotion widgets between sections -->
+            {% if post.cross_promotion and post.cross_promotion.category_position == loop.index %}
+                {% if post.cross_promotion.category_id %}
+                    <div class="cross-promotion-widget category-widget" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                        <h3 style="color: #1976d2; margin: 0 0 10px 0;">
+                            <i class="fas fa-tags"></i> 
+                            {{ post.cross_promotion.category_title or 'Related Department' }}
+                        </h3>
+                        <p style="margin: 0; color: #1565c0;">
+                            <strong>Category Widget:</strong> Will display category ID {{ post.cross_promotion.category_id }}
+                        </p>
+                        <small style="color: #42a5f5;">Position: After section {{ loop.index }}</small>
+                    </div>
+                {% endif %}
+            {% endif %}
+            
+            {% if post.cross_promotion and post.cross_promotion.product_position == loop.index %}
+                {% if post.cross_promotion.product_id %}
+                    <div class="cross-promotion-widget product-widget" style="background-color: #f3e5f5; border: 2px solid #9c27b0; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                        <h3 style="color: #7b1fa2; margin: 0 0 10px 0;">
+                            <i class="fas fa-shopping-bag"></i> 
+                            {{ post.cross_promotion.product_title or 'Related Products' }}
+                        </h3>
+                        <p style="margin: 0; color: #6a1b9a;">
+                            <strong>Product Widget:</strong> Will display product ID {{ post.cross_promotion.product_id }}
+                        </p>
+                        <small style="color: #ab47bc;">Position: After section {{ loop.index }}</small>
+                    </div>
+                {% endif %}
+            {% endif %}
+            
             {% endfor %}
+            
+            <!-- Cross-promotion widgets after the last section -->
+            {% if post.cross_promotion %}
+                {% if post.cross_promotion.category_position == sections|length + 1 and post.cross_promotion.category_id %}
+                    <div class="cross-promotion-widget category-widget" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                        <h3 style="color: #1976d2; margin: 0 0 10px 0;">
+                            <i class="fas fa-tags"></i> 
+                            {{ post.cross_promotion.category_title or 'Related Department' }}
+                        </h3>
+                        <p style="margin: 0; color: #1565c0;">
+                            <strong>Category Widget:</strong> Will display category ID {{ post.cross_promotion.category_id }}
+                        </p>
+                        <small style="color: #42a5f5;">Position: After all sections</small>
+                    </div>
+                {% endif %}
+                
+                {% if post.cross_promotion.product_position == sections|length + 1 and post.cross_promotion.product_id %}
+                    <div class="cross-promotion-widget product-widget" style="background-color: #f3e5f5; border: 2px solid #9c27b0; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                        <h3 style="color: #7b1fa2; margin: 0 0 10px 0;">
+                            <i class="fas fa-shopping-bag"></i> 
+                            {{ post.cross_promotion.product_title or 'Related Products' }}
+                        </h3>
+                        <p style="margin: 0; color: #6a1b9a;">
+                            <strong>Product Widget:</strong> Will display product ID {{ post.cross_promotion.product_id }}
+                        </p>
+                        <small style="color: #ab47bc;">Position: After all sections</small>
+                    </div>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% if not post.idea_seed and not post.intro_blurb and not sections %}

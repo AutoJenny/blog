@@ -1,0 +1,77 @@
+<div class="mp-content std fix-me">
+    <header class="blog-post__header">
+        {% if post.subtitle %}
+        <p class="blog-post__subtitle">{{ post.subtitle }}</p>
+        {% endif %}
+        
+        <div class="post-meta">
+            <span class="post-meta__date">Published on <time datetime="{{ post.created_at.strftime('%Y-%m-%d') if post.created_at else 'Unknown date' }}">{{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}</time></span>
+            <span class="post-meta__separator"> | </span>
+            <span class="post-meta__author">By Caitrin Stewart</span>
+        </div>
+        
+        {% if post.summary %}
+        <div class="blog-post__summary">
+            <p>{{ post.summary }}</p>
+        </div>
+        {% endif %}
+    </header>
+    
+    {% if sections %}
+    <div class="blog-sections">
+    {% for section in sections %}
+    <section class="blog-section" id="section-{{ loop.index }}">
+        <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
+        <div class="section-text">
+            {% if section.polished %}
+                {{ section.polished|strip_html_doc|safe }}
+            {% elif section.draft %}
+                {{ section.draft|strip_html_doc|safe }}
+            {% elif section.content %}
+                {{ section.content|strip_html_doc|safe }}
+            {% else %}
+                <p>No content available for this section.</p>
+            {% endif %}
+        </div>
+        
+        {% if section.image and section.image.path and not section.image.placeholder %}
+        <figure class="section-image">
+            <a title="{{ section.image.caption or section.image.alt_text or 'Section image' }}" 
+               href="{{ section.image.path }}" 
+               rel="lightbox[mpblog_{{ post.id }}]" 
+               target="_blank">
+                <img alt="{{ section.image.alt_text }}" src="{{ section.image.path }}">
+            </a>
+            {% if section.image.caption %}
+            <figcaption>{{ section.image.caption }}</figcaption>
+            {% endif %}
+        </figure>
+        {% endif %}
+    </section>
+    
+    {% if post.cross_promotion and post.cross_promotion.category_position == loop.index %}
+        {% if post.cross_promotion.category_widget_html %}
+            {{ post.cross_promotion.category_widget_html|safe }}
+        {% endif %}
+    {% endif %}
+    
+    {% if post.cross_promotion and post.cross_promotion.product_position == loop.index %}
+        {% if post.cross_promotion.product_widget_html %}
+            {{ post.cross_promotion.product_widget_html|safe }}
+        {% endif %}
+    {% endif %}
+    
+    {% endfor %}
+    
+    {% if post.cross_promotion %}
+        {% if post.cross_promotion.category_position == sections|length + 1 and post.cross_promotion.category_widget_html %}
+            {{ post.cross_promotion.category_widget_html|safe }}
+        {% endif %}
+        
+        {% if post.cross_promotion.product_position == sections|length + 1 and post.cross_promotion.product_widget_html %}
+            {{ post.cross_promotion.product_widget_html|safe }}
+        {% endif %}
+    {% endif %}
+    </div>
+    {% endif %}
+</div>

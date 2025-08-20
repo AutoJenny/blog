@@ -740,49 +740,37 @@ class ClanPublisher:
             logger.info("=== PUBLISH_TO_CLAN DEBUG END ===")
 
     def get_preview_html_content(self, post, sections, uploaded_images=None):
-        """Get HTML from the preview endpoint and minimally transform it for clan.com upload.
-        - KEEP preview content identical
-        - REMOVE only preview meta/context
-        - FIX image/file paths using uploaded_images
-        - KEEP cross-promo widgets; append client-side JS that calls clan.com API
+        """Generate HTML using clan_post_raw.html template for clan.com upload.
+        This shows the ACTUAL HTML that gets uploaded, not placeholder widgets.
         """
         try:
-            import requests
-            from bs4 import BeautifulSoup
-            import re
+            import os
             
-            preview_url = f"http://localhost:5001/preview/{post['id']}?meta=off"
-            logger.info(f"Fetching preview HTML from: {preview_url}")
-            resp = requests.get(preview_url, timeout=15)
-            resp.raise_for_status()
-            html = resp.text
-            logger.info(f"Fetched preview HTML length: {len(html)}")
+            # Get the clan_post_raw.html template content
+            template_path = os.path.join(os.path.dirname(__file__), 'templates', 'clan_post_raw.html')
+            with open(template_path, 'r', encoding='utf-8') as f:
+                template_content = f.read()
             
-            soup = BeautifulSoup(html, 'html.parser')
-            container = soup.find('div', class_='preview-container')
-            if not container:
-                raise Exception('preview-container not found in preview HTML')
+            # Create Jinja2 environment with the strip_html_doc filter
+            from jinja2 import Environment, BaseLoader
             
-            # Remove preview-only UI elements
-            for sel in [
-                ('div', {'class': 'image-meta-panel'}),
-                ('div', {'class': 'meta-item'}),
-                ('button', {'class': 'meta-button'}),
-                ('div', {'id': 'post-meta-panel'})
-            ]:
-                for el in container.find_all(*sel):
-                    el.decompose()
+            def strip_html_doc(content):
+                """Strip HTML document tags and return just the content"""
+                if not content:
+                    return content
+                # Remove DOCTYPE, html, head, body tags and their content
+                import re
+                content = re.sub(r'<!DOCTYPE[^>]*>', '', content)
+                content = re.sub(r'<html[^>]*>.*?</html>', '', content, flags=re.DOTALL)
+                content = re.sub(r'<head[^>]*>.*?</head>', '', content, flags=re.DOTALL)
+                content = re.sub(r'<body[^>]*>.*?</body>', '', content, flags=re.DOTALL)
+                return content.strip()
             
-            # Extract header and sections exactly like preview
-            parts = []
-            header = container.find('header', class_='preview-header')
-            if header:
-                parts.append(str(header))
-            blog_sections = container.find('div', class_='blog-sections')
-            if blog_sections:
-                parts.append(str(blog_sections))
+            env = Environment(loader=BaseLoader())
+            env.filters['strip_html_doc'] = strip_html_doc
             
-            extracted_html = '\n'.join(parts)
+            template = env.from_string(template_content)
+            html_content = template.render(post=post, sections=sections)
             
             # Translate local image/file paths to uploaded clan.com URLs
             if uploaded_images:
@@ -795,27 +783,24 @@ class ClanPublisher:
                         rel = local_path.split('content/posts/')[-1] if 'content/posts/' in local_path else local_path
                         path_mapping[f'/static/content/posts/{rel}'] = clan_url
                 for local_path, clan_url in path_mapping.items():
-                    extracted_html = extracted_html.replace(f'src="{local_path}"', f'src="{clan_url}"')
-                    extracted_html = extracted_html.replace(f'href="{local_path}"', f'href="{clan_url}"')
+                    html_content = html_content.replace(f'src="{local_path}"', f'src="{clan_url}"')
+                    html_content = html_content.replace(f'href="{local_path}"', f'href="{clan_url}"')
                     logger.info(f"Replaced {local_path} -> {clan_url}")
             
             # Remove localhost refs that may linger
-            extracted_html = re.sub(r'http://localhost:\d+', '', extracted_html)
-            
-
-            
-
+            import re
+            html_content = re.sub(r'http://localhost:\d+', '', html_content)
             
             # Save the HTML file for inspection
             debug_file = f'/tmp/upload_html_post_{post["id"]}_{int(time.time())}.html'
             with open(debug_file, 'w', encoding='utf-8') as f:
-                f.write(extracted_html)
+                f.write(html_content)
             logger.info(f"Upload HTML saved to: {debug_file}")
             
-            logger.info(f"Final HTML content length: {len(extracted_html)}")
-            return extracted_html
+            logger.info(f"Final HTML content length: {len(html_content)}")
+            return html_content
         except Exception as e:
-            logger.error(f"Error getting preview HTML content: {str(e)}")
+            logger.error(f"Error generating HTML content: {str(e)}")
             import traceback
             logger.error(f"Traceback: {traceback.format_exc()}")
             return None

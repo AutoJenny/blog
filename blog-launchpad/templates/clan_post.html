@@ -124,6 +124,19 @@
             {% endif %}
 
             {% if sections %}
+            <!-- Cross-promotion error handling -->
+            {% if not post.cross_promotion %}
+                <div class="cross-promotion-error" style="background-color: #ffebee; border: 2px solid #f44336; padding: 15px; margin: 20px 0; border-radius: 8px; color: #c62828;">
+                    <h4 style="margin: 0 0 10px 0; color: #d32f2f;">
+                        <i class="fas fa-exclamation-triangle"></i> Cross-Promotion Configuration Missing
+                    </h4>
+                    <p style="margin: 0; font-size: 0.9em;">
+                        No cross-promotion widgets are configured for this post. 
+                        <a href="http://localhost:5001/cross-promotion" style="color: #d32f2f; text-decoration: underline;">Configure widgets here</a>.
+                    </p>
+                </div>
+            {% endif %}
+            
             {% for section in sections %}
             <section>
                 <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
@@ -151,7 +164,36 @@
                 </figure>
                 {% endif %}
             </section>
+            
+            <!-- Cross-promotion widgets between sections -->
+            {% if post.cross_promotion and post.cross_promotion.category_position == loop.index %}
+                {% if post.cross_promotion.category_widget_html %}
+                    <!-- Category Cross-Sell Widget -->
+                    {{ post.cross_promotion.category_widget_html|safe }}
+                {% endif %}
+            {% endif %}
+            
+            {% if post.cross_promotion and post.cross_promotion.product_position == loop.index %}
+                {% if post.cross_promotion.product_widget_html %}
+                    <!-- Product Cross-Sell Widget -->
+                    {{ post.cross_promotion.product_widget_html|safe }}
+                {% endif %}
+            {% endif %}
+            
             {% endfor %}
+            
+            <!-- Cross-promotion widgets after the last section -->
+            {% if post.cross_promotion %}
+                {% if post.cross_promotion.category_position == sections|length + 1 and post.cross_promotion.category_widget_html %}
+                    <!-- Category Cross-Sell Widget -->
+                    {{ post.cross_promotion.category_widget_html|safe }}
+                {% endif %}
+                
+                {% if post.cross_promotion.product_position == sections|length + 1 and post.cross_promotion.product_widget_html %}
+                    <!-- Product Cross-Sell Widget -->
+                    {{ post.cross_promotion.product_widget_html|safe }}
+                {% endif %}
+            {% endif %}
             {% endif %}
         </div>
     </div>
