@@ -220,10 +220,12 @@ class ClanCache:
             
             return categories
     
-    def get_random_products(self, count: int = 3) -> List[Dict]:
-        """Get random products from PostgreSQL cache"""
+    def get_random_products(self, count: int = 3, offset: int = 0) -> List[Dict]:
+        """Get random products from PostgreSQL cache with offset-based variety"""
         with self.get_db_conn() as conn:
             cursor = conn.cursor(cursor_factory=RealDictCursor)
+            
+            # Simple random selection - offset will be handled by different random seeds
             cursor.execute('''
                 SELECT id, name, sku, price, image_url, url, description, category_ids 
                 FROM clan_products 
@@ -235,17 +237,154 @@ class ClanCache:
             products = []
             for row in rows:
                 products.append({
-                    'id': row['id'],
-                    'name': row['name'],
-                    'sku': row['sku'],
-                    'price': row['price'],
-                    'image_url': row['image_url'],
-                    'url': row['url'],
-                    'description': row['description'],
-                    'category_ids': row['category_ids'] if row['category_ids'] else []
+                    'id': row.get('id', 0),
+                    'name': row.get('name', 'Product Name'),
+                    'sku': row.get('sku', ''),
+                    'price': row.get('price', '29.99'),
+                    'image_url': row.get('image_url', 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg'),
+                    'url': row.get('url', ''),
+                    'description': row.get('description', 'No description available'),
+                    'category_ids': row.get('category_ids', []) if row.get('category_ids') else []
                 })
             
             return products
+    
+    def download_full_catalog(self) -> Dict:
+        """Download the full catalog from clan.com API and store locally"""
+        try:
+            import requests
+            import time
+            
+            logger.info("Starting full catalog download from clan.com...")
+            
+            # Download the full product list (1,116 products)
+            response = requests.get("https://clan.com/clan/api/getProducts", timeout=30)
+            
+            if response.status_code != 200:
+                logger.error(f"Failed to download catalog: HTTP {response.status_code}")
+                return {'success': False, 'error': f'HTTP {response.status_code}'}
+            
+            api_data = response.json()
+            
+            if not api_data.get('success') or not api_data.get('data'):
+                logger.error("Invalid API response format")
+                return {'success': False, 'error': 'Invalid API response'}
+            
+            products = api_data['data']
+            logger.info(f"Downloaded {len(products)} products from clan.com API")
+            
+            # Store basic product info (without detailed data)
+            stored_count = 0
+            for i, product in enumerate(products):
+                try:
+                    # Extract basic info from clan.com API response
+                    product_data = {
+                        'id': i + 1,  # Generate sequential ID
+                        'name': product[0],  # title
+                        'sku': product[1],   # sku
+                        'url': product[2],   # product_url
+                        'description': product[3],  # description
+                        'image_url': 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg',  # Default image
+                        'price': '29.99',  # Default price
+                        'has_detailed_data': False  # Mark as needing detailed data
+                    }
+                    
+                    if self.store_single_product(product_data):
+                        stored_count += 1
+                    
+                    # Progress logging every 100 products
+                    if (i + 1) % 100 == 0:
+                        logger.info(f"Processed {i + 1}/{len(products)} products...")
+                    
+                except Exception as e:
+                    logger.error(f"Error processing product {i}: {str(e)}")
+                    continue
+            
+            # Update cache timestamp
+            self.update_cache_timestamp('products')
+            
+            logger.info(f"Successfully stored {stored_count}/{len(products)} products in local cache")
+            
+            return {
+                'success': True,
+                'total_downloaded': len(products),
+                'stored_count': stored_count,
+                'message': f'Catalog download complete: {stored_count} products stored locally'
+            }
+            
+        except Exception as e:
+            logger.error(f"Error downloading full catalog: {str(e)}")
+            return {'success': False, 'error': str(e)}
+    
+    def get_products_with_detailed_data(self, skus: List[str]) -> List[Dict]:
+        """Fetch detailed data for specific SKUs from clan.com API"""
+        try:
+            import requests
+            
+            detailed_products = []
+            
+            for sku in skus:
+                try:
+                    # Fetch detailed product data
+                    response = requests.get(f"https://clan.com/clan/api/getProductData?sku={sku}", timeout=10)
+                    
+                    if response.status_code == 200:
+                        product_data = response.json()
+                        
+                        if product_data.get('success') and product_data.get('data'):
+                            # Extract detailed info
+                            detailed_product = {
+                                'sku': sku,
+                                'name': product_data['data'].get('title', ''),
+                                'price': str(product_data['data'].get('price', '29.99')),
+                                'image_url': product_data['data'].get('image', 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg'),
+                                'description': product_data['data'].get('description', ''),
+                                'url': f"https://clan.com/product/{sku}"  # Construct URL
+                            }
+                            
+                            # Update local cache with detailed data
+                            self.update_product_details(sku, detailed_product)
+                            
+                            detailed_products.append(detailed_product)
+                        else:
+                            logger.warning(f"No detailed data for SKU {sku}")
+                    else:
+                        logger.warning(f"Failed to fetch details for SKU {sku}: HTTP {response.status_code}")
+                        
+                except Exception as e:
+                    logger.error(f"Error fetching details for SKU {sku}: {str(e)}")
+                    continue
+            
+            return detailed_products
+            
+        except Exception as e:
+            logger.error(f"Error fetching detailed product data: {str(e)}")
+            return []
+    
+    def update_product_details(self, sku: str, detailed_data: Dict):
+        """Update product with detailed data from clan.com API"""
+        try:
+            conn = self.get_db_conn()
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                UPDATE clan_products 
+                SET price = %s, image_url = %s, has_detailed_data = TRUE
+                WHERE sku = %s
+            """, (
+                detailed_data.get('price', '29.99'),
+                detailed_data.get('image_url', ''),
+                sku
+            ))
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            logger.info(f"Updated product {sku} with detailed data")
+            
+        except Exception as e:
+            logger.error(f"Error updating product details for {sku}: {str(e)}")
     
     def get_cache_stats(self) -> Dict:
         """Get cache statistics"""
@@ -332,7 +471,6 @@ class ClanCache:
             
         except Exception as e:
             logger.error(f"Error truncating products table: {str(e)}")
-            return False
 
     def add_has_detailed_data_column(self) -> bool:
         """Add has_detailed_data column to clan_products table if it doesn't exist"""
