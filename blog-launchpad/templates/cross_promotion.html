@@ -379,6 +379,48 @@
             color: #666;
         }
         
+        .search-container {
+            position: relative;
+        }
+        
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .search-results.hidden {
+            display: none;
+        }
+        
+        .search-result-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s ease;
+        }
+        
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-result-item.selected {
+            background-color: #e3f2fd;
+        }
+        
         @media (max-width: 768px) {
             .cross-promotion-config {
                 grid-template-columns: 1fr;
@@ -458,7 +500,7 @@
                 // Load categories and products in parallel
                 const [categoriesResponse, productsResponse] = await Promise.all([
                     fetch('/api/clan/categories'),
-                    fetch('/api/clan/products')
+                    fetch('/api/clan/products?limit=2000')
                 ]);
                 
                 categories = await categoriesResponse.json();
@@ -528,21 +570,22 @@
                             <div class="config-section">
                                 <h3><i class="fas fa-tags"></i> Category Widget</h3>
                                 <div class="form-group">
-                                    <label for="category-${post.id}">Category</label>
-                                    <select id="category-${post.id}" onchange="updateCategory(${post.id})">
-                                        <option value="">Select a category...</option>
-                                        ${categories.map(cat => `
-                                            <option value="${cat.id}" ${post.cross_promotion?.category_id == cat.id ? 'selected' : ''}>
-                                                ${cat.name}
-                                            </option>
-                                        `).join('')}
-                                    </select>
+                                    <label for="category-search-${post.id}">Category</label>
+                                    <div class="search-container">
+                                        <input type="text" id="category-search-${post.id}" 
+                                               value="${post.cross_promotion?.category_id ? categories.find(c => c.id == post.cross_promotion.category_id)?.name || '' : ''}"
+                                               placeholder="Type to search categories..."
+                                               oninput="filterCategories(${post.id})"
+                                               onfocus="showCategoryResults(${post.id})"
+                                               onblur="hideCategoryResults(${post.id})">
+                                        <div id="category-results-${post.id}" class="search-results hidden"></div>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="category-title-${post.id}">Widget Title</label>
                                     <input type="text" id="category-title-${post.id}" 
-                                           value="${post.cross_promotion?.category_title || ''}"
-                                           placeholder="e.g., Scottish Clothing Collection"
+                                           value="Related department"
+                                           placeholder="Related department"
                                            onchange="updateCategoryTitle(${post.id})">
                                 </div>
                                 ${post.cross_promotion?.category_id ? `
@@ -556,21 +599,22 @@
                             <div class="config-section">
                                 <h3><i class="fas fa-box"></i> Product Widget</h3>
                                 <div class="form-group">
-                                    <label for="product-${post.id}">Product</label>
-                                    <select id="product-${post.id}" onchange="updateProduct(${post.id})">
-                                        <option value="">Select a product...</option>
-                                        ${products.map(prod => `
-                                            <option value="${prod.id}" ${post.cross_promotion?.product_id == prod.id ? 'selected' : ''}>
-                                                ${prod.name} (${prod.sku})
-                                            </option>
-                                        `).join('')}
-                                    </select>
+                                    <label for="product-search-${post.id}">Product</label>
+                                    <div class="search-container">
+                                        <input type="text" id="product-search-${post.id}" 
+                                               value="${post.cross_promotion?.product_id && products.find(p => p.id == post.cross_promotion.product_id) ? products.find(p => p.id == post.cross_promotion.product_id).name + ' (' + products.find(p => p.id == post.cross_promotion.product_id).sku + ')' : ''}"
+                                               placeholder="Type to search products..."
+                                               oninput="filterProducts(${post.id})"
+                                               onfocus="showProductResults(${post.id})"
+                                               onblur="hideProductResults(${post.id})">
+                                        <div id="product-results-${post.id}" class="search-results hidden"></div>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="product-title-${post.id}">Widget Title</label>
                                     <input type="text" id="product-title-${post.id}" 
-                                           value="${post.cross_promotion?.product_title || ''}"
-                                           placeholder="e.g., Related Scottish Products"
+                                           value="Related products"
+                                           placeholder="Related products"
                                            onchange="updateProductTitle(${post.id})">
                                 </div>
                                 ${post.cross_promotion?.product_id ? `
@@ -702,6 +746,12 @@
                 post.cross_promotion = post.cross_promotion || {};
                 post.cross_promotion.category_title = title;
             }
+            
+            // Update the current display area
+            const searchInput = document.getElementById(`category-search-${postId}`);
+            if (searchInput.value) {
+                updateCategoryCurrentDisplay(postId, searchInput.value);
+            }
         }
         
         async function updateProduct(postId) {
@@ -734,6 +784,193 @@
             if (post) {
                 post.cross_promotion = post.cross_promotion || {};
                 post.cross_promotion.product_title = title;
+            }
+            
+            // Update the current display area
+            const searchInput = document.getElementById(`product-search-${postId}`);
+            if (searchInput.value) {
+                const productName = searchInput.value.split(' (')[0]; // Extract just the product name
+                updateProductCurrentDisplay(postId, productName);
+            }
+        }
+        
+        // Real-time filtering functions
+        function filterCategories(postId) {
+            const searchInput = document.getElementById(`category-search-${postId}`);
+            const resultsContainer = document.getElementById(`category-results-${postId}`);
+            const searchTerm = searchInput.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            
+            if (searchTerm.length === 0) {
+                resultsContainer.innerHTML = '';
+                resultsContainer.classList.add('hidden');
+                return;
+            }
+            
+            const filteredCategories = categories.filter(cat => {
+                const normalizedName = cat.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                return normalizedName.includes(searchTerm);
+            });
+            
+            displayCategoryResults(postId, filteredCategories);
+        }
+        
+        function filterProducts(postId) {
+            const searchInput = document.getElementById(`product-search-${postId}`);
+            const resultsContainer = document.getElementById(`product-results-${postId}`);
+            const searchTerm = searchInput.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            
+            if (searchTerm.length === 0) {
+                resultsContainer.innerHTML = '';
+                resultsContainer.classList.add('hidden');
+                return;
+            }
+            
+            const filteredProducts = products.filter(prod => {
+                const normalizedName = prod.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const normalizedSku = prod.sku.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                return normalizedName.includes(searchTerm) || normalizedSku.includes(searchTerm);
+            });
+            
+            displayProductResults(postId, filteredProducts);
+        }
+        
+        function displayCategoryResults(postId, filteredCategories) {
+            const resultsContainer = document.getElementById(`category-results-${postId}`);
+            
+            if (filteredCategories.length === 0) {
+                resultsContainer.innerHTML = '<div class="search-result-item">No categories found</div>';
+            } else {
+                const resultsHTML = filteredCategories.map(cat => 
+                    `<div class="search-result-item" onclick="selectCategory(${postId}, ${cat.id}, '${cat.name}')">
+                        ${cat.name}
+                    </div>`
+                ).join('');
+                resultsContainer.innerHTML = resultsHTML;
+            }
+            
+            resultsContainer.classList.remove('hidden');
+        }
+        
+        function displayProductResults(postId, filteredProducts) {
+            const resultsContainer = document.getElementById(`product-results-${postId}`);
+            
+            if (filteredProducts.length === 0) {
+                resultsContainer.innerHTML = '<div class="search-result-item">No products found</div>';
+            } else {
+                const resultsHTML = filteredProducts.map(prod => 
+                    `<div class="search-result-item" onclick="selectProduct(${postId}, ${prod.id}, '${prod.name}', '${prod.sku}')">
+                        ${prod.name} (${prod.sku})
+                    </div>`
+                ).join('');
+                resultsContainer.innerHTML = resultsHTML;
+            }
+            
+            resultsContainer.classList.remove('hidden');
+        }
+        
+        function selectCategory(postId, categoryId, categoryName) {
+            const searchInput = document.getElementById(`category-search-${postId}`);
+            const resultsContainer = document.getElementById(`category-results-${postId}`);
+            
+            searchInput.value = categoryName;
+            resultsContainer.classList.add('hidden');
+            
+            // Update the post data
+            const post = allPosts.find(p => p.id == postId);
+            if (post) {
+                post.cross_promotion = post.cross_promotion || {};
+                post.cross_promotion.category_id = categoryId;
+                if (!post.cross_promotion.category_title) {
+                    post.cross_promotion.category_title = categoryName;
+                    document.getElementById(`category-title-${postId}`).value = categoryName;
+                }
+            }
+            
+            // Update the current display area
+            updateCategoryCurrentDisplay(postId, categoryName);
+            
+            // Update status badge
+            const card = document.querySelector(`[data-post-id="${postId}"]`);
+            const statusBadge = card.querySelector('.status-badge');
+            statusBadge.className = `status-badge ${getStatusClass(post)}`;
+            statusBadge.textContent = getStatusText(post);
+        }
+        
+        function selectProduct(postId, productId, productName, productSku) {
+            const searchInput = document.getElementById(`product-search-${postId}`);
+            const resultsContainer = document.getElementById(`product-results-${postId}`);
+            
+            searchInput.value = `${productName} (${productSku})`;
+            resultsContainer.classList.add('hidden');
+            
+            // Update the post data
+            const post = allPosts.find(p => p.id == postId);
+            if (post) {
+                post.cross_promotion = post.cross_promotion || {};
+                post.cross_promotion.product_id = productId;
+                if (!post.cross_promotion.product_title) {
+                    post.cross_promotion.product_title = productName;
+                    document.getElementById(`product-title-${postId}`).value = productName;
+                }
+            }
+            
+            // Update the current display area
+            updateProductCurrentDisplay(postId, productName);
+            
+            // Update status badge
+            const card = document.querySelector(`[data-post-id="${postId}"]`);
+            const statusBadge = card.querySelector('.status-badge');
+            statusBadge.className = `status-badge ${getStatusClass(post)}`;
+            statusBadge.textContent = getStatusText(post);
+        }
+        
+        function showCategoryResults(postId) {
+            const resultsContainer = document.getElementById(`category-results-${postId}`);
+            const searchInput = document.getElementById(`category-search-${postId}`);
+            
+            if (searchInput.value.length > 0) {
+                resultsContainer.classList.remove('hidden');
+            }
+        }
+        
+        function showProductResults(postId) {
+            const resultsContainer = document.getElementById(`product-results-${postId}`);
+            const searchInput = document.getElementById(`product-search-${postId}`);
+            
+            if (searchInput.value.length > 0) {
+                resultsContainer.classList.remove('hidden');
+            }
+        }
+        
+        function hideCategoryResults(postId) {
+            // Delay hiding to allow for clicks
+            setTimeout(() => {
+                const resultsContainer = document.getElementById(`category-results-${postId}`);
+                resultsContainer.classList.add('hidden');
+            }, 200);
+        }
+        
+        function hideProductResults(postId) {
+            // Delay hiding to allow for clicks
+            setTimeout(() => {
+                const resultsContainer = document.getElementById(`product-results-${postId}`);
+                resultsContainer.classList.add('hidden');
+            }, 200);
+        }
+        
+        function updateCategoryCurrentDisplay(postId, categoryName) {
+            const currentDisplay = document.querySelector(`[data-post-id="${postId}"] .config-section:first-child .current-config`);
+            if (currentDisplay) {
+                const categoryTitle = document.getElementById(`category-title-${postId}`).value;
+                currentDisplay.innerHTML = `<strong>Current:</strong> ${categoryName}${categoryTitle ? ` - "${categoryTitle}"` : ''}`;
+            }
+        }
+        
+        function updateProductCurrentDisplay(postId, productName) {
+            const currentDisplay = document.querySelector(`[data-post-id="${postId}"] .config-section:nth-child(2) .current-config`);
+            if (currentDisplay) {
+                const productTitle = document.getElementById(`product-title-${postId}`).value;
+                currentDisplay.innerHTML = `<strong>Current:</strong> ${productName}${productTitle ? ` - "${productTitle}"` : ''}`;
             }
         }
         
@@ -782,4 +1019,3 @@
     </script>
 </body>
 </html>
-
