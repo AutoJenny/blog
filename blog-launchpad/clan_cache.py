@@ -282,7 +282,7 @@ class ClanCache:
                         'id': i + 1,  # Generate sequential ID
                         'name': product[0],  # title
                         'sku': product[1],   # sku
-                        'url': product[2],   # product_url
+                        'url': product[2],   # product_url - use actual URL from API
                         'description': product[3],  # description
                         'image_url': 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg',  # Default image
                         'price': '29.99',  # Default price
@@ -339,7 +339,7 @@ class ClanCache:
                                 'price': str(product_data['data'].get('price', '29.99')),
                                 'image_url': product_data['data'].get('image', 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg'),
                                 'description': product_data['data'].get('description', ''),
-                                'url': f"https://clan.com/product/{sku}"  # Construct URL
+                                'url': product_data['data'].get('product_url', '')  # Use product_url field from API response
                             }
                             
                             # Update local cache with detailed data
@@ -504,6 +504,65 @@ class ClanCache:
         except Exception as e:
             logger.error(f"Error adding has_detailed_data column: {str(e)}")
             return False
+
+    def refresh_product_urls(self) -> Dict:
+        """Refresh product URLs from clan.com API to fix 404 links"""
+        try:
+            import requests
+            
+            logger.info("Starting product URL refresh from clan.com...")
+            
+            # Download fresh product list to get correct URLs
+            response = requests.get("https://clan.com/clan/api/getProducts", timeout=30)
+            
+            if response.status_code != 200:
+                logger.error(f"Failed to refresh URLs: HTTP {response.status_code}")
+                return {'success': False, 'error': f'HTTP {response.status_code}'}
+            
+            api_data = response.json()
+            
+            if not api_data.get('success') or not api_data.get('data'):
+                logger.error("Invalid API response format")
+                return {'success': False, 'error': 'Invalid API response'}
+            
+            products = api_data['data']
+            updated_count = 0
+            
+            with self.get_db_conn() as conn:
+                cursor = conn.cursor()
+                
+                for product in products:
+                    try:
+                        sku = product[1]
+                        correct_url = product[2]
+                        
+                        # Update the URL for this SKU
+                        cursor.execute("""
+                            UPDATE clan_products 
+                            SET url = %s 
+                            WHERE sku = %s
+                        """, (correct_url, sku))
+                        
+                        if cursor.rowcount > 0:
+                            updated_count += 1
+                            
+                    except Exception as e:
+                        logger.error(f"Error updating URL for product {product[1]}: {str(e)}")
+                        continue
+                
+                conn.commit()
+            
+            logger.info(f"Successfully updated URLs for {updated_count} products")
+            
+            return {
+                'success': True,
+                'updated_count': updated_count,
+                'message': f'URL refresh complete: {updated_count} products updated'
+            }
+            
+        except Exception as e:
+            logger.error(f"Error refreshing product URLs: {str(e)}")
+            return {'success': False, 'error': str(e)}
 
 # Global cache instance
 clan_cache = ClanCache()
