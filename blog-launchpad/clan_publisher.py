@@ -701,20 +701,97 @@ class ClanPublisher:
     def get_preview_html_content(self, post, sections, uploaded_images=None):
         """Get the preview HTML content from the working template and prepare it for clan.com upload"""
         try:
-            # This method should:
-            # 1. Use the working preview HTML template (templates/post_preview.html)
-            # 2. Strip out meta/header info
-            # 3. Fix image paths to point to clan.com
-            # 4. Return the cleaned HTML for upload
+            import requests
+            from bs4 import BeautifulSoup
+            import re
             
-            # TODO: Implement the correct approach using the preview template
-            # For now, return a placeholder to prevent errors
-            logger.warning("TODO: Implement preview HTML template usage")
+            logger.info("Getting preview HTML content from working template...")
             
-            # This should use the same HTML generation that works in the local preview
-            # The approach should be similar to how the preview page works
-            return "<div>Preview HTML content placeholder - needs implementation</div>"
+            # Step 1: Get the rendered preview HTML from the local preview endpoint
+            preview_url = f"http://localhost:5001/preview/{post['id']}"
+            logger.info(f"Fetching preview HTML from: {preview_url}")
+            
+            response = requests.get(preview_url, timeout=10)
+            if response.status_code != 200:
+                raise Exception(f"Failed to fetch preview HTML: {response.status_code}")
+            
+            preview_html = response.text
+            logger.info(f"Preview HTML fetched successfully, length: {len(preview_html)}")
+            
+            # Step 2: Parse the HTML and extract only the blog post content
+            soup = BeautifulSoup(preview_html, 'html.parser')
+            
+            # Find the main content container
+            preview_container = soup.find('div', class_='preview-container')
+            if not preview_container:
+                raise Exception("Could not find preview-container in HTML")
+            
+            # Extract the blog post content (from header to footer, excluding nav/meta)
+            blog_content = []
+            
+            # Start with the header (title, subtitle, header image, post meta)
+            header = preview_container.find('header', class_='preview-header')
+            if header:
+                # Clean the header - remove meta panels and keep only the post content
+                import copy
+                header_copy = copy.copy(header)
+                
+                # Remove meta panels (these are filtered out by the meta button)
+                meta_panels = header_copy.find_all('div', class_='image-meta-panel')
+                for panel in meta_panels:
+                    panel.decompose()
+                
+                blog_content.append(str(header_copy))
+            
+            # Add the blog sections (the actual content)
+            blog_sections = preview_container.find('div', class_='blog-sections')
+            if blog_sections:
+                blog_content.append(str(blog_sections))
+            
+            # Add the article footer (tags, share buttons)
+            article_footer = preview_container.find('footer', class_='article-footer')
+            if article_footer:
+                blog_content.append(str(article_footer))
+            
+            # Combine the content
+            extracted_html = '\n'.join(blog_content)
+            
+            # Step 3: Fix image paths to point to clan.com
+            if uploaded_images:
+                logger.info("Fixing image paths to point to clan.com...")
+                
+                # Create a mapping from local paths to clan.com URLs
+                path_mapping = {}
+                for local_path, clan_url in uploaded_images.items():
+                    # Convert web paths to the format used in the HTML
+                    if local_path.startswith('/static/'):
+                        path_mapping[local_path] = clan_url
+                    # Also handle file system paths if they appear in HTML
+                    if 'content/posts' in local_path:
+                        # Extract the relative path part
+                        relative_path = local_path.split('content/posts/')[-1] if 'content/posts/' in local_path else local_path
+                        path_mapping[f'/static/content/posts/{relative_path}'] = clan_url
+                
+                # Replace all image paths
+                for local_path, clan_url in path_mapping.items():
+                    extracted_html = extracted_html.replace(f'src="{local_path}"', f'src="{clan_url}"')
+                    extracted_html = extracted_html.replace(f'href="{local_path}"', f'href="{clan_url}"')
+                    logger.info(f"Replaced {local_path} -> {clan_url}")
+            
+            # Step 4: Clean up the HTML
+            # Remove any remaining localhost references
+            extracted_html = re.sub(r'http://localhost:\d+', '', extracted_html)
+            
+            # Remove any remaining static file references that weren't uploaded
+            extracted_html = re.sub(r'src="/static/[^"]*"', 'src=""', extracted_html)
+            extracted_html = re.sub(r'href="/static/[^"]*"', 'href=""', extracted_html)
+            
+            logger.info(f"Final HTML content length: {len(extracted_html)}")
+            
+            return extracted_html
             
         except Exception as e:
             logger.error(f"Error getting preview HTML content: {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return None
