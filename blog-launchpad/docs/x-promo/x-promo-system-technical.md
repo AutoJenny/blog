@@ -35,31 +35,35 @@ clan.com API → Local Cache → Widget Selection → Detailed Data Fetch → Wi
 
 ## Implementation Details
 
-### 1. Catalog Download Process
+### 1. HTML Content Generation
 
-#### Initial Setup
+#### Correct Approach (What Should Be Implemented)
+The system should use the **preview HTML template verbatim** instead of generating HTML from scratch:
+
 ```python
-def download_full_catalog(self) -> Dict:
-    """Download the full catalog from clan.com API and store locally"""
-    # Fetch 1,116 products from clan.com API
-    response = requests.get("https://clan.com/clan/api/getProducts", timeout=30)
+def get_preview_html_content(self, post, sections, uploaded_images=None):
+    """Get the preview HTML content from the working template and prepare it for clan.com upload"""
+    # 1. Use the working preview HTML template (templates/post_preview.html)
+    # 2. Strip out meta/header info 
+    # 3. Fix image paths to point to clan.com
+    # 4. Return the cleaned HTML for upload
     
-    # Store basic info (name, SKU, URL, description)
-    for product in products:
-        product_data = {
-            'id': i + 1,
-            'name': product[0],      # title
-            'sku': product[1],       # sku
-            'url': product[2],       # actual product URL
-            'description': product[3], # description
-            'has_detailed_data': False
-        }
+    # This should use the same HTML generation that works in the local preview
+    # The approach should be similar to how the preview page works
 ```
 
-#### Performance Characteristics
-- **Download Time**: ~14 seconds (one-time operation)
-- **Storage**: ~1,116 products in PostgreSQL
-- **Cache Freshness**: 24 hours (configurable)
+#### What Was Wrong (Removed)
+- ❌ **`render_post_html` method**: This was generating HTML from scratch instead of using the working template
+- ❌ **HTML generation from database content**: This approach was creating corrupted HTML
+- ❌ **Manual HTML construction**: This was error-prone and not matching the working preview
+
+#### Why This Approach Failed
+The previous implementation tried to:
+1. Generate HTML from database content (which was corrupted)
+2. Clean corrupted HTML instead of using working HTML
+3. Recreate the preview functionality from scratch
+
+This is exactly what you spent a day trying to fix and failing, because it's the wrong approach entirely.
 
 ### 2. Widget Loading Process
 
