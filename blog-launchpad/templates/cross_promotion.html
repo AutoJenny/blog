@@ -3,329 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross-Promotion Management</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Cross-Promotion Management - Blog Launchpad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 2em;
-            font-weight: 300;
-        }
-        
-        .post-selector {
-            background: #f8f9fa;
-            padding: 20px;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .post-selector select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        
-        .post-content {
-            padding: 30px;
-        }
-        
-        .post-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .post-info h2 {
-            margin: 0 0 10px 0;
-            color: #2c3e50;
-            font-size: 1.8em;
-        }
-        
-        .post-meta {
-            color: #6c757d;
-            font-size: 0.9em;
-        }
-        
-        .status-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9em;
-            text-transform: uppercase;
-        }
-        
-        .status-draft { background: #ffc107; color: #212529; }
-        .status-published { background: #28a745; color: white; }
-        .status-archived { background: #6c757d; color: white; }
-        .status-deleted { background: #dc3545; color: white; }
-        .status-fully-configured { background: #17a2b8; color: white; }
-        
-        .cross-promotion-config {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .save-section {
-            text-align: center;
-            margin: 20px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-        }
-        
-        .left-column, .right-column {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-        }
-        
-        .config-section {
-            margin-bottom: 25px;
-        }
-        
-        .config-section:last-child {
-            margin-bottom: 0;
-        }
-        
-        .config-section h3 {
-            margin: 0 0 15px 0;
-            color: #495057;
-            font-size: 1.2em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .config-section h3 i {
-            color: #007bff;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #495057;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            font-size: 14px;
+            padding: 0;
             box-sizing: border-box;
         }
         
-        .search-container {
-            position: relative;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
         }
         
-        .search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
             background: white;
-            border: 1px solid #ced4da;
-            border-top: none;
-            border-radius: 0 0 5px 5px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        .search-result-item {
-            padding: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #f1f3f4;
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #333;
         }
         
-        .search-result-item:hover {
-            background: #f8f9fa;
+        .header p {
+            color: #666;
+            margin-bottom: 20px;
         }
         
-        .search-result-item:last-child {
-            border-bottom: none;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .current-config {
-            background: #e3f2fd;
-            padding: 12px;
-            border-radius: 5px;
-            border-left: 4px solid #2196f3;
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: #1976d2;
-        }
-        
-        .section-titles {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .section-title {
-            background: #e9ecef;
-            padding: 12px 15px;
-            border-radius: 5px;
-            border: 1px solid #dee2e6;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-        
-        .section-title:hover {
-            background: #dee2e6;
-            transform: translateY(-1px);
-        }
-        
-        .drop-zone {
-            height: 20px;
-            margin: 5px 0;
-            border: 2px dashed #ced4da;
-            border-radius: 3px;
-            background: #f8f9fa;
-            transition: all 0.2s ease;
-        }
-        
-        .drop-zone.drag-over {
-            border-color: #007bff;
-            background: #e3f2fd;
-        }
-        
-        .drop-zone.valid-drop {
-            border-color: #28a745;
-            background: #d4edda;
-        }
-        
-        .widget-drop-area {
-            background: #fff3cd;
-            border: 2px dashed #ffc107;
-            border-radius: 5px;
-            padding: 10px;
-            margin: 10px 0;
-            text-align: center;
-            color: #856404;
-            font-size: 0.9em;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .widget-drop-area.has-widget {
-            background: #d1ecf1;
-            border-color: #17a2b8;
-            color: #0c5460;
-        }
-        
-        .widget-item {
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 10px;
-            margin: 5px 0;
-            cursor: grab;
-            user-select: none;
-            transition: all 0.2s ease;
-        }
-        
-        .widget-item:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .widget-item.dragging {
-            opacity: 0.4;
-        }
-        
-        .widget-item.category-widget {
-            background: #e3f2fd;
-            border-color: #2196f3;
-            color: #1976d2;
-        }
-        
-        .widget-item.product-widget {
-            background: #e8f5e8;
-            border-color: #4caf50;
-            color: #2e7d32;
-        }
-        
-        .current-config[data-widget-type="category"] {
-            background: #e3f2fd;
-            border-left-color: #2196f3;
-            color: #1976d2;
-        }
-        
-        .current-config[data-widget-type="product"] {
-            background: #e8f5e8;
-            border-left-color: #4caf50;
-            color: #2e7d32;
-        }
-        
-        .action-buttons {
+        .header-actions {
             display: flex;
             gap: 15px;
-            justify-content: center;
-            margin-top: 30px;
+            align-items: center;
         }
         
         .btn {
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            border-radius: 6px;
             text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
         .btn-primary {
@@ -352,113 +87,441 @@
         }
         
         .btn-success:hover {
-            background: #1e7e34;
+            background: #218838;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .filters {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-group label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .posts-grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .post-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .post-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .post-meta {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .post-status {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-badge.configured {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.not-configured {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-badge.partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .cross-promotion-config {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        
+        .save-section {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .config-section {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .config-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .config-section h3 i {
+            color: #007bff;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        
+        .current-config {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .current-config strong {
+            color: #333;
+        }
+        
+        .post-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #007bff;
         }
         
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: #6c757d;
+            color: #666;
         }
         
         .empty-state i {
-            font-size: 4em;
+            font-size: 3rem;
             margin-bottom: 20px;
-            color: #dee2e6;
+            color: #ddd;
         }
         
-        .empty-state h3 {
-            margin: 0 0 15px 0;
-            color: #495057;
+        .post-selector {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        .empty-state p {
-            margin: 0;
-            font-size: 1.1em;
+        .selector-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         
-        .sortable-ghost {
-            opacity: 0.4;
+        .selector-group label {
+            font-weight: 500;
+            color: #555;
+            font-size: 0.9rem;
         }
         
-        .sortable-chosen {
-            opacity: 0.8;
+        .selector-group select {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: white;
         }
         
-        .sortable-drag {
-            opacity: 0.9;
+        .selector-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        
+        .search-box {
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .section-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .section-title {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #333;
+        }
+        
+        .no-sections {
+            font-style: italic;
+            color: #666;
+        }
+        
+        .search-container {
+            position: relative;
+        }
+        
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .search-results.hidden {
+            display: none;
+        }
+        
+        .search-result-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s ease;
+        }
+        
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-result-item.selected {
+            background-color: #e3f2fd;
+        }
+        
+        @media (max-width: 768px) {
+            .cross-promotion-config {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                max-width: none;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Posts data for JavaScript -->
-    <script type="application/json" id="posts-data">
-        {{ posts|tojson|safe }}
-    </script>
-    
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-link"></i> Cross-Promotion Management</h1>
+            <h1><i class="fas fa-handshake"></i> Cross-Promotion Management</h1>
+            <p>Configure product and category cross-promotion widgets for your blog posts. These widgets will appear between sections and at the end of posts to drive sales.</p>
+            <div class="header-actions">
+                <a href="/" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+                <button class="btn btn-success" onclick="saveAllChanges()">
+                    <i class="fas fa-save"></i>
+                    Save All Changes
+                </button>
+                <button class="btn btn-warning" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+            </div>
         </div>
         
         <div class="post-selector">
-            <select id="post-selector" onchange="selectPost(this.value)">
-                <option value="">Select a post...</option>
-            </select>
+            <div class="selector-group">
+                <label for="post-select">Select Post</label>
+                <select id="post-select" onchange="selectPost()">
+                    {% for post in posts %}
+                    <option value="{{ post.id }}" 
+                            {% if post.id == default_post.id %}selected{% endif %}
+                            data-category-id="{{ post.cross_promotion_category_id or '' }}"
+                            data-category-title="{{ post.cross_promotion_category_title or '' }}"
+                            data-product-id="{{ post.cross_promotion_product_id or '' }}"
+                            data-product-title="{{ post.cross_promotion_product_title or '' }}">
+                        {{ post.title or post.main_title or post.idea_seed or 'Untitled Post' }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
         
-        <div class="post-content" id="post-content">
-            <div class="empty-state">
-                <i class="fas fa-file-alt"></i>
-                <h3>No Posts Available</h3>
-                <p>Select a post from the dropdown above to manage cross-promotion settings.</p>
+        <div id="posts-container" class="posts-grid">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <div>Loading posts...</div>
             </div>
         </div>
     </div>
-
-    <!-- SortableJS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <script>
-        let allPosts = [];
+        // Server-side data
+        let allPosts = {{ posts|tojson|safe }};
         let categories = [];
         let products = [];
-        let selectedPostId = null;
-
+        
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+        });
+        
         async function loadData() {
             try {
-                console.log('Loading categories and products...');
+                // Load categories and products in parallel
                 const [categoriesResponse, productsResponse] = await Promise.all([
                     fetch('/api/clan/categories'),
-                    fetch('/api/clan/products?limit=2000') // Increased limit to fetch more products
+                    fetch('/api/clan/products?limit=2000')
                 ]);
                 
                 categories = await categoriesResponse.json();
                 products = await productsResponse.json();
                 
-                console.log('Categories loaded:', categories.length);
-                console.log('Products loaded:', products.length);
-                
-                // Load posts data after categories and products are loaded
-                const postsScript = document.getElementById('posts-data').textContent;
-                if (postsScript) {
-                    allPosts = JSON.parse(postsScript);
-                    console.log('Posts loaded:', allPosts.length);
-                    if (allPosts.length > 0) {
-                        renderSelectedPost(allPosts[0]);
-                    }
-                } else {
-                    document.getElementById('post-content').innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h3>Error Loading Posts</h3>
-                            <p>Unable to load posts data. Please try refreshing the page.</p>
-                        </div>
-                    `;
+                // Posts are now loaded server-side, so we can render the default post
+                if (allPosts.length > 0) {
+                    renderSelectedPost(allPosts[0]);
                 }
             } catch (error) {
                 console.error('Error loading data:', error);
-                document.getElementById('post-content').innerHTML = `
+                document.getElementById('posts-container').innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-exclamation-triangle"></i>
                         <h3>Error Loading Data</h3>
@@ -467,310 +530,359 @@
                 `;
             }
         }
+        
 
-        function selectPost(postId) {
-            if (!postId) return;
+        
+        function selectPost() {
+            const postSelect = document.getElementById('post-select');
+            const selectedPostId = postSelect.value;
             
-            const post = allPosts.find(p => p.id == postId);
-            if (post) {
-                renderSelectedPost(post);
-            }
+            // Get the selected post data
+            const selectedPost = allPosts.find(post => post.id == selectedPostId);
+            if (!selectedPost) return;
+            
+            // Update the post display
+            renderSelectedPost(selectedPost);
         }
-
+        
         function renderSelectedPost(post) {
-            selectedPostId = post.id;
+            const container = document.getElementById('posts-container');
             
-            console.log('Rendering post:', post);
-            console.log('Available categories:', categories);
-            console.log('Available products:', products);
+            if (!post) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Post Not Found</h3>
+                        <p>The selected post could not be found.</p>
+                    </div>
+                `;
+                return;
+            }
             
-            // Populate post selector
-            const selector = document.getElementById('post-selector');
-            selector.innerHTML = allPosts.map(p => 
-                `<option value="${p.id}" ${p.id == post.id ? 'selected' : ''}>${p.title}</option>`
-            ).join('');
-            
-            // Find the actual category and product names
-            const categoryName = post.cross_promotion?.category_id ? 
-                categories.find(c => c.id == post.cross_promotion.category_id)?.name : null;
-            const productName = post.cross_promotion?.product_id ? 
-                products.find(p => p.id == post.cross_promotion.product_id)?.name : null;
-            
-            console.log('Found category name:', categoryName);
-            console.log('Found product name:', productName);
-            
-            // Render post content
-            document.getElementById('post-content').innerHTML = `
-                <div class="post-header">
-                    <div class="post-info">
-                        <h2>${post.title}</h2>
-                        <div class="post-meta">
-                            ID: ${post.id} | Created: ${new Date(post.created_at).toLocaleDateString('en-GB')} | Status: ${post.status}
+            const postHTML = `
+                <div class="post-card" data-post-id="${post.id}">
+                    <div class="post-header">
+                        <div>
+                            <div class="post-title">${post.title || post.main_title || post.idea_seed || 'Untitled Post'}</div>
+                            <div class="post-meta">
+                                ID: ${post.id} | Created: ${new Date(post.created_at).toLocaleDateString()}
+                                ${post.status ? ` | Status: ${post.status}` : ''}
+                            </div>
+                        </div>
+                        <div class="post-status">
+                            <span class="status-badge ${getStatusClass(post)}">${getStatusText(post)}</span>
                         </div>
                     </div>
-                    <div class="status-badge ${getStatusClass(post)}">
-                        ${getStatusText(post)}
-                    </div>
-                </div>
-                
-                <div class="cross-promotion-config">
-                    <div class="left-column">
-                        <div class="config-section">
-                            <h3><i class="fas fa-tags"></i> Category Widget</h3>
-                            <div class="form-group">
-                                <label for="category-search-${post.id}">Category</label>
-                                <div class="search-container">
-                                    <input type="text" id="category-search-${post.id}" 
-                                           value="${categoryName || ''}"
-                                           placeholder="Type to search categories..."
-                                           oninput="filterCategories(${post.id})"
-                                           onfocus="showCategoryResults(${post.id})"
-                                           onblur="hideCategoryResults(${post.id})">
-                                    <div id="category-results-${post.id}" class="search-results hidden"></div>
+                    
+                    <div class="cross-promotion-config">
+                        <div class="left-column">
+                            <div class="config-section">
+                                <h3><i class="fas fa-tags"></i> Category Widget</h3>
+                                <div class="form-group">
+                                    <label for="category-search-${post.id}">Category</label>
+                                    <div class="search-container">
+                                        <input type="text" id="category-search-${post.id}" 
+                                               value="${post.cross_promotion?.category_id ? categories.find(c => c.id == post.cross_promotion.category_id)?.name || '' : ''}"
+                                               placeholder="Type to search categories..."
+                                               oninput="filterCategories(${post.id})"
+                                               onfocus="showCategoryResults(${post.id})"
+                                               onblur="hideCategoryResults(${post.id})">
+                                        <div id="category-results-${post.id}" class="search-results hidden"></div>
+                                    </div>
                                 </div>
+                                <div class="form-group">
+                                    <label for="category-title-${post.id}">Widget Title</label>
+                                    <input type="text" id="category-title-${post.id}" 
+                                           value="Related department"
+                                           placeholder="Related department"
+                                           onchange="updateCategoryTitle(${post.id})">
+                                </div>
+                                ${post.cross_promotion?.category_id ? `
+                                    <div class="current-config">
+                                        <strong>Current:</strong> ${categories.find(c => c.id == post.cross_promotion.category_id)?.name || 'Unknown'} 
+                                        ${post.cross_promotion.category_title ? `- "${post.cross_promotion.category_title}"` : ''}
+                                    </div>
+                                ` : ''}
                             </div>
-                            <div class="form-group">
-                                <label for="category-title-${post.id}">Widget Title</label>
-                                <input type="text" id="category-title-${post.id}" 
-                                       value="Related department"
-                                       placeholder="Related department"
-                                       onchange="updateCategoryTitle(${post.id})">
-                            </div>
-                            <div class="current-config" draggable="true" data-widget-type="category" data-post-id="${post.id}" style="display: ${post.cross_promotion?.category_id && categories.find(c => c.id == post.cross_promotion.category_id) ? 'block' : 'none'}">
-                                <strong>X-promo category:</strong> ${post.cross_promotion?.category_id && categories.find(c => c.id == post.cross_promotion.category_id) ? categories.find(c => c.id == post.cross_promotion.category_id).name : 'No category selected'} 
-                                ${post.cross_promotion?.category_title ? `- "${post.cross_promotion.category_title}"` : ''}
+                            
+                            <div class="config-section">
+                                <h3><i class="fas fa-box"></i> Product Widget</h3>
+                                <div class="form-group">
+                                    <label for="product-search-${post.id}">Product</label>
+                                    <div class="search-container">
+                                        <input type="text" id="product-search-${post.id}" 
+                                               value="${post.cross_promotion?.product_id && products.find(p => p.id == post.cross_promotion.product_id) ? products.find(p => p.id == post.cross_promotion.product_id).name + ' (' + products.find(p => p.id == post.cross_promotion.product_id).sku + ')' : ''}"
+                                               placeholder="Type to search products..."
+                                               oninput="filterProducts(${post.id})"
+                                               onfocus="showProductResults(${post.id})"
+                                               onblur="hideProductResults(${post.id})">
+                                        <div id="product-results-${post.id}" class="search-results hidden"></div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="product-title-${post.id}">Widget Title</label>
+                                    <input type="text" id="product-title-${post.id}" 
+                                           value="Related products"
+                                           placeholder="Related products"
+                                           onchange="updateProductTitle(${post.id})">
+                                </div>
+                                ${post.cross_promotion?.product_id ? `
+                                    <div class="current-config">
+                                        <strong>Current:</strong> ${products.find(p => p.id == post.cross_promotion.product_id)?.name || 'Unknown'} 
+                                        ${post.cross_promotion.product_title ? `- "${post.cross_promotion.product_title}"` : ''}
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                         
-                        <div class="config-section">
-                            <h3><i class="fas fa-box"></i> Product Widget</h3>
-                            <div class="form-group">
-                                <label for="product-search-${post.id}">Product</label>
-                                <div class="search-container">
-                                    <input type="text" id="product-search-${post.id}" 
-                                           value="${productName ? `${productName} (${products.find(p => p.id == post.cross_promotion.product_id)?.sku || 'No SKU'})` : ''}"
-                                           placeholder="Type to search products..."
-                                           oninput="filterProducts(${post.id})"
-                                           onfocus="showProductResults(${post.id})"
-                                           onblur="hideProductResults(${post.id})">
-                                    <div id="product-results-${post.id}" class="search-results hidden"></div>
+                        <div class="right-column">
+                            <div class="config-section">
+                                <h3><i class="fas fa-list"></i> Section Titles</h3>
+                                <div class="section-titles">
+                                    ${post.sections ? post.sections.map(section => `
+                                        <div class="section-title">${section.section_heading || 'Untitled Section'}</div>
+                                    `).join('') : '<div class="no-sections">No sections found</div>'}
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="product-title-${post.id}">Widget Title</label>
-                                <input type="text" id="product-title-${post.id}" 
-                                       value="Related products"
-                                       placeholder="Related products"
-                                       onchange="updateProductTitle(${post.id})">
-                            </div>
-                            <div class="current-config" draggable="true" data-widget-type="product" data-post-id="${post.id}" style="display: ${post.cross_promotion?.product_id && products.find(p => p.id == post.cross_promotion.product_id) ? 'block' : 'none'}">
-                                <strong>X-promo product:</strong> ${post.cross_promotion?.product_id && products.find(p => p.id == post.cross_promotion.product_id) ? products.find(p => p.id == post.cross_promotion.product_id).name : 'No product selected'} 
-                                ${post.cross_promotion.product_title ? `- "${post.cross_promotion.product_title}"` : ''}
                             </div>
                         </div>
                     </div>
                     
-                    <div class="right-column">
-                        <div class="config-section">
-                            <h3><i class="fas fa-list"></i> Section Titles</h3>
-                            <div class="section-titles" id="section-titles-${post.id}">
-                                ${post.sections ? post.sections.map((section, index) => `
-                                    <div class="drop-zone" data-section-index="${index}" data-post-id="${post.id}"></div>
-                                    <div class="section-title" data-section-id="${section.id}" data-post-id="${post.id}">
-                                        ${section.section_heading || 'Untitled Section'}
-                                    </div>
-                                    ${index === post.sections.length - 1 ? `
-                                        <div class="drop-zone" data-section-index="${post.sections.length}" data-post-id="${post.id}"></div>
-                                    ` : ''}
-                                `).join('') : '<div class="no-sections">No sections found</div>'}
-                            </div>
-                        </div>
+                    <div class="save-section">
+                        <button class="btn btn-primary" onclick="saveCrossPromotionChanges(${post.id})">
+                            <i class="fas fa-save me-1"></i>Save Changes
+                        </button>
                     </div>
-                </div>
-                
-                <div class="save-section">
-                    <button class="btn btn-primary" onclick="saveCrossPromotionChanges(${post.id})">
-                        <i class="fas fa-save me-1"></i>Save Changes
-                    </button>
-                </div>
-                
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="previewPost(${post.id})">
-                        <i class="fas fa-eye"></i>Preview Post
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportHTML(${post.id})">
-                        <i class="fas fa-download"></i>Export HTML
-                    </button>
-                    <button class="btn btn-success" onclick="editPost(${post.id})">
-                        <i class="fas fa-edit"></i>Edit Post
-                    </button>
+                    
+                    <div class="post-actions">
+                        <a href="/preview/${post.id}" class="btn btn-primary" target="_blank">
+                            <i class="fas fa-eye"></i>
+                            Preview Post
+                        </a>
+                        <a href="/preview/${post.id}?export=true" class="btn btn-secondary" target="_blank">
+                            <i class="fas fa-download"></i>
+                            Export HTML
+                        </a>
+                        <a href="http://localhost:5000/workflow/posts/${post.id}/planning/idea/initial_concept" 
+                           class="btn btn-success" target="_blank">
+                            <i class="fas fa-edit"></i>
+                            Edit Post
+                        </a>
+                    </div>
                 </div>
             `;
             
-            // Initialize drag and drop after rendering
-            initializeDragAndDrop(post.id);
+            container.innerHTML = postHTML;
         }
-
-        function initializeDragAndDrop(postId) {
-            // Make current-config elements draggable
-            const draggableElements = document.querySelectorAll(`[data-post-id="${postId}"][draggable="true"]`);
-            
-            draggableElements.forEach(element => {
-                element.addEventListener('dragstart', handleDragStart);
-                element.addEventListener('dragend', handleDragEnd);
-            });
-            
-            // Make drop zones droppable
-            const dropZones = document.querySelectorAll(`[data-post-id="${postId}"].drop-zone`);
-            
-            dropZones.forEach(zone => {
-                zone.addEventListener('dragover', handleDragOver);
-                zone.addEventListener('drop', handleDrop);
-                zone.addEventListener('dragenter', handleDragEnter);
-                zone.addEventListener('dragleave', handleDragLeave);
-            });
+        
+        function renderPosts(posts) {
+            // This function is now deprecated, use renderSelectedPost instead
+            if (posts.length > 0) {
+                renderSelectedPost(posts[0]);
+            }
         }
-
-        function handleDragStart(e) {
-            e.dataTransfer.setData('text/plain', JSON.stringify({
-                widgetType: e.target.dataset.widgetType,
-                postId: e.target.dataset.postId,
-                content: e.target.innerHTML
-            }));
-            e.target.classList.add('dragging');
-        }
-
-        function handleDragEnd(e) {
-            e.target.classList.remove('dragging');
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-        }
-
-        function handleDragEnter(e) {
-            e.preventDefault();
-            e.target.classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            e.target.classList.remove('drag-over');
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            e.target.classList.remove('drag-over');
-            
-            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-            const sectionIndex = parseInt(e.target.dataset.sectionIndex);
-            const postId = parseInt(e.target.dataset.postId);
-            
-            // Create widget display in the drop zone
-            const widgetElement = document.createElement('div');
-            widgetElement.className = `widget-item ${data.widgetType}-widget`;
-            widgetElement.innerHTML = data.content;
-            widgetElement.dataset.widgetType = data.widgetType;
-            widgetElement.dataset.postId = data.postId;
-            
-            // Replace drop zone with widget
-            e.target.innerHTML = '';
-            e.target.appendChild(widgetElement);
-            e.target.classList.add('valid-drop');
-            
-            console.log(`Widget dropped at section index ${sectionIndex} for post ${postId}`);
-        }
-
+        
         function getStatusClass(post) {
-            if (post.cross_promotion?.category_id && post.cross_promotion?.product_id) {
-                return 'status-fully-configured';
-            }
-            switch (post.status) {
-                case 'draft': return 'status-draft';
-                case 'published': return 'status-published';
-                case 'archived': return 'status-archived';
-                case 'deleted': return 'status-deleted';
-                default: return 'status-draft';
-            }
+            const hasCategory = post.cross_promotion?.category_id;
+            const hasProduct = post.cross_promotion?.product_id;
+            
+            if (hasCategory && hasProduct) return 'configured';
+            if (!hasCategory && !hasProduct) return 'not-configured';
+            return 'partial';
         }
-
+        
         function getStatusText(post) {
-            if (post.cross_promotion?.category_id && post.cross_promotion?.product_id) {
-                return 'Fully Configured';
-            }
-            return post.status.charAt(0).toUpperCase() + post.status.slice(1);
+            const hasCategory = post.cross_promotion?.category_id;
+            const hasProduct = post.cross_promotion?.product_id;
+            
+            if (hasCategory && hasProduct) return 'Fully Configured';
+            if (!hasCategory && !hasProduct) return 'Not Configured';
+            return 'Partially Configured';
         }
-
+        
+        function filterPosts() {
+            const searchTerm = document.getElementById('search-posts').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const sortBy = document.getElementById('sort-by').value;
+            
+            let filteredPosts = allPosts.filter(post => {
+                const title = (post.title || post.main_title || '').toLowerCase();
+                const matchesSearch = title.includes(searchTerm);
+                
+                const status = getStatusClass(post);
+                const matchesStatus = !statusFilter || status === statusFilter;
+                
+                return matchesSearch && matchesStatus;
+            });
+            
+            // Sort posts
+            filteredPosts.sort((a, b) => {
+                switch (sortBy) {
+                    case 'title':
+                        return (a.title || a.main_title || '').localeCompare(b.title || b.main_title || '');
+                    case 'status':
+                        return getStatusClass(a).localeCompare(getStatusClass(b));
+                    case 'created':
+                    default:
+                        return new Date(b.created_at) - new Date(a.created_at);
+                }
+            });
+            
+            renderPosts(filteredPosts);
+        }
+        
+        async function updateCategory(postId) {
+            const select = document.getElementById(`category-${postId}`);
+            const categoryId = select.value;
+            const category = categories.find(c => c.id == categoryId);
+            
+            const post = allPosts.find(p => p.id == postId);
+            if (post) {
+                post.cross_promotion = post.cross_promotion || {};
+                post.cross_promotion.category_id = categoryId ? parseInt(categoryId) : null;
+                if (category && !post.cross_promotion.category_title) {
+                    post.cross_promotion.category_title = category.name;
+                    document.getElementById(`category-title-${postId}`).value = category.name;
+                }
+            }
+            
+            // Update status badge
+            const card = document.querySelector(`[data-post-id="${postId}"]`);
+            const statusBadge = card.querySelector('.status-badge');
+            statusBadge.className = `status-badge ${getStatusClass(post)}`;
+            statusBadge.textContent = getStatusText(post);
+        }
+        
+        function updateCategoryTitle(postId) {
+            const input = document.getElementById(`category-title-${postId}`);
+            const title = input.value;
+            
+            const post = allPosts.find(p => p.id == postId);
+            if (post) {
+                post.cross_promotion = post.cross_promotion || {};
+                post.cross_promotion.category_title = title;
+            }
+            
+            // Update the current display area
+            const searchInput = document.getElementById(`category-search-${postId}`);
+            if (searchInput.value) {
+                updateCategoryCurrentDisplay(postId, searchInput.value);
+            }
+        }
+        
+        async function updateProduct(postId) {
+            const select = document.getElementById(`product-${postId}`);
+            const productId = select.value;
+            const product = products.find(p => p.id == productId);
+            
+            const post = allPosts.find(p => p.id == postId);
+            if (post) {
+                post.cross_promotion = post.cross_promotion || {};
+                post.cross_promotion.product_id = productId ? parseInt(productId) : null;
+                if (product && !post.cross_promotion.product_title) {
+                    post.cross_promotion.product_title = product.name;
+                    document.getElementById(`product-title-${postId}`).value = product.name;
+                }
+            }
+            
+            // Update status badge
+            const card = document.querySelector(`[data-post-id="${postId}"]`);
+            const statusBadge = card.querySelector('.status-badge');
+            statusBadge.className = `status-badge ${getStatusClass(post)}`;
+            statusBadge.textContent = getStatusText(post);
+        }
+        
+        function updateProductTitle(postId) {
+            const input = document.getElementById(`product-title-${postId}`);
+            const title = input.value;
+            
+            const post = allPosts.find(p => p.id == postId);
+            if (post) {
+                post.cross_promotion = post.cross_promotion || {};
+                post.cross_promotion.product_title = title;
+            }
+            
+            // Update the current display area
+            const searchInput = document.getElementById(`product-search-${postId}`);
+            if (searchInput.value) {
+                const productName = searchInput.value.split(' (')[0]; // Extract just the product name
+                updateProductCurrentDisplay(postId, productName);
+            }
+        }
+        
+        // Real-time filtering functions
         function filterCategories(postId) {
             const searchInput = document.getElementById(`category-search-${postId}`);
             const resultsContainer = document.getElementById(`category-results-${postId}`);
-            const query = searchInput.value.toLowerCase();
+            const searchTerm = searchInput.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             
-            if (query.length < 2) {
+            if (searchTerm.length === 0) {
+                resultsContainer.innerHTML = '';
                 resultsContainer.classList.add('hidden');
                 return;
             }
             
-            const filtered = categories.filter(cat => 
-                cat.name.toLowerCase().includes(query)
-            ).slice(0, 10);
+            const filteredCategories = categories.filter(cat => {
+                const normalizedName = cat.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                return normalizedName.includes(searchTerm);
+            });
             
-            resultsContainer.innerHTML = filtered.map(cat => 
-                `<div class="search-result-item" onclick="selectCategory(${postId}, ${cat.id}, '${cat.name}')">${cat.name}</div>`
-            ).join('');
-            
-            resultsContainer.classList.remove('hidden');
+            displayCategoryResults(postId, filteredCategories);
         }
-
+        
         function filterProducts(postId) {
             const searchInput = document.getElementById(`product-search-${postId}`);
             const resultsContainer = document.getElementById(`product-results-${postId}`);
-            const query = searchInput.value.toLowerCase();
+            const searchTerm = searchInput.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             
-            if (query.length < 2) {
+            if (searchTerm.length === 0) {
+                resultsContainer.innerHTML = '';
                 resultsContainer.classList.add('hidden');
                 return;
             }
             
-            const filtered = products.filter(prod => 
-                prod.name.toLowerCase().includes(query) || 
-                prod.sku.toLowerCase().includes(query)
-            ).slice(0, 10);
+            const filteredProducts = products.filter(prod => {
+                const normalizedName = prod.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const normalizedSku = prod.sku.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                return normalizedName.includes(searchTerm) || normalizedSku.includes(searchTerm);
+            });
             
-            resultsContainer.innerHTML = filtered.map(prod => 
-                `<div class="search-result-item" onclick="selectProduct(${postId}, ${prod.id}, '${prod.name}', '${prod.sku}')">${prod.name} (${prod.sku})</div>`
-            ).join('');
+            displayProductResults(postId, filteredProducts);
+        }
+        
+        function displayCategoryResults(postId, filteredCategories) {
+            const resultsContainer = document.getElementById(`category-results-${postId}`);
+            
+            if (filteredCategories.length === 0) {
+                resultsContainer.innerHTML = '<div class="search-result-item">No categories found</div>';
+            } else {
+                const resultsHTML = filteredCategories.map(cat => 
+                    `<div class="search-result-item" onclick="selectCategory(${postId}, ${cat.id}, '${cat.name}')">
+                        ${cat.name}
+                    </div>`
+                ).join('');
+                resultsContainer.innerHTML = resultsHTML;
+            }
             
             resultsContainer.classList.remove('hidden');
         }
-
-        function showCategoryResults(postId) {
-            const resultsContainer = document.getElementById(`category-results-${postId}`);
-            if (resultsContainer.innerHTML.trim()) {
-                resultsContainer.classList.remove('hidden');
-            }
-        }
-
-        function hideCategoryResults(postId) {
-            setTimeout(() => {
-                const resultsContainer = document.getElementById(`category-results-${postId}`);
-                resultsContainer.classList.add('hidden');
-            }, 200);
-        }
-
-        function showProductResults(postId) {
+        
+        function displayProductResults(postId, filteredProducts) {
             const resultsContainer = document.getElementById(`product-results-${postId}`);
-            if (resultsContainer.innerHTML.trim()) {
-                resultsContainer.classList.remove('hidden');
+            
+            if (filteredProducts.length === 0) {
+                resultsContainer.innerHTML = '<div class="search-result-item">No products found</div>';
+            } else {
+                const resultsHTML = filteredProducts.map(prod => 
+                    `<div class="search-result-item" onclick="selectProduct(${postId}, ${prod.id}, '${prod.name}', '${prod.sku}')">
+                        ${prod.name} (${prod.sku})
+                    </div>`
+                ).join('');
+                resultsContainer.innerHTML = resultsHTML;
             }
+            
+            resultsContainer.classList.remove('hidden');
         }
-
-        function hideProductResults(postId) {
-            setTimeout(() => {
-                const resultsContainer = document.getElementById(`product-results-${postId}`);
-                resultsContainer.classList.add('hidden');
-            }, 200);
-        }
-
+        
         function selectCategory(postId, categoryId, categoryName) {
             const searchInput = document.getElementById(`category-search-${postId}`);
             const resultsContainer = document.getElementById(`category-results-${postId}`);
@@ -778,23 +890,21 @@
             searchInput.value = categoryName;
             resultsContainer.classList.add('hidden');
             
+            // Update the post data
             const post = allPosts.find(p => p.id == postId);
             if (post) {
                 post.cross_promotion = post.cross_promotion || {};
                 post.cross_promotion.category_id = categoryId;
                 if (!post.cross_promotion.category_title) {
-                    post.cross_promotion.category_title = categoryName; // Reverted to original behavior
-                    document.getElementById(`category-title-${postId}`).value = categoryName; // Reverted to original behavior
+                    post.cross_promotion.category_title = categoryName;
+                    document.getElementById(`category-title-${postId}`).value = categoryName;
                 }
             }
             
-            // Show the current-config div and update its content
-            const currentConfig = document.querySelector(`[data-post-id="${postId}"] .config-section:first-child .current-config`);
-            if (currentConfig) {
-                currentConfig.style.display = 'block';
-            }
+            // Update the current display area
+            updateCategoryCurrentDisplay(postId, categoryName);
             
-            updateCategoryCurrentDisplay(postId, categoryName); // Added this to update current display
+            // Update status badge
             const card = document.querySelector(`[data-post-id="${postId}"]`);
             const statusBadge = card.querySelector('.status-badge');
             statusBadge.className = `status-badge ${getStatusClass(post)}`;
@@ -808,52 +918,66 @@
             searchInput.value = `${productName} (${productSku})`;
             resultsContainer.classList.add('hidden');
             
+            // Update the post data
             const post = allPosts.find(p => p.id == postId);
             if (post) {
                 post.cross_promotion = post.cross_promotion || {};
                 post.cross_promotion.product_id = productId;
                 if (!post.cross_promotion.product_title) {
-                    post.cross_promotion.product_title = productName; // Reverted to original behavior
-                    document.getElementById(`product-title-${postId}`).value = productName; // Reverted to original behavior
+                    post.cross_promotion.product_title = productName;
+                    document.getElementById(`product-title-${postId}`).value = productName;
                 }
             }
             
-            // Show the current-config div and update its content
-            const currentConfig = document.querySelector(`[data-post-id="${postId}"] .config-section:nth-child(2) .current-config`);
-            if (currentConfig) {
-                currentConfig.style.display = 'block';
-            }
+            // Update the current display area
+            updateProductCurrentDisplay(postId, productName);
             
-            updateProductCurrentDisplay(postId, productName); // Added this to update current display
+            // Update status badge
             const card = document.querySelector(`[data-post-id="${postId}"]`);
             const statusBadge = card.querySelector('.status-badge');
             statusBadge.className = `status-badge ${getStatusClass(post)}`;
             statusBadge.textContent = getStatusText(post);
         }
-
-        function updateCategoryTitle(postId) {
-            const titleInput = document.getElementById(`category-title-${postId}`);
-            const post = allPosts.find(p => p.id == postId);
-            if (post && post.cross_promotion) {
-                post.cross_promotion.category_title = titleInput.value;
-                updateCategoryCurrentDisplay(postId, categories.find(c => c.id == post.cross_promotion.category_id)?.name || 'Unknown');
+        
+        function showCategoryResults(postId) {
+            const resultsContainer = document.getElementById(`category-results-${postId}`);
+            const searchInput = document.getElementById(`category-search-${postId}`);
+            
+            if (searchInput.value.length > 0) {
+                resultsContainer.classList.remove('hidden');
             }
         }
-
-        function updateProductTitle(postId) {
-            const titleInput = document.getElementById(`product-title-${postId}`);
-            const post = allPosts.find(p => p.id == postId);
-            if (post && post.cross_promotion) {
-                post.cross_promotion.product_title = titleInput.value;
-                updateProductCurrentDisplay(postId, products.find(p => p.id == post.cross_promotion.product_id)?.name || 'Unknown');
+        
+        function showProductResults(postId) {
+            const resultsContainer = document.getElementById(`product-results-${postId}`);
+            const searchInput = document.getElementById(`product-search-${postId}`);
+            
+            if (searchInput.value.length > 0) {
+                resultsContainer.classList.remove('hidden');
             }
         }
-
+        
+        function hideCategoryResults(postId) {
+            // Delay hiding to allow for clicks
+            setTimeout(() => {
+                const resultsContainer = document.getElementById(`category-results-${postId}`);
+                resultsContainer.classList.add('hidden');
+            }, 200);
+        }
+        
+        function hideProductResults(postId) {
+            // Delay hiding to allow for clicks
+            setTimeout(() => {
+                const resultsContainer = document.getElementById(`product-results-${postId}`);
+                resultsContainer.classList.add('hidden');
+            }, 200);
+        }
+        
         function updateCategoryCurrentDisplay(postId, categoryName) {
             const currentDisplay = document.querySelector(`[data-post-id="${postId}"] .config-section:first-child .current-config`);
             if (currentDisplay) {
                 const categoryTitle = document.getElementById(`category-title-${postId}`).value;
-                currentDisplay.innerHTML = `<strong>X-promo category:</strong> ${categoryName}${categoryTitle ? ` - "${categoryTitle}"` : ''}`;
+                currentDisplay.innerHTML = `<strong>Current:</strong> ${categoryName}${categoryTitle ? ` - "${categoryTitle}"` : ''}`;
             }
         }
         
@@ -861,22 +985,53 @@
             const currentDisplay = document.querySelector(`[data-post-id="${postId}"] .config-section:nth-child(2) .current-config`);
             if (currentDisplay) {
                 const productTitle = document.getElementById(`product-title-${postId}`).value;
-                currentDisplay.innerHTML = `<strong>X-promo product:</strong> ${productName}${productTitle ? ` - "${productTitle}"` : ''}`;
+                currentDisplay.innerHTML = `<strong>Current:</strong> ${productName}${productTitle ? ` - "${productTitle}"` : ''}`;
             }
         }
-
-        function previewPost(postId) {
-            window.open(`/preview/${postId}`, '_blank');
+        
+        async function saveAllChanges() {
+            const saveButton = document.querySelector('.btn-success');
+            const originalText = saveButton.innerHTML;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            saveButton.disabled = true;
+            
+            try {
+                const savePromises = allPosts.map(post => {
+                    if (post.cross_promotion) {
+                        return fetch(`/api/cross-promotion/${post.id}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(post.cross_promotion)
+                        });
+                    }
+                }).filter(Boolean);
+                
+                await Promise.all(savePromises);
+                
+                alert('All changes saved successfully!');
+            } catch (error) {
+                console.error('Error saving changes:', error);
+                alert('Error saving changes. Please try again.');
+            } finally {
+                saveButton.innerHTML = originalText;
+                saveButton.disabled = false;
+            }
         }
-
-        function exportHTML(postId) {
-            window.open(`/clan-post-html/${postId}`, '_blank');
+        
+        function refreshData() {
+            const refreshButton = document.querySelector('.btn-warning');
+            const originalText = refreshButton.innerHTML;
+            refreshButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            refreshButton.disabled = false;
+            
+            loadData().finally(() => {
+                refreshButton.innerHTML = originalText;
+                refreshButton.disabled = false;
+            });
         }
-
-        function editPost(postId) {
-            window.open(`/workflow/posts/${postId}/writing`, '_blank');
-        }
-
+        
         function saveCrossPromotionChanges(postId) {
             const post = allPosts.find(p => p.id == postId);
             if (!post || !post.cross_promotion) {
@@ -911,20 +1066,6 @@
                 alert('Error saving settings. Please try again.');
             });
         }
-
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-        });
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
