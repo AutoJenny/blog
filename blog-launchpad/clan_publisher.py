@@ -422,6 +422,36 @@ class ClanPublisher:
                     # Plain text - escape HTML special characters
                     return html.escape(text_str)
             
+            def clean_section_content(content):
+                """Clean corrupted HTML content from sections"""
+                if not content:
+                    return ''
+                
+                content_str = str(content)
+                
+                # Remove corrupted HTML tags and entities
+                content_str = re.sub(r'</html', '', content_str)  # Remove incomplete </html
+                content_str = re.sub(r'<html[^>]*>', '', content_str)  # Remove <html tags
+                content_str = re.sub(r'<!DOCTYPE[^>]*>', '', content_str)  # Remove DOCTYPE
+                
+                # Fix nested paragraph tags: <p><p>content</p></p> -> <p>content</p>
+                content_str = re.sub(r'<p>\s*<p>', '<p>', content_str)
+                content_str = re.sub(r'</p>\s*</p>', '</p>', content_str)
+                
+                # Remove any remaining HTML structure tags
+                content_str = re.sub(r'<head[^>]*>.*?</head>', '', content_str, flags=re.DOTALL)
+                content_str = re.sub(r'<body[^>]*>', '', content_str)
+                content_str = re.sub(r'</body>', '', content_str)
+                
+                # Clean up HTML entities
+                content_str = re.sub(r'&lt;', '<', content_str)
+                content_str = re.sub(r'&gt;', '>', content_str)
+                
+                # Clean up extra whitespace
+                content_str = re.sub(r'\s+', ' ', content_str).strip()
+                
+                return content_str
+            
             def safe_url(url):
                 """Safely validate and escape URLs"""
                 if not url:
@@ -527,11 +557,14 @@ class ClanPublisher:
                     heading = safe_html(section.get('section_heading') or 'Untitled Section')
                     html_parts.append(f'<h2>{heading}</h2>')
                     
-                    # Section content - safely escaped
+                    # Section content - safely escaped and cleaned
                     html_parts.append('<div class="section-text">')
                     content = section.get('polished') or section.get('draft') or section.get('content') or 'No content available for this section.'
+                    
+                    # Clean the corrupted HTML content
+                    cleaned_content = clean_section_content(content)
+                    
                     # Don't wrap in <p> tags if content already contains HTML structure
-                    cleaned_content = safe_html(content)
                     if cleaned_content.startswith('<p>') and cleaned_content.endswith('</p>'):
                         html_parts.append(cleaned_content)
                     elif cleaned_content.startswith('<p>') or cleaned_content.endswith('</p>'):
