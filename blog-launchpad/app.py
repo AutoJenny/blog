@@ -94,7 +94,8 @@ def cross_promotion():
             SELECT p.id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug,
                    pd.idea_seed, pd.intro_blurb, pd.main_title,
                    p.cross_promotion_category_id, p.cross_promotion_category_title,
-                   p.cross_promotion_product_id, p.cross_promotion_product_title
+                   p.cross_promotion_product_id, p.cross_promotion_product_title,
+                   p.cross_promotion_category_position, p.cross_promotion_product_position
             FROM post p
             LEFT JOIN post_development pd ON pd.post_id = p.id
             WHERE p.status != 'deleted'
@@ -107,7 +108,9 @@ def cross_promotion():
                 'category_id': post.get('cross_promotion_category_id'),
                 'category_title': post.get('cross_promotion_category_title'),
                 'product_id': post.get('cross_promotion_product_id'),
-                'product_title': post.get('cross_promotion_product_title')
+                'product_title': post.get('cross_promotion_product_title'),
+                'category_position': post.get('cross_promotion_category_position'),
+                'product_position': post.get('cross_promotion_product_position')
             }
             sections = get_post_sections_with_images(post['id'])
             post['sections'] = sections
@@ -464,6 +467,8 @@ def update_cross_promotion(post_id):
                 cross_promotion_category_title = %s,
                 cross_promotion_product_id = %s,
                 cross_promotion_product_title = %s,
+                cross_promotion_category_position = %s,
+                cross_promotion_product_position = %s,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = %s
         """, (
@@ -471,6 +476,8 @@ def update_cross_promotion(post_id):
             data.get('category_title'),
             data.get('product_id'),
             data.get('product_title'),
+            data.get('category_position'),
+            data.get('product_position'),
             post_id
         ))
         conn.commit()
