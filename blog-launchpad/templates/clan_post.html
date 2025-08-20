@@ -92,14 +92,24 @@
         
         {# Insert cross-promotion widgets at strategic points #}
         {% if loop.index == 2 and post.cross_promotion.category_id %}
-        {{widget type="swcatalog/widget_crossSell_category" category_id="{{ post.cross_promotion.category_id }}" title="{{ post.cross_promotion.category_title }}"}}
+        <div class="cross-promotion-widget category-widget">
+            <h3 class="widget-title">{{ post.cross_promotion.category_title or 'Related Products' }}</h3>
+            <div class="widget-preview" data-widget-type="category" data-category-id="{{ post.cross_promotion.category_id }}">
+                <div class="widget-loading">Loading category products...</div>
+            </div>
+        </div>
         {% endif %}
         
         {% endfor %}
         
         {# Insert product widget after final section #}
         {% if post.cross_promotion.product_id %}
-        {{widget type="swcatalog/widget_crossSell_product" product_id="{{ post.cross_promotion.product_id }}" title="{{ post.cross_promotion.product_title }}"}}
+        <div class="cross-promotion-widget product-widget">
+            <h3 class="widget-title">{{ post.cross_promotion.product_title or 'Related Products' }}</h3>
+            <div class="widget-preview" data-widget-type="product" data-product-id="{{ post.cross_promotion.product_id }}">
+                <div class="widget-loading">Loading related products...</div>
+            </div>
+        </div>
         {% endif %}
     </div>
     {% endif %}
@@ -115,3 +125,167 @@
         {% endif %}
     </footer>
 </div>
+
+<!-- Cross-Promotion Widget JavaScript -->
+<script>
+    // Helper function to format price
+    function formatPrice(price) {
+        if (!price) return '£29.99';
+        
+        // Convert to number and format
+        const numPrice = parseFloat(price);
+        if (isNaN(numPrice)) return '£29.99';
+        
+        // Format to 2 decimal places only if not .00
+        const formatted = numPrice.toFixed(2);
+        if (formatted.endsWith('.00')) {
+            return `£${numPrice.toFixed(0)}`;
+        } else {
+            return `£${formatted}`;
+        }
+    }
+    
+    async function loadCategoryProducts(widget, categoryId, categoryTitle) {
+        try {
+            console.log(`Loading category products from clan.com API for category ${categoryId}...`);
+            
+            // Call clan.com API directly (no CORS issues on clan.com domain)
+            // Get the ENTIRE clan.com catalog for maximum variety and randomization
+            const response = await fetch(`https://clan.com/clan/api/getProducts?limit=5000`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const apiData = await response.json();
+            console.log('Clan.com API response:', apiData);
+            
+            if (apiData.success && apiData.data && apiData.data.length > 0) {
+                // Map clan.com API response to widget format
+                const products = apiData.data.map(item => ({
+                    name: item[0],           // title
+                    sku: item[1],            // sku
+                    url: item[2],            // product_url
+                    description: item[3],    // description
+                    image_url: 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg', // Default image
+                    price: '43'              // Default price
+                }));
+                
+                console.log('Mapped products:', products);
+                
+                widget.innerHTML = `
+                    <div class="product-grid">
+                        ${products.map(product => `
+                            <a href="${product.url}" target="_blank" class="product-card">
+                                <div class="product-image">
+                                    <img src="${product.image_url}" alt="${product.name}">
+                                    <div class="product-description-overlay">
+                                        ${product.description ? product.description.replace(/<[^>]*>/g, '') : 'No description available'}
+                                    </div>
+                                </div>
+                                <h4>${product.name}</h4>
+                                <div class="price">${formatPrice(product.price)}</div>
+                                <div class="btn btn-primary btn-sm">View Product</div>
+                            </a>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                widget.innerHTML = `
+                    <div class="widget-loading">No products found in this category.</div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading category products from clan.com API:', error);
+            widget.innerHTML = `
+                <div class="widget-loading">Error loading products. Please try again.</div>
+            `;
+        }
+    }
+    
+    async function loadRelatedProducts(widget, productId, productTitle) {
+        try {
+            console.log(`Loading related products from clan.com API for product ${productId}...`);
+            
+            // Call clan.com API directly (no CORS issues on clan.com domain)
+            // Get the ENTIRE clan.com catalog for maximum variety and randomization
+            const response = await fetch(`https://clan.com/clan/api/getProducts?limit=5000`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const apiData = await response.json();
+            console.log('Clan.com API response for related products:', apiData);
+            
+            if (apiData.success && apiData.data && apiData.data.length > 0) {
+                // Map clan.com API response to widget format
+                const products = apiData.data.map(item => ({
+                    name: item[0],           // title
+                    sku: item[1],            // sku
+                    url: item[2],            // product_url
+                    description: item[3],    // description
+                    image_url: 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg', // Default image
+                    price: '43'              // Default price
+                }));
+                
+                console.log('Mapped related products:', products);
+                
+                widget.innerHTML = `
+                    <div class="product-grid">
+                        ${products.map(product => `
+                            <a href="${product.url}" target="_blank" class="product-card">
+                                <div class="product-image">
+                                    <img src="${product.image_url}" alt="${product.name}">
+                                    <div class="product-description-overlay">
+                                        ${product.description ? product.description.replace(/<[^>]*>/g, '') : 'No description available'}
+                                    </div>
+                                </div>
+                                <h4>${product.name}</h4>
+                                <div class="price">${formatPrice(product.price)}</div>
+                                <div class="btn btn-primary btn-sm">View Product</div>
+                            </a>
+                        `).join('')}
+                </div>
+                `;
+                console.log('Related products rendered successfully');
+            } else {
+                console.log('No related products found, showing error message');
+                widget.innerHTML = `
+                    <div class="widget-loading">No related products found.</div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading related products from clan.com API:', error);
+            widget.innerHTML = `
+                <div class="widget-loading">Error loading products: ${error.message}</div>
+            `;
+        }
+    }
+    
+    // Load widget data when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, starting widget data load...');
+        loadWidgetData();
+    });
+    
+    async function loadWidgetData() {
+        console.log('loadWidgetData called');
+        const widgets = document.querySelectorAll('.widget-preview');
+        console.log(`Found ${widgets.length} widgets`);
+        
+        widgets.forEach(widget => {
+            const widgetType = widget.dataset.widgetType;
+            
+            if (widgetType === 'category') {
+                const categoryId = widget.dataset.categoryId;
+                const categoryTitle = widget.closest('.cross-promotion-widget').querySelector('.widget-title').textContent;
+                loadCategoryProducts(widget, categoryId, categoryTitle);
+            } else if (widgetType === 'product') {
+                const productId = widget.dataset.productId;
+                const productTitle = widget.closest('.cross-promotion-widget').querySelector('.widget-title').textContent;
+                loadRelatedProducts(widget, productId, productTitle);
+            }
+        });
+    }
+</script>

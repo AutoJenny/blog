@@ -198,6 +198,57 @@ class ClanPublisher:
             if 'temp_file' in locals() and os.path.exists(temp_file.name):
                 os.unlink(temp_file.name)
     
+    def _safe_url_test(self, url, uploaded_images):
+        """Test version of safe_url for debugging"""
+        if not url:
+            return ''
+        
+        # If we have uploaded_images mapping, use the clan.com URL
+        if uploaded_images and url in uploaded_images:
+            return html.escape(uploaded_images[url])
+        
+        # Basic URL validation - only allow http/https URLs
+        if url.startswith(('http://', 'https://')):
+            return html.escape(url)
+        # For relative URLs, ensure they're safe
+        if url.startswith('/'):
+            return html.escape(url)
+        # Reject potentially dangerous URLs
+        return ''
+    
+    def _safe_html_test(self, text):
+        """Test version of safe_html for debugging"""
+        if not text:
+            return ''
+        
+        import re
+        text_str = str(text)
+        
+        # Check if content already contains HTML tags - be more specific
+        # Only treat as HTML if it contains actual HTML tag patterns
+        if re.search(r'<[a-z][^>]*>', text_str, re.IGNORECASE) or re.search(r'</[a-z][^>]*>', text_str, re.IGNORECASE):
+            # Content has actual HTML tags - clean it but preserve structure
+            # Remove DOCTYPE, html, head, body tags
+            text_str = re.sub(r'<!DOCTYPE[^>]*>', '', text_str)
+            text_str = re.sub(r'<html[^>]*>', '', text_str)
+            text_str = re.sub(r'</html>', '', text_str)
+            text_str = re.sub(r'<head[^>]*>.*?</head>', '', text_str, flags=re.DOTALL)
+            text_str = re.sub(r'<body[^>]*>', '', text_str)
+            text_str = re.sub(r'</body>', '', text_str)
+            
+            # Fix double <p> tags
+            text_str = re.sub(r'<p>\s*<p>', '<p>', text_str)
+            text_str = re.sub(r'</p>\s*</p>', '</p>', text_str)
+            
+            # Clean up any remaining HTML entities that shouldn't be there
+            text_str = re.sub(r'&lt;', '<', text_str)
+            text_str = re.sub(r'&gt;', '>', text_str)
+            
+            return text_str
+        else:
+            # Plain text - escape HTML special characters
+            return html.escape(text_str)
+
     def process_images(self, post, sections):
         """Upload all images and update paths in the post content"""
         import time
@@ -332,11 +383,9 @@ class ClanPublisher:
                 
                 text_str = str(text)
                 
-                # Check if content already contains HTML tags (including HTML-encoded versions)
+                # Check if content already contains HTML tags - be more specific
                 # Only treat as HTML if it contains actual HTML tag patterns
-                if (re.search(r'<[a-z][^>]*>', text_str, re.IGNORECASE) or 
-                    re.search(r'</[a-z][^>]*>', text_str, re.IGNORECASE) or
-                    '&lt;' in text_str or '&gt;' in text_str):
+                if re.search(r'<[a-z][^>]*>', text_str, re.IGNORECASE) or re.search(r'</[a-z][^>]*>', text_str, re.IGNORECASE):
                     # Content has actual HTML tags - clean it but preserve structure
                     # Remove DOCTYPE, html, head, body tags
                     text_str = re.sub(r'<!DOCTYPE[^>]*>', '', text_str)
@@ -495,15 +544,7 @@ class ClanPublisher:
                     # Section image - WITH LIGHTBOX AND DIMENSIONS
                     if section.get('image') and section['image'].get('path') and not section['image'].get('placeholder'):
                         img = section['image']
-                        
-                        # Use clan.com URL if available, otherwise fall back to local path
-                        if uploaded_images and img['path'] in uploaded_images:
-                            safe_path = uploaded_images[img['path']]
-                            logger.info(f"✅ Using clan.com URL for section image: {safe_path}")
-                        else:
-                            safe_path = safe_url(img['path'])
-                            logger.warning(f"⚠️ No clan.com URL found for {img['path']}, using local path")
-                        
+                        safe_path = safe_url(img['path'])
                         if safe_path:
                             html_parts.append('<figure class="section-image">')
                             # Add lightbox link
@@ -557,103 +598,15 @@ class ClanPublisher:
     def create_or_update_post(self, post, html_content, is_update=False, uploaded_images=None):
         """Create or update a post on clan.com"""
         try:
-            # FIX: Get working HTML from preview endpoint with META off, then translate image paths
-            logger.info("🔧 FIXING HTML DELIVERY: Getting working HTML from preview endpoint (META off)")
-            
-            import requests
-            preview_url = f"http://localhost:5001/preview/{post['id']}?meta=off"
-            preview_response = requests.get(preview_url, timeout=15)
-            
-            if preview_response.status_code == 200:
-                working_html = preview_response.text
-                logger.info(f"✅ Got working HTML from preview: {len(working_html)} characters")
-                logger.info(f"✅ Preview HTML contains sections: {'section' in working_html}")
-                
-                # FIX: Extract only blog post content, remove meta panels, and translate image paths
-                if uploaded_images:
-                    logger.info("🔧 EXTRACTING BLOG CONTENT: Getting only the blog post part")
-                    transformed_html = working_html
-                    
-                    import re
-                    
-                    # Extract only the blog post content (remove page wrapper elements)
-                    # Look for the blog-sections div which contains the actual blog content
-                    # Use a more precise approach to find the complete content
-                    blog_match = re.search(r'<div class="blog-sections">(.*?)</div>\s*</div>\s*</div>\s*</body>', transformed_html, flags=re.DOTALL)
-                    if blog_match:
-                        blog_content = blog_match.group(1)
-                        # Add the opening div tag back
-                        transformed_html = f'<div class="blog-sections">{blog_content}</div>'
-                        logger.info(f"✅ Blog content extracted: {len(working_html)} -> {len(transformed_html)} characters")
-                    else:
-                        # Fallback: try to find just the blog-sections content with a more precise pattern
-                        logger.warning("⚠️ Could not find blog-sections with full pattern, trying fallback")
-                        # Look for blog-sections and capture until we find the closing div that's NOT part of a section
-                        fallback_match = re.search(r'<div class="blog-sections">(.*?)(?=</div>\s*<div class="mp-details|</div>\s*<div class="customer-action-bar)', transformed_html, flags=re.DOTALL)
-                        if fallback_match:
-                            blog_content = fallback_match.group(1)
-                            transformed_html = f'<div class="blog-sections">{blog_content}</div>'
-                            logger.info(f"✅ Blog content extracted with fallback: {len(working_html)} -> {len(transformed_html)} characters")
-                        else:
-                            logger.error("❌ Could not find blog-sections at all, using full HTML")
-                    
-                    # CRITICAL FIX: Remove the problematic content that's outside preview-container
-                    # Remove Edit Post, View Meta, Site Header, and Breadcrumb navigation
-                    logger.info("🔧 REMOVING PROBLEMATIC CONTENT: Stripping Edit Post, View Meta, Site Header, Breadcrumb")
-                    import re
-                    
-                    # Remove Edit Post and View Meta buttons
-                    transformed_html = re.sub(r'<!-- Edit and Meta Buttons - Top Right -->.*?<div class="preview-container">', '<div class="preview-container">', transformed_html, flags=re.DOTALL)
-                    
-                    # Remove Site Header
-                    transformed_html = re.sub(r'<!-- Site Header -->.*?<div class="preview-container">', '<div class="preview-container">', transformed_html, flags=re.DOTALL)
-                    
-                    # Remove Breadcrumb navigation
-                    transformed_html = re.sub(r'<!-- Breadcrumb Navigation -->.*?<header class="preview-header">', '<header class="preview-header">', transformed_html, flags=re.DOTALL)
-                    
-                    logger.info(f"✅ Problematic content removed: {len(transformed_html)} characters")
-                    
-                    working_html = transformed_html
-                    
-                    # Remove all meta panels (they're always in HTML, just hidden by CSS)
-                    logger.info("🔧 CLEANING HTML: Removing meta panels")
-                    # Remove image-meta-panel divs and their content
-                    transformed_html = re.sub(r'<div class="image-meta-panel[^"]*">.*?</div>', '', transformed_html, flags=re.DOTALL)
-                    # Remove any remaining meta-item divs
-                    transformed_html = re.sub(r'<div class="meta-item">.*?</div>', '', transformed_html, flags=re.DOTALL)
-                    
-                    logger.info(f"✅ Meta panels removed: {len(transformed_html)} characters")
-                    
-                    # Translate local image paths to clan.com URLs
-                    logger.info("🔧 TRANSLATING IMAGE PATHS: Converting local paths to clan.com URLs")
-                    for local_path, clan_url in uploaded_images.items():
-                        # Replace local paths in HTML with clan.com URLs
-                        if local_path in transformed_html:
-                            transformed_html = transformed_html.replace(local_path, clan_url)
-                            logger.info(f"✅ Replaced: {local_path} -> {clan_url}")
-                    
-                    working_html = transformed_html
-                    logger.info(f"✅ Blog content extraction, meta removal, and image path translation complete: {len(working_html)} characters")
-                else:
-                    logger.warning("⚠️ No uploaded_images mapping available for path translation")
-            else:
-                logger.error(f"❌ Failed to get preview HTML: {preview_response.status_code}")
-                return {
-                    'success': False,
-                    'error': f"Failed to get preview HTML: {preview_response.status_code}"
-                }
-            
             # Determine endpoint
             if is_update and post.get('clan_post_id'):
                 endpoint = f"{self.api_base_url}editPost"
                 json_args = {
                     'post_id': post['clan_post_id']
                 }
-                logger.info(f"🔄 Updating existing post {post['clan_post_id']} via editPost")
             else:
                 endpoint = f"{self.api_base_url}createPost"
                 json_args = {}
-                logger.info("🆕 Creating new post via createPost")
             
             # Get header image path for thumbnails
             header_image_path = None
@@ -753,17 +706,16 @@ class ClanPublisher:
             # Create HTML file in a known location that clan.com can access
             import os
             import time
-            # Use static filename like PHP example - clan.com might expect consistent naming
-            html_filename = f"post_{post['id']}.html"
+            html_filename = f"post_{post['id']}_{int(time.time())}.html"
             html_filepath = os.path.join(os.getcwd(), html_filename)
             
             try:
-                # Write working HTML from preview to file (FIXED!)
+                # Write HTML content to file
                 with open(html_filepath, 'w', encoding='utf-8') as html_file:
-                    html_file.write(working_html)
+                    html_file.write(html_content)
                 
                 logger.info(f"{'Updating' if is_update else 'Creating'} post: {json_args['title']}")
-                logger.info(f"HTML content length: {len(working_html)} characters (FIXED: using preview HTML)")
+                logger.info(f"HTML content length: {len(html_content)} characters")
                 logger.info(f"HTML file created at: {html_filepath}")
                 
                 # Send the request with the actual HTML file content
