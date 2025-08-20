@@ -536,12 +536,10 @@
                                        placeholder="Related department"
                                        onchange="updateCategoryTitle(${post.id})">
                             </div>
-                            ${post.cross_promotion?.category_id && categories.find(c => c.id == post.cross_promotion.category_id) ? `
-                                <div class="current-config" draggable="true" data-widget-type="category" data-post-id="${post.id}">
-                                    <strong>X-promo category:</strong> ${categories.find(c => c.id == post.cross_promotion.category_id)?.name} 
-                                    ${post.cross_promotion.category_title ? `- "${post.cross_promotion.category_title}"` : ''}
-                                </div>
-                            ` : ''}
+                            <div class="current-config" draggable="true" data-widget-type="category" data-post-id="${post.id}" style="display: ${post.cross_promotion?.category_id && categories.find(c => c.id == post.cross_promotion.category_id) ? 'block' : 'none'}">
+                                <strong>X-promo category:</strong> ${post.cross_promotion?.category_id && categories.find(c => c.id == post.cross_promotion.category_id) ? categories.find(c => c.id == post.cross_promotion.category_id).name : 'No category selected'} 
+                                ${post.cross_promotion?.category_title ? `- "${post.cross_promotion.category_title}"` : ''}
+                            </div>
                         </div>
                         
                         <div class="config-section">
@@ -565,12 +563,10 @@
                                        placeholder="Related products"
                                        onchange="updateProductTitle(${post.id})">
                             </div>
-                            ${post.cross_promotion?.product_id && products.find(p => p.id == post.cross_promotion.product_id) ? `
-                                <div class="current-config" draggable="true" data-widget-type="product" data-post-id="${post.id}">
-                                    <strong>X-promo product:</strong> ${products.find(p => p.id == post.cross_promotion.product_id)?.name} 
-                                    ${post.cross_promotion.product_title ? `- "${post.cross_promotion.product_title}"` : ''}
-                                </div>
-                            ` : ''}
+                            <div class="current-config" draggable="true" data-widget-type="product" data-post-id="${post.id}" style="display: ${post.cross_promotion?.product_id && products.find(p => p.id == post.cross_promotion.product_id) ? 'block' : 'none'}">
+                                <strong>X-promo product:</strong> ${post.cross_promotion?.product_id && products.find(p => p.id == post.cross_promotion.product_id) ? products.find(p => p.id == post.cross_promotion.product_id).name : 'No product selected'} 
+                                ${post.cross_promotion.product_title ? `- "${post.cross_promotion.product_title}"` : ''}
+                            </div>
                         </div>
                     </div>
                     
@@ -791,6 +787,13 @@
                     document.getElementById(`category-title-${postId}`).value = categoryName; // Reverted to original behavior
                 }
             }
+            
+            // Show the current-config div and update its content
+            const currentConfig = document.querySelector(`[data-post-id="${postId}"] .config-section:first-child .current-config`);
+            if (currentConfig) {
+                currentConfig.style.display = 'block';
+            }
+            
             updateCategoryCurrentDisplay(postId, categoryName); // Added this to update current display
             const card = document.querySelector(`[data-post-id="${postId}"]`);
             const statusBadge = card.querySelector('.status-badge');
@@ -814,6 +817,13 @@
                     document.getElementById(`product-title-${postId}`).value = productName; // Reverted to original behavior
                 }
             }
+            
+            // Show the current-config div and update its content
+            const currentConfig = document.querySelector(`[data-post-id="${postId}"] .config-section:nth-child(2) .current-config`);
+            if (currentConfig) {
+                currentConfig.style.display = 'block';
+            }
+            
             updateProductCurrentDisplay(postId, productName); // Added this to update current display
             const card = document.querySelector(`[data-post-id="${postId}"]`);
             const statusBadge = card.querySelector('.status-badge');
@@ -909,6 +919,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
