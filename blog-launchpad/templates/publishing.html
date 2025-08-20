@@ -83,6 +83,55 @@
             border-radius: 20px;
             font-size: 0.85rem;
         }
+        
+        .btn-outline-info {
+            border: 1px solid #17a2b8;
+            color: #17a2b8;
+            background: transparent;
+            transition: all 0.3s;
+        }
+        
+        .btn-outline-info:hover {
+            background: #17a2b8;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .action-buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+        
+        .action-buttons-container .btn {
+            min-width: 120px;
+        }
+        
+        .view-buttons-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+            margin-top: 0.5rem;
+        }
+        
+        .view-buttons-group .btn {
+            min-width: 120px;
+        }
+        
+        .btn-outline-success {
+            border: 1px solid #28a745;
+            color: #28a745;
+            background: transparent;
+            transition: all 0.3s;
+        }
+        
+        .btn-outline-success:hover {
+            background: #28a745;
+            color: white;
+            transform: translateY(-1px);
+        }
         .stats-card {
             background: white;
             border-radius: 12px;
@@ -356,6 +405,11 @@
             console.log('Previewing post:', postId);
             window.open(`/preview/${postId}`, '_blank');
         }
+        
+        function viewClanPostHtml(postId) {
+            console.log('Viewing clan_post HTML for post:', postId);
+            window.open(`/clan-post-html/${postId}`, '_blank');
+        }
 
         function updatePostStatus(postId, newStatus) {
             // Update the status badge for the post
@@ -579,7 +633,7 @@
             });
             
             div.innerHTML = `
-                <div class="row align-items-center">
+                                <div class="row align-items-center">
                     <div class="col-md-1">
                         <input class="form-check-input post-checkbox" type="checkbox" value="${post.id}" ${post.clan_status === 'publishing' ? 'disabled' : ''}>
                     </div>
@@ -602,20 +656,7 @@
                         </span>
                         ${statusInfo.message ? `<div class="${statusInfo.messageClass} mt-2">${statusInfo.message}</div>` : ''}
                     </div>
-                    <div class="col-md-2 text-center">
-                        <div class="${post.clan_post_id ? 'text-success' : 'text-muted'}">
-                            <small>
-                                ${post.clan_post_id ? 
-                                    `<strong>Clan.com ID: ${post.clan_post_id}</strong><br>
-                                     <a href="https://clan.com/blog/${post.title?.toLowerCase().replace(/\s+/g, '-')}" target="_blank" class="text-decoration-none">
-                                         <i class="fas fa-external-link-alt me-1"></i>View Live
-                                     </a>` : 
-                                    'Clan.com ID: --'
-                                }
-                            </small>
-                        </div>
-                    </div>
-                    <div class="col-md-2 text-end">
+                    <div class="col-md-4 text-end">
                         ${getActionButtons(post)}
                     </div>
                 </div>
@@ -689,41 +730,77 @@
         }
 
         function getActionButtons(post) {
+            const viewLiveBtn = post.clan_post_id && post.clan_uploaded_url ? `
+                <a href="${post.clan_uploaded_url}" target="_blank" class="btn btn-outline-success btn-sm" title="View live post on Clan.com">
+                    <i class="fas fa-external-link-alt me-1"></i>View Live
+                </a>
+            ` : '';
+            
+            const clanPostHtmlBtn = `
+                <button class="btn btn-outline-info btn-sm" onclick="viewClanPostHtml(${post.id})" title="View HTML that will be uploaded to Clan.com">
+                    <i class="fas fa-code me-1"></i>Clan HTML
+                </button>
+            `;
+            
             if (post.clan_status === 'publishing') {
                 return `
-                    <button class="btn publish-btn me-2" disabled>
-                        <i class="fas fa-spinner fa-spin me-1"></i>Publishing...
-                    </button>
-                    <button class="btn view-btn">
-                        <i class="fas fa-eye me-1"></i>Preview
-                    </button>
+                    <div class="action-buttons-container">
+                        <button class="btn publish-btn" disabled>
+                            <i class="fas fa-spinner fa-spin me-1"></i>Publishing...
+                        </button>
+                        <div class="view-buttons-group">
+                            <button class="btn view-btn">
+                                <i class="fas fa-eye me-1"></i>Preview
+                            </button>
+                            ${clanPostHtmlBtn}
+                            ${viewLiveBtn}
+                        </div>
+                    </div>
                 `;
             } else if (post.clan_status === 'error') {
                 return `
-                    <button class="btn retry-btn me-2">
-                        <i class="fas fa-redo me-1"></i>Retry
-                    </button>
-                    <button class="btn view-btn">
-                        <i class="fas fa-eye me-1"></i>Preview
-                    </button>
+                    <div class="action-buttons-container">
+                        <button class="btn retry-btn">
+                            <i class="fas fa-redo me-1"></i>Retry
+                        </button>
+                        <div class="view-buttons-group">
+                            <button class="btn view-btn">
+                                <i class="fas fa-eye me-1"></i>Preview
+                            </button>
+                            ${clanPostHtmlBtn}
+                            ${viewLiveBtn}
+                        </div>
+                    </div>
                 `;
             } else if (post.clan_status === 'published') {
                 return `
-                    <button class="btn publish-btn me-2">
-                        <i class="fas fa-sync me-1"></i>Update
-                    </button>
-                    <button class="btn view-btn">
-                        <i class="fas fa-eye me-1"></i>Preview
-                    </button>
+                    <div class="action-buttons-container">
+                        <button class="btn publish-btn">
+                            <i class="fas fa-sync me-1"></i>Update
+                        </button>
+                        <div class="view-buttons-group">
+                            <button class="btn view-btn">
+                                <i class="fas fa-eye me-1"></i>Preview
+                            </button>
+                            ${clanPostHtmlBtn}
+                            ${viewLiveBtn}
+                        </div>
+                    </div>
                 `;
             } else {
                 return `
-                    <button class="btn publish-btn me-2">
-                        <i class="fas fa-upload me-1"></i>Publish
-                    </button>
-                    <button class="btn view-btn">
-                        <i class="fas fa-eye me-1"></i>Preview
-                    </button>
+                    <div class="action-buttons-container">
+                        <button class="btn publish-btn">
+                            <i class="fas fa-upload me-1"></i>Publish
+                        </button>
+                        <div class="view-buttons-container">
+                            <button class="btn view-btn">
+                                <i class="fas fa-eye me-1"></i>Preview
+                            </button>
+                            ${clanPostHtmlBtn}
+                            ${viewLiveBtn}
+                        </div>
+                    </div>
                 `;
             }
         }

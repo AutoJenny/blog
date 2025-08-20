@@ -163,6 +163,58 @@ def preview_post(post_id):
     
     return render_template('post_preview.html', post=post, sections=sections)
 
+@app.route('/clan-post-html/<int:post_id>')
+def clan_post_html(post_id):
+    """View the clan_post HTML that will be uploaded to Clan.com."""
+    # Get post data from database
+    post = get_post_with_development(post_id)
+    if not post:
+        return "Post not found", 404
+    
+    sections = get_post_sections_with_images(post_id)
+    
+    # Find header image
+    header_image_path = find_header_image(post_id)
+    if header_image_path:
+        # Get header image caption from database
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur.execute("""
+                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                       cross_promotion_category_id, cross_promotion_category_title,
+                       cross_promotion_product_id, cross_promotion_product_title
+                FROM post WHERE id = %s
+            """, (post_id,))
+            header_data = cur.fetchone()
+            header_caption = header_data['header_image_caption'] if header_data and header_data['header_image_caption'] else None
+        
+        post['header_image'] = {
+            'path': header_image_path,
+            'alt_text': f"Header image for {post.get('title', 'this post')}",
+            'caption': header_caption,
+            'title': header_data['header_image_title'] if header_data and header_data['header_image_title'] else None,
+            'width': header_data['header_image_width'] if header_data and header_data['header_image_width'] else None,
+            'height': header_data['header_image_height'] if header_data and header_data['header_image_height'] else None
+        }
+        
+        # Add cross-promotion data
+        post['cross_promotion'] = {
+            'category_id': header_data['cross_promotion_category_id'] if header_data and header_data['cross_promotion_category_id'] else None,
+            'category_title': header_data['cross_promotion_category_title'] if header_data and header_data['cross_promotion_category_title'] else None,
+            'product_id': header_data['cross_promotion_product_id'] if header_data and header_data['cross_promotion_product_id'] else None,
+            'product_title': header_data['cross_promotion_product_title'] if header_data and header_data['cross_promotion_product_id'] else None
+        }
+    
+    # Render the clan_post template instead of post_preview
+    # Generate the raw HTML that will be uploaded
+    from clan_publisher import ClanPublisher
+    publisher = ClanPublisher()
+    
+    # Get the HTML content that would be uploaded
+    html_content = publisher.get_preview_html_content(post, sections)
+    
+    return render_template('clan_post.html', post=post, sections=sections, raw_html=html_content)
+
 def get_post_with_development(post_id):
     """Fetch post with development data."""
     with get_db_conn() as conn:
