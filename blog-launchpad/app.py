@@ -95,7 +95,8 @@ def cross_promotion():
                    pd.idea_seed, pd.intro_blurb, pd.main_title,
                    p.cross_promotion_category_id, p.cross_promotion_category_title,
                    p.cross_promotion_product_id, p.cross_promotion_product_title,
-                   p.cross_promotion_category_position, p.cross_promotion_product_position
+                   p.cross_promotion_category_position, p.cross_promotion_product_position,
+                   p.cross_promotion_category_widget_html, p.cross_promotion_product_widget_html
             FROM post p
             LEFT JOIN post_development pd ON pd.post_id = p.id
             WHERE p.status != 'deleted'
@@ -110,7 +111,9 @@ def cross_promotion():
                 'product_id': post.get('cross_promotion_product_id'),
                 'product_title': post.get('cross_promotion_product_title'),
                 'category_position': post.get('cross_promotion_category_position'),
-                'product_position': post.get('cross_promotion_product_position')
+                'product_position': post.get('cross_promotion_product_position'),
+                'category_widget_html': post.get('cross_promotion_category_widget_html'),
+                'product_widget_html': post.get('cross_promotion_product_widget_html')
             }
             sections = get_post_sections_with_images(post['id'])
             post['sections'] = sections
@@ -186,7 +189,9 @@ def preview_post(post_id):
             'category_id': header_data['cross_promotion_category_id'] if header_data and header_data['cross_promotion_category_id'] else None,
             'category_title': header_data['cross_promotion_category_title'] if header_data and header_data['cross_promotion_category_title'] else None,
             'product_id': header_data['cross_promotion_product_id'] if header_data and header_data['cross_promotion_product_id'] else None,
-            'product_title': header_data['cross_promotion_product_title'] if header_data and header_data['cross_promotion_product_title'] else None
+            'product_title': header_data['cross_promotion_product_title'] if header_data and header_data['cross_promotion_product_title'] else None,
+            'category_position': header_data.get('cross_promotion_category_position'),
+            'product_position': header_data.get('cross_promotion_product_position')
         }
     
     return render_template('post_preview.html', post=post, sections=sections)
@@ -210,7 +215,9 @@ def clan_post_html(post_id):
             cur.execute("""
                 SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
                        cross_promotion_category_id, cross_promotion_category_title,
-                       cross_promotion_product_id, cross_promotion_product_title
+                       cross_promotion_product_id, cross_promotion_product_title,
+                       cross_promotion_category_position, cross_promotion_product_position,
+                       cross_promotion_category_widget_html, cross_promotion_product_widget_html
                 FROM post WHERE id = %s
             """, (post_id,))
             header_data = cur.fetchone()
@@ -230,18 +237,29 @@ def clan_post_html(post_id):
             'category_id': header_data['cross_promotion_category_id'] if header_data and header_data['cross_promotion_category_id'] else None,
             'category_title': header_data['cross_promotion_category_title'] if header_data and header_data['cross_promotion_category_title'] else None,
             'product_id': header_data['cross_promotion_product_id'] if header_data and header_data['cross_promotion_product_id'] else None,
-            'product_title': header_data['cross_promotion_product_title'] if header_data and header_data['cross_promotion_product_id'] else None
+            'product_title': header_data['cross_promotion_product_title'] if header_data and header_data['cross_promotion_product_id'] else None,
+            'category_position': header_data.get('cross_promotion_category_position'),
+            'product_position': header_data.get('cross_promotion_product_position'),
+            'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
+            'product_widget_html': header_data.get('cross_promotion_product_widget_html')
         }
     
-    # Render the clan_post template instead of post_preview
-    # Generate the raw HTML that will be uploaded
+    # Generate the actual HTML that will be uploaded to clan.com
+    # This should match exactly what the upload script uses
     from clan_publisher import ClanPublisher
     publisher = ClanPublisher()
     
-    # Get the HTML content that would be uploaded
-    html_content = publisher.get_preview_html_content(post, sections)
+    # Get the exact same HTML that gets uploaded
+    upload_html = publisher.get_preview_html_content(post, sections)
     
-    return render_template('clan_post.html', post=post, sections=sections, raw_html=html_content)
+    if upload_html:
+        # Return the actual upload HTML as raw text - NO RENDERING
+        # Set content type to text/plain so browser shows source code
+        return upload_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    else:
+        # Fallback to raw template if preview HTML fails
+        raw_html = render_template('clan_post_raw.html', post=post, sections=sections)
+        return raw_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 def get_post_with_development(post_id):
     """Fetch post with development data."""
@@ -459,6 +477,16 @@ def update_cross_promotion(post_id):
     """Update cross-promotion data for a post."""
     data = request.get_json()
     
+    # Generate the actual widget HTML
+    category_widget_html = None
+    product_widget_html = None
+    
+    if data.get('category_id') and data.get('category_position'):
+        category_widget_html = f'{{{{widget type="swcatalog/widget_crossSell_category" category_id="{data.get("category_id")}" title="{data.get("category_title") or "Related Department"}"}}}}'
+    
+    if data.get('product_id') and data.get('product_position'):
+        product_widget_html = f'{{{{widget type="swcatalog/widget_crossSell_product" product_id="{data.get("product_id")}" title="{data.get("product_title") or "Related Products"}"}}}}'
+    
     with get_db_conn() as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -469,6 +497,8 @@ def update_cross_promotion(post_id):
                 cross_promotion_product_title = %s,
                 cross_promotion_category_position = %s,
                 cross_promotion_product_position = %s,
+                cross_promotion_category_widget_html = %s,
+                cross_promotion_product_widget_html = %s,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = %s
         """, (
@@ -478,6 +508,8 @@ def update_cross_promotion(post_id):
             data.get('product_title'),
             data.get('category_position'),
             data.get('product_position'),
+            category_widget_html,
+            product_widget_html,
             post_id
         ))
         conn.commit()
@@ -653,7 +685,9 @@ def publish_post_to_clan(post_id):
                 cur.execute("""
                     SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
                            cross_promotion_category_id, cross_promotion_category_title,
-                           cross_promotion_product_id, cross_promotion_product_title
+                           cross_promotion_product_id, cross_promotion_product_title,
+                           cross_promotion_category_position, cross_promotion_product_position,
+                           cross_promotion_category_widget_html, cross_promotion_product_widget_html
                     FROM post WHERE id = %s
                 """, (post_id,))
                 header_data = cur.fetchone()
@@ -671,7 +705,11 @@ def publish_post_to_clan(post_id):
                     'category_id': header_data['cross_promotion_category_id'] if header_data else None,
                     'category_title': header_data['cross_promotion_category_title'] if header_data else None,
                     'product_id': header_data['cross_promotion_product_id'] if header_data else None,
-                    'product_title': header_data['cross_promotion_product_title'] if header_data else None
+                    'product_title': header_data['cross_promotion_product_title'] if header_data else None,
+                    'category_position': header_data.get('cross_promotion_category_position'),
+                    'product_position': header_data.get('cross_promotion_product_position'),
+                    'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
+                    'product_widget_html': header_data.get('cross_promotion_product_widget_html')
                 }
         
         # Import publishing class
