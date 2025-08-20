@@ -432,6 +432,104 @@ def clan_related_products(product_id):
     products = get_related_products(product_id)
     return jsonify(products)
 
+@app.route('/api/clan/widget/products')
+def clan_widget_products():
+    """Proxy endpoint for widget to get products from clan.com API."""
+    try:
+        import requests
+        import random
+        
+        # Get limit from query parameter, default to 3
+        limit = request.args.get('limit', 3, type=int)
+        
+        # Get offset for randomization (0 = start, 1 = skip first 3, 2 = skip first 6, etc.)
+        offset = request.args.get('offset', 0, type=int)
+        
+        # Get a reasonable number of products for variety (reduced from 100 to 50 for better performance)
+        fetch_limit = min(50, limit * 15)  # Get up to 15x the requested amount for variety
+        
+        # Get products list from clan.com API
+        response = requests.get(f"https://clan.com/clan/api/getProducts?limit={fetch_limit}", timeout=10)
+        
+        if response.status_code == 200:
+            api_data = response.json()
+            
+            if api_data.get('success') and api_data.get('data'):
+                # First, randomly select the products we actually need
+                available_products = api_data['data']
+                
+                # Apply offset for different randomization
+                if offset > 0:
+                    # Use different random seed based on offset for variety
+                    random.seed(offset)
+                
+                # Randomly select exactly the number of products we need
+                if len(available_products) > limit:
+                    selected_items = random.sample(available_products, limit)
+                else:
+                    selected_items = available_products
+                
+                # Now only fetch detailed data for the selected products
+                final_products = []
+                for item in selected_items:
+                    try:
+                        # Get individual product data for accurate price and image
+                        product_response = requests.get(f"https://clan.com/clan/api/getProductData?sku={item[1]}", timeout=5)
+                        if product_response.status_code == 200:
+                            product_data = product_response.json()
+                            if product_data.get('success') and product_data.get('data'):
+                                # Use real product data
+                                product = {
+                                    "name": item[0],           # title
+                                    "sku": item[1],            # sku
+                                    "url": item[2],            # product_url
+                                    "description": item[3],    # description
+                                    "image_url": product_data['data'].get('image', 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg'),
+                                    "price": str(product_data['data'].get('price', '29.99'))
+                                }
+                            else:
+                                # Fallback to basic data
+                                product = {
+                                    "name": item[0],
+                                    "sku": item[1],
+                                    "url": item[2],
+                                    "description": item[3],
+                                    "image_url": "https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg",
+                                    "price": "29.99"
+                                }
+                        else:
+                            # Fallback to basic data
+                            product = {
+                                "name": item[0],
+                                "sku": item[1],
+                                "url": item[2],
+                                "description": item[3],
+                                "image_url": "https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg",
+                                "price": "29.99"
+                            }
+                    except Exception as e:
+                        # Fallback to basic data if individual product fetch fails
+                        product = {
+                            "name": item[0],
+                            "sku": item[1],
+                            "url": item[2],
+                            "description": item[3],
+                            "image_url": "https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg",
+                            "price": "29.99"
+                        }
+                    
+                    final_products.append(product)
+                
+                return jsonify(final_products)
+            else:
+                return jsonify([])
+        else:
+            return jsonify({'error': f'Clan.com API returned {response.status_code}'}), response.status_code
+            
+    except Exception as e:
+        print(f"Error in clan widget products proxy: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/clan/cache/refresh', methods=['POST'])
 def refresh_clan_cache():
     """Manually refresh the clan.com cache."""
