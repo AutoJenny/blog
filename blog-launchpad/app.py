@@ -103,7 +103,7 @@ def cross_promotion():
         """)
         posts = [dict(row) for row in cur.fetchall()]
         
-        # Add cross_promotion data structure to each post
+        # Add cross_promotion data structure and sections to each post
         for post in posts:
             post['cross_promotion'] = {
                 'category_id': post.get('cross_promotion_category_id'),
@@ -111,6 +111,10 @@ def cross_promotion():
                 'product_id': post.get('cross_promotion_product_id'),
                 'product_title': post.get('cross_promotion_product_title')
             }
+            
+            # Get sections for this post
+            sections = get_post_sections_with_images(post['id'])
+            post['sections'] = sections
     
     # Get the first (most recently modified) post as default
     default_post = posts[0] if posts else None
