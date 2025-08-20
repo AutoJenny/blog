@@ -462,20 +462,20 @@
                     {% if section.image %}
                         {% if section.image.path and not section.image.placeholder %}
                             <figure class="section-image">
-                                <a title="{{ section.image.caption or section.image.alt_text or 'Section image' }}" 
-                                   href="{{ section.image.path }}" 
-                                   rel="lightbox[mpblog_{{ post.id }}]" 
-                                   target="_blank">
-                                    <img alt="{{ section.image.alt_text }}" 
-                                         src="{{ section.image.path }}"
-                                         onerror="this.style.display='none'; this.closest('figure').querySelector('.image-error').style.display='block';">
-                                </a>
-                                <div class="image-error" style="display: none;">
-                                    <small><strong>Image not found:</strong> {{ section.image.path }}</small>
-                                </div>
-                                {% if section.image.caption %}
-                                    <figcaption>{{ section.image.caption }}</figcaption>
-                                {% endif %}
+                                                            <a title="{{ section.image_captions or section.image.alt_text or 'Section image' }}" 
+                               href="{{ section.image.path }}" 
+                               rel="lightbox[mpblog_{{ post.id }}]" 
+                               target="_blank">
+                                <img alt="{{ section.image.alt_text }}" 
+                                     src="{{ section.image.path }}"
+                                     onerror="this.style.display='none'; this.closest('figure').querySelector('.image-error').style.display='block';">
+                            </a>
+                            <div class="image-error" style="display: none;">
+                                <small><strong>Image not found:</strong> {{ section.image.path }}</small>
+                            </div>
+                            {% if section.image_captions %}
+                                <figcaption>{{ section.image_captions }}</figcaption>
+                            {% endif %}
                                 <div class="image-meta-panel" id="section-meta-panel-{{ section.id }}">
                                     <div class="meta-item">
                                         <strong>Alt Text:</strong> {{ section.image.alt_text }}
