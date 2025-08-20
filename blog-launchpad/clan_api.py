@@ -53,31 +53,15 @@ clan_client = ClanAPIClient()
 
 def get_categories() -> List[Dict]:
     """Get available categories from cache or API."""
-    # Check if cache is fresh
-    if clan_cache.is_cache_fresh('categories'):
-        logger.info("Using cached categories")
-        return clan_cache.get_categories()
-    
-    # Fetch from API and cache
-    logger.info("Fetching categories from API")
-    categories = clan_client.get_categories()
-    if categories:
-        clan_cache.store_categories(categories)
-    return categories
+    # Always use cached categories since freshness is not important
+    logger.info("Using cached categories")
+    return clan_cache.get_categories()
 
 def get_products(limit: int = 50, query: str = '') -> List[Dict]:
     """Search products from cache or API."""
-    # Check if cache is fresh
-    if clan_cache.is_cache_fresh('products'):
-        logger.info("Using cached products")
-        return clan_cache.get_products(limit=limit, query=query)
-    
-    # Fetch from API and cache
-    logger.info("Fetching products from API")
-    products = clan_client.get_products(limit=limit, query=query)
-    if products:
-        clan_cache.store_products(products)
-    return products
+    # Always use cached products since freshness is not important
+    logger.info("Using cached products")
+    return clan_cache.get_products(limit=limit, query=query)
 
 def get_category_products(category_id: int) -> List[Dict]:
     """Get products from a specific category (random selection from cache)."""
