@@ -709,6 +709,31 @@ def catalog_status():
         logger.error(f"Error getting catalog status: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/clan/catalog/refresh-urls', methods=['POST'])
+def refresh_product_urls():
+    """Refresh product URLs from clan.com API to fix 404 links"""
+    try:
+        from clan_cache import clan_cache
+        
+        logger.info("Manual product URL refresh triggered")
+        result = clan_cache.refresh_product_urls()
+        
+        if result.get('success'):
+            return jsonify({
+                'success': True,
+                'message': result.get('message'),
+                'updated_count': result.get('updated_count')
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': result.get('error')
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Error in product URL refresh: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(debug=True, host='0.0.0.0', port=port) 
