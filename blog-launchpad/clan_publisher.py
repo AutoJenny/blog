@@ -13,6 +13,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import re
 import html
+import time
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -39,13 +40,16 @@ class ClanPublisher:
         import re
         import time
         
-        # If this is an update and we have an existing clan_post_id, try to preserve the URL
-        if post.get('clan_post_id'):
-            # For updates, we should ideally preserve the existing URL key
-            # But since we don't store it, we'll generate a consistent one
-            pass
+        # If this is an update and we have an existing clan_uploaded_url, extract the URL key from it
+        if post.get('clan_post_id') and post.get('clan_uploaded_url'):
+            # Extract the URL key from the existing clan.com URL
+            existing_url = post['clan_uploaded_url']
+            if '/blog/' in existing_url:
+                url_key = existing_url.split('/blog/')[-1]
+                logger.info(f"Using existing URL key from clan.com for update: {url_key}")
+                return url_key
         
-        # Generate from title
+        # Generate from title for new posts
         title = post.get('title', 'Untitled Post')
         # Convert to lowercase, replace spaces with hyphens, remove special chars
         url_key = re.sub(r'[^a-z0-9\s-]', '', title.lower())
@@ -587,40 +591,73 @@ class ClanPublisher:
 
     def publish_to_clan(self, post, sections):
         """Main method to publish a post to clan.com"""
-        logger.info(f"=== PUBLISH_TO_CLAN DEBUG START ===")
-        logger.info(f"Post ID: {post.get('id')}")
-        logger.info(f"Post header_image_id: {post.get('header_image_id')}")
-        logger.info(f"Post header_image: {post.get('header_image')}")
-        
         try:
-            # Step 0: Find and populate image paths from file system
+            logger.info("=== PUBLISH_TO_CLAN DEBUG START ===")
+            logger.info(f"Post ID: {post.get('id')}")
+            
+            # Step 0: Get full post data from database to determine if this is an update
+            from app import get_db_conn
+            conn = get_db_conn()
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM post WHERE id = %s', (post['id'],))
+            post_row = cursor.fetchone()
+            
+            if not post_row:
+                return {
+                    'success': False,
+                    'error': f'Post {post["id"]} not found in database'
+                }
+            
+            # Get column names and convert to dict
+            column_names = [desc[0] for desc in cursor.description]
+            full_post_data = dict(zip(column_names, post_row))
+            
+            # Check if this is an update (post already exists on clan.com)
+            is_update = bool(full_post_data.get('clan_post_id'))
+            logger.info(f"Is update: {is_update} (clan_post_id: {full_post_data.get('clan_post_id')})")
+            
+            logger.info(f"Post header_image_id: {full_post_data.get('header_image_id')}")
+            logger.info(f"Post header_image: {full_post_data.get('header_image')}")
+            
+            # Load sections from DB so we can attach images and upload them
+            cursor.execute('SELECT id, section_heading, polished, draft FROM post_section WHERE post_id = %s ORDER BY id', (post['id'],))
+            db_sections = cursor.fetchall()
+            sections_list = []
+            for row in db_sections:
+                section_dict = {
+                    'id': row[0],
+                    'section_heading': row[1],
+                    'polished': row[2],
+                    'draft': row[3]
+                }
+                sections_list.append(section_dict)
+            logger.info(f"Loaded {len(sections_list)} sections from DB")
+            
+            # Step 0: Finding image paths from file system
             logger.info("Step 0: Finding image paths from file system...")
             from app import find_header_image, find_section_image
             
-            header_image_path = find_header_image(post['id'])
+            # Set header image path
+            header_image_path = find_header_image(full_post_data['id'])
             logger.info(f"find_header_image returned: {header_image_path}")
             
             if header_image_path:
-                post['header_image'] = {'path': header_image_path}
-                logger.info(f"✅ Set post['header_image'] = {{'path': '{header_image_path}'}}")
+                full_post_data['header_image'] = {'path': header_image_path}
+                logger.info(f"✅ Set full_post_data['header_image'] = {{'path': '{header_image_path}'}}")
             else:
                 logger.warning("❌ No header image found")
             
-            # Process sections to find images
-            for i, section in enumerate(sections):
-                section_image_path = find_section_image(post['id'], section['id'])
+            # Attach section image paths
+            for i, section in enumerate(sections_list):
+                section_image_path = find_section_image(full_post_data['id'], section['id'])
                 logger.info(f"Section {i+1} ({section.get('section_heading', 'No title')}): find_section_image returned: {section_image_path}")
-                
                 if section_image_path:
                     section['image'] = {'path': section_image_path}
-                    logger.info(f"✅ Set section[{i+1}]['image'] = {{'path': '{section_image_path}'}}")
-                else:
-                    logger.info(f"Section {i+1} has no image")
-            
-            # Step 1: Process and upload images
+                
+            # Step 1: Process and upload images (header + section images)
             logger.info("Step 1: Processing and uploading images...")
             try:
-                uploaded_images = self.process_images(post, sections)
+                uploaded_images = self.process_images(full_post_data, sections_list)
                 logger.info(f"✅ Image processing completed. Uploaded {len(uploaded_images)} images.")
                 logger.info(f"uploaded_images dictionary: {uploaded_images}")
             except Exception as e:
@@ -632,17 +669,35 @@ class ClanPublisher:
                     'error': f'Image processing failed: {str(e)}'
                 }
             
-            # Step 2: Render HTML content
-            logger.info("Step 2: Rendering HTML content...")
+            # Step 2: Mapping cross-promotion data
+            logger.info("Step 2: Mapping cross-promotion data...")
+            if full_post_data.get('cross_promotion_category_id'):
+                full_post_data['cross_promotion'] = {
+                    'category_id': full_post_data['cross_promotion_category_id'],
+                    'category_title': full_post_data.get('cross_promotion_category_title', ''),
+                    'product_id': full_post_data.get('cross_promotion_product_id'),
+                    'product_title': full_post_data.get('cross_promotion_product_title', '')
+                }
+                logger.info(f"✅ Mapped cross-promotion data: category_id={full_post_data['cross_promotion']['category_id']}, title='{full_post_data['cross_promotion']['category_title']}'")
+            else:
+                logger.info("No cross-promotion data found")
+            
+            # Step 3: Render HTML content
+            logger.info("Step 3: Rendering HTML content...")
             try:
-                # Use the preview HTML template instead of generating HTML from scratch
-                html_content = self.get_preview_html_content(post, sections, uploaded_images)
+                # Use the clan_post.html template instead of generating HTML from scratch
+                html_content = self.get_preview_html_content(full_post_data, sections_list, uploaded_images)
                 if not html_content:
                     return {
                         'success': False,
                         'error': 'Failed to get preview HTML content'
                     }
                 logger.info(f"✅ Preview HTML content retrieved. Content length: {len(html_content)}")
+                
+                # Add the header_image data that was set earlier
+                if full_post_data.get('header_image'):
+                    logger.info(f"✅ Header image data ready for clan.com API: {full_post_data['header_image']}")
+                
             except Exception as e:
                 logger.error(f"❌ Error getting preview HTML content: {str(e)}")
                 import traceback
@@ -652,31 +707,17 @@ class ClanPublisher:
                     'error': f'Preview HTML content retrieval failed: {str(e)}'
                 }
             
-            # Step 3: Map cross-promotion data
-            logger.info("Step 3: Mapping cross-promotion data...")
-            if post.get('cross_promotion_category_id'):
-                post['cross_promotion'] = {
-                    'category_id': post['cross_promotion_category_id'],
-                    'category_title': post.get('cross_promotion_category_title', ''),
-                    'product_id': post.get('cross_promotion_product_id'),
-                    'product_title': post.get('cross_promotion_product_title', '')
-                }
-                logger.info(f"✅ Mapped cross-promotion data: category_id={post['cross_promotion']['category_id']}, title='{post['cross_promotion']['category_title']}'")
-            else:
-                logger.info("No cross-promotion data found")
-            
             # Step 4: Create or update post on clan.com
             logger.info("Step 4: Creating/updating post on clan.com...")
-            is_update = bool(post.get('clan_post_id'))
-            logger.info(f"Is update: {is_update} (clan_post_id: {post.get('clan_post_id')})")
+            logger.info(f"Is update: {is_update} (clan_post_id: {full_post_data.get('clan_post_id')})")
             
             try:
-                result = self.create_or_update_post(post, html_content, is_update, uploaded_images)
+                result = self.create_or_update_post(full_post_data, html_content, is_update, uploaded_images)
                 if result['success']:
-                    logger.info(f"✅ Successfully published post {post['id']} to clan.com")
+                    logger.info(f"✅ Successfully published post {full_post_data['id']} to clan.com")
                     return result
                 else:
-                    logger.error(f"❌ Failed to publish post {post['id']}: {result.get('error', 'Unknown error')}")
+                    logger.error(f"❌ Failed to publish post {full_post_data['id']}: {result.get('error', 'Unknown error')}")
                     return result
             except Exception as e:
                 logger.error(f"❌ Error during post creation/update: {str(e)}")
@@ -699,97 +740,83 @@ class ClanPublisher:
             logger.info("=== PUBLISH_TO_CLAN DEBUG END ===")
 
     def get_preview_html_content(self, post, sections, uploaded_images=None):
-        """Get the preview HTML content from the working template and prepare it for clan.com upload"""
+        """Get HTML from the preview endpoint and minimally transform it for clan.com upload.
+        - KEEP preview content identical
+        - REMOVE only preview meta/context
+        - FIX image/file paths using uploaded_images
+        - KEEP cross-promo widgets; append client-side JS that calls clan.com API
+        """
         try:
             import requests
             from bs4 import BeautifulSoup
             import re
             
-            logger.info("Getting preview HTML content from working template...")
-            
-            # Step 1: Get the rendered preview HTML from the local preview endpoint
-            preview_url = f"http://localhost:5001/preview/{post['id']}"
+            preview_url = f"http://localhost:5001/preview/{post['id']}?meta=off"
             logger.info(f"Fetching preview HTML from: {preview_url}")
+            resp = requests.get(preview_url, timeout=15)
+            resp.raise_for_status()
+            html = resp.text
+            logger.info(f"Fetched preview HTML length: {len(html)}")
             
-            response = requests.get(preview_url, timeout=10)
-            if response.status_code != 200:
-                raise Exception(f"Failed to fetch preview HTML: {response.status_code}")
+            soup = BeautifulSoup(html, 'html.parser')
+            container = soup.find('div', class_='preview-container')
+            if not container:
+                raise Exception('preview-container not found in preview HTML')
             
-            preview_html = response.text
-            logger.info(f"Preview HTML fetched successfully, length: {len(preview_html)}")
+            # Remove preview-only UI elements
+            for sel in [
+                ('div', {'class': 'image-meta-panel'}),
+                ('div', {'class': 'meta-item'}),
+                ('button', {'class': 'meta-button'}),
+                ('div', {'id': 'post-meta-panel'})
+            ]:
+                for el in container.find_all(*sel):
+                    el.decompose()
             
-            # Step 2: Parse the HTML and extract only the blog post content
-            soup = BeautifulSoup(preview_html, 'html.parser')
-            
-            # Find the main content container
-            preview_container = soup.find('div', class_='preview-container')
-            if not preview_container:
-                raise Exception("Could not find preview-container in HTML")
-            
-            # Extract the blog post content (from header to footer, excluding nav/meta)
-            blog_content = []
-            
-            # Start with the header (title, subtitle, header image, post meta)
-            header = preview_container.find('header', class_='preview-header')
+            # Extract header, sections and footer exactly like preview
+            parts = []
+            header = container.find('header', class_='preview-header')
             if header:
-                # Clean the header - remove meta panels and keep only the post content
-                import copy
-                header_copy = copy.copy(header)
-                
-                # Remove meta panels (these are filtered out by the meta button)
-                meta_panels = header_copy.find_all('div', class_='image-meta-panel')
-                for panel in meta_panels:
-                    panel.decompose()
-                
-                blog_content.append(str(header_copy))
-            
-            # Add the blog sections (the actual content)
-            blog_sections = preview_container.find('div', class_='blog-sections')
+                parts.append(str(header))
+            blog_sections = container.find('div', class_='blog-sections')
             if blog_sections:
-                blog_content.append(str(blog_sections))
-            
-            # Add the article footer (tags, share buttons)
-            article_footer = preview_container.find('footer', class_='article-footer')
+                parts.append(str(blog_sections))
+            article_footer = container.find('footer', class_='article-footer')
             if article_footer:
-                blog_content.append(str(article_footer))
+                parts.append(str(article_footer))
             
-            # Combine the content
-            extracted_html = '\n'.join(blog_content)
+            extracted_html = '\n'.join(parts)
             
-            # Step 3: Fix image paths to point to clan.com
+            # Translate local image/file paths to uploaded clan.com URLs
             if uploaded_images:
-                logger.info("Fixing image paths to point to clan.com...")
-                
-                # Create a mapping from local paths to clan.com URLs
+                logger.info('Translating image paths to clan.com URLs...')
                 path_mapping = {}
                 for local_path, clan_url in uploaded_images.items():
-                    # Convert web paths to the format used in the HTML
                     if local_path.startswith('/static/'):
                         path_mapping[local_path] = clan_url
-                    # Also handle file system paths if they appear in HTML
                     if 'content/posts' in local_path:
-                        # Extract the relative path part
-                        relative_path = local_path.split('content/posts/')[-1] if 'content/posts/' in local_path else local_path
-                        path_mapping[f'/static/content/posts/{relative_path}'] = clan_url
-                
-                # Replace all image paths
+                        rel = local_path.split('content/posts/')[-1] if 'content/posts/' in local_path else local_path
+                        path_mapping[f'/static/content/posts/{rel}'] = clan_url
                 for local_path, clan_url in path_mapping.items():
                     extracted_html = extracted_html.replace(f'src="{local_path}"', f'src="{clan_url}"')
                     extracted_html = extracted_html.replace(f'href="{local_path}"', f'href="{clan_url}"')
                     logger.info(f"Replaced {local_path} -> {clan_url}")
             
-            # Step 4: Clean up the HTML
-            # Remove any remaining localhost references
+            # Remove localhost refs that may linger
             extracted_html = re.sub(r'http://localhost:\d+', '', extracted_html)
             
-            # Remove any remaining static file references that weren't uploaded
-            extracted_html = re.sub(r'src="/static/[^"]*"', 'src=""', extracted_html)
-            extracted_html = re.sub(r'href="/static/[^"]*"', 'href=""', extracted_html)
+
+            
+
+            
+            # Save the HTML file for inspection
+            debug_file = f'/tmp/upload_html_post_{post["id"]}_{int(time.time())}.html'
+            with open(debug_file, 'w', encoding='utf-8') as f:
+                f.write(extracted_html)
+            logger.info(f"Upload HTML saved to: {debug_file}")
             
             logger.info(f"Final HTML content length: {len(extracted_html)}")
-            
             return extracted_html
-            
         except Exception as e:
             logger.error(f"Error getting preview HTML content: {str(e)}")
             import traceback

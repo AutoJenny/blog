@@ -525,40 +525,7 @@
                 </div>
             </section>
             
-            <!-- Insert category widget after 2nd section -->
-            {% if loop.index == 2 and post.cross_promotion.category_id %}
-            <div class="cross-promotion-widget category-widget">
-                {% if request.args.get('export') %}
-                    <!-- Raw widget for Magento -->
-                    {{ "{{widget type=\"swcatalog/widget_crossSell_category\" category_id=\"" }}{{ post.cross_promotion.category_id }}{{ "\" title=\"" }}{{ post.cross_promotion.category_title }}{{ "\"}}" }}
-                {% else %}
-                    <!-- Live data call for local preview -->
-                    <div class="widget-preview" data-widget-type="category" 
-                         data-category-id="{{ post.cross_promotion.category_id }}"
-                         data-title="{{ post.cross_promotion.category_title }}">
-                        <div class="widget-loading">Loading category products...</div>
-                    </div>
-                {% endif %}
-            </div>
-            {% endif %}
             {% endfor %}
-            
-            <!-- Insert product widget after final section -->
-            {% if post.cross_promotion.product_id %}
-            <div class="cross-promotion-widget product-widget">
-                {% if request.args.get('export') %}
-                    <!-- Raw widget for Magento -->
-                    {{ "{{widget type=\"swcatalog/widget_crossSell_product\" product_id=\"" }}{{ post.cross_promotion.product_id }}{{ "\" title=\"" }}{{ post.cross_promotion.product_title }}{{ "\"}}" }}
-                {% else %}
-                    <!-- Live data call for local preview -->
-                    <div class="widget-preview" data-widget-type="product" 
-                         data-product-id="{{ post.cross_promotion.product_id }}"
-                         data-title="{{ post.cross_promotion.product_title }}">
-                        <div class="widget-loading">Loading related products...</div>
-                    </div>
-                {% endif %}
-            </div>
-            {% endif %}
         </div>
         {% endif %}
         {% if not post.idea_seed and not post.intro_blurb and not sections %}

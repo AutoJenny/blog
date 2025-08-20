@@ -1,291 +1,180 @@
-{% set total_chars = 0 %}
-{% set word_count = 0 %}
-{% for section in sections %}
-    {% if section.polished %}
-        {% set section_text = section.polished|strip_html_doc %}
-        {% set total_chars = total_chars + section_text|length %}
-        {% set word_count = word_count + (section_text.split()|length) %}
-    {% elif section.draft %}
-        {% set section_text = section.draft|strip_html_doc %}
-        {% set total_chars = total_chars + section_text|length %}
-        {% set word_count = word_count + (section_text.split()|length) %}
-    {% endif %}
-{% endfor %}
-{% set reading_time = ((word_count / 200) | round(0, 'ceil')) | int %}
-{% if reading_time < 1 %}{% set reading_time = 1 %}{% endif %}
-
-{# Blog post content for clan.com publishing #}
-<div class="mpblog-post">
-    <header class="blog-post-header">
-        <h1>{{ post.title or post.main_title or post.provisional_title or 'Untitled Post' }}</h1>
-        {% if post.subtitle %}
-        <div class="blog-post__subtitle">{{ post.subtitle }}</div>
-        {% endif %}
-        
-        <div class="post-meta">
-            <span class="post-meta__author">
-                By Caitrin Stewart
-            </span>
-            <span class="post-meta__separator"> | </span>
-            <span class="post-meta__date">
-                {{ post.created_at.strftime('%B %d, %Y') if post.created_at else 'Unknown date' }}
-            </span>
-            <span class="post-meta__separator"> | </span>
-            <span class="post-meta__reading-time">
-                {{ reading_time }} min read
-            </span>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title or post.main_title or post.provisional_title or 'Untitled Post' }} - Clan.com</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .view-toggle {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .raw-html {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: none;
+        }
+        .rendered-content {
+            display: block;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .blog-post {
+            line-height: 1.6;
+        }
+        .blog-post h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .blog-post h2 {
+            color: #555;
+            margin-top: 30px;
+        }
+        .blog-post img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .blog-post p {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="view-toggle">
+            <button id="rendered-btn" class="btn btn-primary" onclick="showRendered()">
+                Rendered View
+            </button>
+            <button id="raw-btn" class="btn btn-secondary" onclick="showRawHtml()">
+                Raw HTML
+            </button>
         </div>
-    </header>
 
-    {% if post.header_image %}
-    <figure class="blog-post-image">
-        <img src="{{ post.header_image.path }}" 
-             alt="{{ post.header_image.alt_text or 'Header image for ' + post.title }}"
-             {% if post.header_image.width %}width="{{ post.header_image.width }}"{% endif %}
-             {% if post.header_image.height %}height="{{ post.header_image.height }}"{% endif %}>
-        {% if post.header_image.caption %}
-        <figcaption>{{ post.header_image.caption }}</figcaption>
-        {% endif %}
-    </figure>
-    {% endif %}
+        <div id="raw-html" class="raw-html">
+{{ raw_html|e }}
+        </div>
 
-    {% if post.summary %}
-    <div class="blog-post__summary">
-        <p>{{ post.summary }}</p>
-    </div>
-    {% endif %}
-
-    {% if sections %}
-    <div class="blog-sections">
-        {% for section in sections %}
-        <section class="blog-section" id="section-{{ loop.index }}">
-            <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
-            <div class="section-text">
-                {% if section.polished %}
-                    {{ section.polished|strip_html_doc|safe }}
-                {% elif section.draft %}
-                    {{ section.draft|strip_html_doc|safe }}
-                {% elif section.content %}
-                    {{ section.content|strip_html_doc|safe }}
-                {% else %}
-                    <p>No content available for this section.</p>
-                {% endif %}
-            </div>
+        <div id="rendered-content" class="rendered-content blog-post">
+            <h1>{{ post.title or post.main_title or post.provisional_title or 'Untitled Post' }}</h1>
             
-            {% if section.image and section.image.path and not section.image.placeholder %}
-            <figure class="section-image">
-                <a title="{{ section.image.caption or section.image.alt_text or 'Section image' }}" 
-                   href="{{ section.image.path }}" 
-                   rel="lightbox[mpblog_{{ post.id }}]" 
-                   target="_blank">
-                    <img alt="{{ section.image.alt_text }}" 
+            {% if post.subtitle %}
+            <h2>{{ post.subtitle }}</h2>
+            {% endif %}
+
+            {% if post.header_image %}
+            <img src="{{ post.header_image.path }}" 
+                 alt="{{ post.header_image.alt_text or 'Header image' }}"
+                 {% if post.header_image.width %}width="{{ post.header_image.width }}"{% endif %}
+                 {% if post.header_image.height %}height="{{ post.header_image.height }}"{% endif %}>
+            {% if post.header_image.caption %}
+            <p><em>{{ post.header_image.caption }}</em></p>
+            {% endif %}
+            {% endif %}
+
+            {% if post.summary %}
+            <p><strong>{{ post.summary }}</strong></p>
+            {% endif %}
+
+            {% if sections %}
+            {% for section in sections %}
+            <section>
+                <h2>{{ section.section_heading or 'Untitled Section' }}</h2>
+                <div>
+                    {% if section.polished %}
+                        {{ section.polished|safe }}
+                    {% elif section.draft %}
+                        {{ section.draft|safe }}
+                    {% elif section.content %}
+                        {{ section.content|safe }}
+                    {% else %}
+                        <p>No content available for this section.</p>
+                    {% endif %}
+                </div>
+                
+                {% if section.image and section.image.path and not section.image.placeholder %}
+                <figure>
+                    <img alt="{{ section.image.alt_text or 'Section image' }}" 
                          src="{{ section.image.path }}"
                          {% if section.image.width %}width="{{ section.image.width }}"{% endif %}
                          {% if section.image.height %}height="{{ section.image.height }}"{% endif %}>
-                </a>
-                {% if section.image.caption %}
-                <figcaption>{{ section.image.caption }}</figcaption>
+                    {% if section.image.caption %}
+                    <figcaption><em>{{ section.image.caption }}</em></figcaption>
+                    {% endif %}
+                </figure>
                 {% endif %}
-            </figure>
-            {% endif %}
-        </section>
-        
-        {# Insert cross-promotion widgets at strategic points #}
-        {% if loop.index == 2 and post.cross_promotion.category_id %}
-        <div class="cross-promotion-widget category-widget">
-            <h3 class="widget-title">{{ post.cross_promotion.category_title or 'Related Products' }}</h3>
-            <div class="widget-preview" data-widget-type="category" data-category-id="{{ post.cross_promotion.category_id }}">
-                <div class="widget-loading">Loading category products...</div>
-            </div>
-        </div>
-        {% endif %}
-        
-        {% endfor %}
-        
-        {# Insert product widget after final section #}
-        {% if post.cross_promotion.product_id %}
-        <div class="cross-promotion-widget product-widget">
-            <h3 class="widget-title">{{ post.cross_promotion.product_title or 'Related Products' }}</h3>
-            <div class="widget-preview" data-widget-type="product" data-product-id="{{ post.cross_promotion.product_id }}">
-                <div class="widget-loading">Loading related products...</div>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-    {% endif %}
-
-    <footer class="article-footer">
-        {% if post.keywords %}
-        <div class="article-tags">
-            <strong>Tags:</strong>
-            {% for keyword in post.keywords %}
-            <span class="tag">{{ keyword }}</span>
+            </section>
             {% endfor %}
+            {% endif %}
         </div>
-        {% endif %}
-    </footer>
-</div>
+    </div>
 
-<!-- Cross-Promotion Widget JavaScript -->
-<script>
-    // Helper function to format price
-    function formatPrice(price) {
-        if (!price) return '£29.99';
-        
-        // Convert to number and format
-        const numPrice = parseFloat(price);
-        if (isNaN(numPrice)) return '£29.99';
-        
-        // Format to 2 decimal places only if not .00
-        const formatted = numPrice.toFixed(2);
-        if (formatted.endsWith('.00')) {
-            return `£${numPrice.toFixed(0)}`;
-        } else {
-            return `£${formatted}`;
+    <script>
+        function showRendered() {
+            document.getElementById('rendered-content').style.display = 'block';
+            document.getElementById('raw-html').style.display = 'none';
+            document.getElementById('rendered-btn').className = 'btn btn-primary';
+            document.getElementById('raw-btn').className = 'btn btn-secondary';
         }
-    }
-    
-    async function loadCategoryProducts(widget, categoryId, categoryTitle) {
-        try {
-            console.log(`Loading category products from clan.com API for category ${categoryId}...`);
-            
-            // Call clan.com API directly (no CORS issues on clan.com domain)
-            // Get the ENTIRE clan.com catalog for maximum variety and randomization
-            const response = await fetch(`https://clan.com/clan/api/getProducts?limit=5000`);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const apiData = await response.json();
-            console.log('Clan.com API response:', apiData);
-            
-            if (apiData.success && apiData.data && apiData.data.length > 0) {
-                // Map clan.com API response to widget format
-                const products = apiData.data.map(item => ({
-                    name: item[0],           // title
-                    sku: item[1],            // sku
-                    url: item[2],            // product_url
-                    description: item[3],    // description
-                    image_url: 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg', // Default image
-                    price: '43'              // Default price
-                }));
-                
-                console.log('Mapped products:', products);
-                
-                widget.innerHTML = `
-                    <div class="product-grid">
-                        ${products.map(product => `
-                            <a href="${product.url}" target="_blank" class="product-card">
-                                <div class="product-image">
-                                    <img src="${product.image_url}" alt="${product.name}">
-                                    <div class="product-description-overlay">
-                                        ${product.description ? product.description.replace(/<[^>]*>/g, '') : 'No description available'}
-                                    </div>
-                                </div>
-                                <h4>${product.name}</h4>
-                                <div class="price">${formatPrice(product.price)}</div>
-                                <div class="btn btn-primary btn-sm">View Product</div>
-                            </a>
-                        `).join('')}
-                    </div>
-                `;
-            } else {
-                widget.innerHTML = `
-                    <div class="widget-loading">No products found in this category.</div>
-                `;
-            }
-        } catch (error) {
-            console.error('Error loading category products from clan.com API:', error);
-            widget.innerHTML = `
-                <div class="widget-loading">Error loading products. Please try again.</div>
-            `;
+
+        function showRawHtml() {
+            document.getElementById('rendered-content').style.display = 'none';
+            document.getElementById('raw-html').style.display = 'block';
+            document.getElementById('rendered-btn').className = 'btn btn-secondary';
+            document.getElementById('raw-btn').className = 'btn btn-primary';
         }
-    }
-    
-    async function loadRelatedProducts(widget, productId, productTitle) {
-        try {
-            console.log(`Loading related products from clan.com API for product ${productId}...`);
-            
-            // Call clan.com API directly (no CORS issues on clan.com domain)
-            // Get the ENTIRE clan.com catalog for maximum variety and randomization
-            const response = await fetch(`https://clan.com/clan/api/getProducts?limit=5000`);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const apiData = await response.json();
-            console.log('Clan.com API response for related products:', apiData);
-            
-            if (apiData.success && apiData.data && apiData.data.length > 0) {
-                // Map clan.com API response to widget format
-                const products = apiData.data.map(item => ({
-                    name: item[0],           // title
-                    sku: item[1],            // sku
-                    url: item[2],            // product_url
-                    description: item[3],    // description
-                    image_url: 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg', // Default image
-                    price: '43'              // Default price
-                }));
-                
-                console.log('Mapped related products:', products);
-                
-                widget.innerHTML = `
-                    <div class="product-grid">
-                        ${products.map(product => `
-                            <a href="${product.url}" target="_blank" class="product-card">
-                                <div class="product-image">
-                                    <img src="${product.image_url}" alt="${product.name}">
-                                    <div class="product-description-overlay">
-                                        ${product.description ? product.description.replace(/<[^>]*>/g, '') : 'No description available'}
-                                    </div>
-                                </div>
-                                <h4>${product.name}</h4>
-                                <div class="price">${formatPrice(product.price)}</div>
-                                <div class="btn btn-primary btn-sm">View Product</div>
-                            </a>
-                        `).join('')}
-                </div>
-                `;
-                console.log('Related products rendered successfully');
-            } else {
-                console.log('No related products found, showing error message');
-                widget.innerHTML = `
-                    <div class="widget-loading">No related products found.</div>
-                `;
-            }
-        } catch (error) {
-            console.error('Error loading related products from clan.com API:', error);
-            widget.innerHTML = `
-                <div class="widget-loading">Error loading products: ${error.message}</div>
-            `;
-        }
-    }
-    
-    // Load widget data when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded, starting widget data load...');
-        loadWidgetData();
-    });
-    
-    async function loadWidgetData() {
-        console.log('loadWidgetData called');
-        const widgets = document.querySelectorAll('.widget-preview');
-        console.log(`Found ${widgets.length} widgets`);
-        
-        widgets.forEach(widget => {
-            const widgetType = widget.dataset.widgetType;
-            
-            if (widgetType === 'category') {
-                const categoryId = widget.dataset.categoryId;
-                const categoryTitle = widget.closest('.cross-promotion-widget').querySelector('.widget-title').textContent;
-                loadCategoryProducts(widget, categoryId, categoryTitle);
-            } else if (widgetType === 'product') {
-                const productId = widget.dataset.productId;
-                const productTitle = widget.closest('.cross-promotion-widget').querySelector('.widget-title').textContent;
-                loadRelatedProducts(widget, productId, productTitle);
-            }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showRendered();
         });
-    }
-</script>
+    </script>
+</body>
+</html>
