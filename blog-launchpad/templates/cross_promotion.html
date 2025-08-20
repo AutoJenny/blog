@@ -274,6 +274,22 @@
             color: #333;
         }
         
+        .current-config[data-widget-type="category"] {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            color: #1976d2;
+        }
+        
+        .current-config[data-widget-type="product"] {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            color: #2e7d32;
+        }
+        
+        .dragging {
+            opacity: 0.5;
+        }
+        
         .post-actions {
             display: flex;
             gap: 10px;
@@ -381,6 +397,25 @@
             border-radius: 6px;
             font-size: 0.9rem;
             color: #333;
+        }
+        
+        .drop-zone {
+            height: 20px;
+            margin: 5px 0;
+            border: 2px dashed #ced4da;
+            border-radius: 3px;
+            background: #f8f9fa;
+            transition: all 0.2s ease;
+        }
+        
+        .drop-zone.drag-over {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        
+        .drop-zone.valid-drop {
+            border-color: #28a745;
+            background: #d4edda;
         }
         
         .no-sections {
@@ -598,7 +633,7 @@
                                            onchange="updateCategoryTitle(${post.id})">
                                 </div>
                                 <div class="current-config" draggable="true" data-widget-type="category" data-post-id="${post.id}">
-                                    <strong>Current:</strong> ${post.cross_promotion?.category_id && categories.find(c => c.id == post.cross_promotion.category_id) ? categories.find(c => c.id == post.cross_promotion.category_id).name : 'No category selected'} 
+                                    <strong>X-promo category:</strong> ${post.cross_promotion?.category_id && categories.find(c => c.id == post.cross_promotion.category_id) ? categories.find(c => c.id == post.cross_promotion.category_id).name : 'No category selected'} 
                                     ${post.cross_promotion?.category_title ? `- "${post.cross_promotion.category_title}"` : ''}
                                 </div>
                             </div>
@@ -625,7 +660,7 @@
                                            onchange="updateProductTitle(${post.id})">
                                 </div>
                                 <div class="current-config" draggable="true" data-widget-type="product" data-post-id="${post.id}">
-                                    <strong>Current:</strong> ${post.cross_promotion?.product_id && products.find(p => p.id == post.cross_promotion.product_id) ? products.find(p => p.id == post.cross_promotion.product_id).name : 'No product selected'} 
+                                    <strong>X-promo product:</strong> ${post.cross_promotion?.product_id && products.find(p => p.id == post.cross_promotion.product_id) ? products.find(p => p.id == post.cross_promotion.product_id).name : 'No product selected'} 
                                     ${post.cross_promotion.product_title ? `- "${post.cross_promotion.product_title}"` : ''}
                                 </div>
                             </div>
@@ -634,9 +669,13 @@
                         <div class="right-column">
                             <div class="config-section">
                                 <h3><i class="fas fa-list"></i> Section Titles</h3>
-                                <div class="section-titles">
-                                    ${post.sections ? post.sections.map(section => `
+                                <div class="section-titles" id="section-titles-${post.id}">
+                                    ${post.sections ? post.sections.map((section, index) => `
+                                        <div class="drop-zone" data-section-index="${index}" data-post-id="${post.id}"></div>
                                         <div class="section-title">${section.section_heading || 'Untitled Section'}</div>
+                                        ${index === post.sections.length - 1 ? `
+                                            <div class="drop-zone" data-section-index="${post.sections.length}" data-post-id="${post.id}"></div>
+                                        ` : ''}
                                     `).join('') : '<div class="no-sections">No sections found</div>'}
                                 </div>
                             </div>
@@ -668,6 +707,67 @@
             `;
             
             container.innerHTML = postHTML;
+            
+            // Initialize drag and drop after rendering
+            initializeDragAndDrop(post.id);
+            
+            // Render positioned widgets after data is loaded (with a small delay to ensure DOM is ready)
+            setTimeout(() => renderPositionedWidgets(post.id), 100);
+        }
+        
+        function renderPositionedWidgets(postId) {
+            console.log('renderPositionedWidgets called for post:', postId);
+            const post = allPosts.find(p => p.id == postId);
+            if (!post || !post.cross_promotion) {
+                console.log('No post or cross_promotion data found');
+                return;
+            }
+            
+            console.log('Post cross_promotion data:', post.cross_promotion);
+            const sectionTitlesContainer = document.getElementById(`section-titles-${postId}`);
+            if (!sectionTitlesContainer) {
+                console.log('Section titles container not found');
+                return;
+            }
+            
+            // Render category widget if it has a position
+            if (post.cross_promotion.category_position !== null && post.cross_promotion.category_id) {
+                const categoryName = categories.find(c => c.id == post.cross_promotion.category_id)?.name || 'Unknown Category';
+                const categoryWidget = document.createElement('div');
+                categoryWidget.className = 'current-config';
+                categoryWidget.setAttribute('data-widget-type', 'category');
+                categoryWidget.setAttribute('data-post-id', postId);
+                categoryWidget.setAttribute('draggable', 'true');
+                categoryWidget.style.display = 'block';
+                categoryWidget.innerHTML = `<strong>X-promo category:</strong> ${categoryName}${post.cross_promotion.category_title ? ` - "${post.cross_promotion.category_title}"` : ''}`;
+                
+                // Insert before the drop zone at the specified position
+                const targetDropZone = sectionTitlesContainer.querySelector(`[data-section-index="${post.cross_promotion.category_position}"]`);
+                if (targetDropZone) {
+                    targetDropZone.parentNode.insertBefore(categoryWidget, targetDropZone);
+                }
+            }
+            
+            // Render product widget if it has a position
+            if (post.cross_promotion.product_position !== null && post.cross_promotion.product_id) {
+                const productName = products.find(p => p.id == post.cross_promotion.product_id)?.name || 'Unknown Product';
+                const productWidget = document.createElement('div');
+                productWidget.className = 'current-config';
+                productWidget.setAttribute('data-widget-type', 'product');
+                productWidget.setAttribute('data-post-id', postId);
+                productWidget.setAttribute('draggable', 'true');
+                productWidget.style.display = 'block';
+                productWidget.innerHTML = `<strong>X-promo product:</strong> ${productName}${post.cross_promotion.product_title ? ` - "${post.cross_promotion.product_title}"` : ''}`;
+                
+                // Insert before the drop zone at the specified position
+                const targetDropZone = sectionTitlesContainer.querySelector(`[data-section-index="${post.cross_promotion.product_position}"]`);
+                if (targetDropZone) {
+                    targetDropZone.parentNode.insertBefore(productWidget, targetDropZone);
+                }
+            }
+            
+            // Re-initialize drag and drop for the newly positioned widgets
+            initializeDragAndDrop(postId);
         }
         
         function renderPosts(posts) {
@@ -891,10 +991,7 @@
             if (post) {
                 post.cross_promotion = post.cross_promotion || {};
                 post.cross_promotion.category_id = categoryId;
-                if (!post.cross_promotion.category_title) {
-                    post.cross_promotion.category_title = categoryName;
-                    document.getElementById(`category-title-${postId}`).value = categoryName;
-                }
+
             }
             
             // Update the current display area
@@ -919,10 +1016,7 @@
             if (post) {
                 post.cross_promotion = post.cross_promotion || {};
                 post.cross_promotion.product_id = productId;
-                if (!post.cross_promotion.product_title) {
-                    post.cross_promotion.product_title = productName;
-                    document.getElementById(`product-title-${postId}`).value = productName;
-                }
+
             }
             
             // Update the current display area
@@ -973,7 +1067,7 @@
             const currentDisplay = document.querySelector(`[data-post-id="${postId}"] .config-section:first-child .current-config`);
             if (currentDisplay) {
                 const categoryTitle = document.getElementById(`category-title-${postId}`).value;
-                currentDisplay.innerHTML = `<strong>Current:</strong> ${categoryName}${categoryTitle ? ` - "${categoryTitle}"` : ''}`;
+                currentDisplay.innerHTML = `<strong>X-promo category:</strong> ${categoryName}${categoryTitle ? ` - "${categoryTitle}"` : ''}`;
             }
         }
         
@@ -981,7 +1075,7 @@
             const currentDisplay = document.querySelector(`[data-post-id="${postId}"] .config-section:nth-child(2) .current-config`);
             if (currentDisplay) {
                 const productTitle = document.getElementById(`product-title-${postId}`).value;
-                currentDisplay.innerHTML = `<strong>Current:</strong> ${productName}${productTitle ? ` - "${productTitle}"` : ''}`;
+                currentDisplay.innerHTML = `<strong>X-promo product:</strong> ${productName}${productTitle ? ` - "${productTitle}"` : ''}`;
             }
         }
         
@@ -1039,7 +1133,9 @@
                 category_id: post.cross_promotion.category_id || null,
                 category_title: post.cross_promotion.category_title || null,
                 product_id: post.cross_promotion.product_id || null,
-                product_title: post.cross_promotion.product_title || null
+                product_title: post.cross_promotion.product_title || null,
+                category_position: post.cross_promotion.category_position || null,
+                product_position: post.cross_promotion.product_position || null
             };
 
             fetch(`/api/cross-promotion/${postId}`, {
@@ -1061,6 +1157,90 @@
                 console.error('Error:', error);
                 alert('Error saving settings. Please try again.');
             });
+        }
+        
+        function initializeDragAndDrop(postId) {
+            const draggableElements = document.querySelectorAll(`[data-post-id="${postId}"][draggable="true"]`);
+            const dropZones = document.querySelectorAll(`[data-post-id="${postId}"] .drop-zone`);
+            
+            draggableElements.forEach(element => {
+                element.addEventListener('dragstart', handleDragStart);
+                element.addEventListener('dragend', handleDragEnd);
+            });
+            
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('dragenter', handleDragEnter);
+                zone.addEventListener('dragleave', handleDragLeave);
+                zone.addEventListener('drop', handleDrop);
+            });
+        }
+        
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.outerHTML);
+            e.target.classList.add('dragging');
+        }
+        
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+        
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.target.classList.add('drag-over');
+        }
+        
+        function handleDragLeave(e) {
+            e.target.classList.remove('drag-over');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            const draggedHTML = e.dataTransfer.getData('text/plain');
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = draggedHTML;
+            const draggedElement = tempDiv.firstElementChild;
+            
+            const postId = e.target.getAttribute('data-post-id');
+            const sectionIndex = e.target.getAttribute('data-section-index');
+            const widgetType = draggedElement.getAttribute('data-widget-type');
+            
+            // Remove any existing positioned widget of the same type to prevent duplicates
+            const sectionTitlesContainer = document.getElementById(`section-titles-${postId}`);
+            if (sectionTitlesContainer) {
+                const existingWidget = sectionTitlesContainer.querySelector(`[data-widget-type="${widgetType}"]`);
+                if (existingWidget) {
+                    existingWidget.remove();
+                }
+            }
+            
+            // Insert the dragged element before this drop zone
+            e.target.parentNode.insertBefore(draggedElement, e.target);
+            
+            // Calculate and save the position
+            const post = allPosts.find(p => p.id == postId);
+            if (post && post.cross_promotion) {
+                if (widgetType === 'category') {
+                    post.cross_promotion.category_position = parseInt(sectionIndex);
+                } else if (widgetType === 'product') {
+                    post.cross_promotion.product_position = parseInt(sectionIndex);
+                }
+            }
+            
+            // Hide the original widget in the left column
+            const originalWidget = document.querySelector(`[data-post-id="${postId}"] .config-section:${widgetType === 'category' ? 'first-child' : 'nth-child(2)'} .current-config`);
+            if (originalWidget) {
+                originalWidget.style.display = 'none';
+            }
+            
+            // Reinitialize drag and drop for the new element
+            initializeDragAndDrop(postId);
         }
     </script>
 </body>
