@@ -36,14 +36,14 @@
         
         {% if section.image and section.image.path and not section.image.placeholder %}
         <figure class="section-image">
-            <a title="{{ section.image.caption or section.image.alt_text or 'Section image' }}" 
+            <a title="{{ section.image_captions or section.image.alt_text or 'Section image' }}" 
                href="{{ section.image.path }}" 
                rel="lightbox[mpblog_{{ post.id }}]" 
                target="_blank">
                 <img alt="{{ section.image.alt_text }}" src="{{ section.image.path }}">
             </a>
-            {% if section.image.caption %}
-            <figcaption>{{ section.image.caption }}</figcaption>
+            {% if section.image_captions %}
+            <figcaption>{{ section.image_captions }}</figcaption>
             {% endif %}
         </figure>
         {% endif %}

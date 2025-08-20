@@ -398,11 +398,12 @@ def get_post_sections_with_images(post_id):
                 section_dict['image'] = {
                     'path': image_path,
                     'alt_text': section.get('image_captions') or f"Image for {section.get('section_heading', 'section')}",
-                    'caption': section.get('image_captions'),
                     'title': section.get('image_title'),
                     'width': section.get('image_width'),
                     'height': section.get('image_height')
                 }
+                # Also set the caption directly on the section for template compatibility
+                section_dict['image_captions'] = section.get('image_captions')
             elif section.get('image_id'):
                 # Fallback to legacy image_id system
                 cur.execute("""
@@ -411,16 +412,19 @@ def get_post_sections_with_images(post_id):
                 image = cur.fetchone()
                 if image:
                     section_dict['image'] = dict(image)
+                    # Also set the caption directly on the section for template compatibility
+                    section_dict['image_captions'] = section.get('image_captions')
             elif section.get('generated_image_url'):
                 # Fallback to generated_image_url
                 section_dict['image'] = {
                     'path': section['generated_image_url'],
                     'alt_text': section.get('image_captions') or 'Section image',
-                    'caption': section.get('image_captions'),
                     'title': section.get('image_title'),
                     'width': section.get('image_width'),
                     'height': section.get('image_height')
                 }
+                # Also set the caption directly on the section for template compatibility
+                section_dict['image_captions'] = section.get('image_captions')
             else:
                 # No image found - provide placeholder info
                 section_dict['image'] = {

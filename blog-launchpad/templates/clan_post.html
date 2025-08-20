@@ -158,8 +158,8 @@
                          src="{{ section.image.path }}"
                          {% if section.image.width %}width="{{ section.image.width }}"{% endif %}
                          {% if section.image.height %}height="{{ section.image.height }}"{% endif %}>
-                    {% if section.image.caption %}
-                    <figcaption><em>{{ section.image.caption }}</em></figcaption>
+                    {% if section.image_captions %}
+                    <figcaption><em>{{ section.image_captions }}</em></figcaption>
                     {% endif %}
                 </figure>
                 {% endif %}

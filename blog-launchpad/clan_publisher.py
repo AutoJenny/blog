@@ -619,19 +619,10 @@ class ClanPublisher:
             logger.info(f"Post header_image_id: {full_post_data.get('header_image_id')}")
             logger.info(f"Post header_image: {full_post_data.get('header_image')}")
             
-            # Load sections from DB so we can attach images and upload them
-            cursor.execute('SELECT id, section_heading, polished, draft FROM post_section WHERE post_id = %s ORDER BY id', (post['id'],))
-            db_sections = cursor.fetchall()
-            sections_list = []
-            for row in db_sections:
-                section_dict = {
-                    'id': row[0],
-                    'section_heading': row[1],
-                    'polished': row[2],
-                    'draft': row[3]
-                }
-                sections_list.append(section_dict)
-            logger.info(f"Loaded {len(sections_list)} sections from DB")
+            # Load sections from DB using the same function as the local route
+            from app import get_post_sections_with_images
+            sections_list = get_post_sections_with_images(post['id'])
+            logger.info(f"Loaded {len(sections_list)} sections from DB using get_post_sections_with_images")
             
             # Step 0: Finding image paths from file system
             logger.info("Step 0: Finding image paths from file system...")
