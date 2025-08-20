@@ -88,7 +88,34 @@ def index():
 @app.route('/cross-promotion')
 def cross_promotion():
     """Cross-promotion management page."""
-    return render_template('cross_promotion.html')
+    # Get all posts (not deleted) ordered by most recently modified
+    with get_db_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute("""
+            SELECT p.id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug,
+                   pd.idea_seed, pd.intro_blurb, pd.main_title,
+                   p.cross_promotion_category_id, p.cross_promotion_category_title,
+                   p.cross_promotion_product_id, p.cross_promotion_product_title
+            FROM post p
+            LEFT JOIN post_development pd ON pd.post_id = p.id
+            WHERE p.status != 'deleted'
+            ORDER BY p.updated_at DESC NULLS LAST, p.created_at DESC
+        """)
+        posts = [dict(row) for row in cur.fetchall()]
+        
+        # Add cross_promotion data structure to each post
+        for post in posts:
+            post['cross_promotion'] = {
+                'category_id': post.get('cross_promotion_category_id'),
+                'category_title': post.get('cross_promotion_category_title'),
+                'product_id': post.get('cross_promotion_product_id'),
+                'product_title': post.get('cross_promotion_product_title')
+            }
+    
+    # Get the first (most recently modified) post as default
+    default_post = posts[0] if posts else None
+    
+    return render_template('cross_promotion.html', posts=posts, default_post=default_post)
 
 @app.route('/publishing')
 def publishing():

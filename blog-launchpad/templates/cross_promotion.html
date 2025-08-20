@@ -295,6 +295,40 @@
             color: #ddd;
         }
         
+        .post-selector {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .selector-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .selector-group label {
+            font-weight: 500;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        .selector-group select {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: white;
+        }
+        
+        .selector-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        
         .search-box {
             flex: 1;
             max-width: 300px;
@@ -351,29 +385,21 @@
             </div>
         </div>
         
-        <div class="filters">
-            <div class="filter-row">
-                <div class="search-box">
-                    <label for="search-posts">Search Posts</label>
-                    <input type="text" id="search-posts" placeholder="Search by title..." onkeyup="filterPosts()">
-                </div>
-                <div class="filter-group">
-                    <label for="status-filter">Status</label>
-                    <select id="status-filter" onchange="filterPosts()">
-                        <option value="">All Posts</option>
-                        <option value="configured">Configured</option>
-                        <option value="not-configured">Not Configured</option>
-                        <option value="partial">Partially Configured</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="sort-by">Sort By</label>
-                    <select id="sort-by" onchange="filterPosts()">
-                        <option value="created">Date Created</option>
-                        <option value="title">Title</option>
-                        <option value="status">Status</option>
-                    </select>
-                </div>
+        <div class="post-selector">
+            <div class="selector-group">
+                <label for="post-select">Select Post</label>
+                <select id="post-select" onchange="selectPost()">
+                    {% for post in posts %}
+                    <option value="{{ post.id }}" 
+                            {% if post.id == default_post.id %}selected{% endif %}
+                            data-category-id="{{ post.cross_promotion_category_id or '' }}"
+                            data-category-title="{{ post.cross_promotion_category_title or '' }}"
+                            data-product-id="{{ post.cross_promotion_product_id or '' }}"
+                            data-product-title="{{ post.cross_promotion_product_title or '' }}">
+                        {{ post.title or post.main_title or post.idea_seed or 'Untitled Post' }}
+                    </option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
         
@@ -386,7 +412,8 @@
     </div>
     
     <script>
-        let allPosts = [];
+        // Server-side data
+        let allPosts = {{ posts|tojson|safe }};
         let categories = [];
         let products = [];
         
@@ -397,70 +424,64 @@
         
         async function loadData() {
             try {
-                // Load posts, categories, and products in parallel
-                const [postsResponse, categoriesResponse, productsResponse] = await Promise.all([
-                    fetch('/api/posts'),
+                // Load categories and products in parallel
+                const [categoriesResponse, productsResponse] = await Promise.all([
                     fetch('/api/clan/categories'),
                     fetch('/api/clan/products')
                 ]);
                 
-                allPosts = await postsResponse.json();
                 categories = await categoriesResponse.json();
                 products = await productsResponse.json();
                 
-                // Load cross-promotion data for each post
-                await loadCrossPromotionData();
-                
-                renderPosts(allPosts);
+                // Posts are now loaded server-side, so we can render the default post
+                if (allPosts.length > 0) {
+                    renderSelectedPost(allPosts[0]);
+                }
             } catch (error) {
                 console.error('Error loading data:', error);
                 document.getElementById('posts-container').innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-exclamation-triangle"></i>
                         <h3>Error Loading Data</h3>
-                        <p>Unable to load posts and configuration data. Please try refreshing the page.</p>
+                        <p>Unable to load categories and products data. Please try refreshing the page.</p>
                     </div>
                 `;
             }
         }
         
-        async function loadCrossPromotionData() {
-            for (let post of allPosts) {
-                try {
-                    const response = await fetch(`/api/cross-promotion/${post.id}`);
-                    const crossPromotion = await response.json();
-                    post.cross_promotion = crossPromotion;
-                } catch (error) {
-                    console.error(`Error loading cross-promotion for post ${post.id}:`, error);
-                    post.cross_promotion = {
-                        category_id: null,
-                        category_title: null,
-                        product_id: null,
-                        product_title: null
-                    };
-                }
-            }
+
+        
+        function selectPost() {
+            const postSelect = document.getElementById('post-select');
+            const selectedPostId = postSelect.value;
+            
+            // Get the selected post data
+            const selectedPost = allPosts.find(post => post.id == selectedPostId);
+            if (!selectedPost) return;
+            
+            // Update the post display
+            renderSelectedPost(selectedPost);
         }
         
-        function renderPosts(posts) {
+        function renderSelectedPost(post) {
             const container = document.getElementById('posts-container');
             
-            if (posts.length === 0) {
+            if (!post) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <i class="fas fa-file-alt"></i>
-                        <h3>No posts found</h3>
-                        <p>No posts match your current filters.</p>
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Post Not Found</h3>
+                        <p>The selected post could not be found.</p>
                     </div>
                 `;
                 return;
             }
             
-            const postsHTML = posts.map(post => `
+            const postHTML = `
                 <div class="post-card" data-post-id="${post.id}">
                     <div class="post-header">
                         <div>
-                            <div class="post-title">${post.title || post.main_title || 'Untitled Post'}</div>
+                            <div class="post-title">${post.title || post.main_title || post.idea_seed || 'Untitled Post'}</div>
                             <div class="post-meta">
                                 ID: ${post.id} | Created: ${new Date(post.created_at).toLocaleDateString()}
                                 ${post.status ? ` | Status: ${post.status}` : ''}
@@ -545,9 +566,16 @@
                         </a>
                     </div>
                 </div>
-            `).join('');
+            `;
             
-            container.innerHTML = postsHTML;
+            container.innerHTML = postHTML;
+        }
+        
+        function renderPosts(posts) {
+            // This function is now deprecated, use renderSelectedPost instead
+            if (posts.length > 0) {
+                renderSelectedPost(posts[0]);
+            }
         }
         
         function getStatusClass(post) {
