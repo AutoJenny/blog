@@ -7,6 +7,21 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
         .publishing-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -22,6 +37,18 @@
         }
         .post-card:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .post-card.published {
+            background: linear-gradient(135deg, #f0fff4 0%, #e6fffa 100%);
+            border-color: #9ae6b4;
+        }
+        .post-card.error {
+            background: linear-gradient(135deg, #fff5f5 0%, #fef5e7 100%);
+            border-color: #fed7d7;
+        }
+        .post-card.publishing {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-color: #fde68a;
         }
         .status-badge {
             font-size: 0.85rem;
@@ -175,9 +202,45 @@
             margin-top: 0.5rem;
             color: #22543d;
         }
+        .update-button-container {
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
-<body class="bg-light">
+<body class="bg-dark">
+    <!-- Header -->
+    <header class="bg-dark shadow-lg border-bottom py-3">
+        <nav class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <!-- Logo and Title -->
+                    <a href="/" class="d-flex align-items-center text-white text-decoration-none me-4">
+                        <img src="http://localhost:5000/static/images/site/brand-logo.png" alt="BlogForge Logo" class="rounded-circle shadow me-2" style="background:#23273a; width: 40px; height: 40px;" />
+                        <span class="fw-bold text-white fs-3">BlogForge</span>
+                    </a>
+                </div>
+                <div class="d-flex align-items-center">
+                    <!-- Modules Dropdown -->
+                    <div class="dropdown me-3">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" id="modulesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-cubes me-1"></i> Modules
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="modulesDropdown">
+                            <li><a class="dropdown-item" href="/db/"><i class="fas fa-database text-purple me-2"></i>Database</a></li>
+                            <li><a class="dropdown-item" href="/llm/"><i class="fas fa-brain text-pink me-2"></i>AI</a></li>
+                            <li><a class="dropdown-item" href="/llm/images"><i class="fas fa-image text-info me-2"></i>Images</a></li>
+                            <li><a class="dropdown-item" href="/servers/"><i class="fas fa-server text-success me-2"></i>Servers</a></li>
+                        </ul>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <a href="/posts" class="btn btn-link text-white text-decoration-none me-3">Posts</a>
+                        <a href="/workflow/" class="btn btn-link text-white text-decoration-none">Workflow</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
@@ -197,21 +260,17 @@
     <div class="publishing-header">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-md-8">
+                <div class="col-12">
                     <h1 class="mb-2">
                         <i class="fas fa-share-alt me-3"></i>Publishing Management
                     </h1>
                     <p class="mb-0 opacity-75">Manage and monitor blog post publishing to Clan.com</p>
                 </div>
-                <div class="col-md-4 text-end">
-                    <img src="https://www.clan.com/skin/frontend/default/clan/images/logo.png" alt="Clan.com" class="clan-logo">
-                    <span class="fs-5">→ Clan.com</span>
-                </div>
             </div>
         </div>
     </div>
 
-    <div class="container">
+    <div class="container text-white">
         <!-- Publishing Statistics -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -236,38 +295,6 @@
                 <div class="stats-card">
                     <div class="stats-number text-danger" id="error-posts">1</div>
                     <div class="text-muted">Errors</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bulk Actions -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <i class="fas fa-tasks me-2"></i>Bulk Actions
-                        </h5>
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="select-all">
-                                    <label class="form-check-label" for="select-all">Select All</label>
-                                </div>
-                                <span class="text-muted ms-3">
-                                    <span id="selected-count">0</span> posts selected
-                                </span>
-                            </div>
-                            <div class="col-md-6 text-end">
-                                <button class="btn btn-outline-primary me-2" id="bulk-publish" disabled>
-                                    <i class="fas fa-upload me-2"></i>Publish Selected
-                                </button>
-                                <button class="btn btn-outline-secondary" id="bulk-sync" disabled>
-                                    <i class="fas fa-sync me-2"></i>Sync Status
-                                </button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -441,68 +468,6 @@
             loadPosts();
         }
 
-        // Initialize event listeners (called after DOM is loaded)
-        function initializeEventListeners() {
-            // Checkbox handling
-            const selectAllCheckbox = document.getElementById('select-all');
-            if (selectAllCheckbox) {
-                selectAllCheckbox.addEventListener('change', function() {
-                    const checkboxes = document.querySelectorAll('.post-checkbox:not([disabled])');
-                    checkboxes.forEach(cb => cb.checked = this.checked);
-                    updateSelectionCount();
-                });
-            }
-
-            // Individual checkbox handling (will be updated when posts are rendered)
-            document.querySelectorAll('.post-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', updateSelectionCount);
-            });
-        }
-
-        function updateSelectionCount() {
-            const selectedCount = document.querySelectorAll('.post-checkbox:checked').length;
-            document.getElementById('selected-count').textContent = selectedCount;
-            
-            const bulkButtons = document.querySelectorAll('#bulk-publish, #bulk-sync');
-            bulkButtons.forEach(btn => btn.disabled = selectedCount === 0);
-        }
-
-        // Initialize bulk action listeners (called after DOM is loaded)
-        function initializeBulkActions() {
-            const bulkPublishBtn = document.getElementById('bulk-publish');
-            if (bulkPublishBtn) {
-                bulkPublishBtn.addEventListener('click', async function() {
-                    const selectedPosts = Array.from(document.querySelectorAll('.post-checkbox:checked'))
-                        .map(cb => cb.value);
-                    console.log('Bulk publishing posts:', selectedPosts);
-                    showToast(`Publishing ${selectedPosts.length} posts to Clan.com...`, 'info');
-                    
-                    // Actually publish each selected post
-                    for (const postId of selectedPosts) {
-                        try {
-                            await publishPost(postId);
-                            // Small delay between posts to avoid overwhelming the API
-                            await new Promise(resolve => setTimeout(resolve, 1000));
-                        } catch (error) {
-                            console.error(`Failed to publish post ${postId}:`, error);
-                        }
-                    }
-                    
-                    showToast(`Bulk publishing completed for ${selectedPosts.length} posts`, 'success');
-                });
-            }
-
-            const bulkSyncBtn = document.getElementById('bulk-sync');
-            if (bulkSyncBtn) {
-                bulkSyncBtn.addEventListener('click', function() {
-                    const selectedPosts = Array.from(document.querySelectorAll('.post-checkbox:checked'))
-                        .map(cb => cb.value);
-                    console.log('Bulk syncing posts:', selectedPosts);
-                    showToast(`Syncing status for ${selectedPosts.length} posts...`, 'info');
-                });
-            }
-        }
-
         // Toast notification system
         function showToast(message, type = 'info') {
             const toastContainer = getOrCreateToastContainer();
@@ -569,8 +534,6 @@
             }
         }
 
-
-
         function updateStatistics() {
             publishingStats.total = posts.length;
             publishingStats.published = posts.filter(p => p.clan_status === 'published').length;
@@ -614,14 +577,11 @@
                     container.appendChild(postCard);
                 });
             }
-            
-            // Update selection count after rendering
-            updateSelectionCount();
         }
 
         function createPostCard(post) {
             const div = document.createElement('div');
-            div.className = 'post-card';
+            div.className = `post-card ${post.clan_status}`;
             div.setAttribute('data-post-id', post.id);
             
             const statusInfo = getStatusInfo(post);
@@ -633,10 +593,7 @@
             });
             
             div.innerHTML = `
-                                <div class="row align-items-center">
-                    <div class="col-md-1">
-                        <input class="form-check-input post-checkbox" type="checkbox" value="${post.id}" ${post.clan_status === 'publishing' ? 'disabled' : ''}>
-                    </div>
+                <div class="row align-items-center">
                     <div class="col-md-5">
                         <h5 class="mb-1">${post.title || post.provisional_title || post.idea_seed || 'Untitled Post'}</h5>
                         <p class="text-muted mb-1">
@@ -646,14 +603,15 @@
                             </small>
                         </p>
                         <div class="mb-2">
-                            <span class="badge bg-secondary me-1">${post.status || 'draft'}</span>
+                            ${post.clan_status === 'published' ? '<span class="status-badge status-published"><i class="fas fa-check me-1"></i>Published</span>' : '<span class="badge bg-secondary me-1">' + (post.status || 'draft') + '</span>'}
                             ${post.id ? '<span class="badge bg-secondary me-1">ID: ' + post.id + '</span>' : ''}
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <span class="status-badge ${statusInfo.class}">
-                            ${statusInfo.icon} ${statusInfo.text}
-                        </span>
+                    <div class="col-md-3">
+                        ${post.clan_status === 'published' ? 
+                            '<div class="update-button-container"><button class="btn publish-btn"><i class="fas fa-sync me-1"></i>Update</button></div>' : 
+                            '<span class="status-badge ' + statusInfo.class + '">' + statusInfo.icon + ' ' + statusInfo.text + '</span>'
+                        }
                         ${statusInfo.message ? `<div class="${statusInfo.messageClass} mt-2">${statusInfo.message}</div>` : ''}
                     </div>
                     <div class="col-md-4 text-end">
@@ -679,11 +637,6 @@
             const previewBtn = div.querySelector('.view-btn');
             if (previewBtn) {
                 previewBtn.addEventListener('click', () => previewPost(post.id));
-            }
-            
-            const checkbox = div.querySelector('.post-checkbox');
-            if (checkbox) {
-                checkbox.addEventListener('change', updateSelectionCount);
             }
             
             return div;
@@ -775,9 +728,6 @@
             } else if (post.clan_status === 'published') {
                 return `
                     <div class="action-buttons-container">
-                        <button class="btn publish-btn">
-                            <i class="fas fa-sync me-1"></i>Update
-                        </button>
                         <div class="view-buttons-group">
                             <button class="btn view-btn">
                                 <i class="fas fa-eye me-1"></i>Preview
@@ -793,7 +743,7 @@
                         <button class="btn publish-btn">
                             <i class="fas fa-upload me-1"></i>Publish
                         </button>
-                        <div class="view-buttons-container">
+                        <div class="view-buttons-group">
                             <button class="btn view-btn">
                                 <i class="fas fa-eye me-1"></i>Preview
                             </button>
@@ -807,10 +757,7 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            initializeEventListeners();
-            initializeBulkActions();
             loadPosts();
-            updateSelectionCount();
         });
     </script>
 </body>
