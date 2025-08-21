@@ -558,6 +558,61 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Content Process Selection -->
+                    <div class="spec-card mt-3">
+                        <div class="accordion" id="contentProcessSelectionAccordion">
+                            <div class="accordion-item bg-dark border-secondary">
+                                <h2 class="accordion-header" id="contentProcessSelectionHeader">
+                                    <button class="accordion-button bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#contentProcessSelectionCollapse" aria-expanded="true" aria-controls="contentProcessSelectionCollapse">
+                                        <i class="fas fa-cogs me-2"></i>Content Process Selection
+                                    </button>
+                                </h2>
+                                <div id="contentProcessSelectionCollapse" class="accordion-collapse collapse show" aria-labelledby="contentProcessSelectionHeader" data-bs-parent="#contentProcessSelectionAccordion">
+                                    <div class="accordion-body text-white">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="spec-item">
+                                                    <span class="spec-label">Select Content Process:</span>
+                                                    <div class="mt-2">
+                                                        <select id="content-process-selector" class="form-select bg-dark text-white border-secondary" style="max-width: 300px;">
+                                                            <option value="facebook_feed_post" selected>📝 Feed Post - Standard text + image posts</option>
+                                                            <option value="facebook_story_post">📱 Story Post - Short-form, visual content</option>
+                                                            <option value="facebook_reels_caption">🎬 Reels Caption - Video content with captions</option>
+                                                            <option value="facebook_group_post">👥 Group Post - Community-focused content</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="spec-item mt-3">
+                                                    <span class="spec-label">Process Description:</span>
+                                                    <div id="process-description" class="mt-2 p-3 bg-secondary rounded">
+                                                        <strong>Feed Post:</strong> Standard Facebook text + image posts with conversational tone. Optimized for engagement and sharing with character limits up to 63,206 characters.
+                                                    </div>
+                                                </div>
+                                                <div class="spec-item mt-3">
+                                                    <span class="spec-label">Current Configuration:</span>
+                                                    <div id="process-config-preview" class="mt-2 p-3 bg-secondary rounded">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <strong>LLM Prompts:</strong> Configured<br>
+                                                                <strong>Constraints:</strong> 63,206 characters max<br>
+                                                                <strong>Style Guide:</strong> Conversational, engaging
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <strong>Hashtag Strategy:</strong> 2-3 relevant tags<br>
+                                                                <strong>CTA Examples:</strong> Multiple options<br>
+                                                                <strong>Status:</strong> ✅ Ready for use
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -898,6 +953,89 @@
                     }
                 }, 5000);
             }
+
+            // Content Process Selection Functionality
+            const processSelector = document.getElementById('content-process-selector');
+            const processDescription = document.getElementById('process-description');
+            const processConfigPreview = document.getElementById('process-config-preview');
+
+            // Process configuration data
+            const processConfigs = {
+                'facebook_feed_post': {
+                    description: '<strong>Feed Post:</strong> Standard Facebook text + image posts with conversational tone. Optimized for engagement and sharing with character limits up to 63,206 characters.',
+                    config: {
+                        llm_prompts: 'Configured',
+                        constraints: '63,206 characters max',
+                        style_guide: 'Conversational, engaging',
+                        hashtag_strategy: '2-3 relevant tags',
+                        cta_examples: 'Multiple options',
+                        status: '✅ Ready for use'
+                    }
+                },
+                'facebook_story_post': {
+                    description: '<strong>Story Post:</strong> Short-form, visual content optimized for Facebook Stories. Focuses on engaging visuals with concise text under 100 characters.',
+                    config: {
+                        llm_prompts: 'Configured',
+                        constraints: '100 characters max',
+                        style_guide: 'Visual, engaging, concise',
+                        hashtag_strategy: '1-2 very relevant tags',
+                        cta_examples: 'Swipe up, tap for more',
+                        status: '✅ Ready for use'
+                    }
+                },
+                'facebook_reels_caption': {
+                    description: '<strong>Reels Caption:</strong> Video content captions optimized for Facebook Reels. Trending language with engaging calls-to-action under 150 characters.',
+                    config: {
+                        llm_prompts: 'Configured',
+                        constraints: '150 characters max',
+                        style_guide: 'Trending, energetic, engaging',
+                        hashtag_strategy: '2-3 trending tags',
+                        cta_examples: 'Follow, like, comment',
+                        status: '✅ Ready for use'
+                    }
+                },
+                'facebook_group_post': {
+                    description: '<strong>Group Post:</strong> Community-focused content for Facebook Groups. Encourages discussion and community engagement with conversational tone.',
+                    config: {
+                        llm_prompts: 'Configured',
+                        constraints: '63,206 characters max',
+                        style_guide: 'Community-oriented, discussion-focused',
+                        hashtag_strategy: '2-3 relevant tags',
+                        cta_examples: 'What do you think? Share your thoughts',
+                        status: '✅ Ready for use'
+                    }
+                }
+            };
+
+            // Handle process selection change
+            processSelector.addEventListener('change', function() {
+                const selectedProcess = this.value;
+                const config = processConfigs[selectedProcess];
+                
+                if (config) {
+                    // Update description
+                    processDescription.innerHTML = config.description;
+                    
+                    // Update configuration preview
+                    processConfigPreview.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>LLM Prompts:</strong> ${config.config.llm_prompts}<br>
+                                <strong>Constraints:</strong> ${config.config.constraints}<br>
+                                <strong>Style Guide:</strong> ${config.config.style_guide}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Hashtag Strategy:</strong> ${config.config.hashtag_strategy}<br>
+                                <strong>CTA Examples:</strong> ${config.config.cta_examples}<br>
+                                <strong>Status:</strong> ${config.config.status}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            // Initialize with default process
+            processSelector.dispatchEvent(new Event('change'));
         });
     </script>
 </body>
