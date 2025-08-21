@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Settings - Social Media Syndication - Blog Launchpad</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/launchpad.css?v=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        .platform-tab {
+            background-color: #dd6707 !important;
+        }
+        div.platform-tab.status-undeveloped {
+            background-color: #000000 !important;
+        }
+        div.platform-tab.status-developed {
+            background-color: #f8f9fa !important;
+        }
+        div.platform-tab.status-active {
+            background-color: #ffffff !important;
+        }
+    </style>
+</head>
+<body class="bg-dark">
+    <!-- Header -->
+    <header class="bg-dark shadow-lg border-bottom py-3">
+        <nav class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <!-- Logo and Title -->
+                    <a href="http://localhost:5000/" class="d-flex align-items-center text-white text-decoration-none me-4">
+                        <img src="http://localhost:5000/static/images/site/brand-logo.png" alt="BlogForge Logo" class="rounded-circle shadow me-2" style="background:#23273a; width: 40px; height: 40px;" />
+                        <span class="fw-bold text-white fs-3">BlogForge</span>
+                    </a>
+                </div>
+                <div class="d-flex align-items-center">
+                    <!-- Modules Dropdown -->
+                    <div class="dropdown me-3">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" id="modulesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-cubes me-1"></i> Modules
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="modulesDropdown">
+                            <li><a class="dropdown-item" href="http://localhost:5000/db/"><i class="fas fa-cogs text-purple me-2"></i>Database</a></li>
+                            <li><a class="dropdown-item" href="http://localhost:5000/llm/"><i class="fas fa-brain text-pink me-2"></i>AI</a></li>
+                            <li><a class="dropdown-item" href="http://localhost:5000/llm/images"><i class="fas fa-image text-info me-2"></i>Images</a></li>
+                            <li><a class="dropdown-item" href="http://localhost:5000/servers/"><i class="fas fa-server text-success me-2"></i>Servers</a></li>
+                        </ul>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <a href="http://localhost:5000/posts" class="btn btn-link text-white text-decoration-none me-3">Posts</a>
+                        <a href="http://localhost:5000/workflow/" class="btn btn-link text-white text-decoration-none">Workflow</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-rocket me-2"></i>Blog Launchpad
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Dashboard</a>
+                <a class="nav-link" href="/cross-promotion">Cross Promotion</a>
+                <a class="nav-link" href="/publishing">Publishing</a>
+                <a class="nav-link active" href="/syndication">Syndication</a>
+                <a class="nav-link" href="/test-api">API Test</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Syndication Header -->
+    <div class="publishing-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <h2 class="mb-2">
+                        <i class="fab fa-facebook me-3"></i>Facebook Platform Settings
+                    </h2>
+                    <p class="mb-0 opacity-75">Priority 1 - Text posts with images</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            {% include 'includes/platform_sidebar.html' %}
+            
+            <!-- Right Content Area -->
+            <div class="col-md-9">
+                <div class="platform-content">
+                    <!-- Content Specifications -->
+                    <div class="spec-card">
+                        <div class="spec-header">
+                            <h5 class="text-white mb-0"><i class="fas fa-file-alt me-2"></i>Content Specifications</h5>
+                        </div>
+                        <div class="spec-body text-white">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Content Type:</strong> Text posts with images</p>
+                                    <p><strong>Character Target:</strong> ≤200 characters</p>
+                                    <p><strong>Style/Tone:</strong> Conversational, engaging</p>
+                                    <p><strong>Posting Frequency:</strong> 1 section per day</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Optimal Timing:</strong> 09:00 AM</p>
+                                    <p><strong>Priority Level:</strong> 1 (Highest)</p>
+                                    <p><strong>Example CTA:</strong> "Discover more in the full article → [link]"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Requirements -->
+                    <div class="spec-card">
+                        <div class="spec-header">
+                            <h5 class="text-white mb-0"><i class="fas fa-image me-2"></i>Image Requirements</h5>
+                        </div>
+                        <div class="spec-body text-white">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Dimensions:</strong> 1200×630 (landscape)</p>
+                                    <p><strong>Aspect Ratio:</strong> 1.91:1</p>
+                                    <p><strong>Format:</strong> JPG, PNG</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>File Size:</strong> Max 4MB</p>
+                                    <p><strong>Quality:</strong> High resolution</p>
+                                    <p><strong>Style:</strong> Engaging, shareable</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Adaptation -->
+                    <div class="spec-card">
+                        <div class="spec-header">
+                            <h5 class="text-white mb-0"><i class="fas fa-magic me-2"></i>Content Adaptation</h5>
+                        </div>
+                        <div class="spec-body text-white">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Text Processing:</strong> Auto-truncation to ≤200 characters</p>
+                                    <p><strong>Tone Adjustment:</strong> Conversational, engaging</p>
+                                    <p><strong>Hashtag Strategy:</strong> 3-5 relevant hashtags</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>CTA Generation:</strong> Platform-specific call-to-action</p>
+                                    <p><strong>Content Focus:</strong> Scottish heritage, storytelling</p>
+                                    <p><strong>Engagement:</strong> Encourage comments and shares</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API Integration -->
+                    <div class="spec-card">
+                        <div class="spec-header">
+                            <h5 class="text-white mb-0"><i class="fas fa-code me-2"></i>API Integration</h5>
+                        </div>
+                        <div class="spec-body text-white">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>API:</strong> Facebook Graph API</p>
+                                    <p><strong>Authentication:</strong> OAuth 2.0</p>
+                                    <p><strong>Rate Limits:</strong> 200 posts per hour</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Endpoints:</strong> /me/feed</p>
+                                    <p><strong>Permissions:</strong> publish_actions</p>
+                                    <p><strong>Status:</strong> Not configured</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Platform Activation -->
+                    <div class="spec-card">
+                        <div class="spec-header">
+                            <h5 class="text-white mb-0"><i class="fas fa-power-off me-2"></i>Platform Activation</h5>
+                        </div>
+                        <div class="spec-body text-white">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Current Status:</strong> <span id="platform-status">Developed</span></p>
+                                    <p><strong>Last Activated:</strong> Never</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <button id="activate-btn" class="btn btn-success me-2">Activate Platform</button>
+                                    <button id="deactivate-btn" class="btn btn-secondary">Deactivate</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const platformTabs = document.querySelectorAll('.platform-tab');
+            
+            // Handle platform tab clicks
+            platformTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const platform = this.getAttribute('data-platform');
+                    if (platform !== 'facebook') {
+                        window.location.href = `/syndication/platform-settings/${platform}`;
+                    }
+                });
+            });
+            
+            // Force colors with JavaScript
+            document.querySelectorAll('.status-undeveloped').forEach(tab => {
+                tab.style.backgroundColor = '#000000';
+                // Darker text and icons for undeveloped
+                const text = tab.querySelector('.platform-name');
+                const icon = tab.querySelector('.platform-icon');
+                if (text) text.style.color = '#666666';
+                if (icon) icon.style.filter = 'brightness(0) invert(0.4)';
+            });
+            document.querySelectorAll('.status-developed').forEach(tab => {
+                tab.style.backgroundColor = '#f8f9fa';
+                // Black text and icons for developed
+                const text = tab.querySelector('.platform-name');
+                const icon = tab.querySelector('.platform-icon');
+                if (text) text.style.color = '#000000';
+                if (icon) icon.style.filter = 'brightness(0) invert(0)';
+            });
+            document.querySelectorAll('.status-active').forEach(tab => {
+                tab.style.backgroundColor = '#ffffff';
+                // Black text and icons for active
+                const text = tab.querySelector('.platform-name');
+                const icon = tab.querySelector('.platform-icon');
+                if (text) text.style.color = '#000000';
+                if (icon) icon.style.filter = 'brightness(0) invert(0)';
+                // Green status indicator
+                const indicator = tab.querySelector('.status-indicator');
+                if (indicator) indicator.style.backgroundColor = '#10b981';
+            });
+            
+            // Automatically activate Facebook when this page loads
+            console.log('Looking for Facebook tab...');
+            const facebookTab = document.querySelector('[data-platform="facebook"]');
+            console.log('Facebook tab found:', facebookTab);
+            if (facebookTab) {
+                console.log('Setting Facebook to active...');
+                facebookTab.className = 'platform-tab status-active';
+                const statusIndicator = facebookTab.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.className = 'status-indicator status-active';
+                }
+                console.log('Facebook tab classes:', facebookTab.className);
+            }
+            
+            // Update the status display to show Active
+            const platformStatus = document.getElementById('platform-status');
+            if (platformStatus) {
+                platformStatus.textContent = 'Active';
+                platformStatus.className = 'text-success';
+            }
+            
+            // Apply active styling to Facebook tab
+            if (facebookTab) {
+                console.log('Applying active styling to Facebook...');
+                facebookTab.style.backgroundColor = '#ffffff';
+                const text = facebookTab.querySelector('.platform-name');
+                const icon = facebookTab.querySelector('.platform-icon');
+                if (text) text.style.color = '#000000';
+                if (icon) icon.style.filter = 'brightness(0) invert(0)';
+                const indicator = facebookTab.querySelector('.status-indicator');
+                if (indicator) indicator.style.backgroundColor = '#10b981';
+                console.log('Active styling applied. Background color:', facebookTab.style.backgroundColor);
+            }
+            
+            // Handle platform activation
+            const activateBtn = document.getElementById('activate-btn');
+            const deactivateBtn = document.getElementById('deactivate-btn');
+            
+            activateBtn.addEventListener('click', function() {
+                // Update the Facebook tab in the sidebar
+                const facebookTab = document.querySelector('[data-platform="facebook"]');
+                if (facebookTab) {
+                    facebookTab.className = 'platform-tab status-active';
+                    const statusIndicator = facebookTab.querySelector('.status-indicator');
+                    if (statusIndicator) {
+                        statusIndicator.className = 'status-indicator status-active';
+                    }
+                }
+                
+                // Update the status display
+                platformStatus.textContent = 'Active';
+                platformStatus.className = 'text-success';
+                
+                // Re-run the color styling
+                document.querySelectorAll('.status-active').forEach(tab => {
+                    tab.style.backgroundColor = '#ffffff';
+                    const text = tab.querySelector('.platform-name');
+                    const icon = tab.querySelector('.platform-icon');
+                    if (text) text.style.color = '#000000';
+                    if (icon) icon.style.filter = 'brightness(0) invert(0)';
+                    const indicator = tab.querySelector('.status-indicator');
+                    if (indicator) indicator.style.backgroundColor = '#10b981';
+                });
+            });
+            
+            deactivateBtn.addEventListener('click', function() {
+                // Update the Facebook tab in the sidebar
+                const facebookTab = document.querySelector('[data-platform="facebook"]');
+                if (facebookTab) {
+                    facebookTab.className = 'platform-tab status-developed';
+                    const statusIndicator = facebookTab.querySelector('.status-indicator');
+                    if (statusIndicator) {
+                        statusIndicator.className = 'status-indicator status-developed';
+                    }
+                }
+                
+                // Update the status display
+                platformStatus.textContent = 'Developed';
+                platformStatus.className = 'text-white';
+                
+                // Re-run the color styling
+                document.querySelectorAll('.status-developed').forEach(tab => {
+                    tab.style.backgroundColor = '#f8f9fa';
+                    const text = tab.querySelector('.platform-name');
+                    const icon = tab.querySelector('.platform-icon');
+                    if (text) text.style.color = '#000000';
+                    if (icon) icon.style.filter = 'brightness(0) invert(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
