@@ -28,6 +28,133 @@
             padding: 2rem 0;
             margin-bottom: 2rem;
         }
+        
+        /* Dark theme base styles */
+        body {
+            background-color: #0f1419;
+            color: #e0e0e0;
+        }
+        
+        /* Deeply faded styling for unimplemented elements */
+        .faded {
+            opacity: 0.2;
+            filter: grayscale(100%);
+            transition: all 0.3s ease;
+        }
+        
+        .faded:hover {
+            opacity: 0.3;
+        }
+        
+        /* When implemented, remove .faded class for normal brightness */
+        .implemented {
+            opacity: 1;
+            filter: grayscale(0%);
+        }
+        
+        .stats-card {
+            background: #1a1f2e;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            border-color: #4a5568;
+            transform: translateY(-2px);
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-label {
+            color: #a0aec0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .action-button {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            color: #a0aec0;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .action-button:hover {
+            background: #4a5568;
+            border-color: #667eea;
+            color: #e0e0e0;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+        
+        .action-button.implemented {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+        
+        .action-button.implemented:hover {
+            background: #5a67d8;
+            border-color: #5a67d8;
+        }
+        
+        .activity-item {
+            background: #1a1f2e;
+            border: 1px solid #2d3748;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .status-success {
+            color: #48bb78;
+        }
+        
+        .status-error {
+            color: #f56565;
+        }
+        
+        .status-pending {
+            color: #ed8936;
+        }
+        
+        .quick-links {
+            background: #1a1f2e;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .quick-links a {
+            color: #a0aec0;
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #2d3748;
+        }
+        
+        .quick-links a:last-child {
+            border-bottom: none;
+        }
+        
+        .quick-links a:hover {
+            color: #667eea;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -49,15 +176,15 @@
                             <i class="fas fa-cubes me-1"></i> Modules
                         </button>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="modulesDropdown">
-                            <li><a class="dropdown-item" href="/db/"><i class="fas fa-database text-purple me-2"></i>Database</a></li>
-                            <li><a class="dropdown-item" href="/llm/"><i class="fas fa-brain text-pink me-2"></i>AI</a></li>
-                            <li><a class="dropdown-item" href="/llm/images"><i class="fas fa-image text-info me-2"></i>Images</a></li>
-                            <li><a class="dropdown-item" href="/servers/"><i class="fas fa-server text-success me-2"></i>Servers</a></li>
+                            <li><a class="dropdown-item" href="http://localhost:5000/db/"><i class="fas fa-database text-purple me-2"></i>Database</a></li>
+                            <li><a class="dropdown-item" href="http://localhost:5000/llm/"><i class="fas fa-brain text-pink me-2"></i>AI</a></li>
+                            <li><a class="dropdown-item" href="http://localhost:5000/llm/images"><i class="fas fa-image text-info me-2"></i>Images</a></li>
+                            <li><a class="dropdown-item" href="http://localhost:5000/servers/"><i class="fas fa-server text-success me-2"></i>Servers</a></li>
                         </ul>
                     </div>
                     <div class="d-flex align-items-center">
-                        <a href="/posts" class="btn btn-link text-white text-decoration-none me-3">Posts</a>
-                        <a href="/workflow/" class="btn btn-link text-white text-decoration-none">Workflow</a>
+                        <a href="http://localhost:5000/posts" class="btn btn-link text-white text-decoration-none me-3">Posts</a>
+                        <a href="http://localhost:5000/workflow/" class="btn btn-link text-white text-decoration-none">Workflow</a>
                     </div>
                 </div>
             </div>
@@ -80,7 +207,7 @@
         </div>
     </nav>
 
-    <!-- Publishing Header -->
+    <!-- Syndication Header -->
     <div class="publishing-header">
         <div class="container">
             <div class="row align-items-center">
@@ -95,7 +222,96 @@
     </div>
 
     <div class="container">
-        <h2>Social Media Syndication</h2>
+        <!-- Quick Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card faded">
+                    <div class="stats-number">0</div>
+                    <div class="stats-label">Posts Ready</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card faded">
+                    <div class="stats-number">0</div>
+                    <div class="stats-label">Scheduled</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card faded">
+                    <div class="stats-number">0</div>
+                    <div class="stats-label">Published</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card faded">
+                    <div class="stats-number">1/9</div>
+                    <div class="stats-label">Platforms Active</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Action Buttons -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <a href="#" class="action-button faded">
+                    <i class="fas fa-list me-2"></i>Select Posts
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="#" class="action-button faded">
+                    <i class="fas fa-calendar me-2"></i>Manage Schedule
+                </a>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <a href="#" class="action-button faded">
+                    <i class="fas fa-chart-line me-2"></i>View Analytics
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="#" class="action-button faded">
+                    <i class="fas fa-cog me-2"></i>Platform Settings
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3">Recent Activity</h4>
+                <div class="activity-item faded">
+                    <i class="fas fa-info-circle me-2"></i>No recent activity
+                </div>
+                <div class="activity-item faded">
+                    <i class="fas fa-info-circle me-2"></i>System ready for first post
+                </div>
+                <div class="activity-item faded">
+                    <i class="fas fa-info-circle me-2"></i>Facebook platform configured
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="quick-links">
+                    <h5 class="mb-3">Quick Links</h5>
+                    <a href="/docs/social_media_syndication_plan.md" target="_blank">
+                        <i class="fas fa-book me-2"></i>Documentation
+                    </a>
+                    <a href="#">
+                        <i class="fas fa-question-circle me-2"></i>Help
+                    </a>
+                    <a href="#">
+                        <i class="fas fa-sliders-h me-2"></i>Settings
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
