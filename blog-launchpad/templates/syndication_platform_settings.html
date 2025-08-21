@@ -28,6 +28,110 @@
             padding: 1rem 0;
             margin-bottom: 2rem;
         }
+        
+        /* Platform Sidebar Styling */
+        .platform-sidebar {
+            background-color: #1a1d29;
+            border-right: 1px solid #495057;
+            min-height: calc(100vh - 300px);
+            padding: 1rem;
+        }
+        
+        .platform-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .platform-tab {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background-color: #23273a;
+            border: 1px solid #495057;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            gap: 0.75rem;
+        }
+        
+        .platform-tab:hover {
+            background-color: #2d3748;
+            border-color: #667eea;
+        }
+        
+        .platform-tab.active {
+            background-color: #2d3748;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
+        }
+        
+        .platform-icon {
+            width: 24px;
+            height: 24px;
+            filter: brightness(0) invert(1);
+        }
+        
+        .platform-name {
+            flex: 1;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #495057;
+        }
+        
+        /* Status Levels - Three CSS dimming levels */
+        .status-undeveloped {
+            background-color: #6c757d;
+            opacity: 0.2;
+            filter: grayscale(100%);
+        }
+        
+        .status-undeveloped + .platform-name {
+            opacity: 0.2;
+            filter: grayscale(100%);
+        }
+        
+        .status-undeveloped .platform-icon {
+            opacity: 0.2;
+            filter: grayscale(100%);
+        }
+        
+        .status-developed {
+            background-color: #ffc107;
+            opacity: 0.6;
+        }
+        
+        .status-developed + .platform-name {
+            opacity: 0.6;
+        }
+        
+        .status-developed .platform-icon {
+            opacity: 0.6;
+        }
+        
+        .status-active {
+            background-color: #28a745;
+            opacity: 1;
+        }
+        
+        .status-active + .platform-name {
+            opacity: 1;
+        }
+        
+        .status-active .platform-icon {
+            opacity: 1;
+        }
+        
+        /* Platform Content Area */
+        .platform-content {
+            padding: 1rem;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -94,12 +198,200 @@
         </div>
     </div>
 
-    <div class="container">
-        <!-- Page content will go here -->
-        <h3>Platform Settings</h3>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Sidebar - Platform Navigation -->
+            <div class="col-md-3">
+                <div class="platform-sidebar">
+                    <h5 class="text-white mb-3">Social Media Platforms</h5>
+                    
+                    <!-- Platform Tabs -->
+                    <div class="platform-tabs">
+                        <!-- Facebook - Priority 1 -->
+                        <div class="platform-tab active" data-platform="facebook">
+                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/facebook.svg" alt="Facebook" class="platform-icon">
+                            <span class="platform-name">Facebook</span>
+                            <span class="status-indicator status-active"></span>
+                        </div>
+                        
+                        <!-- Instagram - Priority 2 -->
+                        <div class="platform-tab" data-platform="instagram">
+                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/instagram.svg" alt="Instagram" class="platform-icon">
+                            <span class="platform-name">Instagram</span>
+                            <span class="status-indicator status-active"></span>
+                        </div>
+                        
+                        <!-- Twitter/X - Priority 3 -->
+                        <div class="platform-tab" data-platform="twitter">
+                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/twitter.svg" alt="Twitter" class="platform-icon">
+                            <span class="platform-name">Twitter/X</span>
+                            <span class="status-indicator status-developed"></span>
+                        </div>
+                        
+                        <!-- LinkedIn - Priority 4 -->
+                        <div class="platform-tab" data-platform="linkedin">
+                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/linkedin.svg" alt="LinkedIn" class="platform-icon">
+                            <span class="platform-name">LinkedIn</span>
+                            <span class="status-indicator status-developed"></span>
+                        </div>
+                        
+                        <!-- TikTok - Priority 5 -->
+                        <div class="platform-tab" data-platform="tiktok">
+                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/tiktok.svg" alt="TikTok" class="platform-icon">
+                            <span class="platform-name">TikTok</span>
+                            <span class="status-indicator status-undeveloped"></span>
+                        </div>
+                        
+                        <!-- YouTube - Priority 6 -->
+                        <div class="platform-tab" data-platform="youtube">
+                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/youtube.svg" alt="YouTube" class="platform-icon">
+                            <span class="platform-name">YouTube Shorts</span>
+                            <span class="status-indicator status-undeveloped"></span>
+                        </div>
+                        
+                        <!-- Pinterest - Priority 7 -->
+                        <div class="platform-tab" data-platform="pinterest">
+                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/pinterest.svg" alt="Pinterest" class="platform-icon">
+                            <span class="platform-name">Pinterest</span>
+                            <span class="status-indicator status-undeveloped"></span>
+                        </div>
+                        
+                        <!-- Threads - Priority 8 -->
+                        <div class="platform-tab" data-platform="threads">
+                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/threads.svg" alt="Threads" class="platform-icon">
+                            <span class="platform-name">Threads</span>
+                            <span class="status-indicator status-undeveloped"></span>
+                        </div>
+                        
+                        <!-- Mastodon - Priority 9 -->
+                        <div class="platform-tab" data-platform="mastodon">
+                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/mastodon.svg" alt="Mastodon" class="platform-icon">
+                            <span class="platform-name">Mastodon</span>
+                            <span class="status-indicator status-undeveloped"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Content Area -->
+            <div class="col-md-9">
+                <div class="platform-content">
+                    <h3>Platform Settings</h3>
+                    <p class="text-muted">Select a platform from the left to configure its settings.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const platformTabs = document.querySelectorAll('.platform-tab');
+            const platformContent = document.querySelector('.platform-content');
+            
+            // Handle platform tab clicks
+            platformTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    platformTabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Get platform name
+                    const platform = this.getAttribute('data-platform');
+                    const platformName = this.querySelector('.platform-name').textContent;
+                    
+                    // Update content area
+                    updatePlatformContent(platform, platformName);
+                });
+            });
+            
+            function updatePlatformContent(platform, platformName) {
+                // Update the content area based on selected platform
+                platformContent.innerHTML = `
+                    <h3>${platformName} Settings</h3>
+                    <p class="text-muted">Configure settings for ${platformName} platform.</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-dark text-white border-secondary">
+                                <div class="card-header bg-secondary text-dark">
+                                    <h6 class="mb-0">Connection Status</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-2"><strong>Status:</strong> <span class="badge bg-success">Connected</span></p>
+                                    <p class="mb-2"><strong>Account:</strong> @${platform}account</p>
+                                    <p class="mb-0"><strong>Last Updated:</strong> Just now</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-dark text-white border-secondary">
+                                <div class="card-header bg-secondary text-dark">
+                                    <h6 class="mb-0">Platform Info</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-2"><strong>Priority:</strong> ${getPlatformPriority(platform)}</p>
+                                    <p class="mb-2"><strong>Content Type:</strong> ${getContentType(platform)}</p>
+                                    <p class="mb-0"><strong>Optimal Time:</strong> ${getOptimalTime(platform)}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            function getPlatformPriority(platform) {
+                const priorities = {
+                    'facebook': '1 (Highest)',
+                    'instagram': '2',
+                    'twitter': '3',
+                    'linkedin': '4',
+                    'tiktok': '5',
+                    'youtube': '6',
+                    'pinterest': '7',
+                    'threads': '8',
+                    'mastodon': '9 (Lowest)'
+                };
+                return priorities[platform] || 'Unknown';
+            }
+            
+            function getContentType(platform) {
+                const contentTypes = {
+                    'facebook': 'Text posts with images',
+                    'instagram': 'Feed posts with captions',
+                    'twitter': 'Tweets with images',
+                    'linkedin': 'Professional articles',
+                    'tiktok': 'Short-form video',
+                    'youtube': 'Vertical video content',
+                    'pinterest': 'Pins with descriptions',
+                    'threads': 'Text-based posts',
+                    'mastodon': 'Text posts'
+                };
+                return contentTypes[platform] || 'Unknown';
+            }
+            
+            function getOptimalTime(platform) {
+                const optimalTimes = {
+                    'facebook': '09:00 AM',
+                    'instagram': '11:00 AM',
+                    'twitter': '10:00 AM',
+                    'linkedin': '08:00 AM',
+                    'tiktok': '07:00 PM',
+                    'youtube': '06:00 PM',
+                    'pinterest': '02:00 PM',
+                    'threads': '12:00 PM',
+                    'mastodon': '01:00 PM'
+                };
+                return optimalTimes[platform] || 'Unknown';
+            }
+            
+            // Initialize with Facebook (first platform)
+            updatePlatformContent('facebook', 'Facebook');
+        });
+    </script>
 </body>
 </html>
