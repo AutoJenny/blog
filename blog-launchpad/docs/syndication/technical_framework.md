@@ -236,10 +236,11 @@ CREATE TABLE social_media_process_executions (
 5. Platform settings accordion interface
 6. Channel selection dropdown
 7. API endpoints for platform data
+8. Content process registry tables and models
+9. Database viewer integration (Social Media group)
 
 ### 🚧 In Progress
-1. Content process registry design
-2. LLM integration framework planning
+1. LLM integration framework planning
 
 ### 📋 Planned Components
 1. Content generation processes
@@ -310,7 +311,7 @@ CREATE TABLE social_media_process_executions (
 
 ---
 
-**Document Version**: 1.0  
+**Document Version**: 1.1  
 **Last Updated**: 2025-01-27  
-**Status**: Active Development  
-**Next Review**: After process registry implementation
+**Status**: Active Development - Process Registry Implemented  
+**Next Review**: After LLM integration implementation
