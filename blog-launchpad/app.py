@@ -259,6 +259,42 @@ def delete_specification():
         print(f"Error deleting specification: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/syndication/social-media-platforms')
+def get_social_media_platforms():
+    """Get only developed social media platforms for the dropdown selector."""
+    try:
+        from models.social_media import SocialMediaPlatform
+        
+        # Database configuration
+        db_config = {
+            'host': 'localhost',
+            'database': 'blog',
+            'user': 'postgres',
+            'password': 'postgres'
+        }
+        
+        # Get only developed platforms
+        platform_model = SocialMediaPlatform(db_config)
+        platforms = platform_model.get_platforms_by_status('developed')
+        
+        # Convert to list of dicts for JSON serialization
+        platforms_list = []
+        for platform in platforms:
+            platforms_list.append({
+                'id': platform['id'],
+                'platform_name': platform['platform_name'],
+                'display_name': platform['display_name'],
+                'status': platform['status'],
+                'priority': platform['priority'],
+                'icon_url': platform['icon_url']
+            })
+        
+        return jsonify({'platforms': platforms_list})
+        
+    except Exception as e:
+        print(f"Error fetching social media platforms: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/syndication/published-posts')
 def get_published_posts():
     """Get all posts with status=published for syndication."""
@@ -313,6 +349,60 @@ def get_published_posts():
         conn.close()
         
         return {'posts': posts_list}
+        
+    except Exception as e:
+        return {'error': str(e)}, 500
+
+@app.route('/api/syndication/post-sections/<int:post_id>')
+def get_post_sections(post_id):
+    """Get all sections for a specific post."""
+    try:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        
+        # Database connection
+        conn = psycopg2.connect(
+            host="localhost",
+            database="blog",
+            user="postgres",
+            password="postgres"
+        )
+        
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Get sections for the specified post
+        query = """
+            SELECT 
+                ps.id,
+                ps.section_heading as title,
+                ps.section_description as content,
+                ps.section_order as "order"
+            FROM post_section ps
+            WHERE ps.post_id = %s
+            ORDER BY ps.section_order ASC, ps.id ASC
+        """
+        
+        cursor.execute(query, (post_id,))
+        sections = cursor.fetchall()
+        
+        # Convert to list of dicts for JSON serialization
+        sections_list = []
+        for section in sections:
+            # Find the actual image path using the same logic as the preview page
+            image_path = find_section_image(post_id, section['id'])
+            
+            sections_list.append({
+                'id': section['id'],
+                'title': section['title'],
+                'content': section['content'],
+                'order': section['order'],
+                'image_path': image_path
+            })
+        
+        cursor.close()
+        conn.close()
+        
+        return {'sections': sections_list}
         
     except Exception as e:
         return {'error': str(e)}, 500
