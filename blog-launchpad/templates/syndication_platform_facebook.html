@@ -105,34 +105,43 @@
                                     <h5 class="text-white mb-0"><i class="fas fa-file-alt me-2"></i>Content Specifications</h5>
                                 </div>
                                 <div class="spec-body text-white">
-                                    <div class="spec-item">
-                                        <span class="spec-label">Content Type:</span>
-                                        <span class="spec-value">Text posts with images</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Character Target:</span>
-                                        <span class="spec-value">≤63,206 characters</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Style/Tone:</span>
-                                        <span class="spec-value">Conversational, engaging, authentic</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Posting Frequency:</span>
-                                        <span class="spec-value">1-2 posts per day (optimal)</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Optimal Timing:</span>
-                                        <span class="spec-value">1-3 PM, 7-9 PM (local time)</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Priority Level:</span>
-                                        <span class="spec-value">1 (Highest)</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Example CTA:</span>
-                                        <span class="spec-value">"Read the full story in the link below 👇"</span>
-                                    </div>
+                                    {% if platform.specifications.content %}
+                                        {% for spec in platform.specifications.content %}
+                                        <div class="spec-item">
+                                            <span class="spec-label">{{ spec.spec_key|replace('_', ' ')|title }}:</span>
+                                            <span class="spec-value">{{ spec.spec_value }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="spec-item">
+                                            <span class="spec-label">Content Type:</span>
+                                            <span class="spec-value">Text posts with images</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Character Target:</span>
+                                            <span class="spec-value">≤63,206 characters</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Style/Tone:</span>
+                                            <span class="spec-value">Conversational, engaging, authentic</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Posting Frequency:</span>
+                                            <span class="spec-value">1-2 posts per day (optimal)</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Optimal Timing:</span>
+                                            <span class="spec-value">1-3 PM, 7-9 PM (local time)</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Priority Level:</span>
+                                            <span class="spec-value">1 (Highest)</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Example CTA:</span>
+                                            <span class="spec-value">"Read the full story in the link below 👇"</span>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -142,30 +151,39 @@
                                     <h5 class="text-white mb-0"><i class="fas fa-image me-2"></i>Image Requirements</h5>
                                 </div>
                                 <div class="spec-body text-white">
-                                    <div class="spec-item">
-                                        <span class="spec-label">Dimensions:</span>
-                                        <span class="spec-value">1200×630 (landscape)</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Aspect Ratio:</span>
-                                        <span class="spec-value">1.91:1</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Format:</span>
-                                        <span class="spec-value">JPG, PNG, GIF</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">File Size:</span>
-                                        <span class="spec-value">Max 30MB</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Quality:</span>
-                                        <span class="spec-value">High resolution, mobile-optimized</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Style:</span>
-                                        <span class="spec-value">Authentic, engaging, shareable</span>
-                                    </div>
+                                    {% if platform.specifications.image %}
+                                        {% for spec in platform.specifications.image %}
+                                        <div class="spec-item">
+                                            <span class="spec-label">{{ spec.spec_key|replace('_', ' ')|title }}:</span>
+                                            <span class="spec-value">{{ spec.spec_value }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="spec-item">
+                                            <span class="spec-label">Dimensions:</span>
+                                            <span class="spec-value">1200×630 (landscape)</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Aspect Ratio:</span>
+                                            <span class="spec-value">1.91:1</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Format:</span>
+                                            <span class="spec-value">JPG, PNG, GIF</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">File Size:</span>
+                                            <span class="spec-value">Max 30MB</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Quality:</span>
+                                            <span class="spec-value">High resolution, mobile-optimized</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Style:</span>
+                                            <span class="spec-value">Authentic, engaging, shareable</span>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -178,26 +196,35 @@
                                     <h5 class="text-white mb-0"><i class="fas fa-magic me-2"></i>Content Adaptation</h5>
                                 </div>
                                 <div class="spec-body text-white">
-                                    <div class="spec-item">
-                                        <span class="spec-label">Text Processing:</span>
-                                        <span class="spec-value">Optimize for engagement, not truncation</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Tone Adjustment:</span>
-                                        <span class="spec-value">Authentic, conversational, community-focused</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Hashtag Strategy:</span>
-                                        <span class="spec-value">2-3 relevant hashtags (Facebook prefers fewer)</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">CTA Generation:</span>
-                                        <span class="spec-value">Ask questions, encourage discussion</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Content Focus:</span>
-                                        <span class="spec-value">Scottish heritage, storytelling, community</span>
-                                    </div>
+                                    {% if platform.specifications.adaptation %}
+                                        {% for spec in platform.specifications.adaptation %}
+                                        <div class="spec-item">
+                                            <span class="spec-label">{{ spec.spec_key|replace('_', ' ')|title }}:</span>
+                                            <span class="spec-value">{{ spec.spec_value }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="spec-item">
+                                            <span class="spec-label">Text Processing:</span>
+                                            <span class="spec-value">Optimize for engagement, not truncation</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Tone Adjustment:</span>
+                                            <span class="spec-value">Authentic, conversational, community-focused</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Hashtag Strategy:</span>
+                                            <span class="spec-value">2-3 relevant hashtags (Facebook prefers fewer)</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">CTA Generation:</span>
+                                            <span class="spec-value">Ask questions, encourage discussion</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Content Focus:</span>
+                                            <span class="spec-value">Scottish heritage, storytelling, community</span>
+                                        </div>
+                                    {% endif %}
                                     <div class="spec-item">
                                         <span class="spec-label">Engagement:</span>
                                         <span class="spec-value">Polls, questions, tag friends</span>
@@ -211,30 +238,39 @@
                                     <h5 class="text-white mb-0"><i class="fas fa-code me-2"></i>API Integration</h5>
                                 </div>
                                 <div class="spec-body text-white">
-                                    <div class="spec-item">
-                                        <span class="spec-label">API:</span>
-                                        <span class="spec-value">Facebook Graph API v18.0+</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Authentication:</span>
-                                        <span class="spec-value">OAuth 2.0 with App Review</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Rate Limits:</span>
-                                        <span class="spec-value">200 posts per hour per user</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Endpoints:</span>
-                                        <span class="spec-value">/me/feed, /page/feed</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Permissions:</span>
-                                        <span class="spec-value">pages_manage_posts, publish_to_groups</span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Status:</span>
-                                        <span class="spec-value">Requires App Review approval</span>
-                                    </div>
+                                    {% if platform.specifications.api %}
+                                        {% for spec in platform.specifications.api %}
+                                        <div class="spec-item">
+                                            <span class="spec-label">{{ spec.spec_key|replace('_', ' ')|title }}:</span>
+                                            <span class="spec-value">{{ spec.spec_value }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="spec-item">
+                                            <span class="spec-label">API:</span>
+                                            <span class="spec-value">Facebook Graph API v18.0+</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Authentication:</span>
+                                            <span class="spec-value">OAuth 2.0 with App Review</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Rate Limits:</span>
+                                            <span class="spec-value">200 posts per hour per user</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Endpoints:</span>
+                                            <span class="spec-value">/me/feed, /page/feed</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Permissions:</span>
+                                            <span class="spec-value">pages_manage_posts, publish_to_groups</span>
+                                        </div>
+                                        <div class="spec-item">
+                                            <span class="spec-label">Status:</span>
+                                            <span class="spec-value">Requires App Review approval</span>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -250,7 +286,7 @@
                                 <div class="col-md-6">
                                     <div class="spec-item">
                                         <span class="spec-label">Current Status:</span>
-                                        <span class="spec-value"><span id="platform-status">Developed</span></span>
+                                        <span class="spec-value"><span id="platform-status">{{ platform.status|title }}</span></span>
                                     </div>
                                     <div class="spec-item">
                                         <span class="spec-label">Last Activated:</span>
