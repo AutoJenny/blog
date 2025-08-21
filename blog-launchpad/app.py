@@ -126,6 +126,11 @@ def publishing():
     """Publishing management page."""
     return render_template('publishing.html')
 
+@app.route('/syndication')
+def syndication():
+    """Social Media Syndication homepage."""
+    return render_template('syndication.html')
+
 @app.route('/test-api')
 def test_api():
     """Test API endpoint."""
@@ -141,6 +146,19 @@ def publishing_docs():
         with open(docs_path, 'r') as f:
             content = f.read()
         return render_template('markdown_viewer.html', content=content, title="Clan.com Publishing System")
+    else:
+        return "Documentation not found", 404
+
+@app.route('/docs/social_media_syndication_plan.md')
+def syndication_docs():
+    """Serve social media syndication plan documentation."""
+    import os
+    docs_path = "/Users/nickfiddes/Code/projects/blog/blog-launchpad/docs/social_media_syndication_plan.md"
+    
+    if os.path.exists(docs_path):
+        with open(docs_path, 'r') as f:
+            content = f.read()
+        return render_template('markdown_viewer.html', content=content, title="Social Media Syndication Plan")
     else:
         return "Documentation not found", 404
 

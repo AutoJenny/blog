@@ -4,1005 +4,377 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Social Media Syndication - Blog Launchpad</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dist/clan_blog.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* Syndication-specific styles */
-        .syndication-container {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            height: calc(100vh - 100px);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        .sidebar {
-            width: 300px;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            overflow-y: auto;
+            color: #333;
+            line-height: 1.6;
         }
         
-        .main-content {
-            flex: 1;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
             background: white;
             border-radius: 8px;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .post-selector {
-            margin-bottom: 20px;
-        }
-        
-        .post-selector select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        .metrics-card {
-            background: white;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        .metrics-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 16px;
-            color: #333;
-        }
-        
-        .metric-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .metric-value {
-            font-weight: 600;
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
             color: #007bff;
         }
         
-        .platform-tabs {
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #333;
             display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
+            align-items: center;
+            gap: 10px;
         }
         
-        .platform-tab {
-            padding: 10px 20px;
-            border: none;
-            background: #f8f9fa;
-            border-radius: 6px 6px 0 0;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
+        .card h2 i {
+            color: #007bff;
         }
         
-        .platform-tab.active {
-            background: #007bff;
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        
+        .status-mvp {
+            background: #28a745;
             color: white;
         }
         
-        .platform-tab:hover:not(.active) {
-            background: #e9ecef;
-        }
-        
-        .platform-content {
-            display: none;
-        }
-        
-        .platform-content.active {
-            display: block;
-        }
-        
-        .content-preview {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .preview-text {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 15px;
-            min-height: 100px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        .preview-image {
-            background: #e9ecef;
-            border: 2px dashed #ccc;
-            border-radius: 4px;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .setting-item {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 15px;
-        }
-        
-        .setting-item label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .setting-item input, .setting-item select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        .scheduled-posts {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 15px;
-        }
-        
-        .scheduled-post {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .scheduled-post:last-child {
-            border-bottom: none;
-        }
-        
-        .post-info {
-            flex: 1;
-        }
-        
-        .post-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .post-meta {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .post-status {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .status-scheduled { background: #e3f2fd; color: #1976d2; }
-        .status-posted { background: #e8f5e8; color: #2e7d32; }
-        .status-failed { background: #ffebee; color: #c62828; }
-        
-        .batch-controls {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .batch-controls h3 {
-            margin: 0 0 15px 0;
+        .status-coming-soon {
+            background: #ffc107;
             color: #333;
         }
         
-        .control-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+        .platform-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
         }
         
-        .control-item label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            font-size: 14px;
+        .platform-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .control-item input, .control-item select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
+        .platform-list li:last-child {
+            border-bottom: none;
         }
         
-        .auto-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .checkbox-item {
+        .platform-name {
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-        
-        .checkbox-item input[type="checkbox"] {
-            width: auto;
-        }
-        
-        .platform-checkboxes {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 10px;
+            font-weight: 500;
+        }
+        
+        .platform-icon {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .platform-status {
+            font-size: 0.9rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .quick-actions {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .quick-actions h2 {
+            font-size: 1.5rem;
             margin-bottom: 20px;
+            color: #333;
         }
         
         .action-buttons {
             display: flex;
             gap: 15px;
-            justify-content: center;
+            flex-wrap: wrap;
         }
         
-        .btn-large {
-            padding: 15px 30px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-        
-        .btn-success { background: #28a745; color: white; }
-        .btn-warning { background: #ffc107; color: #212529; }
-        
-        .content-templates {
-            background: white;
-            border: 1px solid #ddd;
+        .btn {
+            padding: 12px 24px;
+            border: none;
             border-radius: 6px;
-            padding: 15px;
-            margin-top: 20px;
-        }
-        
-        .template-section {
-            margin-bottom: 20px;
-        }
-        
-        .template-section h4 {
-            margin: 0 0 10px 0;
-            color: #333;
-        }
-        
-        .template-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-        }
-        
-        .template-option {
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
+            text-decoration: none;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
         }
         
-        .template-option:hover {
-            background: #e9ecef;
-            border-color: #007bff;
-        }
-        
-        .template-option.selected {
+        .btn-primary {
             background: #007bff;
             color: white;
-            border-color: #007bff;
         }
         
-        .analytics-preview {
-            background: white;
-            border: 1px solid #ddd;
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
             border-radius: 6px;
             padding: 15px;
             margin-top: 20px;
         }
         
-        .metric-chart {
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            height: 150px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 15px;
+        .info-box h3 {
+            color: #0056b3;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
         }
         
-        .metric-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
+        .info-box p {
+            color: #0056b3;
+            margin-bottom: 8px;
         }
         
-        .stat-box {
-            text-align: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
+        .info-box ul {
+            margin-left: 20px;
+            color: #0056b3;
         }
         
-        .stat-number {
-            font-size: 24px;
-            font-weight: 700;
-            color: #007bff;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-        }
-        
-        .breadcrumb {
-            background: #f8f9fa;
-            padding: 15px 20px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 0;
-        }
-        
-        .breadcrumb a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        
-        .breadcrumb a:hover {
-            text-decoration: underline;
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Breadcrumb Navigation -->
-    <div class="breadcrumb">
-        <a href="/"><i class="fas fa-home"></i> Home</a>
-        <span class="mx-2">/</span>
-        <span>Social Media Syndication</span>
-    </div>
-
-    <div class="syndication-container">
-        <!-- Left Sidebar -->
-        <div class="sidebar">
-            <!-- Post Selection -->
-            <div class="post-selector">
-                <h3>📝 Select Blog Post</h3>
-                <select id="postSelect">
-                    <option value="">Choose a post...</option>
-                    <option value="53">The Balmoral Kilt: A Royal Tradition</option>
-                    <option value="54">Tartan Traditions Through the Ages</option>
-                    <option value="55">Celtic Storytelling: Myths and Legends</option>
-                </select>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-share-alt"></i> Social Media Syndication</h1>
+            <p>Automatically distribute blog content across social media platforms with intelligent content adaptation</p>
+        </div>
+        
+        <div class="content-grid">
+            <!-- Platform Status -->
+            <div class="card">
+                <h2>
+                    <i class="fas fa-globe"></i>
+                    Platform Status
+                    <span class="status-badge status-mvp">MVP Phase</span>
+                </h2>
+                <ul class="platform-list">
+                    <li>
+                        <div class="platform-name">
+                            <span class="platform-icon"><i class="fab fa-facebook"></i></span>
+                            Facebook
+                        </div>
+                        <span class="platform-status status-active">Active</span>
+                    </li>
+                    <li>
+                        <div class="platform-name">
+                            <span class="platform-icon"><i class="fab fa-instagram"></i></span>
+                            Instagram
+                        </div>
+                        <span class="platform-status status-pending">Coming Soon</span>
+                    </li>
+                    <li>
+                        <div class="platform-name">
+                            <span class="platform-icon"><i class="fab fa-twitter"></i></span>
+                            X (Twitter)
+                        </div>
+                        <span class="platform-status status-pending">Coming Soon</span>
+                    </li>
+                    <li>
+                        <div class="platform-name">
+                            <span class="platform-icon"><i class="fab fa-linkedin"></i></span>
+                            LinkedIn
+                        </div>
+                        <span class="platform-status status-pending">Coming Soon</span>
+                    </li>
+                    <li>
+                        <div class="platform-name">
+                            <span class="platform-icon"><i class="fab fa-tiktok"></i></span>
+                            TikTok
+                        </div>
+                        <span class="platform-status status-inactive">Planned</span>
+                    </li>
+                    <li>
+                        <div class="platform-name">
+                            <span class="platform-icon"><i class="fab fa-youtube"></i></span>
+                            YouTube Shorts
+                        </div>
+                        <span class="platform-status status-inactive">Planned</span>
+                    </li>
+                    <li>
+                        <div class="platform-name">
+                            <span class="platform-icon"><i class="fab fa-pinterest"></i></span>
+                            Pinterest
+                        </div>
+                        <span class="platform-status status-inactive">Planned</span>
+                    </li>
+                </ul>
             </div>
-
-            <!-- Post Metrics -->
-            <div class="metrics-card">
-                <h3>📊 Post Metrics</h3>
-                <div class="metric-item">
-                    <span>Sections:</span>
-                    <span class="metric-value">6</span>
+            
+            <!-- Current Status -->
+            <div class="card">
+                <h2><i class="fas fa-chart-line"></i> Current Status</h2>
+                <div style="margin-bottom: 20px;">
+                    <p><strong>Phase:</strong> MVP Development</p>
+                    <p><strong>Focus Platform:</strong> Facebook</p>
+                    <p><strong>Next Milestone:</strong> Facebook API Integration</p>
+                    <p><strong>Estimated Completion:</strong> 2-3 weeks</p>
                 </div>
-                <div class="metric-item">
-                    <span>Total Words:</span>
-                    <span class="metric-value">2,847</span>
-                </div>
-                <div class="metric-item">
-                    <span>Images:</span>
-                    <span class="metric-value">8</span>
-                </div>
-                <div class="metric-item">
-                    <span>Daily Posts:</span>
-                    <span class="metric-value">6</span>
-                </div>
-            </div>
-
-            <!-- Syndication Status -->
-            <div class="metrics-card">
-                <h3>🌐 Syndication Status</h3>
-                <div class="metric-item">
-                    <span>Facebook:</span>
-                    <span class="metric-value">2/6</span>
-                </div>
-                <div class="metric-item">
-                    <span>Instagram:</span>
-                    <span class="metric-value">1/6</span>
-                </div>
-                <div class="metric-item">
-                    <span>Twitter:</span>
-                    <span class="metric-value">3/6</span>
-                </div>
-                <div class="metric-item">
-                    <span>LinkedIn:</span>
-                    <span class="metric-value">0/6</span>
-                </div>
-                <div class="metric-item">
-                    <span>TikTok:</span>
-                    <span class="metric-value">0/6</span>
+                
+                <div class="info-box">
+                    <h3><i class="fas fa-info-circle"></i> MVP Scope</h3>
+                    <p>Initial implementation focusing on Facebook platform:</p>
+                    <ul>
+                        <li>Content adaptation for Facebook posts</li>
+                        <li>Image resizing to 1200×630 dimensions</li>
+                        <li>Text truncation to ≤200 characters</li>
+                        <li>Basic scheduling and posting</li>
+                        <li>Engagement tracking</li>
+                    </ul>
                 </div>
             </div>
         </div>
-
-        <!-- Main Content Area -->
-        <div class="main-content">
-            <!-- Platform Tabs -->
-            <div class="platform-tabs">
-                <button class="platform-tab active" data-platform="facebook">
-                    <i class="fab fa-facebook"></i> Facebook
-                </button>
-                <button class="platform-tab" data-platform="instagram">
-                    <i class="fab fa-instagram"></i> Instagram
-                </button>
-                <button class="platform-tab" data-platform="twitter">
-                    <i class="fab fa-twitter"></i> Twitter
-                </button>
-                <button class="platform-tab" data-platform="linkedin">
-                    <i class="fab fa-linkedin"></i> LinkedIn
-                </button>
-                <button class="platform-tab" data-platform="tiktok">
-                    <i class="fab fa-tiktok"></i> TikTok
-                </button>
-                <button class="platform-tab" data-platform="youtube">
-                    <i class="fab fa-youtube"></i> YouTube
-                </button>
-                <button class="platform-tab" data-platform="pinterest">
-                    <i class="fab fa-pinterest"></i> Pinterest
-                </button>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+            <div class="action-buttons">
+                <a href="#" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Create Facebook Post
+                </a>
+                <a href="#" class="btn btn-secondary">
+                    <i class="fas fa-cog"></i>
+                    Facebook Settings
+                </a>
+                <a href="#" class="btn btn-secondary">
+                    <i class="fas fa-calendar"></i>
+                    Schedule Posts
+                </a>
+                <a href="#" class="btn btn-secondary">
+                    <i class="fas fa-chart-bar"></i>
+                    View Analytics
+                </a>
+                <a href="/docs/social_media_syndication_plan.md" class="btn btn-success" target="_blank">
+                    <i class="fas fa-book"></i>
+                    View Full Plan
+                </a>
             </div>
-
-            <!-- Facebook Content -->
-            <div class="platform-content active" id="facebook-content">
-                <h2><i class="fab fa-facebook"></i> Facebook Syndication</h2>
-                
-                <!-- Content Preview -->
-                <div class="content-preview">
-                    <h3>📝 Content Preview</h3>
-                    <div class="preview-text">
-                        Discover the fascinating history of the Balmoral Kilt, a royal tradition that has graced Scottish ceremonies for centuries. From its distinctive design to the stories behind its creation, this iconic garment represents more than just fashion—it's a symbol of heritage and pride.
-                        
-                        The Balmoral Kilt's unique features include its distinctive tartan pattern and the way it's traditionally worn. Each pleat tells a story, and every thread connects to Scotland's rich cultural tapestry.
-                    </div>
-                    <div class="preview-image">
-                        <i class="fas fa-image"></i> 1200×630 Image Preview
-                    </div>
-                    <div class="preview-text">
-                        <strong>CTA:</strong> "Discover more in the full article → [link]"
-                    </div>
-                </div>
-
-                <!-- Settings -->
-                <div class="settings-grid">
-                    <div class="setting-item">
-                        <label>Character Limit</label>
-                        <input type="text" value="200" readonly>
-                    </div>
-                    <div class="setting-item">
-                        <label>Image Dimensions</label>
-                        <input type="text" value="1200×630" readonly>
-                    </div>
-                    <div class="setting-item">
-                        <label>Tone</label>
-                        <select>
-                            <option>Conversational</option>
-                            <option>Professional</option>
-                            <option>Casual</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Post Timing</label>
-                        <input type="time" value="09:00">
-                    </div>
-                </div>
-
-                <!-- Scheduled Posts -->
-                <div class="scheduled-posts">
-                    <h3>📅 Scheduled Posts</h3>
-                    <div class="scheduled-post">
-                        <div class="post-info">
-                            <div class="post-title">Section 1: Introduction</div>
-                            <div class="post-meta">Tomorrow at 09:00 • 156 characters</div>
-                        </div>
-                        <span class="post-status status-scheduled">Scheduled</span>
-                    </div>
-                    <div class="scheduled-post">
-                        <div class="post-info">
-                            <div class="post-title">Section 2: Historical Background</div>
-                            <div class="post-meta">Day after tomorrow at 09:00 • 189 characters</div>
-                        </div>
-                        <span class="post-status status-scheduled">Scheduled</span>
-                    </div>
-                    <div class="scheduled-post">
-                        <div class="post-info">
-                            <div class="post-title">Section 3: Design Features</div>
-                            <div class="post-meta">3 days from now at 09:00 • 167 characters</div>
-                        </div>
-                        <span class="post-status status-scheduled">Scheduled</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Instagram Content -->
-            <div class="platform-content" id="instagram-content">
-                <h2><i class="fab fa-instagram"></i> Instagram Syndication</h2>
-                
-                <div class="content-preview">
-                    <h3>📱 Instagram Feed Post</h3>
-                    <div class="preview-text">
-                        <strong>Hook:</strong> The Balmoral Kilt: Where royal tradition meets Scottish heritage ✨
-                        
-                        <strong>Caption:</strong> Every pleat tells a story, every thread connects to Scotland's rich cultural tapestry. This iconic garment has graced royal ceremonies for centuries, representing more than just fashion—it's a symbol of pride and tradition.
-                        
-                        <strong>Hashtags:</strong> #BalmoralKilt #ScottishHeritage #RoyalTradition #TartanFashion #CelticCulture #Scotland #Heritage #Fashion
-                    </div>
-                    <div class="preview-image">
-                        <i class="fas fa-image"></i> 1080×1080 Square Image Preview
-                    </div>
-                    <div class="preview-text">
-                        <strong>CTA:</strong> "Read the full story in our bio link!"
-                    </div>
-                </div>
-
-                <div class="settings-grid">
-                    <div class="setting-item">
-                        <label>Hook Line (≤125 chars)</label>
-                        <input type="text" value="The Balmoral Kilt: Where royal tradition meets Scottish heritage ✨">
-                    </div>
-                    <div class="setting-item">
-                        <label>Caption Length</label>
-                        <input type="text" value="150 words" readonly>
-                    </div>
-                    <div class="setting-item">
-                        <label>Image Style</label>
-                        <select>
-                            <option>Square (1080×1080)</option>
-                            <option>Portrait (1080×1350)</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Hashtag Count</label>
-                        <input type="text" value="8" readonly>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Twitter Content -->
-            <div class="platform-content" id="twitter-content">
-                <h2><i class="fab fa-twitter"></i> Twitter/X Syndication</h2>
-                
-                <div class="content-preview">
-                    <h3>🐦 Tweet Preview</h3>
-                    <div class="preview-text">
-                        The Balmoral Kilt isn't just fashion—it's a royal tradition that's graced Scottish ceremonies for centuries. Every pleat tells a story, every thread connects to Scotland's rich cultural tapestry. #ScottishHeritage #RoyalTradition
-                    </div>
-                    <div class="preview-image">
-                        <i class="fas fa-image"></i> 1200×675 Image Preview
-                    </div>
-                    <div class="preview-text">
-                        <strong>Character Count:</strong> 278/280 ✓
-                    </div>
-                </div>
-
-                <div class="settings-grid">
-                    <div class="setting-item">
-                        <label>Character Limit</label>
-                        <input type="text" value="280" readonly>
-                    </div>
-                    <div class="setting-item">
-                        <label>Hashtag Count</label>
-                        <input type="text" value="2" readonly>
-                    </div>
-                    <div class="setting-item">
-                        <label>Image Count</label>
-                        <select>
-                            <option>1 image</option>
-                            <option>2 images</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Post Timing</label>
-                        <input type="time" value="10:00">
-                    </div>
-                </div>
-            </div>
-
-            <!-- LinkedIn Content -->
-            <div class="platform-content" id="linkedin-content">
-                <h2><i class="fab fa-linkedin"></i> LinkedIn Syndication</h2>
-                
-                <div class="content-preview">
-                    <h3>💼 Professional Post Preview</h3>
-                    <div class="preview-text">
-                        The Balmoral Kilt represents more than Scottish fashion—it's a testament to cultural preservation and royal tradition. As we explore its historical significance, we're reminded of how traditional garments can carry centuries of meaning and identity.
-                        
-                        This exploration reveals the intricate balance between maintaining cultural heritage and adapting to modern contexts. The Balmoral Kilt serves as a perfect example of how traditional craftsmanship continues to inspire contemporary appreciation.
-                    </div>
-                    <div class="preview-image">
-                        <i class="fas fa-image"></i> Professional Image Preview
-                    </div>
-                    <div class="preview-text">
-                        <strong>CTA:</strong> "Continue the discussion on our site"
-                    </div>
-                </div>
-
-                <div class="settings-grid">
-                    <div class="setting-item">
-                        <label>Professional Tone</label>
-                        <select>
-                            <option>Reflective</option>
-                            <option>Analytical</option>
-                            <option>Educational</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Content Focus</label>
-                        <select>
-                            <option>Historical Insights</option>
-                            <option>Cultural Analysis</option>
-                            <option>Modern Relevance</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TikTok Content -->
-            <div class="platform-content" id="tiktok-content">
-                <h2><i class="fab fa-tiktok"></i> TikTok Syndication</h2>
-                
-                <div class="content-preview">
-                    <h3>🎵 Video Script Preview</h3>
-                    <div class="preview-text">
-                        <strong>Script (15-45 seconds):</strong>
-                        
-                        "The Balmoral Kilt isn't just fashion—it's a royal tradition! ✨ Every pleat tells a story, every thread connects to Scotland's rich cultural tapestry. This iconic garment has graced royal ceremonies for centuries. Want to know more? Check the link in bio!"
-                    </div>
-                    <div class="preview-image">
-                        <i class="fas fa-video"></i> 1080×1920 Vertical Video Preview
-                    </div>
-                    <div class="preview-text">
-                        <strong>Style:</strong> High-energy narration with trending music and text overlays
-                    </div>
-                </div>
-
-                <div class="settings-grid">
-                    <div class="setting-item">
-                        <label>Video Duration</label>
-                        <select>
-                            <option>15 seconds</option>
-                            <option>30 seconds</option>
-                            <option>45 seconds</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Energy Level</label>
-                        <select>
-                            <option>High</option>
-                            <option>Medium</option>
-                            <option>Low</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Music Style</label>
-                            <select>
-                            <option>Trending</option>
-                            <option>Celtic</option>
-                            <option>Modern</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- YouTube Content -->
-            <div class="platform-content" id="youtube-content">
-                <h2><i class="fab fa-youtube"></i> YouTube Shorts Syndication</h2>
-                
-                <div class="content-preview">
-                    <h3>📺 Shorts Script Preview</h3>
-                    <div class="preview-text">
-                        <strong>Script (15-60 seconds):</strong>
-                        
-                        "Discover the fascinating history of the Balmoral Kilt, a royal tradition that has graced Scottish ceremonies for centuries. From its distinctive design to the stories behind its creation, this iconic garment represents more than just fashion—it's a symbol of heritage and pride."
-                    </div>
-                    <div class="preview-image">
-                        <i class="fas fa-video"></i> 1080×1920 Vertical Video Preview
-                    </div>
-                    <div class="preview-text">
-                        <strong>Style:</strong> Clear voiceover with visual emphasis on artifacts and scenery
-                    </div>
-                </div>
-
-                <div class="settings-grid">
-                    <div class="setting-item">
-                        <label>Video Duration</label>
-                        <select>
-                            <option>15 seconds</option>
-                            <option>30 seconds</option>
-                            <option>45 seconds</option>
-                            <option>60 seconds</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Voiceover Style</label>
-                        <select>
-                            <option>Clear & Professional</option>
-                            <option>Casual & Friendly</option>
-                            <option>Narrative & Storytelling</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pinterest Content -->
-            <div class="platform-content" id="pinterest-content">
-                <h2><i class="fab fa-pinterest"></i> Pinterest Syndication</h2>
-                
-                <div class="content-preview">
-                    <h3>📌 Pin Description Preview</h3>
-                    <div class="preview-text">
-                        <strong>Description:</strong>
-                        
-                        The Balmoral Kilt: A Royal Scottish Tradition ✨ Discover the fascinating history behind this iconic garment that has graced royal ceremonies for centuries. Every pleat tells a story, every thread connects to Scotland's rich cultural tapestry. Perfect for those interested in Scottish heritage, traditional fashion, and cultural preservation.
-                    </div>
-                    <div class="preview-image">
-                        <i class="fas fa-image"></i> 1000×1500 Vertical Pin Preview
-                    </div>
-                    <div class="preview-text">
-                        <strong>SEO Keywords:</strong> Scottish heritage, traditional fashion, cultural preservation, royal tradition
-                    </div>
-                </div>
-
-                <div class="settings-grid">
-                    <div class="setting-item">
-                        <label>Pin Dimensions</label>
-                        <input type="text" value="1000×1500" readonly>
-                    </div>
-                    <div class="setting-item">
-                        <label>Description Length</label>
-                        <input type="text" value="150 words" readonly>
-                    </div>
-                    <div class="setting-item">
-                        <label>SEO Focus</label>
-                        <select>
-                            <option>Scottish Heritage</option>
-                            <option>Traditional Fashion</option>
-                            <option>Cultural Preservation</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Batch Operations -->
-            <div class="batch-controls">
-                <h3>🚀 Batch Operations</h3>
-                
-                <!-- Scheduling -->
-                <div class="control-group">
-                    <div class="control-item">
-                        <label>Start Date</label>
-                        <input type="date" value="2024-01-15">
-                    </div>
-                    <div class="control-item">
-                        <label>Posts Per Day</label>
-                        <select>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                        </select>
-                    </div>
-                    <div class="control-item">
-                        <label>Time Slots</label>
-                        <select>
-                            <option>Morning (09:00)</option>
-                            <option>Afternoon (14:00)</option>
-                            <option>Evening (19:00)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Auto-Adaptation -->
-                <div class="auto-options">
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="auto-resize" checked>
-                        <label for="auto-resize">Auto-resize images</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="auto-truncate" checked>
-                        <label for="auto-truncate">Auto-truncate text</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="auto-hashtags" checked>
-                        <label for="auto-hashtags">Add platform hashtags</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="auto-cta" checked>
-                        <label for="auto-cta">Generate CTAs</label>
-                    </div>
-                </div>
-
-                <!-- Platform Selection -->
-                <div class="platform-checkboxes">
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="platform-fb" checked>
-                        <label for="platform-fb">Facebook</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="platform-ig" checked>
-                        <label for="platform-ig">Instagram</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="platform-tw" checked>
-                        <label for="platform-tw">Twitter</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="platform-li" checked>
-                        <label for="platform-li">LinkedIn</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="platform-tt" checked>
-                        <label for="platform-tt">TikTok</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="platform-yt" checked>
-                        <label for="platform-yt">YouTube</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="platform-pi" checked>
-                        <label for="platform-pi">Pinterest</label>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                    <button class="btn btn-success btn-large">
-                        <i class="fas fa-magic"></i> Generate All Posts
-                    </button>
-                    <button class="btn btn-warning btn-large">
-                        <i class="fas fa-calendar-plus"></i> Schedule All Posts
-                    </button>
-                </div>
-            </div>
-
-            <!-- Content Templates -->
-            <div class="content-templates">
-                <h3>📋 Content Templates</h3>
-                
-                <div class="template-section">
-                    <h4>🎨 Tone Variations</h4>
-                    <div class="template-options">
-                        <div class="template-option selected">Professional (LinkedIn)</div>
-                        <div class="template-option">Conversational (Facebook)</div>
-                        <div class="template-option">Casual (Instagram)</div>
-                        <div class="template-option">Newsy (Twitter)</div>
-                    </div>
-                </div>
-
-                <div class="template-section">
-                    <h4>🔗 CTA Variations</h4>
-                    <div class="template-options">
-                        <div class="template-option selected">"Read more → [link]"</div>
-                        <div class="template-option">"Full story in bio"</div>
-                        <div class="template-option">"Discover more Scottish heritage"</div>
-                        <div class="template-option">"Continue the discussion"</div>
-                    </div>
-                </div>
-
-                <div class="template-section">
-                    <h4>🏷️ Hashtag Sets</h4>
-                    <div class="template-options">
-                        <div class="template-option selected">Scottish Heritage: #Scotland #ScottishHeritage</div>
-                        <div class="template-option">Clan Culture: #ClanHistory #ClanCulture</div>
-                        <div class="template-option">Tartan: #TartanFashion #TartanStyle</div>
-                        <div class="template-option">Celtic: #CelticCulture #CelticHeritage</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Analytics Preview -->
-            <div class="analytics-preview">
-                <h3>📊 Performance Tracking</h3>
-                
-                <div class="metric-chart">
-                    <i class="fas fa-chart-line"></i> Engagement Metrics Chart
-                </div>
-                
-                <div class="metric-stats">
-                    <div class="stat-box">
-                        <div class="stat-number">2.4K</div>
-                        <div class="stat-label">Likes</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number">156</div>
-                        <div class="stat-label">Comments</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number">89</div>
-                        <div class="stat-label">Shares</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number">4.2%</div>
-                        <div class="stat-label">CTR</div>
-                    </div>
-                </div>
+            
+            <div class="info-box">
+                <h3><i class="fas fa-lightbulb"></i> Next Steps</h3>
+                <p>To proceed with the MVP development:</p>
+                <ul>
+                    <li>Set up Facebook Developer account and app</li>
+                    <li>Implement Facebook Graph API integration</li>
+                    <li>Create content adaptation engine</li>
+                    <li>Build basic posting interface</li>
+                    <li>Test with sample blog content</li>
+                </ul>
             </div>
         </div>
     </div>
-
-    <script>
-        // Platform tab switching
-        document.querySelectorAll('.platform-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Remove active class from all tabs and content
-                document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.platform-content').forEach(c => c.classList.remove('active'));
-                
-                // Add active class to clicked tab
-                tab.classList.add('active');
-                
-                // Show corresponding content
-                const platform = tab.dataset.platform;
-                document.getElementById(`${platform}-content`).classList.add('active');
-            });
-        });
-
-        // Template option selection
-        document.querySelectorAll('.template-option').forEach(option => {
-            option.addEventListener('click', () => {
-                // Remove selected from siblings
-                option.parentElement.querySelectorAll('.template-option').forEach(o => o.classList.remove('selected'));
-                // Add selected to clicked option
-                option.classList.add('selected');
-            });
-        });
-
-        // Post selector change
-        document.getElementById('postSelect').addEventListener('change', (e) => {
-            if (e.target.value) {
-                // In a real implementation, this would load post data
-                console.log('Selected post:', e.target.value);
-            }
-        });
-
-        // Generate All Posts button
-        document.querySelector('.btn-success').addEventListener('click', () => {
-            alert('This would generate all social media posts for the selected platforms and content!');
-        });
-
-        // Schedule All Posts button
-        document.querySelector('.btn-warning').addEventListener('click', () => {
-            alert('This would schedule all generated posts according to the specified timing!');
-        });
-    </script>
 </body>
 </html>
