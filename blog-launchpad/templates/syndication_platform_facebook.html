@@ -534,30 +534,7 @@
                         </div>
                     </div>
 
-                    <!-- Full Width Platform Activation -->
-                    <div class="spec-card mt-3">
-                        <div class="spec-header">
-                            <h5 class="text-white mb-0"><i class="fas fa-power-off me-2"></i>Platform Activation</h5>
-                        </div>
-                        <div class="spec-body text-white">
-                            <div class="row align-items-center">
-                                <div class="col-md-6">
-                                    <div class="spec-item">
-                                        <span class="spec-label">Current Status:</span>
-                                        <span class="spec-value"><span id="platform-status">{{ platform.status|title }}</span></span>
-                                    </div>
-                                    <div class="spec-item">
-                                        <span class="spec-label">Last Activated:</span>
-                                        <span class="spec-value">Never</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 text-end">
-                                    <button id="activate-btn" class="btn btn-success me-2">Activate Platform</button>
-                                    <button id="deactivate-btn" class="btn btn-secondary">Deactivate</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <!-- Content Process Selection -->
                     <div class="spec-card mt-3">
@@ -664,95 +641,9 @@
                 if (indicator) indicator.style.backgroundColor = '#10b981';
             });
             
-            // Automatically activate Facebook when this page loads
-            console.log('Looking for Facebook tab...');
-            const facebookTab = document.querySelector('[data-platform="facebook"]');
-            console.log('Facebook tab found:', facebookTab);
-            if (facebookTab) {
-                console.log('Setting Facebook to active...');
-                facebookTab.className = 'platform-tab status-active';
-                const statusIndicator = facebookTab.querySelector('.status-indicator');
-                if (statusIndicator) {
-                    statusIndicator.className = 'status-indicator status-active';
-                }
-                console.log('Facebook tab classes:', facebookTab.className);
-            }
+
             
-            // Update the status display to show Active
-            const platformStatus = document.getElementById('platform-status');
-            if (platformStatus) {
-                platformStatus.textContent = 'Active';
-                platformStatus.className = 'text-success';
-            }
-            
-            // Apply active styling to Facebook tab
-            if (facebookTab) {
-                console.log('Applying active styling to Facebook...');
-                facebookTab.style.backgroundColor = '#ffffff';
-                const text = facebookTab.querySelector('.platform-name');
-                const icon = facebookTab.querySelector('.platform-icon');
-                if (text) text.style.color = '#000000';
-                if (icon) icon.style.filter = 'brightness(0) invert(0)';
-                const indicator = facebookTab.querySelector('.status-indicator');
-                if (indicator) indicator.style.backgroundColor = '#10b981';
-                console.log('Active styling applied. Background color:', facebookTab.style.backgroundColor);
-            }
-            
-            // Handle platform activation
-            const activateBtn = document.getElementById('activate-btn');
-            const deactivateBtn = document.getElementById('deactivate-btn');
-            
-            activateBtn.addEventListener('click', function() {
-                // Update the Facebook tab in the sidebar
-                const facebookTab = document.querySelector('[data-platform="facebook"]');
-                if (facebookTab) {
-                    facebookTab.className = 'platform-tab status-active';
-                    const statusIndicator = facebookTab.querySelector('.status-indicator');
-                    if (statusIndicator) {
-                        statusIndicator.className = 'status-indicator status-active';
-                    }
-                }
-                
-                // Update the status display
-                platformStatus.textContent = 'Active';
-                platformStatus.className = 'text-success';
-                
-                // Re-run the color styling
-                document.querySelectorAll('.status-active').forEach(tab => {
-                    tab.style.backgroundColor = '#ffffff';
-                    const text = tab.querySelector('.platform-name');
-                    const icon = tab.querySelector('.platform-icon');
-                    if (text) text.style.color = '#000000';
-                    if (icon) icon.style.filter = 'brightness(0) invert(0)';
-                    const indicator = tab.querySelector('.status-indicator');
-                    if (indicator) indicator.style.backgroundColor = '#10b981';
-                });
-            });
-            
-            deactivateBtn.addEventListener('click', function() {
-                // Update the Facebook tab in the sidebar
-                const facebookTab = document.querySelector('[data-platform="facebook"]');
-                if (facebookTab) {
-                    facebookTab.className = 'platform-tab status-developed';
-                    const statusIndicator = facebookTab.querySelector('.status-indicator');
-                    if (statusIndicator) {
-                        statusIndicator.className = 'status-indicator status-developed';
-                    }
-                }
-                
-                // Update the status display
-                platformStatus.textContent = 'Developed';
-                platformStatus.className = 'text-white';
-                
-                // Re-run the color styling
-                document.querySelectorAll('.status-developed').forEach(tab => {
-                    tab.style.backgroundColor = '#f8f9fa';
-                    const text = tab.querySelector('.platform-name');
-                    const icon = tab.querySelector('.platform-icon');
-                    if (text) text.style.color = '#000000';
-                    if (icon) icon.style.filter = 'brightness(0) invert(0)';
-                });
-            });
+
             
             // CRUD Functionality for Specifications
             let editingSpec = null;
