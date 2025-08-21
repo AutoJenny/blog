@@ -144,7 +144,43 @@ def syndication_platform_settings():
 @app.route('/syndication/platform-settings/<platform>')
 def syndication_platform_detail(platform):
     """Individual platform settings page."""
-    return render_template(f'syndication_platform_{platform}.html')
+    try:
+        from models.social_media import SocialMediaPlatform
+        
+        # Database configuration
+        db_config = {
+            'host': 'localhost',
+            'database': 'blog',
+            'user': 'nickfiddes',
+            'password': 'password',
+            'port': '5432'
+        }
+        
+        # Get platform data with specifications
+        platform_model = SocialMediaPlatform(db_config)
+        platform_data = platform_model.get_platform_with_specs(platform)
+        
+        if not platform_data:
+            # Fallback to basic data if platform not found
+            platform_data = {
+                'platform_name': platform,
+                'display_name': platform.title(),
+                'status': 'undeveloped',
+                'specifications': {}
+            }
+        
+        return render_template(f'syndication_platform_{platform}.html', platform=platform_data)
+        
+    except Exception as e:
+        # Fallback to basic data if there's any error
+        print(f"Error loading platform data: {e}")
+        platform_data = {
+            'platform_name': platform,
+            'display_name': platform.title(),
+            'status': 'undeveloped',
+            'specifications': {}
+        }
+        return render_template(f'syndication_platform_{platform}.html', platform=platform_data)
 
 @app.route('/api/syndication/published-posts')
 def get_published_posts():
