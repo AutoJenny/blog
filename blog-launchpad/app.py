@@ -182,6 +182,11 @@ def syndication_platform_detail(platform):
         }
         return render_template(f'syndication_platform_{platform}.html', platform=platform_data)
 
+@app.route('/syndication/create-piece')
+def syndication_create_piece():
+    """Create Piece page for social media syndication."""
+    return render_template('syndication_create_piece.html')
+
 # API endpoints for CRUD operations on social media specifications
 @app.route('/api/social-media/specifications/update', methods=['POST'])
 def update_specification():
