@@ -182,6 +182,123 @@ def syndication_platform_detail(platform):
         }
         return render_template(f'syndication_platform_{platform}.html', platform=platform_data)
 
+# API endpoints for CRUD operations on social media specifications
+@app.route('/api/social-media/specifications/update', methods=['POST'])
+def update_specification():
+    """Update a social media platform specification."""
+    try:
+        from models.social_media import SocialMediaSpecification
+        
+        data = request.get_json()
+        spec_id = data.get('spec_id')
+        category = data.get('category')
+        key = data.get('key')
+        value = data.get('value')
+        
+        if not all([spec_id, category, key, value]):
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        # Database configuration
+        db_config = {
+            'host': 'localhost',
+            'database': 'blog',
+            'user': 'nickfiddes',
+            'password': 'password',
+            'port': '5432'
+        }
+        
+        spec_model = SocialMediaSpecification(db_config)
+        success = spec_model.update_specification_by_id(spec_id, value)
+        
+        if success:
+            return jsonify({'message': 'Specification updated successfully'})
+        else:
+            return jsonify({'error': 'Failed to update specification'}), 500
+            
+    except Exception as e:
+        print(f"Error updating specification: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/specifications/add', methods=['POST'])
+def add_specification():
+    """Add a new social media platform specification."""
+    try:
+        from models.social_media import SocialMediaSpecification, SocialMediaPlatform
+        
+        data = request.get_json()
+        platform_name = data.get('platform_name')
+        category = data.get('category')
+        key = data.get('key')
+        value = data.get('value')
+        
+        if not all([platform_name, category, key, value]):
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        # Database configuration
+        db_config = {
+            'host': 'localhost',
+            'database': 'blog',
+            'user': 'nickfiddes',
+            'password': 'password',
+            'port': '5432'
+        }
+        
+        # Get platform ID
+        platform_model = SocialMediaPlatform(db_config)
+        platform = platform_model.get_platform_by_name(platform_name)
+        
+        if not platform:
+            return jsonify({'error': 'Platform not found'}), 404
+        
+        # Add specification
+        spec_model = SocialMediaSpecification(db_config)
+        success = spec_model.add_specification(
+            platform['id'], category, key, value, 
+            spec_type='text', is_required=False, display_order=0
+        )
+        
+        if success:
+            return jsonify({'message': 'Specification added successfully'})
+        else:
+            return jsonify({'error': 'Failed to add specification'}), 500
+            
+    except Exception as e:
+        print(f"Error adding specification: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/specifications/delete', methods=['DELETE'])
+def delete_specification():
+    """Delete a social media platform specification."""
+    try:
+        from models.social_media import SocialMediaSpecification
+        
+        data = request.get_json()
+        spec_id = data.get('spec_id')
+        
+        if not spec_id:
+            return jsonify({'error': 'Missing specification ID'}), 400
+        
+        # Database configuration
+        db_config = {
+            'host': 'localhost',
+            'database': 'blog',
+            'user': 'nickfiddes',
+            'password': 'password',
+            'port': '5432'
+        }
+        
+        spec_model = SocialMediaSpecification(db_config)
+        success = spec_model.delete_specification(spec_id)
+        
+        if success:
+            return jsonify({'message': 'Specification deleted successfully'})
+        else:
+            return jsonify({'error': 'Failed to delete specification'}), 500
+            
+    except Exception as e:
+        print(f"Error deleting specification: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/syndication/published-posts')
 def get_published_posts():
     """Get all posts with status=published for syndication."""
