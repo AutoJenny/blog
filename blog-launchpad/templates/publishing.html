@@ -414,7 +414,7 @@
                     const postIndex = posts.findIndex(p => p.id === postId);
                     if (postIndex !== -1) {
                         posts[postIndex].clan_post_id = result.clan_post_id;
-                        posts[postIndex].clan_status = 'published';
+                        posts[postIndex].status = 'published';
                         posts[postIndex].clan_uploaded_url = result.url;
                         posts[postIndex].clan_error = null;
                         updateStatistics();
@@ -432,7 +432,7 @@
                 // Update the post in our local list
                 const postIndex = posts.findIndex(p => p.id === postId);
                 if (postIndex !== -1) {
-                    posts[postIndex].clan_status = 'error';
+                    posts[postIndex].status = 'error';
                     posts[postIndex].clan_error = error.message;
                     updateStatistics();
                     renderPosts();
@@ -548,8 +548,7 @@
                 const data = await response.json();
                 posts = data.map(post => ({
                     ...post,
-                    // Use real clan publishing data from database
-                    clan_status: post.clan_status || 'not_published',
+                    // Use unified status from database
                     clan_last_attempt: post.clan_last_attempt ? new Date(post.clan_last_attempt) : null
                 }));
                 
@@ -564,9 +563,9 @@
 
         function updateStatistics() {
             publishingStats.total = posts.length;
-            publishingStats.published = posts.filter(p => p.clan_status === 'published').length;
-            publishingStats.pending = posts.filter(p => p.clan_status === 'not_published').length;
-            publishingStats.errors = posts.filter(p => p.clan_status === 'error').length;
+            publishingStats.published = posts.filter(p => p.status === 'published').length;
+            publishingStats.pending = posts.filter(p => p.status === 'draft' || p.status === 'in_process').length;
+            publishingStats.errors = posts.filter(p => p.status === 'error').length;
             
             document.getElementById('total-posts').textContent = publishingStats.total;
             document.getElementById('published-posts').textContent = publishingStats.published;
@@ -609,7 +608,7 @@
 
         function createPostCard(post) {
             const div = document.createElement('div');
-            div.className = `post-card ${post.clan_status}`;
+                            div.className = `post-card ${post.status}`;
             div.setAttribute('data-post-id', post.id);
             
             const statusInfo = getStatusInfo(post);
@@ -631,12 +630,12 @@
                             </small>
                         </p>
                         <div class="mb-2">
-                            ${post.clan_status === 'published' ? '<span class="status-badge status-published"><i class="fas fa-check me-1"></i>Published</span>' : '<span class="badge bg-secondary me-1">' + (post.status || 'draft') + '</span>'}
+                            ${post.status === 'published' ? '<span class="status-badge status-published"><i class="fas fa-check me-1"></i>Published</span>' : '<span class="badge bg-secondary me-1">' + (post.status || 'draft') + '</span>'}
                             ${post.id ? '<span class="badge bg-secondary me-1">ID: ' + post.id + '</span>' : ''}
                         </div>
                     </div>
                     <div class="col-md-3">
-                        ${post.clan_status === 'published' ? 
+                        ${post.status === 'published' ? 
                             '<div class="update-button-container"><button class="btn publish-btn"><i class="fas fa-sync me-1"></i>Update</button></div>' : 
                             '<span class="status-badge ' + statusInfo.class + '">' + statusInfo.icon + ' ' + statusInfo.text + '</span>'
                         }
@@ -652,13 +651,13 @@
             const publishBtn = div.querySelector('.publish-btn, .retry-btn');
             if (publishBtn && !publishBtn.disabled) {
                 publishBtn.addEventListener('click', () => {
-                    if (post.clan_status === 'error') {
-                        retryPublish(post.id);
-                    } else if (post.clan_status === 'published') {
-                        republishPost(post.id);
-                    } else {
-                        publishPost(post.id);
-                    }
+                                    if (post.status === 'error') {
+                    retryPublish(post.id);
+                } else if (post.status === 'published') {
+                    republishPost(post.id);
+                } else {
+                    publishPost(post.id);
+                }
                 });
             }
             
@@ -671,7 +670,7 @@
         }
 
         function getStatusInfo(post) {
-            switch (post.clan_status) {
+            switch (post.status) {
                 case 'published':
                     return {
                         class: 'status-published',
@@ -723,7 +722,7 @@
                 </button>
             `;
             
-            if (post.clan_status === 'publishing') {
+            if (post.status === 'publishing') {
                 return `
                     <div class="action-buttons-container">
                         <button class="btn publish-btn" disabled>
@@ -738,7 +737,7 @@
                         </div>
                     </div>
                 `;
-            } else if (post.clan_status === 'error') {
+            } else if (post.status === 'error') {
                 return `
                     <div class="action-buttons-container">
                         <button class="btn retry-btn">
@@ -753,7 +752,7 @@
                         </div>
                     </div>
                 `;
-            } else if (post.clan_status === 'published') {
+            } else if (post.status === 'published') {
                 return `
                     <div class="action-buttons-container">
                         <div class="view-buttons-group">
