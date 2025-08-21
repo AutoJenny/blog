@@ -4,377 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Social Media Syndication - Blog Launchpad</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
         }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8f9fa;
-            color: #333;
-            line-height: 1.6;
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        .nav-dropdown a {
+            color: #e0e0e0;
         }
-        
-        .header {
-            background: white;
-            border-radius: 8px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
         }
-        
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #007bff;
-        }
-        
-        .header p {
-            font-size: 1.1rem;
-            color: #666;
-        }
-        
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .card h2 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .card h2 i {
-            color: #007bff;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-left: 10px;
-        }
-        
-        .status-mvp {
-            background: #28a745;
+        .publishing-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-        }
-        
-        .status-coming-soon {
-            background: #ffc107;
-            color: #333;
-        }
-        
-        .platform-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .platform-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .platform-list li:last-child {
-            border-bottom: none;
-        }
-        
-        .platform-name {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-        }
-        
-        .platform-icon {
-            width: 20px;
-            text-align: center;
-        }
-        
-        .platform-status {
-            font-size: 0.9rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-        }
-        
-        .status-active {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .status-inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .quick-actions {
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .quick-actions h2 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-        
-        .btn-primary {
-            background: #007bff;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #0056b3;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #545b62;
-        }
-        
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #218838;
-        }
-        
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        .info-box {
-            background: #e7f3ff;
-            border: 1px solid #b3d9ff;
-            border-radius: 6px;
-            padding: 15px;
-            margin-top: 20px;
-        }
-        
-        .info-box h3 {
-            color: #0056b3;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-        
-        .info-box p {
-            color: #0056b3;
-            margin-bottom: 8px;
-        }
-        
-        .info-box ul {
-            margin-left: 20px;
-            color: #0056b3;
-        }
-        
-        @media (max-width: 768px) {
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
+            padding: 2rem 0;
+            margin-bottom: 2rem;
         }
     </style>
 </head>
-<body>
+<body class="bg-dark">
+    <!-- Header -->
+    <header class="bg-dark shadow-lg border-bottom py-3">
+        <nav class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <!-- Logo and Title -->
+                    <a href="/" class="d-flex align-items-center text-white text-decoration-none me-4">
+                        <img src="http://localhost:5000/static/images/site/brand-logo.png" alt="BlogForge Logo" class="rounded-circle shadow me-2" style="background:#23273a; width: 40px; height: 40px;" />
+                        <span class="fw-bold text-white fs-3">BlogForge</span>
+                    </a>
+                </div>
+                <div class="d-flex align-items-center">
+                    <!-- Modules Dropdown -->
+                    <div class="dropdown me-3">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button" id="modulesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-cubes me-1"></i> Modules
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="modulesDropdown">
+                            <li><a class="dropdown-item" href="/db/"><i class="fas fa-database text-purple me-2"></i>Database</a></li>
+                            <li><a class="dropdown-item" href="/llm/"><i class="fas fa-brain text-pink me-2"></i>AI</a></li>
+                            <li><a class="dropdown-item" href="/llm/images"><i class="fas fa-image text-info me-2"></i>Images</a></li>
+                            <li><a class="dropdown-item" href="/servers/"><i class="fas fa-server text-success me-2"></i>Servers</a></li>
+                        </ul>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <a href="/posts" class="btn btn-link text-white text-decoration-none me-3">Posts</a>
+                        <a href="/workflow/" class="btn btn-link text-white text-decoration-none">Workflow</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-rocket me-2"></i>Blog Launchpad
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Dashboard</a>
+                <a class="nav-link" href="/cross-promotion">Cross Promotion</a>
+                <a class="nav-link" href="/publishing">Publishing</a>
+                <a class="nav-link active" href="/syndication">Syndication</a>
+                <a class="nav-link" href="/test-api">API Test</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Publishing Header -->
+    <div class="publishing-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <h1 class="mb-2">
+                        <i class="fas fa-share-alt me-3"></i>Social Media Syndication
+                    </h1>
+                    <p class="mb-0 opacity-75">Automatically distribute blog content across social media platforms</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-share-alt"></i> Social Media Syndication</h1>
-            <p>Automatically distribute blog content across social media platforms with intelligent content adaptation</p>
-        </div>
-        
-        <div class="content-grid">
-            <!-- Platform Status -->
-            <div class="card">
-                <h2>
-                    <i class="fas fa-globe"></i>
-                    Platform Status
-                    <span class="status-badge status-mvp">MVP Phase</span>
-                </h2>
-                <ul class="platform-list">
-                    <li>
-                        <div class="platform-name">
-                            <span class="platform-icon"><i class="fab fa-facebook"></i></span>
-                            Facebook
-                        </div>
-                        <span class="platform-status status-active">Active</span>
-                    </li>
-                    <li>
-                        <div class="platform-name">
-                            <span class="platform-icon"><i class="fab fa-instagram"></i></span>
-                            Instagram
-                        </div>
-                        <span class="platform-status status-pending">Coming Soon</span>
-                    </li>
-                    <li>
-                        <div class="platform-name">
-                            <span class="platform-icon"><i class="fab fa-twitter"></i></span>
-                            X (Twitter)
-                        </div>
-                        <span class="platform-status status-pending">Coming Soon</span>
-                    </li>
-                    <li>
-                        <div class="platform-name">
-                            <span class="platform-icon"><i class="fab fa-linkedin"></i></span>
-                            LinkedIn
-                        </div>
-                        <span class="platform-status status-pending">Coming Soon</span>
-                    </li>
-                    <li>
-                        <div class="platform-name">
-                            <span class="platform-icon"><i class="fab fa-tiktok"></i></span>
-                            TikTok
-                        </div>
-                        <span class="platform-status status-inactive">Planned</span>
-                    </li>
-                    <li>
-                        <div class="platform-name">
-                            <span class="platform-icon"><i class="fab fa-youtube"></i></span>
-                            YouTube Shorts
-                        </div>
-                        <span class="platform-status status-inactive">Planned</span>
-                    </li>
-                    <li>
-                        <div class="platform-name">
-                            <span class="platform-icon"><i class="fab fa-pinterest"></i></span>
-                            Pinterest
-                        </div>
-                        <span class="platform-status status-inactive">Planned</span>
-                    </li>
-                </ul>
-            </div>
-            
-            <!-- Current Status -->
-            <div class="card">
-                <h2><i class="fas fa-chart-line"></i> Current Status</h2>
-                <div style="margin-bottom: 20px;">
-                    <p><strong>Phase:</strong> MVP Development</p>
-                    <p><strong>Focus Platform:</strong> Facebook</p>
-                    <p><strong>Next Milestone:</strong> Facebook API Integration</p>
-                    <p><strong>Estimated Completion:</strong> 2-3 weeks</p>
-                </div>
-                
-                <div class="info-box">
-                    <h3><i class="fas fa-info-circle"></i> MVP Scope</h3>
-                    <p>Initial implementation focusing on Facebook platform:</p>
-                    <ul>
-                        <li>Content adaptation for Facebook posts</li>
-                        <li>Image resizing to 1200×630 dimensions</li>
-                        <li>Text truncation to ≤200 characters</li>
-                        <li>Basic scheduling and posting</li>
-                        <li>Engagement tracking</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
-            <div class="action-buttons">
-                <a href="#" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Create Facebook Post
-                </a>
-                <a href="#" class="btn btn-secondary">
-                    <i class="fas fa-cog"></i>
-                    Facebook Settings
-                </a>
-                <a href="#" class="btn btn-secondary">
-                    <i class="fas fa-calendar"></i>
-                    Schedule Posts
-                </a>
-                <a href="#" class="btn btn-secondary">
-                    <i class="fas fa-chart-bar"></i>
-                    View Analytics
-                </a>
-                <a href="/docs/social_media_syndication_plan.md" class="btn btn-success" target="_blank">
-                    <i class="fas fa-book"></i>
-                    View Full Plan
-                </a>
-            </div>
-            
-            <div class="info-box">
-                <h3><i class="fas fa-lightbulb"></i> Next Steps</h3>
-                <p>To proceed with the MVP development:</p>
-                <ul>
-                    <li>Set up Facebook Developer account and app</li>
-                    <li>Implement Facebook Graph API integration</li>
-                    <li>Create content adaptation engine</li>
-                    <li>Build basic posting interface</li>
-                    <li>Test with sample blog content</li>
-                </ul>
-            </div>
-        </div>
+        <h2>Social Media Syndication</h2>
     </div>
 </body>
 </html>
