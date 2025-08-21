@@ -136,6 +136,66 @@ def syndication_select_posts():
     """Select Posts for syndication."""
     return render_template('syndication_select_posts.html')
 
+@app.route('/api/syndication/published-posts')
+def get_published_posts():
+    """Get all posts with status=published for syndication."""
+    try:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        
+        # Database connection
+        conn = psycopg2.connect(
+            host="localhost",
+            database="blog",
+            user="postgres",
+            password="postgres"
+        )
+        
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Get published posts ordered by most recently updated
+        query = """
+            SELECT 
+                p.id,
+                p.title,
+                p.status,
+                p.clan_status,
+                p.created_at,
+                p.updated_at,
+                p.slug,
+                COUNT(ps.id) as section_count
+            FROM post p
+            LEFT JOIN post_section ps ON p.id = ps.post_id
+            WHERE p.status = 'published' OR p.clan_status = 'published'
+            GROUP BY p.id, p.title, p.status, p.clan_status, p.created_at, p.updated_at, p.slug
+            ORDER BY p.updated_at DESC
+        """
+        
+        cursor.execute(query)
+        posts = cursor.fetchall()
+        
+        # Convert to list of dicts for JSON serialization
+        posts_list = []
+        for post in posts:
+            posts_list.append({
+                'id': post['id'],
+                'title': post['title'],
+                'status': post['status'],
+                'clan_status': post['clan_status'],
+                'created_at': post['created_at'].isoformat() if post['created_at'] else None,
+                'updated_at': post['updated_at'].isoformat() if post['updated_at'] else None,
+                'slug': post['slug'],
+                'section_count': post['section_count']
+            })
+        
+        cursor.close()
+        conn.close()
+        
+        return {'posts': posts_list}
+        
+    except Exception as e:
+        return {'error': str(e)}, 500
+
 @app.route('/test-api')
 def test_api():
     """Test API endpoint."""
