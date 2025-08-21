@@ -141,6 +141,11 @@ def syndication_platform_settings():
     """Platform Settings for syndication."""
     return render_template('syndication_platform_settings.html')
 
+@app.route('/syndication/platform-settings/<platform>')
+def syndication_platform_detail(platform):
+    """Individual platform settings page."""
+    return render_template(f'syndication_platform_{platform}.html')
+
 @app.route('/api/syndication/published-posts')
 def get_published_posts():
     """Get all posts with status=published for syndication."""

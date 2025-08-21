@@ -1,0 +1,164 @@
+/* Launchpad Styles - Social Media Syndication */
+
+/* Header Styles */
+.header-gradient {
+    background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+}
+
+.nav-dropdown {
+    background: #23273a;
+    border: 1px solid #31364a;
+    box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+}
+
+.nav-dropdown a {
+    color: #e0e0e0;
+}
+
+.nav-dropdown a:hover {
+    background: #23273a;
+    color: #a5b4fc;
+}
+
+.publishing-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+}
+
+/* Platform Sidebar Styling */
+.platform-sidebar {
+    background-color: #1a1d29;
+    border-right: 1px solid #495057;
+    min-height: calc(100vh - 300px);
+    padding: 1rem;
+}
+
+.platform-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.platform-tab {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: #dd6707;
+    border: 1px solid #2d3748;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    gap: 0.75rem;
+}
+
+.platform-tab:hover {
+    background-color: #2d3748;
+    border-color: #667eea;
+}
+
+.platform-tab.active {
+    background-color: #2d3748;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
+}
+
+.platform-icon {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(0.2);
+}
+
+.platform-name {
+    flex: 1;
+    color: #2d3748;
+    font-weight: 500;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #495057;
+}
+
+/* Status Levels */
+.status-undeveloped {
+    background-color: #6c757d;
+}
+
+.status-undeveloped .platform-tab {
+    background-color: #ff0000 !important;
+    opacity: 1;
+    filter: none;
+    border: 5px solid yellow !important;
+}
+
+.status-undeveloped .platform-name {
+    color: #cccccc;
+}
+
+.status-undeveloped .platform-icon {
+    filter: brightness(0) invert(0.8);
+}
+
+.status-developed {
+    background-color: #9ca3af;
+}
+
+.status-developed .platform-tab {
+    background-color: #f8f9fa !important;
+    opacity: 1;
+    filter: none;
+}
+
+.status-developed .platform-name {
+    color: #000000;
+}
+
+.status-developed .platform-icon {
+    filter: brightness(0) invert(0);
+}
+
+.status-active {
+    background-color: #10b981;
+}
+
+.status-active .platform-tab {
+    background-color: #ffffff !important;
+    opacity: 1;
+    filter: none;
+}
+
+.status-active .platform-name {
+    color: #000000;
+}
+
+.status-active .platform-icon {
+    filter: brightness(0) invert(0);
+}
+
+/* Platform Content Area */
+.platform-content {
+    padding: 1rem;
+}
+
+/* Spec Cards */
+.spec-card {
+    background-color: #1a1d29;
+    border: 1px solid #495057;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.spec-header {
+    background-color: #23273a;
+    border-bottom: 1px solid #495057;
+    padding: 1rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.spec-body {
+    padding: 1rem;
+}
