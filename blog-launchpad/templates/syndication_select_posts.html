@@ -28,6 +28,38 @@
             padding: 1rem 0;
             margin-bottom: 2rem;
         }
+        
+        /* Accordion styling for dark theme */
+        .accordion-button {
+            background-color: #23273a !important;
+            border-color: #495057 !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background-color: #2d3748 !important;
+            border-color: #495057 !important;
+            color: #e0e0e0 !important;
+            box-shadow: none !important;
+        }
+        
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25) !important;
+            border-color: #667eea !important;
+        }
+        
+        .accordion-button::after {
+            filter: invert(1);
+        }
+        
+        .accordion-item {
+            border-color: #495057 !important;
+        }
+        
+        .accordion-body {
+            background-color: #1a1d29 !important;
+            border-top: 1px solid #495057 !important;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -95,39 +127,43 @@
     </div>
 
     <div class="container">
-        <!-- Post Selection Area -->
+                <!-- Post Selection Area -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="card bg-dark text-white border-secondary">
-                    <div class="card-header bg-secondary text-dark">
-                        <h5 class="mb-0">
-                            <i class="fas fa-list me-2"></i>Select Post for Syndication
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <!-- Post Dropdown -->
-                        <div class="mb-3">
-                            <label for="postSelector" class="form-label">Choose a published post:</label>
-                            <select class="form-select bg-dark text-white border-secondary" id="postSelector">
-                                <option value="">Loading posts...</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Selected Post Details -->
-                        <div id="postDetails" class="d-none">
-                            <hr class="border-secondary">
-                            <h6 class="text-info mb-3">Post Details</h6>
-                            <div class="row">
-                                                <div class="col-md-6">
-                    <p><strong>Title:</strong> <span id="postTitle"></span></p>
-                    <p><strong>Created Date:</strong> <span id="postCreatedAt"></span></p>
-                    <p><strong>Last Updated:</strong> <span id="postUpdatedAt"></span></p>
-                </div>
-                                <div class="col-md-6">
-                                    <p><strong>Post ID:</strong> <span id="postId"></span></p>
-                                    <p><strong>Status:</strong> <span id="postStatus"></span></p>
-                                    <p><strong>Slug:</strong> <span id="postSlug"></span></p>
-                                    <p><strong>Number of Sections:</strong> <span id="postSectionCount"></span></p>
+                <div class="accordion" id="postSelectionAccordion">
+                    <div class="accordion-item bg-dark text-white border-secondary">
+                        <h2 class="accordion-header" id="postSelectionHeader">
+                            <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#postSelectionCollapse" aria-expanded="false" aria-controls="postSelectionCollapse">
+                                <i class="fas fa-list me-2"></i><span id="accordionTitle">Select Post for Syndication</span>
+                            </button>
+                        </h2>
+                        <div id="postSelectionCollapse" class="accordion-collapse collapse" aria-labelledby="postSelectionHeader" data-bs-parent="#postSelectionAccordion">
+                            <div class="accordion-body">
+                                <!-- Post Dropdown -->
+                                <div class="mb-3">
+                                    <label for="postSelector" class="form-label">Choose a published post:</label>
+                                    <select class="form-select bg-dark text-white border-secondary" id="postSelector">
+                                        <option value="">Loading posts...</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Selected Post Details -->
+                                <div id="postDetails" class="d-none">
+                                    <hr class="border-secondary">
+                                    <h6 class="text-info mb-3">Post Details</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Title:</strong> <span id="postTitle"></span></p>
+                                            <p><strong>Created Date:</strong> <span id="postCreatedAt"></span></p>
+                                            <p><strong>Last Updated:</strong> <span id="postUpdatedAt"></span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Post ID:</strong> <span id="postId"></span></p>
+                                            <p><strong>Status:</strong> <span id="postStatus"></span></p>
+                                            <p><strong>Slug:</strong> <span id="postSlug"></span></p>
+                                            <p><strong>Number of Sections:</strong> <span id="postSectionCount"></span></p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -212,6 +248,9 @@
                 
                 document.getElementById('postCreatedAt').textContent = createdDate;
                 document.getElementById('postUpdatedAt').textContent = updatedDate;
+                
+                // Update accordion title to show selected post
+                document.getElementById('accordionTitle').textContent = `Post: ${post.title}`;
                 
                 postDetails.classList.remove('d-none');
             }
