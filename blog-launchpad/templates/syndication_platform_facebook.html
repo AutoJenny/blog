@@ -147,6 +147,17 @@
             background-color: #343a40;
             color: white;
         }
+        
+        /* Accordion button indicators */
+        .accordion-button::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .accordion-button:not(.collapsed)::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -225,10 +236,15 @@
                         <div class="col-md-6">
                             <!-- Content Specifications -->
                             <div class="spec-card">
-                                <div class="spec-header">
-                                    <h5 class="text-white mb-0"><i class="fas fa-file-alt me-2"></i>Content Specifications</h5>
-                                </div>
-                                <div class="spec-body text-white">
+                                <div class="accordion" id="contentSpecsAccordion">
+                                    <div class="accordion-item bg-dark border-secondary">
+                                        <h2 class="accordion-header" id="contentSpecsHeader">
+                                            <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#contentSpecsCollapse" aria-expanded="false" aria-controls="contentSpecsCollapse">
+                                                <i class="fas fa-file-alt me-2"></i>Content Specifications
+                                            </button>
+                                        </h2>
+                                        <div id="contentSpecsCollapse" class="accordion-collapse collapse" aria-labelledby="contentSpecsHeader" data-bs-parent="#contentSpecsAccordion">
+                                            <div class="accordion-body text-white">
                                     {% if platform.specifications.content %}
                                         {% for spec in platform.specifications.content %}
                                         <div class="spec-item" data-spec-id="{{ spec.id }}" data-category="content" data-key="{{ spec.spec_key }}">
@@ -291,15 +307,23 @@
                                         </div>
                                     {% endif %}
 
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Image Requirements -->
                             <div class="spec-card">
-                                <div class="spec-header">
-                                    <h5 class="text-white mb-0"><i class="fas fa-image me-2"></i>Image Requirements</h5>
-                                </div>
-                                <div class="spec-body text-white">
+                                <div class="accordion" id="imageReqsAccordion">
+                                    <div class="accordion-item bg-dark border-secondary">
+                                        <h2 class="accordion-header" id="imageReqsHeader">
+                                            <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#imageReqsCollapse" aria-expanded="false" aria-controls="imageReqsCollapse">
+                                                <i class="fas fa-image me-2"></i>Image Requirements
+                                            </button>
+                                        </h2>
+                                        <div id="imageReqsCollapse" class="accordion-collapse collapse" aria-labelledby="imageReqsHeader" data-bs-parent="#imageReqsAccordion">
+                                            <div class="accordion-body text-white">
                                     {% if platform.specifications.image %}
                                         {% for spec in platform.specifications.image %}
                                         <div class="spec-item" data-spec-id="{{ spec.id }}" data-category="image" data-key="{{ spec.spec_key }}">
@@ -355,6 +379,9 @@
                                         </div>
                                     {% endif %}
 
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -363,10 +390,15 @@
                         <div class="col-md-6">
                             <!-- Content Adaptation -->
                             <div class="spec-card">
-                                <div class="spec-header">
-                                    <h5 class="text-white mb-0"><i class="fas fa-magic me-2"></i>Content Adaptation</h5>
-                                </div>
-                                <div class="spec-body text-white">
+                                <div class="accordion" id="contentAdaptationAccordion">
+                                    <div class="accordion-item bg-dark border-secondary">
+                                        <h2 class="accordion-header" id="contentAdaptationHeader">
+                                            <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#contentAdaptationCollapse" aria-expanded="false" aria-controls="contentAdaptationCollapse">
+                                                <i class="fas fa-magic me-2"></i>Content Adaptation
+                                            </button>
+                                        </h2>
+                                        <div id="contentAdaptationCollapse" class="accordion-collapse collapse" aria-labelledby="contentAdaptationHeader" data-bs-parent="#contentAdaptationAccordion">
+                                            <div class="accordion-body text-white">
                                     {% if platform.specifications.adaptation %}
                                         {% for spec in platform.specifications.adaptation %}
                                         <div class="spec-item" data-spec-id="{{ spec.id }}" data-category="adaptation" data-key="{{ spec.spec_key }}">
@@ -422,15 +454,23 @@
                                         </span>
                                     </div>
 
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- API Integration -->
                             <div class="spec-card">
-                                <div class="spec-header">
-                                    <h5 class="text-white mb-0"><i class="fas fa-code me-2"></i>API Integration</h5>
-                                </div>
-                                <div class="spec-body text-white">
+                                <div class="accordion" id="apiIntegrationAccordion">
+                                    <div class="accordion-item bg-dark border-secondary">
+                                        <h2 class="accordion-header" id="apiIntegrationHeader">
+                                            <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#apiIntegrationCollapse" aria-expanded="false" aria-controls="apiIntegrationCollapse">
+                                                <i class="fas fa-code me-2"></i>API Integration
+                                            </button>
+                                        </h2>
+                                        <div id="apiIntegrationCollapse" class="accordion-collapse collapse" aria-labelledby="apiIntegrationHeader" data-bs-parent="#apiIntegrationAccordion">
+                                            <div class="accordion-body text-white">
                                     {% if platform.specifications.api %}
                                         {% for spec in platform.specifications.api %}
                                         <div class="spec-item" data-spec-id="{{ spec.id }}" data-category="api" data-key="{{ spec.spec_key }}">
@@ -486,6 +526,9 @@
                                         </div>
                                     {% endif %}
 
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

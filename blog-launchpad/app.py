@@ -407,6 +407,82 @@ def get_post_sections(post_id):
     except Exception as e:
         return {'error': str(e)}, 500
 
+@app.route('/api/syndication/content-processes')
+def get_content_processes():
+    """Get all active content processes for syndication."""
+    try:
+        from models.content_process import ContentProcess
+        
+        # Database configuration
+        db_config = {
+            'host': 'localhost',
+            'database': 'blog',
+            'user': 'postgres',
+            'password': 'postgres'
+        }
+        
+        # Get all active processes
+        process_model = ContentProcess(db_config)
+        processes = process_model.get_all_processes()
+        
+        # Convert to list of dicts for JSON serialization
+        processes_list = []
+        for process in processes:
+            processes_list.append({
+                'id': process['id'],
+                'process_name': process['process_name'],
+                'display_name': process['display_name'],
+                'platform_id': process['platform_id'],
+                'platform_name': process['platform_name'],
+                'platform_display_name': process['platform_display_name'],
+                'content_type': process['content_type'],
+                'description': process['description'],
+                'is_active': process['is_active'],
+                'priority': process['priority']
+            })
+        
+        return jsonify({'processes': processes_list})
+        
+    except Exception as e:
+        print(f"Error fetching content processes: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/content-processes/<int:process_id>/configs')
+def get_process_configs(process_id):
+    """Get all configurations for a specific content process."""
+    try:
+        from models.content_process import ContentProcess
+        
+        # Database configuration
+        db_config = {
+            'host': 'localhost',
+            'database': 'blog',
+            'user': 'postgres',
+            'password': 'postgres'
+        }
+        
+        # Get process configurations
+        process_model = ContentProcess(db_config)
+        configs = process_model.get_process_configs(process_id)
+        
+        # Convert to list of dicts for JSON serialization
+        configs_list = []
+        for config in configs:
+            configs_list.append({
+                'config_category': config['config_category'],
+                'config_key': config['config_key'],
+                'config_value': config['config_value'],
+                'config_type': config['config_type'],
+                'is_required': config['is_required'],
+                'display_order': config['display_order']
+            })
+        
+        return jsonify({'configs': configs_list})
+        
+    except Exception as e:
+        print(f"Error fetching process configs: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/test-api')
 def test_api():
     """Test API endpoint."""
