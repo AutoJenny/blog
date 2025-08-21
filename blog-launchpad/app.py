@@ -131,6 +131,11 @@ def syndication():
     """Social Media Syndication homepage."""
     return render_template('syndication.html')
 
+@app.route('/syndication/select-posts')
+def syndication_select_posts():
+    """Select Posts for syndication."""
+    return render_template('syndication_select_posts.html')
+
 @app.route('/test-api')
 def test_api():
     """Test API endpoint."""
