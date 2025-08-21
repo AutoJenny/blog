@@ -159,15 +159,14 @@ def get_published_posts():
                 p.id,
                 p.title,
                 p.status,
-                p.clan_status,
                 p.created_at,
                 p.updated_at,
                 p.slug,
                 COUNT(ps.id) as section_count
             FROM post p
             LEFT JOIN post_section ps ON p.id = ps.post_id
-            WHERE p.status = 'published' OR p.clan_status = 'published'
-            GROUP BY p.id, p.title, p.status, p.clan_status, p.created_at, p.updated_at, p.slug
+            WHERE p.status = 'published'
+            GROUP BY p.id, p.title, p.status, p.created_at, p.updated_at, p.slug
             ORDER BY p.updated_at DESC
         """
         
@@ -181,7 +180,6 @@ def get_published_posts():
                 'id': post['id'],
                 'title': post['title'],
                 'status': post['status'],
-                'clan_status': post['clan_status'],
                 'created_at': post['created_at'].isoformat() if post['created_at'] else None,
                 'updated_at': post['updated_at'].isoformat() if post['updated_at'] else None,
                 'slug': post['slug'],
@@ -352,7 +350,7 @@ def get_post_with_development(post_id):
         # Get post data, alias post.id as post_id
         cur.execute("""
             SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
-                   p.clan_post_id, p.clan_status, p.clan_uploaded_url,
+                   p.clan_post_id, p.clan_uploaded_url,
                    pd.idea_seed, pd.intro_blurb, pd.main_title
             FROM post p
             LEFT JOIN post_development pd ON pd.post_id = p.id
@@ -527,7 +525,7 @@ def get_posts():
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("""
             SELECT p.id, p.title, p.created_at, p.updated_at, p.status,
-                   p.clan_post_id, p.clan_status, p.clan_last_attempt, p.clan_error, p.clan_uploaded_url,
+                   p.clan_post_id, p.clan_last_attempt, p.clan_error, p.clan_uploaded_url,
                    pd.idea_seed, pd.provisional_title, pd.intro_blurb
             FROM post p
             LEFT JOIN post_development pd ON p.id = pd.post_id
@@ -824,7 +822,7 @@ def publish_post_to_clan(post_id):
                 cur.execute("""
                     UPDATE post SET 
                         clan_post_id = %s,
-                        clan_status = 'published',
+                        status = 'published',
                         clan_last_attempt = CURRENT_TIMESTAMP,
                         clan_error = NULL,
                         clan_uploaded_url = %s
@@ -844,7 +842,7 @@ def publish_post_to_clan(post_id):
                 cur = conn.cursor()
                 cur.execute("""
                     UPDATE post SET 
-                        clan_status = 'error',
+                        status = 'error',
                         clan_last_attempt = CURRENT_TIMESTAMP,
                         clan_error = %s
                     WHERE id = %s
@@ -867,7 +865,7 @@ def publish_post_to_clan(post_id):
             cur = conn.cursor()
             cur.execute("""
                 UPDATE post SET 
-                    clan_status = 'error',
+                    status = 'error',
                     clan_last_attempt = CURRENT_TIMESTAMP,
                     clan_error = %s
                 WHERE id = %s

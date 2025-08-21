@@ -125,8 +125,7 @@
                 </div>
                                 <div class="col-md-6">
                                     <p><strong>Post ID:</strong> <span id="postId"></span></p>
-                                    <p><strong>Workflow Status:</strong> <span id="postStatus"></span></p>
-                                    <p><strong>Clan Status:</strong> <span id="postClanStatus"></span></p>
+                                    <p><strong>Status:</strong> <span id="postStatus"></span></p>
                                     <p><strong>Slug:</strong> <span id="postSlug"></span></p>
                                     <p><strong>Number of Sections:</strong> <span id="postSectionCount"></span></p>
                                 </div>
@@ -204,7 +203,6 @@
                 document.getElementById('postTitle').textContent = post.title;
                 document.getElementById('postId').textContent = post.id;
                 document.getElementById('postStatus').textContent = post.status;
-                document.getElementById('postClanStatus').textContent = post.clan_status || 'N/A';
                 document.getElementById('postSlug').textContent = post.slug || 'N/A';
                 document.getElementById('postSectionCount').textContent = post.section_count;
                 
