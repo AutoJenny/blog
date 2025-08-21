@@ -162,3 +162,29 @@
 .spec-body {
     padding: 1rem;
 }
+
+/* Spec Item Styling */
+.spec-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #495057;
+}
+
+.spec-item:last-child {
+    border-bottom: none;
+}
+
+.spec-label {
+    font-weight: 600;
+    color: #a5b4fc;
+    min-width: 140px;
+    margin-right: 1rem;
+}
+
+.spec-value {
+    color: #ffffff;
+    text-align: right;
+    flex: 1;
+}
