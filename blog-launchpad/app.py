@@ -136,6 +136,11 @@ def syndication_select_posts():
     """Select Posts for syndication."""
     return render_template('syndication_select_posts.html')
 
+@app.route('/syndication/platform-settings')
+def syndication_platform_settings():
+    """Platform Settings for syndication."""
+    return render_template('syndication_platform_settings.html')
+
 @app.route('/api/syndication/published-posts')
 def get_published_posts():
     """Get all posts with status=published for syndication."""
