@@ -95,10 +95,129 @@
     </div>
 
     <div class="container">
-        <!-- Page content will go here -->
+        <!-- Post Selection Area -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-dark text-white border-secondary">
+                    <div class="card-header bg-secondary text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Select Post for Syndication
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Post Dropdown -->
+                        <div class="mb-3">
+                            <label for="postSelector" class="form-label">Choose a published post:</label>
+                            <select class="form-select bg-dark text-white border-secondary" id="postSelector">
+                                <option value="">Loading posts...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Selected Post Details -->
+                        <div id="postDetails" class="d-none">
+                            <hr class="border-secondary">
+                            <h6 class="text-info mb-3">Post Details</h6>
+                            <div class="row">
+                                                <div class="col-md-6">
+                    <p><strong>Title:</strong> <span id="postTitle"></span></p>
+                    <p><strong>Created Date:</strong> <span id="postCreatedAt"></span></p>
+                    <p><strong>Last Updated:</strong> <span id="postUpdatedAt"></span></p>
+                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Post ID:</strong> <span id="postId"></span></p>
+                                    <p><strong>Workflow Status:</strong> <span id="postStatus"></span></p>
+                                    <p><strong>Clan Status:</strong> <span id="postClanStatus"></span></p>
+                                    <p><strong>Slug:</strong> <span id="postSlug"></span></p>
+                                    <p><strong>Number of Sections:</strong> <span id="postSectionCount"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const postSelector = document.getElementById('postSelector');
+            const postDetails = document.getElementById('postDetails');
+            
+            // Fetch published posts
+            fetch('/api/syndication/published-posts')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error fetching posts:', data.error);
+                        postSelector.innerHTML = '<option value="">Error loading posts</option>';
+                        return;
+                    }
+                    
+                    const posts = data.posts;
+                    if (posts.length === 0) {
+                        postSelector.innerHTML = '<option value="">No published posts found</option>';
+                        return;
+                    }
+                    
+                    // Clear loading option and add posts
+                    postSelector.innerHTML = '<option value="">Select a post...</option>';
+                    posts.forEach(post => {
+                        const option = document.createElement('option');
+                        option.value = post.id;
+                        option.textContent = `${post.title} (ID: ${post.id})`;
+                        postSelector.appendChild(option);
+                    });
+                    
+                    // Auto-select the first (most recent) post
+                    if (posts.length > 0) {
+                        postSelector.value = posts[0].id;
+                        displayPostDetails(posts[0]);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    postSelector.innerHTML = '<option value="">Error loading posts</option>';
+                });
+            
+            // Handle post selection change
+            postSelector.addEventListener('change', function() {
+                const selectedId = this.value;
+                if (selectedId) {
+                    // Find the selected post data
+                    fetch('/api/syndication/published-posts')
+                        .then(response => response.json())
+                        .then(data => {
+                            const selectedPost = data.posts.find(post => post.id == selectedId);
+                            if (selectedPost) {
+                                displayPostDetails(selectedPost);
+                            }
+                        });
+                } else {
+                    postDetails.classList.add('d-none');
+                }
+            });
+            
+            function displayPostDetails(post) {
+                document.getElementById('postTitle').textContent = post.title;
+                document.getElementById('postId').textContent = post.id;
+                document.getElementById('postStatus').textContent = post.status;
+                document.getElementById('postClanStatus').textContent = post.clan_status || 'N/A';
+                document.getElementById('postSlug').textContent = post.slug || 'N/A';
+                document.getElementById('postSectionCount').textContent = post.section_count;
+                
+                // Format dates
+                const createdDate = post.created_at ? new Date(post.created_at).toLocaleDateString() : 'N/A';
+                const updatedDate = post.updated_at ? new Date(post.updated_at).toLocaleDateString() : 'N/A';
+                
+                document.getElementById('postCreatedAt').textContent = createdDate;
+                document.getElementById('postUpdatedAt').textContent = updatedDate;
+                
+                postDetails.classList.remove('d-none');
+            }
+        });
+    </script>
 </body>
 </html>
