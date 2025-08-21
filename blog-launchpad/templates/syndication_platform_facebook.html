@@ -114,21 +114,7 @@
             background-color: #c82333;
         }
         
-        .add-spec-btn {
-            background-color: #17a2b8;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 16px;
-            width: 100%;
-        }
-        
-        .add-spec-btn:hover {
-            background-color: #138496;
-        }
+
         
         /* Edit Form Styles */
         .edit-form {
@@ -254,38 +240,57 @@
                                         </div>
                                         {% endfor %}
                                     {% else %}
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="content" data-key="content_type">
                                             <span class="spec-label">Content Type:</span>
-                                            <span class="spec-value">Text posts with images</span>
+                                            <span class="spec-value clickable-edit" data-category="content" data-key="content_type">
+                                                Text posts with images
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="content" data-key="character_target">
                                             <span class="spec-label">Character Target:</span>
-                                            <span class="spec-value">≤63,206 characters</span>
+                                            <span class="spec-value clickable-edit" data-category="content" data-key="character_target">
+                                                ≤63,206 characters
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="content" data-key="style_tone">
                                             <span class="spec-label">Style/Tone:</span>
-                                            <span class="spec-value">Conversational, engaging, authentic</span>
+                                            <span class="spec-value clickable-edit" data-category="content" data-key="style_tone">
+                                                Conversational, engaging, authentic
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="content" data-key="posting_frequency">
                                             <span class="spec-label">Posting Frequency:</span>
-                                            <span class="spec-value">1-2 posts per day (optimal)</span>
+                                            <span class="spec-value clickable-edit" data-category="content" data-key="posting_frequency">
+                                                1-2 posts per day (optimal)
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="content" data-key="optimal_timing">
                                             <span class="spec-label">Optimal Timing:</span>
-                                            <span class="spec-value">1-3 PM, 7-9 PM (local time)</span>
+                                            <span class="spec-value clickable-edit" data-category="content" data-key="optimal_timing">
+                                                1-3 PM, 7-9 PM (local time)
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="content" data-key="priority_level">
                                             <span class="spec-label">Priority Level:</span>
-                                            <span class="spec-value">1 (Highest)</span>
+                                            <span class="spec-value clickable-edit" data-category="content" data-key="priority_level">
+                                                1 (Highest)
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="content" data-key="example_cta">
                                             <span class="spec-label">Example CTA:</span>
-                                            <span class="spec-value">"Read the full story in the link below 👇"</span>
+                                            <span class="spec-value clickable-edit" data-category="content" data-key="example_cta">
+                                                "Read the full story in the link below 👇"
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
                                     {% endif %}
-                                    <button class="add-spec-btn" data-category="content">
-                                        <i class="fas fa-plus me-2"></i>Add New Content Specification
-                                    </button>
+
                                 </div>
                             </div>
 
@@ -306,34 +311,50 @@
                                         </div>
                                         {% endfor %}
                                     {% else %}
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="image" data-key="dimensions">
                                             <span class="spec-label">Dimensions:</span>
-                                            <span class="spec-value">1200×630 (landscape)</span>
+                                            <span class="spec-value clickable-edit" data-category="image" data-key="dimensions">
+                                                1200×630 (landscape)
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="image" data-key="aspect_ratio">
                                             <span class="spec-label">Aspect Ratio:</span>
-                                            <span class="spec-value">1.91:1</span>
+                                            <span class="spec-value clickable-edit" data-category="image" data-key="aspect_ratio">
+                                                1.91:1
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="image" data-key="format">
                                             <span class="spec-label">Format:</span>
-                                            <span class="spec-value">JPG, PNG, GIF</span>
+                                            <span class="spec-value clickable-edit" data-category="image" data-key="format">
+                                                JPG, PNG, GIF
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="image" data-key="file_size">
                                             <span class="spec-label">File Size:</span>
-                                            <span class="spec-value">Max 30MB</span>
+                                            <span class="spec-value clickable-edit" data-category="image" data-key="file_size">
+                                                Max 30MB
+                                                <i class="spec-value clickable-edit" data-category="image" data-key="file_size">
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="image" data-key="quality">
                                             <span class="spec-label">Quality:</span>
-                                            <span class="spec-value">High resolution, mobile-optimized</span>
+                                            <span class="spec-value clickable-edit" data-category="image" data-key="quality">
+                                                High resolution, mobile-optimized
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="image" data-key="style">
                                             <span class="spec-label">Style:</span>
-                                            <span class="spec-value">Authentic, engaging, shareable</span>
+                                            <span class="spec-value clickable-edit" data-category="image" data-key="style">
+                                                Authentic, engaging, shareable
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
                                     {% endif %}
-                                    <button class="add-spec-btn" data-category="image">
-                                        <i class="fas fa-plus me-2"></i>Add New Image Specification
-                                    </button>
+
                                 </div>
                             </div>
                         </div>
@@ -357,34 +378,50 @@
                                         </div>
                                         {% endfor %}
                                     {% else %}
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="adaptation" data-key="text_processing">
                                             <span class="spec-label">Text Processing:</span>
-                                            <span class="spec-value">Optimize for engagement, not truncation</span>
+                                            <span class="spec-value clickable-edit" data-category="adaptation" data-key="text_processing">
+                                                Optimize for engagement, not truncation
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="adaptation" data-key="tone_adjustment">
                                             <span class="spec-label">Tone Adjustment:</span>
-                                            <span class="spec-value">Authentic, conversational, community-focused</span>
+                                            <span class="spec-value clickable-edit" data-category="adaptation" data-key="tone_adjustment">
+                                                Authentic, conversational, community-focused
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="adaptation" data-key="hashtag_strategy">
                                             <span class="spec-label">Hashtag Strategy:</span>
-                                            <span class="spec-value">2-3 relevant hashtags (Facebook prefers fewer)</span>
+                                            <span class="spec-value clickable-edit" data-category="adaptation" data-key="hashtag_strategy">
+                                                2-3 relevant hashtags (Facebook prefers fewer)
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="adaptation" data-key="cta_generation">
                                             <span class="spec-label">CTA Generation:</span>
-                                            <span class="spec-value">Ask questions, encourage discussion</span>
+                                            <span class="spec-value clickable-edit" data-category="adaptation" data-key="cta_generation">
+                                                Ask questions, encourage discussion
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="adaptation" data-key="content_focus">
                                             <span class="spec-label">Content Focus:</span>
-                                            <span class="spec-value">Scottish heritage, storytelling, community</span>
+                                            <span class="spec-value clickable-edit" data-category="adaptation" data-key="content_focus">
+                                                Scottish heritage, storytelling, community
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
                                     {% endif %}
-                                    <div class="spec-item">
+                                    <div class="spec-item" data-category="adaptation" data-key="engagement">
                                         <span class="spec-label">Engagement:</span>
-                                        <span class="spec-value">Polls, questions, tag friends</span>
+                                        <span class="spec-value clickable-edit" data-category="adaptation" data-key="engagement">
+                                            Polls, questions, tag friends
+                                            <i class="fas fa-edit edit-icon ms-2"></i>
+                                        </span>
                                     </div>
-                                    <button class="add-spec-btn" data-category="adaptation">
-                                        <i class="fas fa-plus me-2"></i>Add New Adaptation Specification
-                                    </button>
+
                                 </div>
                             </div>
 
@@ -405,34 +442,50 @@
                                         </div>
                                         {% endfor %}
                                     {% else %}
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="api" data-key="api_name">
                                             <span class="spec-label">API:</span>
-                                            <span class="spec-value">Facebook Graph API v18.0+</span>
+                                            <span class="spec-value clickable-edit" data-category="api" data-key="api_name">
+                                                Facebook Graph API v18.0+
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="api" data-key="authentication">
                                             <span class="spec-label">Authentication:</span>
-                                            <span class="spec-value">OAuth 2.0 with App Review</span>
+                                            <span class="spec-value clickable-edit" data-category="api" data-key="authentication">
+                                                OAuth 2.0 with App Review
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="api" data-key="rate_limits">
                                             <span class="spec-label">Rate Limits:</span>
-                                            <span class="spec-value">200 posts per hour per user</span>
+                                            <span class="spec-value clickable-edit" data-category="api" data-key="rate_limits">
+                                                200 posts per hour per user
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="api" data-key="endpoints">
                                             <span class="spec-label">Endpoints:</span>
-                                            <span class="spec-value">/me/feed, /page/feed</span>
+                                            <span class="spec-value clickable-edit" data-category="api" data-key="endpoints">
+                                                /me/feed, /page/feed
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="api" data-key="permissions">
                                             <span class="spec-label">Permissions:</span>
-                                            <span class="spec-value">pages_manage_posts, publish_to_groups</span>
+                                            <span class="spec-value clickable-edit" data-category="api" data-key="permissions">
+                                                pages_manage_posts, publish_to_groups
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
-                                        <div class="spec-item">
+                                        <div class="spec-item" data-category="api" data-key="status">
                                             <span class="spec-label">Status:</span>
-                                            <span class="spec-value">Requires App Review approval</span>
+                                            <span class="spec-value clickable-edit" data-category="api" data-key="status">
+                                                Requires App Review approval
+                                                <i class="fas fa-edit edit-icon ms-2"></i>
+                                            </span>
                                         </div>
                                     {% endif %}
-                                    <button class="add-spec-btn" data-category="api">
-                                        <i class="fas fa-plus me-2"></i>Add New API Specification
-                                    </button>
+
                                 </div>
                             </div>
                         </div>
@@ -625,19 +678,7 @@
                 }
             });
             
-            // Handle add new specification buttons
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.add-spec-btn')) {
-                    const button = e.target.closest('.add-spec-btn');
-                    const category = button.dataset.category;
-                    
-                    if (editingSpec) {
-                        cancelEdit();
-                    }
-                    
-                    startAddNew(category);
-                }
-            });
+
             
             function startEdit(specItem, specId, category, key, currentValue) {
                 editingSpec = { specItem, specId, category, key, currentValue };
@@ -678,43 +719,7 @@
                 editForm.querySelector('.delete-btn').addEventListener('click', () => deleteSpec());
             }
             
-            function startAddNew(category) {
-                // Find the appropriate section
-                const section = document.querySelector(`[data-category="${category}"]`).closest('.spec-card');
-                const specBody = section.querySelector('.spec-body');
-                
-                // Create add form
-                const addForm = document.createElement('div');
-                addForm.className = 'edit-form spec-item editing';
-                addForm.innerHTML = `
-                    <div class="edit-row">
-                        <label class="edit-label">Key:</label>
-                        <input type="text" class="edit-input edit-key" placeholder="Enter specification key">
-                    </div>
-                    <div class="edit-row">
-                        <label class="edit-label">Value:</label>
-                        <input type="text" class="edit-input edit-value" placeholder="Enter specification value">
-                    </div>
-                    <div class="edit-buttons">
-                        <button class="edit-btn save-btn">Add</button>
-                        <button class="edit-btn cancel-btn">Cancel</button>
-                    </div>
-                `;
-                
-                // Insert before the add button
-                const addButton = specBody.querySelector(`[data-category="${category}"]`);
-                specBody.insertBefore(addForm, addButton);
-                
-                // Focus on the key input
-                const keyInput = addForm.querySelector('.edit-key');
-                keyInput.focus();
-                
-                // Add event listeners
-                addForm.querySelector('.save-btn').addEventListener('click', () => addNewSpec(category));
-                addForm.querySelector('.cancel-btn').addEventListener('click', () => cancelAdd());
-                
-                editingSpec = { isNew: true, form: addForm, category };
-            }
+
             
             function saveEdit() {
                 if (!editingSpec) return;
@@ -750,48 +755,7 @@
                     });
             }
             
-            function addNewSpec(category) {
-                if (!editingSpec || !editingSpec.isNew) return;
-                
-                const { form, category } = editingSpec;
-                const key = form.querySelector('.edit-key').value.trim();
-                const value = form.querySelector('.edit-value').value.trim();
-                
-                if (!key || !value) {
-                    alert('Both key and value are required');
-                    return;
-                }
-                
-                // Add to database via API
-                addSpecification(category, key, value)
-                    .then(() => {
-                        // Create new spec item
-                        const specItem = document.createElement('div');
-                        specItem.className = 'spec-item';
-                        specItem.dataset.category = category;
-                        specItem.dataset.key = key;
-                        specItem.innerHTML = `
-                            <span class="spec-label">${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>
-                            <span class="spec-value clickable-edit" data-category="${category}" data-key="${key}">
-                                ${value} ✏️
-                            </span>
-                        `;
-                        
-                        // Insert before the add button
-                        const addButton = form.parentNode.querySelector(`[data-category="${category}"]`);
-                        form.parentNode.insertBefore(specItem, addButton);
-                        
-                        // Remove add form
-                        form.remove();
-                        editingSpec = null;
-                        
-                        showNotification('New specification added successfully!', 'success');
-                    })
-                    .catch(error => {
-                        console.error('Error adding specification:', error);
-                        showNotification('Error adding specification', 'error');
-                    });
-            }
+
             
             function deleteSpec() {
                 if (!editingSpec) return;
@@ -839,12 +803,7 @@
                 editingSpec = null;
             }
             
-            function cancelAdd() {
-                if (!editingSpec || !editingSpec.isNew) return;
-                
-                editingSpec.form.remove();
-                editingSpec = null;
-            }
+
             
             // API functions
             async function updateSpecification(specId, category, key, value) {
@@ -861,24 +820,7 @@
                 return response.json();
             }
             
-            async function addSpecification(category, key, value) {
-                const response = await fetch('/api/social-media/specifications/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        platform_name: 'facebook', 
-                        category, 
-                        key, 
-                        value 
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to add specification');
-                }
-                
-                return response.json();
-            }
+
             
             async function deleteSpecification(specId) {
                 const response = await fetch('/api/social-media/specifications/delete', {
