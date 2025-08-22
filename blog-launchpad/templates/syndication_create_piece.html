@@ -356,6 +356,18 @@
             transform: scale(1.05);
         }
 
+        .image-path-value {
+            font-size: 0.6rem;
+            color: #6c757d;
+            font-family: monospace;
+            word-break: break-all;
+            margin-top: 0.25rem;
+            padding: 0.25rem;
+            background-color: #1a1d29;
+            border-radius: 0.25rem;
+            border: 1px solid #495057;
+        }
+
         /* Field Labels and Full Content Styling */
         .field-label {
             font-size: 0.7rem;
@@ -833,8 +845,9 @@
                             </div>
                             ${section.image_path ? `
                                 <div class="section-image">
-                                    <div class="field-label">[image_path]</div>
                                     <img src="${section.image_path}" alt="Section ${index + 1}" onerror="this.style.display='none'">
+                                    <div class="field-label">[image_path]</div>
+                                    <div class="image-path-value">${section.image_path}</div>
                                 </div>
                             ` : ''}
                         </div>
