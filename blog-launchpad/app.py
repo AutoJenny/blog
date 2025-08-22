@@ -389,6 +389,48 @@ def publishing_docs():
     else:
         return "Documentation not found", 404
 
+@app.route('/api/syndication/social-media-platforms')
+def get_social_media_platforms():
+    """Get only developed social media platforms for the dropdown selector."""
+    try:
+        from models.social_media import SocialMediaPlatform
+        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        platform_model = SocialMediaPlatform(db_config)
+        platforms = platform_model.get_platforms_by_status('developed')
+        platforms_list = [{'id': p['id'], 'platform_name': p['platform_name'], 'display_name': p['display_name'], 'status': p['status'], 'priority': p['priority'], 'icon_url': p['icon_url']} for p in platforms]
+        return jsonify({'platforms': platforms_list})
+    except Exception as e:
+        print(f"Error fetching social media platforms: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/content-processes')
+def get_content_processes():
+    """Get all active content processes for syndication."""
+    try:
+        from models.content_process import ContentProcess
+        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        process_model = ContentProcess(db_config)
+        processes = process_model.get_all_processes()
+        processes_list = [{'id': p['id'], 'process_name': p['process_name'], 'display_name': p['display_name'], 'platform_id': p['platform_id'], 'platform_name': p['platform_name'], 'platform_display_name': p['platform_display_name'], 'content_type': p['content_type'], 'description': p['description'], 'is_active': p['is_active'], 'priority': p['priority'], 'development_status': p.get('development_status', 'draft')} for p in processes]
+        return jsonify({'processes': processes_list})
+    except Exception as e:
+        print(f"Error fetching content processes: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/content-processes/<int:process_id>/configs')
+def get_process_configs(process_id):
+    """Get configurations for a specific content process."""
+    try:
+        from models.content_process import ContentProcess
+        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        process_model = ContentProcess(db_config)
+        configs = process_model.get_process_configs(process_id)
+        configs_list = [{'id': c['id'], 'config_category': c['config_category'], 'config_key': c['config_key'], 'config_value': c['config_value'], 'config_type': c['config_type'], 'is_required': c['is_required'], 'display_order': c['display_order']} for c in configs]
+        return jsonify({'configs': configs_list})
+    except Exception as e:
+        print(f"Error fetching process configs: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/docs/social_media_syndication_plan.md')
 def syndication_docs():
     """Serve social media syndication plan documentation."""
