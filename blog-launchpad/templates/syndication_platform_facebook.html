@@ -148,6 +148,128 @@
         .accordion-button:not(.collapsed)::after {
             transform: rotate(180deg);
         }
+        
+        /* Improved Layout Styles */
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 4px 0;
+        }
+        
+        .summary-value {
+            color: white;
+            font-weight: 500;
+            max-width: 120px;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        .config-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .config-section h6 {
+            color: #17a2b8;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .config-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .config-row:last-child {
+            border-bottom: none;
+        }
+        
+        .config-label {
+            min-width: 140px;
+            font-weight: 600;
+            color: #adb5bd;
+            padding-right: 16px;
+            flex-shrink: 0;
+        }
+        
+        .config-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            min-height: 40px;
+            resize: vertical;
+        }
+        
+        .config-input:focus {
+            outline: none;
+            border-color: #17a2b8;
+            box-shadow: 0 0 0 2px rgba(23, 162, 184, 0.25);
+        }
+        
+        .config-input.small {
+            min-height: 32px;
+            max-width: 200px;
+        }
+        
+        .config-input.medium {
+            min-height: 36px;
+            max-width: 300px;
+        }
+        
+        .config-input.large {
+            min-height: 60px;
+        }
+        
+        .config-category {
+            margin-bottom: 24px;
+        }
+        
+        .config-category:last-child {
+            margin-bottom: 0;
+        }
+        
+        .priority-high {
+            border-left-color: #dc3545;
+        }
+        
+        .priority-high h6 {
+            color: #dc3545;
+        }
+        
+        .priority-medium {
+            border-left-color: #ffc107;
+        }
+        
+        .priority-medium h6 {
+            color: #ffc107;
+        }
+        
+        .priority-low {
+            border-left-color: #28a745;
+        }
+        
+        .priority-low h6 {
+            color: #28a745;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -455,6 +577,61 @@
                                                 <i class="fas fa-info-circle me-2"></i>Select a content process above to view and edit its configuration
                                             </div>
                                         </div>
+                                        
+                                        <!-- Quick Summary Cards -->
+                                        <div id="quickSummaryCards" class="row mb-4" style="display: none;">
+                                            <div class="col-md-4">
+                                                <div class="card bg-dark border-info">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="card-title text-info mb-2">
+                                                            <i class="fas fa-image me-2"></i>Image Specs
+                                                        </h6>
+                                                        <div class="summary-item">
+                                                            <small class="text-muted">Dimensions:</small>
+                                                            <span class="summary-value" id="summaryDimensions">-</span>
+                                                        </div>
+                                                        <div class="summary-item">
+                                                            <small class="text-muted">Style:</small>
+                                                            <span class="summary-value" id="summaryStyle">-</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card bg-dark border-warning">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="card-title text-warning mb-2">
+                                                            <i class="fas fa-magic me-2"></i>Content Strategy
+                                                        </h6>
+                                                        <div class="summary-item">
+                                                            <small class="text-muted">Focus:</small>
+                                                            <span class="summary-value" id="summaryFocus">-</span>
+                                                        </div>
+                                                        <div class="summary-item">
+                                                            <small class="text-muted">Tone:</small>
+                                                            <span class="summary-value" id="summaryTone">-</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card bg-dark border-success">
+                                                    <div class="card-body p-3">
+                                                        <h6 class="card-title text-success mb-2">
+                                                            <i class="fas fa-bullseye me-2"></i>Engagement
+                                                        </h6>
+                                                        <div class="summary-item">
+                                                            <small class="text-muted">Tactics:</small>
+                                                            <span class="summary-value" id="summaryTactics">-</span>
+                                                        </div>
+                                                        <div class="summary-item">
+                                                            <small class="text-muted">Hashtags:</small>
+                                                            <span class="summary-value" id="summaryHashtags">-</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -544,9 +721,11 @@
             // Display process configurations
             function displayProcessConfigs(configs) {
                 const processConfigsContainer = document.getElementById('processConfigsContainer');
+                const quickSummaryCards = document.getElementById('quickSummaryCards');
                 
                 if (!configs || configs.length === 0) {
                     processConfigsContainer.innerHTML = '<div class="text-center text-muted py-4"><i class="fas fa-info-circle me-2"></i>No configurations found for this process</div>';
+                    quickSummaryCards.style.display = 'none';
                     return;
                 }
 
@@ -561,39 +740,53 @@
 
                 let html = '';
                 
-                // Display configs by category
+                // Display configs by category with improved layout
                 Object.keys(configsByCategory).forEach(category => {
                     const categoryConfigs = configsByCategory[category];
+                    const priorityClass = getPriorityClass(category);
                     
                     html += `
-                        <div class="mb-4">
-                            <h6 class="text-info mb-3">
-                                <i class="fas fa-cog me-2"></i>${category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                            </h6>
+                        <div class="config-category">
+                            <div class="config-section ${priorityClass}">
+                                <h6>
+                                    <i class="fas fa-cog me-2"></i>${category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </h6>
+                                <div class="config-grid">
                     `;
                     
                     categoryConfigs.forEach(config => {
+                        const inputClass = getInputClass(config.config_key);
+                        const rows = getInputRows(config.config_key);
+                        
                         html += `
-                            <div class="spec-item" data-config-id="${config.id}">
-                                <span class="spec-label">${config.config_key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>
-                                <div class="d-flex align-items-center">
-                                    <textarea 
-                                        class="edit-input edit-value ms-2" 
-                                        data-config-id="${config.id}" 
-                                        data-config-category="${config.config_category}" 
-                                        data-config-key="${config.config_key}"
-                                        rows="2"
-                                        style="flex: 1; min-width: 200px;"
-                                    >${config.config_value}</textarea>
-                                </div>
+                            <div class="config-row" data-config-id="${config.id}">
+                                <div class="config-label">${config.config_key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}:</div>
+                                <textarea 
+                                    class="config-input ${inputClass}" 
+                                    data-config-id="${config.id}" 
+                                    data-config-category="${config.config_category}" 
+                                    data-config-key="${config.config_key}"
+                                    rows="${rows}"
+                                    placeholder="Enter ${config.config_key.replace('_', ' ')}..."
+                                >${config.config_value}</textarea>
                             </div>
                         `;
                     });
                     
-                    html += '</div>';
+                    html += `
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 });
 
                 processConfigsContainer.innerHTML = html;
+                
+                // Show summary cards
+                quickSummaryCards.style.display = 'flex';
+                
+                // Populate summary cards
+                populateSummaryCards(configs);
 
                 // Add event listeners for textarea changes
                 const textareas = processConfigsContainer.querySelectorAll('textarea');
@@ -605,8 +798,77 @@
                             this.dataset.configKey,
                             this.value
                         );
+                        // Update summary cards when config changes
+                        populateSummaryCards(configs);
                     });
                 });
+            }
+            
+            // Get priority class for category styling
+            function getPriorityClass(category) {
+                const priorityMap = {
+                    'channel_constraints': 'priority-high',
+                    'channel_strategy': 'priority-medium',
+                    'channel_adaptation': 'priority-low'
+                };
+                return priorityMap[category] || '';
+            }
+            
+            // Get input class for sizing
+            function getInputClass(key) {
+                if (key.includes('dimensions') || key.includes('ratio')) return 'small';
+                if (key.includes('style') || key.includes('tone')) return 'medium';
+                return 'large';
+            }
+            
+            // Get input rows for textarea sizing
+            function getInputRows(key) {
+                if (key.includes('dimensions') || key.includes('ratio')) return 1;
+                if (key.includes('style') || key.includes('tone')) return 2;
+                return 3;
+            }
+            
+            // Populate summary cards with key information
+            function populateSummaryCards(configs) {
+                const summaryData = {
+                    dimensions: '-',
+                    style: '-',
+                    focus: '-',
+                    tone: '-',
+                    tactics: '-',
+                    hashtags: '-'
+                };
+                
+                configs.forEach(config => {
+                    switch(config.config_key) {
+                        case 'image_dimensions':
+                            summaryData.dimensions = config.config_value;
+                            break;
+                        case 'image_style':
+                            summaryData.style = config.config_value;
+                            break;
+                        case 'content_focus':
+                            summaryData.focus = config.config_value;
+                            break;
+                        case 'tone_adjustment':
+                            summaryData.tone = config.config_value;
+                            break;
+                        case 'engagement_tactics':
+                            summaryData.tactics = config.config_value;
+                            break;
+                        case 'hashtag_strategy':
+                            summaryData.hashtags = config.config_value;
+                            break;
+                    }
+                });
+                
+                // Update summary card values
+                document.getElementById('summaryDimensions').textContent = summaryData.dimensions;
+                document.getElementById('summaryStyle').textContent = summaryData.style;
+                document.getElementById('summaryFocus').textContent = summaryData.focus;
+                document.getElementById('summaryTone').textContent = summaryData.tone;
+                document.getElementById('summaryTactics').textContent = summaryData.tactics;
+                document.getElementById('summaryHashtags').textContent = summaryData.hashtags;
             }
 
             // Update process configuration in database
