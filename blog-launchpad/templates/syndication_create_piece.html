@@ -701,13 +701,21 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded event fired');
             const postSelector = document.getElementById('postSelector');
             const postDetails = document.getElementById('postDetails');
+            console.log('postSelector:', postSelector);
+            console.log('postDetails:', postDetails);
             
             // Fetch published posts
+            console.log('Fetching published posts...');
             fetch('/api/syndication/published-posts')
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Response received:', response);
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Data received:', data);
                     if (data.error) {
                         console.error('Error fetching posts:', data.error);
                         postSelector.innerHTML = '<option value="">Error loading posts</option>';
