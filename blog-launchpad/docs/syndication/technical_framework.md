@@ -209,16 +209,35 @@ CREATE TABLE social_media_process_executions (
 - **Status Tracking**: Development status visible for each process
 
 ### 3. Platform Settings Management
-**Status**: ✅ **IMPLEMENTED**
+**Status**: ✅ **IMPLEMENTED & RESTRUCTURED**
 
-#### Facebook Platform Settings
-- **Content Specifications**: Character limits, style guidelines, posting frequency
-- **Image Requirements**: Dimensions, aspect ratios, format specifications
-- **Content Adaptation**: Platform-specific content strategies
-- **API Integration**: Technical integration details
+#### Database Architecture
+- **Platform-Wide Settings**: Stored in `social_media_platform_specs` table
+- **Channel-Specific Settings**: Stored in `social_media_process_configs` table
+- **Clear Separation**: Eliminates overlap between platform capabilities and channel requirements
+
+#### Facebook Platform Settings (Platform-Wide)
+- **Content Specifications**: General Facebook capabilities (63,206 char limit, posting frequency, timing)
+- **Image Requirements**: Facebook's general image support (formats, file size, quality)
+- **API Integration**: Facebook Graph API details (authentication, rate limits, endpoints)
+
+#### Facebook Channel Settings (Process-Specific)
+- **Channel Constraints**: Image dimensions, aspect ratios, character limits per channel
+  - Feed Post: 1200×630 (1.91:1), ≤63,206 chars
+  - Story Post: 1080×1920 (9:16), ≤100 chars
+  - Reels Caption: 1080×1920 (9:16), ≤150 chars
+  - Group Post: 1200×630 (1.91:1), ≤63,206 chars
+- **Channel Strategy**: Content focus, engagement tactics, visual style per channel
+- **Channel Adaptation**: Text processing, tone adjustment, hashtag strategy per channel
+
+#### Configuration Categories
+- **Platform Specs**: `content`, `image`, `api`
+- **Process Configs**: `llm_prompt`, `constraints`, `style_guide`, `channel_constraints`, `channel_strategy`, `channel_adaptation`
 
 #### UI Implementation
-- **Bootstrap Accordions**: Four main panels converted to collapsible sections
+- **Bootstrap Accordions**: Two main sections with clear separation
+- **Left Column**: Platform-wide Facebook configuration
+- **Right Column**: Channel-specific process configuration
 - **Visual Indicators**: Expand/collapse arrows with SVG icons
 - **Default State**: All accordions closed by default
 - **Responsive Design**: Maintains existing styling and functionality
@@ -238,9 +257,9 @@ CREATE TABLE social_media_process_executions (
 ## Planned Data Frameworks
 
 ### 4. Content Process Registry
-**Status**: 🚧 **DESIGNED** (Not yet implemented)
+**Status**: ✅ **IMPLEMENTED & EXTENDED**
 
-#### Proposed Table Structure
+#### Implemented Table Structure
 ```sql
 -- Main process table
 CREATE TABLE social_media_content_processes (
@@ -297,6 +316,16 @@ CREATE TABLE social_media_process_executions (
 - **`llm_prompt`**: AI model instructions and system prompts
 - **`constraints`**: Platform-specific limitations and requirements
 - **`style_guide`**: Content tone, format, and branding guidelines
+- **`channel_constraints`**: Channel-specific technical requirements (image dimensions, aspect ratios)
+- **`channel_strategy`**: Channel-specific content approaches (content focus, engagement tactics)
+- **`channel_adaptation`**: Channel-specific content processing rules (text processing, tone adjustment, hashtag strategy)
+
+#### Database Restructuring (Completed 2025-01-27)
+- **Problem Solved**: Eliminated overlap between platform-wide and channel-specific settings
+- **Solution**: Extended `social_media_process_configs` with new categories
+- **Data Migration**: Moved 18 channel-specific settings from platform specs to process configs
+- **Result**: Clear separation of platform capabilities vs. channel requirements
+- **Benefits**: Improved maintainability, eliminated duplication, better scalability
 
 ## Technical Architecture Patterns
 
@@ -343,7 +372,7 @@ CREATE TABLE social_media_process_executions (
 2. Platform specifications management
 3. Content syndication interface
 4. Bulletproof table-based row alignment system
-5. Platform settings accordion interface
+5. Platform settings accordion interface (restructured for platform vs channel separation)
 6. Channel selection dropdown
 7. API endpoints for platform data
 8. Content process registry tables and models
@@ -353,6 +382,9 @@ CREATE TABLE social_media_process_executions (
 12. Complete API endpoint implementation
 13. Tasks column with row numbering
 14. Conversion Settings panel with process details
+15. Database restructuring for platform-wide vs channel-specific settings
+16. Extended process configuration categories (channel_constraints, channel_strategy, channel_adaptation)
+17. Data migration from platform specs to process configs
 
 ### 🚧 In Progress
 1. LLM integration framework planning
@@ -426,7 +458,7 @@ CREATE TABLE social_media_process_executions (
 
 ---
 
-**Document Version**: 1.1  
+**Document Version**: 1.2  
 **Last Updated**: 2025-01-27  
-**Status**: Active Development - Process Registry Implemented  
-**Next Review**: After LLM integration implementation
+**Status**: Active Development - Database Restructuring Completed  
+**Next Review**: After UI reorganization implementation
