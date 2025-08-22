@@ -357,15 +357,15 @@
         }
 
         .image-path-value {
-            font-size: 0.6rem;
-            color: #6c757d;
+            font-size: 0.8rem;
+            color: #17a2b8;
             font-family: monospace;
             word-break: break-all;
             margin-top: 0.25rem;
-            padding: 0.25rem;
+            padding: 0.5rem;
             background-color: #1a1d29;
             border-radius: 0.25rem;
-            border: 1px solid #495057;
+            border: 1px solid #17a2b8;
         }
 
         /* Field Labels and Full Content Styling */
@@ -859,7 +859,7 @@
                                 `<div class="section-image">
                                     <img src="${section.image_path}" alt="Section ${index + 1}" onerror="this.style.display='none'">
                                     <div class="field-label">[image_path]</div>
-                                    <div class="image-path-value">TEST PATH: ${section.image_path}</div>
+                                    <div class="image-path-value">${section.image_path}</div>
                                 </div>` 
                                 : 
                                 `<div class="no-image">No image available</div>`
