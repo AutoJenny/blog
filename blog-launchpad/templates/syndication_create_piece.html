@@ -430,101 +430,107 @@
         <!-- Conversion Selection Panel -->
         <div id="conversionPanel" style="display: none;">
             <div class="conversion-container">
-                <div class="conversion-header">
-                    <h5 class="text-white mb-3">
-                        <i class="fas fa-exchange-alt me-2"></i>Conversion Settings
-                    </h5>
-                </div>
-                <div class="conversion-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="platformSelector" class="form-label text-white">Social Media Platform:</label>
-                                <select class="form-select bg-dark text-white border-secondary" id="platformSelector">
-                                    <option value="">Loading platforms...</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="processSelector" class="form-label text-white">Content Process:</label>
-                                <select class="form-select bg-dark text-white border-secondary" id="processSelector" disabled>
-                                    <option value="">Select a platform first...</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <div id="processDetails" class="process-details-panel" style="display: none;">
-                                <!-- Process Overview Section -->
-                                <div class="process-overview mb-4">
-                                    <h6 class="text-info mb-3">
-                                        <i class="fas fa-info-circle me-2"></i>Process Overview
-                                    </h6>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="detail-item">
-                                                <span class="detail-label">Process Name:</span>
-                                                <span id="selectedProcessName" class="detail-value"></span>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span class="detail-label">Content Type:</span>
-                                                <span id="selectedProcessType" class="detail-value"></span>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span class="detail-label">Priority Level:</span>
-                                                <span id="selectedProcessPriority" class="detail-value"></span>
-                                            </div>
+                <div class="accordion" id="conversionSettingsAccordion">
+                    <div class="accordion-item bg-dark border-secondary">
+                        <h2 class="accordion-header" id="conversionSettingsHeader">
+                            <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#conversionSettingsCollapse" aria-expanded="false" aria-controls="conversionSettingsCollapse">
+                                <i class="fas fa-exchange-alt me-2"></i>Conversion Settings: <span id="conversionHeaderDisplay" class="text-info ms-2">Select platform and process...</span>
+                            </button>
+                        </h2>
+                        <div id="conversionSettingsCollapse" class="accordion-collapse collapse" aria-labelledby="conversionSettingsHeader" data-bs-parent="#conversionSettingsAccordion">
+                            <div class="accordion-body text-white">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="platformSelector" class="form-label text-white">Social Media Platform:</label>
+                                            <select class="form-select bg-dark text-white border-secondary" id="platformSelector">
+                                                <option value="">Loading platforms...</option>
+                                            </select>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="detail-item">
-                                                <span class="detail-label">Platform:</span>
-                                                <span id="selectedPlatformName" class="detail-value"></span>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span class="detail-label">Status:</span>
-                                                <span id="selectedProcessStatus" class="detail-value"></span>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span class="detail-label">Active:</span>
-                                                <span id="selectedProcessActive" class="detail-value"></span>
-                                            </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="processSelector" class="form-label text-white">Content Process:</label>
+                                            <select class="form-select bg-dark text-white border-secondary" id="processSelector" disabled>
+                                                <option value="">Select a platform first...</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div id="processDetails" class="process-details-panel" style="display: none;">
+                                            <!-- Process Overview Section -->
+                                            <div class="process-overview mb-4">
+                                                <h6 class="text-info mb-3">
+                                                    <i class="fas fa-info-circle me-2"></i>Process Overview
+                                                </h6>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="detail-item">
+                                                            <span class="detail-label">Process Name:</span>
+                                                            <span id="selectedProcessName" class="detail-value"></span>
+                                                        </div>
+                                                        <div class="detail-item">
+                                                            <span class="detail-label">Content Type:</span>
+                                                            <span id="selectedProcessType" class="detail-value"></span>
+                                                        </div>
+                                                        <div class="detail-item">
+                                                            <span class="detail-label">Priority Level:</span>
+                                                            <span id="selectedProcessPriority" class="detail-value"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="detail-item">
+                                                            <span class="detail-label">Platform:</span>
+                                                            <span id="selectedPlatformName" class="detail-value"></span>
+                                                        </div>
+                                                        <div class="detail-item">
+                                                            <span class="detail-label">Status:</span>
+                                                            <span id="selectedProcessStatus" class="detail-value"></span>
+                                                        </div>
+                                                        <div class="detail-item">
+                                                            <span class="detail-label">Active:</span>
+                                                            <span id="selectedProcessActive" class="detail-value"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                <!-- Process Description Section -->
-                                <div class="process-description mb-4">
-                                    <h6 class="text-info mb-3">
-                                        <i class="fas fa-file-alt me-2"></i>What This Process Does
-                                    </h6>
-                                    <div class="description-content p-3 bg-secondary rounded">
-                                        <span id="selectedProcessDescription" class="detail-value"></span>
-                                    </div>
-                                </div>
+                                            <!-- Process Description Section -->
+                                            <div class="process-description mb-4">
+                                                <h6 class="text-info mb-3">
+                                                    <i class="fas fa-file-alt me-2"></i>What This Process Does
+                                                </h6>
+                                                <div class="description-content p-3 bg-secondary rounded">
+                                                    <span id="selectedProcessDescription" class="detail-value"></span>
+                                                </div>
+                                            </div>
 
-                                <!-- Process Configuration Section -->
-                                <div class="process-configuration mb-4">
-                                    <h6 class="text-info mb-3">
-                                        <i class="fas fa-cogs me-2"></i>How This Process Works
-                                    </h6>
-                                    <div id="processConfigsDisplay">
-                                        <div class="text-center text-muted py-3">
-                                            <i class="fas fa-spinner fa-spin me-2"></i>Loading process configuration...
-                                        </div>
-                                    </div>
-                                </div>
+                                            <!-- Process Configuration Section -->
+                                            <div class="process-configuration mb-4">
+                                                <h6 class="text-info mb-3">
+                                                    <i class="fas fa-cogs me-2"></i>How This Process Works
+                                                </h6>
+                                                <div id="processConfigsDisplay">
+                                                    <div class="text-center text-muted py-3">
+                                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading process configuration...
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                <!-- Process Execution Section -->
-                                <div class="process-execution">
-                                    <h6 class="text-info mb-3">
-                                        <i class="fas fa-play-circle me-2"></i>Ready to Execute
-                                    </h6>
-                                    <div class="execution-status p-3 bg-success bg-opacity-25 rounded border border-success">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-check-circle text-success me-2"></i>
-                                            <span class="text-white">This process is ready to convert your post sections into optimized content pieces.</span>
+                                            <!-- Process Execution Section -->
+                                            <div class="process-execution">
+                                                <h6 class="text-info mb-3">
+                                                    <i class="fas fa-play-circle me-2"></i>Ready to Execute
+                                                </h6>
+                                                <div class="execution-status p-3 bg-success bg-opacity-25 rounded border border-success">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                                        <span class="text-white">This process is ready to convert your post sections into optimized content pieces.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -769,6 +775,8 @@
                         // Auto-select the first platform if available
                         if (platforms.length > 0) {
                             platformSelector.value = platforms[0].id;
+                            // Update header display
+                            updateConversionHeaderDisplay();
                             // Trigger the change event to automatically fetch processes
                             platformSelector.dispatchEvent(new Event('change'));
                         }
@@ -813,6 +821,8 @@
                         // Auto-select the first process if available
                         if (platformProcesses.length > 0) {
                             processSelector.value = platformProcesses[0].id;
+                            // Update header display
+                            updateConversionHeaderDisplay();
                             // Trigger the change event to automatically display process details
                             processSelector.dispatchEvent(new Event('change'));
                         }
@@ -830,6 +840,9 @@
                 processSelector.disabled = true;
                 processDetails.style.display = 'none';
                 
+                // Update header display
+                updateConversionHeaderDisplay();
+                
                 if (selectedPlatformId) {
                     fetchContentProcesses(selectedPlatformId);
                 }
@@ -844,6 +857,9 @@
                 } else {
                     processDetails.style.display = 'none';
                 }
+                
+                // Update header display
+                updateConversionHeaderDisplay();
             });
             
             // Display process details
@@ -876,6 +892,27 @@
             function initializeConversionPanel() {
                 document.getElementById('conversionPanel').style.display = 'block';
                 fetchSocialMediaPlatforms();
+            }
+
+            // Update the conversion header display with current selections
+            function updateConversionHeaderDisplay() {
+                const headerDisplay = document.getElementById('conversionHeaderDisplay');
+                const platformSelector = document.getElementById('platformSelector');
+                const processSelector = document.getElementById('processSelector');
+                
+                const selectedPlatform = platformSelector.options[platformSelector.selectedIndex];
+                const selectedProcess = processSelector.options[processSelector.selectedIndex];
+                
+                if (selectedPlatform && selectedPlatform.value && selectedProcess && selectedProcess.value) {
+                    // Both platform and process selected
+                    headerDisplay.textContent = `${selectedPlatform.textContent} → ${selectedProcess.textContent.split(' (')[0]}`;
+                } else if (selectedPlatform && selectedPlatform.value) {
+                    // Only platform selected
+                    headerDisplay.textContent = `${selectedPlatform.textContent} → Select process...`;
+                } else {
+                    // Nothing selected
+                    headerDisplay.textContent = 'Select platform and process...';
+                }
             }
 
             // Fetch and display process configurations
