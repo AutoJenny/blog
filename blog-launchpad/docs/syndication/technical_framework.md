@@ -58,6 +58,8 @@ CREATE TABLE social_media_platform_specs (
 
 #### API Endpoints
 - **`/api/syndication/social-media-platforms`**: Returns platforms filtered by status
+- **`/api/syndication/content-processes`**: Returns all active content processes
+- **`/api/syndication/content-processes/{id}/configs`**: Returns configurations for a specific process
 
 ### 2. Content Syndication Interface
 **Status**: ✅ **IMPLEMENTED**
@@ -97,6 +99,108 @@ CREATE TABLE social_media_platform_specs (
 - **`displayPostDetails()`**: Handles post selection and channel display
 - **`displaySections()`**: Creates synchronized section/piece rows
 - **`fetchSocialMediaPlatforms()`**: Populates platform dropdown
+
+### 3. Content Process Registry
+**Status**: ✅ **IMPLEMENTED**
+
+#### Core Tables
+- **`social_media_content_processes`**: Process definitions with development status
+- **`social_media_process_configs`**: Process-specific configurations and prompts
+- **`social_media_process_executions`**: Execution history and results tracking
+
+#### Table Structure
+```sql
+-- Content processes table
+CREATE TABLE social_media_content_processes (
+    id SERIAL PRIMARY KEY,
+    process_name VARCHAR(100) UNIQUE NOT NULL,
+    display_name VARCHAR(150) NOT NULL,
+    platform_id INTEGER REFERENCES social_media_platforms(id) ON DELETE CASCADE,
+    content_type VARCHAR(50) NOT NULL,
+    description TEXT,
+    is_active BOOLEAN DEFAULT true,
+    priority INTEGER DEFAULT 0,
+    development_status VARCHAR(20) DEFAULT 'draft' CHECK (development_status IN ('draft', 'developed', 'testing', 'production')),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Process configurations table
+CREATE TABLE social_media_process_configs (
+    id SERIAL PRIMARY KEY,
+    process_id INTEGER REFERENCES social_media_content_processes(id) ON DELETE CASCADE,
+    config_category VARCHAR(50) NOT NULL,
+    config_key VARCHAR(100) NOT NULL,
+    config_value TEXT NOT NULL,
+    config_type VARCHAR(20) DEFAULT 'text',
+    is_required BOOLEAN DEFAULT false,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(process_id, config_category, config_key)
+);
+
+-- Process executions table
+CREATE TABLE social_media_process_executions (
+    id SERIAL PRIMARY KEY,
+    process_id INTEGER REFERENCES social_media_content_processes(id) ON DELETE CASCADE,
+    post_id INTEGER NOT NULL,
+    section_id INTEGER NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
+    started_at TIMESTAMP DEFAULT NOW(),
+    completed_at TIMESTAMP,
+    result_data TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+#### Development Status Levels
+- **`draft`**: Basic process defined, not yet configured
+- **`developed`**: Process fully configured and ready for use
+- **`testing`**: Process being tested with real content
+- **`production`**: Process live and working in production
+
+#### Current Processes (Facebook Platform)
+1. **Feed Post** (`facebook_feed_post`) - Status: `developed`
+2. **Story Post** (`facebook_story_post`) - Status: `developed`
+3. **Reels Caption** (`facebook_reels_caption`) - Status: `developed`
+4. **Group Post** (`facebook_group_post`) - Status: `developed`
+
+#### Configuration Categories
+- **`llm_prompt`**: System and user prompts for LLM processing
+- **`constraints`**: Character limits, hashtag counts, etc.
+- **`style_guide`**: Tone, hashtag strategy, CTA examples
+
+#### Database Models
+- **`ContentProcess`**: Python class for process management
+- **Methods**: `get_all_processes()`, `get_processes_by_platform()`, `get_processes_by_development_status()`, `get_process_configs()`, `create_process_execution()`, `update_execution_status()`
+
+### 4. Two-Stage Conversion Selection System
+**Status**: ✅ **IMPLEMENTED**
+
+#### UI Components
+- **Conversion Settings Panel**: Full-width panel above the sections/pieces table
+- **Platform Selection**: First dropdown showing only 'developed' social media platforms
+- **Process Selection**: Second dropdown showing processes for the selected platform
+- **Process Details**: Information panel showing selected process details
+
+#### Selection Flow
+1. **Platform Selection**: User selects from developed platforms (currently Facebook)
+2. **Process Filtering**: Second dropdown populates with processes for selected platform
+3. **Process Selection**: User selects specific content process (Feed Post, Story Post, etc.)
+4. **Details Display**: Process information panel shows configuration and status
+
+#### JavaScript Implementation
+- **`fetchSocialMediaPlatforms()`**: Loads developed platforms
+- **`fetchContentProcesses(platformId)`**: Filters processes by platform
+- **`displayProcessDetails(process)`**: Shows selected process information
+- **Cascading Dropdowns**: Second dropdown enabled only after platform selection
+
+#### Integration Points
+- **Post Selection**: Conversion panel appears when post is selected
+- **Process Execution**: Selected process can be used for content conversion
+- **Status Tracking**: Development status visible for each process
 
 ### 3. Platform Settings Management
 **Status**: ✅ **IMPLEMENTED**
@@ -232,12 +336,17 @@ CREATE TABLE social_media_process_executions (
 1. Social media platform database schema
 2. Platform specifications management
 3. Content syndication interface
-4. Row-based alignment system
+4. Bulletproof table-based row alignment system
 5. Platform settings accordion interface
 6. Channel selection dropdown
 7. API endpoints for platform data
 8. Content process registry tables and models
 9. Database viewer integration (Social Media group)
+10. Two-stage conversion selection system
+11. Development status tracking for processes
+12. Complete API endpoint implementation
+13. Tasks column with row numbering
+14. Conversion Settings panel with process details
 
 ### 🚧 In Progress
 1. LLM integration framework planning
