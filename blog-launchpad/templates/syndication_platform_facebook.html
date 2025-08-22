@@ -990,15 +990,15 @@
 
             // Load process configurations from database
             function loadProcessConfigs(processName) {
-                // First get the process ID and details
-                fetch('/api/syndication/content-processes')
+                // First get the process ID and details - use 'all' endpoint to get current status
+                fetch('/api/syndication/content-processes/all')
                     .then(response => response.json())
                     .then(data => {
                         const process = data.processes.find(p => p.process_name === processName);
                         if (process) {
                             currentProcessId = process.id;
                             
-                            // Update development status toggle
+                            // Update development status toggle with current status from database
                             updateDevelopmentStatus(process.development_status === 'developed');
                             
                             // Load process configurations
