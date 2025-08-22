@@ -445,6 +445,59 @@ def get_process_configs(process_id):
         print(f"Error fetching process configs: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/syndication/content-processes/<int:process_id>/configs', methods=['PUT'])
+def update_process_config(process_id):
+    """Update a specific process configuration."""
+    try:
+        from models.content_process import ContentProcess
+        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        process_model = ContentProcess(db_config)
+        
+        data = request.get_json()
+        config_id = data.get('config_id')
+        new_value = data.get('value')
+        
+        if not config_id or new_value is None:
+            return jsonify({'error': 'Missing config_id or value'}), 400
+        
+        # Update the configuration
+        success = process_model.update_config_value(config_id, new_value)
+        
+        if success:
+            return jsonify({'message': 'Configuration updated successfully'})
+        else:
+            return jsonify({'error': 'Failed to update configuration'}), 500
+            
+    except Exception as e:
+        print(f"Error updating process config: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/content-processes/<int:process_id>/status', methods=['PUT'])
+def update_process_development_status(process_id):
+    """Update the development status of a content process."""
+    try:
+        from models.content_process import ContentProcess
+        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        process_model = ContentProcess(db_config)
+        
+        data = request.get_json()
+        new_status = data.get('status')
+        
+        if not new_status or new_status not in ['draft', 'developed', 'testing', 'production']:
+            return jsonify({'error': 'Invalid status value'}), 400
+        
+        # Update the development status
+        success = process_model.update_development_status(process_id, new_status)
+        
+        if success:
+            return jsonify({'message': 'Development status updated successfully'})
+        else:
+            return jsonify({'error': 'Failed to update development status'}), 500
+            
+    except Exception as e:
+        print(f"Error updating process status: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/docs/social_media_syndication_plan.md')
 def syndication_docs():
     """Serve social media syndication plan documentation."""

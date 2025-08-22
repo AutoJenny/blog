@@ -208,5 +208,37 @@ class ContentProcess:
                     cur.execute(query, params)
                     return cur.fetchall()
         except Exception as e:
-            logger.error(f"Error fetching execution history: {e}")
-            return []
+                    logger.error(f"Error fetching execution history: {e}")
+        return []
+    
+    def update_config_value(self, config_id: int, new_value: str) -> bool:
+        """Update a specific configuration value."""
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        UPDATE social_media_process_configs
+                        SET config_value = %s, updated_at = NOW()
+                        WHERE id = %s
+                    """, (new_value, config_id))
+                    conn.commit()
+                    return cur.rowcount > 0
+        except Exception as e:
+            logger.error(f"Error updating config value: {e}")
+            return False
+    
+    def update_development_status(self, process_id: int, new_status: str) -> bool:
+        """Update the development status of a content process."""
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        UPDATE social_media_content_processes
+                        SET development_status = %s, updated_at = NOW()
+                        WHERE id = %s
+                    """, (new_status, process_id))
+                    conn.commit()
+                    return cur.rowcount > 0
+        except Exception as e:
+            logger.error(f"Error updating development status: {e}")
+            return False

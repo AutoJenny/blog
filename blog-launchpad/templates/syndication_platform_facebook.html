@@ -593,6 +593,42 @@
                 </div>
             </div>
         </div>
+
+        <!-- Process Configuration Panel -->
+        <div class="spec-card mt-3">
+            <div class="accordion" id="processConfigurationAccordion">
+                <div class="accordion-item bg-dark border-secondary">
+                    <h2 class="accordion-header" id="processConfigurationHeader">
+                        <button class="accordion-button bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#processConfigurationCollapse" aria-expanded="true" aria-controls="processConfigurationCollapse">
+                            <i class="fas fa-cogs me-2"></i>Process Configuration
+                        </button>
+                    </h2>
+                    <div id="processConfigurationCollapse" class="accordion-collapse collapse show" aria-labelledby="processConfigurationHeader" data-bs-parent="#processConfigurationAccordion">
+                        <div class="accordion-body text-white">
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center">
+                                        <span class="spec-label me-3">Development Status:</span>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="developedToggle" style="width: 3rem; height: 1.5rem;">
+                                            <label class="form-check-label ms-2" for="developedToggle">
+                                                <span id="developedStatusText">Not Developed</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="processConfigsContainer">
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-info-circle me-2"></i>Select a content process above to view and edit its configuration
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap JS -->
@@ -927,6 +963,195 @@
 
             // Initialize with default process
             processSelector.dispatchEvent(new Event('change'));
+
+            // Process Configuration Panel Functionality
+            const developedToggle = document.getElementById('developedToggle');
+            const developedStatusText = document.getElementById('developedStatusText');
+            const processConfigsContainer = document.getElementById('processConfigsContainer');
+            let currentProcessId = null;
+
+            // Handle process selection change to load configs
+            processSelector.addEventListener('change', function() {
+                const selectedProcess = this.value;
+                if (selectedProcess) {
+                    loadProcessConfigs(selectedProcess);
+                }
+            });
+
+            // Load process configurations from database
+            function loadProcessConfigs(processName) {
+                // First get the process ID and details
+                fetch('/api/syndication/content-processes')
+                    .then(response => response.json())
+                    .then(data => {
+                        const process = data.processes.find(p => p.process_name === processName);
+                        if (process) {
+                            currentProcessId = process.id;
+                            
+                            // Update development status toggle
+                            updateDevelopmentStatus(process.development_status === 'developed');
+                            
+                            // Load process configurations
+                            fetch(`/api/syndication/content-processes/${process.id}/configs`)
+                                .then(response => response.json())
+                                .then(configData => {
+                                    displayProcessConfigs(configData.configs);
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching configs:', error);
+                                    displayProcessConfigs([]);
+                                });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching processes:', error);
+                    });
+            }
+
+            // Update development status toggle
+            function updateDevelopmentStatus(isDeveloped) {
+                developedToggle.checked = isDeveloped;
+                developedStatusText.textContent = isDeveloped ? 'Developed' : 'Not Developed';
+            }
+
+            // Display process configurations organized by category
+            function displayProcessConfigs(configs) {
+                if (!configs || configs.length === 0) {
+                    processConfigsContainer.innerHTML = `
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>No configurations found for this process
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Group configs by category
+                const configsByCategory = {};
+                configs.forEach(config => {
+                    if (!configsByCategory[config.config_category]) {
+                        configsByCategory[config.config_category] = [];
+                    }
+                    configsByCategory[config.config_category].push(config);
+                });
+
+                // Create HTML for each category
+                let html = '';
+                Object.keys(configsByCategory).forEach(category => {
+                    const categoryConfigs = configsByCategory[category];
+                    html += `
+                        <div class="config-category mb-4">
+                            <h6 class="text-info mb-3">${category.replace('_', ' ').toUpperCase()}</h6>
+                            <div class="row">
+                    `;
+                    
+                    categoryConfigs.forEach(config => {
+                        html += `
+                            <div class="col-md-6 mb-3">
+                                <div class="config-item">
+                                    <label class="form-label text-white">${config.config_key.replace('_', ' ').toUpperCase()}:</label>
+                                    <textarea class="form-control bg-dark text-white border-secondary" 
+                                              rows="3" 
+                                              data-config-id="${config.id}"
+                                              data-config-key="${config.config_key}"
+                                              data-config-category="${config.config_category}">${config.config_value}</textarea>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+
+                processConfigsContainer.innerHTML = html;
+
+                // Add event listeners for textarea changes
+                const textareas = processConfigsContainer.querySelectorAll('textarea');
+                textareas.forEach(textarea => {
+                    textarea.addEventListener('blur', function() {
+                        updateProcessConfig(
+                            this.dataset.configId,
+                            this.dataset.configCategory,
+                            this.dataset.configKey,
+                            this.value
+                        );
+                    });
+                });
+            }
+
+            // Update process configuration in database
+            function updateProcessConfig(configId, category, key, value) {
+                fetch(`/api/syndication/content-processes/${currentProcessId}/configs`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        config_id: configId,
+                        value: value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error updating config:', data.error);
+                        showNotification('Error updating configuration', 'danger');
+                    } else {
+                        showNotification('Configuration updated successfully', 'success');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error updating configuration', 'danger');
+                });
+            }
+
+            // Handle development status toggle
+            developedToggle.addEventListener('change', function() {
+                if (currentProcessId) {
+                    updateProcessDevelopmentStatus(this.checked);
+                }
+            });
+
+            // Update process development status in database
+            function updateProcessDevelopmentStatus(isDeveloped) {
+                const newStatus = isDeveloped ? 'developed' : 'draft';
+                
+                fetch(`/api/syndication/content-processes/${currentProcessId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: newStatus
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error updating status:', data.error);
+                        showNotification('Error updating development status', 'danger');
+                        // Revert the toggle
+                        developedToggle.checked = !isDeveloped;
+                        updateDevelopmentStatus(!isDeveloped);
+                    } else {
+                        showNotification('Development status updated successfully', 'success');
+                        updateDevelopmentStatus(isDeveloped);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error updating development status', 'danger');
+                    // Revert the toggle
+                    developedToggle.checked = !isDeveloped;
+                    updateDevelopmentStatus(!isDeveloped);
+                });
+            }
+
+            // Initialize with default process configs
+            loadProcessConfigs('facebook_feed_post');
         });
     </script>
 </body>
