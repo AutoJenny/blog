@@ -182,15 +182,38 @@
             background-color: #2d3748;
         }
         
-        /* Ensure equal column widths */
+        /* Three-column layout with Tasks column */
         .sections-pieces-table th:first-child,
         .sections-pieces-table td:first-child {
-            width: 50%;
+            width: 15%;
+            text-align: center;
+        }
+        
+        .sections-pieces-table th:nth-child(2),
+        .sections-pieces-table td:nth-child(2) {
+            width: 42.5%;
         }
         
         .sections-pieces-table th:last-child,
         .sections-pieces-table td:last-child {
-            width: 50%;
+            width: 42.5%;
+        }
+        
+        /* Tasks column styling */
+        .tasks-header {
+            background-color: #667eea !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+        }
+        
+        .sections-pieces-table td:first-child {
+            background-color: #1a1d29;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            text-align: center;
+            vertical-align: middle;
+            border-right: 2px solid #495057;
         }
         
         /* Maintain existing item styling within table cells */
@@ -328,6 +351,9 @@
                 <table class="sections-pieces-table">
                     <thead>
                         <tr>
+                            <th class="tasks-header">
+                                <i class="fas fa-tasks me-2"></i>Tasks
+                            </th>
                             <th class="sections-header">
                                 <i class="fas fa-layer-group me-2"></i>Post Sections
                             </th>
@@ -338,7 +364,7 @@
                     </thead>
                     <tbody id="sectionsPiecesBody">
                         <!-- Row pairs will be dynamically created here -->
-                        <!-- Each row ensures perfect alignment: Section 1 | Piece 1 -->
+                        <!-- Each row ensures perfect alignment: Task 1 | Section 1 | Piece 1 -->
                     </tbody>
                 </table>
             </div>
@@ -464,7 +490,12 @@
                     // Create a new table row for each section-piece pair
                     const tableRow = document.createElement('tr');
                     
-                    // Create the section cell (left column)
+                    // Create the task number cell (left column)
+                    const taskCell = document.createElement('td');
+                    taskCell.textContent = index + 1;
+                    taskCell.className = 'task-number';
+                    
+                    // Create the section cell (middle column)
                     const sectionCell = document.createElement('td');
                     const sectionItem = document.createElement('div');
                     sectionItem.className = 'section-item';
@@ -492,7 +523,8 @@
                     
                     pieceCell.appendChild(pieceItem);
                     
-                    // Add both cells to the row
+                    // Add all three cells to the row
+                    tableRow.appendChild(taskCell);
                     tableRow.appendChild(sectionCell);
                     tableRow.appendChild(pieceCell);
                     
@@ -505,7 +537,7 @@
                 const sectionsPiecesBody = document.getElementById('sectionsPiecesBody');
                 sectionsPiecesBody.innerHTML = `
                     <tr>
-                        <td colspan="2" class="text-center text-muted py-4">
+                        <td colspan="3" class="text-center text-muted py-4">
                             <i class="fas fa-exclamation-triangle me-2"></i>${message}
                         </td>
                     </tr>
