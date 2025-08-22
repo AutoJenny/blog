@@ -405,7 +405,21 @@ def get_social_media_platforms():
 
 @app.route('/api/syndication/content-processes')
 def get_content_processes():
-    """Get all active content processes for syndication."""
+    """Get only developed content processes for syndication."""
+    try:
+        from models.content_process import ContentProcess
+        db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
+        process_model = ContentProcess(db_config)
+        processes = process_model.get_processes_by_development_status('developed')
+        processes_list = [{'id': p['id'], 'process_name': p['process_name'], 'display_name': p['display_name'], 'platform_id': p['platform_id'], 'platform_name': p['platform_name'], 'platform_display_name': p['platform_display_name'], 'content_type': p['content_type'], 'description': p['description'], 'is_active': p['is_active'], 'priority': p['priority'], 'development_status': p.get('development_status', 'draft')} for p in processes]
+        return jsonify({'processes': processes_list})
+    except Exception as e:
+        print(f"Error fetching content processes: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/syndication/content-processes/all')
+def get_all_content_processes():
+    """Get all content processes (including draft/undeveloped) for admin purposes."""
     try:
         from models.content_process import ContentProcess
         db_config = {'host': 'localhost', 'database': 'blog', 'user': 'postgres', 'password': 'postgres'}
@@ -414,7 +428,7 @@ def get_content_processes():
         processes_list = [{'id': p['id'], 'process_name': p['process_name'], 'display_name': p['display_name'], 'platform_id': p['platform_id'], 'platform_name': p['platform_name'], 'platform_display_name': p['platform_display_name'], 'content_type': p['content_type'], 'description': p['description'], 'is_active': p['is_active'], 'priority': p['priority'], 'development_status': p.get('development_status', 'draft')} for p in processes]
         return jsonify({'processes': processes_list})
     except Exception as e:
-        print(f"Error fetching content processes: {e}")
+        print(f"Error fetching all content processes: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/syndication/content-processes/<int:process_id>/configs')
