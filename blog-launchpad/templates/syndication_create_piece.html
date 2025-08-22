@@ -640,12 +640,14 @@
                         }
                         
                         processSelector.innerHTML = '<option value="">Select a process...</option>';
+                        console.log('Platform processes found:', platformProcesses);
                         platformProcesses.forEach(process => {
                             const option = document.createElement('option');
                             option.value = process.id;
                             option.textContent = `${process.display_name} (${process.content_type})`;
                             option.dataset.processData = JSON.stringify(process);
                             option.dataset.processName = process.process_name;
+                            console.log('Created option for process:', process.process_name, 'with data:', option.dataset.processData);
                             processSelector.appendChild(option);
                         });
                         
@@ -684,10 +686,16 @@
             // Handle process selection change
             processSelector.addEventListener('change', function() {
                 const selectedOption = this.options[this.selectedIndex];
+                console.log('Process selection changed:', selectedOption);
+                console.log('Selected option value:', selectedOption.value);
+                console.log('Selected option dataset:', selectedOption.dataset);
+                
                 if (selectedOption.value && selectedOption.dataset.processData) {
                     const processData = JSON.parse(selectedOption.dataset.processData);
+                    console.log('Process data:', processData);
                     displayProcessDetails(processData);
                 } else {
+                    console.log('No process data found, hiding details');
                     processDetails.style.display = 'none';
                 }
                 
