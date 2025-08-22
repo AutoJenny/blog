@@ -813,6 +813,10 @@
                 sectionsPiecesBody.innerHTML = '';
                 
                 sections.forEach((section, index) => {
+                    // Debug logging
+                    console.log(`Section ${index + 1}:`, section);
+                    console.log(`Section ${index + 1} image_path:`, section.image_path);
+                    
                     // Create a new table row for each section-piece pair
                     const tableRow = document.createElement('tr');
                     
@@ -849,7 +853,7 @@
                                     <div class="field-label">[image_path]</div>
                                     <div class="image-path-value">${section.image_path}</div>
                                 </div>
-                            ` : ''}
+                            ` : `<div class="no-image">No image available</div>`}
                         </div>
                     `;
                     
