@@ -233,6 +233,43 @@
             border-color: #667eea;
             transform: translateY(-1px);
         }
+        
+        /* Conversion Panel Styling */
+        .conversion-container {
+            background-color: #23273a;
+            border: 1px solid #495057;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .conversion-header h5 {
+            color: #ffffff;
+            margin-bottom: 1rem;
+        }
+        
+        .process-details-panel {
+            background-color: #1a1d29;
+            border: 1px solid #495057;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .detail-item {
+            margin-bottom: 0.75rem;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #a0aec0;
+            margin-right: 0.5rem;
+        }
+        
+        .detail-value {
+            color: #ffffff;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -335,6 +372,69 @@
                                             <p><strong>Status:</strong> <span id="postStatus"></span></p>
                                             <p><strong>Slug:</strong> <span id="postSlug"></span></p>
                                             <p><strong>Number of Sections:</strong> <span id="postSectionCount"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversion Selection Panel -->
+        <div id="conversionPanel" style="display: none;">
+            <div class="conversion-container">
+                <div class="conversion-header">
+                    <h5 class="text-white mb-3">
+                        <i class="fas fa-exchange-alt me-2"></i>Conversion Settings
+                    </h5>
+                </div>
+                <div class="conversion-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="platformSelector" class="form-label text-white">Social Media Platform:</label>
+                                <select class="form-select bg-dark text-white border-secondary" id="platformSelector">
+                                    <option value="">Loading platforms...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="processSelector" class="form-label text-white">Content Process:</label>
+                                <select class="form-select bg-dark text-white border-secondary" id="processSelector" disabled>
+                                    <option value="">Select a platform first...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div id="processDetails" class="process-details-panel" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Selected Process:</span>
+                                            <span id="selectedProcessName" class="detail-value"></span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Content Type:</span>
+                                            <span id="selectedProcessType" class="detail-value"></span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Development Status:</span>
+                                            <span id="selectedProcessStatus" class="detail-value"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Description:</span>
+                                            <span id="selectedProcessDescription" class="detail-value"></span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Priority:</span>
+                                            <span id="selectedProcessPriority" class="detail-value"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -452,7 +552,8 @@
                 
                 postDetails.classList.remove('d-none');
                 
-                // Show sections content area and fetch sections
+                // Show conversion panel and sections content area
+                initializeConversionPanel();
                 document.getElementById('sectionsContent').style.display = 'block';
                 fetchPostSections(post.id);
             }
@@ -542,6 +643,119 @@
                         </td>
                     </tr>
                 `;
+            }
+            
+            // Conversion Panel Functionality
+            const platformSelector = document.getElementById('platformSelector');
+            const processSelector = document.getElementById('processSelector');
+            const processDetails = document.getElementById('processDetails');
+            
+            // Fetch social media platforms
+            function fetchSocialMediaPlatforms() {
+                fetch('/api/syndication/social-media-platforms')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Error fetching platforms:', data.error);
+                            platformSelector.innerHTML = '<option value="">Error loading platforms</option>';
+                            return;
+                        }
+                        
+                        const platforms = data.platforms || [];
+                        if (platforms.length === 0) {
+                            platformSelector.innerHTML = '<option value="">No developed platforms found</option>';
+                            return;
+                        }
+                        
+                        platformSelector.innerHTML = '<option value="">Select a platform...</option>';
+                        platforms.forEach(platform => {
+                            const option = document.createElement('option');
+                            option.value = platform.id;
+                            option.textContent = platform.display_name;
+                            option.dataset.platformName = platform.platform_name;
+                            platformSelector.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        platformSelector.innerHTML = '<option value="">Error loading platforms</option>';
+                    });
+            }
+            
+            // Fetch content processes for selected platform
+            function fetchContentProcesses(platformId) {
+                fetch('/api/syndication/content-processes')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Error fetching processes:', data.error);
+                            processSelector.innerHTML = '<option value="">Error loading processes</option>';
+                            return;
+                        }
+                        
+                        const processes = data.processes || [];
+                        const platformProcesses = processes.filter(p => p.platform_id == platformId);
+                        
+                        if (platformProcesses.length === 0) {
+                            processSelector.innerHTML = '<option value="">No processes found for this platform</option>';
+                            return;
+                        }
+                        
+                        processSelector.innerHTML = '<option value="">Select a process...</option>';
+                        platformProcesses.forEach(process => {
+                            const option = document.createElement('option');
+                            option.value = process.id;
+                            option.textContent = `${process.display_name} (${process.content_type})`;
+                            option.dataset.processData = JSON.stringify(process);
+                            processSelector.appendChild(option);
+                        });
+                        
+                        processSelector.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        processSelector.innerHTML = '<option value="">Error loading processes</option>';
+                    });
+            }
+            
+            // Handle platform selection change
+            platformSelector.addEventListener('change', function() {
+                const selectedPlatformId = this.value;
+                processSelector.innerHTML = '<option value="">Select a process...</option>';
+                processSelector.disabled = true;
+                processDetails.style.display = 'none';
+                
+                if (selectedPlatformId) {
+                    fetchContentProcesses(selectedPlatformId);
+                }
+            });
+            
+            // Handle process selection change
+            processSelector.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.value && selectedOption.dataset.processData) {
+                    const processData = JSON.parse(selectedOption.dataset.processData);
+                    displayProcessDetails(processData);
+                } else {
+                    processDetails.style.display = 'none';
+                }
+            });
+            
+            // Display process details
+            function displayProcessDetails(process) {
+                document.getElementById('selectedProcessName').textContent = process.display_name;
+                document.getElementById('selectedProcessType').textContent = process.content_type;
+                document.getElementById('selectedProcessStatus').textContent = process.development_status || 'draft';
+                document.getElementById('selectedProcessDescription').textContent = process.description || 'No description available';
+                document.getElementById('selectedProcessPriority').textContent = process.priority || '0';
+                
+                processDetails.style.display = 'block';
+            }
+            
+            // Initialize conversion panel when post is selected
+            function initializeConversionPanel() {
+                document.getElementById('conversionPanel').style.display = 'block';
+                fetchSocialMediaPlatforms();
             }
         });
     </script>
