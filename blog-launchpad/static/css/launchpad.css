@@ -540,26 +540,15 @@
 }
 
 .image-path-value {
-    font-size: 0.8rem;
-    color: #17a2b8;
+    font-size: 0.75rem;
+    color: #6c757d;
     font-family: monospace;
     word-break: break-all;
     margin-top: 0.25rem;
-    padding: 0.5rem;
-    background-color: #1a1d29;
-    border-radius: 0.25rem;
-    border: 1px solid #17a2b8;
     display: block;
     white-space: pre-wrap;
     max-width: 100%;
     overflow-wrap: break-word;
-    /* Debug styling to ensure visibility */
-    background-color: #ff0000 !important;
-    color: #ffffff !important;
-    border: 3px solid #ffff00 !important;
-    font-weight: bold !important;
-    z-index: 1000 !important;
-    position: relative !important;
 }
 
 /* Field Labels and Full Content Styling */
@@ -625,6 +614,193 @@
     background: #667eea;
 }
 
+/* LLM Debug Panel Styling */
+.llm-debug-container {
+    margin-bottom: 2rem;
+}
+
+.debug-section {
+    background-color: #1a1d29;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    border: 1px solid #495057;
+}
+
+.debug-item {
+    margin-bottom: 1rem;
+}
+
+.debug-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.debug-value {
+    background-color: #2d3748;
+    border: 1px solid #495057;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    color: #e9ecef;
+    font-size: 0.9rem;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.debug-config-box {
+    background-color: #2d3748;
+    border: 1px solid #495057;
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+.config-section {
+    margin-bottom: 1rem;
+}
+
+.config-section:last-child {
+    margin-bottom: 0;
+}
+
+.config-section strong {
+    color: #17a2b8;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.config-value {
+    background-color: #1a1d29;
+    border: 1px solid #31364a;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    color: #ced4da;
+    font-size: 0.85rem;
+    font-family: monospace;
+    white-space: pre-wrap;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.debug-content-box {
+    background-color: #2d3748;
+    border: 1px solid #495057;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    color: #ced4da;
+    font-size: 0.9rem;
+    min-height: 120px;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.debug-prompt-box {
+    background-color: #2d3748;
+    border: 1px solid #495057;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    color: #ced4da;
+    font-size: 0.85rem;
+    font-family: monospace;
+    min-height: 150px;
+    max-height: 250px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.debug-details-box {
+    background-color: #2d3748;
+    border: 1px solid #495057;
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #31364a;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    color: #6c757d;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #17a2b8;
+    font-family: monospace;
+    font-size: 0.8rem;
+}
+
+.debug-response-box {
+    background-color: #2d3748;
+    border: 1px solid #495057;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    color: #ced4da;
+    font-size: 0.85rem;
+    font-family: monospace;
+    min-height: 120px;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.debug-output-box {
+    background-color: #2d3748;
+    border: 1px solid #495057;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    color: #ced4da;
+    font-size: 0.9rem;
+    min-height: 100px;
+    max-height: 150px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.debug-validation-box {
+    background-color: #2d3748;
+    border: 1px solid #495057;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    color: #ced4da;
+    font-size: 0.85rem;
+}
+
+.execution-controls {
+    background-color: #1a1d29;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    border: 1px solid #495057;
+}
+
+.execution-status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.execution-status-bar .badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
 /* Responsive layout for smaller screens */
 @media (max-width: 768px) {
     .section-content-wrapper {
@@ -636,5 +812,14 @@
         width: 100%;
         height: 200px;
         align-self: center;
+    }
+    
+    .debug-section {
+        margin-bottom: 1rem;
+    }
+    
+    .execution-status-bar {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

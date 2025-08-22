@@ -6,7 +6,7 @@
     <title>Create Piece - Social Media Syndication - Blog Launchpad</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/launchpad.css?v=7">
+    <link rel="stylesheet" href="/static/css/launchpad.css?v=8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -225,6 +225,149 @@
                                                         <span class="text-white">This process is ready to convert your post sections into optimized content pieces.</span>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LLM Processing Debug Panel -->
+        <div id="llmDebugPanel" style="display: none;">
+            <div class="llm-debug-container">
+                <div class="accordion" id="llmDebugAccordion">
+                    <div class="accordion-item bg-dark border-secondary">
+                        <h2 class="accordion-header" id="llmDebugHeader">
+                            <button class="accordion-button bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#llmDebugCollapse" aria-expanded="true" aria-controls="llmDebugCollapse">
+                                <i class="fas fa-brain me-2"></i>LLM Processing Debug Panel
+                                <span class="text-info ms-2">(Always Open)</span>
+                            </button>
+                        </h2>
+                        <div id="llmDebugCollapse" class="accordion-collapse collapse show" aria-labelledby="llmDebugHeader" data-bs-parent="#llmDebugAccordion">
+                            <div class="accordion-body text-white">
+                                <!-- Process Execution Controls -->
+                                <div class="execution-controls mb-4">
+                                    <div class="d-flex gap-2 mb-3">
+                                        <button class="btn btn-primary" id="processSection1Btn">
+                                            <i class="fas fa-rocket me-2"></i>Process Section 1
+                                        </button>
+                                        <button class="btn btn-secondary" id="processAllSectionsBtn" disabled>
+                                            <i class="fas fa-sync-alt me-2"></i>Process All Sections
+                                        </button>
+                                        <button class="btn btn-outline-light" id="clearResultsBtn">
+                                            <i class="fas fa-eraser me-2"></i>Clear Results
+                                        </button>
+                                    </div>
+                                    <div class="execution-status-bar">
+                                        <span class="badge bg-secondary me-3">Status: <span id="llmStatus">Ready</span></span>
+                                        <span class="badge bg-secondary me-3">Last Processed: <span id="llmLastProcessed">Never</span></span>
+                                        <span class="badge bg-secondary">Processing Time: <span id="llmProcessingTime">--</span></span>
+                                    </div>
+                                </div>
+
+                                <!-- Main Debug Content -->
+                                <div class="row">
+                                    <!-- Input Assembly Section (Left Column) -->
+                                    <div class="col-md-6">
+                                        <div class="debug-section">
+                                            <h6 class="text-info mb-3">
+                                                <i class="fas fa-arrow-down me-2"></i>Input Assembly - What We're Sending to the LLM
+                                            </h6>
+                                            
+                                            <!-- Process Info -->
+                                            <div class="debug-item mb-3">
+                                                <label class="debug-label">Selected Process:</label>
+                                                <div class="debug-value" id="debugProcessName">No process selected</div>
+                                            </div>
+                                            
+                                            <div class="debug-item mb-3">
+                                                <label class="debug-label">Process Description:</label>
+                                                <div class="debug-value" id="debugProcessDescription">No description available</div>
+                                            </div>
+                                            
+                                            <!-- Process Configuration -->
+                                            <div class="debug-item mb-3">
+                                                <label class="debug-label">Process Configuration:</label>
+                                                <div class="debug-config-box">
+                                                    <div class="config-section mb-2">
+                                                        <strong>LLM Prompt:</strong>
+                                                        <div class="config-value" id="debugLLMPrompt">No prompt configured</div>
+                                                    </div>
+                                                    <div class="config-section mb-2">
+                                                        <strong>Constraints:</strong>
+                                                        <div class="config-value" id="debugConstraints">No constraints configured</div>
+                                                    </div>
+                                                    <div class="config-section mb-2">
+                                                        <strong>Style Guide:</strong>
+                                                        <div class="config-value" id="debugStyleGuide">No style guide configured</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Section Content -->
+                                            <div class="debug-item mb-3">
+                                                <label class="debug-label">Section Content (Section 1):</label>
+                                                <div class="debug-content-box" id="debugSectionContent">No section content available</div>
+                                            </div>
+                                            
+                                            <!-- Final Assembled Prompt -->
+                                            <div class="debug-item mb-3">
+                                                <label class="debug-label">Final Assembled Prompt:</label>
+                                                <div class="debug-prompt-box" id="debugAssembledPrompt">No prompt assembled yet</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- LLM Response Section (Right Column) -->
+                                    <div class="col-md-6">
+                                        <div class="debug-section">
+                                            <h6 class="text-info mb-3">
+                                                <i class="fas fa-arrow-up me-2"></i>LLM Response - What We Received Back
+                                            </h6>
+                                            
+                                            <!-- Processing Details -->
+                                            <div class="debug-item mb-3">
+                                                <label class="debug-label">Processing Details:</label>
+                                                <div class="debug-details-box">
+                                                    <div class="detail-row">
+                                                        <span class="detail-label">Request Time:</span>
+                                                        <span class="detail-value" id="debugRequestTime">--</span>
+                                                    </div>
+                                                    <div class="detail-row">
+                                                        <span class="detail-label">Response Time:</span>
+                                                        <span class="detail-value" id="debugResponseTime">--</span>
+                                                    </div>
+                                                    <div class="detail-row">
+                                                        <span class="detail-label">Total Duration:</span>
+                                                        <span class="detail-value" id="debugTotalDuration">--</span>
+                                                    </div>
+                                                    <div class="detail-row">
+                                                        <span class="detail-label">Model Used:</span>
+                                                        <span class="detail-value" id="debugModelUsed">--</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Raw LLM Response -->
+                                            <div class="debug-item mb-3">
+                                                <label class="debug-label">Raw LLM Response:</label>
+                                                <div class="debug-response-box" id="debugRawResponse">No response yet</div>
+                                            </div>
+                                            
+                                            <!-- Processed Output -->
+                                            <div class="debug-item mb-3">
+                                                <label class="debug-label">Processed Output:</label>
+                                                <div class="debug-output-box" id="debugProcessedOutput">No output processed yet</div>
+                                            </div>
+                                            
+                                            <!-- Validation Results -->
+                                            <div class="debug-item mb-3">
+                                                <label class="debug-label">Validation Results:</label>
+                                                <div class="debug-validation-box" id="debugValidationResults">No validation performed yet</div>
                                             </div>
                                         </div>
                                     </div>
@@ -619,6 +762,7 @@
             // Initialize conversion panel when post is selected
             function initializeConversionPanel() {
                 document.getElementById('conversionPanel').style.display = 'block';
+                document.getElementById('llmDebugPanel').style.display = 'block';
                 fetchSocialMediaPlatforms();
             }
 
@@ -722,6 +866,143 @@
                 });
 
                 configsDisplay.innerHTML = html;
+            }
+
+            // LLM Debug Panel Functions
+            function updateDebugPanel(processConfig, sectionContent) {
+                // Update process info
+                document.getElementById('debugProcessName').textContent = processConfig.process_name || 'No process selected';
+                document.getElementById('debugProcessDescription').textContent = processConfig.description || 'No description available';
+                
+                // Update process configuration
+                const llmPrompt = processConfig.configs?.find(c => c.config_category === 'llm_prompt' && c.config_key === 'system_prompt')?.config_value || 'No prompt configured';
+                const constraints = processConfig.configs?.find(c => c.config_category === 'constraints')?.config_value || 'No constraints configured';
+                const styleGuide = processConfig.configs?.find(c => c.config_category === 'style_guide')?.config_value || 'No style guide configured';
+                
+                document.getElementById('debugLLMPrompt').textContent = llmPrompt;
+                document.getElementById('debugConstraints').textContent = constraints;
+                document.getElementById('debugStyleGuide').textContent = styleGuide;
+                
+                // Update section content
+                if (sectionContent) {
+                    const contentText = `Title: ${sectionContent.title || 'No title'}\n\nContent: ${sectionContent.content || 'No content'}\n\nPolished: ${sectionContent.polished || 'No polished content'}\n\nImage: ${sectionContent.image_path || 'No image'}`;
+                    document.getElementById('debugSectionContent').textContent = contentText;
+                } else {
+                    document.getElementById('debugSectionContent').textContent = 'No section content available';
+                }
+                
+                // Assemble and display the final prompt
+                const assembledPrompt = assembleLLMPrompt(processConfig, sectionContent);
+                document.getElementById('debugAssembledPrompt').textContent = assembledPrompt;
+            }
+
+            function assembleLLMPrompt(processConfig, sectionContent) {
+                if (!processConfig || !sectionContent) {
+                    return 'No prompt assembled yet';
+                }
+                
+                const systemPrompt = processConfig.configs?.find(c => c.config_category === 'llm_prompt' && c.config_key === 'system_prompt')?.config_value || '';
+                const constraints = processConfig.configs?.find(c => c.config_category === 'constraints')?.config_value || '';
+                const styleGuide = processConfig.configs?.find(c => c.config_category === 'style_guide')?.config_value || '';
+                
+                let prompt = `System: ${systemPrompt}\n\n`;
+                prompt += `User: Please convert the following blog section content into a social media post according to these requirements:\n\n`;
+                prompt += `Content:\n${sectionContent.content || sectionContent.title}\n\n`;
+                prompt += `Constraints: ${constraints}\n\n`;
+                prompt += `Style Guide: ${styleGuide}\n\n`;
+                prompt += `Please provide the converted content.`;
+                
+                return prompt;
+            }
+
+            function updateLLMResponse(rawResponse, processedOutput, processingDetails) {
+                // Update processing details
+                document.getElementById('debugRequestTime').textContent = processingDetails.requestTime || '--';
+                document.getElementById('debugResponseTime').textContent = processingDetails.responseTime || '--';
+                document.getElementById('debugTotalDuration').textContent = processingDetails.totalDuration || '--';
+                document.getElementById('debugModelUsed').textContent = processingDetails.modelUsed || '--';
+                
+                // Update response content
+                document.getElementById('debugRawResponse').textContent = rawResponse || 'No response yet';
+                document.getElementById('debugProcessedOutput').textContent = processedOutput || 'No output processed yet';
+                
+                // Update validation results (placeholder for now)
+                document.getElementById('debugValidationResults').textContent = 'Validation not implemented yet';
+            }
+
+            function clearDebugResults() {
+                document.getElementById('debugRawResponse').textContent = 'No response yet';
+                document.getElementById('debugProcessedOutput').textContent = 'No output processed yet';
+                document.getElementById('debugValidationResults').textContent = 'No validation performed yet';
+                document.getElementById('debugRequestTime').textContent = '--';
+                document.getElementById('debugResponseTime').textContent = '--';
+                document.getElementById('debugTotalDuration').textContent = '--';
+                document.getElementById('debugModelUsed').textContent = '--';
+                document.getElementById('llmStatus').textContent = 'Ready';
+                document.getElementById('llmLastProcessed').textContent = 'Never';
+                document.getElementById('llmProcessingTime').textContent = '--';
+            }
+
+            // Event listeners for debug panel buttons
+            document.addEventListener('DOMContentLoaded', function() {
+                const processSection1Btn = document.getElementById('processSection1Btn');
+                const clearResultsBtn = document.getElementById('clearResultsBtn');
+                
+                if (processSection1Btn) {
+                    processSection1Btn.addEventListener('click', function() {
+                        // TODO: Implement actual LLM processing
+                        console.log('Process Section 1 clicked');
+                        document.getElementById('llmStatus').textContent = 'Processing...';
+                        
+                        // Simulate processing for now
+                        setTimeout(() => {
+                            document.getElementById('llmStatus').textContent = 'Completed';
+                            document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
+                            document.getElementById('llmProcessingTime').textContent = '2.5s';
+                            
+                            // Simulate response
+                            const mockResponse = "Here's your converted social media post content...";
+                            const mockOutput = "Converted content ready for display";
+                            const mockDetails = {
+                                requestTime: new Date().toLocaleTimeString(),
+                                responseTime: new Date().toLocaleTimeString(),
+                                totalDuration: '2.5s',
+                                modelUsed: 'Ollama (llama2)'
+                            };
+                            
+                            updateLLMResponse(mockResponse, mockOutput, mockDetails);
+                        }, 2500);
+                    });
+                }
+                
+                if (clearResultsBtn) {
+                    clearResultsBtn.addEventListener('click', clearDebugResults);
+                }
+            });
+
+            // Update debug panel when process is selected
+            function displayProcessDetails(process) {
+                // Existing process details display code...
+                document.getElementById('selectedProcessName').textContent = process.process_name || 'N/A';
+                document.getElementById('selectedProcessType').textContent = process.content_type || 'N/A';
+                document.getElementById('selectedProcessPriority').textContent = process.priority || 'N/A';
+                document.getElementById('selectedPlatformName').textContent = process.platform_name || 'N/A';
+                document.getElementById('selectedProcessStatus').textContent = process.development_status || 'N/A';
+                document.getElementById('selectedProcessActive').textContent = process.is_active ? 'Yes' : 'No';
+                document.getElementById('selectedProcessDescription').textContent = process.description || 'No description available';
+                
+                // Update debug panel with process info
+                const processConfig = {
+                    process_name: process.process_name,
+                    description: process.description,
+                    configs: [] // Will be populated when configs are fetched
+                };
+                
+                // Fetch and display process configurations
+                fetchProcessConfigurations(process.id);
+                
+                // Update debug panel
+                updateDebugPanel(processConfig, null);
             }
         });
     </script>
