@@ -564,41 +564,8 @@
                                             </div>
                                         </div>
 
-                                        <!-- Process Overview Section -->
-                                        <div class="row mb-4">
-                                            <div class="col-12">
-                                                <div class="process-overview-section p-3 bg-secondary rounded">
-                                                    <h6 class="text-info mb-3">
-                                                        <i class="fas fa-info-circle me-2"></i>Process Overview
-                                                    </h6>
-                                                    <div id="process-description-content" class="text-white">
-                                                        Select a process to view its description and configuration
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Development Status Row -->
-                                        <div class="row mb-4">
-                                            <div class="col-12">
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <span class="spec-label">Development Status:</span>
-                                                    <div class="form-check form-switch">
-                                                        <input class="form-check-input" type="checkbox" id="developedToggle" style="width: 3rem; height: 1.5rem;">
-                                                        <label class="form-check-label ms-2" for="developedToggle">
-                                                            <span id="developedStatusText">Not Developed</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Process Configuration Container -->
-                                        <div id="processConfigsContainer">
-                                            <div class="text-center text-muted py-4">
-                                                <i class="fas fa-info-circle me-2"></i>Select a content process above to view and edit its configuration
-                                            </div>
-                                        </div>
+                                        <!-- Include Conversion Settings (Process Details and Configuration) -->
+                                        {% include 'includes/conversion_settings.html' %}
                                     </div>
                                 </div>
                             </div>

@@ -187,6 +187,11 @@ def syndication_create_piece():
     """Create Piece page for social media syndication."""
     return render_template('syndication_create_piece.html')
 
+@app.route('/syndication/create-piece-includes')
+def syndication_create_piece_includes():
+    """Create Piece page for social media syndication (modular includes version)."""
+    return render_template('syndication_create_piece_includes.html')
+
 # API endpoints for CRUD operations on social media specifications
 @app.route('/api/social-media/specifications/update', methods=['POST'])
 def update_specification():
@@ -606,7 +611,7 @@ def clan_post_html(post_id):
             'category_id': header_data['cross_promotion_category_id'] if header_data and header_data['cross_promotion_category_id'] else None,
             'category_title': header_data['cross_promotion_category_title'] if header_data and header_data['cross_promotion_category_title'] else None,
             'product_id': header_data['cross_promotion_product_id'] if header_data and header_data['cross_promotion_product_id'] else None,
-            'product_title': header_data['cross_promotion_product_title'] if header_data and header_data['cross_promotion_product_id'] else None,
+            'product_title': header_data['cross_promotion_product_title'] if header_data and header_data['cross_promotion_product_title'] else None,
             'category_position': header_data.get('cross_promotion_category_position'),
             'product_position': header_data.get('cross_promotion_product_position'),
             'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
