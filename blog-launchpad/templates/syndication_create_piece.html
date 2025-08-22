@@ -160,56 +160,19 @@
                                                 <h6 class="text-info mb-3">
                                                     <i class="fas fa-info-circle me-2"></i>Process Overview
                                                 </h6>
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="detail-item">
-                                                            <span class="detail-label">Process Name:</span>
-                                                            <span id="selectedProcessName" class="detail-value"></span>
-                                                        </div>
-                                                        <div class="detail-item">
-                                                            <span class="detail-label">Content Type:</span>
-                                                            <span id="selectedProcessType" class="detail-value"></span>
-                                                        </div>
-                                                        <div class="detail-item">
-                                                            <span class="detail-label">Priority Level:</span>
-                                                            <span id="selectedProcessPriority" class="detail-value"></span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="detail-item">
-                                                            <span class="detail-label">Platform:</span>
-                                                            <span id="selectedPlatformName" class="detail-value"></span>
-                                                        </div>
-                                                        <div class="detail-item">
-                                                            <span class="detail-label">Status:</span>
-                                                            <span id="selectedProcessStatus" class="detail-value"></span>
-                                                        </div>
-                                                        <div class="detail-item">
-                                                            <span class="detail-label">Active:</span>
-                                                            <span id="selectedProcessActive" class="detail-value"></span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Process Description Section -->
-                                            <div class="process-description mb-4">
-                                                <h6 class="text-info mb-3">
-                                                    <i class="fas fa-file-alt me-2"></i>What This Process Does
-                                                </h6>
-                                                <div class="description-content p-3 bg-secondary rounded">
-                                                    <span id="selectedProcessDescription" class="detail-value"></span>
+                                                <div id="process-description-content" class="text-white p-3 bg-secondary rounded">
+                                                    Select a platform and process to view its description and configuration
                                                 </div>
                                             </div>
 
                                             <!-- Process Configuration Section -->
                                             <div class="process-configuration mb-4">
                                                 <h6 class="text-info mb-3">
-                                                    <i class="fas fa-cogs me-2"></i>How This Process Works
+                                                    <i class="fas fa-cogs me-2"></i>Process Configuration
                                                 </h6>
-                                                <div id="processConfigsDisplay">
-                                                    <div class="text-center text-muted py-3">
-                                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading process configuration...
+                                                <div id="processConfigsContainer">
+                                                    <div class="text-center text-muted py-4">
+                                                        <i class="fas fa-info-circle me-2"></i>Select a platform and process to view its configuration
                                                     </div>
                                                 </div>
                                             </div>
@@ -221,7 +184,6 @@
                                                 </h6>
                                                 <div class="execution-status p-3 bg-success bg-opacity-25 rounded border border-success">
                                                     <div class="d-flex align-items-center">
-                                                        <i class="fas fa-check-circle text-success me-2"></i>
                                                         <span class="text-white">This process is ready to convert your post sections into optimized content pieces.</span>
                                                     </div>
                                                 </div>
@@ -735,19 +697,49 @@
             
             // Display process details
             function displayProcessDetails(process) {
-                // Update process overview
-                document.getElementById('selectedProcessName').textContent = process.display_name || process.process_name;
-                document.getElementById('selectedProcessType').textContent = process.content_type || 'N/A';
-                document.getElementById('selectedProcessStatus').textContent = process.development_status || 'draft';
-                document.getElementById('selectedProcessDescription').textContent = process.description || 'No description available';
-                document.getElementById('selectedProcessPriority').textContent = process.priority || '0';
-                document.getElementById('selectedProcessActive').textContent = process.is_active ? 'Yes' : 'No';
-                
-                // Get platform name from the selected platform
-                const platformSelector = document.getElementById('platformSelector');
-                const selectedPlatformOption = platformSelector.options[platformSelector.selectedIndex];
-                if (selectedPlatformOption) {
-                    document.getElementById('selectedPlatformName').textContent = selectedPlatformOption.textContent;
+                // Update process overview with unified framework
+                const processDescriptionContent = document.getElementById('process-description-content');
+                if (processDescriptionContent) {
+                    const platformSelector = document.getElementById('platformSelector');
+                    const selectedPlatformOption = platformSelector.options[platformSelector.selectedIndex];
+                    const platformName = selectedPlatformOption ? selectedPlatformOption.textContent : 'Unknown Platform';
+                    
+                    processDescriptionContent.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Process Name:</span>
+                                    <span class="detail-value text-white">${process.display_name || process.process_name}</span>
+                                </div>
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Content Type:</span>
+                                    <span class="detail-value text-white">${process.content_type || 'N/A'}</span>
+                                </div>
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Priority Level:</span>
+                                    <span class="detail-value text-white">${process.priority || '0'}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Platform:</span>
+                                    <span class="detail-value text-white">${platformName}</span>
+                                </div>
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Status:</span>
+                                    <span class="detail-value text-white">${process.development_status || 'draft'}</span>
+                                </div>
+                                <div class="detail-item mb-2">
+                                    <span class="detail-label text-info">Active:</span>
+                                    <span class="detail-value text-white">${process.is_active ? 'Yes' : 'No'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-3 bg-dark rounded">
+                            <strong class="text-info">Description:</strong>
+                            <div class="text-white mt-2">${process.description || 'No description available'}</div>
+                        </div>
+                    `;
                 }
                 
                 // Show process details panel
@@ -809,10 +801,10 @@
 
             // Display process configurations organized by category
             function displayProcessConfigurations(configs) {
-                const configsDisplay = document.getElementById('processConfigsDisplay');
+                const configsContainer = document.getElementById('processConfigsContainer');
                 
                 if (!configs || configs.length === 0) {
-                    configsDisplay.innerHTML = `
+                    configsContainer.innerHTML = `
                         <div class="text-center text-muted py-3">
                             <i class="fas fa-exclamation-triangle me-2"></i>No configuration found for this process
                         </div>
