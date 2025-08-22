@@ -77,50 +77,7 @@
     </div>
 
     <div class="container">
-        <!-- Post Selection Area -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="accordion" id="postSelectionAccordion">
-                    <div class="accordion-item bg-dark text-white border-secondary">
-                        <h2 class="accordion-header" id="postSelectionHeader">
-                            <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#postSelectionCollapse" aria-expanded="false" aria-controls="postSelectionCollapse">
-                                <i class="fas fa-list me-2"></i><span id="accordionTitle">Select Post for Syndication</span>
-                            </button>
-                        </h2>
-                        <div id="postSelectionCollapse" class="accordion-collapse collapse" aria-labelledby="postSelectionHeader" data-bs-parent="#postSelectionAccordion">
-                            <div class="accordion-body">
-                                <!-- Post Dropdown -->
-                                <div class="mb-3">
-                                    <label for="postSelector" class="form-label">Choose a published post:</label>
-                                    <select class="form-select bg-dark text-white border-secondary" id="postSelector">
-                                        <option value="">Loading posts...</option>
-                                    </select>
-                                </div>
-                                
-                                <!-- Selected Post Details -->
-                                <div id="postDetails" class="d-none">
-                                    <hr class="border-secondary">
-                                    <h6 class="text-info mb-3">Post Details</h6>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <p><strong>Title:</strong> <span id="postTitle"></span></p>
-                                            <p><strong>Created Date:</strong> <span id="postCreatedAt"></span></p>
-                                            <p><strong>Last Updated:</strong> <span id="postUpdatedAt"></span></p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <p><strong>Post ID:</strong> <span id="postId"></span></p>
-                                            <p><strong>Status:</strong> <span id="postStatus"></span></p>
-                                            <p><strong>Slug:</strong> <span id="postSlug"></span></p>
-                                            <p><strong>Number of Sections:</strong> <span id="postSectionCount"></span></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% include 'includes/post_selection_panel.html' %}
 
         <!-- Conversion Selection Panel -->
         <div id="conversionPanel" style="display: block;">
