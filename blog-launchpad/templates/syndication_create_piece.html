@@ -765,6 +765,13 @@
                             option.dataset.platformName = platform.platform_name;
                             platformSelector.appendChild(option);
                         });
+                        
+                        // Auto-select the first platform if available
+                        if (platforms.length > 0) {
+                            platformSelector.value = platforms[0].id;
+                            // Trigger the change event to automatically fetch processes
+                            platformSelector.dispatchEvent(new Event('change'));
+                        }
                     })
                     .catch(error => {
                         console.error('Error:', error);
@@ -797,10 +804,18 @@
                             option.value = process.id;
                             option.textContent = `${process.display_name} (${process.content_type})`;
                             option.dataset.processData = JSON.stringify(process);
+                            option.dataset.processName = process.process_name;
                             processSelector.appendChild(option);
                         });
                         
                         processSelector.disabled = false;
+                        
+                        // Auto-select the first process if available
+                        if (platformProcesses.length > 0) {
+                            processSelector.value = platformProcesses[0].id;
+                            // Trigger the change event to automatically display process details
+                            processSelector.dispatchEvent(new Event('change'));
+                        }
                     })
                     .catch(error => {
                         console.error('Error:', error);
