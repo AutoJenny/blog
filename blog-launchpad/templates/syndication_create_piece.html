@@ -391,43 +391,6 @@
             border: 1px dashed #495057;
         }
 
-        .full-content-display {
-            max-height: 300px;
-            overflow-y: auto;
-            padding: 0.75rem;
-            background-color: #2d3748;
-            border-radius: 0.375rem;
-            border: 1px solid #495057;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .full-content-display::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .full-content-display::-webkit-scrollbar-track {
-            background: #1a1d29;
-            border-radius: 3px;
-        }
-
-        .full-content-display::-webkit-scrollbar-thumb {
-            background: #495057;
-            border-radius: 3px;
-        }
-
-        .full-content-display::-webkit-scrollbar-thumb:hover {
-            background: #667eea;
-        }
-
-        .full-content-error {
-            color: #dc3545;
-            padding: 0.5rem;
-            background-color: #2d3748;
-            border-radius: 0.25rem;
-            border: 1px solid #dc3545;
-        }
-
         /* Responsive layout for smaller screens */
         @media (max-width: 768px) {
             .section-content-wrapper {
@@ -836,8 +799,8 @@
                                 <p class="section-content">${section.content || 'No content'}</p>
                                 
                                 <div class="field-label">[full_content]</div>
-                                <div class="full-content-placeholder" data-section-id="${section.id}">
-                                    <i class="fas fa-spinner fa-spin me-2"></i>Loading full content...
+                                <div class="full-content-placeholder">
+                                    <i class="fas fa-info-circle me-2"></i>Full content available at preview endpoint
                                 </div>
                             </div>
                             ${section.image_path ? `
@@ -848,9 +811,6 @@
                             ` : ''}
                         </div>
                     `;
-                    
-                    // Fetch full content for this section
-                    fetchFullSectionContent(section.id, section.id);
                     
                     sectionCell.appendChild(sectionItem);
                     
@@ -1041,55 +1001,7 @@
                 fetchSocialMediaPlatforms();
             }
 
-            // Fetch full section content from preview endpoint
-            function fetchFullSectionContent(sectionId, elementId) {
-                fetch(`http://localhost:5001/preview/53`)
-                    .then(response => response.text())
-                    .then(html => {
-                        // Parse the HTML to find the specific section content
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        
-                        // Try to find the section by ID or index
-                        let sectionContent = '';
-                        const sectionElement = doc.querySelector(`[data-section-id="${sectionId}"]`) || 
-                                            doc.querySelector(`#section-${sectionId}`) ||
-                                            doc.querySelector(`.section-${sectionId}`);
-                        
-                        if (sectionElement) {
-                            sectionContent = sectionElement.innerHTML;
-                        } else {
-                            // Fallback: try to find by section number
-                            const sections = doc.querySelectorAll('.post-section, .section, [class*="section"]');
-                            if (sections[sectionId - 1]) {
-                                sectionContent = sections[sectionId - 1].innerHTML;
-                            } else {
-                                sectionContent = 'Full content not found';
-                            }
-                        }
-                        
-                        // Update the placeholder with the full content
-                        const placeholder = document.querySelector(`[data-section-id="${sectionId}"]`);
-                        if (placeholder) {
-                            placeholder.innerHTML = `
-                                <div class="full-content-display">
-                                    ${sectionContent}
-                                </div>
-                            `;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching full content:', error);
-                        const placeholder = document.querySelector(`[data-section-id="${sectionId}"]`);
-                        if (placeholder) {
-                            placeholder.innerHTML = `
-                                <div class="full-content-error">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>Error loading full content
-                                </div>
-                            `;
-                        }
-                    });
-            }
+
 
             // Update the conversion header display with current selections
             function updateConversionHeaderDisplay() {
