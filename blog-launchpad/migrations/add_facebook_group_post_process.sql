@@ -18,3 +18,4 @@ INSERT INTO social_media_process_configs (process_id, config_category, config_ke
 (4, 'style_guide', 'cta_examples', 'What do you think about this?|Share your thoughts below|How does this relate to your experience?|What questions do you have?', 'text', true, 3)
 ON CONFLICT (process_id, config_category, config_key) DO NOTHING;
 
+
