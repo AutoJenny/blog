@@ -270,6 +270,51 @@
             color: #ffffff;
             font-weight: 500;
         }
+
+        /* Enhanced Conversion Panel Styling */
+        .process-overview, .process-description, .process-configuration, .process-execution {
+            border-left: 3px solid #667eea;
+            padding-left: 1rem;
+        }
+
+        .process-overview {
+            border-left-color: #667eea;
+        }
+
+        .process-description {
+            border-left-color: #10b981;
+        }
+
+        .process-configuration {
+            border-left-color: #f59e0b;
+        }
+
+        .process-execution {
+            border-left-color: #10b981;
+        }
+
+        .category-header {
+            border-bottom: 2px solid #495057;
+        }
+
+        .config-item {
+            border: 1px solid #495057;
+            transition: all 0.2s ease;
+        }
+
+        .config-item:hover {
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .description-content {
+            border-left: 3px solid #10b981;
+            background-color: #1a1d29 !important;
+        }
+
+        .execution-status {
+            border-left: 3px solid #10b981;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -412,29 +457,74 @@
                     <div class="row">
                         <div class="col-12">
                             <div id="processDetails" class="process-details-panel" style="display: none;">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="detail-item">
-                                            <span class="detail-label">Selected Process:</span>
-                                            <span id="selectedProcessName" class="detail-value"></span>
+                                <!-- Process Overview Section -->
+                                <div class="process-overview mb-4">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>Process Overview
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label">Process Name:</span>
+                                                <span id="selectedProcessName" class="detail-value"></span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Content Type:</span>
+                                                <span id="selectedProcessType" class="detail-value"></span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Priority Level:</span>
+                                                <span id="selectedProcessPriority" class="detail-value"></span>
+                                            </div>
                                         </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Content Type:</span>
-                                            <span id="selectedProcessType" class="detail-value"></span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Development Status:</span>
-                                            <span id="selectedProcessStatus" class="detail-value"></span>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label">Platform:</span>
+                                                <span id="selectedPlatformName" class="detail-value"></span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Status:</span>
+                                                <span id="selectedProcessStatus" class="detail-value"></span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Active:</span>
+                                                <span id="selectedProcessActive" class="detail-value"></span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="detail-item">
-                                            <span class="detail-label">Description:</span>
-                                            <span id="selectedProcessDescription" class="detail-value"></span>
+                                </div>
+
+                                <!-- Process Description Section -->
+                                <div class="process-description mb-4">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-file-alt me-2"></i>What This Process Does
+                                    </h6>
+                                    <div class="description-content p-3 bg-secondary rounded">
+                                        <span id="selectedProcessDescription" class="detail-value"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Process Configuration Section -->
+                                <div class="process-configuration mb-4">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-cogs me-2"></i>How This Process Works
+                                    </h6>
+                                    <div id="processConfigsDisplay">
+                                        <div class="text-center text-muted py-3">
+                                            <i class="fas fa-spinner fa-spin me-2"></i>Loading process configuration...
                                         </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Priority:</span>
-                                            <span id="selectedProcessPriority" class="detail-value"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Process Execution Section -->
+                                <div class="process-execution">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-play-circle me-2"></i>Ready to Execute
+                                    </h6>
+                                    <div class="execution-status p-3 bg-success bg-opacity-25 rounded border border-success">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            <span class="text-white">This process is ready to convert your post sections into optimized content pieces.</span>
                                         </div>
                                     </div>
                                 </div>
@@ -743,19 +833,113 @@
             
             // Display process details
             function displayProcessDetails(process) {
-                document.getElementById('selectedProcessName').textContent = process.display_name;
-                document.getElementById('selectedProcessType').textContent = process.content_type;
+                // Update process overview
+                document.getElementById('selectedProcessName').textContent = process.display_name || process.process_name;
+                document.getElementById('selectedProcessType').textContent = process.content_type || 'N/A';
                 document.getElementById('selectedProcessStatus').textContent = process.development_status || 'draft';
                 document.getElementById('selectedProcessDescription').textContent = process.description || 'No description available';
                 document.getElementById('selectedProcessPriority').textContent = process.priority || '0';
+                document.getElementById('selectedProcessActive').textContent = process.is_active ? 'Yes' : 'No';
                 
+                // Get platform name from the selected platform
+                const platformSelector = document.getElementById('platformSelector');
+                const selectedPlatformOption = platformSelector.options[platformSelector.selectedIndex];
+                if (selectedPlatformOption) {
+                    document.getElementById('selectedPlatformName').textContent = selectedPlatformOption.textContent;
+                }
+                
+                // Show process details panel
                 processDetails.style.display = 'block';
+                
+                // Fetch and display process configurations
+                if (process.id) {
+                    fetchProcessConfigurations(process.id);
+                }
             }
             
             // Initialize conversion panel when post is selected
             function initializeConversionPanel() {
                 document.getElementById('conversionPanel').style.display = 'block';
                 fetchSocialMediaPlatforms();
+            }
+
+            // Fetch and display process configurations
+            function fetchProcessConfigurations(processId) {
+                fetch(`/api/syndication/content-processes/${processId}/configs`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Error fetching process configs:', data.error);
+                            displayProcessConfigurations([]);
+                            return;
+                        }
+                        displayProcessConfigurations(data.configs || []);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        displayProcessConfigurations([]);
+                    });
+            }
+
+            // Display process configurations organized by category
+            function displayProcessConfigurations(configs) {
+                const configsDisplay = document.getElementById('processConfigsDisplay');
+                
+                if (!configs || configs.length === 0) {
+                    configsDisplay.innerHTML = `
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>No configuration found for this process
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Group configs by category
+                const configsByCategory = {};
+                configs.forEach(config => {
+                    if (!configsByCategory[config.config_category]) {
+                        configsByCategory[config.config_category] = [];
+                    }
+                    configsByCategory[config.config_category].push(config);
+                });
+
+                // Create HTML for each category
+                let html = '';
+                Object.keys(configsByCategory).forEach(category => {
+                    const categoryConfigs = configsByCategory[category];
+                    const categoryDisplayName = category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    html += `
+                        <div class="config-category mb-3">
+                            <div class="category-header p-2 bg-dark rounded mb-2">
+                                <strong class="text-warning">${categoryDisplayName}</strong>
+                            </div>
+                            <div class="row">
+                    `;
+                    
+                    categoryConfigs.forEach(config => {
+                        const configDisplayName = config.config_key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        html += `
+                            <div class="col-md-6 mb-2">
+                                <div class="config-item p-2 bg-secondary rounded">
+                                    <div class="config-key text-info mb-1">
+                                        <strong>${configDisplayName}:</strong>
+                                    </div>
+                                    <div class="config-value text-white">
+                                        ${config.config_value}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+
+                configsDisplay.innerHTML = html;
             }
         });
     </script>
