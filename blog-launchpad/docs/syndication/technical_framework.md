@@ -383,6 +383,39 @@ CREATE TABLE social_media_process_executions (
 13. Tasks column with row numbering
 14. Conversion Settings panel with process details
 15. Database restructuring for platform-wide vs channel-specific settings
+16. Channel-specific configuration categories
+17. UI reorganization with summary cards and improved layout
+
+### 🚧 **NEW: Complete Database Framework Redesign**
+**Status**: Design Phase - Framework Proposed
+
+A comprehensive database framework redesign has been proposed to address fundamental architectural flaws in the current system. The new framework includes:
+
+#### **Core Improvements:**
+- **Complete separation of concerns** - Platform capabilities vs channel requirements
+- **Generic, extensible design** - Works for any platform (Facebook, Instagram, Twitter, LinkedIn, etc.)
+- **Proper normalization** - No more key-value pairs, proper relational structure
+- **UI-driven design** - All labels, categories, and descriptions database-driven
+- **Development status tracking** - For both platforms and channels
+- **Priority management system** - Based on recency and activity
+- **Menu management system** - Conditional display rules and user preferences
+
+#### **New Database Structure:**
+- **17 tables** with proper relationships and constraints
+- **UI & operational tables** for menu management and user preferences
+- **Priority calculation system** with configurable factors
+- **Audit logging** for all data changes
+- **Session state management** for UI persistence
+
+#### **Documentation:**
+- **Complete implementation guide** with all table definitions
+- **Relationship diagrams** and indexing strategies
+- **Migration strategy** for existing data
+- **Performance considerations** and security measures
+
+**Next Steps**: Review framework proposal, define detailed specifications, create migration scripts, implement new schema.
+
+**Reference**: See `/docs/syndication/new_database_framework_proposal.md` for complete details.
 16. Extended process configuration categories (channel_constraints, channel_strategy, channel_adaptation)
 17. Data migration from platform specs to process configs
 
