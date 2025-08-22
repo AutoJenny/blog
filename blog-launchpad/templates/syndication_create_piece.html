@@ -830,7 +830,7 @@
                                 
                                 <div class="field-label">[full_content]</div>
                                 <div class="full-content-display">
-                                    ${section.full_content || section.rendered_content || section.html_content || 'No full content field available'}
+                                    ${section.content || 'No content available'}
                                 </div>
                             </div>
                             ${section.image_path ? `
