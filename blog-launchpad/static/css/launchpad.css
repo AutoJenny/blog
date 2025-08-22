@@ -422,7 +422,6 @@
     background-color: #23273a;
     border: 1px solid #495057;
     border-radius: 0.5rem;
-    padding: 1.5rem;
     margin-bottom: 2rem;
 }
 
@@ -823,3 +822,5 @@
         align-items: flex-start;
     }
 }
+
+
