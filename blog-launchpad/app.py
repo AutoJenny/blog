@@ -340,6 +340,7 @@ def get_post_sections(post_id):
                 ps.id,
                 ps.section_heading as title,
                 ps.section_description as content,
+                ps.polished,
                 ps.section_order as "order"
             FROM post_section ps
             WHERE ps.post_id = %s
@@ -359,6 +360,7 @@ def get_post_sections(post_id):
                 'id': section['id'],
                 'title': section['title'],
                 'content': section['content'],
+                'polished': section['polished'],
                 'order': section['order'],
                 'image_path': image_path
             })
