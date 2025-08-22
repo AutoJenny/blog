@@ -58,7 +58,8 @@ CREATE TABLE social_media_platform_specs (
 
 #### API Endpoints
 - **`/api/syndication/social-media-platforms`**: Returns platforms filtered by status
-- **`/api/syndication/content-processes`**: Returns all active content processes
+- **`/api/syndication/content-processes`**: Returns only **developed** content processes for user selection
+- **`/api/syndication/content-processes/all`**: Returns all content processes (including draft/undeveloped) for admin purposes
 - **`/api/syndication/content-processes/{id}/configs`**: Returns configurations for a specific process
 
 ### 2. Content Syndication Interface
@@ -187,9 +188,14 @@ CREATE TABLE social_media_process_executions (
 
 #### Selection Flow
 1. **Platform Selection**: User selects from developed platforms (currently Facebook)
-2. **Process Filtering**: Second dropdown populates with processes for selected platform
+2. **Process Filtering**: Second dropdown populates with **developed processes only** for selected platform
 3. **Process Selection**: User selects specific content process (Feed Post, Story Post, etc.)
 4. **Details Display**: Process information panel shows configuration and status
+
+#### Security & Quality Control
+- **Platform Filtering**: Only platforms with status='developed' are shown
+- **Process Filtering**: Only processes with development_status='developed' are available for selection
+- **Admin Access**: Full process list available via `/api/syndication/content-processes/all` for development purposes
 
 #### JavaScript Implementation
 - **`fetchSocialMediaPlatforms()`**: Loads developed platforms
