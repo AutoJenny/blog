@@ -22,3 +22,4 @@ ON social_media_content_processes(development_status);
 ALTER TABLE social_media_content_processes 
 ADD CONSTRAINT chk_development_status 
 CHECK (development_status IN ('draft', 'developed', 'testing', 'production'));
+

@@ -718,7 +718,8 @@ def find_section_image(post_id, section_id):
             image_filename = image_files[0]
             # URL-encode the filename to handle spaces and special characters
             encoded_filename = urllib.parse.quote(image_filename)
-            return f"/static/content/posts/{post_id}/sections/{section_id}/optimized/{encoded_filename}"
+            # Return URL pointing to blog-images service on port 5005
+            return f"http://localhost:5005/static/content/posts/{post_id}/sections/{section_id}/optimized/{encoded_filename}"
 
     # 2. Fall back to raw directory if optimized is empty
     section_raw_path = os.path.join(blog_images_static, "content", "posts", str(post_id), "sections", str(section_id), "raw")
@@ -729,7 +730,8 @@ def find_section_image(post_id, section_id):
             image_filename = image_files[0]
             # URL-encode the filename to handle spaces and special characters
             encoded_filename = urllib.parse.quote(image_filename)
-            return f"/static/content/posts/{post_id}/sections/{section_id}/raw/{encoded_filename}"
+            # Return URL pointing to blog-images service on port 5005
+            return f"http://localhost:5005/static/content/posts/{post_id}/sections/{section_id}/raw/{encoded_filename}"
 
     return None
 
