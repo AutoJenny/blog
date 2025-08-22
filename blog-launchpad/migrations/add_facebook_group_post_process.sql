@@ -17,3 +17,4 @@ INSERT INTO social_media_process_configs (process_id, config_category, config_ke
 (4, 'style_guide', 'hashtag_strategy', 'Use 2-3 relevant hashtags related to Scottish heritage, culture, or the specific topic', 'text', true, 2),
 (4, 'style_guide', 'cta_examples', 'What do you think about this?|Share your thoughts below|How does this relate to your experience?|What questions do you have?', 'text', true, 3)
 ON CONFLICT (process_id, config_category, config_key) DO NOTHING;
+

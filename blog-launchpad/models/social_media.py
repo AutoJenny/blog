@@ -116,7 +116,6 @@ class SocialMediaPlatform:
                     cur.execute("""
                         SELECT id, platform_name, display_name, status, priority, icon_url
                         FROM social_media_platforms
-                        WHERE status = %s
                         ORDER BY priority, display_name
                     """, (status,))
                     return cur.fetchall()
