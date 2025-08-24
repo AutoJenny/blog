@@ -136,3 +136,4 @@ CREATE INDEX IF NOT EXISTS idx_process_configs_channel_constraints ON social_med
 -- WHERE p.platform_id = 1 
 -- GROUP BY process_name, config_category 
 -- ORDER BY process_name, config_category;
+
