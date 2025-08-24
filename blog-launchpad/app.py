@@ -4,6 +4,7 @@ from flask import Flask, render_template, jsonify, request, send_file, redirect
 import requests
 import os
 import logging
+import json
 from datetime import datetime
 import pytz
 from humanize import naturaltime
@@ -1553,6 +1554,336 @@ def get_all_platforms():
         conn.close()
         
         return jsonify(platforms_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# =====================================================
+# ADVANCED UI & OPERATIONAL API ENDPOINTS - PHASE 4
+# =====================================================
+
+@app.route('/api/social-media/ui/sections', methods=['GET'])
+def get_ui_sections():
+    """Get UI sections with their display properties"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT id, name, display_name, description, section_type, parent_section_id,
+                   display_order, is_visible, is_collapsible, default_collapsed,
+                   color_theme, icon_class, css_classes, created_at, updated_at
+            FROM ui_sections 
+            WHERE is_visible = true
+            ORDER BY display_order, name
+        """)
+        
+        sections = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        sections_list = []
+        for section in sections:
+            section_dict = dict(section)
+            for key, value in section_dict.items():
+                if hasattr(value, 'isoformat'):
+                    section_dict[key] = value.isoformat()
+            sections_list.append(section_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(sections_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/ui/menu-items', methods=['GET'])
+def get_ui_menu_items():
+    """Get UI menu items with navigation structure"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT id, name, display_name, description, menu_type, parent_menu_id,
+                   section_id, url_pattern, icon_class, display_order, is_visible,
+                   is_active, requires_permission, badge_text, badge_color,
+                   created_at, updated_at
+            FROM ui_menu_items 
+            WHERE is_visible = true AND is_active = true
+            ORDER BY display_order, name
+        """)
+        
+        menu_items = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        menu_items_list = []
+        for item in menu_items:
+            item_dict = dict(item)
+            for key, value in item_dict.items():
+                if hasattr(value, 'isoformat'):
+                    item_dict[key] = value.isoformat()
+            menu_items_list.append(item_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(menu_items_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/ui/display-rules', methods=['GET'])
+def get_ui_display_rules():
+    """Get UI display rules for conditional rendering"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT id, rule_name, description, rule_type, target_type, target_id,
+                   condition_expression, is_active, priority, created_at, updated_at
+            FROM ui_display_rules 
+            WHERE is_active = true
+            ORDER BY priority DESC, rule_name
+        """)
+        
+        rules = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        rules_list = []
+        for rule in rules:
+            rule_dict = dict(rule)
+            for key, value in rule_dict.items():
+                if hasattr(value, 'isoformat'):
+                    rule_dict[key] = value.isoformat()
+            rules_list.append(rule_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(rules_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/priorities', methods=['GET'])
+def get_content_priorities():
+    """Get content priority scores and factors"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT id, content_type, content_id, priority_score, priority_factors,
+                   last_calculated_at, next_calculation_at, calculation_version,
+                   created_at, updated_at
+            FROM content_priorities 
+            ORDER BY priority_score DESC, last_calculated_at DESC
+        """)
+        
+        priorities = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        priorities_list = []
+        for priority in priorities:
+            priority_dict = dict(priority)
+            for key, value in priority_dict.items():
+                if hasattr(value, 'isoformat'):
+                    priority_dict[key] = value.isoformat()
+            priorities_list.append(priority_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(priorities_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/priorities/factors', methods=['GET'])
+def get_priority_factors():
+    """Get priority calculation factors and weights"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT id, factor_name, display_name, description, factor_type, weight,
+                   calculation_formula, is_active, is_configurable, min_value,
+                   max_value, default_value, unit, created_at, updated_at
+            FROM priority_factors 
+            WHERE is_active = true
+            ORDER BY weight DESC, factor_name
+        """)
+        
+        factors = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        factors_list = []
+        for factor in factors:
+            factor_dict = dict(factor)
+            for key, value in factor_dict.items():
+                if hasattr(value, 'isoformat'):
+                    factor_dict[key] = value.isoformat()
+            factors_list.append(factor_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(factors_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/ui/user-preferences/<int:user_id>', methods=['GET'])
+def get_user_preferences(user_id):
+    """Get user-specific UI preferences"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT id, user_id, preference_key, preference_value, preference_type,
+                   category, is_global, created_at, updated_at
+            FROM ui_user_preferences 
+            WHERE user_id = %s OR is_global = true
+            ORDER BY category, preference_key
+        """, (user_id,))
+        
+        preferences = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        preferences_list = []
+        for pref in preferences:
+            pref_dict = dict(pref)
+            for key, value in pref_dict.items():
+                if hasattr(value, 'isoformat'):
+                    pref_dict[key] = value.isoformat()
+            preferences_list.append(pref_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(preferences_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/ui/session-state/<session_id>', methods=['GET'])
+def get_session_state(session_id):
+    """Get session-specific UI state"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT id, session_id, user_id, state_key, state_value, state_type,
+                   expires_at, created_at, updated_at
+            FROM ui_session_state 
+            WHERE session_id = %s AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+            ORDER BY state_key
+        """, (session_id,))
+        
+        states = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        states_list = []
+        for state in states:
+            state_dict = dict(state)
+            for key, value in state_dict.items():
+                if hasattr(value, 'isoformat'):
+                    state_dict[key] = value.isoformat()
+            states_list.append(state_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(states_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/priorities/calculate', methods=['POST'])
+def calculate_content_priorities():
+    """Calculate and update content priority scores"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        # Get all priority factors
+        cur.execute("""
+            SELECT factor_name, weight, calculation_formula, is_active
+            FROM priority_factors 
+            WHERE is_active = true
+            ORDER BY weight DESC
+        """)
+        
+        factors = cur.fetchall()
+        
+        if not factors:
+            return jsonify({'error': 'No priority factors found'}), 400
+        
+        # Get platforms to calculate priorities for
+        cur.execute("""
+            SELECT id, name, last_activity_at, total_posts_count, success_rate_percentage
+            FROM platforms 
+            WHERE is_visible_in_ui = true
+        """)
+        
+        platforms = cur.fetchall()
+        
+        updated_count = 0
+        
+        for platform in platforms:
+            # Calculate priority score based on factors
+            priority_score = 0.0
+            priority_factors = {}
+            
+            for factor in factors:
+                factor_name = factor['factor_name']
+                weight = float(factor['weight'])  # Convert decimal to float
+                
+                # Simple calculation based on factor type
+                if factor_name == 'post_recency':
+                    days_since = (datetime.now() - platform['last_activity_at']).days if platform['last_activity_at'] else 30
+                    factor_score = max(0, 1.0 - (days_since / 30.0))
+                elif factor_name == 'posting_frequency':
+                    factor_score = min(1.0, platform['total_posts_count'] / 100.0)
+                elif factor_name == 'success_rate':
+                    factor_score = platform['success_rate_percentage'] / 100.0 if platform['success_rate_percentage'] else 0.5
+                else:
+                    factor_score = 0.5  # Default score
+                
+                priority_score += factor_score * weight
+                priority_factors[factor_name] = factor_score
+            
+            # Normalize score to 0-1 range
+            priority_score = min(1.0, max(0.0, priority_score))
+            
+            # Update or insert priority record
+            cur.execute("""
+                INSERT INTO content_priorities (content_type, content_id, priority_score, priority_factors, calculation_version)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (content_type, content_id) 
+                DO UPDATE SET 
+                    priority_score = EXCLUDED.priority_score,
+                    priority_factors = EXCLUDED.priority_factors,
+                    last_calculated_at = CURRENT_TIMESTAMP,
+                    calculation_version = EXCLUDED.calculation_version
+            """, ('platform', platform['id'], priority_score, json.dumps(priority_factors), '1.0'))
+            
+            updated_count += 1
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Updated priorities for {updated_count} platforms',
+            'updated_count': updated_count
+        })
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
