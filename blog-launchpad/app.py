@@ -1236,6 +1236,326 @@ def refresh_product_urls():
         logger.error(f"Error in product URL refresh: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+# =====================================================
+# SOCIAL MEDIA API ENDPOINTS - NEW DATABASE SCHEMA
+# =====================================================
+
+@app.route('/api/social-media/platforms/<platform_name>', methods=['GET'])
+def get_platform(platform_name):
+    """Get platform information by name"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT id, name, display_name, description, status, priority, 
+                   website_url, api_documentation_url, logo_url, development_status,
+                   is_featured, menu_priority, is_visible_in_ui, last_activity_at,
+                   last_post_at, last_api_call_at, total_posts_count, 
+                   success_rate_percentage, average_response_time_ms,
+                   estimated_completion_date, actual_completion_date, development_notes,
+                   created_at, updated_at
+            FROM platforms 
+            WHERE name = %s
+        """, (platform_name,))
+        
+        platform = cur.fetchone()
+        
+        if not platform:
+            return jsonify({'error': 'Platform not found'}), 404
+        
+        # Convert datetime objects to strings for JSON serialization
+        platform_dict = dict(platform)
+        for key, value in platform_dict.items():
+            if hasattr(value, 'isoformat'):
+                platform_dict[key] = value.isoformat()
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(platform_dict)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/platforms/<int:platform_id>/capabilities', methods=['GET'])
+def get_platform_capabilities(platform_id):
+    """Get platform capabilities by platform ID"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT id, capability_type, capability_name, capability_value, description,
+                   unit, min_value, max_value, validation_rules, is_active, display_order,
+                   created_at, updated_at
+            FROM platform_capabilities 
+            WHERE platform_id = %s AND is_active = true
+            ORDER BY display_order, capability_type, capability_name
+        """, (platform_id,))
+        
+        capabilities = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        capabilities_list = []
+        for cap in capabilities:
+            cap_dict = dict(cap)
+            for key, value in cap_dict.items():
+                if hasattr(value, 'isoformat'):
+                    cap_dict[key] = value.isoformat()
+            capabilities_list.append(cap_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(capabilities_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/channels', methods=['GET'])
+def get_channels():
+    """Get all channels with platform support information"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT ct.id, ct.name, ct.display_name, ct.description, ct.content_type,
+                   ct.media_support, ct.default_priority, ct.is_active, ct.display_order,
+                   pcs.platform_id, pcs.is_supported, pcs.status, pcs.development_status,
+                   pcs.priority, pcs.notes, pcs.estimated_completion_date, 
+                   pcs.actual_completion_date, pcs.development_notes, pcs.last_activity_at,
+                   cp.process_name, cp.display_name as process_display_name, 
+                   cp.description as process_description, cp.development_status as process_development_status
+            FROM channel_types ct
+            LEFT JOIN platform_channel_support pcs ON ct.id = pcs.channel_type_id
+            LEFT JOIN content_processes cp ON pcs.platform_id = cp.platform_id AND pcs.channel_type_id = cp.channel_type_id
+            WHERE ct.is_active = true
+            ORDER BY ct.display_order, ct.name
+        """)
+        
+        channels = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        channels_list = []
+        for channel in channels:
+            channel_dict = dict(channel)
+            for key, value in channel_dict.items():
+                if hasattr(value, 'isoformat'):
+                    channel_dict[key] = value.isoformat()
+            channels_list.append(channel_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(channels_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/processes/<process_name>/config', methods=['GET'])
+def get_process_config(process_name):
+    """Get process configuration by process name"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        # First get the process details
+        cur.execute("""
+            SELECT cp.id, cp.process_name, cp.display_name, cp.description, 
+                   cp.development_status, cp.priority, cp.is_active,
+                   p.name as platform_name, p.display_name as platform_display_name,
+                   ct.name as channel_name, ct.display_name as channel_display_name
+            FROM content_processes cp
+            JOIN platforms p ON cp.platform_id = p.id
+            JOIN channel_types ct ON cp.channel_type_id = ct.id
+            WHERE cp.process_name = %s
+        """, (process_name,))
+        
+        process = cur.fetchone()
+        
+        if not process:
+            return jsonify({'error': 'Process not found'}), 404
+        
+        # Get process configurations
+        cur.execute("""
+            SELECT pc.id, pc.config_category, pc.config_key, pc.config_value, 
+                   pc.description, pc.display_order, pc.is_active, pc.validation_rules,
+                   cc.display_name as category_display_name, cc.color_theme, cc.icon_class
+            FROM process_configurations pc
+            JOIN config_categories cc ON pc.config_category = cc.name
+            WHERE pc.process_id = %s AND pc.is_active = true
+            ORDER BY pc.display_order, pc.config_category, pc.config_key
+        """, (process['id'],))
+        
+        configs = cur.fetchall()
+        
+        # Get channel requirements
+        cur.execute("""
+            SELECT cr.id, cr.requirement_category, cr.requirement_key, cr.requirement_value,
+                   cr.description, cr.is_required, cr.validation_rules, cr.unit,
+                   cr.min_value, cr.max_value, cr.display_order, cr.is_active,
+                   rc.display_name as category_display_name, rc.color_theme, rc.icon_class
+            FROM channel_requirements cr
+            JOIN requirement_categories rc ON cr.requirement_category = rc.name
+            WHERE cr.platform_id = %s AND cr.channel_type_id = %s AND cr.is_active = true
+            ORDER BY cr.display_order, cr.requirement_category, cr.requirement_key
+        """, (process['platform_id'], process['channel_type_id']))
+        
+        requirements = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        process_dict = dict(process)
+        for key, value in process_dict.items():
+            if hasattr(value, 'isoformat'):
+                process_dict[key] = value.isoformat()
+        
+        configs_list = []
+        for config in configs:
+            config_dict = dict(config)
+            for key, value in config_dict.items():
+                if hasattr(value, 'isoformat'):
+                    config_dict[key] = value.isoformat()
+            configs_list.append(config_dict)
+        
+        requirements_list = []
+        for req in requirements:
+            req_dict = dict(req)
+            for key, value in req_dict.items():
+                if hasattr(value, 'isoformat'):
+                    req_dict[key] = value.isoformat()
+            requirements_list.append(req_dict)
+        
+        # Create a comprehensive response
+        response = {
+            'process': process_dict,
+            'configurations': configs_list,
+            'requirements': requirements_list
+        }
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/platforms/<int:platform_id>/channels', methods=['GET'])
+def get_platform_channels(platform_id):
+    """Get all channels for a specific platform"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT ct.id, ct.name, ct.display_name, ct.description, ct.content_type,
+                   ct.media_support, ct.default_priority, ct.is_active, ct.display_order,
+                   pcs.is_supported, pcs.status, pcs.development_status, pcs.priority,
+                   pcs.notes, pcs.estimated_completion_date, pcs.actual_completion_date,
+                   pcs.development_notes, pcs.last_activity_at,
+                   cp.process_name, cp.display_name as process_display_name,
+                   cp.description as process_description, cp.development_status as process_development_status
+            FROM channel_types ct
+            JOIN platform_channel_support pcs ON ct.id = pcs.channel_type_id
+            LEFT JOIN content_processes cp ON pcs.platform_id = cp.platform_id AND pcs.channel_type_id = cp.channel_type_id
+            WHERE pcs.platform_id = %s AND ct.is_active = true
+            ORDER BY pcs.priority, ct.display_order
+        """, (platform_id,))
+        
+        channels = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        channels_list = []
+        for channel in channels:
+            channel_dict = dict(channel)
+            for key, value in channel_dict.items():
+                if hasattr(value, 'isoformat'):
+                    channel_dict[key] = value.isoformat()
+            channels_list.append(channel_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(channels_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/platforms/<int:platform_id>/channels/<int:channel_id>/requirements', methods=['GET'])
+def get_channel_requirements(platform_id, channel_id):
+    """Get requirements for a specific channel on a specific platform"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT cr.id, cr.requirement_category, cr.requirement_key, cr.requirement_value,
+                   cr.description, cr.is_required, cr.validation_rules, cr.unit,
+                   cr.min_value, cr.max_value, cr.display_order, cr.is_active,
+                   rc.display_name as category_display_name, rc.color_theme, rc.icon_class
+            FROM channel_requirements cr
+            JOIN requirement_categories rc ON cr.requirement_category = rc.name
+            WHERE cr.platform_id = %s AND cr.channel_type_id = %s AND cr.is_active = true
+            ORDER BY cr.display_order, cr.requirement_category, cr.requirement_key
+        """, (platform_id, channel_id))
+        
+        requirements = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        requirements_list = []
+        for req in requirements:
+            req_dict = dict(req)
+            for key, value in req_dict.items():
+                if hasattr(value, 'isoformat'):
+                    req_dict[key] = value.isoformat()
+            requirements_list.append(req_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(requirements_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/social-media/platforms', methods=['GET'])
+def get_all_platforms():
+    """Get all platforms with basic information"""
+    try:
+        conn = get_db_conn()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        
+        cur.execute("""
+            SELECT id, name, display_name, description, status, priority, 
+                   development_status, is_featured, menu_priority, is_visible_in_ui,
+                   last_activity_at, total_posts_count, success_rate_percentage,
+                   created_at, updated_at
+            FROM platforms 
+            WHERE is_visible_in_ui = true
+            ORDER BY priority, display_name
+        """)
+        
+        platforms = cur.fetchall()
+        
+        # Convert datetime objects to strings for JSON serialization
+        platforms_list = []
+        for platform in platforms:
+            platform_dict = dict(platform)
+            for key, value in platform_dict.items():
+                if hasattr(value, 'isoformat'):
+                    platform_dict[key] = value.isoformat()
+            platforms_list.append(platform_dict)
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify(platforms_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(debug=True, host='0.0.0.0', port=port) 
