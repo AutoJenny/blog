@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Platform Settings - Social Media Syndication - Blog Launchpad</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1877f2;
+            --success-color: #42b883;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --secondary-color: #6c757d;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color), #0d6efd);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .platform-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 1.5rem;
+        }
+
+        .platform-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .priority-score {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .priority-excellent { background: linear-gradient(135deg, var(--success-color), #28a745); color: white; }
+        .priority-good { background: linear-gradient(135deg, var(--info-color), #17a2b8); color: white; }
+        .priority-average { background: linear-gradient(135deg, var(--warning-color), #ffc107); color: #212529; }
+        .priority-poor { background: linear-gradient(135deg, var(--danger-color), #dc3545); color: white; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-active { background: var(--success-color); color: white; }
+        .status-coming-soon { background: var(--warning-color); color: #212529; }
+        .status-planned { background: var(--info-color); color: white; }
+        .status-limited { background: #fd7e14; color: white; }
+
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .channel-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .channel-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .channel-card.active {
+            border-color: var(--success-color);
+            background: linear-gradient(135deg, #f8fff9, #e8f5e8);
+        }
+
+        .channel-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .config-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .config-section h5 {
+            color: var(--dark-color);
+            border-bottom: 2px solid var(--light-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .config-item {
+            background: var(--light-color);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .config-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .config-value {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+            color: var(--secondary-color);
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            margin: 1rem 0;
+        }
+
+        .quick-stats {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1.5rem 0;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .action-btn-primary:hover {
+            background: #0d6efd;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .action-btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .action-btn-success:hover {
+            background: #369870;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .breadcrumb-nav {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--secondary-color);
+        }
+
+        @media (max-width: 768px) {
+            .channel-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                text-align: center;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">
+                        <i class="fab fa-facebook me-3"></i>
+                        Facebook Platform Settings
+                    </h1>
+                    <p class="mb-0 opacity-75">Configure Facebook platform and channel settings</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="priority-score" id="platformPriorityScore">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-nav">
+                <li class="breadcrumb-item">
+                    <a href="/syndication/dashboard">
+                        <i class="fas fa-home me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/syndication/platforms">
+                        <i class="fas fa-cogs me-1"></i>Platforms
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="fab fa-facebook me-1"></i>Facebook
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Quick Stats Bar -->
+        <div class="quick-stats">
+            <div class="row">
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalPosts">-</div>
+                        <div class="stat-label">Total Posts</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-item">
+                        <div class="stat-number" id="avgEngagement">-</div>
+                        <div class="stat-label">Avg Engagement</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-item">
+                        <div class="stat-number" id="successRate">-</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-item">
+                        <div class="stat-number" id="lastActivity">-</div>
+                        <div class="stat-label">Last Activity</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="#" class="action-btn action-btn-primary">
+                <i class="fas fa-plus"></i>New Post
+            </a>
+            <a href="#" class="action-btn action-btn-success">
+                <i class="fas fa-calendar"></i>Schedule Content
+            </a>
+            <a href="#" class="action-btn action-btn-primary">
+                <i class="fas fa-chart-bar"></i>View Analytics
+            </a>
+            <a href="#" class="action-btn action-btn-success">
+                <i class="fas fa-cog"></i>Advanced Settings
+            </a>
+        </div>
+
+        <!-- Platform Overview -->
+        <div class="config-section">
+            <h5><i class="fas fa-info-circle me-2"></i>Platform Overview</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="config-item">
+                        <div class="config-label">Platform Status</div>
+                        <div class="config-value" id="platformStatus">Loading...</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="config-item">
+                        <div class="config-label">API Status</div>
+                        <div class="config-value" id="apiStatus">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Channel Selection -->
+        <div class="config-section">
+            <h5><i class="fas fa-list me-2"></i>Content Channels</h5>
+            <div class="channel-grid" id="channelGrid">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p class="mt-2">Loading channels...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platform Settings -->
+        <div class="config-section">
+            <h5><i class="fas fa-cog me-2"></i>Platform Settings</h5>
+            <div class="config-grid" id="platformSettings">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading platform settings...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Channel Configuration (Initially Hidden) -->
+        <div class="config-section" id="channelConfiguration" style="display: none;">
+            <h5><i class="fas fa-edit me-2"></i>Channel Configuration</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="config-item">
+                        <div class="config-label">Selected Channel</div>
+                        <div class="config-value" id="selectedChannel">None</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="config-item">
+                        <div class="config-label">Channel Status</div>
+                        <div class="config-value" id="channelStatus">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h6><i class="fas fa-ruler me-2"></i>Content Requirements</h6>
+                <div class="config-grid" id="channelRequirements">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h6><i class="fas fa-lightbulb me-2"></i>Content Strategy</h6>
+                <div class="config-grid" id="channelStrategy">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global state management
+        let currentPlatform = null;
+        let currentChannel = null;
+        let platformData = null;
+        let channelData = null;
+
+        // Utility functions
+        function getPriorityClass(score) {
+            if (score >= 0.8) return 'priority-excellent';
+            if (score >= 0.6) return 'priority-good';
+            if (score >= 0.4) return 'priority-average';
+            return 'priority-poor';
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'developed': return 'status-active';
+                case 'in_development': return 'status-coming-soon';
+                case 'planned': return 'status-planned';
+                case 'limited': return 'status-limited';
+                default: return 'status-planned';
+            }
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'developed': return 'Active';
+                case 'in_development': return 'Coming Soon';
+                case 'planned': return 'Planned';
+                case 'limited': return 'Limited';
+                default: return 'Unknown';
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) return 'Today';
+            if (diffDays === 2) return 'Yesterday';
+            if (diffDays <= 7) return `${diffDays} days ago`;
+            return date.toLocaleDateString();
+        }
+
+        // API functions
+        async function loadPlatformData() {
+            try {
+                const response = await fetch('/api/social-media/platforms/facebook');
+                if (!response.ok) throw new Error('Failed to load platform data');
+                
+                platformData = await response.json();
+                currentPlatform = platformData;
+                
+                displayPlatformOverview();
+                loadPlatformCapabilities();
+                loadChannels();
+                loadPriorityData();
+                
+            } catch (error) {
+                console.error('Error loading platform data:', error);
+                showError('Failed to load platform data. Please try again.');
+            }
+        }
+
+        async function loadPlatformCapabilities() {
+            try {
+                const response = await fetch(`/api/social-media/platforms/${platformData.id}/capabilities`);
+                if (!response.ok) throw new Error('Failed to load platform capabilities');
+                
+                const capabilities = await response.json();
+                displayPlatformSettings(capabilities);
+                
+            } catch (error) {
+                console.error('Error loading platform capabilities:', error);
+            }
+        }
+
+        async function loadChannels() {
+            try {
+                const response = await fetch(`/api/social-media/platforms/${platformData.id}/channels`);
+                if (!response.ok) throw new Error('Failed to load channels');
+                
+                const channels = await response.json();
+                displayChannels(channels);
+                
+            } catch (error) {
+                console.error('Error loading channels:', error);
+            }
+        }
+
+        async function loadChannelConfiguration(channelId) {
+            try {
+                // Find the process name for this channel
+                const channel = channelData.find(c => c.id === channelId);
+                if (!channel) return;
+                
+                const response = await fetch(`/api/social-media/processes/${channel.process_name}/config`);
+                if (!response.ok) throw new Error('Failed to load channel configuration');
+                
+                const config = await response.json();
+                displayChannelConfiguration(config);
+                
+            } catch (error) {
+                console.error('Error loading channel configuration:', error);
+            }
+        }
+
+        async function loadPriorityData() {
+            try {
+                const response = await fetch('/api/social-media/priorities');
+                if (!response.ok) throw new Error('Failed to load priority data');
+                
+                const priorities = await response.json();
+                const platformPriority = priorities.find(p => 
+                    p.content_type === 'platform' && p.content_id === platformData.id
+                );
+                
+                if (platformPriority) {
+                    displayPriorityScore(platformPriority.priority_score);
+                }
+                
+            } catch (error) {
+                console.error('Error loading priority data:', error);
+            }
+        }
+
+        // Display functions
+        function displayPlatformOverview() {
+            if (!platformData) return;
+            
+            document.getElementById('platformStatus').innerHTML = 
+                `<span class="status-badge ${getStatusClass(platformData.development_status)}">
+                    ${getStatusText(platformData.development_status)}
+                </span>`;
+            
+            document.getElementById('apiStatus').textContent = 
+                platformData.development_status === 'developed' ? 'Connected' : 'Not Connected';
+        }
+
+        function displayPlatformSettings(capabilities) {
+            const container = document.getElementById('platformSettings');
+            
+            if (!capabilities || capabilities.length === 0) {
+                container.innerHTML = '<p class="text-muted">No platform capabilities configured.</p>';
+                return;
+            }
+            
+            const html = capabilities.map(cap => `
+                <div class="config-item">
+                    <div class="config-label">${cap.capability_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                    <div class="config-value">${cap.capability_value} ${cap.unit || ''}</div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+
+        function displayChannels(channels) {
+            channelData = channels;
+            const container = document.getElementById('channelGrid');
+            
+            if (!channels || channels.length === 0) {
+                container.innerHTML = '<p class="text-muted">No channels configured for this platform.</p>';
+                return;
+            }
+            
+            const html = channels.map(channel => `
+                <div class="channel-card" onclick="selectChannel(${channel.id})">
+                    <div class="channel-icon">
+                        <i class="fas fa-${getChannelIcon(channel.channel_type_name)}"></i>
+                    </div>
+                    <h6 class="mb-2">${channel.display_name}</h6>
+                    <div class="status-badge ${getStatusClass(channel.development_status)} mb-2">
+                        ${getStatusText(channel.development_status)}
+                    </div>
+                    <div class="text-muted small">
+                        ${channel.description || 'No description available'}
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+
+        function displayChannelConfiguration(config) {
+            if (!config) return;
+            
+            document.getElementById('selectedChannel').textContent = config.process.display_name;
+            document.getElementById('channelStatus').innerHTML = 
+                `<span class="status-badge ${getStatusClass(config.process.development_status)}">
+                    ${getStatusText(config.process.development_status)}
+                </span>`;
+            
+            // Display requirements
+            if (config.requirements && config.requirements.length > 0) {
+                const requirementsHtml = config.requirements.map(req => `
+                    <div class="config-item">
+                        <div class="config-label">${req.requirement_key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                        <div class="config-value">${req.requirement_value} ${req.unit || ''}</div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('channelRequirements').innerHTML = requirementsHtml;
+            }
+            
+            // Display strategy configurations
+            if (config.configurations && config.configurations.length > 0) {
+                const strategyHtml = config.configurations.map(config => `
+                    <div class="config-item">
+                        <div class="config-label">${config.config_category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                        <div class="config-value">${config.config_value}</div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('channelStrategy').innerHTML = strategyHtml;
+            }
+            
+            // Show the configuration section
+            document.getElementById('channelConfiguration').style.display = 'block';
+        }
+
+        function displayPriorityScore(score) {
+            const container = document.getElementById('platformPriorityScore');
+            const priorityClass = getPriorityClass(score);
+            const percentage = Math.round(score * 100);
+            
+            container.className = `priority-score ${priorityClass}`;
+            container.innerHTML = `
+                <div>${percentage}%</div>
+                <div style="font-size: 0.9rem; opacity: 0.9;">Priority Score</div>
+            `;
+        }
+
+        function selectChannel(channelId) {
+            // Update visual selection
+            document.querySelectorAll('.channel-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            event.currentTarget.classList.add('active');
+            
+            // Load channel configuration
+            currentChannel = channelId;
+            loadChannelConfiguration(channelId);
+        }
+
+        function getChannelIcon(channelType) {
+            switch(channelType) {
+                case 'feed_post': return 'edit';
+                case 'story_post': return 'mobile-alt';
+                case 'reels_post': return 'video';
+                case 'group_post': return 'users';
+                default: return 'file';
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${message}`;
+            
+            document.querySelector('.container').insertBefore(errorDiv, document.querySelector('.quick-stats'));
+        }
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPlatformData();
+        });
+    </script>
+</body>
+</html>
