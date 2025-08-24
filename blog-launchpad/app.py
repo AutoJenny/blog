@@ -1365,6 +1365,7 @@ def get_process_config(process_name):
         cur.execute("""
             SELECT cp.id, cp.process_name, cp.display_name, cp.description, 
                    cp.development_status, cp.priority, cp.is_active,
+                   cp.platform_id, cp.channel_type_id,
                    p.name as platform_name, p.display_name as platform_display_name,
                    ct.name as channel_name, ct.display_name as channel_display_name
             FROM content_processes cp

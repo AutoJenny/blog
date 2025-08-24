@@ -266,3 +266,4 @@ COMMENT ON TABLE process_configurations IS 'Actual configuration values for cont
 -- =====================================================
 -- MIGRATION COMPLETE
 -- =====================================================
+
