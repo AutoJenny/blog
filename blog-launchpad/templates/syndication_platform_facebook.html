@@ -355,7 +355,15 @@
                                 </h2>
                                 <div id="facebookPlatformCollapse" class="accordion-collapse collapse" aria-labelledby="facebookPlatformHeader" data-bs-parent="#facebookPlatformAccordion">
                                     <div class="accordion-body text-white">
-                                        <div class="row">
+                                        <div id="platformInfo">
+                                            <!-- Platform information will be populated from new database -->
+                                            <div class="text-center">
+                                                <div class="spinner-border text-info" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                                <p class="mt-2">Loading platform information...</p>
+                                            </div>
+                                        </div>
                                             <!-- Content Specifications -->
                                             <div class="col-md-6">
                                                 <h6 class="text-info mb-3"><i class="fas fa-file-alt me-2"></i>Content Specifications</h6>
@@ -647,7 +655,228 @@
     
     <!-- Process Management JavaScript -->
     <script>
+        // New database-driven platform functions
+        async function loadPlatformData() {
+            try {
+                // Load Facebook platform information
+                const response = await fetch('/api/social-media/platforms/facebook');
+                if (response.ok) {
+                    const platform = await response.json();
+                    displayPlatformInfo(platform);
+                } else {
+                    console.error('Failed to load platform data');
+                    showPlatformError();
+                }
+            } catch (error) {
+                console.error('Error loading platform data:', error);
+                showPlatformError();
+            }
+        }
+        
+        async function loadChannelData() {
+            try {
+                // Load channel types and support
+                const response = await fetch('/api/social-media/channels');
+                if (response.ok) {
+                    const channels = await response.json();
+                    populateChannelSelector(channels);
+                } else {
+                    console.error('Failed to load channel data');
+                }
+            } catch (error) {
+                console.error('Error loading channel data:', error);
+            }
+        }
+        
+        function displayPlatformInfo(platform) {
+            const platformInfo = document.getElementById('platformInfo');
+            
+            platformInfo.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-info mb-3"><i class="fas fa-info-circle me-2"></i>Platform Information</h6>
+                        <div class="spec-item">
+                            <span class="spec-label">Name:</span>
+                            <span class="spec-value">${platform.display_name}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Status:</span>
+                            <span class="spec-value">${platform.status}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Development:</span>
+                            <span class="spec-value">${platform.development_status}</span>
+                        </div>
+                        <div class="spec-label">Description:</span>
+                            <span class="spec-value">${platform.description}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-info mb-3"><i class="fas fa-cogs me-2"></i>Platform Capabilities</h6>
+                        <div id="platformCapabilities">
+                            <!-- Capabilities will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Load platform capabilities
+            loadPlatformCapabilities(platform.id);
+        }
+        
+        async function loadPlatformCapabilities(platformId) {
+            try {
+                const response = await fetch(`/api/social-media/platforms/${platformId}/capabilities`);
+                if (response.ok) {
+                    const capabilities = await response.json();
+                    displayPlatformCapabilities(capabilities);
+                }
+            } catch (error) {
+                console.error('Error loading capabilities:', error);
+            }
+        }
+        
+        function displayPlatformCapabilities(capabilities) {
+            const container = document.getElementById('platformCapabilities');
+            
+            if (capabilities.length === 0) {
+                container.innerHTML = '<p class="text-muted">No capabilities found</p>';
+                return;
+            }
+            
+            const capabilitiesHtml = capabilities.map(cap => `
+                <div class="spec-item">
+                    <span class="spec-label">${cap.capability_name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>
+                    <span class="spec-value">${cap.capability_value} ${cap.unit || ''}</span>
+                </div>
+            `).join('');
+            
+            container.innerHTML = capabilitiesHtml;
+        }
+        
+        function populateChannelSelector(channels) {
+            const selector = document.getElementById('content-process-selector');
+            
+            // Clear existing options except the first one
+            selector.innerHTML = '<option value="">Choose a channel...</option>';
+            
+            channels.forEach(channel => {
+                const option = document.createElement('option');
+                option.value = channel.process_name;
+                option.textContent = channel.display_name;
+                selector.appendChild(option);
+            });
+            
+            // Add change event listener
+            selector.addEventListener('change', function() {
+                if (this.value) {
+                    loadChannelSettings(this.value);
+                }
+            });
+        }
+        
+        async function loadChannelSettings(processName) {
+            try {
+                const response = await fetch(`/api/social-media/processes/${processName}/config`);
+                if (response.ok) {
+                    const config = await response.json();
+                    displayChannelSettings(config);
+                }
+            } catch (error) {
+                console.error('Error loading channel settings:', error);
+            }
+        }
+        
+        function displayChannelSettings(config) {
+            const content = document.getElementById('channelConfigContent');
+            const summaryCards = document.getElementById('quickSummaryCards');
+            
+            // Display summary cards
+            summaryCards.innerHTML = `
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h6 class="card-title">Image Specs</h6>
+                            <div class="summary-item">
+                                <span>Dimensions:</span>
+                                <span class="summary-value">${config.dimensions || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h6 class="card-title">Content Strategy</h6>
+                            <div class="summary-item">
+                                <span>Tone:</span>
+                                <span class="summary-value">${config.tone || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h6 class="card-title">Engagement</h6>
+                            <div class="summary-item">
+                                <span>Strategy:</span>
+                                <span class="summary-value">${config.engagement || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Display detailed configuration
+            content.innerHTML = `
+                <div class="config-grid">
+                    <div class="config-category priority-high">
+                        <h6><i class="fas fa-cog me-2"></i>Content Strategy</h6>
+                        <div class="config-row">
+                            <span class="config-label">Tone Guidelines:</span>
+                            <textarea class="config-input large" readonly>${config.tone_guidelines || 'Not specified'}</textarea>
+                        </div>
+                        <div class="config-row">
+                            <span class="config-label">Content Focus:</span>
+                            <textarea class="config-input large" readonly>${config.content_focus || 'Not specified'}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="config-category priority-medium">
+                        <h6><i class="fas fa-image me-2"></i>Image Requirements</h6>
+                        <div class="config-row">
+                            <span class="config-label">Style Guidelines:</span>
+                            <textarea class="config-input large" readonly>${config.style_guidelines || 'Not specified'}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="config-category priority-low">
+                        <h6><i class="fas fa-hashtag me-2"></i>Hashtag Strategy</h6>
+                        <div class="config-row">
+                            <span class="config-label">Usage Guidelines:</span>
+                            <textarea class="config-input large" readonly>${config.hashtag_usage || 'Not specified'}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function showPlatformError() {
+            const platformInfo = document.getElementById('platformInfo');
+            platformInfo.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Failed to load platform information. Please try refreshing the page.
+                </div>
+            `;
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
+            // New database-driven platform settings
+            loadPlatformData();
+            loadChannelData();
+            
             // Process selector functionality
             const processSelector = document.getElementById('content-process-selector');
             const selectedProcessDisplay = document.getElementById('selectedProcessDisplay');
@@ -909,8 +1138,9 @@
                 console.log(`${type.toUpperCase()}: ${message}`);
             }
 
-            // Initialize with default process configs
-            loadProcessConfigs('facebook_feed_post');
+            // Initialize with new database structure
+            loadPlatformData();
+            loadChannelData();
         });
     </script>
 </body>
