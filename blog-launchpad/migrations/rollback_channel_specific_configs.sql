@@ -46,3 +46,4 @@ COMMENT ON TABLE social_media_process_configs IS 'Stores configuration settings 
 COMMENT ON COLUMN social_media_process_configs.config_category IS 'Category of configuration: llm_prompt, constraints, style_guide, etc.';
 
 
+
