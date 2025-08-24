@@ -115,3 +115,4 @@ INSERT INTO ui_session_state (session_id, user_id, state_key, state_value, state
 -- =====================================================
 -- DATA SEEDING COMPLETE
 -- =====================================================
+

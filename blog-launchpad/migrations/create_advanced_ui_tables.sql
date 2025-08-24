@@ -194,3 +194,4 @@ COMMENT ON TABLE ui_session_state IS 'Stores temporary UI state for user session
 -- =====================================================
 -- MIGRATION COMPLETE
 -- =====================================================
+
