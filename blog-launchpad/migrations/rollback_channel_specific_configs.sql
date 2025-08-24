@@ -44,3 +44,4 @@ DROP INDEX IF EXISTS idx_process_configs_channel_constraints;
 -- Step 5: Remove the new comments
 COMMENT ON TABLE social_media_process_configs IS 'Stores configuration settings for each content conversion process';
 COMMENT ON COLUMN social_media_process_configs.config_category IS 'Category of configuration: llm_prompt, constraints, style_guide, etc.';
+
