@@ -1888,6 +1888,20 @@ def calculate_content_priorities():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# =====================================================
+# SOCIAL MEDIA SYNDICATION ROUTES
+# =====================================================
+
+@app.route('/syndication/platform-settings/facebook')
+def facebook_platform_settings():
+    """Facebook platform settings page - old version"""
+    return render_template('syndication_platform_facebook.html')
+
+@app.route('/syndication/platform-settings/facebook/new')
+def facebook_platform_settings_new():
+    """Facebook platform settings page - new redesigned version"""
+    return render_template('syndication_platform_facebook_new.html')
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(debug=True, host='0.0.0.0', port=port) 
