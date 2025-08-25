@@ -1,0 +1,68 @@
+<!-- sections_panel.html: Green Panel Sections UI (dynamic, full fidelity) -->
+<!-- FontAwesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div id="sections-panel" style="background-color: #013828; min-height: 150px; border-radius: 8px; padding: 16px; border: 1px solid #065f46; overflow: visible;">
+    
+    <div style="text-align: center; margin-bottom: 12px;">
+        <i class="fas fa-list-ul" style="color: #7dd3fc; font-size: 1.2rem;"></i>
+        <h3 style="font-size: 1rem; font-weight: 600; margin: 0; color: #7dd3fc;">Sections Summary</h3>
+        <div style="font-size: 0.8rem; color: #a7f3d0; margin-top: 4px;">Click to edit sections</div>
+    </div>
+    
+    <div id="sections-list" style="color: #e5e7eb;">
+        <p style="color: #a7f3d0; text-align: center; font-size: 0.9rem;">Loading sections...</p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    const postId = '{{ post_id }}';
+    const sectionsList = document.getElementById('sections-list');
+    
+    try {
+        const response = await fetch(`/api/sections/${postId}`);
+        if (!response.ok) throw new Error('Failed to fetch sections');
+        
+        const data = await response.json();
+        const sections = data.sections || [];
+        
+        if (sections.length === 0) {
+            sectionsList.innerHTML = '<p style="color: #a7f3d0; text-align: center; font-size: 0.9rem;">No sections found</p>';
+            return;
+        }
+        
+        const sectionsHtml = sections.map((section, index) => {
+            const title = section.section_heading || section.title || `Section ${index + 1}`;
+            const description = section.section_description || section.description || '';
+            
+            return `
+                <div style="margin-bottom: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <div style="color: #7dd3fc; font-weight: bold; font-size: 0.9rem;">${index + 1}. ${title}</div>
+                    ${description ? `<div style="color: #a7f3d0; font-style: italic; font-size: 0.8rem; margin-top: 4px;">${description}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+        
+        sectionsList.innerHTML = sectionsHtml;
+        
+        // Send resize message to parent
+        const height = document.body.scrollHeight;
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({
+                type: 'resize',
+                height: height
+            }, '*');
+        }
+        
+    } catch (error) {
+        console.error('Error loading sections:', error);
+        sectionsList.innerHTML = '<p style="color: #ef4444; text-align: center; font-size: 0.9rem;">Error loading sections</p>';
+    }
+});
+
+// Make the entire panel clickable to open the full sections page
+document.getElementById('sections-panel').addEventListener('click', function() {
+    window.open('http://localhost:5000/workflow/posts/{{ post_id }}/writing/sections/ideas_to_include', '_blank');
+});
+</script> 

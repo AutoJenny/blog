@@ -1,0 +1,41 @@
+<!-- Inputs Section -->
+<div class="border border-dark-border rounded-lg p-4 mb-4">
+    <h2 class="text-xl font-medium text-dark-text mb-4">Inputs</h2>
+
+    <div id="inputs-container" data-current-stage="{{ current_stage }}" data-current-substage="{{ current_substage }}">
+        <div class="input-field-group mb-4 p-3 border border-gray-600 rounded" data-input-id="input1">
+            <div class="flex justify-between items-center mb-2">
+                <label for="input_input1" class="block text-sm font-medium text-blue-500">
+                    [input1]
+                </label>
+            </div>
+            <div class="flex gap-2 mb-2">
+                <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 flex-1"
+                    data-target="input_input1" data-section="inputs" data-current-substage="{{ current_substage }}">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <select id="input_format_select_input1"
+                    class="format-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-48"
+                    data-section="input">
+                    <option value="">Input Format</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label for="input_input1_label" class="block text-sm font-medium text-blue-500">
+                    Idea Seed
+                </label>
+            </div>
+            <textarea id="input_input1" name="input1"
+                class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4" data-db-field=""
+                data-db-table="post_development" rows="4" placeholder="Enter text...">story-telling</textarea>
+        </div>
+    </div>
+
+    <!-- Add Input Button -->
+    <div class="mt-4">
+        <button type="button" id="add-input-btn"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors duration-200">
+            <i class="fas fa-plus mr-2"></i>Add Input Field
+        </button>
+    </div>
+</div> 

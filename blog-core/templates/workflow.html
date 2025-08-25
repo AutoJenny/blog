@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow - BlogForge</title>
+    <link href="/static/css/dist/main.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .header-gradient {
+            background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+        }
+        .nav-dropdown {
+            background: #23273a;
+            border: 1px solid #31364a;
+            box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+        }
+        .nav-dropdown a {
+            color: #e0e0e0;
+        }
+        .nav-dropdown a:hover {
+            background: #23273a;
+            color: #a5b4fc;
+        }
+        .workflow-content-container {
+            min-height: 400px;
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Iframe styling for better content display */
+        #llm-actions-iframe {
+            min-height: 4000px !important; /* Increased height for full content */
+            max-height: none !important; /* Allow unlimited height */
+            overflow: visible !important; /* Ensure no scrollbars */
+            width: 100% !important; /* Full width */
+            min-width: 1200px !important; /* Minimum width to prevent narrow display */
+        }
+        
+        /* Container styling to allow full iframe display */
+        #workflow-llm-actions {
+            overflow: visible !important;
+            min-height: 4000px !important;
+            max-height: none !important;
+            width: 100% !important;
+            max-width: none !important; /* Remove max-width constraint */
+        }
+        
+        /* Ensure the main container allows full width */
+        .workflow-content-container {
+            min-height: 4000px;
+            width: 100%;
+            max-width: none;
+        }
+        
+        /* Remove max-width constraint from the main content area */
+        .max-w-6xl {
+            max-width: none !important;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-dark-bg text-dark-text flex flex-col">
+    {% include 'shared/header.html' %}
+
+    <!-- Workflow Navigation -->
+    <div id="workflow-nav">
+        {% include 'nav/nav.html' %}
+    </div>
+
+    <!-- Step Navigation -->
+    <div class="bg-dark-bg border-b border-dark-border py-4">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center justify-center gap-4">
+                <span class="text-sm text-gray-400 font-medium">Steps:</span>
+                {% if stages and current_stage in stages and current_substage in stages[current_stage] %}
+                    {% for step in stages[current_stage][current_substage] %}
+                        {% set step_url = step|lower|replace(' ', '_') %}
+                        {% set is_active = current_step == step_url %}
+                        <a href="/workflow/posts/{{ current_post_id }}/{{ current_stage }}/{{ current_substage }}/{{ step_url }}"
+                           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 {% if is_active %}bg-indigo-600 text-white{% else %}bg-dark-hover text-dark-text hover:bg-indigo-600 hover:text-white{% endif %}">
+                            {{ step }}
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <span class="text-sm text-gray-500">No steps available</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <main class="flex-grow">
+        <div class="max-w-6xl mx-auto py-10 px-4">
+            <div class="workflow-content-container">
+                
+                <!-- Planning Stage: Single Panel -->
+                {% if current_stage == 'planning' %}
+                    <div id="workflow-llm-actions" style="width: 100%; border-radius: 8px; overflow: visible;">
+                        <iframe 
+                            id="llm-actions-iframe"
+                            src="http://localhost:5002/?stage={{ current_stage }}&substage={{ current_substage }}&step={{ current_step }}&post_id={{ current_post_id }}&step_id={{ step_id }}&v={{ range(1000000, 9999999) | random }}"
+                            style="width: 100%; height: 4000px; border: none; border-radius: 8px;"
+                            title="LLM Actions"
+                        ></iframe>
+                    </div>
+                
+                <!-- Writing Stage: Two Panels -->
+                {% elif current_stage == 'writing' %}
+                    {% if current_substage == 'post_info' %}
+                        <!-- Post Info Stage: Three Panels Layout -->
+                        <div class="flex gap-6">
+                            <!-- Left: Purple LLM Actions Panel -->
+                            <div id="workflow-llm-actions" style="flex: 1; border-radius: 8px; overflow: visible;">
+                                <iframe 
+                                    id="llm-actions-iframe-writing"
+                                    src="http://localhost:5002/?stage={{ current_stage }}&substage={{ current_substage }}&step={{ current_step }}&post_id={{ current_post_id }}&step_id={{ step_id }}"
+                                    style="width: 100%; height: 4000px; border: none; border-radius: 8px;"
+                                    title="LLM Actions"
+                                ></iframe>
+                            </div>
+                            
+                            <!-- Right: Three Stacked Panels -->
+                            <div style="flex: 1; display: flex; flex-direction: column; gap: 4;">
+                                <!-- Top: Dark Blue Headers Panel -->
+                                <div id="workflow-headers" style="background-color: #1e3a8a; min-height: 200px; border-radius: 8px; padding: 0; border: 1px solid #3b82f6; overflow: visible;">
+                                    <iframe 
+                                        id="headers-iframe"
+                                        src="http://localhost:5004/titles-editor?post_id={{ current_post_id }}"
+                                        style="width: 100%; height: 200px; border: none; border-radius: 8px; background: #1e3a8a;"
+                                        title="Headers Panel"
+                                    ></iframe>
+                                </div>
+                                
+                                <!-- Middle: Green Sections Panel (summary iframe) -->
+                                <div id="workflow-sections-summary" style="background-color: #013828; min-height: 150px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
+                                    <iframe 
+                                        id="sections-summary-iframe"
+                                        src="http://localhost:5003/sections-summary?post_id={{ current_post_id }}"
+                                        style="width: 100%; height: 200px; border: none; border-radius: 8px; background: #013828;"
+                                        title="Sections Summary Panel"
+                                    ></iframe>
+                                </div>
+
+                                <script>
+                                // Handle iframe resize messages
+                                window.addEventListener('message', function(event) {
+                                    if (event.data.type === 'resize') {
+                                        const iframe = document.getElementById('sections-summary-iframe');
+                                        if (iframe) {
+                                            iframe.style.height = event.data.height + 'px';
+                                        }
+                                    }
+                                });
+                                </script>
+                                
+                                <!-- Bottom: Grey Meta Information Placeholder -->
+                                <div id="workflow-meta-placeholder" style="background-color: #6b7280; min-height: 150px; border-radius: 8px; padding: 20px; border: 1px solid #9ca3af; overflow: visible;">
+                                    <div class="text-center text-white">
+                                        <i class="fas fa-tags text-3xl mb-3 text-gray-300"></i>
+                                        <h3 class="text-lg font-semibold mb-2">Meta Information</h3>
+                                        <p class="text-sm mb-4">SEO, tags, and metadata</p>
+                                        <div class="text-xs text-gray-200">
+                                            <p>Coming soon...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif current_substage == 'images' and current_step == 'watermark_&_optimise' %}
+                        <!-- Watermark & Optimise Stage: Red Panel with Single Button -->
+                        <div class="flex gap-6">
+                            <!-- Left: Red Optimise Panel -->
+                            <div id="workflow-optimise" style="flex: 1; background-color: #dc2626; min-height: 4000px; border-radius: 8px; padding: 20px; border: 1px solid #ef4444; overflow: visible;">
+                                <div class="text-center text-white py-8">
+                                    <h2 class="text-2xl font-bold mb-4">Image Optimization</h2>
+                                    <p class="mb-6">
+                                        Optimize and watermark images for this post.
+                                    </p>
+                                    <button 
+                                        id="optimise-button"
+                                        class="bg-white text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200"
+                                        onclick="handleOptimise()"
+                                    >
+                                        Optimise
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Right: Green Sections Panel -->
+                            <div id="workflow-sections" style="background-color: #013828; flex: 1; min-height: 4000px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
+                                <iframe 
+                                    id="sections-iframe-writing"
+                                    src="http://localhost:5003/sections?stage={{ current_stage }}&substage={{ current_substage }}&step={{ current_step }}&post_id={{ current_post_id }}&v={{ range(1, 10000) | random }}"
+                                    style="width: 100%; height: 4000px; border: none; border-radius: 8px; background: #013828;"
+                                    title="Sections Panel"
+                                ></iframe>
+                            </div>
+                        </div>
+                    {% elif current_step == 'section_illustrations' %}
+                        <!-- Section Illustrations Stage: Three Panels Layout -->
+                        <div class="flex gap-6">
+                            <!-- Left: Purple LLM Actions Panel -->
+                            <div id="workflow-llm-actions" style="flex: 1; border-radius: 8px; overflow: visible;">
+                                <iframe 
+                                    id="llm-actions-iframe-writing"
+                                    src="http://localhost:5002/?stage={{ current_stage }}&substage={{ current_substage }}&step={{ current_step }}&post_id={{ current_post_id }}&step_id={{ step_id }}&v={{ range(1, 10000) | random }}"
+                                    style="width: 100%; height: 4000px; border: none; border-radius: 8px;"
+                                    title="LLM Actions"
+                                ></iframe>
+                            </div>
+                            
+                            <!-- Right: Two Stacked Panels -->
+                            <div style="flex: 1; display: flex; flex-direction: column; gap: 4;">
+                                <!-- Top: Dark Blue Headers Panel -->
+                                <div id="workflow-headers" style="background-color: #1e3a8a; min-height: 200px; border-radius: 8px; padding: 0; border: 1px solid #3b82f6; overflow: visible;">
+                                    <iframe 
+                                        id="headers-iframe"
+                                        src="http://localhost:5004/titles-editor?post_id={{ current_post_id }}"
+                                        style="width: 100%; height: 200px; border: none; border-radius: 8px; background: #1e3a8a;"
+                                        title="Headers Panel"
+                                    ></iframe>
+                                </div>
+                                
+                                <!-- Bottom: Green Sections Panel -->
+                                <div id="workflow-sections" style="background-color: #013828; flex: 1; min-height: 4000px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
+                                    <iframe 
+                                        id="sections-iframe-writing"
+                                        src="http://localhost:5003/sections?stage={{ current_stage }}&substage={{ current_substage }}&step={{ current_step }}&post_id={{ current_post_id }}&v={{ range(1, 10000) | random }}"
+                                        style="width: 100%; height: 4000px; border: none; border-radius: 8px; background: #013828;"
+                                        title="Sections Panel"
+                                    ></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Other Writing Substages: Standard Two Panels -->
+                        <div class="flex gap-6">
+                            <div id="workflow-llm-actions" style="flex: 1; border-radius: 8px; overflow: visible;">
+                                <iframe 
+                                    id="llm-actions-iframe-writing"
+                                    src="http://localhost:5002/?stage={{ current_stage }}&substage={{ current_substage }}&step={{ current_step }}&post_id={{ current_post_id }}{% if current_step == 'image_concepts' %}&step_id=53{% endif %}&v={{ range(1, 10000) | random }}"
+                                    style="width: 100%; height: 4000px; border: none; border-radius: 8px;"
+                                    title="LLM Actions"
+                                ></iframe>
+                            </div>
+                            <div id="workflow-sections" style="background-color: #013828; flex: 1; min-height: 4000px; border-radius: 8px; padding: 0; border: 1px solid #065f46; overflow: visible;">
+                                <iframe 
+                                    id="sections-iframe-writing"
+                                    src="http://localhost:5003/sections?stage={{ current_stage }}&substage={{ current_substage }}&step={{ current_step }}&post_id={{ current_post_id }}&v={{ range(1, 10000) | random }}"
+                                    style="width: 100%; height: 4000px; border: none; border-radius: 8px; background: #013828;"
+                                    title="Sections Panel"
+                                ></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                
+                <!-- Other Stages -->
+                {% else %}
+                    <div id="workflow-content" style="background-color: #1a1a2e; min-height: 600px; border-radius: 8px; padding: 20px;">
+                        <div class="text-center text-white py-8">
+                            <h2 class="text-2xl font-bold mb-4">Workflow Content Area</h2>
+                            <p class="mb-6">
+                                This area will display content from microservices based on the selected stage/substage.
+                            </p>
+                            
+                            <div class="bg-gray-800 p-4 rounded-lg text-left">
+                                <h3 class="font-semibold mb-2">Current Context</h3>
+                                <ul class="text-sm space-y-1">
+                                    <li><strong>Stage:</strong> {{ current_stage|default('Not set') }}</li>
+                                    <li><strong>Substage:</strong> {{ current_substage|default('Not set') }}</li>
+                                    <li><strong>Step:</strong> {{ current_step|default('Not set') }}</li>
+                                    <li><strong>Post ID:</strong> {{ current_post_id|default('Not set') }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-indigo-950 border-t border-dark-border py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-dark-text">
+                &copy; 2025 BlogForge. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple iframe height adjustment (no CORS issues)
+        function adjustIframeHeight(iframe) {
+            // Set height to show full content without scrollbars
+            iframe.style.height = '4000px';
+            console.log('Set iframe height to 4000px for full content visibility');
+        }
+
+        // Simple iframe management for LLM Actions
+        function updateLLMActionsIframe() {
+            const currentStage = '{{ current_stage }}';
+            const currentSubstage = '{{ current_substage }}';
+            const currentStep = '{{ current_step }}';
+            const postId = '{{ current_post_id }}';
+            
+            // Update iframe src with current context
+            const newSrc = `http://localhost:5002/?stage=${currentStage}&substage=${currentSubstage}&step=${currentStep}&post_id=${postId}&v=${Date.now()}`;
+            
+            // Handle both planning and writing stage iframes
+            const planningIframe = document.getElementById('llm-actions-iframe');
+            const writingIframe = document.getElementById('llm-actions-iframe-writing');
+            
+            if (planningIframe) {
+                planningIframe.src = newSrc;
+            }
+            
+            if (writingIframe) {
+                writingIframe.src = newSrc;
+            }
+        }
+
+        // Initialize iframe when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Iframe loads automatically, no additional initialization needed
+            
+            // Set up real-time updates
+            setupRealTimeUpdates();
+            
+            // Set iframe height once on load for both planning and writing stages
+            const planningIframe = document.getElementById('llm-actions-iframe');
+            const writingIframe = document.getElementById('llm-actions-iframe-writing');
+            
+            if (planningIframe) {
+                // Set height after a short delay to ensure iframe is loaded
+                setTimeout(() => {
+                    adjustIframeHeight(planningIframe);
+                }, 500);
+            }
+            
+            if (writingIframe) {
+                // Set height after a short delay to ensure iframe is loaded
+                setTimeout(() => {
+                    adjustIframeHeight(writingIframe);
+                }, 500);
+            }
+        });
+
+        // Set up real-time communication with LLM-actions panel
+        function setupRealTimeUpdates() {
+            // Listen for messages from LLM-actions panel
+            window.addEventListener('message', function(event) {
+                // Allow messages from localhost:5002 (LLM Actions service)
+                if (event.origin !== 'http://localhost:5002' && event.origin !== window.location.origin) return;
+                
+                const { type, data } = event.data;
+                
+                switch (type) {
+                    case 'llm_action_executed':
+                        handleLLMActionResult(data);
+                        break;
+                    case 'llm_action_error':
+                        handleLLMActionError(data);
+                        break;
+                    case 'context_update':
+                        updateWorkflowContext(data);
+                        break;
+                    case 'GET_SELECTED_SECTIONS':
+                        // Relay message to sections iframe
+                        console.log('[Workflow] Relaying GET_SELECTED_SECTIONS to sections iframe');
+                        const sectionsIframe = document.getElementById('sections-iframe-writing');
+                        if (sectionsIframe) {
+                            sectionsIframe.contentWindow.postMessage({
+                                type: 'GET_SELECTED_SECTIONS',
+                                source: 'workflow'
+                            }, '*');
+                        }
+                        break;
+                }
+            });
+            
+            // Listen for messages from sections iframe
+            window.addEventListener('message', function(event) {
+                // Allow messages from localhost:5003 (Sections service)
+                if (event.origin !== 'http://localhost:5003' && event.origin !== window.location.origin) return;
+                
+                const { type, sectionIds } = event.data;
+                
+                switch (type) {
+                    case 'SELECTED_SECTIONS_RESPONSE':
+                        // Relay message to LLM actions iframe
+                        console.log('[Workflow] Relaying SELECTED_SECTIONS_RESPONSE to LLM actions iframe');
+                        const llmActionsIframe = document.getElementById('llm-actions-iframe-writing');
+                        if (llmActionsIframe) {
+                            llmActionsIframe.contentWindow.postMessage({
+                                type: 'SELECTED_SECTIONS_RESPONSE',
+                                sectionIds: sectionIds || []
+                            }, '*');
+                        }
+                        break;
+                }
+            });
+        }
+
+        // Handle successful LLM action execution
+        function handleLLMActionResult(data) {
+            console.log('LLM Action executed successfully:', data);
+            
+            // Show success notification
+            showNotification('LLM Action completed successfully!', 'success');
+            
+            // Update workflow context if needed
+            if (data.context_update) {
+                updateWorkflowContext(data.context_update);
+            }
+        }
+
+        // Handle LLM action errors
+        function handleLLMActionError(data) {
+            console.error('LLM Action error:', data);
+            
+            // Show error notification
+            showNotification(`LLM Action failed: ${data.error}`, 'error');
+        }
+
+        // Handle Optimise button click
+        function handleOptimise() {
+            const postId = {{ current_post_id }};
+            const button = document.getElementById('optimise-button');
+            
+            // Disable button and show loading state
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+            
+            console.log(`Starting image optimization for post ${postId}`);
+            
+            // Make API call to run the image processing script
+            fetch('/api/workflow/optimize-images', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    post_id: postId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`Image optimization completed! Processed ${data.processed_count} images.`, 'success');
+                    console.log('Optimization result:', data);
+                } else {
+                    showNotification(`Optimization failed: ${data.error}`, 'error');
+                    console.error('Optimization error:', data.error);
+                }
+            })
+            .catch(error => {
+                showNotification(`Optimization failed: ${error.message}`, 'error');
+                console.error('Optimization error:', error);
+            })
+            .finally(() => {
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = 'Optimise';
+            });
+        }
+
+        // Update workflow context
+        function updateWorkflowContext(context) {
+            console.log('Updating workflow context:', context);
+            
+            // Update URL if needed
+            if (context.stage && context.substage) {
+                const newUrl = `/workflow/posts/${context.post_id || '{{ current_post_id }}'}/${context.stage}/${context.substage}`;
+                if (window.location.pathname !== newUrl) {
+                    window.history.pushState({}, '', newUrl);
+                }
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-600 text-white' :
+                type === 'error' ? 'bg-red-600 text-white' :
+                'bg-blue-600 text-white'
+            }`;
+            notification.textContent = message;
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Iframe communication handlers for section selection
+        window.addEventListener('message', function(event) {
+            // Handle GET_SELECTED_SECTIONS_FROM_LLM from LLM-actions iframe
+            if (event.data && event.data.type === 'GET_SELECTED_SECTIONS_FROM_LLM') {
+                console.log('🔄 Received GET_SELECTED_SECTIONS_FROM_LLM from LLM-actions iframe');
+                
+                const sectionsIframe = document.getElementById('sections-iframe-writing');
+                if (sectionsIframe && sectionsIframe.contentWindow) {
+                    console.log('📤 Forwarding GET_SELECTED_SECTIONS to sections iframe');
+                    sectionsIframe.contentWindow.postMessage({ type: 'GET_SELECTED_SECTIONS' }, '*');
+                    
+                    // Set up timeout for response
+                    const timeoutId = setTimeout(() => {
+                        console.warn('⏰ Timeout waiting for sections response');
+                        // Send empty response to LLM-actions iframe
+                        const llmIframe = document.getElementById('llm-actions-iframe-writing');
+                        if (llmIframe && llmIframe.contentWindow) {
+                            llmIframe.contentWindow.postMessage({
+                                type: 'SELECTED_SECTIONS_RESPONSE_TO_LLM',
+                                sectionIds: []
+                            }, '*');
+                        }
+                    }, 3000);
+                    
+                    // Listen for response from sections iframe
+                    const responseHandler = function(responseEvent) {
+                        if (responseEvent.data && responseEvent.data.type === 'SELECTED_SECTIONS_RESPONSE') {
+                            console.log('📥 Received SELECTED_SECTIONS_RESPONSE from sections iframe:', responseEvent.data.sectionIds);
+                            clearTimeout(timeoutId);
+                            window.removeEventListener('message', responseHandler);
+                            
+                            // Relay response to LLM-actions iframe
+                            const llmIframe = document.getElementById('llm-actions-iframe-writing');
+                            if (llmIframe && llmIframe.contentWindow) {
+                                console.log('📤 Relaying SELECTED_SECTIONS_RESPONSE_TO_LLM to LLM-actions iframe');
+                                llmIframe.contentWindow.postMessage({
+                                    type: 'SELECTED_SECTIONS_RESPONSE_TO_LLM',
+                                    sectionIds: responseEvent.data.sectionIds || []
+                                }, '*');
+                            }
+                        }
+                    };
+                    
+                    window.addEventListener('message', responseHandler);
+                } else {
+                    console.warn('❌ Sections iframe not found');
+                    // Send empty response to LLM-actions iframe
+                    const llmIframe = document.getElementById('llm-actions-iframe-writing');
+                    if (llmIframe && llmIframe.contentWindow) {
+                        llmIframe.contentWindow.postMessage({
+                            type: 'SELECTED_SECTIONS_RESPONSE_TO_LLM',
+                            sectionIds: []
+                        }, '*');
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

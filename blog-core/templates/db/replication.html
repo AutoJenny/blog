@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Database Replication Status{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Database Replication Status</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Replication Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Status</th>
+                                    <td>
+                                        {% if status.status == 'in sync' %}
+                                        <span class="badge bg-success">In Sync</span>
+                                        {% elif status.status == 'error' %}
+                                        <span class="badge bg-danger">Error</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">{{ status.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Last Sync</th>
+                                    <td>{{ status.last_sync|default('Never', true) }}</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Primary Hash</th>
+                                    <td><code>{{ status.primary_hash|default('N/A', true) }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Replica Hash</th>
+                                    <td><code>{{ status.replica_hash|default('N/A', true) }}</code></td>
+                                </tr>
+                                {% if status.error %}
+                                <tr>
+                                    <th scope="row">Error</th>
+                                    <td class="text-danger">{{ status.error }}</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('db.start_replication') }}" class="btn btn-primary">
+                            <i class="fas fa-play me-2"></i>Start Replication
+                        </a>
+                        <a href="{{ url_for('db.stop_replication') }}" class="btn btn-danger">
+                            <i class="fas fa-stop me-2"></i>Stop Replication
+                        </a>
+                        <a href="{{ url_for('db.force_sync') }}" class="btn btn-warning">
+                            <i class="fas fa-sync me-2"></i>Force Sync
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('db.update_replication_config') }}">
+                        <div class="mb-3">
+                            <label for="checkInterval" class="form-label">Check Interval (seconds)</label>
+                            <input type="number" class="form-control" id="checkInterval" name="check_interval"
+                                value="{{ config.check_interval|default(60) }}" min="10" max="3600">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Configuration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

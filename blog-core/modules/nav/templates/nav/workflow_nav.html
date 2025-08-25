@@ -1,0 +1,139 @@
+<!-- Workflow Navigation -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+{# Context-aware static file loading for modular architecture #}
+{# This template works in both standalone and integrated contexts #}
+{% if request.blueprint == 'workflow_nav' %}
+{# Standalone mode - use blueprint static #}
+<link rel="stylesheet" href="{{ url_for('workflow_nav.static', filename='css/nav.dist.css') }}">
+{% else %}
+{# Integrated mode - use main app static with module-specific naming #}
+<link rel="stylesheet" href="{{ url_for('static', filename='workflow_nav/css/nav.dist.css') }}">
+{% endif %}
+
+<div class="bg-dark-bg py-6">
+    <div class="container mx-auto px-6">
+        <!-- Line 1: Breadcrumbs and Post Selector -->
+        <div class="flex justify-between items-center mb-8">
+            <nav class="text-base">
+                <h2 class="text-2xl font-bold text-dark-text">{{ current_substage|title }} : {{
+                    all_posts|selectattr('id', 'equalto', current_post_id)|map(attribute='title')|first }}</h2>
+            </nav>
+            <div class="relative">
+                <select id="post-selector"
+                    class="bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-dark-text min-w-[200px]">
+                    {% for post in all_posts %}
+                    <option value="{{ post.id }}" {% if post.id==current_post_id %}selected{% endif %}>{{ post.title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Second line: All sub-stages as named icons in three groups of three -->
+        <div class="flex justify-center gap-12 mb-8">
+            <!-- Planning Group -->
+            <div class="flex flex-col items-center">
+                <span class="text-sm text-gray-400 mb-3 font-medium">Planning</span>
+                <div class="flex gap-6">
+                    {% for substage in ['idea', 'research', 'structure'] %}
+                    {% set icon = {
+                    'idea': 'lightbulb',
+                    'research': 'search',
+                    'structure': 'sitemap'
+                    } %}
+                    {% set is_active = current_stage == 'planning' and current_substage == substage %}
+                    <a href="{% if request.blueprint == 'workflow_nav' %}{{ url_for('workflow_nav.stage', stage='planning', substage=substage, post_id=current_post_id) }}{% else %}{{ url_for('workflow_main', stage='planning', substage=substage, post_id=current_post_id) }}{% endif %}"
+                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 {% if is_active %}border-blue-500 bg-dark-hover{% else %}border-dark-border{% endif %}">
+                        <i
+                            class="fas fa-{{ icon[substage] }} text-2xl mb-3 {% if is_active %}text-blue-500{% else %}text-dark-text{% endif %}"></i>
+                        <div
+                            class="text-sm {% if is_active %}text-blue-500 font-medium{% else %}text-dark-text{% endif %}">
+                            {{ substage|title }}</div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Writing Group -->
+            <div class="flex flex-col items-center">
+                <span class="text-sm text-gray-400 mb-3 font-medium">Writing</span>
+                <div class="flex gap-6">
+                    {% for substage in ['content', 'post_info', 'images'] %}
+                    {% set icon = {
+                    'content': 'pen',
+                    'post_info': 'tags',
+                    'images': 'image'
+                    } %}
+                    {% set is_active = current_stage == 'writing' and current_substage == substage %}
+                    <a href="{% if request.blueprint == 'workflow_nav' %}{{ url_for('workflow_nav.stage', stage='writing', substage=substage, post_id=current_post_id) }}{% else %}{{ url_for('workflow_main', stage='writing', substage=substage, post_id=current_post_id) }}{% endif %}"
+                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 {% if is_active %}border-blue-500 bg-dark-hover{% else %}border-dark-border{% endif %}">
+                        <i
+                            class="fas fa-{{ icon[substage] }} text-2xl mb-3 {% if is_active %}text-blue-500{% else %}text-dark-text{% endif %}"></i>
+                        <div
+                            class="text-sm {% if is_active %}text-blue-500 font-medium{% else %}text-dark-text{% endif %}">
+                            {{ substage|title|replace('_', ' ') }}</div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Publishing Group -->
+            <div class="flex flex-col items-center">
+                <span class="text-sm text-gray-400 mb-3 font-medium">Publishing</span>
+                <div class="flex gap-6">
+                    {% for substage in ['preflight', 'launch', 'syndication'] %}
+                    {% set icon = {
+                    'preflight': 'check-circle',
+                    'launch': 'rocket',
+                    'syndication': 'share-alt'
+                    } %}
+                    {% set is_active = current_stage == 'publishing' and current_substage == substage %}
+                    <a href="{% if request.blueprint == 'workflow_nav' %}{{ url_for('workflow_nav.stage', stage='publishing', substage=substage, post_id=current_post_id) }}{% else %}{{ url_for('workflow_main', stage='publishing', substage=substage, post_id=current_post_id) }}{% endif %}"
+                        class="flex flex-col items-center p-4 bg-dark-bg border rounded-lg hover:bg-dark-hover transition-colors duration-200 {% if is_active %}border-blue-500 bg-dark-hover{% else %}border-dark-border{% endif %}">
+                        <i
+                            class="fas fa-{{ icon[substage] }} text-2xl mb-3 {% if is_active %}text-blue-500{% else %}text-dark-text{% endif %}"></i>
+                        <div
+                            class="text-sm {% if is_active %}text-blue-500 font-medium{% else %}text-dark-text{% endif %}">
+                            {{ substage|title }}</div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Line 3: Tabs for steps in the current sub-stage -->
+        <div class="bg-dark-bg border border-dark-border rounded-lg p-4 mb-6">
+            <div class="flex space-x-4">
+                {% if stages and current_stage in stages and current_substage in stages[current_stage] %}
+                {% for step in stages[current_stage][current_substage] %}
+                <a href="{% if request.blueprint == 'workflow_nav' %}{{ url_for('workflow_nav.stage', stage=current_stage, substage=current_substage, step=step|lower|replace(' ', '_'), post_id=current_post_id) }}{% else %}{{ url_for('workflow_main', stage=current_stage, substage=current_substage, step=step|lower|replace(' ', '_'), post_id=current_post_id) }}{% endif %}"
+                    class="px-6 py-3 rounded-lg font-medium transition-all duration-200 {% if current_step == step|lower|replace(' ', '_') %}bg-blue-500 text-white shadow-lg{% else %}text-gray-400 hover:bg-dark-hover hover:text-dark-text{% endif %}">
+                    {{ step|title }}
+                </a>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if not current_post_id %}
+<div class="text-red-500 bg-dark-bg p-4 rounded-lg border border-red-700 mt-4 mx-6">
+    Workflow navigation is unavailable: missing required context variables.
+    Missing: post_id
+</div>
+{% endif %}
+
+<script>
+    document.getElementById('post-selector').addEventListener('change', function () {
+        const postId = this.value;
+        const currentStage = '{{ current_stage }}';
+        const currentSubstage = '{{ current_substage }}';
+
+        // Use the proper URL structure based on the current blueprint
+        {% if request.blueprint == 'workflow_nav' %}
+        window.location.href = `{{ url_for('workflow_nav.stage', post_id=0) }}`.replace('/0/', `/${postId}/`);
+        {% else %}
+        window.location.href = `/workflow/posts/0`.replace('/0/', `/${postId}/`);
+        {% endif %}
+    });
+</script>
