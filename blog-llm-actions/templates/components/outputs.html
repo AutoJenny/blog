@@ -1,0 +1,29 @@
+<!-- Outputs Section -->
+<div class="border border-dark-border rounded-lg p-4 mb-4">
+    <h2 class="text-xl font-medium text-dark-text mb-4">Outputs</h2>
+    
+    <div class="mb-4">
+        <label for="output1" class="block text-sm font-medium text-blue-500 mb-2">
+            Output
+        </label>
+        <div class="flex gap-2 mb-2">
+            <select class="field-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 flex-1"
+                data-target="output1" data-section="outputs" data-current-substage="{{ current_substage }}">
+                <!-- Options will be populated by JavaScript -->
+            </select>
+            <select id="output_format_select_output1"
+                class="format-selector bg-dark-bg text-dark-text border border-dark-border rounded p-2 w-48"
+                data-section="output">
+                <option value="">Output Format</option>
+            </select>
+        </div>
+        <div class="mb-2">
+            <label for="output1_label" class="block text-sm font-medium text-blue-500">
+                Basic Idea
+            </label>
+        </div>
+        <textarea id="output1" name="output1"
+            class="w-full bg-dark-bg border border-dark-border text-dark-text rounded p-4" data-db-field=""
+            data-db-table="post_development" data-section="outputs" rows="4" placeholder="Enter text..."></textarea>
+    </div>
+</div> 

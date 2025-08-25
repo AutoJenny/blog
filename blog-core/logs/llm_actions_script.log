@@ -1,0 +1,105 @@
+=== RUN LLM BUTTON CLICKED ===
+Timestamp: 2025-07-29T18:52:50.267891
+Run LLM button clicked on purple LLM-actions panel
+=== BASIC IDENTIFICATION ===
+Post ID: 53
+Step ID: 53
+Checked Sections: ['712']
+Section Count: 1
+=== GLOBAL PROMPTS (Applied to every Section iteration) ===
+System Prompt ID: 
+Action Prompt ID: System Prompt:
+You are a helpful assistant, expert in social media blogging and online marketing
+
+Task Prompt:
+Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail.
+
+Input Fields:
+Input fields will be detected from the Inputs panel...
+Action Prompt Content: System Prompt:
+You are a helpful assistant, expert in social media blogging and online marketing
+
+Task Prompt:
+Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail.
+
+Input Fields:
+Input fields will be detected from the Inputs panel...
+=== END GLOBAL PROMPTS ===
+=== PER-SECTION FIELD MAPPINGS ===
+Input Field: draft
+Output Field: image_prompts
+Live Preview Text: System Prompt:
+You are a helpful assistant, expert in social media blogging and online marketing
+
+Task Prompt:
+Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail.
+
+Input Fields:
+Input fields will be detected from the Inputs panel...
+Section Input Contents: {}
+=== END PER-SECTION FIELD MAPPINGS ===
+=== LLM CONFIGURATION & ACTIONS ===
+LLM Provider (DB): ollama
+LLM Model (DB): mistral
+LLM API Base (DB): http://localhost:11434
+LLM Status (DB): Active
+LLM Temperature (Hard-coded): 0.7
+LLM Max Tokens (Hard-coded): 1000
+LLM Timeout (Hard-coded): 60s
+=== END LLM CONFIGURATION & ACTIONS ===
+=== SECTION ITERATION PROCESSING ===
+Starting to process 1 sections...
+Global System Prompt: 
+Global Action Prompt: System Prompt:
+You are a helpful assistant, expert in social media blogging and online marketing
+
+Task Prompt:
+Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail.
+
+Input Fields:
+Input fields will be detected from the Inputs panel...
+Per-Section Input Field: draft
+Per-Section Output Field: image_prompts
+Processing section 1/1: Section ID 712
+=== PER SECTION 1/1 ===
+Section ID: 712
+Input Field: draft
+Input Content for this section:
+None
+Message to be sent to LLM:
+System Prompt:
+You are a helpful assistant, expert in social media blogging and online marketing
+
+Task Prompt:
+Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail.
+
+Input Fields:
+Input Content: None
+=== END PER SECTION 1/1 ===
+Calling LLM for section 712...
+✓ LLM response saved to image_prompts for section 712
+LLM Response:  1. Scotland is home to the oldest known stone circle in the world, the Ring of Brodgar, built around 3000 BC.
+2. The national animal of Scotland is the unicorn, a mythical creature with a single horn...
+✓ Section 712 processed successfully in 11.69s
+=== ITERATION COMPLETE ===
+Total Sections: 1
+Processed: 1
+Successful: 1
+Failed: 0
+=== END SECTION ITERATION PROCESSING ===
+=== DEBUG INFORMATION ===
+Context Keys (Frontend Settings): ['step_id', 'output_field', 'message_content', 'section_ids']
+Context Keys Explanation: These are the settings/values passed from the frontend interface
+Step Config Keys (Database Config): ['settings', 'llm_available_tables']
+Step Config Keys Explanation: These are database configuration settings for this workflow step
+Additional Context Setting - message_content: System Prompt:
+You are a helpful assistant, expert in social media blogging and online marketing
+
+Task Prompt:
+Expert in Scottish history and culture, dedicated to accuracy and authenticity in everything you do. You adhere to academic values, but love to popularise ideas to make them easily understandable to those with no knowledge of your specialism. Use web searches to explore all aspects of the topic and make a list of exactly 50 interesting facts that this article could cover. Make these diverse, from whimsical to deeply significant, and from scientific to mythical. If fictional make this clear. Keep your answers concise whilst capturing all important detail.
+
+Input Fields:
+Input fields will be detected from the Inputs panel...
+Additional Context Setting - section_ids: ['712']
+=== END DEBUG INFORMATION ===
+=== END LOG ===

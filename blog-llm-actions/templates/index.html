@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Actions - BlogForge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/llm-actions.css') }}">
+    
+</head>
+
+<body>
+    <div class="llm-container" 
+         data-stage="{{ current_stage }}" 
+         data-substage="{{ current_substage }}" 
+         data-step="{{ current_step }}" 
+         data-post-id="{{ current_post_id }}" 
+         data-step-id="{{ current_step_id }}">
+
+        <!-- Main Content -->
+        <div class="llm-content">
+
+        <!-- System Prompt Section -->
+        <div class="llm-section system-prompt-section">
+            <!-- Database Indicator -->
+            <div style="background: var(--llm-surface); border: 1px solid var(--llm-border); border-radius: 6px; padding: 6px 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--llm-purple-light);">
+                <i class="fas fa-database" style="color: var(--llm-purple);"></i>
+                <span><strong>DB:</strong> blog | <strong>Table:</strong> llm_prompt (system)</span>
+            </div>
+            
+            <!-- Processing Mode Display -->
+            <div id="processing-mode-display" style="background: var(--llm-surface); border: 1px solid var(--llm-border); border-radius: 6px; padding: 6px 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--llm-purple-light);">
+                <i class="fas fa-info-circle" style="color: var(--llm-purple);"></i>
+                <span id="processing-mode-text">Loading processing mode...</span>
+            </div>
+            
+            <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <i class="fas fa-cog"></i>
+                    System Prompt
+                </div>
+                <a href="http://localhost:5000/settings/workflow_prompts" 
+                   target="_blank"
+                   style="color: var(--llm-purple-light); text-decoration: none; font-size: 12px; font-weight: 500; padding: 4px 8px; border-radius: 4px; transition: all 0.2s;"
+                   onmouseover="this.style.background='var(--llm-purple-light)'; this.style.color='var(--llm-bg)';"
+                   onmouseout="this.style.background='transparent'; this.style.color='var(--llm-purple-light)';">
+                    <i class="fas fa-edit"></i> Edit Prompts
+                </a>
+            </div>
+
+            <div class="system-prompt-selector">
+                <select id="system-prompt-select">
+                    <option value="">Choose a system prompt...</option>
+                </select>
+            </div>
+
+            <div class="system-prompt-content">
+                <div class="prompt-display" id="system-prompt-display">
+                    Select a system prompt to view its content...
+                </div>
+                <div class="field-info">
+                    <small><strong>Input Field:</strong> System Context</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Prompt Section -->
+        <div class="task-prompt-section">
+            <!-- Database Indicator -->
+            <div style="background: var(--llm-surface); border: 1px solid var(--llm-border); border-radius: 6px; padding: 6px 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--llm-purple-light);">
+                <i class="fas fa-database" style="color: var(--llm-purple);"></i>
+                <span><strong>DB:</strong> blog | <strong>Table:</strong> llm_prompt (task)</span>
+            </div>
+            
+            <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <i class="fas fa-tasks"></i>
+                    Task Prompt
+                </div>
+                <a href="http://localhost:5000/settings/workflow_prompts" 
+                   target="_blank"
+                   style="color: var(--llm-purple-light); text-decoration: none; font-size: 12px; font-weight: 500; padding: 4px 8px; border-radius: 4px; transition: all 0.2s;"
+                   onmouseover="this.style.background='var(--llm-purple-light)'; this.style.color='var(--llm-bg)';"
+                   onmouseout="this.style.background='transparent'; this.style.color='var(--llm-purple-light)';">
+                    <i class="fas fa-edit"></i> Edit Prompts
+                </a>
+            </div>
+
+            <div class="action-selector">
+                <select id="action-select">
+                    <option value="">Choose an action...</option>
+                </select>
+            </div>
+
+            <div class="task-content">
+                <div class="prompt-display" id="prompt-display">
+                    Select a task prompt to view its content...
+                </div>
+                <div class="field-info">
+                    <small><strong>Input Field:</strong> User Input</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inputs Section -->
+        <div class="llm-section inputs-section">
+            {% if current_stage == 'planning' or (current_stage == 'writing' and current_step == 'header_montage_description') %}
+                <!-- Planning Stage: Simple Input -->
+                <div class="planning-input-section">
+                    <!-- Database Indicator -->
+                    <div style="background: var(--llm-surface); border: 1px solid var(--llm-border); border-radius: 6px; padding: 6px 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--llm-purple-light);">
+                        <i class="fas fa-database" style="color: var(--llm-purple);"></i>
+                        <span><strong>DB:</strong> blog | <strong>Table:</strong> post_development (planning)</span>
+                    </div>
+                    
+                    <div class="section-title">
+                        <i class="fas fa-arrow-down"></i>
+                        Input
+                    </div>
+
+                    <div class="input-field-group">
+                        <label for="planning-input" class="field-label">Input Field:</label>
+                        <textarea id="planning-input" class="field-input" rows="6" 
+                                  placeholder="Select a field above to load its content..." 
+                                  data-field="" 
+                                  data-table="post_development"></textarea>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Writing Stage: Dynamic Inputs -->
+                <div class="dynamic-inputs-section">
+                    <!-- Database Indicator -->
+                    <div style="background: var(--llm-surface); border: 1px solid var(--llm-border); border-radius: 6px; padding: 6px 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--llm-purple-light);">
+                        <i class="fas fa-database" style="color: var(--llm-purple);"></i>
+                        <span><strong>DB:</strong> blog | <strong>Tables:</strong> <span id="current-table-display">post_development, post, post_section (dynamic)</span></span>
+                    </div>
+                    
+                    <div class="section-title">
+                        <i class="fas fa-arrow-down"></i>
+                        Inputs
+                    </div>
+
+                    <!-- Table Selection Section -->
+                    <div class="table-selection-section" style="margin-bottom: 15px;">
+                        <label for="table-selector" class="field-label">Database Table:</label>
+                        <select id="table-selector" class="table-selector" style="width: 100%; padding: 8px; border: 1px solid var(--llm-border); border-radius: 4px; background: var(--llm-surface); color: var(--llm-text);">
+                            <option value="">Loading tables...</option>
+                        </select>
+                        <div class="table-description" id="table-description" style="margin-top: 5px; font-size: 12px; color: var(--llm-purple-light);"></div>
+                    </div>
+
+                    <div class="input-field-group">
+                        <label for="input-field-select" class="field-label">Select Input Field:</label>
+                        <select id="input-field-select" class="field-selector" data-target="input-content" data-section="input">
+                            <option value="">Select a table first...</option>
+                        </select>
+                        
+                        <div class="field-content mt-3">
+                            <label for="input-content" class="field-label">Field Content:</label>
+                            <textarea id="input-content" class="field-input" rows="6" placeholder="Select a field to load its content..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- LLM Message Management Section -->
+        <div id="message-management" class="llm-config-actions-section message-management-section" {% if current_step == 'section_illustrations' %}style="display: none;"{% else %}style="display: block;"{% endif %}>
+            <!-- Content will be populated by message-manager.js -->
+        </div>
+
+        <!-- Output Area -->
+        <div class="llm-section outputs-section">
+            <!-- Database Indicator -->
+            <div style="background: var(--llm-surface); border: 1px solid var(--llm-border); border-radius: 6px; padding: 6px 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--llm-purple-light);">
+                <i class="fas fa-database" style="color: var(--llm-purple);"></i>
+                <span><strong>DB:</strong> blog | <strong>Table:</strong> <span id="output-table-display">post_development (fixed)</span></span>
+            </div>
+            
+            <div class="section-title">
+                <i class="fas fa-arrow-up"></i>
+                Outputs
+            </div>
+
+            <!-- Standard Output Field Selector (hidden for section_illustrations) -->
+            <div id="standard-output-section" class="output-field-group" {% if current_step == 'section_illustrations' %}style="display: none;"{% endif %}>
+                <label for="output-field-select" class="field-label">Select Output Field:</label>
+                <select id="output-field-select" class="field-selector" data-target="output-content" data-section="output">
+                    <option value="">Loading fields...</option>
+                </select>
+                
+                <div class="field-content mt-3">
+                    <label for="output-content" class="field-label">Field Content:</label>
+                    <textarea id="output-content" class="field-input" rows="6" placeholder="Select a field to view its content..."></textarea>
+                </div>
+            </div>
+
+            <!-- Image Generation Output Section (shown only for section_illustrations) -->
+            <div id="image-output-section" class="output-field-group" {% if current_step == 'section_illustrations' %}style="display: block;"{% else %}style="display: none;"{% endif %}>
+                <div style="background: var(--llm-bg); border: 1px solid var(--llm-purple-light); border-radius: 8px; padding: 20px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <i class="fas fa-image" style="color: var(--llm-purple); font-size: 18px;"></i>
+                        <h4 style="margin: 0; color: var(--llm-purple-light); font-size: 16px;">Image Generation Output</h4>
+                    </div>
+                    <p style="margin: 0; color: #e0e0e0; font-size: 14px; line-height: 1.5;">
+                        <strong>Images will be saved to:</strong><br>
+                        <code style="background: var(--llm-surface); padding: 4px 8px; border-radius: 4px; font-family: monospace; color: var(--llm-purple-light);">
+                            /static/content/posts/<span id="image-post-id">53</span>/sections/{section_id}/raw/
+                        </code>
+                    </p>
+                    <div style="margin-top: 15px; padding: 10px; background: var(--llm-surface); border-radius: 6px; border: 1px solid var(--llm-border);">
+                        <small style="color: var(--llm-purple-light);">
+                            <i class="fas fa-info-circle"></i>
+                            Generated images will be automatically saved to the appropriate section directories. 
+                            The "Run LLM" button will process all checked sections in the green panel.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Combined LLM Config & Actions Section -->
+        <div class="llm-config-actions-section">
+            <!-- Database Indicator -->
+            <div style="background: var(--llm-surface); border: 1px solid var(--llm-border); border-radius: 6px; padding: 6px 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--llm-purple-light);">
+                <i class="fas fa-database" style="color: var(--llm-purple);"></i>
+                <span><strong>DB:</strong> blog | <strong>Table:</strong> llm_config (providers/models)</span>
+            </div>
+            
+            <div class="section-title">
+                <i class="fas fa-robot"></i>
+                LLM Configuration & Actions
+            </div>
+            
+            <!-- LLM Action Buttons -->
+            <div class="llm-action-buttons">
+                <button class="btn-start-ollama" onclick="startOllama()">
+                    <i class="fas fa-rocket"></i>
+                    Start Ollama
+                </button>
+                <button class="btn-run-llm" onclick="runLLM()">
+                    <i class="fas fa-play"></i>
+                    Run LLM
+                </button>
+            </div>
+            
+            <!-- Configuration Grid -->
+            <div class="config-grid" id="config-grid">
+                <div class="config-item">
+                    <h4>Provider</h4>
+                    <select id="config-provider" class="config-select">
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <h4>Model</h4>
+                    <select id="config-model" class="config-select">
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <h4>API Base</h4>
+                    <input id="config-api-base" type="text" class="config-input" placeholder="Loading...">
+                </div>
+                <div class="config-item">
+                    <h4>Status</h4>
+                    <p id="config-status">Loading...</p>
+                </div>
+                <div class="config-item">
+                    <h4>Temperature</h4>
+                    <input id="config-temperature" type="number" step="0.1" min="0" max="2" class="config-input" value="0.7">
+                </div>
+                <div class="config-item">
+                    <h4>Max Tokens</h4>
+                    <input id="config-max-tokens" type="number" min="1" max="100000" class="config-input" value="1000">
+                </div>
+                <div class="config-item">
+                    <h4>Timeout</h4>
+                    <input id="config-timeout" type="number" min="1" max="3600" class="config-input" value="60">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="{{ url_for('static', filename='js/logger.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/llm-actions.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/config-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/prompt-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui-config.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/field-selector.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/message-manager-core.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/message-manager-ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/message-manager-elements.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/message-manager-preview.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/message-manager-storage.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/accordion-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/llm-config-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/debug-modules.js') }}"></script>
+    
+    <script>
+        // Global error handler
+        window.addEventListener('error', function(event) {
+            console.error('Global JavaScript error:', event.error);
+            console.error('Error details:', {
+                message: event.message,
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno
+            });
+        });
+        
+        // Unhandled promise rejection handler
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+        });
+    </script>
+</body>
+
+</html>
