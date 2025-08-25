@@ -130,58 +130,196 @@ def publishing():
 @app.route('/syndication')
 def syndication():
     """Social Media Syndication homepage."""
-    return render_template('syndication.html')
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get total platforms count
+            cur.execute("SELECT COUNT(*) as total_platforms FROM platforms")
+            total_platforms = cur.fetchone()['total_platforms']
+            
+            # Get active channels count (developed and active)
+            cur.execute("""
+                SELECT COUNT(*) as active_channels
+                FROM content_processes 
+                WHERE development_status = 'developed' AND is_active = true
+            """)
+            active_channels = cur.fetchone()['active_channels']
+            
+            # Get total configurations count
+            cur.execute("SELECT COUNT(*) as total_configs FROM process_configurations")
+            total_configs = cur.fetchone()['total_configs']
+            
+            return render_template('syndication.html',
+                                total_platforms=total_platforms,
+                                active_channels=active_channels,
+                                total_configs=total_configs)
+                                
+    except Exception as e:
+        logger.error(f"Error in syndication: {e}")
+        return render_template('syndication.html',
+                            total_platforms=0,
+                            active_channels=0,
+                            total_configs=0)
+
+@app.route('/syndication/dashboard')
+def syndication_dashboard():
+    """New social media syndication dashboard with platform management."""
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get Facebook platform data
+            cur.execute("""
+                SELECT 
+                    p.id, p.name, p.display_name, p.description, p.status, p.development_status,
+                    p.total_posts_count, p.success_rate_percentage, p.average_response_time_ms,
+                    p.last_activity_at, p.last_post_at, p.last_api_call_at,
+                    p.estimated_completion_date, p.actual_completion_date,
+                    p.development_notes, p.created_at, p.updated_at
+                FROM platforms p 
+                WHERE p.name = 'facebook'
+            """)
+            platform = cur.fetchone()
+            
+            if not platform:
+                return "Facebook platform not found", 404
+            
+            # Get platform capabilities count
+            cur.execute("""
+                SELECT COUNT(*) as capabilities_count
+                FROM platform_capabilities 
+                WHERE platform_id = %s
+            """, (platform['id'],))
+            capabilities_count = cur.fetchone()['capabilities_count']
+            
+            # Get content processes for Facebook with configuration counts
+            cur.execute("""
+                SELECT 
+                    cp.id, cp.process_name, cp.display_name, cp.description, 
+                    cp.development_status, cp.priority, cp.is_active,
+                    ct.name as channel_type_name, ct.display_name as channel_display_name,
+                    (SELECT COUNT(*) FROM process_configurations WHERE process_id = cp.id) as configurations_count
+                FROM content_processes cp
+                JOIN channel_types ct ON cp.channel_type_id = ct.id
+                WHERE cp.platform_id = %s
+                ORDER BY cp.priority
+            """, (platform['id'],))
+            processes = cur.fetchall()
+            
+            # Get process configurations count
+            cur.execute("""
+                SELECT COUNT(*) as configs_count
+                FROM process_configurations 
+                WHERE process_id IN (SELECT id FROM content_processes WHERE platform_id = %s)
+            """, (platform['id'],))
+            configs_count = cur.fetchone()['configs_count']
+            
+            # Get content priority score
+            cur.execute("""
+                SELECT priority_score, priority_factors, last_calculated_at
+                FROM content_priorities 
+                WHERE content_type = 'platform' AND content_id = %s
+            """, (platform['id'],))
+            priority_data = cur.fetchone()
+            
+            # Calculate active channels count (only fully developed ones)
+            active_channels = sum(1 for p in processes if p['development_status'] == 'developed' and p['is_active'])
+            
+            # Get platform capabilities for display
+            cur.execute("""
+                SELECT capability_name, capability_value, description, unit
+                FROM platform_capabilities 
+                WHERE platform_id = %s AND is_active = true
+                ORDER BY display_order
+            """, (platform['id'],))
+            capabilities = cur.fetchall()
+            
+            return render_template('syndication_dashboard.html', 
+                                platform=platform,
+                                processes=processes,
+                                capabilities=capabilities,
+                                capabilities_count=capabilities_count,
+                                configs_count=configs_count,
+                                active_channels=active_channels,
+                                priority_data=priority_data)
+                                
+    except Exception as e:
+        logger.error(f"Error in syndication_dashboard: {e}")
+        return f"Error loading dashboard: {str(e)}", 500
+
+@app.route('/syndication/facebook/feed-post')
+def facebook_feed_post_config():
+    """Facebook Feed Post channel configuration."""
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get Facebook platform data
+            cur.execute("""
+                SELECT 
+                    p.id, p.name, p.display_name, p.description, p.status, p.development_status,
+                    p.total_posts_count, p.success_rate_percentage, p.average_response_time_ms,
+                    p.last_activity_at, p.last_post_at, p.last_api_call_at
+                FROM platforms p 
+                WHERE p.name = 'facebook'
+            """)
+            platform = cur.fetchone()
+            
+            if not platform:
+                return "Facebook platform not found", 404
+            
+            # Get Facebook Feed Post process data
+            cur.execute("""
+                SELECT 
+                    cp.id, cp.process_name, cp.display_name, cp.description, 
+                    cp.development_status, cp.priority, cp.is_active,
+                    ct.name as channel_type_name, ct.display_name as channel_display_name
+                FROM content_processes cp
+                JOIN channel_types ct ON cp.channel_type_id = ct.id
+                WHERE cp.platform_id = %s AND cp.process_name = 'facebook_feed_post'
+            """, (platform['id'],))
+            process = cur.fetchone()
+            
+            if not process:
+                return "Facebook Feed Post process not found", 404
+            
+            # Get process configurations count
+            cur.execute("""
+                SELECT COUNT(*) as configs_count
+                FROM process_configurations 
+                WHERE process_id = %s
+            """, (process['id'],))
+            configs_count = cur.fetchone()['configs_count']
+            
+            # Get process execution data (if any exists)
+            cur.execute("""
+                SELECT 
+                    COALESCE(total_executions, 0) as total_executions,
+                    COALESCE(success_rate_percentage, 0) as avg_success_rate
+                FROM content_processes 
+                WHERE id = %s
+            """, (process['id'],))
+            execution_data = cur.fetchone()
+            
+            return render_template('facebook_feed_post_config.html',
+                                platform=platform,
+                                process=process,
+                                configs_count=configs_count,
+                                execution_data=execution_data)
+                                
+    except Exception as e:
+        logger.error(f"Error in facebook_feed_post_config: {e}")
+        return f"Error loading configuration: {str(e)}", 500
 
 @app.route('/syndication/select-posts')
 def syndication_select_posts():
     """Select Posts for syndication."""
     return render_template('syndication_select_posts.html')
 
-@app.route('/syndication/platform-settings')
-def syndication_platform_settings():
-    """Platform Settings for syndication."""
-    return render_template('syndication_platform_settings.html')
+# Platform settings route removed - will be reimplemented properly
 
-@app.route('/syndication/platform-settings/<platform>')
-def syndication_platform_detail(platform):
-    """Individual platform settings page."""
-    try:
-        from models.social_media import SocialMediaPlatform
-        
-        # Database configuration
-        db_config = {
-            'host': 'localhost',
-            'database': 'blog',
-            'user': 'nickfiddes',
-            'password': 'password',
-            'port': '5432'
-        }
-        
-        # Get platform data with specifications
-        platform_model = SocialMediaPlatform(db_config)
-        platform_data = platform_model.get_platform_with_specs(platform)
-        
-        if not platform_data:
-            # Fallback to basic data if platform not found
-            platform_data = {
-                'platform_name': platform,
-                'display_name': platform.title(),
-                'status': 'undeveloped',
-                'specifications': {}
-            }
-        
-        return render_template(f'syndication_platform_{platform}.html', platform=platform_data)
-        
-    except Exception as e:
-        # Fallback to basic data if there's any error
-        print(f"Error loading platform data: {e}")
-        platform_data = {
-            'platform_name': platform,
-            'display_name': platform.title(),
-            'status': 'undeveloped',
-            'specifications': {}
-        }
-        return render_template(f'syndication_platform_{platform}.html', platform=platform_data)
+# Individual platform settings route removed - will be reimplemented properly
 
 @app.route('/syndication/create-piece')
 def syndication_create_piece():
@@ -193,77 +331,7 @@ def syndication_create_piece_includes():
     """Create Piece page for social media syndication (modular includes version)."""
     return render_template('syndication_create_piece_includes.html')
 
-# API endpoints for CRUD operations on social media specifications
-@app.route('/api/social-media/specifications/update', methods=['POST'])
-def update_specification():
-    """Update a social media platform specification."""
-    try:
-        from models.social_media import SocialMediaSpecification
-        
-        data = request.get_json()
-        spec_id = data.get('spec_id')
-        category = data.get('category')
-        key = data.get('key')
-        value = data.get('value')
-        
-        if not all([spec_id, category, key, value]):
-            return jsonify({'error': 'Missing required fields'}), 400
-        
-        # Database configuration
-        db_config = {
-            'host': 'localhost',
-            'database': 'blog',
-            'user': 'nickfiddes',
-            'password': 'password',
-            'port': '5432'
-        }
-        
-        spec_model = SocialMediaSpecification(db_config)
-        success = spec_model.update_specification_by_id(spec_id, value)
-        
-        if success:
-            return jsonify({'message': 'Specification updated successfully'})
-        else:
-            return jsonify({'error': 'Failed to update specification'}), 500
-            
-    except Exception as e:
-        print(f"Error updating specification: {e}")
-        return jsonify({'error': str(e)}), 500
-
-
-
-@app.route('/api/social-media/specifications/delete', methods=['DELETE'])
-def delete_specification():
-    """Delete a social media platform specification."""
-    try:
-        from models.social_media import SocialMediaSpecification
-        
-        data = request.get_json()
-        spec_id = data.get('spec_id')
-        
-        if not spec_id:
-            return jsonify({'error': 'Missing specification ID'}), 400
-        
-        # Database configuration
-        db_config = {
-            'host': 'localhost',
-            'database': 'blog',
-            'user': 'nickfiddes',
-            'password': 'password',
-            'port': '5432'
-        }
-        
-        spec_model = SocialMediaSpecification(db_config)
-        success = spec_model.delete_specification(spec_id)
-        
-        if success:
-            return jsonify({'message': 'Specification deleted successfully'})
-        else:
-            return jsonify({'error': 'Failed to delete specification'}), 500
-            
-    except Exception as e:
-        print(f"Error deleting specification: {e}")
-        return jsonify({'error': str(e)}), 500
+# Old social media specifications API endpoints removed - will be reimplemented properly
 
 @app.route('/api/syndication/published-posts')
 def get_published_posts():
@@ -1891,16 +1959,7 @@ def calculate_content_priorities():
 # =====================================================
 # SOCIAL MEDIA SYNDICATION ROUTES
 # =====================================================
-
-@app.route('/syndication/platform-settings/facebook')
-def facebook_platform_settings():
-    """Facebook platform settings page - old version"""
-    return render_template('syndication_platform_facebook.html')
-
-@app.route('/syndication/platform-settings/facebook/new')
-def facebook_platform_settings_new():
-    """Facebook platform settings page - new redesigned version"""
-    return render_template('syndication_platform_facebook_new.html')
+# Facebook platform settings routes removed - will be reimplemented properly
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))

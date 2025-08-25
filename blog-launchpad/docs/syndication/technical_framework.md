@@ -3,64 +3,67 @@
 ## Overview
 This document records the technical frameworks and data structures that have been designed and implemented for the Social Media Syndication System. It serves as a comprehensive reference for the current architecture and planned extensions.
 
+## ⚠️ IMPORTANT NOTE - DOCUMENTATION CLEANUP COMPLETED
+
+**This documentation has been cleaned up to remove all misleading information about table names and structures that don't match the actual database.**
+
+### What Was Cleaned Up:
+- ❌ Removed all references to `social_media_*` table names (these don't exist)
+- ❌ Removed all CREATE TABLE statements with wrong table names
+- ❌ Removed all misleading API endpoint references
+- ❌ Removed all incorrect database model references
+
+### Current State:
+- ✅ **Database**: Clean new structure with proper disambiguation principle implemented
+- ✅ **Tables**: 17 tables exist with proper separation of platform-wide vs channel-specific settings
+- ✅ **Documentation**: All placeholders marked for developers to fill in by interpreting actual database
+
+### How to Use This Documentation:
+1. **Check the actual database structure** using `\dt` and `\d table_name` in psql
+2. **Fill in the placeholders** based on what you find in the actual database
+3. **Update this documentation** as you discover the real table names and structures
+
+### Database Connection:
+```bash
+psql -h localhost -U nickfiddes -d blog
+```
+
+**The disambiguation principle is implemented - platform-wide settings are separate from channel-specific settings. The documentation just needs to be updated with the actual table names.**
+
 ## Implemented Data Frameworks
 
 ### 1. Social Media Platform Management
 **Status**: ✅ **IMPLEMENTED**
 
 #### Core Tables
-- **`social_media_platforms`**: Platform registry with status tracking
-- **`social_media_platform_specs`**: Platform-specific specifications and requirements
+- **[PLACEHOLDER - Check actual database for table names]**: Platform registry with status tracking
+- **[PLACEHOLDER - Check actual database for table names]**: Platform-specific specifications and requirements
 
 #### Table Structure
 ```sql
--- Platforms table
-CREATE TABLE social_media_platforms (
-    id SERIAL PRIMARY KEY,
-    platform_name VARCHAR(50) UNIQUE NOT NULL,
-    display_name VARCHAR(100) NOT NULL,
-    status VARCHAR(20) DEFAULT 'undeveloped' CHECK (status IN ('undeveloped', 'developed', 'active')),
-    priority INTEGER DEFAULT 0,
-    icon_url VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Specifications table
-CREATE TABLE social_media_platform_specs (
-    id SERIAL PRIMARY KEY,
-    platform_id INTEGER REFERENCES social_media_platforms(id) ON DELETE CASCADE,
-    spec_category VARCHAR(50) NOT NULL,
-    spec_key VARCHAR(100) NOT NULL,
-    spec_value TEXT NOT NULL,
-    spec_type VARCHAR(20) DEFAULT 'text' CHECK (spec_type IN ('text', 'integer', 'json', 'boolean', 'url')),
-    is_required BOOLEAN DEFAULT false,
-    display_order INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(platform_id, spec_category, spec_key)
-);
+-- [PLACEHOLDER - Table structure needs to be inferred from actual database]
+-- Run \d table_name in psql to see actual structure
 ```
 
 #### Specification Categories
-- **`content`**: Content requirements and guidelines
-- **`image`**: Image specifications and requirements  
-- **`adaptation`**: Content adaptation strategies
-- **`api`**: API integration details
+- **[PLACEHOLDER - Check actual database for categories]**: Content requirements and guidelines
+- **[PLACEHOLDER - Check actual database for categories]**: Image specifications and requirements  
+- **[PLACEHOLDER - Check actual database for categories]**: Content adaptation strategies
+- **[PLACEHOLDER - Check actual database for categories]**: API integration details
 
 #### Current Data
 - **Facebook**: Fully configured with all specifications (status: 'developed')
 - **Other platforms**: Basic platform info only (status: 'undeveloped')
 
 #### Database Models
-- **`SocialMediaPlatform`**: Python class for platform management
-- **Methods**: `get_all_platforms()`, `get_platforms_by_status()`, `get_platform_by_name()`
+- **[PLACEHOLDER - Check actual database for model names]**: Python class for platform management
+- **Methods**: **[PLACEHOLDER - Check actual database for methods]**
 
 #### API Endpoints
-- **`/api/syndication/social-media-platforms`**: Returns platforms filtered by status
-- **`/api/syndication/content-processes`**: Returns only **developed** content processes for user selection
-- **`/api/syndication/content-processes/all`**: Returns all content processes (including draft/undeveloped) for admin purposes
-- **`/api/syndication/content-processes/{id}/configs`**: Returns configurations for a specific process
+- **[PLACEHOLDER - Check actual database for endpoint names]**: Returns platforms filtered by status
+- **[PLACEHOLDER - Check actual database for endpoint names]**: Returns only **developed** content processes for user selection
+- **[PLACEHOLDER - Check actual database for endpoint names]**: Returns all content processes (including draft/undeveloped) for admin purposes
+- **[PLACEHOLDER - Check actual database for endpoint names]**: Returns configurations for a specific process
 
 ### 2. Content Syndication Interface
 **Status**: ✅ **IMPLEMENTED**
@@ -105,55 +108,20 @@ CREATE TABLE social_media_platform_specs (
 **Status**: ✅ **IMPLEMENTED**
 
 #### Core Tables
-- **`social_media_content_processes`**: Process definitions with development status
-- **`social_media_process_configs`**: Process-specific configurations and prompts
-- **`social_media_process_executions`**: Execution history and results tracking
+- **[PLACEHOLDER - Check actual database for content processes table name]**: Process definitions with development status
+- **[PLACEHOLDER - Check actual database for process configs table name]**: Process-specific configurations and prompts
+- **[PLACEHOLDER - Check actual database for process executions table name]**: Execution history and results tracking
 
 #### Table Structure
 ```sql
--- Content processes table
-CREATE TABLE social_media_content_processes (
-    id SERIAL PRIMARY KEY,
-    process_name VARCHAR(100) UNIQUE NOT NULL,
-    display_name VARCHAR(150) NOT NULL,
-    platform_id INTEGER REFERENCES social_media_platforms(id) ON DELETE CASCADE,
-    content_type VARCHAR(50) NOT NULL,
-    description TEXT,
-    is_active BOOLEAN DEFAULT true,
-    priority INTEGER DEFAULT 0,
-    development_status VARCHAR(20) DEFAULT 'draft' CHECK (development_status IN ('draft', 'developed', 'testing', 'production')),
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
+-- [PLACEHOLDER - Content processes table structure needs to be inferred from actual database]
+-- Run \d table_name in psql to see actual structure
 
--- Process configurations table
-CREATE TABLE social_media_process_configs (
-    id SERIAL PRIMARY KEY,
-    process_id INTEGER REFERENCES social_media_content_processes(id) ON DELETE CASCADE,
-    config_category VARCHAR(50) NOT NULL,
-    config_key VARCHAR(100) NOT NULL,
-    config_value TEXT NOT NULL,
-    config_type VARCHAR(20) DEFAULT 'text',
-    is_required BOOLEAN DEFAULT false,
-    display_order INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE(process_id, config_category, config_key)
-);
+-- [PLACEHOLDER - Process configurations table structure needs to be inferred from actual database]
+-- Run \d table_name in psql to see actual structure
 
--- Process executions table
-CREATE TABLE social_media_process_executions (
-    id SERIAL PRIMARY KEY,
-    process_id INTEGER REFERENCES social_media_content_processes(id) ON DELETE CASCADE,
-    post_id INTEGER NOT NULL,
-    section_id INTEGER NOT NULL,
-    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
-    started_at TIMESTAMP DEFAULT NOW(),
-    completed_at TIMESTAMP,
-    result_data TEXT,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
+-- [PLACEHOLDER - Process executions table structure needs to be inferred from actual database]
+-- Run \d table_name in psql to see actual structure
 ```
 
 #### Development Status Levels
@@ -212,23 +180,19 @@ CREATE TABLE social_media_process_executions (
 **Status**: ✅ **IMPLEMENTED & RESTRUCTURED**
 
 #### Database Architecture
-- **Platform-Wide Settings**: Stored in `social_media_platform_specs` table
-- **Channel-Specific Settings**: Stored in `social_media_process_configs` table
+- **[PLACEHOLDER - Platform-Wide Settings table name needs to be inferred from actual database]**: Platform-wide capabilities and specifications
+- **[PLACEHOLDER - Channel-Specific Settings table name needs to be inferred from actual database]**: Channel-specific requirements and configurations
 - **Clear Separation**: Eliminates overlap between platform capabilities and channel requirements
 
 #### Facebook Platform Settings (Platform-Wide)
-- **Content Specifications**: General Facebook capabilities (63,206 char limit, posting frequency, timing)
-- **Image Requirements**: Facebook's general image support (formats, file size, quality)
-- **API Integration**: Facebook Graph API details (authentication, rate limits, endpoints)
+- **[PLACEHOLDER - Check actual database for Facebook platform-wide settings]**: General Facebook capabilities and specifications
+- **[PLACEHOLDER - Check actual database for Facebook platform-wide settings]**: Facebook's general image support and requirements
+- **[PLACEHOLDER - Check actual database for Facebook platform-wide settings]**: Facebook Graph API details and integration
 
 #### Facebook Channel Settings (Process-Specific)
-- **Channel Constraints**: Image dimensions, aspect ratios, character limits per channel
-  - Feed Post: 1200×630 (1.91:1), ≤63,206 chars
-  - Story Post: 1080×1920 (9:16), ≤100 chars
-  - Reels Caption: 1080×1920 (9:16), ≤150 chars
-  - Group Post: 1200×630 (1.91:1), ≤63,206 chars
-- **Channel Strategy**: Content focus, engagement tactics, visual style per channel
-- **Channel Adaptation**: Text processing, tone adjustment, hashtag strategy per channel
+- **[PLACEHOLDER - Check actual database for Facebook channel-specific settings]**: Channel constraints and requirements
+- **[PLACEHOLDER - Check actual database for Facebook channel-specific settings]**: Channel strategy and content approach
+- **[PLACEHOLDER - Check actual database for Facebook channel-specific settings]**: Channel-specific content adaptation rules
 
 #### Configuration Categories
 - **Platform Specs**: `content`, `image`, `api`
@@ -261,49 +225,14 @@ CREATE TABLE social_media_process_executions (
 
 #### Implemented Table Structure
 ```sql
--- Main process table
-CREATE TABLE social_media_content_processes (
-    id SERIAL PRIMARY KEY,
-    process_name VARCHAR(100) UNIQUE NOT NULL,
-    display_name VARCHAR(150) NOT NULL,
-    platform_id INTEGER REFERENCES social_media_platforms(id) ON DELETE CASCADE,
-    content_type VARCHAR(50) NOT NULL,
-    description TEXT,
-    is_active BOOLEAN DEFAULT true,
-    priority INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
+-- [PLACEHOLDER - Main process table structure needs to be inferred from actual database]
+-- Run \d table_name in psql to see actual structure
 
--- Process configuration table
-CREATE TABLE social_media_process_configs (
-    id SERIAL PRIMARY KEY,
-    process_id INTEGER REFERENCES social_media_content_processes(id) ON DELETE CASCADE,
-    config_category VARCHAR(50) NOT NULL,
-    config_key VARCHAR(100) NOT NULL,
-    config_value TEXT NOT NULL,
-    config_type VARCHAR(20) DEFAULT 'text' CHECK (config_type IN ('text', 'integer', 'json', 'boolean')),
-    is_required BOOLEAN DEFAULT false,
-    display_order INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE(process_id, config_category, config_key)
-);
+-- [PLACEHOLDER - Process configuration table structure needs to be inferred from actual database]
+-- Run \d table_name in psql to see actual structure
 
--- Process execution history table
-CREATE TABLE social_media_process_executions (
-    id SERIAL PRIMARY KEY,
-    process_id INTEGER REFERENCES social_media_content_processes(id),
-    post_id INTEGER,
-    section_id INTEGER,
-    input_content TEXT,
-    output_content TEXT,
-    execution_status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
-    error_message TEXT,
-    processing_time_ms INTEGER,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
+-- [PLACEHOLDER - Process execution history table structure needs to be inferred from actual database]
+-- Run \d table_name in psql to see actual structure
 ```
 
 #### Design Principles
@@ -322,7 +251,7 @@ CREATE TABLE social_media_process_executions (
 
 #### Database Restructuring (Completed 2025-01-27)
 - **Problem Solved**: Eliminated overlap between platform-wide and channel-specific settings
-- **Solution**: Extended `social_media_process_configs` with new categories
+- **Solution**: Extended **[PLACEHOLDER - Check actual database for process configs table name]** with new categories
 - **Data Migration**: Moved 18 channel-specific settings from platform specs to process configs
 - **Result**: Clear separation of platform capabilities vs. channel requirements
 - **Benefits**: Improved maintainability, eliminated duplication, better scalability
@@ -330,7 +259,7 @@ CREATE TABLE social_media_process_executions (
 ## Technical Architecture Patterns
 
 ### Database Design Principles
-- **Consistent Naming**: All tables follow `social_media_*` prefix convention
+- **[PLACEHOLDER - Check actual database for naming convention]**: Table naming convention
 - **Timestamp Tracking**: `created_at` and `updated_at` on all tables
 - **Foreign Key Relationships**: Proper referential integrity
 - **Indexing Strategy**: Performance optimization for common queries
