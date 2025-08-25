@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Feed Post Configuration - Blog Launchpad</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad.css') }}">
+    <style>
+        /* Channel config specific styles */
+        .channel-header {
+            background: linear-gradient(135deg, #1877f2 0%, #0d6efd 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+        }
+        
+        .config-section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .config-card {
+            background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+            border: 1px solid #4a5568;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        
+        .config-card.channel-specific {
+            border-left: 6px solid #06b6d4;
+        }
+        
+        .config-card.platform-wide {
+            border-left: 6px solid #8b5cf6;
+        }
+        
+        .card-header {
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid #4a5568;
+            padding: 1rem 1.5rem;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        .config-item:last-child {
+            border-bottom: none;
+        }
+        
+        .config-name {
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        
+        .config-value {
+            color: #a0aec0;
+            font-family: monospace;
+        }
+        
+        .config-description {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        /* Accordion Styles for Channel Requirements */
+        .accordion-item.config-card {
+            background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+            border: 1px solid #4a5568;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .accordion-button {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            border: none;
+            color: #e0e0e0;
+            padding: 1.25rem;
+            font-weight: 600;
+            box-shadow: none;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            color: white;
+            box-shadow: none;
+        }
+        
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(6, 182, 212, 0.25);
+            border-color: #06b6d4;
+        }
+        
+        .accordion-button::after {
+            display: none;
+        }
+        
+        .requirement-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .requirement-indicator .badge {
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .requirement-indicator .fa-chevron-down {
+            transition: transform 0.3s ease;
+        }
+        
+        .accordion-collapse {
+            background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+        }
+        
+        .accordion-body {
+            padding: 1.5rem;
+            border-top: 1px solid #4a5568;
+        }
+        
+        .requirements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .requirement-category {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .category-title {
+            color: #e0e0e0;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        .requirement-category .config-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        .requirement-category .config-item:last-child {
+            border-bottom: none;
+        }
+        
+        .breadcrumb-nav {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .breadcrumb-item {
+            color: #a0aec0;
+        }
+        
+        .breadcrumb-item.active {
+            color: #e0e0e0;
+        }
+        
+        .breadcrumb-item a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #a5b4fc;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-limited {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .status-draft {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .priority-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .priority-high {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .priority-medium {
+            background: #ea580c;
+            color: white;
+        }
+        
+        .priority-low {
+            background: #16a34a;
+            color: white;
+        }
+    </style>
+</head>
+<body style="background-color: #0f1419; color: #e0e0e0;">
+    <div class="container-fluid">
+        <!-- Breadcrumb Navigation -->
+        <div class="breadcrumb-nav">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/syndication"><i class="fas fa-home me-1"></i>Syndication</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="/syndication/dashboard"><i class="fab fa-facebook me-1"></i>Facebook</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="fas fa-newspaper me-1"></i>Feed Post Configuration
+                    </li>
+                </ol>
+            </nav>
+        </div>
+        
+        <!-- Channel Header -->
+        <div class="channel-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-3">
+                        <i class="fas fa-newspaper me-3"></i>Facebook Feed Post Configuration
+                    </h1>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Status:</strong> <span class="status-badge status-active">Active</span></p>
+                            <p class="mb-2"><strong>Priority Score:</strong> <span class="priority-indicator priority-high">0.92</span></p>
+                            <p class="mb-0"><strong>Development:</strong> <span class="status-badge status-active">Complete</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Configurations:</strong> <span class="badge bg-info">{{ configs_count }}</span></p>
+                            <p class="mb-2"><strong>Success Rate:</strong> <span class="badge bg-success">{{ "%.1f%%"|format(platform.success_rate_percentage) if platform.success_rate_percentage else "N/A" }}</span></p>
+                            <p class="mb-0"><strong>Last Updated:</strong> {{ platform.updated_at.strftime('%Y-%m-%d %H:%M') if platform.updated_at else "Never" }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="btn-group-vertical">
+                        <button class="btn btn-outline-light mb-2">
+                            <i class="fas fa-edit me-2"></i>Edit Configuration
+                        </button>
+                        <button class="btn btn-outline-light mb-2">
+                            <i class="fas fa-copy me-2"></i>Duplicate
+                        </button>
+                        <button class="btn btn-outline-light">
+                            <i class="fas fa-trash me-2"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Disambiguation Legend -->
+        <div class="alert alert-info" style="background: rgba(59, 130, 246, 0.1); border-color: #3b82f6;">
+            <h6 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>Disambiguation Principle in Action
+            </h6>
+            <p class="mb-2">This view demonstrates the clear separation between platform-wide capabilities and channel-specific requirements:</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                        <div style="width: 16px; height: 16px; background-color: #8b5cf6; border-radius: 4px; margin-right: 8px;"></div>
+                        <span><strong>Platform-Wide:</strong> General Facebook capabilities that apply to all channels</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                        <div style="width: 16px; height: 16px; background-color: #06b6d4; border-radius: 4px; margin-right: 8px;"></div>
+                        <span><strong>Channel-Specific:</strong> Requirements and settings specific to Feed Posts only</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Channel-Specific Requirements -->
+        <div class="config-section">
+            <h3 class="section-title">
+                <i class="fas fa-cog text-info"></i>
+                Channel-Specific Requirements
+            </h3>
+            
+            <div class="accordion" id="channelRequirementsAccordion">
+                <div class="accordion-item config-card channel-specific">
+                    <h2 class="accordion-header" id="headingChannelRequirements">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#collapseChannelRequirements" aria-expanded="false" 
+                                aria-controls="collapseChannelRequirements">
+                            <div class="d-flex align-items-center w-100">
+                                <i class="fas fa-cog me-3 text-info"></i>
+                                <span class="flex-grow-1">Facebook Feed Post Requirements</span>
+                                <div class="requirement-indicator">
+                                    <span class="badge bg-info me-2">3 Categories</span>
+                                    <i class="fas fa-chevron-down text-muted"></i>
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="collapseChannelRequirements" class="accordion-collapse collapse" 
+                         aria-labelledby="headingChannelRequirements" 
+                         data-bs-parent="#channelRequirementsAccordion">
+                        <div class="accordion-body">
+                            <div class="requirements-grid">
+                                
+                                <!-- Content Dimensions & Constraints -->
+                                <div class="requirement-category">
+                                    <h6 class="category-title">
+                                        <i class="fas fa-ruler-combined me-2 text-info"></i>Content Dimensions & Constraints
+                                    </h6>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">Image Dimensions</div>
+                                            <div class="config-description">Optimal size for Facebook feed posts</div>
+                                        </div>
+                                        <div class="config-value">1200 × 630 pixels</div>
+                                    </div>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">Aspect Ratio</div>
+                                            <div class="config-description">Recommended image proportions</div>
+                                        </div>
+                                        <div class="config-value">1.91:1 (landscape)</div>
+                                    </div>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">Text Character Limit</div>
+                                            <div class="config-description">Maximum characters for post text</div>
+                                        </div>
+                                        <div class="config-value">63,206 characters</div>
+                                    </div>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">Hashtag Limit</div>
+                                            <div class="config-description">Recommended number of hashtags</div>
+                                        </div>
+                                        <div class="config-value">3-5 hashtags</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Content Strategy & Style -->
+                                <div class="requirement-category">
+                                    <h6 class="category-title">
+                                        <i class="fas fa-palette me-2 text-info"></i>Content Strategy & Style
+                                    </h6>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">Content Tone</div>
+                                            <div class="config-description">Recommended voice for feed posts</div>
+                                        </div>
+                                        <div class="config-value">Friendly & Engaging</div>
+                                    </div>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">Visual Style</div>
+                                            <div class="config-description">Preferred aesthetic approach</div>
+                                        </div>
+                                        <div class="config-value">Modern & Clean</div>
+                                    </div>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">CTA Strategy</div>
+                                            <div class="config-description">Call-to-action placement</div>
+                                        </div>
+                                        <div class="config-value">End of post</div>
+                                    </div>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">Engagement Focus</div>
+                                            <div class="config-description">Primary engagement goal</div>
+                                        </div>
+                                        <div class="config-value">Comments & Shares</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- AI Processing Rules -->
+                                <div class="requirement-category">
+                                    <h6 class="category-title">
+                                        <i class="fas fa-robot me-2 text-info"></i>AI Processing Rules
+                                    </h6>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">LLM Model</div>
+                                            <div class="config-description">AI model for content generation</div>
+                                        </div>
+                                        <div class="config-value">GPT-4</div>
+                                    </div>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">Content Context</div>
+                                            <div class="config-description">Source material for adaptation</div>
+                                        </div>
+                                        <div class="config-value">Blog Post Sections</div>
+                                    </div>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">Output Length</div>
+                                            <div class="config-description">Target content length</div>
+                                        </div>
+                                        <div class="config-value">Medium (2-3 paragraphs)</div>
+                                    </div>
+                                    <div class="config-item">
+                                        <div>
+                                            <div class="config-name">Hashtag Generation</div>
+                                            <div class="config-description">Automatic hashtag creation</div>
+                                        </div>
+                                        <div class="config-value">Enabled (trending focus)</div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Platform-Wide Capabilities (Reference) -->
+        <div class="config-section">
+            <h3 class="section-title">
+                <i class="fas fa-globe text-purple"></i>
+                Platform-Wide Capabilities (Reference)
+            </h3>
+            
+            <div class="config-card platform-wide">
+                <div class="card-header">
+                    <h5 class="text-white mb-0">
+                        <i class="fas fa-info-circle me-2"></i>These apply to ALL Facebook channels
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="config-item">
+                        <div>
+                            <div class="config-name">API Endpoint</div>
+                            <div class="config-description">Facebook Graph API endpoint</div>
+                        </div>
+                        <div class="config-value">graph.facebook.com/v18.0</div>
+                    </div>
+                    <div class="config-item">
+                        <div>
+                            <div class="config-name">Authentication</div>
+                            <div class="config-description">OAuth 2.0 flow</div>
+                        </div>
+                        <div class="config-value">OAuth 2.0</div>
+                    </div>
+                    <div class="config-item">
+                        <div>
+                            <div class="config-name">Rate Limits</div>
+                            <div class="config-description">API call restrictions</div>
+                        </div>
+                        <div class="config-value">200 calls/hour</div>
+                    </div>
+                    <div class="config-item">
+                        <div>
+                            <div class="config-name">File Formats</div>
+                            <div class="config-description">Supported media types</div>
+                        </div>
+                        <div class="config-value">JPG, PNG, WebP, MP4</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Metrics -->
+        <div class="config-section">
+            <h3 class="section-title">
+                <i class="fas fa-chart-line text-success"></i>
+                Performance Metrics
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card" style="background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%); border: 1px solid #4a5568;">
+                        <div class="card-body text-center">
+                            <div style="font-size: 2rem; font-weight: bold; color: #10b981;">{{ "%.1f%%"|format(platform.success_rate_percentage) if platform.success_rate_percentage else "N/A" }}</div>
+                            <div style="color: #a0aec0; font-size: 0.9rem;">Success Rate</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card" style="background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%); border: 1px solid #4a5568;">
+                        <div class="card-body text-center">
+                            <div style="font-size: 2rem; font-weight: bold; color: #3b82f6;">{{ "%.1fs"|format(platform.average_response_time_ms/1000) if platform.average_response_time_ms else "N/A" }}</div>
+                            <div style="color: #a0aec0; font-size: 0.9rem;">Avg Processing</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card" style="background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%); border: 1px solid #4a5568;">
+                        <div class="card-body text-center">
+                            <div style="font-size: 2rem; font-weight: bold; color: #f59e0b;">{{ execution_data.total_executions if execution_data and execution_data.total_executions else 0 }}</div>
+                            <div style="color: #a0aec0; font-size: 0.9rem;">Total Executions</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card" style="background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%); border: 1px solid #4a5568;">
+                        <div class="card-body text-center">
+                            <div style="font-size: 2rem; font-weight: bold; color: #8b5cf6;">{{ configs_count }}</div>
+                            <div style="color: #a0aec0; font-size: 0.9rem;">Active Configs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="config-section">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <a href="/syndication/dashboard" class="btn btn-secondary btn-lg w-100">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <button class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <button class="btn btn-success btn-lg w-100">
+                        <i class="fas fa-play me-2"></i>Test Configuration
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Channel configuration functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Facebook Feed Post configuration loaded');
+            
+            // Add any interactive functionality here
+            const editButtons = document.querySelectorAll('.btn-outline-light');
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.textContent.trim();
+                    console.log(`Action clicked: ${action}`);
+                    
+                    // For now, just show an alert
+                    if (action.includes('Edit')) {
+                        alert('Edit functionality coming soon!');
+                    } else if (action.includes('Duplicate')) {
+                        alert('Duplicate functionality coming soon!');
+                    } else if (action.includes('Delete')) {
+                        if (confirm('Are you sure you want to delete this configuration?')) {
+                            alert('Delete functionality coming soon!');
+                        }
+                    }
+                });
+            });
+            
+            // Accordion functionality for Channel Requirements
+            const accordionButtons = document.querySelectorAll('.accordion-button');
+            
+            accordionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const chevron = this.querySelector('.fa-chevron-down');
+                    if (chevron) {
+                        // Toggle chevron rotation
+                        if (this.classList.contains('collapsed')) {
+                            chevron.style.transform = 'rotate(0deg)';
+                        } else {
+                            chevron.style.transform = 'rotate(180deg)';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
