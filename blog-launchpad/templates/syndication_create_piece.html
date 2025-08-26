@@ -469,10 +469,22 @@
                     // Create a new table row for each section-piece pair
                     const tableRow = document.createElement('tr');
                     
-                    // Create the task number cell (left column)
+                    // Create the task checkbox cell (left column)
                     const taskCell = document.createElement('td');
-                    taskCell.textContent = index + 1;
-                    taskCell.className = 'task-number';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'task-checkbox';
+                    checkbox.dataset.sectionId = section.id;
+                    checkbox.dataset.sectionIndex = index;
+                    checkbox.id = `task-checkbox-${index}`;
+                    
+                    // Hard-code the first checkbox as selected
+                    if (index === 0) {
+                        checkbox.checked = true;
+                    }
+                    
+                    taskCell.appendChild(checkbox);
+                    taskCell.className = 'task-checkbox-cell';
                     
                     // Create the section cell (middle column)
                     const sectionCell = document.createElement('td');

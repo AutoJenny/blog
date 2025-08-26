@@ -389,6 +389,26 @@
     font-weight: 700 !important;
 }
 
+.task-checkbox-cell {
+    background-color: #1a1d29 !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    border-right: 2px solid #495057 !important;
+    padding: 1rem !important;
+}
+
+.task-checkbox {
+    width: 1.5rem;
+    height: 1.5rem;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+.task-checkbox:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
 .sections-pieces-table td:first-child {
     background-color: #1a1d29;
     font-size: 2.5rem;
