@@ -143,7 +143,7 @@
                         <i class="fas fa-comment-dots me-3 text-success"></i>
                         <span class="flex-grow-1">Prompt Configuration</span>
                         <div class="requirement-indicator">
-                            <span class="badge bg-success me-2">4 Settings</span>
+                            <span class="badge bg-success me-2">2 Settings</span>
                             <i class="fas fa-chevron-down text-muted"></i>
                         </div>
                     </div>
@@ -175,12 +175,6 @@
                                 <input type="number" class="form-control bg-dark text-white border-success" value="1000" min="100" max="4000" id="llmMaxTokens">
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="setting-item mb-3">
-                                <label class="form-label text-white">Stop Sequences:</label>
-                                <input type="text" class="form-control bg-dark text-white border-success" placeholder="Enter stop sequences separated by commas">
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -198,7 +192,7 @@
                         <i class="fas fa-play-circle me-3 text-success"></i>
                         <span class="flex-grow-1">Execution Settings</span>
                         <div class="requirement-indicator">
-                            <span class="badge bg-success me-2">2 Settings</span>
+                            <span class="badge bg-success me-2">4 Settings</span>
                             <i class="fas fa-chevron-down text-muted"></i>
                         </div>
                     </div>
@@ -210,17 +204,6 @@
                  data-bs-parent="#llmSettingsAccordion">
                 <div class="accordion-body" style="background: rgba(255, 255, 255, 0.02); padding: 1rem;">
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="setting-item mb-3">
-                                <label class="form-label text-white">Batch Processing:</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="batchProcessing" checked>
-                                    <label class="form-check-label text-white" for="batchProcessing">
-                                        Process multiple sections simultaneously
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
                         <div class="col-md-6">
                             <div class="setting-item mb-3">
                                 <label class="form-label text-white">Retry on Failure:</label>
@@ -237,13 +220,13 @@
                         <div class="col-md-6">
                             <div class="setting-item mb-3">
                                 <label class="form-label text-white">Timeout (seconds):</label>
-                                <input type="number" class="form-control bg-dark text-white border-success" value="30" min="10" max="120">
+                                <input type="number" class="form-control bg-dark text-white border-success" value="30" min="10" max="120" id="llmTimeout">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="setting-item mb-3">
                                 <label class="form-label text-white">Max Retries:</label>
-                                <input type="number" class="form-control bg-dark text-white border-success" value="3" min="1" max="5">
+                                <input type="number" class="form-control bg-dark text-white border-success" value="3" min="1" max="5" id="llmMaxRetries">
                             </div>
                         </div>
                     </div>
@@ -335,6 +318,8 @@ document.getElementById('llmProviderSelect').addEventListener('change', function
     const providerId = this.value;
     if (providerId) {
         loadLLMModels(providerId);
+        // Save settings after a short delay to allow models to load
+        setTimeout(saveLLMSettings, 200);
     } else {
         document.getElementById('llmModelSelect').innerHTML = '<option value="">Select a provider first</option>';
         document.getElementById('llmModelSelect').disabled = true;
@@ -374,7 +359,9 @@ async function saveLLMSettings() {
             model_id: document.getElementById('llmModelSelect').value,
             temperature: document.getElementById('llmTemperature').value,
             max_tokens: document.getElementById('llmMaxTokens').value,
-            retry_on_failure: document.getElementById('llmRetryOnFailure').checked
+            retry_on_failure: document.getElementById('llmRetryOnFailure').checked,
+            timeout: document.getElementById('llmTimeout').value,
+            max_retries: document.getElementById('llmMaxRetries').value
         };
 
         const response = await fetch('/api/syndication/llm/settings', {
@@ -432,6 +419,14 @@ async function loadLLMSettings() {
             if (data.settings.retry_on_failure && data.settings.retry_on_failure.value) {
                 document.getElementById('llmRetryOnFailure').checked = data.settings.retry_on_failure.value === 'true';
             }
+            
+            if (data.settings.timeout && data.settings.timeout.value) {
+                document.getElementById('llmTimeout').value = data.settings.timeout.value;
+            }
+            
+            if (data.settings.max_retries && data.settings.max_retries.value) {
+                document.getElementById('llmMaxRetries').value = data.settings.max_retries.value;
+            }
         }
     } catch (error) {
         console.error('Error loading LLM settings:', error);
@@ -462,6 +457,8 @@ document.getElementById('llmTemperature').addEventListener('change', function() 
 
 document.getElementById('llmMaxTokens').addEventListener('change', saveLLMSettings);
 document.getElementById('llmRetryOnFailure').addEventListener('change', saveLLMSettings);
+document.getElementById('llmTimeout').addEventListener('change', saveLLMSettings);
+document.getElementById('llmMaxRetries').addEventListener('change', saveLLMSettings);
 
 // Load settings when page loads
 document.addEventListener('DOMContentLoaded', function() {
