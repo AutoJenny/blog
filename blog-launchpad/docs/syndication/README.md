@@ -34,6 +34,12 @@ This directory contains comprehensive documentation for our Social Media Syndica
 - **Status**: ✅ **UPDATED** - Reflects current MVP implementation
 
 ### **5. Database Schema Reference** (`database_schema.md`)
+
+### **6. LLM Integration Status** (External Reference)
+- **Purpose**: AI-powered content generation integration status
+- **Content**: Database architecture investigation, integration approach
+- **Status**: ✅ **INVESTIGATION COMPLETE** - See `../llm_integration_strategy.md`
+- **Key Finding**: LLM Actions and Launchpad use shared database (no tables lost)
 - **Purpose**: Comprehensive database schema documentation
 - **Content**: Existing schema reference, MVP integration, enterprise vision
 - **Status**: ✅ **UPDATED** - Reflects current MVP database approach
@@ -92,7 +98,7 @@ This directory contains comprehensive documentation for our Social Media Syndica
    - Twitter-specific requirements
    - Same MVP pattern
 
-3. **Enhance LLM Integration**
+3. **Enhance LLM Integration** (Database Architecture Confirmed)
    - Replace mock responses with real LLM API calls
    - Add error handling and validation
    - Implement response caching
