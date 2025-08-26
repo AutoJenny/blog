@@ -69,7 +69,7 @@ def serve_header_image(post_id, directory, filename):
         return "Image not found", 404
 
 # Database connection function (shared with blog-core)
-def get_db_conn():
+def get_db_connection():
     """Get database connection."""
     import psycopg2
     return psycopg2.connect(
@@ -87,7 +87,7 @@ def index():
 @app.route('/cross-promotion')
 def cross_promotion():
     """Cross-promotion management page."""
-    with get_db_conn() as conn:
+    with get_db_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("""
             SELECT p.id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug,
@@ -129,7 +129,7 @@ def publishing():
 def syndication():
     """Social Media Syndication homepage."""
     try:
-        with get_db_conn() as conn:
+        with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             # Get total platforms count
@@ -164,7 +164,7 @@ def syndication():
 def syndication_dashboard():
     """New social media syndication dashboard with platform management."""
     try:
-        with get_db_conn() as conn:
+        with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             # Get Facebook platform data
@@ -250,7 +250,7 @@ def syndication_dashboard():
 def channel_config(platform_name, channel_type):
     """Generic channel configuration for any platform and channel type."""
     try:
-        with get_db_conn() as conn:
+        with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             # Get platform data
@@ -358,7 +358,7 @@ def syndication_select_posts():
 def syndication_create_piece():
     """Create Piece page for social media syndication."""
     try:
-        with get_db_conn() as conn:
+        with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             # Get Facebook platform data (default)
@@ -693,7 +693,7 @@ def preview_post(post_id):
     header_image_path = find_header_image(post_id)
     if header_image_path:
         # Get header image caption from database
-        with get_db_conn() as conn:
+        with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             cur.execute("""
                 SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
@@ -739,7 +739,7 @@ def clan_post_html(post_id):
     header_image_path = find_header_image(post_id)
     if header_image_path:
         # Get header image caption from database
-        with get_db_conn() as conn:
+        with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             cur.execute("""
                 SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
@@ -792,7 +792,7 @@ def clan_post_html(post_id):
 
 def get_post_with_development(post_id):
     """Fetch post with development data."""
-    with get_db_conn() as conn:
+    with get_db_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
         # Get post data, alias post.id as post_id
@@ -897,7 +897,7 @@ def find_section_image(post_id, section_id):
 
 def get_post_sections_with_images(post_id):
     """Fetch sections with complete image metadata."""
-    with get_db_conn() as conn:
+    with get_db_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
         # Get all sections for the post
@@ -971,7 +971,7 @@ def get_post_sections_with_images(post_id):
 @app.route('/api/posts')
 def get_posts():
     """Get all posts for the launchpad."""
-    with get_db_conn() as conn:
+    with get_db_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("""
             SELECT p.id, p.title, p.created_at, p.updated_at, p.status,
@@ -988,7 +988,7 @@ def get_posts():
 @app.route('/api/cross-promotion/<int:post_id>', methods=['GET'])
 def get_cross_promotion(post_id):
     """Get cross-promotion data for a post."""
-    with get_db_conn() as conn:
+    with get_db_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("""
             SELECT cross_promotion_category_id, cross_promotion_category_title,
@@ -1022,7 +1022,7 @@ def update_cross_promotion(post_id):
     if data.get('product_id') and data.get('product_position'):
         product_widget_html = f'{{{{widget type="swcatalog/widget_crossSell_product" product_id="{data.get("product_id")}" title="{data.get("product_title") or "Related Products"}"}}}}'
     
-    with get_db_conn() as conn:
+    with get_db_connection() as conn:
         cur = conn.cursor()
         cur.execute("""
             UPDATE post SET 
@@ -1215,7 +1215,7 @@ def publish_post_to_clan(post_id):
         # Add header image if exists
         header_image_path = find_header_image(post_id)
         if header_image_path:
-            with get_db_conn() as conn:
+            with get_db_connection() as conn:
                 cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
                 cur.execute("""
                     SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
@@ -1267,7 +1267,7 @@ def publish_post_to_clan(post_id):
         
         if result['success']:
             # Update database with clan post details
-            with get_db_conn() as conn:
+            with get_db_connection() as conn:
                 cur = conn.cursor()
                 cur.execute("""
                     UPDATE post SET 
@@ -1288,7 +1288,7 @@ def publish_post_to_clan(post_id):
             })
         else:
             # Update database with error
-            with get_db_conn() as conn:
+            with get_db_connection() as conn:
                 cur = conn.cursor()
                 cur.execute("""
                     UPDATE post SET 
@@ -1311,7 +1311,7 @@ def publish_post_to_clan(post_id):
         
     except Exception as e:
         # Update database with error
-        with get_db_conn() as conn:
+        with get_db_connection() as conn:
             cur = conn.cursor()
             cur.execute("""
                 UPDATE post SET 
@@ -1399,7 +1399,7 @@ def refresh_product_urls():
 def get_platform(platform_name):
     """Get platform information by name"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1437,7 +1437,7 @@ def get_platform(platform_name):
 def get_platform_capabilities(platform_id):
     """Get platform capabilities by platform ID"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1472,7 +1472,7 @@ def get_platform_capabilities(platform_id):
 def get_channels():
     """Get all channels with platform support information"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1513,7 +1513,7 @@ def get_channels():
 def get_process_config(process_name):
     """Get process configuration by process name"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         # First get the process details
@@ -1602,7 +1602,7 @@ def get_process_config(process_name):
 def get_platform_channels(platform_id):
     """Get all channels for a specific platform"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1643,7 +1643,7 @@ def get_platform_channels(platform_id):
 def get_channel_requirements(platform_id, channel_id):
     """Get requirements for a specific channel on a specific platform"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1680,7 +1680,7 @@ def get_channel_requirements(platform_id, channel_id):
 def get_all_platforms():
     """Get all platforms with basic information"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1720,7 +1720,7 @@ def get_all_platforms():
 def get_ui_sections():
     """Get UI sections with their display properties"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1755,7 +1755,7 @@ def get_ui_sections():
 def get_ui_menu_items():
     """Get UI menu items with navigation structure"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1791,7 +1791,7 @@ def get_ui_menu_items():
 def get_ui_display_rules():
     """Get UI display rules for conditional rendering"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1825,7 +1825,7 @@ def get_ui_display_rules():
 def get_content_priorities():
     """Get content priority scores and factors"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1859,7 +1859,7 @@ def get_content_priorities():
 def get_priority_factors():
     """Get priority calculation factors and weights"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1894,7 +1894,7 @@ def get_priority_factors():
 def get_user_preferences(user_id):
     """Get user-specific UI preferences"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1928,7 +1928,7 @@ def get_user_preferences(user_id):
 def get_session_state(session_id):
     """Get session-specific UI state"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         cur.execute("""
@@ -1962,7 +1962,7 @@ def get_session_state(session_id):
 def calculate_content_priorities():
     """Calculate and update content priority scores"""
     try:
-        conn = get_db_conn()
+        conn = get_db_connection()
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         # Get all priority factors
@@ -2049,6 +2049,145 @@ def calculate_content_priorities():
 
 
 
+
+# LLM Integration API Endpoints for Syndication
+
+@app.route('/api/syndication/llm/providers')
+def get_llm_providers():
+    """Get available LLM providers for dropdown population."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur.execute("""
+                SELECT id, name, type, description 
+                FROM llm_provider 
+                ORDER BY name
+            """)
+            providers = cur.fetchall()
+            
+            provider_list = []
+            for provider in providers:
+                provider_list.append({
+                    'id': provider['id'],
+                    'name': provider['name'],
+                    'type': provider['type'],
+                    'description': provider['description']
+                })
+            
+            return jsonify({'providers': provider_list})
+    except Exception as e:
+        logger.error(f"Error fetching LLM providers: {e}")
+        return jsonify({'error': 'Failed to fetch providers'}), 500
+
+@app.route('/api/syndication/llm/models/<int:provider_id>')
+def get_llm_models(provider_id):
+    """Get available models for a specific provider."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur.execute("""
+                SELECT id, name, description, strengths, weaknesses
+                FROM llm_model 
+                WHERE provider_id = %s 
+                ORDER BY name
+            """, (provider_id,))
+            models = cur.fetchall()
+            
+            model_list = []
+            for model in models:
+                model_list.append({
+                    'id': model['id'],
+                    'name': model['name'],
+                    'description': model['description'],
+                    'strengths': model['strengths'],
+                    'weaknesses': model['weaknesses']
+                })
+            
+            return jsonify({'models': model_list})
+    except Exception as e:
+        logger.error(f"Error fetching LLM models: {e}")
+        return jsonify({'error': 'Failed to fetch models'}), 500
+
+@app.route('/api/syndication/llm/settings', methods=['GET'])
+def get_llm_settings():
+    """Get LLM settings for Facebook Feed Post process."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get LLM settings for Facebook Feed Post process (ID 1)
+            cur.execute("""
+                SELECT config_key, config_value, description
+                FROM process_configurations 
+                WHERE process_id = 1 
+                AND config_category = 'llm_settings'
+                AND is_active = true
+                ORDER BY display_order
+            """)
+            
+            settings = cur.fetchall()
+            
+            # Convert to dictionary format
+            settings_dict = {}
+            for setting in settings:
+                settings_dict[setting['config_key']] = {
+                    'value': setting['config_value'],
+                    'description': setting['description']
+                }
+            
+            return jsonify({'settings': settings_dict})
+            
+    except Exception as e:
+        logger.error(f"Error fetching LLM settings: {e}")
+        return jsonify({'error': 'Failed to fetch LLM settings'}), 500
+
+@app.route('/api/syndication/llm/settings', methods=['POST'])
+def save_llm_settings():
+    """Save LLM settings for Facebook Feed Post process."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No JSON data provided'}), 400
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Process ID 1 is Facebook Feed Post
+            process_id = 1
+            
+            for key, value in data.items():
+                # Check if setting already exists
+                cur.execute("""
+                    SELECT id FROM process_configurations 
+                    WHERE process_id = %s 
+                    AND config_category = 'llm_settings' 
+                    AND config_key = %s
+                """, (process_id, key))
+                
+                existing = cur.fetchone()
+                
+                if existing:
+                    # Update existing setting
+                    cur.execute("""
+                        UPDATE process_configurations 
+                        SET config_value = %s, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                    """, (str(value), existing['id']))
+                else:
+                    # Insert new setting
+                    cur.execute("""
+                        INSERT INTO process_configurations 
+                        (process_id, config_category, config_key, config_value, description, display_order, is_active)
+                        VALUES (%s, 'llm_settings', %s, %s, %s, 0, true)
+                    """, (process_id, key, str(value), f'LLM setting for {key}'))
+            
+            conn.commit()
+            
+        return jsonify({'success': True, 'message': 'LLM settings saved successfully'})
+        
+    except Exception as e:
+        logger.error(f"Error saving LLM settings: {e}")
+        return jsonify({'error': 'Failed to save LLM settings'}), 500
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(debug=True, host='0.0.0.0', port=port) 
