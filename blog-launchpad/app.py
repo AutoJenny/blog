@@ -357,7 +357,60 @@ def syndication_select_posts():
 @app.route('/syndication/create-piece')
 def syndication_create_piece():
     """Create Piece page for social media syndication."""
-    return render_template('syndication_create_piece.html')
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get Facebook platform data (default)
+            cur.execute("""
+                SELECT 
+                    p.id, p.name, p.display_name, p.description, p.status, p.development_status,
+                    p.total_posts_count, p.success_rate_percentage, p.average_response_time_ms,
+                    p.last_activity_at, p.last_post_at, p.last_api_call_at
+                FROM platforms p 
+                WHERE p.name = 'facebook'
+            """)
+            platform = cur.fetchone()
+            
+            if not platform:
+                return "Facebook platform not found", 404
+            
+            # Get Facebook Feed Post channel type data (default)
+            cur.execute("""
+                SELECT 
+                    ct.id, ct.name, ct.display_name, ct.description
+                FROM channel_types ct
+                WHERE ct.name = 'feed_post'
+            """)
+            channel_type = cur.fetchone()
+            
+            if not channel_type:
+                return "Feed Post channel type not found", 404
+            
+            # Get Facebook Feed Post requirements for the component
+            cur.execute("""
+                SELECT 
+                    cr.requirement_category,
+                    cr.requirement_key,
+                    cr.requirement_value,
+                    cr.description
+                FROM channel_requirements cr
+                JOIN platforms p ON cr.platform_id = p.id
+                JOIN channel_types ct ON cr.channel_type_id = ct.id
+                WHERE p.name = 'facebook' 
+                AND ct.name = 'feed_post'
+                ORDER BY cr.requirement_category, cr.requirement_key
+            """)
+            requirements = cur.fetchall()
+            
+            return render_template('syndication_create_piece.html',
+                                platform=platform,
+                                channel_type=channel_type,
+                                requirements=requirements)
+                                
+    except Exception as e:
+        logger.error(f"Error in syndication_create_piece: {e}")
+        return f"Error loading create piece page: {str(e)}", 500
 
 @app.route('/syndication/create-piece-includes')
 def syndication_create_piece_includes():

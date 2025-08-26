@@ -155,87 +155,9 @@
                                 <div class="row">
                                     <div class="col-12">
                                         <div id="processDetails" class="process-details-panel" style="display: block;">
-                                            <!-- Process Overview Section -->
-                                            <div class="process-overview mb-4">
-                                                <h6 class="text-info mb-3">
-                                                    <i class="fas fa-info-circle me-2"></i>Process Overview
-                                                </h6>
-                                                <div id="process-description-content" class="text-white p-3 bg-secondary rounded">
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="detail-item mb-2">
-                                                                <span class="detail-label text-info">Process Name:</span>
-                                                                <span class="detail-value text-white">Facebook Feed Post</span>
-                                                            </div>
-                                                            <div class="detail-item mb-2">
-                                                                <span class="detail-label text-info">Content Type:</span>
-                                                                <span class="detail-value text-white">feed_post</span>
-                                                            </div>
-                                                            <div class="detail-item mb-2">
-                                                                <span class="detail-label text-info">Priority Level:</span>
-                                                                <span class="detail-value text-white">1</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="detail-item mb-2">
-                                                                <span class="detail-label text-info">Platform:</span>
-                                                                <span class="detail-value text-white">Facebook</span>
-                                                            </div>
-                                                            <div class="detail-item mb-2">
-                                                                <span class="detail-label text-info">Status:</span>
-                                                                <span class="detail-value text-white">ready</span>
-                                                            </div>
-                                                            <div class="detail-item mb-2">
-                                                                <span class="detail-label text-info">Active:</span>
-                                                                <span class="detail-value text-white">Yes</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="mt-3 p-3 bg-dark rounded">
-                                                        <strong class="text-info">Description:</strong>
-                                                        <div class="text-white mt-2">This process converts blog post sections into optimized Facebook Feed Post content for Facebook.</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Process Configuration Section -->
-                                            <div class="process-configuration mb-4">
-                                                <h6 class="text-info mb-3">
-                                                    <i class="fas fa-cogs me-2"></i>Process Configuration
-                                                </h6>
-                                                <div id="processConfigsContainer">
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="detail-item mb-2">
-                                                                <span class="detail-label text-info">LLM Prompts:</span>
-                                                                <span class="detail-value text-white">Configured</span>
-                                                            </div>
-                                                            <div class="detail-item mb-2">
-                                                                <span class="detail-label text-info">Constraints:</span>
-                                                                <span class="detail-value text-white">63,206 characters max</span>
-                                                            </div>
-                                                            <div class="detail-item mb-2">
-                                                                <span class="detail-label text-info">Style Guide:</span>
-                                                                <span class="detail-value text-white">Conversational, engaging</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="detail-label text-info">Hashtag Strategy:</span>
-                                                                <span class="detail-value text-white">2-3 relevant tags</span>
-                                                            </div>
-                                                            <div class="detail-item mb-2">
-                                                                <span class="detail-label text-info">CTA Examples:</span>
-                                                                <span class="detail-value text-white">Multiple options</span>
-                                                            </div>
-                                                            <div class="detail-item mb-2">
-                                                                <span class="detail-label text-info">Status:</span>
-                                                                <span class="detail-value text-white">✅ Ready for use</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
+                                            <!-- Channel Requirements Component -->
+                                            {% include 'includes/conversion_settings.html' %}
+                                            
                                             <!-- Process Execution Section -->
                                             <div class="process-execution">
                                                 <h6 class="text-info mb-3">
@@ -640,75 +562,37 @@
             
             // Fetch social media platforms
             function fetchSocialMediaPlatforms() {
-                fetch('/api/syndication/social-media-platforms')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            console.error('Error fetching platforms:', data.error);
-                            platformSelector.innerHTML = '<option value="">Error loading platforms</option>';
-                            return;
-                        }
-                        
-                        const platforms = data.platforms || [];
-                        if (platforms.length === 0) {
-                            platformSelector.innerHTML = '<option value="">No developed platforms found</option>';
-                            return;
-                        }
-                        
-                        platformSelector.innerHTML = '<option value="">Select a platform...</option>';
-                        platforms.forEach(platform => {
-                            const option = document.createElement('option');
-                            option.value = platform.id;
-                            option.textContent = platform.display_name;
-                            option.dataset.platformName = platform.platform_name;
-                            platformSelector.appendChild(option);
-                        });
-                        
-                        // Auto-select the first platform if available
-                        if (platforms.length > 0) {
-                            platformSelector.value = platforms[0].id;
-                            // Update header display
-                            updateConversionHeaderDisplay();
-                            // Trigger the change event to automatically fetch processes
-                            platformSelector.dispatchEvent(new Event('change'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        platformSelector.innerHTML = '<option value="">Error loading platforms</option>';
-                    });
+                // Use server-provided data instead of API call
+                const serverPlatform = {{ platform|tojson }};
+                const serverChannelType = {{ channel_type|tojson }};
+                
+                if (serverPlatform) {
+                    platformSelector.innerHTML = '<option value="">Select a platform...</option>';
+                    const option = document.createElement('option');
+                    option.value = serverPlatform.id;
+                    option.textContent = serverPlatform.display_name;
+                    option.dataset.platformName = serverPlatform.name;
+                    platformSelector.appendChild(option);
+                    
+                    // Auto-select Facebook platform
+                    platformSelector.value = serverPlatform.id;
+                    updateConversionHeaderDisplay();
+                    
+                    // Auto-populate processes for Facebook
+                    populateFacebookProcesses();
+                } else {
+                    platformSelector.innerHTML = '<option value="">No platforms available</option>';
+                }
             }
             
-            // Fetch content processes for selected platform
-            function fetchContentProcesses(platformId) {
-                // For now, use hardcoded processes to ensure the unified framework works
-                const platformName = document.getElementById('platformSelector').options[document.getElementById('platformSelector').selectedIndex].textContent;
-                
-                let platformProcesses = [];
-                if (platformName.toLowerCase().includes('facebook')) {
-                    platformProcesses = [
-                        { id: 'facebook_feed_post', display_name: 'Facebook Feed Post', content_type: 'feed_post' },
-                        { id: 'facebook_story_post', display_name: 'Facebook Story Post', content_type: 'story_post' },
-                        { id: 'facebook_reels_caption', display_name: 'Facebook Reels Caption', content_type: 'reels_caption' },
-                        { id: 'facebook_group_post', display_name: 'Facebook Group Post', content_type: 'group_post' }
-                    ];
-                } else if (platformName.toLowerCase().includes('twitter')) {
-                    platformProcesses = [
-                        { id: 'twitter_tweet', display_name: 'Twitter Tweet', content_type: 'tweet' },
-                        { id: 'twitter_thread', display_name: 'Twitter Thread', content_type: 'thread' }
-                    ];
-                } else if (platformName.toLowerCase().includes('linkedin')) {
-                    platformProcesses = [
-                        { id: 'linkedin_post', display_name: 'LinkedIn Post', content_type: 'post' },
-                        { id: 'linkedin_article', display_name: 'LinkedIn Article', content_type: 'article' }
-                    ];
-                } else {
-                    platformProcesses = [
-                        { id: 'generic_post', display_name: 'Generic Post', content_type: 'post' }
-                    ];
-                }
-                
-                console.log('Using hardcoded processes for platform:', platformName, platformProcesses);
+            // Populate Facebook processes
+            function populateFacebookProcesses() {
+                const platformProcesses = [
+                    { id: 'facebook_feed_post', display_name: 'Facebook Feed Post', content_type: 'feed_post' },
+                    { id: 'facebook_story_post', display_name: 'Facebook Story Post', content_type: 'story_post' },
+                    { id: 'facebook_reels_caption', display_name: 'Facebook Reels Caption', content_type: 'reels_caption' },
+                    { id: 'facebook_group_post', display_name: 'Facebook Group Post', content_type: 'group_post' }
+                ];
                 
                 processSelector.innerHTML = '<option value="">Select a process...</option>';
                 platformProcesses.forEach(process => {
@@ -720,14 +604,17 @@
                 
                 processSelector.disabled = false;
                 
-                // Auto-select the first process if available
-                if (platformProcesses.length > 0) {
-                    processSelector.value = platformProcesses[0].id;
-                    // Update header display
-                    updateConversionHeaderDisplay();
-                    // Trigger the change event to automatically display process details
-                    processSelector.dispatchEvent(new Event('change'));
-                }
+                // Auto-select Facebook Feed Post
+                processSelector.value = 'facebook_feed_post';
+                updateConversionHeaderDisplay();
+                processSelector.dispatchEvent(new Event('change'));
+            }
+            
+            // Fetch content processes for selected platform (simplified)
+            function fetchContentProcesses(platformId) {
+                // This function is now simplified since we auto-populate Facebook processes
+                // It's kept for compatibility with existing event handlers
+                console.log('Process fetching simplified - using auto-populated Facebook processes');
             }
             
             // Handle platform selection change
