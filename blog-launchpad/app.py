@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, send_file, redirect
+from flask import Flask, render_template, jsonify, request, send_file, redirect, url_for
 import requests
 import os
 import logging
@@ -246,28 +246,40 @@ def syndication_dashboard():
         logger.error(f"Error in syndication_dashboard: {e}")
         return f"Error loading dashboard: {str(e)}", 500
 
-@app.route('/syndication/facebook/feed-post')
-def facebook_feed_post_config():
-    """Facebook Feed Post channel configuration."""
+@app.route('/syndication/<platform_name>/<channel_type>')
+def channel_config(platform_name, channel_type):
+    """Generic channel configuration for any platform and channel type."""
     try:
         with get_db_conn() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
-            # Get Facebook platform data
+            # Get platform data
             cur.execute("""
                 SELECT 
                     p.id, p.name, p.display_name, p.description, p.status, p.development_status,
                     p.total_posts_count, p.success_rate_percentage, p.average_response_time_ms,
                     p.last_activity_at, p.last_post_at, p.last_api_call_at
                 FROM platforms p 
-                WHERE p.name = 'facebook'
-            """)
+                WHERE p.name = %s
+            """, (platform_name,))
             platform = cur.fetchone()
             
             if not platform:
-                return "Facebook platform not found", 404
+                return f"Platform '{platform_name}' not found", 404
             
-            # Get Facebook Feed Post process data
+            # Get channel type data
+            cur.execute("""
+                SELECT 
+                    ct.id, ct.name, ct.display_name, ct.description
+                FROM channel_types ct
+                WHERE ct.name = %s
+            """, (channel_type,))
+            channel_type_data = cur.fetchone()
+            
+            if not channel_type_data:
+                return f"Channel type '{channel_type}' not found", 404
+            
+            # Get process data for this platform/channel combination
             cur.execute("""
                 SELECT 
                     cp.id, cp.process_name, cp.display_name, cp.description, 
@@ -275,12 +287,12 @@ def facebook_feed_post_config():
                     ct.name as channel_type_name, ct.display_name as channel_display_name
                 FROM content_processes cp
                 JOIN channel_types ct ON cp.channel_type_id = ct.id
-                WHERE cp.platform_id = %s AND cp.process_name = 'facebook_feed_post'
-            """, (platform['id'],))
+                WHERE cp.platform_id = %s AND ct.name = %s
+            """, (platform['id'], channel_type))
             process = cur.fetchone()
             
             if not process:
-                return "Facebook Feed Post process not found", 404
+                return f"Process for {platform_name} {channel_type} not found", 404
             
             # Get process configurations count
             cur.execute("""
@@ -300,7 +312,7 @@ def facebook_feed_post_config():
             """, (process['id'],))
             execution_data = cur.fetchone()
             
-            # Get Facebook Feed Post requirements for MVP interface
+            # Get channel requirements for MVP interface
             cur.execute("""
                 SELECT 
                     cr.requirement_category,
@@ -310,22 +322,28 @@ def facebook_feed_post_config():
                 FROM channel_requirements cr
                 JOIN platforms p ON cr.platform_id = p.id
                 JOIN channel_types ct ON cr.channel_type_id = ct.id
-                WHERE p.name = 'facebook' 
-                AND ct.name = 'feed_post'
+                WHERE p.name = %s 
+                AND ct.name = %s
                 ORDER BY cr.requirement_category, cr.requirement_key
-            """)
+            """, (platform_name, channel_type))
             requirements = cur.fetchall()
             
             return render_template('facebook_feed_post_config.html',
                                 platform=platform,
+                                channel_type=channel_type_data,
                                 process=process,
                                 configs_count=configs_count,
                                 execution_data=execution_data,
                                 requirements=requirements)
                                 
     except Exception as e:
-        logger.error(f"Error in facebook_feed_post_config: {e}")
+        logger.error(f"Error in channel_config: {e}")
         return f"Error loading configuration: {str(e)}", 500
+
+@app.route('/syndication/facebook/feed-post')
+def facebook_feed_post_redirect():
+    """Redirect for backward compatibility to the generic route."""
+    return redirect(url_for('channel_config', platform_name='facebook', channel_type='feed_post'))
 
 @app.route('/syndication/select-posts')
 def syndication_select_posts():
