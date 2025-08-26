@@ -5,10 +5,10 @@ This document outlines the technical framework for our Social Media Syndication 
 
 ## 🎯 **IMPLEMENTATION STRATEGY**
 
-### **Phase 1: MVP (Current - Working Now) ✅**
-- **Goal**: Get a basic LLM-based post rewriting system working quickly
+### **Phase 1: MVP Integration (Current - Working Now) ✅**
+- **Goal**: MVP functionality fully integrated into main system pages
 - **Scope**: Single platform (Facebook) with one channel type (Feed Post)
-- **Approach**: Leverage existing database structure, add MVP functionality on top
+- **Approach**: MVP elements integrated into existing pages, not separate
 - **Timeline**: Immediate implementation
 
 ### **Phase 2: Enhanced MVP (Next 2-4 weeks) 📋**
@@ -29,19 +29,33 @@ This document outlines the technical framework for our Social Media Syndication 
 
 ### **What We Have Working Now ✅**
 
-#### **1. MVP Test Interface**
-- **Route**: `/syndication/mvp-test`
-- **Purpose**: Test LLM-based post rewriting using stored channel requirements
-- **Status**: **100% Database-Driven** - No hard-coded values
-- **Integration**: Added to main dashboard with "Test LLM MVP" button
+#### **1. Integrated MVP Interface**
+- **Route**: `/syndication/facebook/feed-post`
+- **Purpose**: Main Facebook Feed Post configuration with MVP LLM test interface
+- **Status**: **MVP elements prominent, other sections faded**
+- **Integration**: MVP LLM test interface at top, existing sections below
 
-#### **2. Database Integration**
+#### **2. Reusable Conversion Settings Component**
+- **File**: `templates/includes/conversion_settings.html`
+- **Purpose**: Platform-agnostic component for channel requirements and LLM settings
+- **Status**: **Fully implemented with LLM Settings panel**
+- **Usage**: Included on Facebook Feed Post page and Create Piece page
+
+#### **3. LLM Settings Panel (New Feature)**
+- **Purpose**: Configure AI model settings, prompts, and execution parameters
+- **Status**: **New green-themed panel with 3 accordion sections**
+- **Sections**: 
+  - Model Configuration (Provider, Model Name, Temperature)
+  - Prompt Configuration (System Prompt, User Template, Max Tokens, Stop Sequences)
+  - Execution Settings (Batch Processing, Retry on Failure, Timeout, Max Retries)
+
+#### **4. Database Integration**
 - **Source**: Existing `channel_requirements` table from complex schema
 - **Data**: Facebook Feed Post requirements (tone, hashtags, dimensions, CTA)
 - **Query**: Filters by platform='facebook' and channel_type='feed_post'
 - **Result**: Real-time requirements display and LLM prompt generation
 
-#### **3. UI Integration**
+#### **5. UI Integration**
 - **Dashboard**: Preserved existing left-hand platform menu structure
 - **Active Platform**: Facebook (as intended)
 - **Active Channel**: Facebook Feed Post (as intended)
@@ -65,16 +79,23 @@ AND ct.name = 'feed_post'
 ```
 
 #### **Application Layer**
-- **Flask Route**: `/syndication/mvp-test`
-- **Template**: `mvp_llm_test.html`
-- **Data Flow**: Database → Flask → Jinja2 → JavaScript
+- **Flask Route**: `/syndication/facebook/feed-post` (dynamic: `/syndication/<platform>/<channel>`)
+- **Template**: `facebook_feed_post_config.html` with `{% include 'includes/conversion_settings.html' %}`
+- **Data Flow**: Database → Flask → Jinja2 → Component Include → JavaScript
 - **LLM Integration**: Mock response (ready for real API integration)
 
 #### **Frontend Layer**
-- **Requirements Display**: Real-time database values
+- **Requirements Display**: Real-time database values in accordion format
 - **LLM Test Interface**: Blog post input → Facebook post output
 - **Applied Rules**: Generated from actual stored requirements
+- **LLM Settings**: Configurable AI parameters and prompts
 - **Responsive Design**: Bootstrap-based, mobile-friendly
+
+#### **Component Architecture**
+- **Conversion Settings Component**: Reusable across multiple pages
+- **Platform Agnostic**: Uses dynamic variables for platform/channel names
+- **Accordion Structure**: Organized, collapsible sections for requirements and settings
+- **Consistent Styling**: Blue theme for requirements, green theme for LLM settings
 
 ---
 
@@ -84,12 +105,12 @@ AND ct.name = 'feed_post'
 1. **Add Facebook Story Post Channel**
    - Extend existing MVP framework
    - Add new route and template
-   - Reuse database structure
+   - Reuse database structure and conversion_settings component
 
 2. **Add Twitter Feed Post Channel**
    - New platform integration
    - Twitter-specific requirements
-   - Same MVP pattern
+   - Same MVP pattern and component reuse
 
 3. **Enhance LLM Integration**
    - Replace mock responses with real API calls
@@ -99,8 +120,9 @@ AND ct.name = 'feed_post'
 ### **Technical Approach for Expansion**
 - **Pattern Replication**: Copy successful MVP structure
 - **Database Reuse**: Leverage existing `channel_requirements` table
-- **UI Consistency**: Maintain same interface patterns
+- **UI Consistency**: Maintain same interface patterns and component structure
 - **Incremental Development**: Add one channel at a time
+- **Component Reuse**: Leverage conversion_settings component across all channels
 
 ---
 
@@ -134,12 +156,14 @@ AND ct.name = 'feed_post'
 
 ## 📊 **CURRENT IMPLEMENTATION STATUS**
 
-### ✅ **Completed (MVP)**
-1. **MVP Test Interface** - Working and database-driven
-2. **Dashboard Integration** - Button added, existing UI preserved
-3. **Database Integration** - Reading from existing `channel_requirements`
-4. **Requirements Display** - Real-time database values
-5. **LLM Test Framework** - Ready for API integration
+### ✅ **Completed (MVP Integration)**
+1. **Integrated MVP Interface** - Working and database-driven
+2. **Reusable Conversion Settings Component** - Created with LLM Settings panel
+3. **Dashboard Integration** - Existing UI preserved, MVP integrated
+4. **Database Integration** - Reading from existing `channel_requirements`
+5. **Requirements Display** - Real-time database values in accordion format
+6. **LLM Settings Panel** - New feature with 3 accordion sections
+7. **Component Reuse** - Used on multiple pages
 
 ### 🚧 **In Progress (MVP Expansion)**
 1. **Facebook Story Post Channel** - Next priority
@@ -162,6 +186,7 @@ AND ct.name = 'feed_post'
 3. **Preserve Existing** - Don't break working functionality
 4. **Incremental Growth** - Add one feature at a time
 5. **Test Everything** - Verify functionality before moving forward
+6. **Component Reuse** - Leverage existing components across pages
 
 ### **Enterprise Development Rules**
 1. **Proper Architecture** - Follow database normalization principles
@@ -179,6 +204,8 @@ AND ct.name = 'feed_post'
 - **Channel Requirements**: Stored rules for content adaptation
 - **Dashboard UI**: Main interface for system access
 - **LLM Framework**: Ready for API integration
+- **Conversion Settings Component**: Reusable across pages
+- **LLM Settings Panel**: Configurable AI parameters
 
 ### **Future Enterprise Integration**
 - **Advanced Analytics**: Performance tracking and optimization
@@ -194,6 +221,7 @@ AND ct.name = 'feed_post'
 - **Simple Queries**: Single table lookups for requirements
 - **Minimal Processing**: Basic text transformation and display
 - **Fast Response**: Sub-second page loads
+- **Component Caching**: Reusable components reduce rendering overhead
 
 ### **Enterprise Performance**
 - **Optimized Queries**: Complex joins with proper indexing
@@ -225,6 +253,7 @@ AND ct.name = 'feed_post'
 - **Database Reference**: Accurate table and field documentation
 - **API Documentation**: Current endpoint specifications
 - **User Guides**: Step-by-step usage instructions
+- **Component Documentation**: Reusable component usage and customization
 
 ### **Future Documentation**
 - **Architecture Guides**: Complete system design documentation
@@ -234,14 +263,28 @@ AND ct.name = 'feed_post'
 
 ---
 
-**Document Version**: 3.0  
+**Document Version**: 4.0  
 **Last Updated**: 2025-01-27  
-**Status**: **MVP IMPLEMENTED** - Enterprise Framework Planned  
+**Status**: **MVP INTEGRATED** - Enterprise Framework Planned  
 **Next Review**: After MVP expansion to Facebook Story Post and Twitter
 
 ---
 
 ## 📝 **CHANGES LOG**
+
+### **2025-01-27 - MVP Integration Complete**
+- ✅ **Integrated MVP interface** into main Facebook Feed Post page
+- ✅ **Created reusable conversion_settings component** with LLM Settings panel
+- ✅ **Removed standalone MVP test page** and dashboard buttons
+- ✅ **Added LLM Settings panel** with 3 accordion sections
+- ✅ **Integrated component** into Create Piece page
+- ✅ **Made platform/channel selectors** default to Facebook/Feed Post
+
+### **2025-01-27 - Documentation Restructure**
+- ✅ Rewrote technical framework for MVP approach
+- ✅ Positioned enterprise framework as long-term goal
+- ✅ Clarified current implementation status
+- ✅ Added development guidelines and rules
 
 ### **2025-01-27 - MVP Implementation Complete**
 - ✅ Created MVP test interface (`/syndication/mvp-test`)
@@ -249,9 +292,3 @@ AND ct.name = 'feed_post'
 - ✅ Made interface 100% database-driven
 - ✅ Preserved existing UI structure
 - ✅ Added "Test LLM MVP" button
-
-### **2025-01-27 - Documentation Restructure**
-- ✅ Rewrote technical framework for MVP approach
-- ✅ Positioned enterprise framework as long-term goal
-- ✅ Clarified current implementation status
-- ✅ Added development guidelines and rules
