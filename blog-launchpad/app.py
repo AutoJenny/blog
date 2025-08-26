@@ -1,5 +1,3 @@
-
-
 from flask import Flask, render_template, jsonify, request, send_file, redirect
 import requests
 import os
@@ -302,11 +300,28 @@ def facebook_feed_post_config():
             """, (process['id'],))
             execution_data = cur.fetchone()
             
+            # Get Facebook Feed Post requirements for MVP interface
+            cur.execute("""
+                SELECT 
+                    cr.requirement_category,
+                    cr.requirement_key,
+                    cr.requirement_value,
+                    cr.description
+                FROM channel_requirements cr
+                JOIN platforms p ON cr.platform_id = p.id
+                JOIN channel_types ct ON cr.channel_type_id = ct.id
+                WHERE p.name = 'facebook' 
+                AND ct.name = 'feed_post'
+                ORDER BY cr.requirement_category, cr.requirement_key
+            """)
+            requirements = cur.fetchall()
+            
             return render_template('facebook_feed_post_config.html',
                                 platform=platform,
                                 process=process,
                                 configs_count=configs_count,
-                                execution_data=execution_data)
+                                execution_data=execution_data,
+                                requirements=requirements)
                                 
     except Exception as e:
         logger.error(f"Error in facebook_feed_post_config: {e}")
@@ -1960,6 +1975,35 @@ def calculate_content_priorities():
 # SOCIAL MEDIA SYNDICATION ROUTES
 # =====================================================
 # Facebook platform settings routes removed - will be reimplemented properly
+
+@app.route('/syndication/mvp-test')
+def mvp_llm_test():
+    """MVP LLM test interface for testing post rewriting using stored channel requirements."""
+    try:
+        with get_db_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get only the active Facebook Feed Post channel requirements
+            cur.execute("""
+                SELECT 
+                    cr.requirement_category,
+                    cr.requirement_key,
+                    cr.requirement_value,
+                    cr.description
+                FROM channel_requirements cr
+                JOIN platforms p ON cr.platform_id = p.id
+                JOIN channel_types ct ON cr.channel_type_id = ct.id
+                WHERE p.name = 'facebook' 
+                AND ct.name = 'feed_post'
+                ORDER BY cr.requirement_category, cr.requirement_key
+            """)
+            requirements = cur.fetchall()
+            
+            return render_template('mvp_llm_test.html', requirements=requirements)
+            
+    except Exception as e:
+        logger.error(f"Error in mvp_llm_test: {e}")
+        return f"Error loading MVP test: {str(e)}", 500
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
