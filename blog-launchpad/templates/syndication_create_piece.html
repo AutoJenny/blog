@@ -990,10 +990,14 @@
             }
 
             function assembleLLMPrompt(processConfig, sectionContent) {
+                console.log('assembleLLMPrompt called with:', { processConfig, sectionContent });
+                
                 if (!processConfig) {
+                    console.log('No process config, returning error');
                     return 'No process configuration available';
                 }
                 if (!sectionContent) {
+                    console.log('No section content, returning error');
                     return 'No section content available';
                 }
                 
@@ -1003,19 +1007,30 @@
                 const selectedPlatform = platformSelector.options[platformSelector.selectedIndex];
                 const selectedProcess = processSelector.options[processSelector.selectedIndex];
                 
+                console.log('Selected platform:', selectedPlatform);
+                console.log('Selected process:', selectedProcess);
+                
                 const platformName = selectedPlatform ? selectedPlatform.textContent : 'Unknown Platform';
                 const processName = selectedProcess ? selectedProcess.textContent.split(' (')[0] : 'Unknown Process';
                 const channelType = selectedProcess ? selectedProcess.textContent.includes('(') ? selectedProcess.textContent.split('(')[1].replace(')', '') : 'N/A' : 'N/A';
                 
+                console.log('Extracted platform/process info:', { platformName, processName, channelType });
+                
                 // Get requirements from the Channel Requirements accordion
                 const requirementsAccordion = document.getElementById('mvpRequirementsAccordion');
+                console.log('Requirements accordion found:', requirementsAccordion);
+                
                 let requirements = [];
                 
                 if (requirementsAccordion) {
                     const requirementItems = requirementsAccordion.querySelectorAll('.requirement-item');
-                    requirementItems.forEach(item => {
+                    console.log('Found requirement items:', requirementItems.length);
+                    
+                    requirementItems.forEach((item, index) => {
                         const keyElement = item.querySelector('.badge');
                         const valueElement = item.querySelector('strong');
+                        console.log(`Requirement ${index + 1}:`, { keyElement: keyElement?.textContent, valueElement: valueElement?.textContent });
+                        
                         if (keyElement && valueElement) {
                             requirements.push(`${keyElement.textContent}: ${valueElement.textContent}`);
                         }
@@ -1023,17 +1038,24 @@
                 }
                 
                 const requirementsText = requirements.length > 0 ? requirements.join('\n') : 'No specific requirements';
+                console.log('Final requirements text:', requirementsText);
                 
                 // Get LLM settings for the actual prompt
                 const llmSettings = getLLMSettings();
+                console.log('LLM settings:', llmSettings);
+                
                 const systemPrompt = llmSettings.system_prompt || 'You are a social media content specialist. Convert blog post sections into engaging social media posts following the specified platform requirements.';
                 const userPrompt = llmSettings.user_prompt_template || 'Convert this blog post section into a {platform} {channel_type} post. Follow these requirements: {requirements}';
+                
+                console.log('Base prompts:', { systemPrompt, userPrompt });
                 
                 // Replace placeholders with actual values
                 let finalUserPrompt = userPrompt
                     .replace('{platform}', platformName)
                     .replace('{channel_type}', channelType)
                     .replace('{requirements}', requirementsText);
+                
+                console.log('Final user prompt after replacement:', finalUserPrompt);
                 
                 // Build the complete prompt
                 let prompt = `${systemPrompt}\n\n`;
@@ -1043,6 +1065,7 @@
                 prompt += `POLISHED CONTENT: ${sectionContent.polished || 'No polished content'}\n\n`;
                 prompt += `TASK: Create a social media post based on the above blog content.`;
                 
+                console.log('Final assembled prompt:', prompt);
                 return prompt;
             }
 
