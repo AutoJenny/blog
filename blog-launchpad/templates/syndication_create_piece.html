@@ -284,15 +284,15 @@
                                                 </div>
                                             </div>
                                             
-                                            <!-- Raw LLM Response -->
+                                            <!-- LLM Response -->
                                             <div class="debug-item mb-3">
-                                                <label class="debug-label">Raw LLM Response:</label>
+                                                <label class="debug-label">LLM Response (What We Got Back):</label>
                                                 <div class="debug-response-box" id="debugRawResponse">No response yet</div>
                                             </div>
                                             
-                                            <!-- Processed Output -->
+                                            <!-- LLM Request -->
                                             <div class="debug-item mb-3">
-                                                <label class="debug-label">Processed Output:</label>
+                                                <label class="debug-label">LLM Request (What We Sent):</label>
                                                 <div class="debug-output-box" id="debugProcessedOutput">No output processed yet</div>
                                             </div>
                                             
@@ -880,16 +880,16 @@
                 return prompt;
             }
 
-            function updateLLMResponse(rawResponse, processedOutput, processingDetails) {
+            function updateLLMResponse(llmResponse, llmRequest, processingDetails) {
                 // Update processing details
                 document.getElementById('debugRequestTime').textContent = processingDetails.requestTime || '--';
                 document.getElementById('debugResponseTime').textContent = processingDetails.responseTime || '--';
                 document.getElementById('debugTotalDuration').textContent = processingDetails.totalDuration || '--';
                 document.getElementById('debugModelUsed').textContent = processingDetails.modelUsed || '--';
                 
-                // Update response content
-                document.getElementById('debugRawResponse').textContent = rawResponse || 'No response yet';
-                document.getElementById('debugProcessedOutput').textContent = processedOutput || 'No output processed yet';
+                // Update response content - llmResponse is what we got back, llmRequest is what we sent
+                document.getElementById('debugRawResponse').textContent = llmResponse || 'No response yet';
+                document.getElementById('debugProcessedOutput').textContent = llmRequest || 'No request data yet';
                 
                 // Update validation results (placeholder for now)
                 document.getElementById('debugValidationResults').textContent = 'Validation not implemented yet';
@@ -897,7 +897,7 @@
 
             function clearDebugResults() {
                 document.getElementById('debugRawResponse').textContent = 'No response yet';
-                document.getElementById('debugProcessedOutput').textContent = 'No output processed yet';
+                document.getElementById('debugProcessedOutput').textContent = 'No request data yet';
                 document.getElementById('debugValidationResults').textContent = 'No validation performed yet';
                 document.getElementById('debugRequestTime').textContent = '--';
                 document.getElementById('debugResponseTime').textContent = '--';
@@ -979,10 +979,10 @@
                     }
 
                     // Assemble prompt
-                    const systemPrompt = llmSettings.system_prompt || 'You are a social media content creator. Convert blog content into engaging social media posts.';
-                    const userPrompt = llmSettings.user_prompt_template || 'Please convert this blog section into a social media post:';
+                    const systemPrompt = llmSettings.system_prompt || 'You are a social media content specialist. Your task is to convert blog post sections into engaging social media posts.';
+                    const userPrompt = llmSettings.user_prompt_template || 'Convert this blog section into an engaging social media post. Make it concise, engaging, and suitable for social media sharing.';
                     
-                    const fullPrompt = `${systemPrompt}\n\n${userPrompt}\n\nTitle: ${sectionContent.title}\n\nContent: ${sectionContent.content}\n\nPolished: ${sectionContent.polished}`;
+                    const fullPrompt = `${systemPrompt}\n\n${userPrompt}\n\nBLOG TITLE: ${sectionContent.title}\n\nBLOG CONTENT: ${sectionContent.content}\n\nPOLISHED CONTENT: ${sectionContent.polished}\n\nTASK: Create a social media post based on the above blog content.`;
 
                     // Prepare LLM request
                     const llmRequest = {
@@ -1035,9 +1035,10 @@
                         modelUsed: `${llmSettings.provider_id} (${llmSettings.model_id})`
                     };
 
+                    // Update the debug panel with proper labels and content
                     updateLLMResponse(
-                        JSON.stringify(llmRequest, null, 2),
-                        responseContent,
+                        responseContent, // This is the actual LLM response
+                        JSON.stringify(llmRequest, null, 2), // This is what we sent
                         processingDetails
                     );
 
