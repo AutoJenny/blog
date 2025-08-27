@@ -584,27 +584,26 @@
             
             // Fetch social media platforms
             function fetchSocialMediaPlatforms() {
-                // Use server-provided data instead of API call
-                const serverPlatform = {{ platform|tojson }};
-                const serverChannelType = {{ channel_type|tojson }};
+                // Hardcode Facebook platform since we're focusing on Facebook for now
+                const facebookPlatform = {
+                    id: 'facebook',
+                    name: 'facebook',
+                    display_name: 'Facebook'
+                };
                 
-                if (serverPlatform) {
-                    platformSelector.innerHTML = '<option value="">Select a platform...</option>';
-                    const option = document.createElement('option');
-                    option.value = serverPlatform.id;
-                    option.textContent = serverPlatform.display_name;
-                    option.dataset.platformName = serverPlatform.name;
-                    platformSelector.appendChild(option);
-                    
-                    // Auto-select Facebook platform
-                    platformSelector.value = serverPlatform.id;
-                    updateConversionHeaderDisplay();
-                    
-                    // Auto-populate processes for Facebook
-                    populateFacebookProcesses();
-                } else {
-                    platformSelector.innerHTML = '<option value="">No platforms available</option>';
-                }
+                platformSelector.innerHTML = '<option value="">Select a platform...</option>';
+                const option = document.createElement('option');
+                option.value = facebookPlatform.id;
+                option.textContent = facebookPlatform.display_name;
+                option.dataset.platformName = facebookPlatform.name;
+                platformSelector.appendChild(option);
+                
+                // Auto-select Facebook platform
+                platformSelector.value = facebookPlatform.id;
+                updateConversionHeaderDisplay();
+                
+                // Auto-populate processes for Facebook
+                populateFacebookProcesses();
             }
             
             // Populate Facebook processes
