@@ -1319,14 +1319,17 @@
                         platform_id: platformId,
                         channel_type_id: channelTypeId,
                         process_id: processId,
-                        original_content: originalContent,
+                        original_content: originalContent ? JSON.stringify(originalContent) : 'No content available',
                         generated_content: generatedContent,
                         llm_model: llmRequest.model,
                         llm_temperature: llmRequest.temperature,
                         llm_max_tokens: llmRequest.max_tokens,
                         llm_provider: llmRequest.provider,
                         prompt_used: llmRequest.prompt,
-                        processing_time_ms: Math.round(parseFloat(processingTime) * 1000)
+                        processing_time_ms: Math.round(parseFloat(processingTime) * 1000),
+                        platform_name: getPlatformName(),
+                        channel_type_name: getChannelTypeName(),
+                        requirements: getRequirementsText()
                     };
                     
                     // Save to database
@@ -1447,6 +1450,47 @@
                 // Get process ID from selector
                 const processSelector = document.getElementById('processSelector');
                 return processSelector ? processSelector.value : '1'; // Default to first process
+            }
+            
+            function getPlatformName() {
+                // Get platform name from selector
+                const platformSelector = document.getElementById('platformSelector');
+                if (platformSelector && platformSelector.selectedIndex >= 0) {
+                    return platformSelector.options[platformSelector.selectedIndex].textContent;
+                }
+                return 'Unknown Platform';
+            }
+            
+            function getChannelTypeName() {
+                // Get channel type name from selector
+                const processSelector = document.getElementById('processSelector');
+                if (processSelector && processSelector.selectedIndex >= 0) {
+                    const processText = processSelector.options[processSelector.selectedIndex].textContent;
+                    // Extract channel type from parentheses
+                    const match = processText.match(/\(([^)]+)\)/);
+                    return match ? match[1] : 'Unknown Channel Type';
+                }
+                return 'Unknown Channel Type';
+            }
+            
+            function getRequirementsText() {
+                // Get requirements from the Channel Requirements accordion
+                const requirementsAccordion = document.getElementById('mvpRequirementsAccordion');
+                if (requirementsAccordion) {
+                    const requirementItems = requirementsAccordion.querySelectorAll('.requirement-item');
+                    const requirements = [];
+                    
+                    requirementItems.forEach(item => {
+                        const keyElement = item.querySelector('.badge');
+                        const valueElement = item.querySelector('strong');
+                        if (keyElement && valueElement) {
+                            requirements.push(`${keyElement.textContent}: ${valueElement.textContent}`);
+                        }
+                    });
+                    
+                    return requirements.join('\n');
+                }
+                return 'No specific requirements';
             }
             
             function updatePieceSavedStatus(sectionIndex, isSaved) {
