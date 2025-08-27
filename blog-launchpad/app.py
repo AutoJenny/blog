@@ -2161,31 +2161,351 @@ def save_llm_settings():
 
 @app.route('/api/syndication/llm/execute', methods=['POST'])
 def execute_llm_request():
-    """Proxy to LLM service for executing requests."""
+    """Direct LLM execution for syndication using Ollama."""
     try:
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
         
-        # Forward request to LLM service
+        # Extract LLM parameters
+        provider = data.get('provider', 'ollama')
+        model = data.get('model', 'llama3.1:70b')  # Default to user's preferred model
+        prompt = data.get('prompt', '')
+        temperature = float(data.get('temperature', 0.7))
+        max_tokens = int(data.get('max_tokens', 1000))
+        
+        if not prompt:
+            return jsonify({'error': 'No prompt provided'}), 400
+        
+        # Call Ollama directly
         import requests
-        llm_response = requests.post(
-            'http://localhost:5002/api/run-llm',
-            json=data,
-            timeout=30
+        ollama_response = requests.post(
+            'http://localhost:11434/api/generate',
+            json={
+                'model': model,
+                'prompt': prompt,
+                'options': {
+                    'temperature': temperature,
+                    'num_predict': max_tokens
+                }
+            },
+            timeout=60
         )
         
-        if llm_response.status_code == 200:
-            return jsonify(llm_response.json())
+        if ollama_response.status_code == 200:
+            response_data = ollama_response.json()
+            # Extract the generated text from Ollama's response
+            generated_text = response_data.get('response', '')
+            
+            return jsonify({
+                'output': generated_text,
+                'result': generated_text,
+                'status': 'success',
+                'model_used': model,
+                'tokens_generated': len(generated_text.split())
+            })
         else:
-            return jsonify({'error': f'LLM service error: {llm_response.status_code}'}), llm_response.status_code
+            return jsonify({'error': f'Ollama error: {ollama_response.status_code}'}), ollama_response.status_code
             
     except requests.exceptions.RequestException as e:
-        logger.error(f"Error connecting to LLM service: {e}")
-        return jsonify({'error': 'Failed to connect to LLM service'}), 500
+        logger.error(f"Error connecting to Ollama: {e}")
+        return jsonify({'error': 'Failed to connect to Ollama'}), 500
     except Exception as e:
         logger.error(f"Error executing LLM request: {e}")
         return jsonify({'error': 'Failed to execute LLM request'}), 500
+
+@app.route('/api/syndication/ollama/direct', methods=['POST'])
+def direct_ollama_request():
+    """NEW DIRECT OLLAMA ENDPOINT - bypasses old code completely."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Extract LLM parameters
+        provider = data.get('provider', 'ollama')
+        model = data.get('model', 'llama3.1:70b')
+        prompt = data.get('prompt', '')
+        temperature = float(data.get('temperature', 0.7))
+        max_tokens = int(data.get('max_tokens', 1000))
+        
+        if not prompt:
+            return jsonify({'error': 'No prompt provided'}), 400
+        
+        # Call Ollama directly
+        import requests
+        ollama_response = requests.post(
+            'http://localhost:11434/api/generate',
+            json={
+                'model': model,
+                'prompt': prompt,
+                'options': {
+                    'temperature': temperature,
+                    'num_predict': max_tokens
+                }
+            },
+            timeout=60
+        )
+        
+        if ollama_response.status_code == 200:
+            # Ollama returns streaming JSON lines, we need to parse them
+            response_lines = ollama_response.text.strip().split('\n')
+            generated_text = ""
+            
+            for line in response_lines:
+                if line.strip():
+                    try:
+                        line_data = json.loads(line)
+                        if 'response' in line_data:
+                            generated_text += line_data['response']
+                    except json.JSONDecodeError:
+                        continue  # Skip malformed lines
+            
+            return jsonify({
+                'output': generated_text,
+                'result': generated_text,
+                'status': 'success',
+                'model_used': model,
+                'tokens_generated': len(generated_text.split())
+            })
+        else:
+            return jsonify({'error': f'Ollama error: {ollama_response.status_code}'}), ollama_response.status_code
+            
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error connecting to Ollama: {e}")
+        return jsonify({'error': f'Failed to connect to Ollama: {str(e)}'}), 500
+    except Exception as e:
+        logger.error(f"Error executing LLM request: {e}")
+        return jsonify({'error': f'Failed to execute LLM request: {str(e)}'}), 500
+
+@app.route('/api/syndication/ollama/test', methods=['GET'])
+def test_ollama_connection():
+    """Simple test endpoint to check Ollama connectivity."""
+    try:
+        import requests
+        response = requests.get('http://localhost:11434/api/tags', timeout=10)
+        if response.status_code == 200:
+            return jsonify({
+                'status': 'success',
+                'message': 'Ollama is accessible',
+                'models': response.json().get('models', [])
+            })
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': f'Ollama returned status {response.status_code}'
+            }), 500
+    except Exception as e:
+        logger.error(f"Error testing Ollama connection: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Failed to connect to Ollama: {str(e)}'
+        }), 500
+
+@app.route('/api/syndication/pieces', methods=['GET', 'POST'])
+def syndication_pieces():
+    """Handle syndication pieces - save generated content and retrieve existing pieces."""
+    try:
+        if request.method == 'POST':
+            data = request.get_json()
+            
+            # Validate required fields
+            required_fields = ['post_id', 'section_id', 'platform_id', 'channel_type_id', 
+                             'process_id', 'original_content', 'generated_content']
+            for field in required_fields:
+                if field not in data:
+                    return jsonify({'error': f'Missing required field: {field}'}), 400
+            
+            with get_db_connection() as conn:
+                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                
+                # Check if piece already exists for this section/process
+                cur.execute("""
+                    SELECT id FROM syndication_pieces 
+                    WHERE section_id = %s AND process_id = %s
+                """, (data['section_id'], data['process_id']))
+                
+                existing_piece = cur.fetchone()
+                
+                if existing_piece:
+                    # Update existing piece
+                    cur.execute("""
+                        UPDATE syndication_pieces SET
+                            generated_content = %s,
+                            llm_model = %s,
+                            llm_temperature = %s,
+                            llm_max_tokens = %s,
+                            llm_provider = %s,
+                            prompt_used = %s,
+                            processing_time_ms = %s,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                        RETURNING id
+                    """, (
+                        data['generated_content'],
+                        data.get('llm_model'),
+                        data.get('llm_temperature'),
+                        data.get('llm_max_tokens'),
+                        data.get('llm_provider'),
+                        data.get('prompt_used'),
+                        data.get('processing_time_ms'),
+                        existing_piece['id']
+                    ))
+                    
+                    piece_id = cur.fetchone()['id']
+                    conn.commit()
+                    
+                    return jsonify({
+                        'status': 'success',
+                        'message': 'Syndication piece updated successfully',
+                        'piece_id': piece_id,
+                        'action': 'updated'
+                    })
+                else:
+                    # Insert new piece
+                    cur.execute("""
+                        INSERT INTO syndication_pieces (
+                            post_id, section_id, platform_id, channel_type_id, process_id,
+                            original_content, generated_content, llm_model, llm_temperature,
+                            llm_max_tokens, llm_provider, prompt_used, processing_time_ms
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                    """, (
+                        data['post_id'], data['section_id'], data['platform_id'], 
+                        data['channel_type_id'], data['process_id'], data['original_content'],
+                        data['generated_content'], data.get('llm_model'), data.get('llm_temperature'),
+                        data.get('llm_max_tokens'), data.get('llm_provider'), data.get('prompt_used'),
+                        data.get('processing_time_ms')
+                    ))
+                    
+                    piece_id = cur.fetchone()['id']
+                    conn.commit()
+                    
+                    return jsonify({
+                        'status': 'success',
+                        'message': 'Syndication piece saved successfully',
+                        'piece_id': piece_id,
+                        'action': 'created'
+                    })
+        
+        else:
+            # GET request - retrieve pieces for a specific post
+            post_id = request.args.get('post_id')
+            if not post_id:
+                return jsonify({'error': 'post_id parameter required'}), 400
+            
+            with get_db_connection() as conn:
+                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                
+                cur.execute("""
+                    SELECT sp.*, p.name as platform_name, ct.name as channel_type_name,
+                           cp.process_name, cp.display_name as process_display_name
+                    FROM syndication_pieces sp
+                    JOIN platforms p ON sp.platform_id = p.id
+                    JOIN channel_types ct ON sp.channel_type_id = ct.id
+                    JOIN content_processes cp ON sp.process_id = cp.id
+                    WHERE sp.post_id = %s
+                    ORDER BY sp.section_id, sp.created_at DESC
+                """, (post_id,))
+                
+                pieces = [dict(row) for row in cur.fetchall()]
+                
+                return jsonify({
+                    'status': 'success',
+                    'pieces': pieces
+                })
+                
+    except Exception as e:
+        logger.error(f"Error handling syndication pieces: {e}")
+        return jsonify({'error': f'Failed to handle syndication pieces: {str(e)}'}), 500
+
+@app.route('/api/syndication/pieces/<int:piece_id>', methods=['GET', 'PUT', 'DELETE'])
+def syndication_piece(piece_id):
+    """Handle individual syndication piece operations."""
+    try:
+        if request.method == 'GET':
+            with get_db_connection() as conn:
+                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                
+                cur.execute("""
+                    SELECT sp.*, p.name as platform_name, ct.name as channel_type_name,
+                           cp.process_name, cp.display_name as process_display_name
+                    FROM syndication_pieces sp
+                    JOIN platforms p ON sp.platform_id = p.id
+                    JOIN channel_types ct ON sp.channel_type_id = ct.id
+                    JOIN content_processes cp ON sp.process_id = cp.id
+                    WHERE sp.id = %s
+                """, (piece_id,))
+                
+                piece = cur.fetchone()
+                if not piece:
+                    return jsonify({'error': 'Syndication piece not found'}), 404
+                
+                return jsonify({
+                    'status': 'success',
+                    'piece': dict(piece)
+                })
+        
+        elif request.method == 'PUT':
+            data = request.get_json()
+            
+            with get_db_connection() as conn:
+                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                
+                # Update the piece
+                update_fields = []
+                update_values = []
+                
+                for field in ['generated_content', 'status', 'user_notes']:
+                    if field in data:
+                        update_fields.append(f"{field} = %s")
+                        update_values.append(data[field])
+                
+                if not update_fields:
+                    return jsonify({'error': 'No fields to update'}), 400
+                
+                update_values.append(piece_id)
+                
+                cur.execute(f"""
+                    UPDATE syndication_pieces SET
+                        {', '.join(update_fields)},
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                    RETURNING id
+                """, update_values)
+                
+                updated_piece = cur.fetchone()
+                if not updated_piece:
+                    return jsonify({'error': 'Syndication piece not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': 'Syndication piece updated successfully',
+                    'piece_id': piece_id
+                })
+        
+        elif request.method == 'DELETE':
+            with get_db_connection() as conn:
+                cur = conn.cursor()
+                
+                cur.execute("DELETE FROM syndication_pieces WHERE id = %s RETURNING id", (piece_id,))
+                
+                deleted_piece = cur.fetchone()
+                if not deleted_piece:
+                    return jsonify({'error': 'Syndication piece not found'}), 404
+                
+                conn.commit()
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': 'Syndication piece deleted successfully'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error handling syndication piece {piece_id}: {e}")
+        return jsonify({'error': f'Failed to handle syndication piece: {str(e)}'}), 500
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(debug=True, host='0.0.0.0', port=port) 
