@@ -1044,34 +1044,32 @@
             }
 
             // Event listeners for debug panel buttons
-            document.addEventListener('DOMContentLoaded', function() {
-                const processSection1Btn = document.getElementById('processSection1Btn');
-                const clearResultsBtn = document.getElementById('clearResultsBtn');
-                
-                if (processSection1Btn) {
-                    processSection1Btn.addEventListener('click', function() {
-                        console.log('Process Section 1 button clicked!');
-                        
-                        // Get the first selected task
-                        const selectedTasks = getSelectedTasks();
-                        console.log('Selected tasks:', selectedTasks);
-                        
-                        if (selectedTasks.length === 0) {
-                            alert('Please select at least one task to process');
-                            return;
-                        }
-                        
-                        // Process the first selected task
-                        const firstTask = selectedTasks[0];
-                        console.log('Processing first task:', firstTask);
-                        processSectionWithLLM(firstTask.sectionIndex);
-                    });
-                }
-                
-                if (clearResultsBtn) {
-                    clearResultsBtn.addEventListener('click', clearDebugResults);
-                }
-            });
+            const processSection1Btn = document.getElementById('processSection1Btn');
+            const clearResultsBtn = document.getElementById('clearResultsBtn');
+            
+            if (processSection1Btn) {
+                processSection1Btn.addEventListener('click', function() {
+                    console.log('Process Section 1 button clicked!');
+                    
+                    // Get the first selected task
+                    const selectedTasks = getSelectedTasks();
+                    console.log('Selected tasks:', selectedTasks);
+                    
+                    if (selectedTasks.length === 0) {
+                        alert('Please select at least one task to process');
+                        return;
+                    }
+                    
+                    // Process the first selected task
+                    const firstTask = selectedTasks[0];
+                    console.log('Processing first task:', firstTask);
+                    processSectionWithLLM(firstTask.sectionIndex);
+                });
+            }
+            
+            if (clearResultsBtn) {
+                clearResultsBtn.addEventListener('click', clearDebugResults);
+            }
 
             // Update debug panel when process is selected
             function displayProcessDetails(process) {
