@@ -246,10 +246,10 @@
                                                 <div class="debug-content-box" id="debugSectionContent">No section content available</div>
                                             </div>
                                             
-                                            <!-- Final Assembled Prompt -->
+                                            <!-- LLM Request (What We're Sending) -->
                                             <div class="debug-item mb-3">
-                                                <label class="debug-label">Final Assembled Prompt:</label>
-                                                <div class="debug-prompt-box" id="debugAssembledPrompt">No prompt assembled yet</div>
+                                                <label class="debug-label">LLM Request (What We're Sending):</label>
+                                                <div class="debug-prompt-box" id="debugAssembledPrompt">No request data yet</div>
                                             </div>
                                         </div>
                                     </div>
@@ -290,11 +290,7 @@
                                                 <div class="debug-response-box" id="debugRawResponse">No response yet</div>
                                             </div>
                                             
-                                            <!-- LLM Request -->
-                                            <div class="debug-item mb-3">
-                                                <label class="debug-label">LLM Request (What We Sent):</label>
-                                                <div class="debug-output-box" id="debugProcessedOutput">No output processed yet</div>
-                                            </div>
+
                                             
                                             <!-- Validation Results -->
                                             <div class="debug-item mb-3">
@@ -889,7 +885,7 @@
                 
                 // Update response content - llmResponse is what we got back, llmRequest is what we sent
                 document.getElementById('debugRawResponse').textContent = llmResponse || 'No response yet';
-                document.getElementById('debugProcessedOutput').textContent = llmRequest || 'No request data yet';
+                document.getElementById('debugAssembledPrompt').textContent = llmRequest || 'No request data yet';
                 
                 // Update validation results (placeholder for now)
                 document.getElementById('debugValidationResults').textContent = 'Validation not implemented yet';
@@ -897,7 +893,7 @@
 
             function clearDebugResults() {
                 document.getElementById('debugRawResponse').textContent = 'No response yet';
-                document.getElementById('debugProcessedOutput').textContent = 'No request data yet';
+                document.getElementById('debugAssembledPrompt').textContent = 'No request data yet';
                 document.getElementById('debugValidationResults').textContent = 'No validation performed yet';
                 document.getElementById('debugRequestTime').textContent = '--';
                 document.getElementById('debugResponseTime').textContent = '--';
