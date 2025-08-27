@@ -458,7 +458,9 @@
             }
             
             function displaySections(sections, postId) {
+                console.log('displaySections called with:', sections.length, 'sections');
                 const sectionsPiecesBody = document.getElementById('sectionsPiecesBody');
+                console.log('sectionsPiecesBody element:', sectionsPiecesBody);
                 sectionsPiecesBody.innerHTML = '';
                 
                 sections.forEach((section, index) => {
@@ -482,6 +484,9 @@
                     if (index === 0) {
                         checkbox.checked = true;
                     }
+                    
+                    console.log(`Created checkbox ${index}:`, checkbox);
+                    console.log(`Checkbox ${index} checked:`, checkbox.checked);
                     
                     taskCell.appendChild(checkbox);
                     taskCell.className = 'task-checkbox-cell';
@@ -905,11 +910,18 @@
 
             // Helper functions for LLM integration
             function getSelectedTasks() {
+                console.log('getSelectedTasks() called');
                 const checkboxes = document.querySelectorAll('.task-checkbox:checked');
-                return Array.from(checkboxes).map(cb => ({
+                console.log('Found checkboxes:', checkboxes.length);
+                console.log('All checkboxes:', document.querySelectorAll('.task-checkbox'));
+                
+                const selectedTasks = Array.from(checkboxes).map(cb => ({
                     sectionId: cb.dataset.sectionId,
                     sectionIndex: parseInt(cb.dataset.sectionIndex)
                 }));
+                
+                console.log('Selected tasks result:', selectedTasks);
+                return selectedTasks;
             }
 
             function getLLMSettings() {
@@ -1038,8 +1050,12 @@
                 
                 if (processSection1Btn) {
                     processSection1Btn.addEventListener('click', function() {
+                        console.log('Process Section 1 button clicked!');
+                        
                         // Get the first selected task
                         const selectedTasks = getSelectedTasks();
+                        console.log('Selected tasks:', selectedTasks);
+                        
                         if (selectedTasks.length === 0) {
                             alert('Please select at least one task to process');
                             return;
@@ -1047,6 +1063,7 @@
                         
                         // Process the first selected task
                         const firstTask = selectedTasks[0];
+                        console.log('Processing first task:', firstTask);
                         processSectionWithLLM(firstTask.sectionIndex);
                     });
                 }
