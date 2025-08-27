@@ -210,10 +210,10 @@
                                         <button class="btn btn-success" id="startOllamaBtn">
                                             <i class="fas fa-play me-2"></i>Start Ollama
                                         </button>
-                                        <button class="btn btn-primary" id="processSection1Btn">
-                                            <i class="fas fa-rocket me-2"></i>Process Section 1
+                                        <button class="btn btn-primary" id="processCheckedSectionsBtn">
+                                            <i class="fas fa-rocket me-2"></i>Process Checked Sections
                                         </button>
-                                        <button class="btn btn-secondary" id="processAllSectionsBtn" disabled>
+                                        <button class="btn btn-success" id="processAllSectionsBtn">
                                             <i class="fas fa-sync-alt me-2"></i>Process All Sections
                                         </button>
                                         <button class="btn btn-outline-light" id="clearResultsBtn">
@@ -1167,15 +1167,10 @@
             function updateProcessAllButtonState(hasSelection) {
                 const processAllBtn = document.getElementById('processAllSectionsBtn');
                 if (processAllBtn) {
-                    if (hasSelection) {
-                        processAllBtn.disabled = false;
-                        processAllBtn.classList.remove('btn-secondary');
-                        processAllBtn.classList.add('btn-success');
-                    } else {
-                        processAllBtn.disabled = true;
-                        processAllBtn.classList.remove('btn-success');
-                        processAllBtn.classList.add('btn-secondary');
-                    }
+                    // Process All Sections button is always enabled since it processes all sections
+                    processAllBtn.disabled = false;
+                    processAllBtn.classList.remove('btn-secondary');
+                    processAllBtn.classList.add('btn-success');
                 }
             }
 
@@ -1392,13 +1387,18 @@
                 }
             }
             
-            // Process all selected sections with LLM
+            // Process all sections with LLM (regardless of checkboxes)
             async function processAllSelectedSections() {
                 try {
-                    const selectedTasks = getSelectedTasks();
+                    // Get all sections (not just selected ones)
+                    const allSections = [];
+                    const checkboxes = document.querySelectorAll('.task-checkbox');
+                    for (let i = 0; i < checkboxes.length; i++) {
+                        allSections.push({ sectionIndex: i });
+                    }
                     
-                    if (selectedTasks.length === 0) {
-                        alert('Please select at least one task to process');
+                    if (allSections.length === 0) {
+                        alert('No sections found to process');
                         return;
                     }
                     
@@ -1411,16 +1411,16 @@
                     processAllBtn.classList.remove('btn-success');
                     
                     let completedCount = 0;
-                    const totalCount = selectedTasks.length;
+                    const totalCount = allSections.length;
                     
-                    // Process each selected section sequentially
-                    for (const task of selectedTasks) {
+                    // Process each section sequentially
+                    for (const section of allSections) {
                         try {
                             // Update progress
                             processAllBtn.textContent = `Processing ${completedCount + 1}/${totalCount}...`;
                             
                             // Process the section
-                            await processSectionWithLLM(task.sectionIndex);
+                            await processSectionWithLLM(section.sectionIndex);
                             
                             completedCount++;
                             
@@ -1428,7 +1428,7 @@
                             await new Promise(resolve => setTimeout(resolve, 1000));
                             
                         } catch (error) {
-                            console.error(`Error processing section ${task.sectionIndex}:`, error);
+                            console.error(`Error processing section ${section.sectionIndex}:`, error);
                             // Continue with next section
                         }
                     }
@@ -1647,9 +1647,44 @@
                 }
             }
 
+            // Process multiple selected sections
+            async function processSelectedSections(selectedTasks) {
+                try {
+                    console.log('Processing selected sections:', selectedTasks);
+                    
+                    // Process each selected section sequentially
+                    for (let i = 0; i < selectedTasks.length; i++) {
+                        const task = selectedTasks[i];
+                        console.log(`Processing section ${i + 1}/${selectedTasks.length}:`, task);
+                        
+                        // Update status
+                        document.getElementById('llmStatus').textContent = `Processing section ${i + 1}/${selectedTasks.length}...`;
+                        
+                        // Process this section
+                        await processSectionWithLLM(task.sectionIndex);
+                        
+                        // Small delay between sections to avoid overwhelming the system
+                        if (i < selectedTasks.length - 1) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    }
+                    
+                    // Update status
+                    document.getElementById('llmStatus').textContent = 'All selected sections completed';
+                    document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
+                    
+                    console.log('All selected sections processed successfully');
+                    
+                } catch (error) {
+                    console.error('Error processing selected sections:', error);
+                    document.getElementById('llmStatus').textContent = 'Error';
+                    alert(`Error processing sections: ${error.message}`);
+                }
+            }
+
             // Event listeners for debug panel buttons
             const startOllamaBtn = document.getElementById('startOllamaBtn');
-            const processSection1Btn = document.getElementById('processSection1Btn');
+            const processCheckedSectionsBtn = document.getElementById('processCheckedSectionsBtn');
             const clearResultsBtn = document.getElementById('clearResultsBtn');
             
             if (startOllamaBtn) {
@@ -1702,39 +1737,36 @@
                 });
             }
             
-            if (processSection1Btn) {
-                                    processSection1Btn.addEventListener('click', function() {
-                        console.log('Process Section 1 button clicked!');
-                        
-                        // Get the first selected task
-                        const selectedTasks = getSelectedTasks();
-                        console.log('Selected tasks:', selectedTasks);
-                        
-                        if (selectedTasks.length === 0) {
-                            alert('Please select at least one task to process');
-                            return;
-                        }
-                        
-                        // Visual feedback - disable button and show loading
-                        const originalText = this.textContent;
-                        this.textContent = 'Processing...';
-                        this.disabled = true;
-                        this.classList.add('btn-secondary');
-                        this.classList.remove('btn-primary');
-                        
-                        // Process the first selected task
-                        const firstTask = selectedTasks[0];
-                        console.log('Processing first task:', firstTask);
-                        
-                        processSectionWithLLM(firstTask.sectionIndex)
-                            .finally(() => {
-                                // Restore button state
-                                this.textContent = originalText;
-                                this.disabled = false;
-                                this.classList.remove('btn-secondary');
-                                this.classList.add('btn-primary');
-                            });
-                    });
+            if (processCheckedSectionsBtn) {
+                processCheckedSectionsBtn.addEventListener('click', function() {
+                    console.log('Process Checked Sections button clicked!');
+                    
+                    // Get selected tasks
+                    const selectedTasks = getSelectedTasks();
+                    console.log('Selected tasks:', selectedTasks);
+                    
+                    if (selectedTasks.length === 0) {
+                        alert('Please select at least one section to process.');
+                        return;
+                    }
+                    
+                    // Visual feedback - disable button and show loading
+                    const originalText = this.textContent;
+                    this.textContent = 'Processing...';
+                    this.disabled = false;
+                    this.classList.add('btn-secondary');
+                    this.classList.remove('btn-primary');
+                    
+                    // Process all selected tasks
+                    processSelectedSections(selectedTasks)
+                        .finally(() => {
+                            // Restore button state
+                            this.textContent = originalText;
+                            this.disabled = false;
+                            this.classList.remove('btn-secondary');
+                            this.classList.add('btn-primary');
+                        });
+                });
             }
             
             if (clearResultsBtn) {
