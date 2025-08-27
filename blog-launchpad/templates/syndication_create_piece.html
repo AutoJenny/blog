@@ -1233,18 +1233,29 @@
                         
                         // Update UI with saved pieces
                         result.pieces.forEach(piece => {
+                            console.log('Processing piece:', piece);
                             const metadata = piece.interaction_metadata;
+                            console.log('Piece metadata:', metadata);
+                            
                             if (metadata && metadata.section_id) {
+                                console.log('Looking for section ID:', metadata.section_id);
                                 // Find the section index from the section ID
                                 const sectionIndex = getSectionIndexFromId(metadata.section_id);
+                                console.log('Found section index:', sectionIndex);
+                                
                                 if (sectionIndex !== -1) {
+                                    console.log('Updating piece for section index:', sectionIndex);
                                     // Update the piece content
                                     updatePieceContent(sectionIndex, piece.generated_content);
                                     // Mark as saved
                                     updatePieceSavedStatus(sectionIndex, true);
                                     // Store the piece ID for future reference
                                     storePieceId(sectionIndex, piece.id);
+                                } else {
+                                    console.log('Section index not found for section ID:', metadata.section_id);
                                 }
+                            } else {
+                                console.log('No metadata or section_id found in piece');
                             }
                         });
                     } else {
@@ -1257,12 +1268,21 @@
             
             // Helper function to get section index from section ID
             function getSectionIndexFromId(sectionId) {
+                console.log('getSectionIndexFromId called with sectionId:', sectionId, 'type:', typeof sectionId);
                 const checkboxes = document.querySelectorAll('.task-checkbox');
+                console.log('Found checkboxes:', checkboxes.length);
+                
                 for (let i = 0; i < checkboxes.length; i++) {
-                    if (checkboxes[i].dataset.sectionId === sectionId) {
+                    const checkbox = checkboxes[i];
+                    const checkboxSectionId = checkbox.dataset.sectionId;
+                    console.log(`Checkbox ${i}: sectionId = "${checkboxSectionId}" (type: ${typeof checkboxSectionId})`);
+                    
+                    if (checkboxSectionId === sectionId) {
+                        console.log(`Match found at index ${i}`);
                         return i;
                     }
                 }
+                console.log('No match found, returning -1');
                 return -1;
             }
             
@@ -1407,8 +1427,8 @@
             
             function getSectionId(sectionIndex) {
                 // Get section ID from the DOM
-                const sectionElement = document.querySelector(`[data-section-index="${sectionIndex}"]`);
-                return sectionElement ? sectionElement.dataset.sectionId : null;
+                const checkbox = document.getElementById(`task-checkbox-${sectionIndex}`);
+                return checkbox ? checkbox.dataset.sectionId : null;
             }
             
             function getPlatformId() {
