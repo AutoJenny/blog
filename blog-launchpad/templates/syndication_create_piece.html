@@ -1021,7 +1021,21 @@
                 
                 const platformName = selectedPlatform ? selectedPlatform.textContent : 'Unknown Platform';
                 const processName = selectedProcess ? selectedProcess.textContent.split(' (')[0] : 'Unknown Process';
-                const channelType = selectedProcess ? selectedProcess.textContent.includes('(') ? selectedProcess.textContent.split('(')[1].replace(')', '') : 'N/A' : 'N/A';
+                // Clean up the channel type to be more LLM-friendly
+                let channelType = selectedProcess ? selectedProcess.textContent.includes('(') ? selectedProcess.textContent.split('(')[1].replace(')', '') : 'N/A' : 'N/A';
+                
+                // Convert technical terms to natural language
+                if (channelType === 'feed_post') {
+                    channelType = 'feed post';
+                } else if (channelType === 'story_post') {
+                    channelType = 'story post';
+                } else if (channelType === 'reels_caption') {
+                    channelType = 'reels caption';
+                } else if (channelType === 'group_post') {
+                    channelType = 'group post';
+                }
+                
+                console.log('Channel type after conversion:', channelType);
                 
                 console.log('Extracted platform/process info:', { platformName, processName, channelType });
                 
@@ -1066,13 +1080,16 @@
                 
                 console.log('Final user prompt after replacement:', finalUserPrompt);
                 
-                // Build the complete prompt
-                let prompt = `${systemPrompt}\n\n`;
-                prompt += `${finalUserPrompt}\n\n`;
+                // Build a simple, clear prompt
+                let prompt = `You are a social media content specialist. Create an engaging Facebook post based on this blog content:\n\n`;
                 prompt += `BLOG TITLE: ${sectionContent.title || 'No title'}\n\n`;
                 prompt += `BLOG CONTENT: ${sectionContent.content || 'No content'}\n\n`;
-                prompt += `POLISHED CONTENT: ${sectionContent.polished || 'No polished content'}\n\n`;
-                prompt += `TASK: Create a social media post based on the above blog content.`;
+                prompt += `REQUIREMENTS:\n`;
+                prompt += `- Tone: Conversational and engaging\n`;
+                prompt += `- Length: 150-200 characters\n`;
+                prompt += `- Include a call-to-action\n`;
+                prompt += `- Use up to 3 relevant hashtags\n\n`;
+                prompt += `Create the Facebook post now:`;
                 
                 console.log('Final assembled prompt:', prompt);
                 return prompt;
@@ -1184,10 +1201,10 @@
                     
                     const fullPrompt = assembleLLMPrompt(processConfig, sectionContent);
 
-                    // Prepare LLM request
+                    // Prepare LLM request with proper provider/model names
                     const llmRequest = {
-                        provider: llmSettings.provider_id,
-                        model: llmSettings.model_id,
+                        provider: 'ollama',  // Use actual provider name
+                        model: 'mistral',    // Use actual model name
                         prompt: fullPrompt,
                         temperature: parseFloat(llmSettings.temperature),
                         max_tokens: parseInt(llmSettings.max_tokens)
