@@ -259,9 +259,9 @@
                                                 <div class="debug-content-box" id="debugSectionContent">No section content available</div>
                                             </div>
                                             
-                                            <!-- LLM Request (What We're Sending) -->
+                                            <!-- LLM Request Configuration -->
                                             <div class="debug-item mb-3">
-                                                <label class="debug-label">LLM Request (What We're Sending):</label>
+                                                <label class="debug-label">LLM Request Configuration (Complete Request Object):</label>
                                                 <div class="debug-prompt-box" id="debugAssembledPrompt">No request data yet</div>
                                             </div>
                                         </div>
@@ -879,7 +879,18 @@
                 
                 // Assemble and display the final prompt
                 const assembledPrompt = assembleLLMPrompt(processConfig, sectionContent);
-                document.getElementById('debugAssembledPrompt').textContent = assembledPrompt;
+                
+                // Create a preview of what will be sent to LLM (without the actual request object yet)
+                const llmSettings = getLLMSettings();
+                const previewRequest = {
+                    provider: llmSettings.provider_id || 'Not selected',
+                    model: llmSettings.model_id || 'Not selected',
+                    temperature: llmSettings.temperature || '0.7',
+                    max_tokens: llmSettings.max_tokens || '1000',
+                    prompt_preview: assembledPrompt.substring(0, 200) + (assembledPrompt.length > 200 ? '...' : '')
+                };
+                
+                document.getElementById('debugAssembledPrompt').textContent = JSON.stringify(previewRequest, null, 2);
             }
 
             // Pre-fill debug panel with LLM Settings data
