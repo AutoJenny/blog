@@ -577,6 +577,11 @@
                     // Add the row to the table body
                     sectionsPiecesBody.appendChild(tableRow);
                 });
+                
+                // Load any previously saved pieces for this post
+                setTimeout(() => {
+                    loadSavedPieces();
+                }, 500); // Small delay to ensure DOM is fully rendered
             }
             
             function displaySectionsError(message) {
@@ -1209,6 +1214,66 @@
                 }
             }
 
+            // Load saved syndication pieces from database
+            async function loadSavedPieces() {
+                try {
+                    const postId = getCurrentPostId();
+                    if (!postId) {
+                        console.log('No post ID available, skipping saved pieces load');
+                        return;
+                    }
+                    
+                    console.log('Loading saved pieces for post:', postId);
+                    
+                    const response = await fetch(`/api/syndication/pieces?post_id=${postId}`);
+                    const result = await response.json();
+                    
+                    if (result.status === 'success' && result.pieces) {
+                        console.log('Loaded saved pieces:', result.pieces);
+                        
+                        // Update UI with saved pieces
+                        result.pieces.forEach(piece => {
+                            const metadata = piece.interaction_metadata;
+                            if (metadata && metadata.section_id) {
+                                // Find the section index from the section ID
+                                const sectionIndex = getSectionIndexFromId(metadata.section_id);
+                                if (sectionIndex !== -1) {
+                                    // Update the piece content
+                                    updatePieceContent(sectionIndex, piece.generated_content);
+                                    // Mark as saved
+                                    updatePieceSavedStatus(sectionIndex, true);
+                                    // Store the piece ID for future reference
+                                    storePieceId(sectionIndex, piece.id);
+                                }
+                            }
+                        });
+                    } else {
+                        console.log('No saved pieces found or error loading pieces');
+                    }
+                } catch (error) {
+                    console.error('Error loading saved pieces:', error);
+                }
+            }
+            
+            // Helper function to get section index from section ID
+            function getSectionIndexFromId(sectionId) {
+                const checkboxes = document.querySelectorAll('.task-checkbox');
+                for (let i = 0; i < checkboxes.length; i++) {
+                    if (checkboxes[i].dataset.sectionId === sectionId) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+            
+            // Store piece ID for future reference
+            function storePieceId(sectionIndex, pieceId) {
+                const sectionRow = document.querySelector(`#task-checkbox-${sectionIndex}`).closest('tr');
+                if (sectionRow) {
+                    sectionRow.dataset.pieceId = pieceId;
+                }
+            }
+            
             // Save syndication piece to database
             async function saveSyndicationPiece(sectionIndex, generatedContent, llmRequest, llmResult, processingTime) {
                 try {
@@ -1366,23 +1431,26 @@
             
             function updatePieceSavedStatus(sectionIndex, isSaved) {
                 // Update the piece display to show it's been saved
-                const pieceElement = document.querySelector(`[data-section-index="${sectionIndex}"] .piece-content`);
-                if (pieceElement) {
-                    if (isSaved) {
-                        pieceElement.classList.add('saved');
-                        // Add a small indicator that it's saved
-                        const savedIndicator = document.createElement('span');
-                        savedIndicator.className = 'badge bg-success ms-2';
-                        savedIndicator.textContent = 'Saved';
-                        savedIndicator.style.fontSize = '0.7em';
-                        
-                        // Remove existing indicator if present
-                        const existingIndicator = pieceElement.querySelector('.badge');
-                        if (existingIndicator) {
-                            existingIndicator.remove();
+                const sectionRow = document.querySelector(`#task-checkbox-${sectionIndex}`).closest('tr');
+                if (sectionRow) {
+                    const pieceElement = sectionRow.querySelector('.piece-item');
+                    if (pieceElement) {
+                        if (isSaved) {
+                            pieceElement.classList.add('saved');
+                            // Add a small indicator that it's saved
+                            const savedIndicator = document.createElement('span');
+                            savedIndicator.className = 'badge bg-success ms-2';
+                            savedIndicator.textContent = 'Saved';
+                            savedIndicator.style.fontSize = '0.7em';
+                            
+                            // Remove existing indicator if present
+                            const existingIndicator = pieceElement.querySelector('.badge');
+                            if (existingIndicator) {
+                                existingIndicator.remove();
+                            }
+                            
+                            pieceElement.appendChild(savedIndicator);
                         }
-                        
-                        pieceElement.appendChild(savedIndicator);
                     }
                 }
             }
