@@ -1019,8 +1019,13 @@
                     document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
                     document.getElementById('llmProcessingTime').textContent = processingTime;
 
+                    // Extract response content - LLM service returns output/result fields
+                    const responseContent = result.output || result.result || result.response || result.content || 'No response received';
+                    console.log('LLM Response received:', result);
+                    console.log('Extracted content:', responseContent);
+
                     // Update piece content
-                    updatePieceContent(sectionIndex, result.response || result.content || 'No response received');
+                    updatePieceContent(sectionIndex, responseContent);
 
                     // Update debug panel
                     const processingDetails = {
@@ -1032,7 +1037,7 @@
 
                     updateLLMResponse(
                         JSON.stringify(llmRequest, null, 2),
-                        result.response || result.content || 'No response received',
+                        responseContent,
                         processingDetails
                     );
 
