@@ -256,13 +256,13 @@
                                                             <tbody>
                                                                 <tr>
                                                                     <td><strong>Provider</strong></td>
-                                                                    <td>ollama</td>
-                                                                    <td>Hardcoded: syndication_create_piece.html</td>
+                                                                    <td id="tableProvider">ollama</td>
+                                                                    <td>LLM Settings: llmProviderSelect</td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td><strong>Model</strong></td>
-                                                                    <td>mistral</td>
-                                                                    <td>Hardcoded: syndication_create_piece.html</td>
+                                                                    <td id="tableModel">mistral</td>
+                                                                    <td>LLM Settings: llmModelSelect</td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td><strong>Prompt</strong></td>
@@ -1625,8 +1625,8 @@
 
                     // Prepare LLM request with proper provider/model names
                     const llmRequest = {
-                        provider: 'ollama',  // Use actual provider name
-                        model: 'mistral',    // Use actual model name
+                        provider: document.getElementById('llmProviderSelect')?.options[document.getElementById('llmProviderSelect')?.selectedIndex]?.textContent || 'ollama',
+                        model: document.getElementById('llmModelSelect')?.options[document.getElementById('llmModelSelect')?.selectedIndex]?.textContent || 'mistral',
                         prompt: fullPrompt,
                         temperature: parseFloat(llmSettings.temperature),
                         max_tokens: parseInt(llmSettings.max_tokens)
