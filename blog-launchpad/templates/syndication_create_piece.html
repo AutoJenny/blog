@@ -1497,27 +1497,28 @@
                     
                     try {
                         // Update status
-                        document.getElementById('llmStatus').textContent = 'Starting Ollama...';
+                        document.getElementById('llmStatus').textContent = 'Testing Ollama...';
                         
-                        // Test Ollama connection
-                        const response = await fetch('http://localhost:11434/api/tags');
+                        // Test Ollama connection through our Flask endpoint
+                        const response = await fetch('/api/syndication/ollama/test');
                         if (response.ok) {
                             const data = await response.json();
-                            console.log('Ollama models available:', data);
+                            console.log('Ollama test response:', data);
                             
                             // Update status
                             document.getElementById('llmStatus').textContent = 'Ollama Running';
                             document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
                             
                             // Show success message
-                            alert(`Ollama is running! Available models: ${data.models.map(m => m.name).join(', ')}`);
+                            alert(`Ollama is running! ${data.message || 'Connection successful'}`);
                             
                             // Change button to show it's running
                             this.textContent = 'Ollama Running';
                             this.classList.remove('btn-secondary');
                             this.classList.add('btn-info');
                         } else {
-                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
                         }
                     } catch (error) {
                         console.error('Error starting Ollama:', error);
