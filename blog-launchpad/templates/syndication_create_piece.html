@@ -584,12 +584,16 @@
             
             // Fetch social media platforms
             function fetchSocialMediaPlatforms() {
+                console.log('fetchSocialMediaPlatforms called');
+                
                 // Hardcode Facebook platform since we're focusing on Facebook for now
                 const facebookPlatform = {
                     id: 'facebook',
                     name: 'facebook',
                     display_name: 'Facebook'
                 };
+                
+                console.log('Creating Facebook platform option:', facebookPlatform);
                 
                 platformSelector.innerHTML = '<option value="">Select a platform...</option>';
                 const option = document.createElement('option');
@@ -598,8 +602,14 @@
                 option.dataset.platformName = facebookPlatform.name;
                 platformSelector.appendChild(option);
                 
+                console.log('Platform option created:', option);
+                console.log('Platform selector options after creation:', platformSelector.options.length);
+                
                 // Auto-select Facebook platform
                 platformSelector.value = facebookPlatform.id;
+                console.log('Platform selector value set to:', platformSelector.value);
+                console.log('Platform selector selected option:', platformSelector.options[platformSelector.selectedIndex]);
+                
                 updateConversionHeaderDisplay();
                 
                 // Auto-populate processes for Facebook
