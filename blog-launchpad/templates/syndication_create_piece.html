@@ -240,6 +240,50 @@
                                             <!-- Process Configuration -->
                                             <div class="debug-item mb-3">
                                                 <label class="debug-label">Process Configuration:</label>
+                                                
+                                                <!-- JSON Elements Table -->
+                                                <div class="debug-item mb-3">
+                                                    <label class="debug-label">JSON Elements Breakdown:</label>
+                                                    <div class="debug-table-box">
+                                                        <table class="table table-dark table-striped table-sm" style="font-size: 0.85rem;">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th class="text-info">Title</th>
+                                                                    <th class="text-info">Content</th>
+                                                                    <th class="text-info">Source</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td><strong>Provider</strong></td>
+                                                                    <td>ollama</td>
+                                                                    <td>Hardcoded: syndication_create_piece.html</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Model</strong></td>
+                                                                    <td>mistral</td>
+                                                                    <td>Hardcoded: syndication_create_piece.html</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Prompt</strong></td>
+                                                                    <td>You are a social media content specialist. Create an engaging Facebook post based on this blog content:<br><br>BLOG TITLE: Story-telling in Scotland Today<br><br>BLOG CONTENT: Exploring how story-telling continues to thrive in Scotland today, demonstrating its relevance and importance in contemporary society<br><br>REQUIREMENTS:<br>- Tone: Conversational and engaging<br>- Length: 150-200 characters<br>- Include a call-to-action<br>- Use up to 3 relevant hashtags<br><br>Create the Facebook post now:</td>
+                                                                    <td>Hardcoded: syndication_create_piece.html</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Temperature</strong></td>
+                                                                    <td>0.8</td>
+                                                                    <td>UI setting</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Max Tokens</strong></td>
+                                                                    <td>1500</td>
+                                                                    <td>UI setting</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                
                                                 <div class="debug-config-box">
                                                     <div class="config-section mb-2">
                                                         <strong>LLM Prompt:</strong>
