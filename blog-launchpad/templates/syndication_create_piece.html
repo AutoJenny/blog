@@ -911,31 +911,46 @@
                 
                 // Look for constraint and style guide requirements
                 const requirementItems = requirementsAccordion.querySelectorAll('.requirement-item');
-                requirementItems.forEach(item => {
+                console.log('Found requirement items:', requirementItems.length);
+                
+                requirementItems.forEach((item, index) => {
                     const keyElement = item.querySelector('.badge');
                     const valueElement = item.querySelector('strong');
                     const descriptionElement = item.querySelector('small');
                     
                     if (keyElement && valueElement && descriptionElement) {
-                        const key = keyElement.textContent;
+                        const key = keyElement.textContent.toLowerCase();
                         const value = valueElement.textContent;
-                        const description = descriptionElement.textContent;
+                        const description = descriptionElement.textContent.toLowerCase();
                         
-                        // Categorize requirements
-                        if (key.toLowerCase().includes('constraint') || description.toLowerCase().includes('constraint')) {
-                            constraints.push(`${key}: ${value} - ${description}`);
-                        } else if (key.toLowerCase().includes('style') || description.toLowerCase().includes('style')) {
-                            styleGuide.push(`${key}: ${value} - ${description}`);
+                        console.log(`Requirement ${index + 1}:`, { key, value, description });
+                        
+                        // Categorize requirements with broader matching
+                        if (key.includes('constraint') || key.includes('rule') || key.includes('requirement') || 
+                            description.includes('constraint') || description.includes('rule') || description.includes('requirement')) {
+                            constraints.push(`${keyElement.textContent}: ${value} - ${descriptionElement.textContent}`);
+                            console.log('Added to constraints:', keyElement.textContent);
+                        } else if (key.includes('style') || key.includes('tone') || key.includes('voice') || key.includes('guideline') ||
+                                 description.includes('style') || description.includes('tone') || description.includes('voice') || description.includes('guideline')) {
+                            styleGuide.push(`${keyElement.textContent}: ${value} - ${descriptionElement.textContent}`);
+                            console.log('Added to styleGuide:', keyElement.textContent);
                         }
                     }
                 });
                 
+                console.log('Final constraints:', constraints);
+                console.log('Final styleGuide:', styleGuide);
+                
                 // Update debug panel
                 if (constraints.length > 0) {
                     document.getElementById('debugConstraints').textContent = constraints.join('\n');
+                } else {
+                    document.getElementById('debugConstraints').textContent = 'No constraints configured';
                 }
                 if (styleGuide.length > 0) {
                     document.getElementById('debugStyleGuide').textContent = styleGuide.join('\n');
+                } else {
+                    document.getElementById('debugStyleGuide').textContent = 'No style guide configured';
                 }
             }
 
