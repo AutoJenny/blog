@@ -1252,8 +1252,23 @@
                     if (result.status === 'success' && result.pieces) {
                         console.log('Loaded saved pieces:', result.pieces);
                         
-                        // Update UI with saved pieces
+                        // Group pieces by section_id and keep only the most recent one for each section
+                        const sectionPieces = {};
                         result.pieces.forEach(piece => {
+                            const metadata = piece.interaction_metadata;
+                            if (metadata && metadata.section_id) {
+                                const sectionId = metadata.section_id;
+                                // If no piece exists for this section, or if this piece is newer, use this one
+                                if (!sectionPieces[sectionId] || new Date(piece.created_at) > new Date(sectionPieces[sectionId].created_at)) {
+                                    sectionPieces[sectionId] = piece;
+                                }
+                            }
+                        });
+                        
+                        console.log('Section pieces after filtering (most recent per section):', sectionPieces);
+                        
+                        // Update UI with the most recent piece for each section
+                        Object.values(sectionPieces).forEach(piece => {
                             console.log('Processing piece:', piece);
                             const metadata = piece.interaction_metadata;
                             console.log('Piece metadata:', metadata);
