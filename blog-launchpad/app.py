@@ -2193,9 +2193,18 @@ def execute_llm_request():
         )
         
         if ollama_response.status_code == 200:
-            response_data = ollama_response.json()
-            # Extract the generated text from Ollama's response
-            generated_text = response_data.get('response', '')
+            # Ollama returns streaming JSON lines, we need to parse them
+            response_lines = ollama_response.text.strip().split('\n')
+            generated_text = ""
+            
+            for line in response_lines:
+                if line.strip():
+                    try:
+                        line_data = json.loads(line)
+                        if 'response' in line_data:
+                            generated_text += line_data['response']
+                    except json.JSONDecodeError:
+                        continue  # Skip malformed lines
             
             return jsonify({
                 'output': generated_text,
