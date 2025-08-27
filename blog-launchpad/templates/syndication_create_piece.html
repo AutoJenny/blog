@@ -580,6 +580,7 @@
                 
                 // Load any previously saved pieces for this post
                 setTimeout(() => {
+                    console.log('displaySections: Calling loadSavedPieces after 500ms delay');
                     loadSavedPieces();
                 }, 500); // Small delay to ensure DOM is fully rendered
             }
@@ -1216,8 +1217,11 @@
 
             // Load saved syndication pieces from database
             async function loadSavedPieces() {
+                console.log('loadSavedPieces() function called');
                 try {
                     const postId = getCurrentPostId();
+                    console.log('getCurrentPostId() returned:', postId);
+                    
                     if (!postId) {
                         console.log('No post ID available, skipping saved pieces load');
                         return;
