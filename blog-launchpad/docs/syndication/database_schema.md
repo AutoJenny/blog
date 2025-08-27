@@ -20,6 +20,13 @@ This document provides a comprehensive reference for the Social Media Syndicatio
 - **Timeline**: Immediate implementation
 - **Status**: **IMPLEMENTED AND WORKING**
 
+#### **Database Integration Strategy**
+- **LLM Infrastructure**: Uses existing `llm_interaction` table for storing generated content
+- **Prompt Management**: Leverages existing `llm_prompt` table with "Social Media Syndication" prompt
+- **Metadata Storage**: Stores syndication-specific data in `interaction_metadata` JSON field
+- **Parameter Tracking**: Records platform/channel info in `parameters_used` JSON field
+- **No New Tables**: Fully integrated with existing blog-core database schema
+
 ### **Phase 2: Enhanced MVP (Next 2-4 weeks) 📋**
 - **Goal**: Expand to multiple Facebook channels and add Twitter
 - **Scope**: 2-3 platforms, 3-5 channel types
@@ -67,9 +74,32 @@ ORDER BY cr.requirement_category, cr.requirement_key
 4. **JavaScript**: Processes real data to generate LLM responses
 5. **Output**: Shows actual stored values, not hard-coded ones
 
+#### **4. LLM Content Storage**
+1. **Generated Content**: Stored in existing `llm_interaction.output_text` field
+2. **Original Content**: Stored in existing `llm_interaction.input_text` field
+3. **Syndication Metadata**: Stored in `llm_interaction.interaction_metadata` JSON field
+4. **Platform Parameters**: Stored in `llm_interaction.parameters_used` JSON field
+5. **Prompt Reference**: Links to "Social Media Syndication" prompt in `llm_prompt` table
+
 ---
 
 ## 📊 **EXISTING DATABASE SCHEMA REFERENCE**
+
+### **Integration with Blog-Core LLM Infrastructure**
+
+The syndication system leverages the existing blog-core LLM infrastructure instead of creating duplicate functionality:
+
+#### **LLM Tables Used**
+- **`llm_prompt`**: Contains the "Social Media Syndication" prompt template
+- **`llm_interaction`**: Stores all generated syndication content and metadata
+- **`llm_provider`**: References to LLM service providers (Ollama, etc.)
+- **`llm_model`**: Model information for tracking which models were used
+
+#### **Data Storage Strategy**
+- **Content**: `llm_interaction.input_text` (original blog content) + `llm_interaction.output_text` (generated social media content)
+- **Metadata**: `llm_interaction.interaction_metadata` stores syndication-specific data (post_id, section_id, platform_id, etc.)
+- **Parameters**: `llm_interaction.parameters_used` stores platform/channel requirements and prompt details
+- **Timestamps**: `llm_interaction.created_at` tracks when content was generated
 
 ### **Current System Architecture**
 The existing system uses a complex 17-table database schema that provides a solid foundation for our MVP implementation. This schema includes comprehensive platform management, channel configuration, and process tracking capabilities.
