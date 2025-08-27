@@ -1204,9 +1204,21 @@
             }
 
             function updatePieceContent(sectionIndex, llmResponse) {
+                console.log(`updatePieceContent called with sectionIndex: ${sectionIndex}, llmResponse: ${llmResponse.substring(0, 100)}...`);
+                
                 const sectionRow = document.querySelector(`#task-checkbox-${sectionIndex}`).closest('tr');
+                console.log(`Found section row:`, sectionRow);
+                
+                if (!sectionRow) {
+                    console.error(`No section row found for section index: ${sectionIndex}`);
+                    return;
+                }
+                
                 const pieceCell = sectionRow.querySelector('.piece-item');
+                console.log(`Found piece cell:`, pieceCell);
+                
                 if (pieceCell) {
+                    console.log(`Updating piece cell content for section ${sectionIndex}`);
                     pieceCell.innerHTML = `
                         <h6>Piece ${sectionIndex + 1}</h6>
                         <div class="piece-output">
@@ -1214,6 +1226,9 @@
                             <div class="piece-timestamp text-muted small">Generated: ${new Date().toLocaleTimeString()}</div>
                         </div>
                     `;
+                    console.log(`Piece cell updated successfully for section ${sectionIndex}`);
+                } else {
+                    console.error(`No piece cell found for section index: ${sectionIndex}`);
                 }
             }
 
