@@ -497,6 +497,13 @@
                     console.log(`Created checkbox ${index}:`, checkbox);
                     console.log(`Checkbox ${index} checked:`, checkbox.checked);
                     
+                    // Pre-fill debug panel with section content for the first section
+                    if (index === 0) {
+                        setTimeout(() => {
+                            updateDebugPanelSectionContent(section);
+                        }, 100);
+                    }
+                    
                     taskCell.appendChild(checkbox);
                     taskCell.className = 'task-checkbox-cell';
                     
@@ -673,6 +680,11 @@
                     
                     console.log('Created process data:', processData);
                     displayProcessDetails(processData);
+                    
+                    // Pre-fill debug panel with available data
+                    setTimeout(() => {
+                        prefillDebugPanelWithLLMSettings();
+                    }, 100); // Small delay to ensure DOM elements are loaded
                 } else {
                     console.log('No process selected, hiding details');
                     processDetails.style.display = 'none';
@@ -868,6 +880,73 @@
                 // Assemble and display the final prompt
                 const assembledPrompt = assembleLLMPrompt(processConfig, sectionContent);
                 document.getElementById('debugAssembledPrompt').textContent = assembledPrompt;
+            }
+
+            // Pre-fill debug panel with LLM Settings data
+            function prefillDebugPanelWithLLMSettings() {
+                // Get LLM Settings from the form fields
+                const llmProviderSelect = document.getElementById('llmProviderSelect');
+                const llmModelSelect = document.getElementById('llmModelSelect');
+                const llmTemperature = document.getElementById('llmTemperature');
+                const llmMaxTokens = document.getElementById('llmMaxTokens');
+                const llmSystemPrompt = document.getElementById('llmSystemPrompt');
+                const llmUserPromptTemplate = document.getElementById('llmUserPromptTemplate');
+                
+                if (llmSystemPrompt && llmSystemPrompt.value) {
+                    document.getElementById('debugLLMPrompt').textContent = llmSystemPrompt.value;
+                }
+                
+                // Update constraints and style guide from Channel Requirements
+                updateDebugPanelFromRequirements();
+            }
+
+            // Update debug panel with Channel Requirements data
+            function updateDebugPanelFromRequirements() {
+                // Get requirements from the Channel Requirements accordion
+                const requirementsAccordion = document.getElementById('mvpRequirementsAccordion');
+                if (!requirementsAccordion) return;
+                
+                let constraints = [];
+                let styleGuide = [];
+                
+                // Look for constraint and style guide requirements
+                const requirementItems = requirementsAccordion.querySelectorAll('.requirement-item');
+                requirementItems.forEach(item => {
+                    const keyElement = item.querySelector('.badge');
+                    const valueElement = item.querySelector('strong');
+                    const descriptionElement = item.querySelector('small');
+                    
+                    if (keyElement && valueElement && descriptionElement) {
+                        const key = keyElement.textContent;
+                        const value = valueElement.textContent;
+                        const description = descriptionElement.textContent;
+                        
+                        // Categorize requirements
+                        if (key.toLowerCase().includes('constraint') || description.toLowerCase().includes('constraint')) {
+                            constraints.push(`${key}: ${value} - ${description}`);
+                        } else if (key.toLowerCase().includes('style') || description.toLowerCase().includes('style')) {
+                            styleGuide.push(`${key}: ${value} - ${description}`);
+                        }
+                    }
+                });
+                
+                // Update debug panel
+                if (constraints.length > 0) {
+                    document.getElementById('debugConstraints').textContent = constraints.join('\n');
+                }
+                if (styleGuide.length > 0) {
+                    document.getElementById('debugStyleGuide').textContent = styleGuide.join('\n');
+                }
+            }
+
+            // Update debug panel with section content
+            function updateDebugPanelSectionContent(section) {
+                if (section) {
+                    const contentText = `Title: ${section.title || 'No title'}\n\nContent: ${section.content || 'No content'}\n\nPolished: ${section.polished || 'No polished content'}\n\nImage: ${section.image_path || 'No image'}`;
+                    document.getElementById('debugSectionContent').textContent = contentText;
+                } else {
+                    document.getElementById('debugSectionContent').textContent = 'No section content available';
+                }
             }
 
             function assembleLLMPrompt(processConfig, sectionContent) {
