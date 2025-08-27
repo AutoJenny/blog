@@ -957,7 +957,17 @@
             // Update debug panel with section content
             function updateDebugPanelSectionContent(section) {
                 if (section) {
-                    const contentText = `Title: ${section.title || 'No title'}\n\nContent: ${section.content || 'No content'}\n\nPolished: ${section.polished || 'No polished content'}\n\nImage: ${section.image_path || 'No image'}`;
+                    // Clean up the polished content by removing HTML tags
+                    let polishedContent = section.polished || '';
+                    if (polishedContent) {
+                        // Remove HTML tags and clean up whitespace
+                        polishedContent = polishedContent.replace(/<[^>]*>/g, '').trim();
+                        // Replace multiple spaces/newlines with single spaces
+                        polishedContent = polishedContent.replace(/\s+/g, ' ');
+                    }
+                    
+                    // Create clean, LLM-friendly content
+                    const contentText = `${section.title || 'No title'}\n\n${polishedContent || section.content || 'No content available'}`;
                     document.getElementById('debugSectionContent').textContent = contentText;
                 } else {
                     document.getElementById('debugSectionContent').textContent = 'No section content available';
