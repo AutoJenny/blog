@@ -928,12 +928,12 @@
                         // Categorize requirements with broader matching
                         if (key.includes('constraint') || key.includes('rule') || key.includes('requirement') || 
                             description.includes('constraint') || description.includes('rule') || description.includes('requirement')) {
-                            constraints.push(`${keyElement.textContent}: ${value} - ${descriptionElement.textContent}`);
-                            console.log('Added to constraints:', keyElement.textContent);
+                            constraints.push(value);
+                            console.log('Added to constraints:', value);
                         } else if (key.includes('style') || key.includes('tone') || key.includes('voice') || key.includes('guideline') ||
                                  description.includes('style') || description.includes('tone') || description.includes('voice') || description.includes('guideline')) {
-                            styleGuide.push(`${keyElement.textContent}: ${value} - ${descriptionElement.textContent}`);
-                            console.log('Added to styleGuide:', keyElement.textContent);
+                            styleGuide.push(value);
+                            console.log('Added to styleGuide:', value);
                         }
                     }
                 });
