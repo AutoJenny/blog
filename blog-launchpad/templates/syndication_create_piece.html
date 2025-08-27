@@ -717,11 +717,6 @@
                 
                 // Show process details panel
                 processDetails.style.display = 'block';
-                
-                // Fetch and display process configurations
-                if (process.id) {
-                    fetchProcessConfigurations(process.id);
-                }
             }
             
             // Initialize conversion panel when post is selected
@@ -1063,14 +1058,7 @@
 
             // Update debug panel when process is selected
             function displayProcessDetails(process) {
-                // Existing process details display code...
-                document.getElementById('selectedProcessName').textContent = process.process_name || 'N/A';
-                document.getElementById('selectedProcessType').textContent = process.content_type || 'N/A';
-                document.getElementById('selectedProcessPriority').textContent = process.priority || 'N/A';
-                document.getElementById('selectedPlatformName').textContent = process.platform_name || 'N/A';
-                document.getElementById('selectedProcessStatus').textContent = process.development_status || 'N/A';
-                document.getElementById('selectedProcessActive').textContent = process.is_active ? 'Yes' : 'No';
-                document.getElementById('selectedProcessDescription').textContent = process.description || 'No description available';
+                console.log('Process selected:', process);
                 
                 // Update debug panel with process info
                 const processConfig = {
@@ -1078,9 +1066,6 @@
                     description: process.description,
                     configs: [] // Will be populated when configs are fetched
                 };
-                
-                // Fetch and display process configurations
-                fetchProcessConfigurations(process.id);
                 
                 // Update debug panel
                 updateDebugPanel(processConfig, null);
