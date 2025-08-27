@@ -2110,84 +2110,82 @@ def get_llm_models(provider_id):
 
 @app.route('/api/syndication/llm/settings', methods=['GET'])
 def get_llm_settings():
-    """Get LLM settings for Facebook Feed Post process."""
+    """Get saved LLM settings for the current process."""
     try:
         with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            
-            # Get LLM settings for Facebook Feed Post process (ID 1)
             cur.execute("""
-                SELECT config_key, config_value, description
+                SELECT config_key, config_value, config_category
                 FROM process_configurations 
-                WHERE process_id = 1 
-                AND config_category = 'llm_settings'
-                AND is_active = true
-                ORDER BY display_order
+                WHERE process_id = 1 AND config_category = 'llm_settings'
             """)
+            configs = cur.fetchall()
             
-            settings = cur.fetchall()
-            
-            # Convert to dictionary format
-            settings_dict = {}
-            for setting in settings:
-                settings_dict[setting['config_key']] = {
-                    'value': setting['config_value'],
-                    'description': setting['description']
+            settings = {}
+            for config in configs:
+                settings[config['config_key']] = {
+                    'value': config['config_value'],
+                    'category': config['config_category']
                 }
             
-            return jsonify({'settings': settings_dict})
-            
+            return jsonify({'settings': settings})
     except Exception as e:
         logger.error(f"Error fetching LLM settings: {e}")
-        return jsonify({'error': 'Failed to fetch LLM settings'}), 500
+        return jsonify({'error': 'Failed to fetch settings'}), 500
 
 @app.route('/api/syndication/llm/settings', methods=['POST'])
 def save_llm_settings():
-    """Save LLM settings for Facebook Feed Post process."""
+    """Save LLM settings for the current process."""
     try:
         data = request.get_json()
         if not data:
-            return jsonify({'error': 'No JSON data provided'}), 400
+            return jsonify({'error': 'No data provided'}), 400
         
         with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
-            # Process ID 1 is Facebook Feed Post
-            process_id = 1
-            
             for key, value in data.items():
-                # Check if setting already exists
+                # Insert or update each setting
                 cur.execute("""
-                    SELECT id FROM process_configurations 
-                    WHERE process_id = %s 
-                    AND config_category = 'llm_settings' 
-                    AND config_key = %s
-                """, (process_id, key))
-                
-                existing = cur.fetchone()
-                
-                if existing:
-                    # Update existing setting
-                    cur.execute("""
-                        UPDATE process_configurations 
-                        SET config_value = %s, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = %s
-                    """, (str(value), existing['id']))
-                else:
-                    # Insert new setting
-                    cur.execute("""
-                        INSERT INTO process_configurations 
-                        (process_id, config_category, config_key, config_value, description, display_order, is_active)
-                        VALUES (%s, 'llm_settings', %s, %s, %s, 0, true)
-                    """, (process_id, key, str(value), f'LLM setting for {key}'))
+                    INSERT INTO process_configurations (process_id, config_category, config_key, config_value)
+                    VALUES (1, 'llm_settings', %s, %s)
+                    ON CONFLICT (process_id, config_category, config_key) 
+                    DO UPDATE SET config_value = EXCLUDED.config_value
+                """, (key, value))
             
             conn.commit()
-            
-        return jsonify({'success': True, 'message': 'LLM settings saved successfully'})
-        
+            return jsonify({'success': True, 'message': 'Settings saved successfully'})
     except Exception as e:
         logger.error(f"Error saving LLM settings: {e}")
-        return jsonify({'error': 'Failed to save LLM settings'}), 500
+        return jsonify({'error': 'Failed to save settings'}), 500
+
+@app.route('/api/syndication/llm/execute', methods=['POST'])
+def execute_llm_request():
+    """Proxy to LLM service for executing requests."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Forward request to LLM service
+        import requests
+        llm_response = requests.post(
+            'http://localhost:5002/api/run-llm',
+            json=data,
+            timeout=30
+        )
+        
+        if llm_response.status_code == 200:
+            return jsonify(llm_response.json())
+        else:
+            return jsonify({'error': f'LLM service error: {llm_response.status_code}'}), llm_response.status_code
+            
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error connecting to LLM service: {e}")
+        return jsonify({'error': 'Failed to connect to LLM service'}), 500
+    except Exception as e:
+        logger.error(f"Error executing LLM request: {e}")
+        return jsonify({'error': 'Failed to execute LLM request'}), 500
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(debug=True, host='0.0.0.0', port=port) 

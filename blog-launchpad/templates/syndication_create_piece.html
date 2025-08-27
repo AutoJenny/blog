@@ -908,6 +908,134 @@
                 document.getElementById('llmProcessingTime').textContent = '--';
             }
 
+            // Helper functions for LLM integration
+            function getSelectedTasks() {
+                const checkboxes = document.querySelectorAll('.task-checkbox:checked');
+                return Array.from(checkboxes).map(cb => ({
+                    sectionId: cb.dataset.sectionId,
+                    sectionIndex: parseInt(cb.dataset.sectionIndex)
+                }));
+            }
+
+            function getLLMSettings() {
+                return {
+                    provider_id: document.getElementById('llmProviderSelect')?.value || '',
+                    model_id: document.getElementById('llmModelSelect')?.value || '',
+                    system_prompt: document.getElementById('llmSystemPrompt')?.value || '',
+                    user_prompt_template: document.getElementById('llmUserPromptTemplate')?.value || '',
+                    temperature: document.getElementById('llmTemperature')?.value || '0.7',
+                    max_tokens: document.getElementById('llmMaxTokens')?.value || '1000'
+                };
+            }
+
+            function getSectionContent(sectionIndex) {
+                const sectionRow = document.querySelector(`#task-checkbox-${sectionIndex}`).closest('tr');
+                const sectionCell = sectionRow.querySelector('.section-item');
+                if (sectionCell) {
+                    return {
+                        title: sectionCell.querySelector('.section-title')?.textContent || '',
+                        content: sectionCell.querySelector('.section-content')?.textContent || '',
+                        polished: sectionCell.querySelector('.full-content-display')?.textContent || ''
+                    };
+                }
+                return null;
+            }
+
+            function updatePieceContent(sectionIndex, llmResponse) {
+                const sectionRow = document.querySelector(`#task-checkbox-${sectionIndex}`).closest('tr');
+                const pieceCell = sectionRow.querySelector('.piece-item');
+                if (pieceCell) {
+                    pieceCell.innerHTML = `
+                        <h6>Piece ${sectionIndex + 1}</h6>
+                        <div class="piece-output">
+                            <div class="piece-text">${llmResponse}</div>
+                            <div class="piece-timestamp text-muted small">Generated: ${new Date().toLocaleTimeString()}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            async function processSectionWithLLM(sectionIndex) {
+                try {
+                    // Get LLM settings
+                    const llmSettings = getLLMSettings();
+                    if (!llmSettings.provider_id || !llmSettings.model_id) {
+                        alert('Please select a provider and model first');
+                        return;
+                    }
+
+                    // Get section content
+                    const sectionContent = getSectionContent(sectionIndex);
+                    if (!sectionContent) {
+                        alert('Could not find section content');
+                        return;
+                    }
+
+                    // Assemble prompt
+                    const systemPrompt = llmSettings.system_prompt || 'You are a social media content creator. Convert blog content into engaging social media posts.';
+                    const userPrompt = llmSettings.user_prompt_template || 'Please convert this blog section into a social media post:';
+                    
+                    const fullPrompt = `${systemPrompt}\n\n${userPrompt}\n\nTitle: ${sectionContent.title}\n\nContent: ${sectionContent.content}\n\nPolished: ${sectionContent.polished}`;
+
+                    // Prepare LLM request
+                    const llmRequest = {
+                        provider: llmSettings.provider_id,
+                        model: llmSettings.model_id,
+                        prompt: fullPrompt,
+                        temperature: parseFloat(llmSettings.temperature),
+                        max_tokens: parseInt(llmSettings.max_tokens)
+                    };
+
+                    // Update status
+                    document.getElementById('llmStatus').textContent = 'Processing...';
+                    const startTime = Date.now();
+
+                    // Send to LLM service
+                    const response = await fetch('/api/syndication/llm/execute', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(llmRequest)
+                    });
+
+                    const result = await response.json();
+                    const endTime = Date.now();
+                    const processingTime = ((endTime - startTime) / 1000).toFixed(1) + 's';
+
+                    if (result.error) {
+                        throw new Error(result.error);
+                    }
+
+                    // Update status
+                    document.getElementById('llmStatus').textContent = 'Completed';
+                    document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
+                    document.getElementById('llmProcessingTime').textContent = processingTime;
+
+                    // Update piece content
+                    updatePieceContent(sectionIndex, result.response || result.content || 'No response received');
+
+                    // Update debug panel
+                    const processingDetails = {
+                        requestTime: new Date(startTime).toLocaleTimeString(),
+                        responseTime: new Date(endTime).toLocaleTimeString(),
+                        totalDuration: processingTime,
+                        modelUsed: `${llmSettings.provider_id} (${llmSettings.model_id})`
+                    };
+
+                    updateLLMResponse(
+                        JSON.stringify(llmRequest, null, 2),
+                        result.response || result.content || 'No response received',
+                        processingDetails
+                    );
+
+                } catch (error) {
+                    console.error('Error processing section:', error);
+                    document.getElementById('llmStatus').textContent = 'Error';
+                    alert(`Error processing section: ${error.message}`);
+                }
+            }
+
             // Event listeners for debug panel buttons
             document.addEventListener('DOMContentLoaded', function() {
                 const processSection1Btn = document.getElementById('processSection1Btn');
@@ -915,28 +1043,16 @@
                 
                 if (processSection1Btn) {
                     processSection1Btn.addEventListener('click', function() {
-                        // TODO: Implement actual LLM processing
-                        console.log('Process Section 1 clicked');
-                        document.getElementById('llmStatus').textContent = 'Processing...';
+                        // Get the first selected task
+                        const selectedTasks = getSelectedTasks();
+                        if (selectedTasks.length === 0) {
+                            alert('Please select at least one task to process');
+                            return;
+                        }
                         
-                        // Simulate processing for now
-                        setTimeout(() => {
-                            document.getElementById('llmStatus').textContent = 'Completed';
-                            document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
-                            document.getElementById('llmProcessingTime').textContent = '2.5s';
-                            
-                            // Simulate response
-                            const mockResponse = "Here's your converted social media post content...";
-                            const mockOutput = "Converted content ready for display";
-                            const mockDetails = {
-                                requestTime: new Date().toLocaleTimeString(),
-                                responseTime: new Date().toLocaleTimeString(),
-                                totalDuration: '2.5s',
-                                modelUsed: 'Ollama (llama2)'
-                            };
-                            
-                            updateLLMResponse(mockResponse, mockOutput, mockDetails);
-                        }, 2500);
+                        // Process the first selected task
+                        const firstTask = selectedTasks[0];
+                        processSectionWithLLM(firstTask.sectionIndex);
                     });
                 }
                 
