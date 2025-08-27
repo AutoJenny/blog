@@ -2304,7 +2304,7 @@ def test_ollama_connection():
 
 @app.route('/api/syndication/pieces', methods=['GET', 'POST'])
 def syndication_pieces():
-    """Handle syndication pieces - save generated content and retrieve existing pieces."""
+    """Handle syndication pieces using existing llm_interaction table."""
     try:
         if request.method == 'POST':
             data = request.get_json()
@@ -2319,74 +2319,52 @@ def syndication_pieces():
             with get_db_connection() as conn:
                 cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
                 
-                # Check if piece already exists for this section/process
+                # Use the existing llm_interaction table
+                # Store metadata in interaction_metadata JSON field
+                metadata = {
+                    'post_id': str(data['post_id']),
+                    'section_id': str(data['section_id']),
+                    'platform_id': str(data['platform_id']),
+                    'channel_type_id': str(data['channel_type_id']),
+                    'process_id': str(data['process_id']),
+                    'llm_model': str(data.get('llm_model', '')),
+                    'llm_temperature': str(data.get('llm_temperature', '')),
+                    'llm_max_tokens': str(data.get('llm_max_tokens', '')),
+                    'llm_provider': str(data.get('llm_provider', '')),
+                    'processing_time_ms': str(data.get('processing_time_ms', ''))
+                }
+                
+                # Store parameters in parameters_used JSON field
+                parameters = {
+                    'platform': str(data.get('platform_name', 'Unknown')),
+                    'channel_type': str(data.get('channel_type_name', 'Unknown')),
+                    'requirements': str(data.get('requirements', '')),
+                    'prompt_used': str(data.get('prompt_used', ''))
+                }
+                
+                # Insert into llm_interaction table
                 cur.execute("""
-                    SELECT id FROM syndication_pieces 
-                    WHERE section_id = %s AND process_id = %s
-                """, (data['section_id'], data['process_id']))
+                    INSERT INTO llm_interaction (
+                        prompt_id, input_text, output_text, parameters_used, interaction_metadata
+                    ) VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (
+                    116,  # Social Media Syndication prompt ID
+                    data['original_content'],
+                    data['generated_content'],
+                    json.dumps(parameters),
+                    json.dumps(metadata)
+                ))
                 
-                existing_piece = cur.fetchone()
+                piece_id = cur.fetchone()['id']
+                conn.commit()
                 
-                if existing_piece:
-                    # Update existing piece
-                    cur.execute("""
-                        UPDATE syndication_pieces SET
-                            generated_content = %s,
-                            llm_model = %s,
-                            llm_temperature = %s,
-                            llm_max_tokens = %s,
-                            llm_provider = %s,
-                            prompt_used = %s,
-                            processing_time_ms = %s,
-                            updated_at = CURRENT_TIMESTAMP
-                        WHERE id = %s
-                        RETURNING id
-                    """, (
-                        data['generated_content'],
-                        data.get('llm_model'),
-                        data.get('llm_temperature'),
-                        data.get('llm_max_tokens'),
-                        data.get('llm_provider'),
-                        data.get('prompt_used'),
-                        data.get('processing_time_ms'),
-                        existing_piece['id']
-                    ))
-                    
-                    piece_id = cur.fetchone()['id']
-                    conn.commit()
-                    
-                    return jsonify({
-                        'status': 'success',
-                        'message': 'Syndication piece updated successfully',
-                        'piece_id': piece_id,
-                        'action': 'updated'
-                    })
-                else:
-                    # Insert new piece
-                    cur.execute("""
-                        INSERT INTO syndication_pieces (
-                            post_id, section_id, platform_id, channel_type_id, process_id,
-                            original_content, generated_content, llm_model, llm_temperature,
-                            llm_max_tokens, llm_provider, prompt_used, processing_time_ms
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        RETURNING id
-                    """, (
-                        data['post_id'], data['section_id'], data['platform_id'], 
-                        data['channel_type_id'], data['process_id'], data['original_content'],
-                        data['generated_content'], data.get('llm_model'), data.get('llm_temperature'),
-                        data.get('llm_max_tokens'), data.get('llm_provider'), data.get('prompt_used'),
-                        data.get('processing_time_ms')
-                    ))
-                    
-                    piece_id = cur.fetchone()['id']
-                    conn.commit()
-                    
-                    return jsonify({
-                        'status': 'success',
-                        'message': 'Syndication piece saved successfully',
-                        'piece_id': piece_id,
-                        'action': 'created'
-                    })
+                return jsonify({
+                    'status': 'success',
+                    'message': 'Syndication piece saved successfully',
+                    'piece_id': piece_id,
+                    'action': 'created'
+                })
         
         else:
             # GET request - retrieve pieces for a specific post
@@ -2398,17 +2376,37 @@ def syndication_pieces():
                 cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
                 
                 cur.execute("""
-                    SELECT sp.*, p.name as platform_name, ct.name as channel_type_name,
-                           cp.process_name, cp.display_name as process_display_name
-                    FROM syndication_pieces sp
-                    JOIN platforms p ON sp.platform_id = p.id
-                    JOIN channel_types ct ON sp.channel_type_id = ct.id
-                    JOIN content_processes cp ON sp.process_id = cp.id
-                    WHERE sp.post_id = %s
-                    ORDER BY sp.section_id, sp.created_at DESC
+                    SELECT 
+                        li.id,
+                        li.input_text as original_content,
+                        li.output_text as generated_content,
+                        li.parameters_used,
+                        li.interaction_metadata,
+                        li.created_at,
+                        lp.name as prompt_name,
+                        lp.description as prompt_description
+                    FROM llm_interaction li
+                    JOIN llm_prompt lp ON li.prompt_id = lp.id
+                    WHERE li.interaction_metadata->>'post_id' = %s
+                    AND lp.name = 'Social Media Syndication'
+                    ORDER BY li.created_at DESC
                 """, (post_id,))
                 
-                pieces = [dict(row) for row in cur.fetchall()]
+                pieces = []
+                for row in cur.fetchall():
+                    piece = dict(row)
+                    # Parse JSON fields - check if they're strings first
+                    if piece['parameters_used'] and isinstance(piece['parameters_used'], str):
+                        try:
+                            piece['parameters_used'] = json.loads(piece['parameters_used'])
+                        except json.JSONDecodeError:
+                            piece['parameters_used'] = {}
+                    if piece['interaction_metadata'] and isinstance(piece['interaction_metadata'], str):
+                        try:
+                            piece['interaction_metadata'] = json.loads(piece['interaction_metadata'])
+                        except json.JSONDecodeError:
+                            piece['interaction_metadata'] = {}
+                    pieces.append(piece)
                 
                 return jsonify({
                     'status': 'success',
@@ -2421,25 +2419,36 @@ def syndication_pieces():
 
 @app.route('/api/syndication/pieces/<int:piece_id>', methods=['GET', 'PUT', 'DELETE'])
 def syndication_piece(piece_id):
-    """Handle individual syndication piece operations."""
+    """Handle individual syndication piece operations using existing llm_interaction table."""
     try:
         if request.method == 'GET':
             with get_db_connection() as conn:
                 cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
                 
                 cur.execute("""
-                    SELECT sp.*, p.name as platform_name, ct.name as channel_type_name,
-                           cp.process_name, cp.display_name as process_display_name
-                    FROM syndication_pieces sp
-                    JOIN platforms p ON sp.platform_id = p.id
-                    JOIN channel_types ct ON sp.channel_type_id = ct.id
-                    JOIN content_processes cp ON sp.process_id = cp.id
-                    WHERE sp.id = %s
+                    SELECT 
+                        li.id,
+                        li.input_text as original_content,
+                        li.output_text as generated_content,
+                        li.parameters_used,
+                        li.interaction_metadata,
+                        li.created_at,
+                        lp.name as prompt_name,
+                        lp.description as prompt_description
+                    FROM llm_interaction li
+                    JOIN llm_prompt lp ON li.prompt_id = lp.id
+                    WHERE li.id = %s AND lp.name = 'Social Media Syndication'
                 """, (piece_id,))
                 
                 piece = cur.fetchone()
                 if not piece:
                     return jsonify({'error': 'Syndication piece not found'}), 404
+                
+                # Parse JSON fields
+                if piece['parameters_used']:
+                    piece['parameters_used'] = json.loads(piece['parameters_used'])
+                if piece['interaction_metadata']:
+                    piece['interaction_metadata'] = json.loads(piece['interaction_metadata'])
                 
                 return jsonify({
                     'status': 'success',
@@ -2452,27 +2461,16 @@ def syndication_piece(piece_id):
             with get_db_connection() as conn:
                 cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
                 
-                # Update the piece
-                update_fields = []
-                update_values = []
+                # Update the piece - only output_text can be updated
+                if 'generated_content' not in data:
+                    return jsonify({'error': 'Only generated_content can be updated'}), 400
                 
-                for field in ['generated_content', 'status', 'user_notes']:
-                    if field in data:
-                        update_fields.append(f"{field} = %s")
-                        update_values.append(data[field])
-                
-                if not update_fields:
-                    return jsonify({'error': 'No fields to update'}), 400
-                
-                update_values.append(piece_id)
-                
-                cur.execute(f"""
-                    UPDATE syndication_pieces SET
-                        {', '.join(update_fields)},
-                        updated_at = CURRENT_TIMESTAMP
-                    WHERE id = %s
+                cur.execute("""
+                    UPDATE llm_interaction SET
+                        output_text = %s
+                    WHERE id = %s AND prompt_id = %s
                     RETURNING id
-                """, update_values)
+                """, (data['generated_content'], piece_id, 116))
                 
                 updated_piece = cur.fetchone()
                 if not updated_piece:
@@ -2490,7 +2488,7 @@ def syndication_piece(piece_id):
             with get_db_connection() as conn:
                 cur = conn.cursor()
                 
-                cur.execute("DELETE FROM syndication_pieces WHERE id = %s RETURNING id", (piece_id,))
+                cur.execute("DELETE FROM llm_interaction WHERE id = %s AND prompt_id = %s RETURNING id", (piece_id, 116))
                 
                 deleted_piece = cur.fetchone()
                 if not deleted_piece:
