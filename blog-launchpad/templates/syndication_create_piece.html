@@ -880,17 +880,21 @@
                 // Assemble and display the final prompt
                 const assembledPrompt = assembleLLMPrompt(processConfig, sectionContent);
                 
-                // Create a preview of what will be sent to LLM (without the actual request object yet)
-                const llmSettings = getLLMSettings();
-                const previewRequest = {
-                    provider: llmSettings.provider_id || 'Not selected',
-                    model: llmSettings.model_id || 'Not selected',
-                    temperature: llmSettings.temperature || '0.7',
-                    max_tokens: llmSettings.max_tokens || '1000',
-                    prompt_preview: assembledPrompt.substring(0, 200) + (assembledPrompt.length > 200 ? '...' : '')
-                };
-                
-                document.getElementById('debugAssembledPrompt').textContent = JSON.stringify(previewRequest, null, 2);
+                // Only show preview if we have valid data
+                if (assembledPrompt && assembledPrompt !== 'No prompt assembled yet') {
+                    const llmSettings = getLLMSettings();
+                    const previewRequest = {
+                        provider: llmSettings.provider_id || 'Not selected',
+                        model: llmSettings.model_id || 'Not selected',
+                        temperature: llmSettings.temperature || '0.7',
+                        max_tokens: llmSettings.max_tokens || '1000',
+                        prompt_preview: assembledPrompt.substring(0, 200) + (assembledPrompt.length > 200 ? '...' : '')
+                    };
+                    
+                    document.getElementById('debugAssembledPrompt').textContent = JSON.stringify(previewRequest, null, 2);
+                } else {
+                    document.getElementById('debugAssembledPrompt').textContent = 'Select a process and wait for prompt assembly...';
+                }
             }
 
             // Pre-fill debug panel with LLM Settings data
@@ -903,12 +907,21 @@
                 const llmSystemPrompt = document.getElementById('llmSystemPrompt');
                 const llmUserPromptTemplate = document.getElementById('llmUserPromptTemplate');
                 
-                if (llmSystemPrompt && llmSystemPrompt.value) {
-                    document.getElementById('debugLLMPrompt').textContent = llmSystemPrompt.value;
+                // Only update if we have valid LLM settings
+                if (llmProviderSelect && llmModelSelect && llmSystemPrompt) {
+                    if (llmSystemPrompt.value) {
+                        document.getElementById('debugLLMPrompt').textContent = llmSystemPrompt.value;
+                    }
+                    
+                    // Update constraints and style guide from Channel Requirements
+                    updateDebugPanelFromRequirements();
+                } else {
+                    // Clear debug panel if LLM settings aren't ready
+                    document.getElementById('debugLLMPrompt').textContent = 'LLM Settings not loaded yet';
+                    document.getElementById('debugConstraints').textContent = 'Waiting for requirements...';
+                    document.getElementById('debugStyleGuide').textContent = 'Waiting for requirements...';
+                    document.getElementById('debugAssembledPrompt').textContent = 'Select a process and configure LLM settings first...';
                 }
-                
-                // Update constraints and style guide from Channel Requirements
-                updateDebugPanelFromRequirements();
             }
 
             // Update debug panel with Channel Requirements data
@@ -986,8 +999,11 @@
             }
 
             function assembleLLMPrompt(processConfig, sectionContent) {
-                if (!processConfig || !sectionContent) {
-                    return 'No prompt assembled yet';
+                if (!processConfig) {
+                    return 'No process configuration available';
+                }
+                if (!sectionContent) {
+                    return 'No section content available';
                 }
                 
                 const systemPrompt = processConfig.configs?.find(c => c.config_category === 'llm_prompt' && c.config_key === 'system_prompt')?.config_value || '';
