@@ -259,10 +259,10 @@
                                                 <div class="debug-content-box" id="debugSectionContent">No section content available</div>
                                             </div>
                                             
-                                            <!-- LLM Request Configuration -->
+                                            <!-- Final Assembled Prompt -->
                                             <div class="debug-item mb-3">
-                                                <label class="debug-label">LLM Request Configuration (Complete Request Object):</label>
-                                                <div class="debug-prompt-box" id="debugAssembledPrompt">No request data yet</div>
+                                                <label class="debug-label">Final Assembled Prompt (What We're Sending to the LLM):</label>
+                                                <div class="debug-prompt-box" id="debugAssembledPrompt">No prompt assembled yet</div>
                                             </div>
                                         </div>
                                     </div>
@@ -880,18 +880,9 @@
                 // Assemble and display the final prompt
                 const assembledPrompt = assembleLLMPrompt(processConfig, sectionContent);
                 
-                // Only show preview if we have valid data
+                // Show the actual assembled prompt
                 if (assembledPrompt && assembledPrompt !== 'No prompt assembled yet') {
-                    const llmSettings = getLLMSettings();
-                    const previewRequest = {
-                        provider: llmSettings.provider_id || 'Not selected',
-                        model: llmSettings.model_id || 'Not selected',
-                        temperature: llmSettings.temperature || '0.7',
-                        max_tokens: llmSettings.max_tokens || '1000',
-                        prompt_preview: assembledPrompt.substring(0, 200) + (assembledPrompt.length > 200 ? '...' : '')
-                    };
-                    
-                    document.getElementById('debugAssembledPrompt').textContent = JSON.stringify(previewRequest, null, 2);
+                    document.getElementById('debugAssembledPrompt').textContent = assembledPrompt;
                 } else {
                     document.getElementById('debugAssembledPrompt').textContent = 'Select a process and wait for prompt assembly...';
                 }
@@ -1006,16 +997,51 @@
                     return 'No section content available';
                 }
                 
-                const systemPrompt = processConfig.configs?.find(c => c.config_category === 'llm_prompt' && c.config_key === 'system_prompt')?.config_value || '';
-                const constraints = processConfig.configs?.find(c => c.config_category === 'constraints')?.config_value || '';
-                const styleGuide = processConfig.configs?.find(c => c.config_category === 'style_guide')?.config_value || '';
+                // Get actual platform and process information
+                const platformSelector = document.getElementById('platformSelector');
+                const processSelector = document.getElementById('processSelector');
+                const selectedPlatform = platformSelector.options[platformSelector.selectedIndex];
+                const selectedProcess = processSelector.options[processSelector.selectedIndex];
                 
-                let prompt = `System: ${systemPrompt}\n\n`;
-                prompt += `User: Please convert the following blog section content into a social media post according to these requirements:\n\n`;
-                prompt += `Content:\n${sectionContent.content || sectionContent.title}\n\n`;
-                prompt += `Constraints: ${constraints}\n\n`;
-                prompt += `Style Guide: ${styleGuide}\n\n`;
-                prompt += `Please provide the converted content.`;
+                const platformName = selectedPlatform ? selectedPlatform.textContent : 'Unknown Platform';
+                const processName = selectedProcess ? selectedProcess.textContent.split(' (')[0] : 'Unknown Process';
+                const channelType = selectedProcess ? selectedProcess.textContent.includes('(') ? selectedProcess.textContent.split('(')[1].replace(')', '') : 'N/A' : 'N/A';
+                
+                // Get requirements from the Channel Requirements accordion
+                const requirementsAccordion = document.getElementById('mvpRequirementsAccordion');
+                let requirements = [];
+                
+                if (requirementsAccordion) {
+                    const requirementItems = requirementsAccordion.querySelectorAll('.requirement-item');
+                    requirementItems.forEach(item => {
+                        const keyElement = item.querySelector('.badge');
+                        const valueElement = item.querySelector('strong');
+                        if (keyElement && valueElement) {
+                            requirements.push(`${keyElement.textContent}: ${valueElement.textContent}`);
+                        }
+                    });
+                }
+                
+                const requirementsText = requirements.length > 0 ? requirements.join('\n') : 'No specific requirements';
+                
+                // Get LLM settings for the actual prompt
+                const llmSettings = getLLMSettings();
+                const systemPrompt = llmSettings.system_prompt || 'You are a social media content specialist. Convert blog post sections into engaging social media posts following the specified platform requirements.';
+                const userPrompt = llmSettings.user_prompt_template || 'Convert this blog post section into a {platform} {channel_type} post. Follow these requirements: {requirements}';
+                
+                // Replace placeholders with actual values
+                let finalUserPrompt = userPrompt
+                    .replace('{platform}', platformName)
+                    .replace('{channel_type}', channelType)
+                    .replace('{requirements}', requirementsText);
+                
+                // Build the complete prompt
+                let prompt = `${systemPrompt}\n\n`;
+                prompt += `${finalUserPrompt}\n\n`;
+                prompt += `BLOG TITLE: ${sectionContent.title || 'No title'}\n\n`;
+                prompt += `BLOG CONTENT: ${sectionContent.content || 'No content'}\n\n`;
+                prompt += `POLISHED CONTENT: ${sectionContent.polished || 'No polished content'}\n\n`;
+                prompt += `TASK: Create a social media post based on the above blog content.`;
                 
                 return prompt;
             }
@@ -1118,11 +1144,13 @@
                         return;
                     }
 
-                    // Assemble prompt
-                    const systemPrompt = llmSettings.system_prompt || 'You are a social media content specialist. Your task is to convert blog post sections into engaging social media posts.';
-                    const userPrompt = llmSettings.user_prompt_template || 'Convert this blog section into an engaging social media post. Make it concise, engaging, and suitable for social media sharing.';
+                    // Assemble prompt using the improved function
+                    const processConfig = {
+                        process_name: document.getElementById('debugProcessName')?.textContent || 'Unknown Process',
+                        description: document.getElementById('debugProcessDescription')?.textContent || 'No description available'
+                    };
                     
-                    const fullPrompt = `${systemPrompt}\n\n${userPrompt}\n\nBLOG TITLE: ${sectionContent.title}\n\nBLOG CONTENT: ${sectionContent.content}\n\nPOLISHED CONTENT: ${sectionContent.polished}\n\nTASK: Create a social media post based on the above blog content.`;
+                    const fullPrompt = assembleLLMPrompt(processConfig, sectionContent);
 
                     // Prepare LLM request
                     const llmRequest = {
