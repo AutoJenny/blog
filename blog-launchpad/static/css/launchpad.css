@@ -843,4 +843,29 @@
     }
 }
 
+/* Syndication pieces styling */
+.piece-item.saved {
+    border-color: #28a745 !important;
+    background-color: #f8fff9 !important;
+}
+
+.piece-item .badge {
+    font-size: 0.7em;
+    padding: 0.25em 0.5em;
+}
+
+.piece-item .piece-output {
+    margin-top: 10px;
+}
+
+.piece-item .piece-text {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.piece-item .piece-timestamp {
+    font-size: 0.8em;
+    color: #6c757d;
+}
+
 

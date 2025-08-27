@@ -207,6 +207,9 @@
                                 <!-- Process Execution Controls -->
                                 <div class="execution-controls mb-4">
                                     <div class="d-flex gap-2 mb-3">
+                                        <button class="btn btn-success" id="startOllamaBtn">
+                                            <i class="fas fa-play me-2"></i>Start Ollama
+                                        </button>
                                         <button class="btn btn-primary" id="processSection1Btn">
                                             <i class="fas fa-rocket me-2"></i>Process Section 1
                                         </button>
@@ -352,6 +355,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOMContentLoaded event fired');
+            
+            // Initialize button states - first checkbox is pre-selected
+            updateProcessAllButtonState(true);
             const postSelector = document.getElementById('postSelector');
             const postDetails = document.getElementById('postDetails');
             console.log('postSelector:', postSelector);
@@ -493,6 +499,13 @@
                     if (index === 0) {
                         checkbox.checked = true;
                     }
+                    
+                    // Add event listener for checkbox changes
+                    checkbox.addEventListener('change', function() {
+                        // Update button state when checkboxes change
+                        const selectedTasks = getSelectedTasks();
+                        updateProcessAllButtonState(selectedTasks.length > 0);
+                    });
                     
                     console.log(`Created checkbox ${index}:`, checkbox);
                     console.log(`Checkbox ${index} checked:`, checkbox.checked);
@@ -1136,7 +1149,26 @@
                 }));
                 
                 console.log('Selected tasks result:', selectedTasks);
+                
+                // Update button state based on selection
+                updateProcessAllButtonState(selectedTasks.length > 0);
+                
                 return selectedTasks;
+            }
+            
+            function updateProcessAllButtonState(hasSelection) {
+                const processAllBtn = document.getElementById('processAllSectionsBtn');
+                if (processAllBtn) {
+                    if (hasSelection) {
+                        processAllBtn.disabled = false;
+                        processAllBtn.classList.remove('btn-secondary');
+                        processAllBtn.classList.add('btn-success');
+                    } else {
+                        processAllBtn.disabled = true;
+                        processAllBtn.classList.remove('btn-success');
+                        processAllBtn.classList.add('btn-secondary');
+                    }
+                }
             }
 
             function getLLMSettings() {
@@ -1174,6 +1206,184 @@
                             <div class="piece-timestamp text-muted small">Generated: ${new Date().toLocaleTimeString()}</div>
                         </div>
                     `;
+                }
+            }
+
+            // Save syndication piece to database
+            async function saveSyndicationPiece(sectionIndex, generatedContent, llmRequest, llmResult, processingTime) {
+                try {
+                    // Get current post and section information
+                    const postId = getCurrentPostId();
+                    const sectionId = getSectionId(sectionIndex);
+                    const platformId = getPlatformId();
+                    const channelTypeId = getChannelTypeId();
+                    const processId = getProcessId();
+                    
+                    if (!postId || !sectionId || !platformId || !channelTypeId || !processId) {
+                        console.warn('Missing required IDs for database save:', { postId, sectionId, platformId, channelTypeId, processId });
+                        return;
+                    }
+                    
+                    // Get original content
+                    const originalContent = getSectionContent(sectionIndex);
+                    
+                    // Prepare data for database
+                    const pieceData = {
+                        post_id: postId,
+                        section_id: sectionId,
+                        platform_id: platformId,
+                        channel_type_id: channelTypeId,
+                        process_id: processId,
+                        original_content: originalContent,
+                        generated_content: generatedContent,
+                        llm_model: llmRequest.model,
+                        llm_temperature: llmRequest.temperature,
+                        llm_max_tokens: llmRequest.max_tokens,
+                        llm_provider: llmRequest.provider,
+                        prompt_used: llmRequest.prompt,
+                        processing_time_ms: Math.round(parseFloat(processingTime) * 1000)
+                    };
+                    
+                    // Save to database
+                    const response = await fetch('/api/syndication/pieces', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(pieceData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        console.log('Syndication piece saved successfully:', result);
+                        // Update the piece display to show it's saved
+                        updatePieceSavedStatus(sectionIndex, true);
+                    } else {
+                        console.error('Failed to save syndication piece:', result.error);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error saving syndication piece:', error);
+                }
+            }
+            
+            // Process all selected sections with LLM
+            async function processAllSelectedSections() {
+                try {
+                    const selectedTasks = getSelectedTasks();
+                    
+                    if (selectedTasks.length === 0) {
+                        alert('Please select at least one task to process');
+                        return;
+                    }
+                    
+                    // Disable the button and show progress
+                    const processAllBtn = document.getElementById('processAllSectionsBtn');
+                    const originalText = processAllBtn.textContent;
+                    processAllBtn.textContent = 'Processing...';
+                    processAllBtn.disabled = true;
+                    processAllBtn.classList.add('btn-secondary');
+                    processAllBtn.classList.remove('btn-success');
+                    
+                    let completedCount = 0;
+                    const totalCount = selectedTasks.length;
+                    
+                    // Process each selected section sequentially
+                    for (const task of selectedTasks) {
+                        try {
+                            // Update progress
+                            processAllBtn.textContent = `Processing ${completedCount + 1}/${totalCount}...`;
+                            
+                            // Process the section
+                            await processSectionWithLLM(task.sectionIndex);
+                            
+                            completedCount++;
+                            
+                            // Small delay between sections to avoid overwhelming the LLM
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            
+                        } catch (error) {
+                            console.error(`Error processing section ${task.sectionIndex}:`, error);
+                            // Continue with next section
+                        }
+                    }
+                    
+                    // Restore button state
+                    processAllBtn.textContent = originalText;
+                    processAllBtn.disabled = false;
+                    processAllBtn.classList.remove('btn-secondary');
+                    processAllBtn.classList.add('btn-success');
+                    
+                    // Show completion message
+                    alert(`Processing complete! Successfully processed ${completedCount}/${totalCount} sections.`);
+                    
+                } catch (error) {
+                    console.error('Error processing all sections:', error);
+                    alert(`Error processing sections: ${error.message}`);
+                    
+                    // Restore button state
+                    const processAllBtn = document.getElementById('processAllSectionsBtn');
+                    if (processAllBtn) {
+                        processAllBtn.textContent = 'Process All Sections';
+                        processAllBtn.disabled = false;
+                        processAllBtn.classList.remove('btn-secondary');
+                        processAllBtn.classList.add('btn-success');
+                    }
+                }
+            }
+            
+            // Helper functions for database operations
+            function getCurrentPostId() {
+                // Extract post ID from URL or page data
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('post_id') || '53'; // Default for testing
+            }
+            
+            function getSectionId(sectionIndex) {
+                // Get section ID from the DOM
+                const sectionElement = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+                return sectionElement ? sectionElement.dataset.sectionId : null;
+            }
+            
+            function getPlatformId() {
+                // Get platform ID from selector
+                const platformSelector = document.getElementById('platformSelector');
+                return platformSelector ? platformSelector.value : '1'; // Default to Facebook
+            }
+            
+            function getChannelTypeId() {
+                // Get channel type ID from selector
+                const channelTypeSelector = document.getElementById('channelTypeSelector');
+                return channelTypeSelector ? channelTypeSelector.value : '1'; // Default to feed_post
+            }
+            
+            function getProcessId() {
+                // Get process ID from selector
+                const processSelector = document.getElementById('processSelector');
+                return processSelector ? processSelector.value : '1'; // Default to first process
+            }
+            
+            function updatePieceSavedStatus(sectionIndex, isSaved) {
+                // Update the piece display to show it's been saved
+                const pieceElement = document.querySelector(`[data-section-index="${sectionIndex}"] .piece-content`);
+                if (pieceElement) {
+                    if (isSaved) {
+                        pieceElement.classList.add('saved');
+                        // Add a small indicator that it's saved
+                        const savedIndicator = document.createElement('span');
+                        savedIndicator.className = 'badge bg-success ms-2';
+                        savedIndicator.textContent = 'Saved';
+                        savedIndicator.style.fontSize = '0.7em';
+                        
+                        // Remove existing indicator if present
+                        const existingIndicator = pieceElement.querySelector('.badge');
+                        if (existingIndicator) {
+                            existingIndicator.remove();
+                        }
+                        
+                        pieceElement.appendChild(savedIndicator);
+                    }
                 }
             }
 
@@ -1215,7 +1425,7 @@
                     const startTime = Date.now();
 
                     // Send to LLM service
-                    const response = await fetch('/api/syndication/llm/execute', {
+                    const response = await fetch('/api/syndication/ollama/direct', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -1244,6 +1454,9 @@
                     // Update piece content
                     updatePieceContent(sectionIndex, responseContent);
 
+                    // Save to database
+                    await saveSyndicationPiece(sectionIndex, responseContent, llmRequest, result, processingTime);
+
                     // Update debug panel
                     const processingDetails = {
                         requestTime: new Date(startTime).toLocaleTimeString(),
@@ -1267,8 +1480,58 @@
             }
 
             // Event listeners for debug panel buttons
+            const startOllamaBtn = document.getElementById('startOllamaBtn');
             const processSection1Btn = document.getElementById('processSection1Btn');
             const clearResultsBtn = document.getElementById('clearResultsBtn');
+            
+            if (startOllamaBtn) {
+                startOllamaBtn.addEventListener('click', async function() {
+                    console.log('Start Ollama button clicked!');
+                    
+                    // Visual feedback - disable button and show loading
+                    const originalText = this.textContent;
+                    this.textContent = 'Starting...';
+                    this.disabled = true;
+                    this.classList.add('btn-secondary');
+                    this.classList.remove('btn-success');
+                    
+                    try {
+                        // Update status
+                        document.getElementById('llmStatus').textContent = 'Starting Ollama...';
+                        
+                        // Test Ollama connection
+                        const response = await fetch('http://localhost:11434/api/tags');
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log('Ollama models available:', data);
+                            
+                            // Update status
+                            document.getElementById('llmStatus').textContent = 'Ollama Running';
+                            document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
+                            
+                            // Show success message
+                            alert(`Ollama is running! Available models: ${data.models.map(m => m.name).join(', ')}`);
+                            
+                            // Change button to show it's running
+                            this.textContent = 'Ollama Running';
+                            this.classList.remove('btn-secondary');
+                            this.classList.add('btn-info');
+                        } else {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                    } catch (error) {
+                        console.error('Error starting Ollama:', error);
+                        document.getElementById('llmStatus').textContent = 'Ollama Error';
+                        alert(`Error starting Ollama: ${error.message}\n\nPlease ensure Ollama is running on port 11434.`);
+                        
+                        // Restore button state
+                        this.textContent = originalText;
+                        this.disabled = false;
+                        this.classList.remove('btn-secondary');
+                        this.classList.add('btn-success');
+                    }
+                });
+            }
             
             if (processSection1Btn) {
                                     processSection1Btn.addEventListener('click', function() {
@@ -1307,6 +1570,12 @@
             
             if (clearResultsBtn) {
                 clearResultsBtn.addEventListener('click', clearDebugResults);
+            }
+            
+            // Add event listener for Process All Sections button
+            const processAllSectionsBtn = document.getElementById('processAllSectionsBtn');
+            if (processAllSectionsBtn) {
+                processAllSectionsBtn.addEventListener('click', processAllSelectedSections);
             }
 
             // Update debug panel when process is selected
