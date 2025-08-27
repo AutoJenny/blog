@@ -1048,23 +1048,38 @@
             const clearResultsBtn = document.getElementById('clearResultsBtn');
             
             if (processSection1Btn) {
-                processSection1Btn.addEventListener('click', function() {
-                    console.log('Process Section 1 button clicked!');
-                    
-                    // Get the first selected task
-                    const selectedTasks = getSelectedTasks();
-                    console.log('Selected tasks:', selectedTasks);
-                    
-                    if (selectedTasks.length === 0) {
-                        alert('Please select at least one task to process');
-                        return;
-                    }
-                    
-                    // Process the first selected task
-                    const firstTask = selectedTasks[0];
-                    console.log('Processing first task:', firstTask);
-                    processSectionWithLLM(firstTask.sectionIndex);
-                });
+                                    processSection1Btn.addEventListener('click', function() {
+                        console.log('Process Section 1 button clicked!');
+                        
+                        // Get the first selected task
+                        const selectedTasks = getSelectedTasks();
+                        console.log('Selected tasks:', selectedTasks);
+                        
+                        if (selectedTasks.length === 0) {
+                            alert('Please select at least one task to process');
+                            return;
+                        }
+                        
+                        // Visual feedback - disable button and show loading
+                        const originalText = this.textContent;
+                        this.textContent = 'Processing...';
+                        this.disabled = true;
+                        this.classList.add('btn-secondary');
+                        this.classList.remove('btn-primary');
+                        
+                        // Process the first selected task
+                        const firstTask = selectedTasks[0];
+                        console.log('Processing first task:', firstTask);
+                        
+                        processSectionWithLLM(firstTask.sectionIndex)
+                            .finally(() => {
+                                // Restore button state
+                                this.textContent = originalText;
+                                this.disabled = false;
+                                this.classList.remove('btn-secondary');
+                                this.classList.add('btn-primary');
+                            });
+                    });
             }
             
             if (clearResultsBtn) {

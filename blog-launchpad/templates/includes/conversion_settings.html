@@ -304,7 +304,27 @@ async function loadLLMModels(providerId) {
         });
 
         if (data.models.length > 0) {
-            modelSelect.value = data.models[0].id; // Select the first model by default
+            // Prefer faster, smaller models for better performance
+            const preferredModels = ['mistral', 'llama3.1:8b', 'llama3.2:latest', 'qwen2.5:1.5b'];
+            let selectedModel = null;
+            
+            // Try to find a preferred model
+            for (const preferred of preferredModels) {
+                const preferredOption = Array.from(modelSelect.options).find(opt => 
+                    opt.textContent.toLowerCase().includes(preferred.toLowerCase())
+                );
+                if (preferredOption) {
+                    selectedModel = preferredOption.value;
+                    break;
+                }
+            }
+            
+            // If no preferred model found, use the first one
+            if (!selectedModel) {
+                selectedModel = data.models[0].id;
+            }
+            
+            modelSelect.value = selectedModel;
         }
 
     } catch (error) {
