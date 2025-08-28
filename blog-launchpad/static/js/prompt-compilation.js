@@ -140,3 +140,15 @@ function updateStructuredPromptDisplay(systemTask, blogDetails, requirements) {
 
 // Export the update function
 window.updateStructuredPromptDisplay = updateStructuredPromptDisplay;
+
+// Function to initialize the structured prompt display with default content
+function initializeStructuredPromptDisplay() {
+    const defaultSystemTask = `You are a social media content specialist.\n\nYour task: Create an engaging Facebook post based on the blog details below.`;
+    const defaultBlogDetails = `Title: [Blog title will appear here]\nContent: [Blog content will appear here]`;
+    const defaultRequirements = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a clear call-to-action\n- Use up to 3 relevant hashtags\n\nReturn only the final Facebook post text, with no explanations or extra commentary.`;
+    
+    updateStructuredPromptDisplay(defaultSystemTask, defaultBlogDetails, defaultRequirements);
+}
+
+// Export the initialization function
+window.initializeStructuredPromptDisplay = initializeStructuredPromptDisplay;
