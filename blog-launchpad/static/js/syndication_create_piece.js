@@ -80,6 +80,12 @@
                             const selectedPost = data.posts.find(post => post.id == selectedId);
                             if (selectedPost) {
                                 displayPostDetails(selectedPost);
+                                // Update blog details display after post is selected
+                                setTimeout(() => {
+                                    if (typeof updateBlogDetailsDisplay === 'function') {
+                                        updateBlogDetailsDisplay();
+                                    }
+                                }, 500); // Small delay to ensure sections are loaded
                             }
                         });
                 } else {
@@ -139,6 +145,10 @@
             
             function displaySections(sections, postId) {
                 console.log('displaySections called with:', sections.length, 'sections');
+                
+                // Store sections data globally for access by other functions
+                window.currentSectionsData = sections;
+                
                 const sectionsPiecesBody = document.getElementById('sectionsPiecesBody');
                 console.log('sectionsPiecesBody element:', sectionsPiecesBody);
                 sectionsPiecesBody.innerHTML = '';
@@ -172,6 +182,11 @@
                         // Update button state when checkboxes change
                         const selectedTasks = getSelectedTasks();
                         updateProcessAllButtonState(selectedTasks.length > 0);
+                        
+                        // Update blog details display when selection changes
+                        if (typeof updateBlogDetailsDisplay === 'function') {
+                            updateBlogDetailsDisplay();
+                        }
                     });
                     
                     console.log(`Created checkbox ${index}:`, checkbox);
@@ -181,6 +196,10 @@
                     if (index === 0) {
                         setTimeout(() => {
                             updateDebugPanelSectionContent(section);
+                            // Update blog details display
+                            if (typeof updateBlogDetailsDisplay === 'function') {
+                                updateBlogDetailsDisplay();
+                            }
                         }, 100);
                     }
                     

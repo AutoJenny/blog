@@ -375,7 +375,46 @@ function setupPromptUpdateListeners() {
     }
 }
 
+// Function to update the blog details display with dynamic content
+function updateBlogDetailsDisplay() {
+    console.log('Updating blog details display...');
+    
+    // Get the current post title
+    const postTitleElement = document.getElementById('postTitle');
+    const postTitle = postTitleElement ? postTitleElement.textContent : 'No post selected';
+    
+    // Get the selected section (first checked checkbox)
+    const checkedCheckboxes = document.querySelectorAll('.task-checkbox:checked');
+    let selectedSection = null;
+    
+    if (checkedCheckboxes.length > 0) {
+        const firstCheckedIndex = parseInt(checkedCheckboxes[0].dataset.sectionIndex);
+        // Get section data from the sections array (we'll need to access this)
+        const sectionsData = window.currentSectionsData || [];
+        selectedSection = sectionsData[firstCheckedIndex];
+    }
+    
+    // Build the blog details content
+    let blogDetailsContent = '';
+    
+    if (selectedSection) {
+        blogDetailsContent = `POST TITLE: ${postTitle}\n\nSECTION TITLE: ${selectedSection.title || 'No section title'}\n\nSECTION OUTLINE: ${selectedSection.content || 'No section outline'}\n\nSECTION TEXT: ${selectedSection.polished || 'No section text'}`;
+    } else {
+        blogDetailsContent = `POST TITLE: ${postTitle}\n\nSECTION TITLE: No section selected\n\nSECTION OUTLINE: No section selected\n\nSECTION TEXT: No section selected`;
+    }
+    
+    // Update the display
+    const blogDetailsElement = document.getElementById('dynamicBlogDetails');
+    if (blogDetailsElement) {
+        blogDetailsElement.textContent = blogDetailsContent;
+        console.log('Blog details updated:', blogDetailsContent);
+    } else {
+        console.error('Blog details element not found');
+    }
+}
+
 // Export the update function
 window.updatePromptDisplayOnChange = updatePromptDisplayOnChange;
 window.setupPromptUpdateListeners = setupPromptUpdateListeners;
 window.waitForLLMSettingsAndInitialize = waitForLLMSettingsAndInitialize;
+window.updateBlogDetailsDisplay = updateBlogDetailsDisplay;
