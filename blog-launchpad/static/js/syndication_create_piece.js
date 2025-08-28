@@ -298,6 +298,11 @@
                 
                 updateConversionHeaderDisplay();
                 
+                // Update the prompt display when platform changes
+                if (typeof updatePromptDisplayOnChange === 'function') {
+                    updatePromptDisplayOnChange();
+                }
+                
                 // Auto-populate processes for Facebook
                 populateFacebookProcesses();
             }
@@ -387,6 +392,11 @@
                 
                 // Update header display
                 updateConversionHeaderDisplay();
+                
+                // Update the prompt display when process changes
+                if (typeof updatePromptDisplayOnChange === 'function') {
+                    updatePromptDisplayOnChange();
+                }
             });
             
             // Display process details
