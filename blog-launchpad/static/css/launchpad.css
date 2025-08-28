@@ -735,6 +735,45 @@
     white-space: pre-wrap;
 }
 
+/* Structured Prompt Styling */
+.prompt-structured {
+    background-color: #1a1a2e !important;
+    border: 1px solid #2d3748 !important;
+    padding: 1rem !important;
+}
+
+.prompt-section {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+}
+
+.system-task-section {
+    background-color: #2d3748;
+    border-left: 4px solid #4299e1;
+}
+
+.blog-details-section {
+    background-color: #2d3748;
+    border-left: 4px solid #48bb78;
+}
+
+.requirements-section {
+    background-color: #2d3748;
+    border-left: 4px solid #ed8936;
+}
+
+.prompt-separator {
+    text-align: center;
+    font-weight: bold;
+    color: #a0aec0;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    background-color: #1a202c;
+    border-radius: 0.25rem;
+    font-family: monospace;
+}
+
 .debug-details-box {
     background-color: #2d3748;
     border: 1px solid #495057;

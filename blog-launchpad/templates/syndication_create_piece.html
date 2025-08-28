@@ -309,7 +309,24 @@
                                             <!-- Final Assembled Prompt -->
                                             <div class="debug-item mb-3">
                                                 <label class="debug-label">Final Assembled Prompt (What We're Sending to the LLM):</label>
-                                                <div class="debug-prompt-box" id="debugAssembledPrompt">No prompt assembled yet</div>
+                                                <div class="debug-prompt-box prompt-structured" id="debugAssembledPrompt">
+                                                    <!-- System & Task Section -->
+                                                    <div class="prompt-section system-task-section">
+                                                        <div id="promptSystemTask">No prompt configured</div>
+                                                    </div>
+                                                    
+                                                    <!-- Blog Details Section -->
+                                                    <div class="prompt-separator">=== BLOG DETAILS ===</div>
+                                                    <div class="prompt-section blog-details-section">
+                                                        <div id="promptBlogDetails">No blog content available</div>
+                                                    </div>
+                                                    
+                                                    <!-- Requirements Section -->
+                                                    <div class="prompt-separator">=== REQUIREMENTS ===</div>
+                                                    <div class="prompt-section requirements-section">
+                                                        <div id="promptRequirements">No requirements configured</div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
