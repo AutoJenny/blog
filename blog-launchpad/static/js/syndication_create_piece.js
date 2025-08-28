@@ -775,7 +775,7 @@
                 const requirementsAccordion = document.getElementById('mvpRequirementsAccordion');
                 console.log('Requirements accordion found:', requirementsAccordion);
                 
-                let requirements = [];
+                let channelRequirements = [];
                 
                 if (requirementsAccordion) {
                     const requirementItems = requirementsAccordion.querySelectorAll('.requirement-item');
@@ -787,12 +787,12 @@
                         console.log(`Requirement ${index + 1}:`, { keyElement: keyElement?.textContent, valueElement: valueElement?.textContent });
                         
                         if (keyElement && valueElement) {
-                            requirements.push(`${keyElement.textContent}: ${valueElement.textContent}`);
+                            channelRequirements.push(`${keyElement.textContent}: ${valueElement.textContent}`);
                         }
                     });
                 }
                 
-                const requirementsText = requirements.length > 0 ? requirements.join('\n') : 'No specific requirements';
+                const requirementsText = channelRequirements.length > 0 ? channelRequirements.join('\n') : 'No specific requirements';
                 console.log('Final requirements text:', requirementsText);
                 
                 // Get LLM settings for the actual prompt
@@ -812,19 +812,31 @@
                 
                 console.log('Final user prompt after replacement:', finalUserPrompt);
                 
-                // Build a simple, clear prompt
-                let prompt = `You are a social media content specialist. Create an engaging Facebook post based on this blog content:\n\n`;
-                prompt += `BLOG TITLE: ${sectionContent.title || 'No title'}\n\n`;
-                prompt += `BLOG CONTENT: ${sectionContent.content || 'No content'}\n\n`;
-                prompt += `REQUIREMENTS:\n`;
-                prompt += `- Tone: Conversational and engaging\n`;
-                prompt += `- Length: 150-200 characters\n`;
-                prompt += `- Include a call-to-action\n`;
-                prompt += `- Use up to 3 relevant hashtags\n\n`;
-                prompt += `Create the Facebook post now:`;
+                // Use the same dynamic content that's displayed in the Input Assembly panel
+                const systemTaskElement = document.getElementById('promptSystemTask');
+                const blogDetailsElement = document.getElementById('promptBlogDetails');
+                const requirementsElement = document.getElementById('promptRequirements');
                 
-                console.log('Final assembled prompt:', prompt);
-                return prompt;
+                if (!systemTaskElement || !blogDetailsElement || !requirementsElement) {
+                    console.log('Required elements not found, using fallback content');
+                    return 'Please wait for prompt assembly to complete...';
+                }
+                
+                // Get the content from the Final Assembled Prompt panel (which should be synchronized)
+                const systemTask = systemTaskElement.textContent || 'No system task configured';
+                const blogDetails = blogDetailsElement.textContent || 'No blog details available';
+                const requirements = requirementsElement.textContent || 'No requirements configured';
+                
+                console.log('Using synchronized content from Final Assembled Prompt panel:');
+                console.log('System Task:', systemTask);
+                console.log('Blog Details:', blogDetails);
+                console.log('Requirements:', requirements);
+                
+                // Assemble the final prompt using the same structure as Input Assembly
+                let finalPrompt = `${systemTask}\n\n=== BLOG DETAILS ===\n${blogDetails}\n\n=== REQUIREMENTS ===\n${requirements}`;
+                
+                console.log('Final assembled prompt:', finalPrompt);
+                return finalPrompt;
             }
 
             function updateLLMResponse(llmResponse, llmRequest, processingDetails) {
