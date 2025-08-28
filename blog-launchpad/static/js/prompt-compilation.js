@@ -278,11 +278,67 @@ function initializeStructuredPromptDisplay() {
     }
     
     // Combine them for the first section
-    const defaultSystemTask = `${systemPrompt}\n\n${userPromptTemplate}`;
-    const defaultBlogDetails = `Title: [Blog title will appear here]\nContent: [Blog content will appear here]`;
-    const defaultRequirements = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a clear call-to-action\n- Use up to 3 relevant hashtags\n\nReturn only the final Facebook post text, with no explanations or extra commentary.`;
+    const defaultSystemTask = `${systemPrompt}\n\n${substitutedUserPromptTemplate}`;
     
-    updateStructuredPromptDisplay(defaultSystemTask, defaultBlogDetails, defaultRequirements);
+    // Get dynamic blog details and requirements from the Input Assembly panel
+    const dynamicBlogDetails = getDynamicBlogDetails();
+    const dynamicRequirements = getDynamicRequirements();
+    
+    // Update both panels with the same content
+    updateStructuredPromptDisplay(defaultSystemTask, dynamicBlogDetails, dynamicRequirements);
+    
+    // Also update the Input Assembly panel to ensure synchronization
+    updateInputAssemblyPanel(defaultSystemTask, dynamicBlogDetails, dynamicRequirements);
+}
+
+// Helper function to get dynamic blog details from Input Assembly panel
+function getDynamicBlogDetails() {
+    const blogDetailsElement = document.getElementById('dynamicBlogDetails');
+    if (blogDetailsElement && blogDetailsElement.textContent && blogDetailsElement.textContent !== 'Loading blog details...') {
+        return blogDetailsElement.textContent;
+    }
+    // Fallback to default if not loaded yet
+    return 'POST TITLE: No post selected\n\nSECTION TITLE: No section selected\n\nSECTION OUTLINE: No section selected\n\nSECTION TEXT: No section selected';
+}
+
+// Helper function to get dynamic requirements from Input Assembly panel
+function getDynamicRequirements() {
+    const requirementsElement = document.getElementById('dynamicRequirements');
+    if (requirementsElement && requirementsElement.innerHTML && requirementsElement.innerHTML !== 'Loading requirements...') {
+        // Convert <br> tags back to \n for the Final Assembled Prompt
+        return requirementsElement.innerHTML.replace(/<br>/g, '\n');
+    }
+    // Fallback to default if not loaded yet
+    return '- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a call-to-action\n- Use up to 3 relevant hashtags\n\nCreate the Facebook Feed Post now:';
+}
+
+// Function to update the Input Assembly panel to ensure synchronization
+function updateInputAssemblyPanel(systemTask, blogDetails, requirements) {
+    // Update the table display with the actual content
+    const tableSystemPrompt = document.getElementById('tableSystemPrompt');
+    const tableUserPromptTemplate = document.getElementById('tableUserPromptTemplate');
+    
+    if (tableSystemPrompt) {
+        tableSystemPrompt.textContent = systemTask.split('\n\n')[0]; // Just the system prompt part
+    }
+    
+    if (tableUserPromptTemplate) {
+        tableUserPromptTemplate.textContent = systemTask.split('\n\n')[1] || ''; // Just the user prompt part
+    }
+    
+    // Update blog details if available
+    const dynamicBlogDetailsElement = document.getElementById('dynamicBlogDetails');
+    if (dynamicBlogDetailsElement && blogDetails && blogDetails !== 'Loading blog details...') {
+        dynamicBlogDetailsElement.textContent = blogDetails;
+    }
+    
+    // Update requirements if available
+    const dynamicRequirementsElement = document.getElementById('dynamicRequirements');
+    if (dynamicRequirementsElement && requirements && requirements !== 'Loading requirements...') {
+        // Convert \n to <br> tags for HTML display
+        const htmlContent = requirements.replace(/\n/g, '<br>');
+        dynamicRequirementsElement.innerHTML = htmlContent;
+    }
 }
 
 // Export the initialization function
@@ -292,6 +348,48 @@ window.initializeStructuredPromptDisplay = initializeStructuredPromptDisplay;
 function updatePromptDisplayOnChange() {
     console.log('updatePromptDisplayOnChange called - updating prompt display');
     initializeStructuredPromptDisplay();
+    
+    // Also update the Final Assembled Prompt system/task section
+    const systemPromptElement = document.getElementById('llmSystemPrompt');
+    const userPromptTemplateElement = document.getElementById('llmUserPromptTemplate');
+    
+    if (systemPromptElement && userPromptTemplateElement) {
+        const systemPrompt = systemPromptElement.value || 'No system prompt configured';
+        let userPromptTemplate = userPromptTemplateElement.value || 'No user prompt template configured';
+        
+        // Get the selected platform and channel type values for substitution
+        const platformSelector = document.getElementById('platformSelector');
+        const processSelector = document.getElementById('processSelector');
+        
+        if (platformSelector && processSelector && processSelector.selectedIndex > 0) {
+            const selectedPlatform = platformSelector.options[platformSelector.selectedIndex]?.text || 'No platform selected';
+            let channelType = 'No channel type selected';
+            
+            const selectedProcessOption = processSelector.options[processSelector.selectedIndex];
+            if (selectedProcessOption && selectedProcessOption.textContent.includes('(')) {
+                channelType = selectedProcessOption.textContent.split('(')[1].replace(')', '');
+                // Convert technical terms to natural language
+                if (channelType === 'feed_post') channelType = 'feed post';
+                else if (channelType === 'story_post') channelType = 'story post';
+                else if (channelType === 'reels_caption') channelType = 'reels caption';
+                else if (channelType === 'group_post') channelType = 'group post';
+            }
+            
+            // Substitute placeholders
+            userPromptTemplate = userPromptTemplate
+                .replace(/{platform}/g, selectedPlatform)
+                .replace(/{channel_type}/g, channelType);
+        }
+        
+        const combinedSystemTask = `${systemPrompt}\n\n${userPromptTemplate}`;
+        
+        // Update the Final Assembled Prompt system/task section
+        const finalSystemTaskElement = document.getElementById('promptSystemTask');
+        if (finalSystemTaskElement) {
+            finalSystemTaskElement.textContent = combinedSystemTask;
+            console.log('Final Assembled Prompt system/task synchronized');
+        }
+    }
 }
 
 // Function to wait for LLM settings to be loaded before initializing
@@ -408,6 +506,13 @@ function updateBlogDetailsDisplay() {
     if (blogDetailsElement) {
         blogDetailsElement.textContent = blogDetailsContent;
         console.log('Blog details updated:', blogDetailsContent);
+        
+        // Synchronize the Final Assembled Prompt panel
+        const finalBlogDetailsElement = document.getElementById('promptBlogDetails');
+        if (finalBlogDetailsElement) {
+            finalBlogDetailsElement.textContent = blogDetailsContent;
+            console.log('Final Assembled Prompt blog details synchronized');
+        }
     } else {
         console.error('Blog details element not found');
     }
@@ -532,6 +637,13 @@ function updateRequirementsDisplay() {
                 requirementsElement.innerHTML = htmlContent;
                 console.log('Requirements element updated successfully');
                 console.log('New content:', requirementsElement.innerHTML);
+                
+                // Synchronize the Final Assembled Prompt panel
+                const finalRequirementsElement = document.getElementById('promptRequirements');
+                if (finalRequirementsElement) {
+                    finalRequirementsElement.textContent = requirementsContent;
+                    console.log('Final Assembled Prompt requirements synchronized');
+                }
             } else {
                 console.error('Requirements element not found');
             }
@@ -558,3 +670,6 @@ window.setupPromptUpdateListeners = setupPromptUpdateListeners;
 window.waitForLLMSettingsAndInitialize = waitForLLMSettingsAndInitialize;
 window.updateBlogDetailsDisplay = updateBlogDetailsDisplay;
 window.updateRequirementsDisplay = updateRequirementsDisplay;
+window.getDynamicBlogDetails = getDynamicBlogDetails;
+window.getDynamicRequirements = getDynamicRequirements;
+window.updateInputAssemblyPanel = updateInputAssemblyPanel;
