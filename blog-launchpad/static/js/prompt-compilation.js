@@ -1,6 +1,8 @@
 // Prompt Compilation Module
 // Extracted from syndication_create_piece.js for modularization
 
+console.log('Prompt compilation module loading...');
+
 function assembleLLMPrompt(processConfig, sectionContent) {
     console.log('assembleLLMPrompt called with:', { processConfig, sectionContent });
     
