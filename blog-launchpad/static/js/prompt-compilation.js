@@ -201,12 +201,17 @@ function initializeStructuredPromptDisplay() {
     let systemPrompt = 'No system prompt configured';
     let userPromptTemplate = 'No user prompt template configured';
     
-    if (systemPromptElement) {
-        systemPrompt = systemPromptElement.value || systemPromptElement.textContent || 'No system prompt configured';
+    // Check if the textarea has actual content (not just placeholder)
+    if (systemPromptElement && systemPromptElement.value && systemPromptElement.value.trim() !== '') {
+        systemPrompt = systemPromptElement.value;
+    } else if (systemPromptElement && systemPromptElement.textContent && systemPromptElement.textContent.trim() !== '') {
+        systemPrompt = systemPromptElement.textContent;
     }
     
-    if (userPromptTemplateElement) {
-        userPromptTemplate = userPromptTemplateElement.value || userPromptTemplateElement.textContent || 'No user prompt template configured';
+    if (userPromptTemplateElement && userPromptTemplateElement.value && userPromptTemplateElement.value.trim() !== '') {
+        userPromptTemplate = userPromptTemplateElement.value;
+    } else if (userPromptTemplateElement && userPromptTemplateElement.textContent && userPromptTemplateElement.textContent.trim() !== '') {
+        userPromptTemplate = userPromptTemplateElement.textContent;
     }
     
     // Get the selected platform and channel type values
@@ -289,5 +294,88 @@ function updatePromptDisplayOnChange() {
     initializeStructuredPromptDisplay();
 }
 
+// Function to wait for LLM settings to be loaded before initializing
+function waitForLLMSettingsAndInitialize() {
+    console.log('Waiting for LLM settings to be loaded...');
+    
+    // Try to get LLM settings directly from the API
+    fetch('/api/syndication/llm/settings')
+        .then(response => response.json())
+        .then(data => {
+            console.log('LLM settings loaded from API:', data);
+            if (data.settings && data.settings.user_prompt_template && data.settings.user_prompt_template.value) {
+                console.log('Using API data for prompt template:', data.settings.user_prompt_template.value);
+                // Update the textarea with the API data
+                const userPromptTemplateElement = document.getElementById('llmUserPromptTemplate');
+                if (userPromptTemplateElement) {
+                    userPromptTemplateElement.value = data.settings.user_prompt_template.value;
+                }
+                // Now initialize the display
+                initializeStructuredPromptDisplay();
+            } else {
+                console.log('No API data, falling back to textarea check...');
+                checkTextareaAndInitialize();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading LLM settings from API:', error);
+            console.log('Falling back to textarea check...');
+            checkTextareaAndInitialize();
+        });
+}
+
+// Fallback function to check textarea content
+function checkTextareaAndInitialize() {
+    const userPromptTemplateElement = document.getElementById('llmUserPromptTemplate');
+    
+    console.log('User prompt template element found:', userPromptTemplateElement);
+    if (userPromptTemplateElement) {
+        console.log('Textarea value:', userPromptTemplateElement.value);
+        console.log('Textarea textContent:', userPromptTemplateElement.textContent);
+        console.log('Textarea innerHTML:', userPromptTemplateElement.innerHTML);
+    }
+    
+    if (userPromptTemplateElement && userPromptTemplateElement.value && userPromptTemplateElement.value.trim() !== '') {
+        console.log('LLM settings loaded from textarea, initializing prompt display');
+        initializeStructuredPromptDisplay();
+    } else {
+        console.log('LLM settings not yet loaded, retrying in 500ms...');
+        setTimeout(checkTextareaAndInitialize, 500);
+    }
+    
+    // Force initialization after 3 seconds as a fallback
+    setTimeout(() => {
+        console.log('Forcing initialization after timeout...');
+        initializeStructuredPromptDisplay();
+    }, 3000);
+}
+
+// Function to set up event listeners for real-time updates
+function setupPromptUpdateListeners() {
+    console.log('Setting up prompt update listeners...');
+    
+    // Listen for changes to the User Prompt Template textarea
+    const userPromptTemplateElement = document.getElementById('llmUserPromptTemplate');
+    if (userPromptTemplateElement) {
+        console.log('Found User Prompt Template element, adding input listener');
+        userPromptTemplateElement.addEventListener('input', function() {
+            console.log('User Prompt Template changed, updating display...');
+            updatePromptDisplayOnChange();
+        });
+    }
+    
+    // Listen for changes to the System Prompt textarea
+    const systemPromptElement = document.getElementById('llmSystemPrompt');
+    if (systemPromptElement) {
+        console.log('Found System Prompt element, adding input listener');
+        systemPromptElement.addEventListener('input', function() {
+            console.log('System Prompt changed, updating display...');
+            updatePromptDisplayOnChange();
+        });
+    }
+}
+
 // Export the update function
 window.updatePromptDisplayOnChange = updatePromptDisplayOnChange;
+window.setupPromptUpdateListeners = setupPromptUpdateListeners;
+window.waitForLLMSettingsAndInitialize = waitForLLMSettingsAndInitialize;

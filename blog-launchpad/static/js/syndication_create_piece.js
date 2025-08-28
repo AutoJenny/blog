@@ -2,21 +2,21 @@
             console.log('DOMContentLoaded event fired');
             
             // Initialize the structured prompt display
-            console.log('Checking for initializeStructuredPromptDisplay function...');
-            console.log('Function exists:', typeof initializeStructuredPromptDisplay);
+            console.log('Checking for waitForLLMSettingsAndInitialize function...');
+            console.log('Function exists:', typeof waitForLLMSettingsAndInitialize);
             
-            if (typeof initializeStructuredPromptDisplay === 'function') {
-                console.log('Calling initializeStructuredPromptDisplay...');
-                initializeStructuredPromptDisplay();
+            if (typeof waitForLLMSettingsAndInitialize === 'function') {
+                console.log('Calling waitForLLMSettingsAndInitialize...');
+                waitForLLMSettingsAndInitialize();
             } else {
                 console.log('Function not found, waiting and retrying...');
                 // Wait a bit and try again
                 setTimeout(() => {
-                    if (typeof initializeStructuredPromptDisplay === 'function') {
-                        console.log('Retry successful, calling initializeStructuredPromptDisplay...');
-                        initializeStructuredPromptDisplay();
+                    if (typeof waitForLLMSettingsAndInitialize === 'function') {
+                        console.log('Retry successful, calling waitForLLMSettingsAndInitialize...');
+                        waitForLLMSettingsAndInitialize();
                     } else {
-                        console.error('initializeStructuredPromptDisplay still not available after retry');
+                        console.error('waitForLLMSettingsAndInitialize still not available after retry');
                     }
                 }, 100);
             }
@@ -398,6 +398,11 @@
                     updatePromptDisplayOnChange();
                 }
             });
+            
+            // Set up real-time prompt update listeners
+            if (typeof setupPromptUpdateListeners === 'function') {
+                setupPromptUpdateListeners();
+            }
             
             // Display process details
             function displayProcessDetails(process) {
