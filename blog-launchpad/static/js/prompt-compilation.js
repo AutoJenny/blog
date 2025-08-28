@@ -83,16 +83,20 @@ function assembleLLMPrompt(processConfig, sectionContent) {
     
     console.log('Final user prompt after replacement:', finalUserPrompt);
     
-    // Build a simple, clear prompt
-    let prompt = `You are a social media content specialist. Create an engaging Facebook post based on this blog content:\n\n`;
-    prompt += `BLOG TITLE: ${sectionContent.title || 'No title'}\n\n`;
-    prompt += `BLOG CONTENT: ${sectionContent.content || 'No content'}\n\n`;
-    prompt += `REQUIREMENTS:\n`;
-    prompt += `- Tone: Conversational and engaging\n`;
-    prompt += `- Length: 150-200 characters\n`;
-    prompt += `- Include a call-to-action\n`;
-    prompt += `- Use up to 3 relevant hashtags\n\n`;
-    prompt += `Create the Facebook post now:`;
+    // Build the three structured parts
+    const systemTask = `You are a social media content specialist.\n\nYour task: Create an engaging Facebook post based on the blog details below.`;
+    
+    const blogDetails = `Title: ${sectionContent.title || 'No title'}\nContent: ${sectionContent.content || 'No content'}`;
+    
+    const structuredRequirements = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a clear call-to-action\n- Use up to 3 relevant hashtags\n\nReturn only the final Facebook post text, with no explanations or extra commentary.`;
+    
+    // Update the structured display
+    if (typeof updateStructuredPromptDisplay === 'function') {
+        updateStructuredPromptDisplay(systemTask, blogDetails, structuredRequirements);
+    }
+    
+    // Build the full prompt for LLM (keeping backward compatibility)
+    let prompt = `${systemTask}\n\n=== BLOG DETAILS ===\n${blogDetails}\n===================\n\nREQUIREMENTS:\n${structuredRequirements}`;
     
     console.log('Final assembled prompt:', prompt);
     return prompt;
@@ -112,3 +116,27 @@ function getLLMSettings() {
 // Export functions to global scope for compatibility
 window.assembleLLMPrompt = assembleLLMPrompt;
 window.getLLMSettings = getLLMSettings;
+
+// Function to update the structured prompt display
+function updateStructuredPromptDisplay(systemTask, blogDetails, requirements) {
+    // Update System & Task section
+    const systemTaskElement = document.getElementById('promptSystemTask');
+    if (systemTaskElement) {
+        systemTaskElement.textContent = systemTask || 'No prompt configured';
+    }
+    
+    // Update Blog Details section
+    const blogDetailsElement = document.getElementById('promptBlogDetails');
+    if (blogDetailsElement) {
+        blogDetailsElement.textContent = blogDetails || 'No blog content available';
+    }
+    
+    // Update Requirements section
+    const requirementsElement = document.getElementById('promptRequirements');
+    if (requirementsElement) {
+        requirementsElement.textContent = requirements || 'No requirements configured';
+    }
+}
+
+// Export the update function
+window.updateStructuredPromptDisplay = updateStructuredPromptDisplay;
