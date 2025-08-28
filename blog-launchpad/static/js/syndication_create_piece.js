@@ -2,8 +2,23 @@
             console.log('DOMContentLoaded event fired');
             
             // Initialize the structured prompt display
+            console.log('Checking for initializeStructuredPromptDisplay function...');
+            console.log('Function exists:', typeof initializeStructuredPromptDisplay);
+            
             if (typeof initializeStructuredPromptDisplay === 'function') {
+                console.log('Calling initializeStructuredPromptDisplay...');
                 initializeStructuredPromptDisplay();
+            } else {
+                console.log('Function not found, waiting and retrying...');
+                // Wait a bit and try again
+                setTimeout(() => {
+                    if (typeof initializeStructuredPromptDisplay === 'function') {
+                        console.log('Retry successful, calling initializeStructuredPromptDisplay...');
+                        initializeStructuredPromptDisplay();
+                    } else {
+                        console.error('initializeStructuredPromptDisplay still not available after retry');
+                    }
+                }, 100);
             }
             
             // Initialize button states - first checkbox is pre-selected

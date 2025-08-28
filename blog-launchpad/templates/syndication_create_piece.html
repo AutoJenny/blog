@@ -250,34 +250,45 @@
                                                                 <tr>
                                                                     <th class="text-info">Title</th>
                                                                     <th class="text-info">Content</th>
-                                                                    <th class="text-info">Source</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
                                                                 <tr>
                                                                     <td><strong>Provider</strong></td>
                                                                     <td id="tableProvider">ollama</td>
-                                                                    <td>LLM Settings: llmProviderSelect</td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td><strong>Model</strong></td>
                                                                     <td id="tableModel">mistral</td>
-                                                                    <td>LLM Settings: llmModelSelect</td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td><strong>Prompt</strong></td>
-                                                                    <td>You are a social media content specialist. Create an engaging Facebook post based on this blog content:<br><br>BLOG TITLE: Story-telling in Scotland Today<br><br>BLOG CONTENT: Exploring how story-telling continues to thrive in Scotland today, demonstrating its relevance and importance in contemporary society<br><br>REQUIREMENTS:<br>- Tone: Conversational and engaging<br>- Length: 150-200 characters<br>- Include a call-to-action<br>- Use up to 3 relevant hashtags<br><br>Create the Facebook post now:</td>
-                                                                    <td>Hardcoded: syndication_create_piece.html</td>
+                                                                    <td style="background-color: #1a1a2e; border: 1px solid #2d3748; padding: 1rem;">
+                                                                        <!-- System & Task Section (no titling) -->
+                                                                        <div style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 0.375rem; background-color: #2d3748; border-left: 4px solid #4299e1;">
+                                                                            You are a social media content specialist.<br><br>Your task: Create an engaging Facebook post based on the blog details below.
+                                                                        </div>
+                                                                        
+                                                                        <!-- Blog Details Section -->
+                                                                        <div style="text-align: center; font-weight: bold; color: #a0aec0; margin: 1rem 0; padding: 0.5rem; background-color: #1a202c; border-radius: 0.25rem; font-family: monospace;">=== BLOG DETAILS ===</div>
+                                                                        <div style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 0.375rem; background-color: #2d3748; border-left: 4px solid #48bb78;">
+                                                                            BLOG TITLE: Story-telling in Scotland Today<br><br>BLOG CONTENT: Exploring how story-telling continues to thrive in Scotland today, demonstrating its relevance and importance in contemporary society
+                                                                        </div>
+                                                                        
+                                                                        <!-- Requirements Section -->
+                                                                        <div style="text-align: center; font-weight: bold; color: #a0aec0; margin: 1rem 0; padding: 0.5rem; background-color: #1a202c; border-radius: 0.25rem; font-family: monospace;">=== REQUIREMENTS ===</div>
+                                                                        <div style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 0.375rem; background-color: #2d3748; border-left: 4px solid #ed8936;">
+                                                                            - Tone: Conversational and engaging<br>- Length: 150-200 characters<br>- Include a call-to-action<br>- Use up to 3 relevant hashtags<br><br>Create the Facebook post now:
+                                                                        </div>
+                                                                    </td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td><strong>Temperature</strong></td>
                                                                     <td>0.8</td>
-                                                                    <td>UI setting</td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td><strong>Max Tokens</strong></td>
                                                                     <td>1500</td>
-                                                                    <td>UI setting</td>
                                                                 </tr>
                                                             </tbody>
                                                         </table>
