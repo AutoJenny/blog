@@ -349,6 +349,13 @@
                 processSelector.value = 'facebook_feed_post';
                 updateConversionHeaderDisplay();
                 processSelector.dispatchEvent(new Event('change'));
+                
+                // Update requirements display after process is selected
+                setTimeout(() => {
+                    if (typeof updateRequirementsDisplay === 'function') {
+                        updateRequirementsDisplay();
+                    }
+                }, 200);
             }
             
             // Fetch content processes for selected platform (simplified)
@@ -415,6 +422,11 @@
                 // Update the prompt display when process changes
                 if (typeof updatePromptDisplayOnChange === 'function') {
                     updatePromptDisplayOnChange();
+                }
+                
+                // Update the requirements display when process changes
+                if (typeof updateRequirementsDisplay === 'function') {
+                    updateRequirementsDisplay();
                 }
             });
             

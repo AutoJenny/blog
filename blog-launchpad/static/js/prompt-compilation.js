@@ -413,8 +413,148 @@ function updateBlogDetailsDisplay() {
     }
 }
 
+// Function to update the requirements display with dynamic content from database
+function updateRequirementsDisplay() {
+    console.log('=== updateRequirementsDisplay() called ===');
+    
+    // Get the current platform and channel type
+    const platformSelector = document.getElementById('platformSelector');
+    const processSelector = document.getElementById('processSelector');
+    
+    console.log('Platform selector:', platformSelector);
+    console.log('Process selector:', processSelector);
+    
+    if (!platformSelector || !processSelector || processSelector.selectedIndex === 0) {
+        console.log('Platform or process not selected yet');
+        return;
+    }
+    
+    const selectedPlatform = platformSelector.options[platformSelector.selectedIndex]?.text;
+    const selectedProcess = processSelector.options[processSelector.selectedIndex]?.textContent;
+    
+    console.log('Selected platform:', selectedPlatform);
+    console.log('Selected process:', selectedProcess);
+    
+    if (!selectedPlatform || !selectedProcess) {
+        console.log('Platform or process not available');
+        return;
+    }
+    
+    // Extract channel type from process text (e.g., "Facebook Feed Post (feed_post)")
+    let channelType = 'feed_post'; // Default
+    if (selectedProcess.includes('(')) {
+        channelType = selectedProcess.split('(')[1].replace(')', '');
+    }
+    
+    console.log('Fetching requirements for:', selectedPlatform, channelType);
+    
+    // Fetch requirements from the database
+    // Map process selector value to channel type ID
+    let channelTypeId = 1; // Default to feed_post ID
+    if (processSelector.value === 'facebook_feed_post') {
+        channelTypeId = 1; // feed_post
+    } else if (processSelector.value === 'facebook_story_post') {
+        channelTypeId = 2; // story_post (if it exists)
+    } else if (processSelector.value === 'facebook_reels_caption') {
+        channelTypeId = 3; // reels_caption (if it exists)
+    } else if (processSelector.value === 'facebook_group_post') {
+        channelTypeId = 4; // group_post (if it exists)
+    }
+    
+    const apiUrl = `/api/social-media/platforms/${platformSelector.value}/channels/${channelTypeId}/requirements`;
+    console.log('API URL:', apiUrl);
+    
+    fetch(apiUrl)
+        .then(response => {
+            console.log('API response status:', response.status);
+            return response.json();
+        })
+        .then(requirements => {
+            console.log('Requirements fetched:', requirements);
+            
+            // Build the requirements content
+            let requirementsContent = '';
+            
+            // Find specific requirements
+            const toneRequirement = requirements.find(r => r.requirement_key === 'tone_guidelines');
+            const lengthRequirement = requirements.find(r => r.requirement_key === 'content_length');
+            const ctaRequirement = requirements.find(r => r.requirement_key === 'cta_strategy');
+            const hashtagRequirement = requirements.find(r => r.requirement_key === 'max_hashtags');
+            const finalInstruction = requirements.find(r => r.requirement_key === 'content_length')?.final_instruction;
+            
+            console.log('Found requirements:', {
+                toneRequirement,
+                lengthRequirement,
+                ctaRequirement,
+                hashtagRequirement,
+                finalInstruction
+            });
+            
+            // Build the display content
+            if (toneRequirement) {
+                requirementsContent += `- Tone: ${toneRequirement.requirement_value}\n`;
+            }
+            
+            if (lengthRequirement) {
+                requirementsContent += `- Length: ${lengthRequirement.requirement_value}\n`;
+            }
+            
+            if (ctaRequirement) {
+                requirementsContent += `- Include a call-to-action\n`;
+            }
+            
+            if (hashtagRequirement) {
+                requirementsContent += `- Use up to ${hashtagRequirement.requirement_value} relevant hashtags\n`;
+            }
+            
+            // Add double line break before final instruction
+            requirementsContent += '\n\n';
+            
+            // Make final instruction dynamic based on platform and channel
+            if (finalInstruction) {
+                requirementsContent += finalInstruction;
+            } else {
+                // Create dynamic instruction based on selected platform and channel
+                const platformName = platformSelector.options[platformSelector.selectedIndex]?.text || 'Facebook';
+                const channelType = processSelector.options[processSelector.selectedIndex]?.textContent?.split(' (')[0] || 'post';
+                requirementsContent += `Create the ${platformName} ${channelType} now:`;
+            }
+            
+            console.log('Final requirements content:', requirementsContent);
+            
+            // Update the display
+            const requirementsElement = document.getElementById('dynamicRequirements');
+            console.log('Looking for requirements element with ID "dynamicRequirements"');
+            console.log('Found element:', requirementsElement);
+            if (requirementsElement) {
+                // Convert \n to <br> tags for proper HTML line breaks
+                const htmlContent = requirementsContent.replace(/\n/g, '<br>');
+                requirementsElement.innerHTML = htmlContent;
+                console.log('Requirements element updated successfully');
+                console.log('New content:', requirementsElement.innerHTML);
+            } else {
+                console.error('Requirements element not found');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching requirements:', error);
+            // Fallback to default content
+            const requirementsElement = document.getElementById('dynamicRequirements');
+            if (requirementsElement) {
+                // Create dynamic fallback content
+                const platformName = platformSelector.options[platformSelector.selectedIndex]?.text || 'Facebook';
+                const channelType = processSelector.options[processSelector.selectedIndex]?.textContent?.split(' (')[0] || 'post';
+                const fallbackContent = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a call-to-action\n- Use up to 3 relevant hashtags\n\nCreate the ${platformName} ${channelType} now:`;
+                // Convert \n to <br> tags for proper HTML line breaks
+                const htmlContent = fallbackContent.replace(/\n/g, '<br>');
+                requirementsElement.innerHTML = htmlContent;
+            }
+        });
+}
+
 // Export the update function
 window.updatePromptDisplayOnChange = updatePromptDisplayOnChange;
 window.setupPromptUpdateListeners = setupPromptUpdateListeners;
 window.waitForLLMSettingsAndInitialize = waitForLLMSettingsAndInitialize;
 window.updateBlogDetailsDisplay = updateBlogDetailsDisplay;
+window.updateRequirementsDisplay = updateRequirementsDisplay;
