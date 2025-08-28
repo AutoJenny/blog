@@ -1650,6 +1650,7 @@ def get_channel_requirements(platform_id, channel_id):
             SELECT cr.id, cr.requirement_category, cr.requirement_key, cr.requirement_value,
                    cr.description, cr.is_required, cr.validation_rules, cr.unit,
                    cr.min_value, cr.max_value, cr.display_order, cr.is_active,
+                   cr.content_length, cr.final_instruction,
                    rc.display_name as category_display_name, rc.color_theme, rc.icon_class
             FROM channel_requirements cr
             JOIN requirement_categories rc ON cr.requirement_category = rc.name
