@@ -86,7 +86,56 @@ function assembleLLMPrompt(processConfig, sectionContent) {
     console.log('Final user prompt after replacement:', finalUserPrompt);
     
     // Build the three structured parts
-    const systemTask = `You are a social media content specialist.\n\nYour task: Create an engaging Facebook post based on the blog details below.`;
+    // Get the System Prompt and User Prompt Template from the LLM Settings panel
+    const systemPromptElement = document.getElementById('llmSystemPrompt');
+    const userPromptTemplateElement = document.getElementById('llmUserPromptTemplate');
+    
+    let currentSystemPrompt = 'No system prompt configured';
+    let currentUserPromptTemplate = 'No user prompt template configured';
+    
+    if (systemPromptElement) {
+        currentSystemPrompt = systemPromptElement.value || systemPromptElement.textContent || 'No system prompt configured';
+    }
+    
+    if (userPromptTemplateElement) {
+        currentUserPromptTemplate = userPromptTemplateElement.value || userPromptTemplateElement.textContent || 'No user prompt template configured';
+    }
+    
+    // Get the selected platform and channel type values
+    const currentPlatformSelector = document.getElementById('platformSelector');
+    
+    let currentSelectedPlatform = 'No platform selected';
+    let currentSelectedChannelType = 'No channel type selected';
+    
+    if (currentPlatformSelector) {
+        currentSelectedPlatform = currentPlatformSelector.options[currentPlatformSelector.selectedIndex]?.text || 'No platform selected';
+    }
+    
+    // Get channel type from the process configuration displayed in debugProcessName
+    const debugProcessName = document.getElementById('debugProcessName');
+    if (debugProcessName && debugProcessName.textContent !== 'No process selected') {
+        let currentChannelType = debugProcessName.textContent.includes('(') ? debugProcessName.textContent.split('(')[1].replace(')', '') : 'N/A';
+        
+        // Convert technical terms to natural language
+        if (currentChannelType === 'feed_post') {
+            currentChannelType = 'feed post';
+        } else if (currentChannelType === 'story_post') {
+            currentChannelType = 'story post';
+        } else if (currentChannelType === 'reels_caption') {
+            currentChannelType = 'reels caption';
+        } else if (currentChannelType === 'group_post') {
+            currentChannelType = 'group post';
+        }
+        
+        currentSelectedChannelType = currentChannelType;
+    }
+    
+    // Substitute the placeholders in the user prompt template
+    const substitutedUserPromptTemplate = currentUserPromptTemplate
+        .replace(/{platform}/g, currentSelectedPlatform)
+        .replace(/{channel_type}/g, currentSelectedChannelType);
+    
+    const systemTask = `${currentSystemPrompt}\n\n${substitutedUserPromptTemplate}`;
     
     const blogDetails = `Title: ${sectionContent.title || 'No title'}\nContent: ${sectionContent.content || 'No content'}`;
     
@@ -145,7 +194,86 @@ window.updateStructuredPromptDisplay = updateStructuredPromptDisplay;
 
 // Function to initialize the structured prompt display with default content
 function initializeStructuredPromptDisplay() {
-    const defaultSystemTask = `You are a social media content specialist.\n\nYour task: Create an engaging Facebook post based on the blog details below.`;
+    // Get the System Prompt and User Prompt Template from the LLM Settings panel
+    const systemPromptElement = document.getElementById('llmSystemPrompt');
+    const userPromptTemplateElement = document.getElementById('llmUserPromptTemplate');
+    
+    let systemPrompt = 'No system prompt configured';
+    let userPromptTemplate = 'No user prompt template configured';
+    
+    if (systemPromptElement) {
+        systemPrompt = systemPromptElement.value || systemPromptElement.textContent || 'No system prompt configured';
+    }
+    
+    if (userPromptTemplateElement) {
+        userPromptTemplate = userPromptTemplateElement.value || userPromptTemplateElement.textContent || 'No user prompt template configured';
+    }
+    
+    // Get the selected platform and channel type values
+    const platformSelector = document.getElementById('platformSelector');
+    
+    let selectedPlatform = 'No platform selected';
+    let selectedChannelType = 'No channel type selected';
+    
+    console.log('Platform selector found:', platformSelector);
+    if (platformSelector) {
+        console.log('Platform selector options:', platformSelector.options);
+        console.log('Platform selector selectedIndex:', platformSelector.selectedIndex);
+        selectedPlatform = platformSelector.options[platformSelector.selectedIndex]?.text || 'No platform selected';
+        console.log('Selected platform:', selectedPlatform);
+    }
+    
+    // Get channel type from the process selector
+    const processSelector = document.getElementById('processSelector');
+    console.log('Process selector found:', processSelector);
+    
+    if (processSelector && processSelector.selectedIndex > 0) {
+        const selectedProcessOption = processSelector.options[processSelector.selectedIndex];
+        console.log('Selected process option:', selectedProcessOption);
+        
+        if (selectedProcessOption && selectedProcessOption.textContent.includes('(')) {
+            let channelType = selectedProcessOption.textContent.split('(')[1].replace(')', '');
+            console.log('Extracted channel type:', channelType);
+            
+            // Convert technical terms to natural language
+            if (channelType === 'feed_post') {
+                channelType = 'feed post';
+            } else if (channelType === 'story_post') {
+                channelType = 'story post';
+            } else if (channelType === 'reels_caption') {
+                channelType = 'reels caption';
+            } else if (channelType === 'group_post') {
+                channelType = 'group post';
+            }
+            
+            selectedChannelType = channelType;
+            console.log('Final selected channel type:', selectedChannelType);
+        }
+    }
+    
+    console.log('Final values - Platform:', selectedPlatform, 'Channel Type:', selectedChannelType);
+    
+    // Substitute the placeholders in the user prompt template
+    const substitutedUserPromptTemplate = userPromptTemplate
+        .replace(/{platform}/g, selectedPlatform)
+        .replace(/{channel_type}/g, selectedChannelType);
+    
+    console.log('Substituted user prompt template:', substitutedUserPromptTemplate);
+    
+    // Update the table display with the actual content
+    const tableSystemPrompt = document.getElementById('tableSystemPrompt');
+    const tableUserPromptTemplate = document.getElementById('tableUserPromptTemplate');
+    
+    if (tableSystemPrompt) {
+        tableSystemPrompt.textContent = systemPrompt;
+    }
+    
+    if (tableUserPromptTemplate) {
+        tableUserPromptTemplate.textContent = substitutedUserPromptTemplate;
+    }
+    
+    // Combine them for the first section
+    const defaultSystemTask = `${systemPrompt}\n\n${userPromptTemplate}`;
     const defaultBlogDetails = `Title: [Blog title will appear here]\nContent: [Blog content will appear here]`;
     const defaultRequirements = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a clear call-to-action\n- Use up to 3 relevant hashtags\n\nReturn only the final Facebook post text, with no explanations or extra commentary.`;
     
@@ -154,3 +282,12 @@ function initializeStructuredPromptDisplay() {
 
 // Export the initialization function
 window.initializeStructuredPromptDisplay = initializeStructuredPromptDisplay;
+
+// Function to update the prompt display when platform/process changes
+function updatePromptDisplayOnChange() {
+    console.log('updatePromptDisplayOnChange called - updating prompt display');
+    initializeStructuredPromptDisplay();
+}
+
+// Export the update function
+window.updatePromptDisplayOnChange = updatePromptDisplayOnChange;
