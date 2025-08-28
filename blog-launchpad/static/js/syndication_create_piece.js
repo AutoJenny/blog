@@ -1,5 +1,10 @@
-document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
             console.log('DOMContentLoaded event fired');
+            
+            // Initialize the structured prompt display
+            if (typeof initializeStructuredPromptDisplay === 'function') {
+                initializeStructuredPromptDisplay();
+            }
             
             // Initialize button states - first checkbox is pre-selected
             updateProcessAllButtonState(true);
