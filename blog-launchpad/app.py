@@ -2514,6 +2514,84 @@ def syndication_piece(piece_id):
     except Exception as e:
         logger.error(f"Error handling syndication piece {piece_id}: {e}")
         return jsonify({'error': f'Failed to handle syndication piece: {str(e)}'}), 500
+@app.route('/api/syndication/ollama/start', methods=['POST'])
+def start_ollama():
+    """Start Ollama as a background process."""
+    try:
+        import subprocess
+        import os
+        import signal
+        import time
+
+        # Check if Ollama is already running
+        try:
+            import requests
+            response = requests.get('http://localhost:11434/api/tags', timeout=5)
+            if response.status_code == 200:
+                return jsonify({
+                    'status': 'success',
+                    'message': 'Ollama is already running',
+                    'already_running': True
+                })
+        except:
+            pass  # Ollama is not running, continue to start it
+
+        # Start Ollama in the background
+        try:
+            # Use subprocess.Popen to start Ollama in background
+            process = subprocess.Popen(
+                ['ollama', 'serve'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                preexec_fn=os.setsid if hasattr(os, 'setsid') else None
+            )
+
+            # Wait a moment for Ollama to start
+            time.sleep(3)
+
+            # Test if Ollama is now accessible
+            try:
+                response = requests.get('http://localhost:11434/api/tags', timeout=10)
+                if response.status_code == 200:
+                    return jsonify({
+                        'status': 'success',
+                        'message': 'Ollama started successfully',
+                        'process_id': process.pid,
+                        'already_running': False
+                    })
+                else:
+                    # Kill the process if it didn't start properly
+                    if hasattr(os, 'killpg'):
+                        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                    else:
+                        process.terminate()
+                    raise Exception(f'Ollama started but returned status {response.status_code}')
+            except Exception as e:
+                # Kill the process if connection test failed
+                if hasattr(os, 'killpg'):
+                    os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                else:
+                    process.terminate()
+                raise Exception(f'Failed to connect to Ollama after starting: {str(e)}')
+
+        except FileNotFoundError:
+            return jsonify({
+                'status': 'error',
+                'message': 'Ollama command not found. Please ensure Ollama is installed and in your PATH.'
+            }), 500
+        except Exception as e:
+            return jsonify({
+                'status': 'error',
+                'message': f'Failed to start Ollama: {str(e)}'
+            }), 500
+
+    except Exception as e:
+        logger.error(f"Error starting Ollama: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Error starting Ollama: {str(e)}'
+        }), 500
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(debug=True, host='0.0.0.0', port=port) 
