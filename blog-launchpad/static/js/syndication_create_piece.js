@@ -1423,20 +1423,31 @@
                     
                     try {
                         // Update status
-                        document.getElementById('llmStatus').textContent = 'Testing Ollama...';
+                        document.getElementById('llmStatus').textContent = 'Starting Ollama...';
                         
-                        // Test Ollama connection through our Flask endpoint
-                        const response = await fetch('/api/syndication/ollama/test');
+                        // Start Ollama through our Flask endpoint
+                        const response = await fetch('/api/syndication/ollama/start', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
                         if (response.ok) {
                             const data = await response.json();
-                            console.log('Ollama test response:', data);
+                            console.log('Ollama start response:', data);
                             
-                            // Update status
-                            document.getElementById('llmStatus').textContent = 'Ollama Running';
-                            document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
-                            
-                            // Show success message
-                            alert(`Ollama is running! ${data.message || 'Connection successful'}`);
+                            if (data.already_running) {
+                                // Ollama was already running
+                                document.getElementById('llmStatus').textContent = 'Ollama Running';
+                                document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
+                                alert(`Ollama is already running! ${data.message}`);
+                            } else {
+                                // Ollama was started successfully
+                                document.getElementById('llmStatus').textContent = 'Ollama Running';
+                                document.getElementById('llmLastProcessed').textContent = new Date().toLocaleTimeString();
+                                alert(`Ollama started successfully! ${data.message}`);
+                            }
                             
                             // Change button to show it's running
                             this.textContent = 'Ollama Running';
@@ -1444,7 +1455,7 @@
                             this.classList.add('btn-info');
                         } else {
                             const errorData = await response.json();
-                            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                            throw new Error(errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`);
                         }
                     } catch (error) {
                         console.error('Error starting Ollama:', error);
