@@ -566,7 +566,16 @@ function updateRequirementsDisplay() {
         channelTypeId = 4; // group_post (if it exists)
     }
     
-    const apiUrl = `/api/social-media/platforms/${platformSelector.value}/channels/${channelTypeId}/requirements`;
+    // Get the actual platform ID from the selected option
+    const selectedPlatformOption = platformSelector.options[platformSelector.selectedIndex];
+    const platformId = selectedPlatformOption ? selectedPlatformOption.value : 1; // Default to Facebook (ID 1)
+    
+    console.log('Platform selector value:', platformSelector.value);
+    console.log('Selected platform option:', selectedPlatformOption);
+    console.log('Using platform ID:', platformId);
+    console.log('Using channel type ID:', channelTypeId);
+    
+    const apiUrl = `/api/social-media/platforms/${platformId}/channels/${channelTypeId}/requirements`;
     console.log('API URL:', apiUrl);
     
     fetch(apiUrl)
@@ -585,7 +594,7 @@ function updateRequirementsDisplay() {
             const lengthRequirement = requirements.find(r => r.requirement_key === 'content_length');
             const ctaRequirement = requirements.find(r => r.requirement_key === 'cta_strategy');
             const hashtagRequirement = requirements.find(r => r.requirement_key === 'max_hashtags');
-            const finalInstruction = requirements.find(r => r.requirement_key === 'content_length')?.final_instruction;
+            const finalInstruction = requirements.find(r => r.requirement_key === 'final_instruction')?.requirement_value;
             
             console.log('Found requirements:', {
                 toneRequirement,
