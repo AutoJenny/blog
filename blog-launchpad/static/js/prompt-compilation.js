@@ -586,22 +586,30 @@ function updateRequirementsDisplay() {
         .then(requirements => {
             console.log('Requirements fetched:', requirements);
             
+            // Validate response before parsing
+            if (!requirements || !Array.isArray(requirements)) {
+                console.error('Invalid requirements response:', requirements);
+                throw new Error('Requirements response is not an array');
+            }
+            
             // Build the requirements content
             let requirementsContent = '';
             
-            // Find specific requirements
-            const toneRequirement = requirements.find(r => r.requirement_key === 'tone_guidelines');
-            const lengthRequirement = requirements.find(r => r.requirement_key === 'content_length');
-            const ctaRequirement = requirements.find(r => r.requirement_key === 'cta_strategy');
-            const hashtagRequirement = requirements.find(r => r.requirement_key === 'max_hashtags');
-            const finalInstruction = requirements.find(r => r.requirement_key === 'final_instruction')?.requirement_value;
+            try {
+                // Find specific requirements with safe property access
+                const toneRequirement = requirements.find(r => r && r.requirement_key === 'tone_guidelines');
+                const lengthRequirement = requirements.find(r => r && r.requirement_key === 'content_length');
+                const ctaRequirement = requirements.find(r => r && r.requirement_key === 'cta_strategy');
+                const hashtagRequirement = requirements.find(r => r && r.requirement_key === 'max_hashtags');
+                const finalInstruction = requirements.find(r => r && r.requirement_key === 'final_instruction');
+                const finalInstructionValue = finalInstruction ? finalInstruction.requirement_value : null;
             
             console.log('Found requirements:', {
                 toneRequirement,
                 lengthRequirement,
                 ctaRequirement,
                 hashtagRequirement,
-                finalInstruction
+                finalInstruction: finalInstructionValue
             });
             
             // Build the display content
@@ -625,8 +633,8 @@ function updateRequirementsDisplay() {
             requirementsContent += '\n\n';
             
             // Make final instruction dynamic based on platform and channel
-            if (finalInstruction) {
-                requirementsContent += finalInstruction;
+            if (finalInstructionValue) {
+                requirementsContent += finalInstructionValue;
             } else {
                 // Create dynamic instruction based on selected platform and channel
                 const platformName = platformSelector.options[platformSelector.selectedIndex]?.text || 'Facebook';
@@ -656,6 +664,18 @@ function updateRequirementsDisplay() {
             } else {
                 console.error('Requirements element not found');
             }
+        } catch (parseError) {
+            console.error('Error parsing requirements:', parseError);
+            // Fallback to default content
+            const requirementsElement = document.getElementById('dynamicRequirements');
+            if (requirementsElement) {
+                const platformName = platformSelector.options[platformSelector.selectedIndex]?.text || 'Facebook';
+                const channelType = processSelector.options[processSelector.selectedIndex]?.textContent?.split(' (')[0] || 'post';
+                const fallbackContent = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a call-to-action\n- Use up to 3 relevant hashtags\n\nCreate the ${platformName} ${channelType} now:`;
+                const htmlContent = fallbackContent.replace(/\n/g, '<br>');
+                requirementsElement.innerHTML = htmlContent;
+            }
+        }
         })
         .catch(error => {
             console.error('Error fetching requirements:', error);
