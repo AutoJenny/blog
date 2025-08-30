@@ -72,7 +72,7 @@ function assembleLLMPrompt(processConfig, sectionContent) {
     const llmSettings = getLLMSettings();
     console.log('LLM settings:', llmSettings);
     
-    const systemPrompt = llmSettings.system_prompt || 'You are a social media content specialist. Convert blog post sections into engaging social media posts following the specified platform requirements.';
+            const systemPrompt = llmSettings.system_prompt || 'You are a social media content specialist. Convert blog post sections into engaging social media posts following the specified platform requirements. IMPORTANT: Return ONLY the social media post text with hashtags. Do NOT include character counts, image descriptions, engagement prompts, or any other meta-information. The response should be clean, ready-to-post content.';
     const userPrompt = llmSettings.user_prompt_template || 'Convert this blog post section into a {platform} {channel_type} post. Follow these requirements: {requirements}';
     
     console.log('Base prompts:', { systemPrompt, userPrompt });
