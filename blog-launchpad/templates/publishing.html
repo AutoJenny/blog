@@ -233,6 +233,65 @@
         .update-button-container {
             margin-bottom: 0.5rem;
         }
+        
+        /* Clan.com API Content Accordion Styles */
+        .clan-api-accordion {
+            margin-top: 1rem;
+        }
+        
+        .clan-api-accordion .accordion-button {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            border: 1px solid #4a5568;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .clan-api-accordion .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .clan-api-accordion .accordion-button:focus {
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+        }
+        
+        .clan-api-accordion .accordion-body {
+            background: #1a202c;
+            border: 1px solid #4a5568;
+        }
+        
+        .clan-content-display {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        .clan-content-display::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .clan-content-display::-webkit-scrollbar-track {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+        
+        .clan-content-display::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        
+        .clan-content-display::-webkit-scrollbar-thumb:hover {
+            background: #5a67d8;
+        }
     </style>
 </head>
 <body class="bg-dark">
@@ -336,6 +395,11 @@
                         <i class="fas fa-refresh me-1"></i>Refresh
                     </button>
                 </h3>
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>New Feature:</strong> Each post now has an accordion that shows the exact content sent to Clan.com. 
+                    This will help us integrate <strong>Open Graph (OG) tags</strong> for Facebook posting later.
+                </div>
 
                 <!-- Posts will be loaded dynamically here -->
                 <div id="posts-loading" class="text-center p-4">
@@ -645,6 +709,57 @@
                         ${getActionButtons(post)}
                     </div>
                 </div>
+                
+                <!-- Clan.com API Content Accordion -->
+                <div class="clan-api-accordion">
+                    <div class="accordion" id="clanApiAccordion${post.id}">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="clanApiHeader${post.id}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#clanApiCollapse${post.id}" aria-expanded="false" aria-controls="clanApiCollapse${post.id}">
+                                    <i class="fas fa-code me-2"></i>View Clan.com API Content
+                                    <span class="text-info ms-2">(Raw HTML & API Data)</span>
+                                </button>
+                            </h2>
+                            <div id="clanApiCollapse${post.id}" class="accordion-collapse collapse" aria-labelledby="clanApiHeader${post.id}" data-bs-parent="#clanApiAccordion${post.id}">
+                                <div class="accordion-body text-white">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary mb-2">
+                                                <i class="fas fa-html5 me-2"></i>HTML Content Sent to Clan.com
+                                            </h6>
+                                            <div class="mb-3">
+                                                <button class="btn btn-outline-info btn-sm" onclick="loadClanPostHtml(${post.id})">
+                                                    <i class="fas fa-download me-1"></i>Load HTML Content
+                                                </button>
+                                            </div>
+                                            <div id="clanHtmlContent${post.id}" class="clan-content-display">
+                                                <div class="text-muted text-center py-3">
+                                                    <i class="fas fa-arrow-down fa-2x mb-2"></i>
+                                                    <p>Click "Load HTML Content" to see the exact HTML sent to Clan.com</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-success mb-2">
+                                                <i class="fas fa-database me-2"></i>API Request Data
+                                            </h6>
+                                            <div class="mb-3">
+                                                <button class="btn btn-outline-success btn-sm" onclick="loadClanApiData(${post.id})">
+                                                    <i class="fas fa-download me-1"></i>Load API Data
+                                                </button>
+                                            </div>
+                                            <div id="clanApiData${post.id}" class="clan-content-display">
+                                                <div class="text-muted text-center py-3">
+                                                    <p>Click "Load API Data" to see the JSON data sent to Clan.com</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             `;
             
             // Add event listeners for buttons
@@ -786,6 +901,181 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadPosts();
         });
+
+        // Load Clan.com HTML content for a specific post
+        async function loadClanPostHtml(postId) {
+            const contentDiv = document.getElementById(`clanHtmlContent${postId}`);
+            if (!contentDiv) {
+                console.error(`Content div not found for post ${postId}`);
+                return;
+            }
+            
+            try {
+                contentDiv.innerHTML = `
+                    <div class="text-center py-2">
+                        <i class="fas fa-spinner fa-spin me-2"></i>Loading HTML content...
+                    </div>
+                `;
+                
+                const response = await fetch(`/clan-post-html/${postId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const htmlContent = await response.text();
+                
+                if (!htmlContent || htmlContent.trim().length === 0) {
+                    throw new Error('No HTML content received');
+                }
+                
+                // Format the HTML content for display
+                const formattedContent = htmlContent
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/\n/g, '<br>')
+                    .replace(/\s{2,}/g, '&nbsp;&nbsp;');
+                
+                contentDiv.innerHTML = `
+                    <div class="text-success mb-2">
+                        <i class="fas fa-check me-2"></i>HTML Content Loaded Successfully
+                    </div>
+                    <div class="text-muted small mb-2">
+                        <i class="fas fa-info-circle me-1"></i>Content length: ${htmlContent.length} characters
+                    </div>
+                    <div class="border-top border-secondary pt-2">
+                        ${formattedContent}
+                    </div>
+                `;
+                
+                console.log(`HTML content loaded for post ${postId}:`, htmlContent.length, 'characters');
+                
+            } catch (error) {
+                console.error('Error loading HTML content:', error);
+                contentDiv.innerHTML = `
+                    <div class="text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Error loading HTML content
+                    </div>
+                    <div class="text-muted small mt-1">${error.message}</div>
+                    <div class="mt-2">
+                        <button class="btn btn-outline-warning btn-sm" onclick="loadClanPostHtml(${postId})">
+                            <i class="fas fa-redo me-1"></i>Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Load Clan.com API data for a specific post
+        async function loadClanApiData(postId) {
+            const contentDiv = document.getElementById(`clanApiData${postId}`);
+            if (!contentDiv) {
+                console.error(`API data div not found for post ${postId}`);
+                return;
+            }
+            
+            try {
+                contentDiv.innerHTML = `
+                    <div class="text-center py-2">
+                        <i class="fas fa-spinner fa-spin me-2"></i>Loading API data...
+                    </div>
+                `;
+                
+                // Get the post data from our local posts array
+                const post = posts.find(p => p.id === postId);
+                if (!post) {
+                    throw new Error('Post not found in local data');
+                }
+                
+                // Simulate the API data that would be sent to Clan.com
+                // In a real implementation, this would come from the ClanPublisher
+                const apiData = {
+                    title: post.title || post.provisional_title || post.idea_seed || 'Untitled Post',
+                    url_key: generateUrlKey(post),
+                    short_content: post.summary ? post.summary.substring(0, 200) : 'No summary available',
+                    status: 2, // 2 = enabled
+                    categories: [14, 15], // Default clan.com categories
+                    list_thumbnail: '/blog/placeholder.jpg',
+                    post_thumbnail: '/blog/placeholder.jpg',
+                    meta_title: post.title || post.provisional_title || post.idea_seed || 'Untitled Post',
+                    meta_tags: generateMetaTags(post),
+                    meta_description: post.summary ? post.summary.substring(0, 160) : 'No description available'
+                };
+                
+                // Format the API data for display
+                const formattedData = JSON.stringify(apiData, null, 2)
+                    .replace(/\n/g, '<br>')
+                    .replace(/\s{2,}/g, '&nbsp;&nbsp;');
+                
+                contentDiv.innerHTML = `
+                    <div class="text-success mb-2">
+                        <i class="fas fa-check me-2"></i>API Data Loaded Successfully
+                    </div>
+                    <div class="text-muted small mb-2">
+                        <i class="fas fa-info-circle me-1"></i>Simulated API request data (based on post metadata)
+                    </div>
+                    <div class="text-muted small mb-2">
+                        <i class="fas fa-code me-1"></i>This shows the JSON payload that would be sent to Clan.com
+                    </div>
+                    <div class="border-top border-secondary pt-2">
+                        <pre class="text-white">${formattedData}</pre>
+                    </div>
+                `;
+                
+                console.log(`API data loaded for post ${postId}:`, apiData);
+                
+            } catch (error) {
+                console.error('Error loading API data:', error);
+                contentDiv.innerHTML = `
+                    <div class="text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Error loading API data
+                    </div>
+                    <div class="text-muted small mt-1">${error.message}</div>
+                    <div class="mt-2">
+                        <button class="btn btn-outline-warning btn-sm" onclick="loadClanApiData(${postId})">
+                            <i class="fas fa-redo me-1"></i>Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Helper function to generate URL key (similar to ClanPublisher)
+        function generateUrlKey(post) {
+            const title = post.title || post.provisional_title || post.idea_seed || 'Untitled Post';
+            const urlKey = title.toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .trim('-');
+            
+            const postId = post.id || 0;
+            const fixedTimestamp = 1755600000 + (postId * 1000);
+            
+            return urlKey ? `${urlKey}-${postId}-${fixedTimestamp}` : `post-${postId}-${fixedTimestamp}`;
+        }
+
+        // Helper function to generate meta tags (similar to ClanPublisher)
+        function generateMetaTags(post) {
+            const title = post.title || post.provisional_title || post.idea_seed || '';
+            const summary = post.summary || '';
+            
+            const words = [];
+            
+            // Extract meaningful words from title
+            if (title) {
+                const titleWords = title.toLowerCase().match(/\b[a-zA-Z]{3,}\b/g) || [];
+                words.push(...titleWords.slice(0, 3));
+            }
+            
+            // Extract meaningful words from summary
+            if (summary) {
+                const summaryWords = summary.toLowerCase().match(/\b[a-zA-Z]{3,}\b/g) || [];
+                words.push(...summaryWords.slice(0, 2));
+            }
+            
+            // Remove duplicates and join
+            const uniqueWords = [...new Set(words)];
+            return uniqueWords.join(',');
+        }
     </script>
 </body>
 </html>
