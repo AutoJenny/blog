@@ -2227,6 +2227,9 @@ def execute_llm_request():
 @app.route('/api/syndication/ollama/direct', methods=['POST'])
 def direct_ollama_request():
     """NEW DIRECT OLLAMA ENDPOINT - bypasses old code completely."""
+    import requests  # Import at top of function to avoid UnboundLocalError
+    import time  # Import for sleep function in retry mechanism
+    
     try:
         data = request.get_json()
         if not data:
@@ -2234,7 +2237,7 @@ def direct_ollama_request():
         
         # Extract LLM parameters
         provider = data.get('provider', 'ollama')
-        model = data.get('model', 'llama3.1:70b')
+        model = data.get('model', 'mistral:latest')  # Changed from llama3.1:70b to mistral:latest for stability
         prompt = data.get('prompt', '')
         temperature = float(data.get('temperature', 0.7))
         max_tokens = int(data.get('max_tokens', 1000))
@@ -2243,19 +2246,142 @@ def direct_ollama_request():
             return jsonify({'error': 'No prompt provided'}), 400
         
         # Call Ollama directly
-        import requests
-        ollama_response = requests.post(
-            'http://localhost:11434/api/generate',
-            json={
-                'model': model,
-                'prompt': prompt,
-                'options': {
-                    'temperature': temperature,
-                    'num_predict': max_tokens
-                }
-            },
-            timeout=60
-        )
+        # Note: requests import moved to top of function to avoid UnboundLocalError
+        
+        # Add better error handling and model validation
+        logger.info(f"Making Ollama request to model: {model}")
+        logger.info(f"Prompt length: {len(prompt)} characters")
+        
+        # Limit prompt length to prevent crashes (most models handle 4K tokens well)
+        max_prompt_length = 4000  # Conservative limit
+        if len(prompt) > max_prompt_length:
+            logger.warning(f"Prompt too long ({len(prompt)} chars), truncating to {max_prompt_length}")
+            prompt = prompt[:max_prompt_length] + "\n\n[Content truncated due to length]"
+            logger.info(f"Truncated prompt length: {len(prompt)} characters")
+        
+        # First check if the model is available (with better error handling)
+        available_models = []
+        try:
+            model_check = requests.get('http://localhost:11434/api/tags', timeout=5)  # Reduced timeout
+            if model_check.status_code == 200:
+                try:
+                    available_models = [m['name'] for m in model_check.json().get('models', [])]
+                    logger.info(f"Available models: {available_models}")
+                except Exception as parse_error:
+                    logger.warning(f"Failed to parse models response: {parse_error}")
+                    available_models = []
+            else:
+                logger.warning(f"Model check returned status {model_check.status_code}")
+                available_models = []
+        except requests.exceptions.ConnectionError:
+            logger.warning("Cannot connect to Ollama for model check - proceeding with default model")
+            available_models = []
+        except requests.exceptions.Timeout:
+            logger.warning("Model check timed out - proceeding with default model")
+            available_models = []
+        except Exception as e:
+            logger.warning(f"Error checking models: {e} - proceeding with default model")
+            available_models = []
+        
+        # Always prefer smaller, more stable models to prevent crashes
+        if available_models:
+            # Prioritize smaller, more stable models
+            stable_models = ['mistral:latest', 'llama3.1:8b', 'llama3:latest', 'llama3.2:latest']
+            for stable_model in stable_models:
+                if stable_model in available_models:
+                    if model != stable_model:
+                        logger.info(f"Switching from {model} to more stable model: {stable_model}")
+                        model = stable_model
+                    break
+            else:
+                # If no stable models available, use the requested one
+                logger.warning(f"No stable models available, using requested: {model}")
+        else:
+            # If we can't check models, default to mistral:latest
+            if model != 'mistral:latest':
+                logger.info(f"Defaulting to stable model: mistral:latest")
+                model = 'mistral:latest'
+        
+        # Make the actual request with retry mechanism
+        max_retries = 2
+        retry_count = 0
+        
+        while retry_count <= max_retries:
+            try:
+                logger.info(f"Attempting Ollama request (attempt {retry_count + 1}/{max_retries + 1})")
+                ollama_response = requests.post(
+                    'http://localhost:11434/api/generate',
+                    json={
+                        'model': model,
+                        'prompt': prompt,
+                        'options': {
+                            'temperature': temperature,
+                            'num_predict': max_tokens
+                        }
+                    },
+                    timeout=120  # Increased timeout for large models
+                )
+                break  # Success, exit retry loop
+                
+            except requests.exceptions.Timeout:
+                logger.error(f"Ollama request timed out after 120 seconds (attempt {retry_count + 1})")
+                if retry_count == max_retries:
+                    return jsonify({'error': 'Ollama request timed out after multiple attempts. The model might be too large or the prompt too long.'}), 504
+                retry_count += 1
+                logger.info(f"Retrying in 2 seconds...")
+                time.sleep(2)
+                
+            except requests.exceptions.ConnectionError as e:
+                logger.error(f"Ollama connection error (attempt {retry_count + 1}): {e}")
+                if retry_count == max_retries:
+                    # Try to restart Ollama automatically
+                    logger.info("Attempting to restart Ollama automatically...")
+                    try:
+                        import subprocess
+                        import os
+                        import signal
+                        
+                        # Start Ollama in background
+                        process = subprocess.Popen(
+                            ['ollama', 'serve'],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            preexec_fn=os.setsid if hasattr(os, 'setsid') else None
+                        )
+                        
+                        # Wait for Ollama to start
+                        time.sleep(5)
+                        
+                        # Test if it's working
+                        test_response = requests.get('http://localhost:11434/api/tags', timeout=10)
+                        if test_response.status_code == 200:
+                            logger.info("Ollama restarted successfully, retrying request...")
+                            # Reset retry count and try again
+                            retry_count = 0
+                            max_retries = 1  # Give it one more try
+                            time.sleep(2)
+                            continue
+                        else:
+                            logger.error("Failed to restart Ollama automatically")
+                            return jsonify({'error': f'Ollama connection error after multiple attempts: {str(e)}. Ollama may have crashed and could not be restarted automatically.'}), 500
+                            
+                    except Exception as restart_error:
+                        logger.error(f"Failed to restart Ollama: {restart_error}")
+                        return jsonify({'error': f'Ollama connection error after multiple attempts: {str(e)}. Ollama may have crashed and could not be restarted automatically.'}), 500
+                
+                retry_count += 1
+                logger.info(f"Retrying in 2 seconds...")
+                time.sleep(2)
+                
+            except Exception as e:
+                logger.error(f"Unexpected error during Ollama request (attempt {retry_count + 1}): {e}")
+                if retry_count == max_retries:
+                    return jsonify({'error': f'Unexpected error after multiple attempts: {str(e)}'}), 500
+                retry_count += 1
+                logger.info(f"Retrying in 2 seconds...")
+                time.sleep(2)
+        
+        logger.info(f"Ollama request successful after {retry_count + 1} attempts")
         
         if ollama_response.status_code == 200:
             # Ollama returns streaming JSON lines, we need to parse them
@@ -2310,6 +2436,84 @@ def test_ollama_connection():
         return jsonify({
             'status': 'error',
             'message': f'Failed to connect to Ollama: {str(e)}'
+        }), 500
+
+@app.route('/api/syndication/ollama/start', methods=['POST'])
+def start_ollama():
+    """Start Ollama as a background process."""
+    try:
+        import subprocess
+        import os
+        import signal
+        import time
+        
+        # Check if Ollama is already running
+        try:
+            import requests
+            response = requests.get('http://localhost:11434/api/tags', timeout=5)
+            if response.status_code == 200:
+                return jsonify({
+                    'status': 'success',
+                    'message': 'Ollama is already running',
+                    'already_running': True
+                })
+        except:
+            pass  # Ollama is not running, continue to start it
+        
+        # Start Ollama in the background
+        try:
+            # Use subprocess.Popen to start Ollama in background
+            process = subprocess.Popen(
+                ['ollama', 'serve'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                preexec_fn=os.setsid if hasattr(os, 'setsid') else None
+            )
+            
+            # Wait a moment for Ollama to start
+            time.sleep(3)
+            
+            # Test if Ollama is now accessible
+            try:
+                response = requests.get('http://localhost:11434/api/tags', timeout=10)
+                if response.status_code == 200:
+                    return jsonify({
+                        'status': 'success',
+                        'message': 'Ollama started successfully',
+                        'process_id': process.pid,
+                        'already_running': False
+                    })
+                else:
+                    # Kill the process if it didn't start properly
+                    if hasattr(os, 'killpg'):
+                        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                    else:
+                        process.terminate()
+                    raise Exception(f'Ollama started but returned status {response.status_code}')
+            except Exception as e:
+                # Kill the process if connection test failed
+                if hasattr(os, 'killpg'):
+                    os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                else:
+                    process.terminate()
+                raise Exception(f'Failed to connect to Ollama after starting: {str(e)}')
+                
+        except FileNotFoundError:
+            return jsonify({
+                'status': 'error',
+                'message': 'Ollama command not found. Please ensure Ollama is installed and in your PATH.'
+            }), 500
+        except Exception as e:
+            return jsonify({
+                'status': 'error',
+                'message': f'Failed to start Ollama: {str(e)}'
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Error starting Ollama: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Error starting Ollama: {str(e)}'
         }), 500
 
 @app.route('/api/syndication/pieces', methods=['GET', 'POST'])
@@ -2514,84 +2718,6 @@ def syndication_piece(piece_id):
     except Exception as e:
         logger.error(f"Error handling syndication piece {piece_id}: {e}")
         return jsonify({'error': f'Failed to handle syndication piece: {str(e)}'}), 500
-@app.route('/api/syndication/ollama/start', methods=['POST'])
-def start_ollama():
-    """Start Ollama as a background process."""
-    try:
-        import subprocess
-        import os
-        import signal
-        import time
-
-        # Check if Ollama is already running
-        try:
-            import requests
-            response = requests.get('http://localhost:11434/api/tags', timeout=5)
-            if response.status_code == 200:
-                return jsonify({
-                    'status': 'success',
-                    'message': 'Ollama is already running',
-                    'already_running': True
-                })
-        except:
-            pass  # Ollama is not running, continue to start it
-
-        # Start Ollama in the background
-        try:
-            # Use subprocess.Popen to start Ollama in background
-            process = subprocess.Popen(
-                ['ollama', 'serve'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                preexec_fn=os.setsid if hasattr(os, 'setsid') else None
-            )
-
-            # Wait a moment for Ollama to start
-            time.sleep(3)
-
-            # Test if Ollama is now accessible
-            try:
-                response = requests.get('http://localhost:11434/api/tags', timeout=10)
-                if response.status_code == 200:
-                    return jsonify({
-                        'status': 'success',
-                        'message': 'Ollama started successfully',
-                        'process_id': process.pid,
-                        'already_running': False
-                    })
-                else:
-                    # Kill the process if it didn't start properly
-                    if hasattr(os, 'killpg'):
-                        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-                    else:
-                        process.terminate()
-                    raise Exception(f'Ollama started but returned status {response.status_code}')
-            except Exception as e:
-                # Kill the process if connection test failed
-                if hasattr(os, 'killpg'):
-                    os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-                else:
-                    process.terminate()
-                raise Exception(f'Failed to connect to Ollama after starting: {str(e)}')
-
-        except FileNotFoundError:
-            return jsonify({
-                'status': 'error',
-                'message': 'Ollama command not found. Please ensure Ollama is installed and in your PATH.'
-            }), 500
-        except Exception as e:
-            return jsonify({
-                'status': 'error',
-                'message': f'Failed to start Ollama: {str(e)}'
-            }), 500
-
-    except Exception as e:
-        logger.error(f"Error starting Ollama: {e}")
-        return jsonify({
-            'status': 'error',
-            'message': f'Error starting Ollama: {str(e)}'
-        }), 500
-
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(debug=True, host='0.0.0.0', port=port) 

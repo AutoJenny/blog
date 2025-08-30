@@ -812,30 +812,27 @@
                 
                 console.log('Final user prompt after replacement:', finalUserPrompt);
                 
-                // Use the same dynamic content that's displayed in the Input Assembly panel
-                const systemTaskElement = document.getElementById('promptSystemTask');
-                const blogDetailsElement = document.getElementById('promptBlogDetails');
-                const requirementsElement = document.getElementById('promptRequirements');
+                // Use the working logic that was already there
+                // Get the blog post title from the post selector
+                const postSelector = document.getElementById('postSelector');
+                const selectedPostOption = postSelector?.options[postSelector?.selectedIndex];
+                const blogTitle = selectedPostOption?.textContent || 'Unknown Blog Title';
                 
-                if (!systemTaskElement || !blogDetailsElement || !requirementsElement) {
-                    console.log('Required elements not found, using fallback content');
-                    return 'Please wait for prompt assembly to complete...';
-                }
+                // Get section details from the sectionContent object
+                const sectionTitle = sectionContent?.title || 'Unknown Section Title';
+                const sectionText = sectionContent?.content || sectionContent?.polished || 'No content available';
                 
-                // Get the content from the Final Assembled Prompt panel (which should be synchronized)
-                const systemTask = systemTaskElement.textContent || 'No system task configured';
-                const blogDetails = blogDetailsElement.textContent || 'No blog details available';
-                const requirements = requirementsElement.textContent || 'No requirements configured';
+                // Build the blog details section
+                const blogDetails = `POST TITLE: ${blogTitle}\nSECTION TITLE: ${sectionTitle}\nSECTION TEXT: ${sectionText}`;
                 
-                console.log('Using synchronized content from Final Assembled Prompt panel:');
-                console.log('System Task:', systemTask);
-                console.log('Blog Details:', blogDetails);
-                console.log('Requirements:', requirements);
+                // Build the requirements section
+                const requirements = channelRequirements.map(req => `- ${req}`).join('\n');
+                const finalRequirements = `${requirements}\n\nCreate the ${platformName} ${channelType} now:`;
                 
-                // Assemble the final prompt using the same structure as Input Assembly
-                let finalPrompt = `${systemTask}\n\n=== BLOG DETAILS ===\n${blogDetails}\n\n=== REQUIREMENTS ===\n${requirements}`;
+                // Assemble the final prompt using the working structure
+                const finalPrompt = `${systemPrompt}\n\n${finalUserPrompt}\n\n=== BLOG DETAILS ===\n${blogDetails}\n\n=== REQUIREMENTS ===\n${finalRequirements}`;
                 
-                console.log('Final assembled prompt:', finalPrompt);
+                console.log('Final assembled prompt using working logic:', finalPrompt);
                 return finalPrompt;
             }
 

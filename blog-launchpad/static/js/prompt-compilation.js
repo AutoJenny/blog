@@ -389,6 +389,29 @@ function updatePromptDisplayOnChange() {
             finalSystemTaskElement.textContent = combinedSystemTask;
             console.log('Final Assembled Prompt system/task synchronized');
         }
+        
+        // Also update the Final Assembled Prompt blog details and requirements sections
+        // Get the current blog details and requirements from the Input Assembly panel
+        const dynamicBlogDetailsElement = document.getElementById('dynamicBlogDetails');
+        const dynamicRequirementsElement = document.getElementById('dynamicRequirements');
+        
+        if (dynamicBlogDetailsElement) {
+            const finalBlogDetailsElement = document.getElementById('promptBlogDetails');
+            if (finalBlogDetailsElement) {
+                finalBlogDetailsElement.textContent = dynamicBlogDetailsElement.textContent;
+                console.log('Final Assembled Prompt blog details synchronized');
+            }
+        }
+        
+        if (dynamicRequirementsElement) {
+            const finalRequirementsElement = document.getElementById('promptRequirements');
+            if (finalRequirementsElement) {
+                // Convert HTML content back to plain text for the prompt
+                const plainTextRequirements = dynamicRequirementsElement.textContent || dynamicRequirementsElement.innerText;
+                finalRequirementsElement.textContent = plainTextRequirements;
+                console.log('Final Assembled Prompt requirements synchronized');
+            }
+        }
     }
 }
 
@@ -568,7 +591,16 @@ function updateRequirementsDisplay() {
     
     // Get the actual platform ID from the selected option
     const selectedPlatformOption = platformSelector.options[platformSelector.selectedIndex];
-    const platformId = selectedPlatformOption ? selectedPlatformOption.value : 1; // Default to Facebook (ID 1)
+    let platformId = 1; // Default to Facebook (ID 1)
+    
+    // Map platform names to IDs
+    if (platformSelector.value === 'facebook') {
+        platformId = 1;
+    } else if (platformSelector.value === 'twitter') {
+        platformId = 2;
+    } else if (platformSelector.value === 'linkedin') {
+        platformId = 3;
+    }
     
     console.log('Platform selector value:', platformSelector.value);
     console.log('Selected platform option:', selectedPlatformOption);
@@ -581,6 +613,12 @@ function updateRequirementsDisplay() {
     fetch(apiUrl)
         .then(response => {
             console.log('API response status:', response.status);
+            if (response.status === 404) {
+                throw new Error('Requirements not found for this platform/channel combination');
+            }
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
             return response.json();
         })
         .then(requirements => {
@@ -604,78 +642,78 @@ function updateRequirementsDisplay() {
                 const finalInstruction = requirements.find(r => r && r.requirement_key === 'final_instruction');
                 const finalInstructionValue = finalInstruction ? finalInstruction.requirement_value : null;
             
-            console.log('Found requirements:', {
-                toneRequirement,
-                lengthRequirement,
-                ctaRequirement,
-                hashtagRequirement,
-                finalInstruction: finalInstructionValue
-            });
-            
-            // Build the display content
-            if (toneRequirement) {
-                requirementsContent += `- Tone: ${toneRequirement.requirement_value}\n`;
-            }
-            
-            if (lengthRequirement) {
-                requirementsContent += `- Length: ${lengthRequirement.requirement_value}\n`;
-            }
-            
-            if (ctaRequirement) {
-                requirementsContent += `- Include a call-to-action\n`;
-            }
-            
-            if (hashtagRequirement) {
-                requirementsContent += `- Use up to ${hashtagRequirement.requirement_value} relevant hashtags\n`;
-            }
-            
-            // Add double line break before final instruction
-            requirementsContent += '\n\n';
-            
-            // Make final instruction dynamic based on platform and channel
-            if (finalInstructionValue) {
-                requirementsContent += finalInstructionValue;
-            } else {
-                // Create dynamic instruction based on selected platform and channel
-                const platformName = platformSelector.options[platformSelector.selectedIndex]?.text || 'Facebook';
-                const channelType = processSelector.options[processSelector.selectedIndex]?.textContent?.split(' (')[0] || 'post';
-                requirementsContent += `Create the ${platformName} ${channelType} now:`;
-            }
-            
-            console.log('Final requirements content:', requirementsContent);
-            
-            // Update the display
-            const requirementsElement = document.getElementById('dynamicRequirements');
-            console.log('Looking for requirements element with ID "dynamicRequirements"');
-            console.log('Found element:', requirementsElement);
-            if (requirementsElement) {
-                // Convert \n to <br> tags for proper HTML line breaks
-                const htmlContent = requirementsContent.replace(/\n/g, '<br>');
-                requirementsElement.innerHTML = htmlContent;
-                console.log('Requirements element updated successfully');
-                console.log('New content:', requirementsElement.innerHTML);
+                console.log('Found requirements:', {
+                    toneRequirement,
+                    lengthRequirement,
+                    ctaRequirement,
+                    hashtagRequirement,
+                    finalInstruction: finalInstructionValue
+                });
                 
-                // Synchronize the Final Assembled Prompt panel
-                const finalRequirementsElement = document.getElementById('promptRequirements');
-                if (finalRequirementsElement) {
-                    finalRequirementsElement.textContent = requirementsContent;
-                    console.log('Final Assembled Prompt requirements synchronized');
+                // Build the display content
+                if (toneRequirement) {
+                    requirementsContent += `- Tone: ${toneRequirement.requirement_value}\n`;
                 }
-            } else {
-                console.error('Requirements element not found');
+                
+                if (lengthRequirement) {
+                    requirementsContent += `- Length: ${lengthRequirement.requirement_value}\n`;
+                }
+                
+                if (ctaRequirement) {
+                    requirementsContent += `- Include a call-to-action\n`;
+                }
+                
+                if (hashtagRequirement) {
+                    requirementsContent += `- Use up to ${hashtagRequirement.requirement_value} relevant hashtags\n`;
+                }
+                
+                // Add double line break before final instruction
+                requirementsContent += '\n\n';
+                
+                // Make final instruction dynamic based on platform and channel
+                if (finalInstructionValue) {
+                    requirementsContent += finalInstructionValue;
+                } else {
+                    // Create dynamic instruction based on selected platform and channel
+                    const platformName = platformSelector.options[platformSelector.selectedIndex]?.text || 'Facebook';
+                    const channelType = processSelector.options[processSelector.selectedIndex]?.textContent?.split(' (')[0] || 'post';
+                    requirementsContent += `Create the ${platformName} ${channelType} now:`;
+                }
+                
+                console.log('Final requirements content:', requirementsContent);
+                
+                // Update the display
+                const requirementsElement = document.getElementById('dynamicRequirements');
+                console.log('Looking for requirements element with ID "dynamicRequirements"');
+                console.log('Found element:', requirementsElement);
+                if (requirementsElement) {
+                    // Convert \n to <br> tags for proper HTML line breaks
+                    const htmlContent = requirementsContent.replace(/\n/g, '<br>');
+                    requirementsElement.innerHTML = htmlContent;
+                    console.log('Requirements element updated successfully');
+                    console.log('New content:', requirementsElement.innerHTML);
+                    
+                    // Synchronize the Final Assembled Prompt panel
+                    const finalRequirementsElement = document.getElementById('promptRequirements');
+                    if (finalRequirementsElement) {
+                        finalRequirementsElement.textContent = requirementsContent;
+                        console.log('Final Assembled Prompt requirements synchronized');
+                    }
+                } else {
+                    console.error('Requirements element not found');
+                }
+            } catch (parseError) {
+                console.error('Error parsing requirements:', parseError);
+                // Fallback to default content
+                const requirementsElement = document.getElementById('dynamicRequirements');
+                if (requirementsElement) {
+                    const platformName = platformSelector.options[platformSelector.selectedIndex]?.text || 'Facebook';
+                    const channelType = processSelector.options[processSelector.selectedIndex]?.textContent?.split(' (')[0] || 'post';
+                    const fallbackContent = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a call-to-action\n- Use up to 3 relevant hashtags\n\nCreate the ${platformName} ${channelType} now:`;
+                    const htmlContent = fallbackContent.replace(/\n/g, '<br>');
+                    requirementsElement.innerHTML = htmlContent;
+                }
             }
-        } catch (parseError) {
-            console.error('Error parsing requirements:', parseError);
-            // Fallback to default content
-            const requirementsElement = document.getElementById('dynamicRequirements');
-            if (requirementsElement) {
-                const platformName = platformSelector.options[platformSelector.selectedIndex]?.text || 'Facebook';
-                const channelType = processSelector.options[processSelector.selectedIndex]?.textContent?.split(' (')[0] || 'post';
-                const fallbackContent = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a call-to-action\n- Use up to 3 relevant hashtags\n\nCreate the ${platformName} ${channelType} now:`;
-                const htmlContent = fallbackContent.replace(/\n/g, '<br>');
-                requirementsElement.innerHTML = htmlContent;
-            }
-        }
         })
         .catch(error => {
             console.error('Error fetching requirements:', error);
