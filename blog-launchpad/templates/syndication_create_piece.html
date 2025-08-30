@@ -90,6 +90,11 @@
                             <i class="fas fa-plus-circle me-2"></i>New Product
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="random-category-tab" data-bs-toggle="tab" data-bs-target="#random-category" type="button" role="tab" aria-controls="random-category" aria-selected="false">
+                            <i class="fas fa-random me-2"></i>Random Category
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -104,6 +109,11 @@
             <!-- New Product Tab -->
             <div class="tab-pane fade" id="new-product" role="tabpanel" aria-labelledby="new-product-tab">
                 {% include 'syndication/includes/new_product_tab.html' %}
+            </div>
+
+            <!-- Random Category Tab -->
+            <div class="tab-pane fade" id="random-category" role="tabpanel" aria-labelledby="random-category-tab">
+                {% include 'syndication/includes/random_category_tab.html' %}
             </div>
         </div>
     </div>
