@@ -1,48 +1,368 @@
 <!-- New Product Tab Content -->
+<!-- Product Selection Area -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card bg-dark text-white border-secondary">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-plus-circle me-2"></i>New Product
-                </h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">This feature is coming soon. New Product creation will allow you to create social media content for new product launches and announcements.</p>
-                
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <div class="card bg-secondary border-dark">
-                            <div class="card-body">
-                                <h6 class="card-title text-white">
-                                    <i class="fas fa-lightbulb me-2"></i>Future Features
-                                </h6>
-                                <ul class="text-light">
-                                    <li>Product launch announcements</li>
-                                    <li>Feature highlights</li>
-                                    <li>Customer testimonials</li>
-                                    <li>Product comparisons</li>
-                                </ul>
+        <div class="accordion" id="productSelectionAccordion">
+            <div class="accordion-item bg-dark text-white border-secondary">
+                <h2 class="accordion-header" id="productSelectionHeader">
+                    <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#productSelectionCollapse" aria-expanded="false" aria-controls="productSelectionCollapse">
+                        <i class="fas fa-box me-2"></i><span id="productAccordionTitle">Select Product for Social Media</span>
+                    </button>
+                </h2>
+                <div id="productSelectionCollapse" class="accordion-collapse collapse" aria-labelledby="productSelectionHeader" data-bs-parent="#productSelectionAccordion">
+                    <div class="accordion-body">
+                        <!-- Product Search -->
+                        <div class="mb-3">
+                            <label for="productSearchInput" class="form-label">Search for products:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control bg-dark text-white border-secondary" id="productSearchInput" placeholder="Enter product name, SKU, or description...">
+                                <button class="btn btn-outline-light" type="button" id="productSearchBtn">
+                                    <i class="fas fa-search"></i>
+                                </button>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card bg-secondary border-dark">
-                            <div class="card-body">
-                                <h6 class="card-title text-white">
-                                    <i class="fas fa-cogs me-2"></i>Planned Integration
-                                </h6>
-                                <ul class="text-light">
-                                    <li>Product database</li>
-                                    <li>Social media templates</li>
-                                    <li>Content scheduling</li>
-                                    <li>Performance analytics</li>
-                                </ul>
+                        
+                        <!-- Product Dropdown -->
+                        <div class="mb-3">
+                            <label for="productSelector" class="form-label">Choose a product:</label>
+                            <select class="form-select bg-dark text-white border-secondary" id="productSelector">
+                                <option value="">Loading products...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Selected Product Details -->
+                        <div id="productDetails" class="d-none">
+                            <hr class="border-secondary">
+                            <h6 class="text-info mb-3">Product Details</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Name:</strong> <span id="productName"></span></p>
+                                    <p><strong>SKU:</strong> <span id="productSku"></span></p>
+                                    <p><strong>Price:</strong> <span id="productPrice"></span></p>
+                                    <p><strong>Category:</strong> <span id="productCategory"></span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Product ID:</strong> <span id="productId"></span></p>
+                                    <strong>Image:</strong>
+                                    <div class="mt-2">
+                                        <img id="productImage" src="" alt="Product Image" class="img-fluid rounded" style="max-width: 150px; max-height: 150px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <p><strong>Description:</strong></p>
+                                    <div id="productDescription" class="text-muted"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Conversion Selection Panel -->
+<div id="productConversionPanel" style="display: block;">
+    <div class="conversion-container">
+        <div class="accordion" id="productConversionSettingsAccordion">
+            <div class="accordion-item bg-dark border-secondary">
+                <h2 class="accordion-header" id="productConversionSettingsHeader">
+                    <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#productConversionSettingsCollapse" aria-expanded="false" aria-controls="productConversionSettingsCollapse">
+                        <i class="fas fa-exchange-alt me-2"></i>Conversion Settings: <span id="productConversionHeaderDisplay" class="text-info ms-2">Select platform and process...</span>
+                    </button>
+                </h2>
+                <div id="productConversionSettingsCollapse" class="accordion-collapse collapse" aria-labelledby="productConversionSettingsHeader" data-bs-parent="#productConversionSettingsAccordion">
+                    <div class="accordion-body text-white">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="productPlatformSelector" class="form-label text-white">Social Media Platform:</label>
+                                    <select class="form-select bg-dark text-white border-secondary" id="productPlatformSelector">
+                                        <option value="">Loading platforms...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="productProcessSelector" class="form-label text-white">Content Process:</label>
+                                    <select class="form-select bg-dark text-white border-secondary" id="productProcessSelector" disabled>
+                                        <option value="">Select a platform first...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Process Info -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h6 class="text-info mb-3">
+                                    <i class="fas fa-cog me-2"></i>Process Information
+                                </h6>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label text-white">Selected Process:</label>
+                                    <div class="form-control-plaintext text-white" id="productDebugProcessName">No process selected</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label text-white">Process Description:</label>
+                                    <div class="form-control-plaintext text-white" id="productDebugProcessDescription">No description available</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="productProcessDetails" class="process-details-panel" style="display: block;">
+                                    <!-- Product Requirements Component -->
+                                    <div class="card bg-secondary border-dark">
+                                        <div class="card-header">
+                                            <h6 class="mb-0 text-white">
+                                                <i class="fas fa-list-check me-2"></i>Product Social Media Requirements
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="productRequirements">
+                                                <p class="text-muted">Requirements will be loaded based on selected platform and process...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LLM Processing Debug Panel -->
+<div id="productLlmDebugPanel" style="display: none;">
+    <div class="llm-debug-container">
+        <div class="accordion" id="productLlmDebugAccordion">
+            <div class="accordion-item bg-dark border-secondary">
+                <h2 class="accordion-header" id="productLlmDebugHeader">
+                    <button class="accordion-button bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#productLlmDebugCollapse" aria-expanded="true" aria-controls="productLlmDebugCollapse">
+                        <i class="fas fa-brain me-2"></i>LLM Processing Debug Panel
+                        <span class="text-info ms-2">(Always Open)</span>
+                    </button>
+                </h2>
+                <div id="productLlmDebugCollapse" class="accordion-collapse collapse show" aria-labelledby="productLlmDebugHeader" data-bs-parent="#productLlmDebugAccordion">
+                    <div class="accordion-body text-white">
+                        <!-- Process Execution Controls -->
+                        <div class="execution-controls mb-4">
+                            <div class="d-flex gap-2 mb-3">
+                                <button class="btn btn-success" id="productStartOllamaBtn">
+                                    <i class="fas fa-play me-2"></i>Start Ollama
+                                </button>
+                                <button class="btn btn-primary" id="productProcessBtn">
+                                    <i class="fas fa-rocket me-2"></i>Process Product
+                                </button>
+                                <button class="btn btn-outline-light" id="productClearResultsBtn">
+                                    <i class="fas fa-eraser me-2"></i>Clear Results
+                                </button>
+                            </div>
+                            <div class="execution-status-bar">
+                                <span class="badge bg-secondary me-3">Status: <span id="productLlmStatus">Ready</span></span>
+                                <span class="badge bg-secondary me-3">Last Processed: <span id="productLlmLastProcessed">Never</span></span>
+                                <span class="badge bg-secondary">Processing Time: <span id="productLlmProcessingTime">--</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Main Debug Content -->
+                        <div class="row">
+                            <!-- Input Assembly Section (Left Column) -->
+                            <div class="col-md-6">
+                                <div class="debug-section">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-arrow-down me-2"></i>Input Assembly - What We're Sending to the LLM
+                                    </h6>
+                                    
+                                    <!-- Process Configuration -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">Process Configuration:</label>
+                                        
+                                        <!-- JSON Elements Table -->
+                                        <div class="debug-item mb-3">
+                                            <label class="debug-label">JSON Elements Breakdown:</label>
+                                            <div class="debug-table-box">
+                                                <table class="table table-dark table-striped table-sm" style="font-size: 0.85rem;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-info">Title</th>
+                                                            <th class="text-info">Content</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><strong>Provider</strong></td>
+                                                            <td id="productTableProvider">ollama</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Model</strong></td>
+                                                            <td id="productTableModel">mistral</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Prompt</strong></td>
+                                                            <td style="background-color: #1a1a2e; border: 1px solid #2d3748; padding: 1rem;">
+                                                                <!-- System & Task Section -->
+                                                                <div style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 0.375rem; background-color: #2d3748; border-left: 4px solid #4299e1;">
+                                                                    <div id="productTableSystemPrompt">Loading system prompt...</div>
+                                                                    <br>
+                                                                    <div id="productTableUserPromptTemplate">Loading user prompt template...</div>
+                                                                </div>
+                                                                
+                                                                <!-- Product Details Section -->
+                                                                <div style="text-align: center; font-weight: bold; color: #a0aec0; margin: 1rem 0; padding: 0.5rem; background-color: #1a202c; border-radius: 0.25rem; font-family: monospace;">=== PRODUCT DETAILS ===</div>
+                                                                <div style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 0.375rem; background-color: #2d3748; border-left: 4px solid #48bb78;">
+                                                                    <span id="productDynamicDetails">Loading product details...</span>
+                                                                </div>
+                                                                
+                                                                <!-- Requirements Section -->
+                                                                <div style="text-align: center; font-weight: bold; color: #a0aec0; margin: 1rem 0; padding: 0.5rem; background-color: #1a202c; border-radius: 0.25rem; font-family: monospace;">=== REQUIREMENTS ===</div>
+                                                                <div style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 0.375rem; background-color: #2d3748; border-left: 4px solid #ed8936;">
+                                                                    <span id="productDynamicRequirements">Loading requirements...</span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Temperature</strong></td>
+                                                            <td>0.8</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><strong>Max Tokens</strong></td>
+                                                            <td>1500</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="debug-config-box">
+                                            <div class="config-section mb-2">
+                                                <strong>LLM Prompt:</strong>
+                                                <div class="config-value" id="productDebugLLMPrompt">No prompt configured</div>
+                                            </div>
+                                            <div class="config-section mb-2">
+                                                <strong>Constraints:</strong>
+                                                <div class="config-value" id="productDebugConstraints">No constraints configured</div>
+                                            </div>
+                                            <div class="config-section mb-2">
+                                                <strong>Style Guide:</strong>
+                                                <div class="config-value" id="productDebugStyleGuide">No style guide configured</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Product Content -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">Product Content:</label>
+                                        <div class="debug-content-box" id="productDebugContent">No product content available</div>
+                                    </div>
+                                    
+                                    <!-- Final Assembled Prompt -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">Final Assembled Prompt (What We're Sending to the LLM):</label>
+                                        <div class="debug-prompt-box prompt-structured" id="productDebugAssembledPrompt">
+                                            <!-- System & Task Section -->
+                                            <div class="prompt-section system-task-section">
+                                                <div id="productPromptSystemTask">No prompt configured</div>
+                                            </div>
+                                            
+                                            <!-- Product Details Section -->
+                                            <div class="prompt-separator">=== PRODUCT DETAILS ===</div>
+                                            <div class="prompt-section product-details-section">
+                                                <div id="productPromptDetails">No product content available</div>
+                                            </div>
+                                            
+                                            <!-- Requirements Section -->
+                                            <div class="prompt-separator">=== REQUIREMENTS ===</div>
+                                            <div class="prompt-section requirements-section">
+                                                <div id="productPromptRequirements">No requirements configured</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- LLM Response Section (Right Column) -->
+                            <div class="col-md-6">
+                                <div class="debug-section">
+                                    <h6 class="text-info mb-3">
+                                        <i class="fas fa-arrow-up me-2"></i>LLM Response - What We Received Back
+                                    </h6>
+                                    
+                                    <!-- Processing Details -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">Processing Details:</label>
+                                        <div class="debug-details-box">
+                                            <div class="detail-row">
+                                                <span class="detail-label">Request Time:</span>
+                                                <span class="detail-value" id="productDebugRequestTime">--</span>
+                                            </div>
+                                            <div class="detail-row">
+                                                <span class="detail-label">Response Time:</span>
+                                                <span class="detail-value" id="productDebugResponseTime">--</span>
+                                            </div>
+                                            <div class="detail-row">
+                                                <span class="detail-label">Total Duration:</span>
+                                                <span class="detail-value" id="productDebugTotalDuration">--</span>
+                                            </div>
+                                            <div class="detail-row">
+                                                <span class="detail-label">Model Used:</span>
+                                                <span class="detail-value" id="productDebugModelUsed">--</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- LLM Response -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">LLM Response (What We Got Back):</label>
+                                        <div class="debug-response-box" id="productDebugRawResponse">No response yet</div>
+                                    </div>
+                                    
+                                    <!-- Validation Results -->
+                                    <div class="debug-item mb-3">
+                                        <label class="debug-label">Validation Results:</label>
+                                        <div class="debug-validation-box" id="productDebugValidationResults">No validation performed yet</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Tasks and Content Area -->
+<div id="productTasksContent" style="display: none;">
+    <div class="sections-pieces-container">
+        <table class="sections-pieces-table">
+            <thead>
+                <tr>
+                    <th class="tasks-header">
+                        <i class="fas fa-tasks me-2"></i>Tasks
+                    </th>
+                    <th class="sections-header">
+                        <i class="fas fa-box me-2"></i>Products
+                    </th>
+                    <th class="pieces-header">
+                        <i class="fas fa-puzzle-piece me-2"></i>Content Pieces
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="productTasksBody">
+                <!-- Row pairs will be dynamically created here -->
+                <!-- Each row ensures perfect alignment: Task 1 | Product 1 | Piece 1 -->
+            </tbody>
+        </table>
     </div>
 </div>
