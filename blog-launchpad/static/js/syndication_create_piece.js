@@ -799,8 +799,12 @@
                 const llmSettings = getLLMSettings();
                 console.log('LLM settings:', llmSettings);
                 
-                const systemPrompt = llmSettings.system_prompt || 'You are a social media content specialist. Convert blog post sections into engaging social media posts following the specified platform requirements. IMPORTANT: Return ONLY the social media post text with hashtags. Do NOT include character counts, image descriptions, engagement prompts, or any other meta-information. The response should be clean, ready-to-post content.';
-                const userPrompt = llmSettings.user_prompt_template || 'Convert this blog post section into a {platform} {channel_type} post. Follow these requirements: {requirements}';
+                // Get prompts from database via UI elements (dynamic)
+                const systemPromptElement = document.getElementById('llmSystemPrompt');
+                const userPromptElement = document.getElementById('llmUserPromptTemplate');
+                
+                const systemPrompt = systemPromptElement?.value || llmSettings.system_prompt || 'No system prompt configured';
+                const userPrompt = userPromptElement?.value || llmSettings.user_prompt_template || 'No user prompt template configured';
                 
                 console.log('Base prompts:', { systemPrompt, userPrompt });
                 
@@ -825,9 +829,17 @@
                 // Build the blog details section
                 const blogDetails = `POST TITLE: ${blogTitle}\nSECTION TITLE: ${sectionTitle}\nSECTION TEXT: ${sectionText}`;
                 
-                // Build the requirements section
+                // Build the requirements section from database
                 const requirements = channelRequirements.map(req => `- ${req}`).join('\n');
-                const finalRequirements = `${requirements}\n\nCreate the ${platformName} ${channelType} now:\n\nOUTPUT FORMAT: Return ONLY the social media post text with hashtags. Do NOT include:\n- Character counts\n- Image descriptions\n- Engagement prompts (like "comment below")\n- Meta-information or instructions\n- Any text in brackets or parentheses\n\nThe response should be clean, ready-to-post content that users can copy and paste directly.`;
+                
+                // Get final instruction from database (dynamic)
+                const finalInstruction = channelRequirements.find(req => req.includes('final_instruction'))?.split(': ')[1] || `Create the ${platformName} ${channelType} now:`;
+                
+                // Add output format instructions from system prompt (dynamic)
+                const outputFormatInstructions = systemPrompt.includes('IMPORTANT:') ? 
+                    '\n\nOUTPUT FORMAT: Return ONLY the social media post text with hashtags. Do NOT include:\n- Character counts\n- Image descriptions\n- Engagement prompts (like "comment below")\n- Meta-information or instructions\n- Any text in brackets or parentheses\n\nThe response should be clean, ready-to-post content that users can copy and paste directly.' : '';
+                
+                const finalRequirements = `${requirements}\n\n${finalInstruction}${outputFormatInstructions}`;
                 
                 // Assemble the final prompt using the working structure
                 const finalPrompt = `${systemPrompt}\n\n${finalUserPrompt}\n\n=== BLOG DETAILS ===\n${blogDetails}\n\n=== REQUIREMENTS ===\n${finalRequirements}`;

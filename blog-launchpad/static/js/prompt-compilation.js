@@ -72,8 +72,9 @@ function assembleLLMPrompt(processConfig, sectionContent) {
     const llmSettings = getLLMSettings();
     console.log('LLM settings:', llmSettings);
     
-            const systemPrompt = llmSettings.system_prompt || 'You are a social media content specialist. Convert blog post sections into engaging social media posts following the specified platform requirements. IMPORTANT: Return ONLY the social media post text with hashtags. Do NOT include character counts, image descriptions, engagement prompts, or any other meta-information. The response should be clean, ready-to-post content.';
-    const userPrompt = llmSettings.user_prompt_template || 'Convert this blog post section into a {platform} {channel_type} post. Follow these requirements: {requirements}';
+            // Get prompts from database via UI elements (dynamic)
+            const systemPrompt = llmSettings.system_prompt || 'No system prompt configured';
+            const userPrompt = llmSettings.user_prompt_template || 'No user prompt template configured';
     
     console.log('Base prompts:', { systemPrompt, userPrompt });
     
@@ -139,7 +140,8 @@ function assembleLLMPrompt(processConfig, sectionContent) {
     
     const blogDetails = `Title: ${sectionContent.title || 'No title'}\nContent: ${sectionContent.content || 'No content'}`;
     
-    const structuredRequirements = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a clear call-to-action\n- Use up to 3 relevant hashtags\n\nReturn only the final Facebook post text, with no explanations or extra commentary.`;
+    // Get requirements from database (dynamic) - this should come from channel_requirements table
+    const structuredRequirements = 'Requirements will be loaded from database';
     
     // Update the structured display
     if (typeof updateStructuredPromptDisplay === 'function') {
@@ -309,7 +311,8 @@ function getDynamicRequirements() {
         return requirementsElement.innerHTML.replace(/<br>/g, '\n');
     }
     // Fallback to default if not loaded yet
-    return '- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a call-to-action\n- Use up to 3 relevant hashtags\n\nCreate the Facebook Feed Post now:';
+    // Requirements should come from database - this is a placeholder
+    return 'Requirements will be loaded from database';
 }
 
 // Function to update the Input Assembly panel to ensure synchronization
@@ -709,7 +712,8 @@ function updateRequirementsDisplay() {
                 if (requirementsElement) {
                     const platformName = platformSelector.options[platformSelector.selectedIndex]?.text || 'Facebook';
                     const channelType = processSelector.options[processSelector.selectedIndex]?.textContent?.split(' (')[0] || 'post';
-                    const fallbackContent = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a call-to-action\n- Use up to 3 relevant hashtags\n\nCreate the ${platformName} ${channelType} now:`;
+                    // Requirements should come from database - this is a placeholder
+                    const fallbackContent = `Requirements will be loaded from database for ${platformName} ${channelType}`;
                     const htmlContent = fallbackContent.replace(/\n/g, '<br>');
                     requirementsElement.innerHTML = htmlContent;
                 }
@@ -723,7 +727,8 @@ function updateRequirementsDisplay() {
                 // Create dynamic fallback content
                 const platformName = platformSelector.options[platformSelector.selectedIndex]?.text || 'Facebook';
                 const channelType = processSelector.options[processSelector.selectedIndex]?.textContent?.split(' (')[0] || 'post';
-                const fallbackContent = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a call-to-action\n- Use up to 3 relevant hashtags\n\nCreate the ${platformName} ${channelType} now:`;
+                // Requirements should come from database - this is a placeholder
+                const fallbackContent = `Requirements will be loaded from database for ${platformName} ${channelType}`;
                 // Convert \n to <br> tags for proper HTML line breaks
                 const htmlContent = fallbackContent.replace(/\n/g, '<br>');
                 requirementsElement.innerHTML = htmlContent;
