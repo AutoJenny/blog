@@ -77,8 +77,30 @@
     </div>
 
     <div class="container">
-        <!-- Post Selection Area -->
+        <!-- Piece Type Tabs -->
         <div class="row mb-4">
+            <div class="col-12">
+                <ul class="nav nav-tabs nav-tabs-dark" id="pieceTypeTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="convert-post-tab" data-bs-toggle="tab" data-bs-target="#convert-post" type="button" role="tab" aria-controls="convert-post" aria-selected="true">
+                            <i class="fas fa-exchange-alt me-2"></i>Convert Post
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="new-product-tab" data-bs-toggle="tab" data-bs-target="#new-product" type="button" role="tab" aria-controls="new-product" aria-selected="false">
+                            <i class="fas fa-plus-circle me-2"></i>New Product
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="pieceTypeTabContent">
+            <!-- Convert Post Tab -->
+            <div class="tab-pane fade show active" id="convert-post" role="tabpanel" aria-labelledby="convert-post-tab">
+                <!-- Post Selection Area -->
+                <div class="row mb-4">
             <div class="col-12">
                 <div class="accordion" id="postSelectionAccordion">
                     <div class="accordion-item bg-dark text-white border-secondary">
@@ -420,8 +442,29 @@
                     </tbody>
                 </table>
             </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Product Tab -->
+        <div class="tab-pane fade" id="new-product" role="tabpanel" aria-labelledby="new-product-tab">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card bg-dark text-white border-secondary">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-plus-circle me-2"></i>New Product
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">This feature is coming soon. New Product creation will allow you to create social media content for new product launches and announcements.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
