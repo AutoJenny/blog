@@ -70,14 +70,19 @@ class ClanPublisher:
     
     def _generate_meta_tags(self, post):
         """Generate meta tags for the post"""
-        # Try to get keywords from the post
+        # First priority: use the new database meta_tags field
+        if post.get('meta_tags'):
+            logger.info(f"Using database meta_tags: {post.get('meta_tags')}")
+            return post.get('meta_tags')
+        
+        # Second priority: try to get keywords from the post
         keywords = post.get('keywords', [])
         
         # If keywords is a list and not empty, join them
         if isinstance(keywords, list) and keywords:
             return ','.join(keywords)
         
-        # If no keywords, generate some from the title and content
+        # Third priority: generate some from the title and content
         title = post.get('title', '')
         summary = post.get('summary', '')
         
@@ -436,7 +441,53 @@ class ClanPublisher:
             else:
                 logger.info("No images available, using default placeholder thumbnails")
             
-            # Common post metadata - matching the working PHP script exactly
+            # Common post metadata - using new database meta fields for proper OG tags
+            try:
+                meta_title = post.get('meta_title') or post.get('title', 'Untitled Post')
+                meta_tags = post.get('meta_tags') or self._generate_meta_tags(post)
+                # Clean meta_description - use subtitle as fallback if meta_description is empty
+                raw_description = post.get('meta_description') or post.get('subtitle') or post.get('summary', '') or 'No description available'
+                # Strip HTML tags and limit to 160 characters
+                import re
+                clean_description = re.sub(r'<[^>]+>', '', raw_description)
+                meta_description = clean_description[:160] if clean_description else 'No description available'
+                
+                # Ensure all meta fields are strings and not None
+                meta_title = str(meta_title) if meta_title else 'Untitled Post'
+                meta_tags = str(meta_tags) if meta_tags else 'scottish,heritage,culture,blog'
+                meta_description = str(meta_description) if meta_description else 'No description available'
+                
+            except Exception as e:
+                logger.error(f"Error processing meta data: {str(e)}")
+                # Fallback to safe defaults
+                meta_title = post.get('title', 'Untitled Post')
+                meta_tags = 'scottish,heritage,culture,blog'
+                meta_description = 'No description available'
+            
+            # Log the meta data being sent for debugging
+            logger.info(f"Meta data for post {post.get('id')}:")
+            logger.info(f"   meta_title: {repr(meta_title)}")
+            logger.info(f"   meta_tags: {repr(meta_tags)}")
+            logger.info(f"   meta_description: {repr(meta_description)}")
+            
+            # Check for problematic characters
+            logger.info(f"Meta title length: {len(meta_title)}")
+            logger.info(f"Meta tags length: {len(meta_tags)}")
+            logger.info(f"Meta description length: {len(meta_description)}")
+            
+            # Validate meta data before sending
+            if not isinstance(meta_title, str) or len(meta_title) > 200:
+                logger.error(f"Invalid meta_title: {type(meta_title)}, length: {len(meta_title) if isinstance(meta_title, str) else 'N/A'}")
+                meta_title = str(meta_title)[:200] if meta_title else 'Untitled Post'
+            
+            if not isinstance(meta_tags, str) or len(meta_tags) > 500:
+                logger.error(f"Invalid meta_tags: {type(meta_tags)}, length: {len(meta_tags) if isinstance(meta_tags, str) else 'N/A'}")
+                meta_tags = str(meta_tags)[:500] if meta_tags else 'scottish,heritage,culture,blog'
+            
+            if not isinstance(meta_description, str) or len(meta_description) > 160:
+                logger.error(f"Invalid meta_description: {type(meta_description)}, length: {len(meta_description) if isinstance(meta_description, str) else 'N/A'}")
+                meta_description = str(meta_description)[:160] if meta_description else 'No description available'
+            
             json_args.update({
                 'title': post.get('title', 'Untitled Post'),  # required
                 'url_key': self._generate_url_key(post),  # required - use slug or generate from title
@@ -445,9 +496,9 @@ class ClanPublisher:
                 'categories': [14, 15],  # required - note: 'categories' not 'category_ids'
                 'list_thumbnail': list_thumbnail,  # required - path from /media (now uses real uploaded image)
                 'post_thumbnail': post_thumbnail,  # required - path from /media (now uses real uploaded image)
-                'meta_title': post.get('title', 'Untitled Post'),  # required
-                'meta_tags': self._generate_meta_tags(post),  # required
-                'meta_description': post.get('summary', '')[:160] if post.get('summary') else 'No description available'  # required
+                'meta_title': meta_title,  # use new meta_title field
+                'meta_tags': meta_tags,  # use new meta_tags field
+                'meta_description': meta_description  # use new meta_description field
             })
             
             # Validate required fields
@@ -472,11 +523,23 @@ class ClanPublisher:
                 }
             
             # Prepare the API request data
-            api_data = {
-                'api_user': self.api_user,
-                'api_key': self.api_key,
-                'json_args': json.dumps(json_args)
-            }
+            try:
+                # Test JSON serialization before sending
+                json_test = json.dumps(json_args)
+                logger.info(f"JSON serialization test successful, length: {len(json_test)}")
+                
+                api_data = {
+                    'api_user': self.api_user,
+                    'api_key': self.api_key,
+                    'json_args': json_test
+                }
+            except Exception as e:
+                logger.error(f"JSON serialization failed: {str(e)}")
+                logger.error(f"Problematic json_args: {json_args}")
+                return {
+                    'success': False,
+                    'error': f'JSON serialization failed: {str(e)}'
+                }
             
             logger.info(f"Sending to {endpoint}")
             logger.info(f"API data: {api_data}")
@@ -596,8 +659,8 @@ class ClanPublisher:
             logger.info(f"Post ID: {post.get('id')}")
             
             # Step 0: Get full post data from database to determine if this is an update
-            from app import get_db_conn
-            conn = get_db_conn()
+            from app import get_db_connection
+            conn = get_db_connection()
             cursor = conn.cursor()
             cursor.execute('SELECT * FROM post WHERE id = %s', (post['id'],))
             post_row = cursor.fetchone()
@@ -766,16 +829,35 @@ class ClanPublisher:
             # Translate local image/file paths to uploaded clan.com URLs
             if uploaded_images:
                 logger.info('Translating image paths to clan.com URLs...')
+                logger.info(f'Uploaded images mapping: {uploaded_images}')
+                
+                # Create a comprehensive path mapping
                 path_mapping = {}
                 for local_path, clan_url in uploaded_images.items():
+                    # Add the exact path as found in uploaded_images
+                    path_mapping[local_path] = clan_url
+                    
+                    # Also add variations that might appear in the HTML
                     if local_path.startswith('/static/'):
+                        # Keep the original path
                         path_mapping[local_path] = clan_url
-                    if 'content/posts' in local_path:
-                        rel = local_path.split('content/posts/')[-1] if 'content/posts/' in local_path else local_path
-                        path_mapping[f'/static/content/posts/{rel}'] = clan_url
+                        
+                        # Add the path without /static/ prefix (in case HTML uses relative paths)
+                        if local_path.startswith('/static/'):
+                            relative_path = local_path[7:]  # Remove '/static/' prefix
+                            path_mapping[relative_path] = clan_url
+                            logger.info(f"Added relative path mapping: {relative_path} -> {clan_url}")
+                
+                logger.info(f'Final path mapping: {path_mapping}')
+                
+                # Replace all paths in the HTML content
                 for local_path, clan_url in path_mapping.items():
+                    # Replace src attributes
                     html_content = html_content.replace(f'src="{local_path}"', f'src="{clan_url}"')
+                    # Replace href attributes  
                     html_content = html_content.replace(f'href="{local_path}"', f'href="{clan_url}"')
+                    # Replace any other occurrences
+                    html_content = html_content.replace(local_path, clan_url)
                     logger.info(f"Replaced {local_path} -> {clan_url}")
             
             # Remove localhost refs that may linger

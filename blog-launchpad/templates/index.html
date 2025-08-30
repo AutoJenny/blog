@@ -201,6 +201,55 @@
             background: #ffc107;
         }
         
+        /* Navigation Bar Styles */
+        .main-nav {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        
+        .nav-link.highlight {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .nav-link.highlight:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        
         @media (max-width: 768px) {
             .modules-grid {
                 grid-template-columns: 1fr;
@@ -214,6 +263,17 @@
 </head>
 <body>
     <div class="container">
+        <!-- Navigation Bar -->
+        <nav class="main-nav">
+            <div class="nav-links">
+                <a href="/" class="nav-link active">Dashboard</a>
+                <a href="/cross-promotion" class="nav-link">Cross-Promotion</a>
+                <a href="/publishing" class="nav-link">Publishing</a>
+                <a href="/syndication" class="nav-link">Syndication</a>
+                <a href="/syndication/create-piece" class="nav-link highlight">Create Piece</a>
+            </div>
+        </nav>
+        
         <div class="header">
             <h1>🚀 Blog Launchpad</h1>
             <p>Marketing & Syndication Hub</p>
@@ -312,6 +372,38 @@
                     <a href="/docs/social_media_syndication_plan.md" class="btn btn-secondary" target="_blank">
                         <i class="fas fa-book"></i>
                         View Plan
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Create Piece (Active) -->
+            <div class="module-card active">
+                <div class="module-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <h2 class="module-title">Create Piece</h2>
+                <p class="module-description">
+                    Create engaging social media content pieces from your blog posts. 
+                    Convert posts, highlight products, feature tartans, and showcase famous clans.
+                </p>
+                <div class="module-stats">
+                    <div class="stat">
+                        <i class="fas fa-check-circle"></i>
+                        Ready to Use
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-tshirt"></i>
+                        5 Content Types
+                    </div>
+                </div>
+                <div class="module-actions">
+                    <a href="/syndication/create-piece" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Create Content
+                    </a>
+                    <a href="/syndication" class="btn btn-secondary">
+                        <i class="fas fa-cog"></i>
+                        Manage Syndication
                     </a>
                 </div>
             </div>
