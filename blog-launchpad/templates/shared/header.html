@@ -1,0 +1,108 @@
+<!-- Header -->
+<header class="header-gradient shadow-lg border-b border-dark-border py-4">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-nowrap items-center justify-between h-16 space-x-6">
+            <div class="flex items-center space-x-8 flex-1 min-w-0">
+                <!-- Logo and Title -->
+                <a href="/" class="flex items-center gap-3 text-white text-2xl font-bold tracking-tight">
+                    <img src="/static/images/site/brand-logo.png" alt="BlogForge Logo" class="w-10 h-10 rounded-full shadow" style="background:#23273a; width: 40px; height: 40px;" />
+                    <span class="font-bold text-white">BlogForge Launchpad</span>
+                </a>
+            </div>
+            <div class="flex items-center space-x-4 ml-8">
+                <!-- Modules Dropdown -->
+                <div class="relative group nav-group" tabindex="0">
+                    <button class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1 focus:outline-none" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa-solid fa-cubes"></i> Modules <i class="fa fa-caret-down text-xs"></i>
+                    </button>
+                    <div class="nav-dropdown absolute left-0 mt-2 min-w-[180px] rounded-lg shadow-lg z-50 hidden">
+                        <a href="http://localhost:5000/db/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-database text-purple-400"></i> Database
+                        </a>
+                        <a href="http://localhost:5000/llm/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-brain text-pink-400"></i> AI
+                        </a>
+                        <a href="http://localhost:5000/llm/images" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-image text-dark-accent"></i> Images
+                        </a>
+                        <a href="http://localhost:5000/servers/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition">
+                            <i class="fa-solid fa-server text-green-400"></i> Servers
+                        </a>
+                        <a href="http://localhost:5001/" class="block px-4 py-2 text-sm flex items-center gap-2 hover:bg-dark-bg transition bg-dark-accent">
+                            <i class="fa-solid fa-rocket text-orange-400"></i> Launchpad
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-shrink-0 flex items-center gap-4 ml-4">
+                <a href="/" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
+                    Dashboard
+                </a>
+                <a href="/cross-promotion" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
+                    Cross Promotion
+                </a>
+                <a href="/publishing" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
+                    Publishing
+                </a>
+                <a href="/syndication" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
+                    Syndication
+                </a>
+                <a href="/test-api" class="text-dark-text hover:text-dark-accent px-3 py-2 rounded-md text-sm font-medium transition">
+                    API Test
+                </a>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<style>
+    .header-gradient {
+        background: linear-gradient(90deg, #181c2a 0%, #23273a 100%);
+    }
+    .nav-dropdown {
+        background: #23273a;
+        border: 1px solid #31364a;
+        box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.45);
+    }
+    .nav-dropdown a {
+        color: #e0e0e0;
+    }
+    .nav-dropdown a:hover {
+        background: #23273a;
+        color: #a5b4fc;
+    }
+    .text-dark-text {
+        color: #e0e0e0;
+    }
+    .text-dark-accent {
+        color: #a5b4fc;
+    }
+    .hover\:text-dark-accent:hover {
+        color: #a5b4fc;
+    }
+    .hover\:bg-dark-bg:hover {
+        background: #23273a;
+    }
+    .bg-dark-accent {
+        background: #a5b4fc;
+    }
+    .bg-dark-bg {
+        background: #23273a;
+    }
+</style>
+
+<script>
+    // Navigation dropdown functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.nav-group').forEach(group => {
+            group.addEventListener('focusin', () => {
+                group.querySelector('.nav-dropdown').classList.remove('hidden');
+            });
+            group.addEventListener('focusout', () => {
+                setTimeout(() => {
+                    group.querySelector('.nav-dropdown').classList.add('hidden');
+                }, 100);
+            });
+        });
+    });
+</script>

@@ -1,22 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog Launchpad - Marketing & Syndication Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0f172a;
             min-height: 100vh;
-            color: #333;
+            color: #e0e0e0;
         }
         
         .container {
@@ -50,10 +47,11 @@
         }
         
         .module-card {
-            background: white;
+            background: #1e293b;
+            border: 1px solid #334155;
             border-radius: 12px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -61,16 +59,17 @@
         
         .module-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border-color: #475569;
         }
         
         .module-card.active {
-            border: 3px solid #28a745;
+            border: 3px solid #10b981;
         }
         
         .module-card.coming-soon {
             opacity: 0.7;
-            background: #f8f9fa;
+            background: #334155;
         }
         
         .module-icon {
@@ -97,11 +96,11 @@
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 10px;
-            color: #333;
+            color: #f1f5f9;
         }
         
         .module-description {
-            color: #666;
+            color: #cbd5e1;
             margin-bottom: 20px;
             line-height: 1.6;
         }
@@ -117,11 +116,11 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            color: #666;
+            color: #94a3b8;
         }
         
         .stat i {
-            color: #28a745;
+            color: #10b981;
         }
         
         .module-actions {
@@ -143,38 +142,44 @@
         }
         
         .btn-primary {
-            background: #007bff;
+            background: #3b82f6;
             color: white;
+            border: 1px solid #1d4ed8;
         }
         
         .btn-primary:hover {
-            background: #0056b3;
+            background: #2563eb;
+            border-color: #1e40af;
         }
         
         .btn-secondary {
-            background: #6c757d;
+            background: #64748b;
             color: white;
+            border: 1px solid #475569;
         }
         
         .btn-secondary:hover {
-            background: #545b62;
+            background: #475569;
+            border-color: #334155;
         }
         
         .btn-success {
-            background: #28a745;
+            background: #10b981;
             color: white;
+            border: 1px solid #059669;
         }
         
         .btn-success:hover {
-            background: #218838;
+            background: #059669;
+            border-color: #047857;
         }
         
         .coming-soon-badge {
             position: absolute;
             top: 15px;
             right: 15px;
-            background: #ffc107;
-            color: #333;
+            background: #f59e0b;
+            color: #1e293b;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
@@ -190,15 +195,15 @@
         }
         
         .status-active {
-            background: #28a745;
+            background: #10b981;
         }
         
         .status-inactive {
-            background: #dc3545;
+            background: #ef4444;
         }
         
         .status-pending {
-            background: #ffc107;
+            background: #f59e0b;
         }
         
         @media (max-width: 768px) {
@@ -213,6 +218,8 @@
     </style>
 </head>
 <body>
+    {% include 'shared/header.html' %}
+    
     <div class="container">
         <div class="header">
             <h1>🚀 Blog Launchpad</h1>
