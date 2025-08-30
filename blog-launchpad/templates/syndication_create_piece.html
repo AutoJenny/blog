@@ -95,6 +95,16 @@
                             <i class="fas fa-random me-2"></i>Random Category
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="todays-tartan-tab" data-bs-toggle="tab" data-bs-target="#todays-tartan" type="button" role="tab" aria-controls="todays-tartan" aria-selected="false">
+                            <i class="fas fa-tshirt me-2"></i>Today's Tartan
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="famous-clans-tab" data-bs-toggle="tab" data-bs-target="#famous-clans" type="button" role="tab" aria-controls="famous-clans" aria-selected="false">
+                            <i class="fas fa-crown me-2"></i>Famous Clans
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -114,6 +124,16 @@
             <!-- Random Category Tab -->
             <div class="tab-pane fade" id="random-category" role="tabpanel" aria-labelledby="random-category-tab">
                 {% include 'syndication/includes/random_category_tab.html' %}
+            </div>
+
+            <!-- Today's Tartan Tab -->
+            <div class="tab-pane fade" id="todays-tartan" role="tabpanel" aria-labelledby="todays-tartan-tab">
+                {% include 'syndication/includes/todays_tartan_tab.html' %}
+            </div>
+
+            <!-- Famous Clans Tab -->
+            <div class="tab-pane fade" id="famous-clans" role="tabpanel" aria-labelledby="famous-clans-tab">
+                {% include 'syndication/includes/famous_clans_tab.html' %}
             </div>
         </div>
     </div>
