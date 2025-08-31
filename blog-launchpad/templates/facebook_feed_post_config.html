@@ -473,6 +473,23 @@
                                     </div>
                                 </div>
                                 
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="setting-item mb-3">
+                                            <label class="form-label text-white">Section Image:</label>
+                                            <div id="sectionImageContainer" class="text-center">
+                                                <div class="bg-secondary text-white p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
+                                                    <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                                                    <div class="ms-2">No image selected</div>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <small class="text-muted">Image dimensions: <span id="imageDimensions">--</span></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
 
                                 
                                 <div class="row">
@@ -888,8 +905,101 @@
             const previewImage = document.getElementById('previewImage');
             if (sectionType) {
                 previewImage.innerHTML = '<div class="bg-primary text-white p-3 rounded d-flex align-items-center justify-content-center" style="height: 200px;"><i class="fas fa-layer-group me-2"></i>Selected Section Content</div>';
+                
+                // Update section image display
+                updateSectionImage(sectionType);
             } else {
                 previewImage.innerHTML = '<i class="fas fa-image text-muted"></i>';
+                updateSectionImage(null);
+            }
+        }
+        
+        // Update section image display
+        function updateSectionImage(sectionId) {
+            const imageContainer = document.getElementById('sectionImageContainer');
+            const imageDimensions = document.getElementById('imageDimensions');
+            
+            if (sectionId) {
+                // Get section data to find the image
+                const sectionSelect = document.getElementById('sectionSelect');
+                const selectedOption = sectionSelect.options[sectionSelect.selectedIndex];
+                
+                if (selectedOption && selectedOption.dataset.sectionData) {
+                    try {
+                        const sectionData = JSON.parse(selectedOption.dataset.sectionData);
+                        
+                        if (sectionData.image_path) {
+                            // Display the actual image
+                            imageContainer.innerHTML = `
+                                <img src="${sectionData.image_path}" alt="Section Image" style="width: 300px; height: auto; max-height: 200px; object-fit: cover; border-radius: 8px;">
+                                <div class="mt-2">
+                                    <small class="text-muted">Image dimensions: <span id="imageDimensions">Loading...</span></small>
+                                </div>
+                            `;
+                            
+                            // Get image dimensions
+                            const img = new Image();
+                            img.onload = function() {
+                                const dimensionsSpan = document.getElementById('imageDimensions');
+                                if (dimensionsSpan) {
+                                    dimensionsSpan.textContent = `${this.naturalWidth} × ${this.naturalHeight} px`;
+                                }
+                            };
+                            img.onerror = function() {
+                                const dimensionsSpan = document.getElementById('imageDimensions');
+                                if (dimensionsSpan) {
+                                    dimensionsSpan.textContent = 'Error loading image';
+                                }
+                            };
+                            img.src = sectionData.image_path;
+                        } else {
+                            // Show placeholder when no image
+                            imageContainer.innerHTML = `
+                                <div class="bg-secondary text-white p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
+                                    <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                                    <div class="ms-2">No image available</div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">Image dimensions: <span id="imageDimensions">--</span></small>
+                                </div>
+                            `;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing section data:', e);
+                        // Show error placeholder
+                        imageContainer.innerHTML = `
+                            <div class="bg-danger text-white p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
+                                <i class="fas fa-exclamation-triangle text-white" style="font-size: 2rem;"></i>
+                                <div class="ms-2">Error loading image</div>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">Image dimensions: <span id="imageDimensions">--</span></small>
+                            </div>
+                        `;
+                    }
+                } else {
+                    // Show placeholder when no section data
+                    imageContainer.innerHTML = `
+                        <div class="bg-secondary text-white p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
+                            <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                            <div class="ms-2">No image available</div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Image dimensions: <span id="imageDimensions">--</span></small>
+                        </div>
+                    `;
+                }
+            } else {
+                // Show placeholder when no section selected
+                imageContainer.innerHTML = `
+                    <div class="bg-secondary text-white p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
+                        <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                        <div class="ms-2">No image selected</div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Image dimensions: <span id="imageDimensions">--</span></small>
+                    </div>
+                `;
             }
         }
         
@@ -931,7 +1041,16 @@
                     const sectionSelect = document.getElementById('sectionSelect');
                     
                     if (this.value) {
-                        blogUrl.value = `https://clan.com/blog/post-${this.value}`;
+                        // Get the selected option to access the stored live URL
+                        const selectedOption = this.options[this.selectedIndex];
+                        const liveUrl = selectedOption.dataset.clanUrl;
+                        
+                        if (liveUrl) {
+                            blogUrl.value = liveUrl;
+                        } else {
+                            blogUrl.value = 'No live URL available - post may not be published to Clan.com yet';
+                        }
+                        
                         // Load sections for the selected post
                         loadPostSections(this.value);
                         sectionSelect.disabled = false;
@@ -968,6 +1087,8 @@
                         const option = document.createElement('option');
                         option.value = post.id;
                         option.textContent = `${post.title} (ID: ${post.id})`;
+                        // Store the live URL for later use
+                        option.dataset.clanUrl = post.clan_uploaded_url || '';
                         blogPostSelect.appendChild(option);
                     });
                     

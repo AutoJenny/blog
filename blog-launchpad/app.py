@@ -445,11 +445,12 @@ def get_published_posts():
                 p.created_at,
                 p.updated_at,
                 p.slug,
+                p.clan_uploaded_url,
                 COUNT(ps.id) as section_count
             FROM post p
             LEFT JOIN post_section ps ON p.id = ps.post_id
             WHERE p.status = 'published'
-            GROUP BY p.id, p.title, p.status, p.created_at, p.updated_at, p.slug
+            GROUP BY p.id, p.title, p.status, p.created_at, p.updated_at, p.slug, p.clan_uploaded_url
             ORDER BY p.updated_at DESC
         """
         
@@ -466,6 +467,7 @@ def get_published_posts():
                 'created_at': post['created_at'].isoformat() if post['created_at'] else None,
                 'updated_at': post['updated_at'].isoformat() if post['updated_at'] else None,
                 'slug': post['slug'],
+                'clan_uploaded_url': post['clan_uploaded_url'],
                 'section_count': post['section_count']
             })
         
