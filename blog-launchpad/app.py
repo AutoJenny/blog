@@ -917,6 +917,56 @@ def resize_image_for_facebook():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/syndication/image-mappings/<int:post_id>', methods=['GET'])
+def get_section_image_mappings(post_id):
+    """Get the stored image mappings for a post's sections."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            cur.execute("""
+                SELECT 
+                    sim.section_id,
+                    sim.local_image_path,
+                    sim.clan_uploaded_url,
+                    sim.image_filename,
+                    sim.image_size_bytes,
+                    sim.image_dimensions,
+                    sim.uploaded_at
+                FROM section_image_mappings sim
+                WHERE sim.post_id = %s
+                ORDER BY sim.section_id
+            """, (post_id,))
+            
+            mappings = cur.fetchall()
+            
+            # Convert to dictionary format for easier lookup
+            result = {}
+            for mapping in mappings:
+                section_id = mapping['section_id']
+                result[section_id] = {
+                    'local_image_path': mapping['local_image_path'],
+                    'clan_uploaded_url': mapping['clan_uploaded_url'],
+                    'image_filename': mapping['image_filename'],
+                    'image_size_bytes': mapping['image_size_bytes'],
+                    'image_dimensions': mapping['image_dimensions'],
+                    'uploaded_at': mapping['uploaded_at'].isoformat() if mapping['uploaded_at'] else None
+                }
+            
+            return jsonify({
+                'status': 'success',
+                'post_id': post_id,
+                'mappings': result,
+                'count': len(result)
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting image mappings: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
 def get_post_with_development(post_id):
     """Fetch post with development data."""
     with get_db_connection() as conn:
