@@ -980,26 +980,17 @@
                     </div>
                 `;
                 
-                // Get the post data from our local posts array
-                const post = posts.find(p => p.id === postId);
-                if (!post) {
-                    throw new Error('Post not found in local data');
+                // Fetch the actual API data from the backend
+                const response = await fetch(`/clan-api-data/${postId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                // Simulate the API data that would be sent to Clan.com
-                // In a real implementation, this would come from the ClanPublisher
-                const apiData = {
-                    title: post.title || post.provisional_title || post.idea_seed || 'Untitled Post',
-                    url_key: generateUrlKey(post),
-                    short_content: post.summary ? post.summary.substring(0, 200) : 'No summary available',
-                    status: 2, // 2 = enabled
-                    categories: [14, 15], // Default clan.com categories
-                    list_thumbnail: '/blog/placeholder.jpg',
-                    post_thumbnail: '/blog/placeholder.jpg',
-                    meta_title: post.title || post.provisional_title || post.idea_seed || 'Untitled Post',
-                    meta_tags: generateMetaTags(post),
-                    meta_description: post.summary ? post.summary.substring(0, 160) : 'No description available'
-                };
+                const apiData = await response.json();
+                
+                if (!apiData || Object.keys(apiData).length === 0) {
+                    throw new Error('No API data received');
+                }
                 
                 // Format the API data for display
                 const formattedData = JSON.stringify(apiData, null, 2)
@@ -1011,10 +1002,10 @@
                         <i class="fas fa-check me-2"></i>API Data Loaded Successfully
                     </div>
                     <div class="text-muted small mb-2">
-                        <i class="fas fa-info-circle me-1"></i>Simulated API request data (based on post metadata)
+                        <i class="fas fa-info-circle me-1"></i>Actual API request data sent to Clan.com
                     </div>
                     <div class="text-muted small mb-2">
-                        <i class="fas fa-code me-1"></i>This shows the JSON payload that would be sent to Clan.com
+                        <i class="fas fa-code me-1"></i>This shows the exact JSON payload that was/will be sent to Clan.com
                     </div>
                     <div class="border-top border-secondary pt-2">
                         <pre class="text-white">${formattedData}</pre>

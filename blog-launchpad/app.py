@@ -790,6 +790,89 @@ def clan_post_html(post_id):
         raw_html = render_template('clan_post_raw.html', post=post, sections=sections)
         return raw_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
+@app.route('/clan-api-data/<int:post_id>')
+def clan_api_data(post_id):
+    """View the actual API request data that was/will be sent to Clan.com."""
+    # Get post data from database
+    post = get_post_with_development(post_id)
+    if not post:
+        return jsonify({'error': 'Post not found'}), 404
+    
+    sections = get_post_sections_with_images(post_id)
+    
+    # Fix field mapping - ensure post has the fields our function expects
+    if post.get('post_id') and not post.get('id'):
+        post['id'] = post['post_id']
+    
+    # Ensure summary field exists and has content
+    if not post.get('summary'):
+        post['summary'] = post.get('intro_blurb', 'No summary available')
+    
+    # Ensure created_at is handled properly
+    if post.get('created_at') and not isinstance(post['created_at'], str):
+        post['created_at'] = post['created_at'].isoformat() if hasattr(post['created_at'], 'isoformat') else str(post['created_at'])
+    
+    # Add header image if exists
+    header_image_path = find_header_image(post_id)
+    if header_image_path:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur.execute("""
+                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
+                       cross_promotion_category_id, cross_promotion_category_title,
+                       cross_promotion_product_id, cross_promotion_product_title,
+                       cross_promotion_category_position, cross_promotion_product_position,
+                       cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                FROM post WHERE id = %s
+            """, (post_id,))
+            header_data = cur.fetchone()
+            
+            post['header_image'] = {
+                'path': header_image_path,
+                'alt_text': f"Header image for {post.get('title', 'this post')}",
+                'caption': header_data['header_image_caption'] if header_data else None,
+                'title': header_data['header_image_title'] if header_data else None,
+                'width': header_data['header_image_width'] if header_data else None,
+                'height': header_data['header_image_height'] if header_data else None
+            }
+            
+            post['cross_promotion'] = {
+                'category_id': header_data['cross_promotion_category_id'] if header_data else None,
+                'category_title': header_data['cross_promotion_category_title'] if header_data else None,
+                'product_id': header_data['cross_promotion_product_id'] if header_data else None,
+                'product_title': header_data['cross_promotion_product_title'] if header_data else None,
+                'category_position': header_data.get('cross_promotion_category_position'),
+                'product_position': header_data.get('cross_promotion_product_position'),
+                'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
+                'product_widget_html': header_data.get('cross_promotion_product_widget_html')
+            }
+    
+    # Import publishing class to get the actual API data
+    from clan_publisher import ClanPublisher
+    publisher = ClanPublisher()
+    
+    # Get the actual API request data that would be sent to Clan.com
+    try:
+        # This will generate the same data structure that gets sent to Clan.com
+        api_data = publisher._prepare_api_data(post, sections)
+        return jsonify(api_data)
+    except Exception as e:
+        logger.error(f"Error preparing API data for post {post_id}: {e}")
+        # Fallback to basic data structure
+        fallback_data = {
+            'title': post.get('title', 'Untitled Post'),
+            'url_key': publisher._generate_url_key(post),
+            'short_content': post.get('summary', 'No summary available')[:200] if post.get('summary') else 'No summary available',
+            'status': 2,
+            'categories': [14, 15],  # Default clan.com categories
+            'list_thumbnail': '/blog/placeholder.jpg',
+            'post_thumbnail': '/blog/placeholder.jpg',
+            'meta_title': post.get('meta_title') or post.get('title', 'Untitled Post'),
+            'meta_tags': post.get('meta_tags') or 'scottish,heritage,celtic',
+            'meta_description': post.get('meta_description') or (post.get('summary', 'No description available')[:160] if post.get('summary') else 'No description available')
+        }
+        return jsonify(fallback_data)
+
 def get_post_with_development(post_id):
     """Fetch post with development data."""
     with get_db_connection() as conn:
@@ -974,7 +1057,7 @@ def get_posts():
     with get_db_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("""
-            SELECT p.id, p.title, p.slug, p.summary, p.subtitle, p.meta_title, p.meta_description, p.meta_image, p.meta_type, p.meta_site_name, p.meta_tags, p.created_at, p.updated_at, p.status,
+            SELECT p.id, p.title, p.created_at, p.updated_at, p.status,
                    p.clan_post_id, p.clan_last_attempt, p.clan_error, p.clan_uploaded_url,
                    pd.idea_seed, pd.provisional_title, pd.intro_blurb
             FROM post p

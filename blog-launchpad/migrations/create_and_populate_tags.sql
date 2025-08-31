@@ -31,3 +31,5 @@ SELECT p.id, p.title, p.meta_tags,
 FROM post p 
 WHERE p.status != 'deleted' 
 ORDER BY p.id;
+
+

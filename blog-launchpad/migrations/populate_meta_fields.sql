@@ -33,3 +33,5 @@ SELECT id, title, meta_title, meta_type, meta_site_name,
 FROM post 
 WHERE status != 'deleted' 
 ORDER BY id;
+
+
