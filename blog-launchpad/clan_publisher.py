@@ -147,7 +147,7 @@ class ClanPublisher:
         api_data = {
             'title': post.get('title', 'Untitled Post'),
             'url_key': self._generate_url_key(post),
-            'short_content': post.get('summary', '')[:200] if post.get('summary') else 'No summary available',
+            'short_content': post.get('summary') or post.get('subtitle') or 'No summary available',
             'status': 2,  # 2 = enabled
             'categories': [14, 15],  # Default clan.com categories
             'list_thumbnail': list_thumbnail,
@@ -541,7 +541,7 @@ class ClanPublisher:
             json_args.update({
                 'title': post.get('title', 'Untitled Post'),  # required
                 'url_key': self._generate_url_key(post),  # required - use slug or generate from title
-                'short_content': post.get('summary', '')[:200] if post.get('summary') else 'No summary available',  # required
+                'short_content': post.get('summary') or post.get('subtitle') or 'No summary available',  # required - use subtitle as fallback
                 'status': 2,  # required - 2 = enabled (not 'published' string)
                 'categories': [14, 15],  # required - note: 'categories' not 'category_ids'
                 'list_thumbnail': list_thumbnail,  # required - path from /media (now uses real uploaded image)
