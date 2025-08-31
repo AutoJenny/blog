@@ -335,16 +335,16 @@
             
             <!-- Post Conversion Accordion -->
             <div class="accordion" id="postConversionAccordion" style="margin-bottom: 2rem;">
-                <!-- Test LLM Post Rewriting Section -->
+                <!-- Post Rewriting Section -->
                 <div class="accordion-item" style="background: linear-gradient(135deg, #1a1d29 0%, #23273a 100%); border: 2px solid #22c55e; border-radius: 12px; overflow: hidden;">
                     <h2 class="accordion-header" id="headingTestLLM">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" 
-                                data-bs-target="#collapseTestLLM" aria-expanded="true" 
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#collapseTestLLM" aria-expanded="false" 
                                 aria-controls="collapseTestLLM"
                                 style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border: none;">
                             <div class="d-flex align-items-center w-100">
                                 <i class="fas fa-robot text-white me-3"></i>
-                                <span class="flex-grow-1">Test LLM Post Rewriting</span>
+                                <span class="flex-grow-1">Post Rewriting</span>
                                 <div class="requirement-indicator">
                                     <span class="badge bg-white text-success me-2">Active</span>
                                     <i class="fas fa-chevron-down text-white"></i>
@@ -352,7 +352,7 @@
                             </div>
                         </button>
                     </h2>
-                    <div id="collapseTestLLM" class="accordion-collapse collapse show" 
+                    <div id="collapseTestLLM" class="accordion-collapse collapse" 
                          aria-labelledby="headingTestLLM" 
                          data-bs-parent="#postConversionAccordion">
                         <div class="accordion-body" style="padding: 2rem;">
@@ -444,10 +444,7 @@
                                         <div class="setting-item mb-3">
                                             <label class="form-label text-white">Blog Post Selection:</label>
                                             <select class="form-select bg-dark text-white border-primary" id="blogPostSelect">
-                                                <option value="">Select a published blog post...</option>
-                                                <option value="1">The Art of Scottish Storytelling - Highland Tales</option>
-                                                <option value="2">Modern Clan Traditions in the Digital Age</option>
-                                                <option value="3">Exploring Ancient Celtic Symbols</option>
+                                                <option value="">Loading posts...</option>
                                             </select>
                                         </div>
                                     </div>
@@ -594,213 +591,8 @@
             </div>
         </div>
         
-        <!-- Channel-Specific Requirements (Faded - Not Yet Active) -->
-        <div class="config-section" style="opacity: 0.3;">
-            <div class="alert alert-warning" style="background: rgba(245, 158, 11, 0.1); border-color: #f59e0b; margin-bottom: 1rem;">
-                <h6 class="alert-heading">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Not Yet Active
-                </h6>
-                <p class="mb-0">These configuration sections are planned for future development. The MVP interface above is currently active and functional.</p>
-            </div>
-            <h3 class="section-title">
-                <i class="fas fa-cog text-info"></i>
-                Channel-Specific Requirements
-            </h3>
-            
-            <div class="accordion" id="channelRequirementsAccordion">
-                <div class="accordion-item config-card channel-specific">
-                    <h2 class="accordion-header" id="headingChannelRequirements">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                                data-bs-target="#collapseChannelRequirements" aria-expanded="false" 
-                                aria-controls="collapseChannelRequirements">
-                            <div class="d-flex align-items-center w-100">
-                                <i class="fas fa-cog me-3 text-info"></i>
-                                <span class="flex-grow-1">{{ platform.display_name }} {{ channel_type.display_name }} Requirements</span>
-                                <div class="requirement-indicator">
-                                    <span class="badge bg-info me-2">3 Categories</span>
-                                    <i class="fas fa-chevron-down text-muted"></i>
-                                </div>
-                            </div>
-                        </button>
-                    </h2>
-                    <div id="collapseChannelRequirements" class="accordion-collapse collapse" 
-                         aria-labelledby="headingChannelRequirements" 
-                         data-bs-parent="#channelRequirementsAccordion">
-                        <div class="accordion-body">
-                            <div class="requirements-grid">
-                                
-                                <!-- Content Dimensions & Constraints -->
-                                <div class="requirement-category">
-                                    <h6 class="category-title">
-                                        <i class="fas fa-ruler-combined me-2 text-info"></i>Content Dimensions & Constraints
-                                    </h6>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">Image Dimensions</div>
-                                            <div class="config-description">Optimal size for {{ platform.display_name|lower }} {{ channel_type.display_name|lower }}</div>
-                                        </div>
-                                        <div class="config-value">1200 × 630 pixels</div>
-                                    </div>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">Aspect Ratio</div>
-                                            <div class="config-description">Recommended image proportions</div>
-                                        </div>
-                                        <div class="config-value">1.91:1 (landscape)</div>
-                                    </div>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">Text Character Limit</div>
-                                            <div class="config-description">Maximum characters for post text</div>
-                                        </div>
-                                        <div class="config-value">63,206 characters</div>
-                                    </div>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">Hashtag Limit</div>
-                                            <div class="config-description">Recommended number of hashtags</div>
-                                        </div>
-                                        <div class="config-value">3-5 hashtags</div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Content Strategy & Style -->
-                                <div class="requirement-category">
-                                    <h6 class="category-title">
-                                        <i class="fas fa-palette me-2 text-info"></i>Content Strategy & Style
-                                    </h6>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">Content Tone</div>
-                                            <div class="config-description">Recommended voice for {{ channel_type.display_name|lower }}</div>
-                                        </div>
-                                        <div class="config-value">Friendly & Engaging</div>
-                                    </div>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">Visual Style</div>
-                                            <div class="config-description">Preferred aesthetic approach</div>
-                                        </div>
-                                        <div class="config-value">Modern & Clean</div>
-                                    </div>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">CTA Strategy</div>
-                                            <div class="config-description">Call-to-action placement</div>
-                                        </div>
-                                        <div class="config-value">End of post</div>
-                                    </div>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">Engagement Focus</div>
-                                            <div class="config-description">Primary engagement goal</div>
-                                        </div>
-                                        <div class="config-value">Comments & Shares</div>
-                                    </div>
-                                </div>
-                                
-                                <!-- AI Processing Rules -->
-                                <div class="requirement-category">
-                                    <h6 class="category-title">
-                                        <i class="fas fa-robot me-2 text-info"></i>AI Processing Rules
-                                    </h6>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">LLM Model</div>
-                                            <div class="config-description">AI model for content generation</div>
-                                        </div>
-                                        <div class="config-value">GPT-4</div>
-                                    </div>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">Content Context</div>
-                                            <div class="config-description">Source material for adaptation</div>
-                                        </div>
-                                        <div class="config-value">Blog Post Sections</div>
-                                    </div>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">Output Length</div>
-                                            <div class="config-description">Target content length</div>
-                                        </div>
-                                        <div class="config-value">Medium (2-3 paragraphs)</div>
-                                    </div>
-                                    <div class="config-item">
-                                        <div>
-                                            <div class="config-name">Hashtag Generation</div>
-                                            <div class="config-description">Automatic hashtag creation</div>
-                                        </div>
-                                        <div class="config-value">Enabled (trending focus)</div>
-                                    </div>
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Platform-Wide Capabilities (Reference) -->
-        <div class="config-section" style="opacity: 0.3;">
-            <div class="alert alert-warning" style="background: rgba(245, 158, 11, 0.1); border-color: #f59e0b; margin-bottom: 1rem;">
-                <h6 class="alert-heading">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Not Yet Active
-                </h6>
-                <p class="mb-0">These configuration sections are planned for future development. The MVP interface above is currently active and functional.</p>
-            </div>
-            <h3 class="section-title">
-                <i class="fas fa-globe text-purple"></i>
-                Platform-Wide Capabilities (Reference)
-            </h3>
-            
-            <div class="config-card platform-wide">
-                <div class="card-header">
-                    <h5 class="text-white mb-0">
-                        <i class="fas fa-info-circle me-2"></i>These apply to ALL Facebook channels
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="config-item">
-                        <div>
-                            <div class="config-name">API Endpoint</div>
-                            <div class="config-description">Facebook Graph API endpoint</div>
-                        </div>
-                        <div class="config-value">graph.facebook.com/v18.0</div>
-                    </div>
-                    <div class="config-item">
-                        <div>
-                            <div class="config-name">Authentication</div>
-                            <div class="config-description">OAuth 2.0 flow</div>
-                        </div>
-                        <div class="config-value">OAuth 2.0</div>
-                    </div>
-                    <div class="config-item">
-                        <div>
-                            <div class="config-name">Rate Limits</div>
-                            <div class="config-description">API call restrictions</div>
-                        </div>
-                        <div class="config-value">200 calls/hour</div>
-                    </div>
-                    <div class="config-item">
-                        <div>
-                            <div class="config-name">File Formats</div>
-                            <div class="config-description">Supported media types</div>
-                        </div>
-                        <div class="config-value">JPG, PNG, WebP, MP4</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
         <!-- Performance Metrics -->
-        <div class="config-section" style="opacity: 0.3;">
-            <div class="alert alert-warning" style="background: rgba(245, 158, 11, 0.1); border-color: #f59e0b; margin-bottom: 1rem;">
-                <h6 class="alert-heading">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Not Yet Active
-                </h6>
-                <p class="mb-0">These configuration sections are planned for future development. The MVP interface above is currently active and functional.</p>
-            </div>
+        <div class="config-section">
             <h3 class="section-title">
                 <i class="fas fa-chart-line text-success"></i>
                 Performance Metrics
@@ -838,33 +630,6 @@
                             <div style="color: #a0aec0; font-size: 0.9rem;">Active Configs</div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="config-section" style="opacity: 0.3;">
-            <div class="alert alert-warning" style="background: rgba(245, 158, 11, 0.1); border-color: #f59e0b; margin-bottom: 1rem;">
-                <h6 class="alert-heading">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Not Yet Active
-                </h6>
-                <p class="mb-0">These configuration sections are planned for future development. The MVP interface above is currently active and functional.</p>
-            </div>
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <a href="/syndication/dashboard" class="btn btn-secondary btn-lg w-100">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                    </a>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <button class="btn btn-primary btn-lg w-100">
-                        <i class="fas fa-save me-2"></i>Save Changes
-                    </button>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <button class="btn btn-success btn-lg w-100">
-                        <i class="fas fa-play me-2"></i>Test Configuration
-                    </button>
                 </div>
             </div>
         </div>
@@ -1175,7 +940,39 @@
             if (imageSelect) {
                 imageSelect.addEventListener('change', updatePreview);
             }
+            
+            // Load published posts for the dropdown
+            loadPublishedPosts();
         });
+        
+        // Load published posts from the API
+        function loadPublishedPosts() {
+            const blogPostSelect = document.getElementById('blogPostSelect');
+            
+            fetch('/api/syndication/published-posts')
+                .then(response => response.json())
+                .then(data => {
+                    blogPostSelect.innerHTML = '<option value="">Select a published blog post...</option>';
+                    
+                    data.posts.forEach(post => {
+                        const option = document.createElement('option');
+                        option.value = post.id;
+                        option.textContent = `${post.title} (ID: ${post.id})`;
+                        blogPostSelect.appendChild(option);
+                    });
+                    
+                    // Auto-select the first (most recent) post
+                    if (data.posts.length > 0) {
+                        blogPostSelect.value = data.posts[0].id;
+                        // Trigger change event to populate blog URL
+                        blogPostSelect.dispatchEvent(new Event('change'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading posts:', error);
+                    blogPostSelect.innerHTML = '<option value="">Error loading posts</option>';
+                });
+        }
     </script>
 </body>
 </html>
