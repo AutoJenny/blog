@@ -473,6 +473,8 @@
                                     </div>
                                 </div>
                                 
+
+                                
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="setting-item mb-3">
@@ -876,7 +878,8 @@
         
         function updatePreview() {
             const caption = document.getElementById('captionBuilder').value;
-            const sectionType = document.getElementById('sectionSelect').value;
+            const sectionSelect = document.getElementById('sectionSelect');
+            const sectionType = sectionSelect.value;
             
             // Update caption preview
             document.getElementById('previewCaption').textContent = caption || 'Your caption will appear here...';
@@ -941,7 +944,11 @@
             }
             
             if (sectionSelect) {
-                sectionSelect.addEventListener('change', updatePreview);
+                sectionSelect.addEventListener('change', function() {
+                    updatePreview();
+                    // Populate Caption Builder with polished content from selected section
+                    populateCaptionBuilder();
+                });
             }
             
             // Load published posts for the dropdown
@@ -991,6 +998,8 @@
                             const option = document.createElement('option');
                             option.value = section.id;
                             option.textContent = `Section ${section.order}: ${section.title || 'Untitled'}`;
+                            // Store section data for later use
+                            option.dataset.sectionData = JSON.stringify(section);
                             sectionSelect.appendChild(option);
                         });
                     } else {
@@ -1001,6 +1010,48 @@
                     console.error('Error loading sections:', error);
                     sectionSelect.innerHTML = '<option value="">Error loading sections</option>';
                 });
+        }
+        
+        // Populate Caption Builder with content piece from selected section
+        function populateCaptionBuilder() {
+            const sectionSelect = document.getElementById('sectionSelect');
+            const captionBuilder = document.getElementById('captionBuilder');
+            
+            if (sectionSelect.value) {
+                const postId = document.getElementById('blogPostSelect').value;
+                const sectionId = sectionSelect.value;
+                
+                // Fetch the content piece for this section from the syndication pieces API
+                fetch(`/api/syndication/pieces?post_id=${postId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.pieces) {
+                            // Find the piece for this specific section
+                            const sectionPiece = data.pieces.find(piece => {
+                                const metadata = piece.interaction_metadata;
+                                return metadata && metadata.section_id == sectionId;
+                            });
+                            
+                            if (sectionPiece && sectionPiece.generated_content) {
+                                captionBuilder.value = sectionPiece.generated_content;
+                            } else {
+                                captionBuilder.value = 'No content piece available for this section.';
+                            }
+                        } else {
+                            captionBuilder.value = 'No content pieces found for this post.';
+                        }
+                        // Update character count
+                        updateCaptionCharCount();
+                    })
+                    .catch(error => {
+                        console.error('Error loading content piece:', error);
+                        captionBuilder.value = 'Error loading content piece.';
+                        updateCaptionCharCount();
+                    });
+            } else {
+                captionBuilder.value = '';
+                updateCaptionCharCount();
+            }
         }
     </script>
 </body>
