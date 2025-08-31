@@ -450,13 +450,9 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="setting-item mb-3">
-                                            <label class="form-label text-white">Image Selection:</label>
-                                            <select class="form-select bg-dark text-white border-primary" id="imageSelect">
-                                                <option value="">Choose image type...</option>
-                                                <option value="header">Header Image (1200×630)</option>
-                                                <option value="section1">Section 1 Image</option>
-                                                <option value="section2">Section 2 Image</option>
-                                                <option value="custom">Upload Custom Image</option>
+                                            <label class="form-label text-white">Section Selection:</label>
+                                            <select class="form-select bg-dark text-white border-primary" id="sectionSelect" disabled>
+                                                <option value="">Select a post first...</option>
                                             </select>
                                         </div>
                                     </div>
@@ -801,11 +797,11 @@
         
         function buildPost() {
             const blogPost = document.getElementById('blogPostSelect').value;
-            const imageType = document.getElementById('imageSelect').value;
+            const sectionType = document.getElementById('sectionSelect').value;
             const caption = document.getElementById('captionBuilder').value;
             
-            if (!blogPost || !imageType || !caption.trim()) {
-                alert('Please complete all required fields: Blog Post, Image Selection, and Caption.');
+            if (!blogPost || !sectionType || !caption.trim()) {
+                alert('Please complete all required fields: Blog Post, Section Selection, and Caption.');
                 return;
             }
             
@@ -880,15 +876,15 @@
         
         function updatePreview() {
             const caption = document.getElementById('captionBuilder').value;
-            const imageType = document.getElementById('imageSelect').value;
+            const sectionType = document.getElementById('sectionSelect').value;
             
             // Update caption preview
             document.getElementById('previewCaption').textContent = caption || 'Your caption will appear here...';
             
             // Update image preview
             const previewImage = document.getElementById('previewImage');
-            if (imageType && imageType !== 'custom') {
-                previewImage.innerHTML = '<img src="https://via.placeholder.com/400x200/3b82f6/ffffff?text=Selected+Image" class="img-fluid rounded" alt="Selected Image">';
+            if (sectionType) {
+                previewImage.innerHTML = '<div class="bg-primary text-white p-3 rounded d-flex align-items-center justify-content-center" style="height: 200px;"><i class="fas fa-layer-group me-2"></i>Selected Section Content</div>';
             } else {
                 previewImage.innerHTML = '<i class="fas fa-image text-muted"></i>';
             }
@@ -919,7 +915,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const captionBuilder = document.getElementById('captionBuilder');
             const blogPostSelect = document.getElementById('blogPostSelect');
-            const imageSelect = document.getElementById('imageSelect');
+            const sectionSelect = document.getElementById('sectionSelect');
             
             if (captionBuilder) {
                 captionBuilder.addEventListener('input', updateCaptionCharCount);
@@ -929,16 +925,23 @@
                 blogPostSelect.addEventListener('change', function() {
                     // Auto-populate blog URL when post is selected
                     const blogUrl = document.getElementById('blogUrl');
+                    const sectionSelect = document.getElementById('sectionSelect');
+                    
                     if (this.value) {
                         blogUrl.value = `https://clan.com/blog/post-${this.value}`;
+                        // Load sections for the selected post
+                        loadPostSections(this.value);
+                        sectionSelect.disabled = false;
                     } else {
                         blogUrl.value = '';
+                        sectionSelect.innerHTML = '<option value="">Select a post first...</option>';
+                        sectionSelect.disabled = true;
                     }
                 });
             }
             
-            if (imageSelect) {
-                imageSelect.addEventListener('change', updatePreview);
+            if (sectionSelect) {
+                sectionSelect.addEventListener('change', updatePreview);
             }
             
             // Load published posts for the dropdown
@@ -971,6 +974,32 @@
                 .catch(error => {
                     console.error('Error loading posts:', error);
                     blogPostSelect.innerHTML = '<option value="">Error loading posts</option>';
+                });
+        }
+        
+        // Load sections for a selected post
+        function loadPostSections(postId) {
+            const sectionSelect = document.getElementById('sectionSelect');
+            
+            fetch(`/api/syndication/post-sections/${postId}`)
+                .then(response => response.json())
+                .then(data => {
+                    sectionSelect.innerHTML = '<option value="">Select a section...</option>';
+                    
+                    if (data.sections && data.sections.length > 0) {
+                        data.sections.forEach(section => {
+                            const option = document.createElement('option');
+                            option.value = section.id;
+                            option.textContent = `Section ${section.order}: ${section.title || 'Untitled'}`;
+                            sectionSelect.appendChild(option);
+                        });
+                    } else {
+                        sectionSelect.innerHTML = '<option value="">No sections found</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading sections:', error);
+                    sectionSelect.innerHTML = '<option value="">Error loading sections</option>';
                 });
         }
     </script>
