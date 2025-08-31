@@ -832,16 +832,30 @@
             const blogPost = document.getElementById('blogPostSelect').value;
             const sectionType = document.getElementById('sectionSelect').value;
             const caption = document.getElementById('captionBuilder').value;
+            const blogUrl = document.getElementById('blogUrl').value;
             
             if (!blogPost || !sectionType || !caption.trim()) {
                 alert('Please complete all required fields: Blog Post, Section Selection, and Caption.');
                 return;
             }
             
-            // Build the Facebook API payload
+            // Get the Facebook-optimized image URL from the post image container
+            const postImageContainer = document.getElementById('postImageContainer');
+            let imageUrl = '';
+            
+            // Try to extract the image URL from the post image container
+            const imgElement = postImageContainer.querySelector('img');
+            if (imgElement && imgElement.src) {
+                imageUrl = imgElement.src;
+            } else {
+                // Fallback to placeholder if no resized image available
+                imageUrl = "https://via.placeholder.com/1200x630/3b82f6/ffffff?text=Facebook+Image";
+            }
+            
+            // Build the Facebook API payload with actual data
             const payload = {
-                caption: caption + " https://clan.com/blog/scottish-storytelling",
-                url: "https://yourcdn.com/images/scottish-storytelling-header.jpg",
+                caption: caption + (blogUrl ? ` ${blogUrl}` : ""),
+                url: imageUrl,
                 published: false,
                 access_token: "PAGE_ACCESS_TOKEN"
             };
@@ -918,7 +932,17 @@
             // Update image preview
             const previewImage = document.getElementById('previewImage');
             if (sectionType) {
-                previewImage.innerHTML = '<div class="bg-primary text-white p-3 rounded d-flex align-items-center justify-content-center" style="height: 200px;"><i class="fas fa-layer-group me-2"></i>Selected Section Content</div>';
+                // Try to get the Facebook-optimized image for the preview
+                const postImageContainer = document.getElementById('postImageContainer');
+                const imgElement = postImageContainer.querySelector('img');
+                
+                if (imgElement && imgElement.src) {
+                    // Use the actual Facebook image
+                    previewImage.innerHTML = `<img src="${imgElement.src}" alt="Facebook Image" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">`;
+                } else {
+                    // Fallback to placeholder
+                    previewImage.innerHTML = '<div class="bg-primary text-white p-3 rounded d-flex align-items-center justify-content-center" style="height: 200px;"><i class="fas fa-layer-group me-2"></i>Selected Section Content</div>';
+                }
                 
                 // Update section image display
                 updateSectionImage(sectionType);
@@ -1095,6 +1119,50 @@
             `;
         }
         
+        // Auto-update API payload with current form data
+        function updateApiPayload() {
+            const blogPost = document.getElementById('blogPostSelect').value;
+            const sectionType = document.getElementById('sectionSelect').value;
+            const caption = document.getElementById('captionBuilder').value;
+            const blogUrl = document.getElementById('blogUrl').value;
+            
+            // Only update if we have the basic required data
+            if (blogPost && sectionType && caption.trim()) {
+                // Get the Facebook-optimized image URL from the post image container
+                const postImageContainer = document.getElementById('postImageContainer');
+                let imageUrl = '';
+                
+                // Try to extract the image URL from the post image container
+                const imgElement = postImageContainer.querySelector('img');
+                if (imgElement && imgElement.src) {
+                    imageUrl = imgElement.src;
+                } else {
+                    // Show placeholder text if no resized image available
+                    imageUrl = "Image will be available after section selection";
+                }
+                
+                // Build the Facebook API payload with actual data
+                const payload = {
+                    caption: caption + (blogUrl ? ` ${blogUrl}` : ""),
+                    url: imageUrl,
+                    published: false,
+                    access_token: "PAGE_ACCESS_TOKEN"
+                };
+                
+                // Update the API payload preview
+                document.getElementById('apiPayload').textContent = JSON.stringify(payload, null, 2);
+            } else {
+                // Show placeholder payload if not all fields are filled
+                const placeholderPayload = {
+                    caption: "Your caption will appear here...",
+                    url: "Image URL will appear here...",
+                    published: false,
+                    access_token: "PAGE_ACCESS_TOKEN"
+                };
+                document.getElementById('apiPayload').textContent = JSON.stringify(placeholderPayload, null, 2);
+            }
+        }
+        
         function updateValidationStatus() {
             // Simulate validation checks
             const imageSize = document.getElementById('validationImageSize');
@@ -1124,6 +1192,8 @@
             
             if (captionBuilder) {
                 captionBuilder.addEventListener('input', updateCaptionCharCount);
+                // Auto-update API payload when caption changes
+                captionBuilder.addEventListener('input', updateApiPayload);
             }
             
             if (blogPostSelect) {
@@ -1151,6 +1221,9 @@
                         sectionSelect.innerHTML = '<option value="">Select a post first...</option>';
                         sectionSelect.disabled = true;
                     }
+                    
+                    // Update API payload when post selection changes
+                    updateApiPayload();
                 });
             }
             
@@ -1159,6 +1232,8 @@
                     updatePreview();
                     // Populate Caption Builder with polished content from selected section
                     populateCaptionBuilder();
+                    // Update API payload when section changes
+                    setTimeout(updateApiPayload, 1000); // Small delay to allow image resize to complete
                 });
             }
             
