@@ -474,16 +474,30 @@
                                 </div>
                                 
                                 <div class="row">
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <div class="setting-item mb-3">
-                                            <label class="form-label text-white">Section Image:</label>
+                                            <label class="form-label text-white">Section Image (Original):</label>
                                             <div id="sectionImageContainer" class="text-center">
                                                 <div class="bg-secondary text-white p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
                                                     <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
                                                     <div class="ms-2">No image selected</div>
                                                 </div>
                                                 <div class="mt-2">
-                                                    <small class="text-muted">Image dimensions: <span id="imageDimensions">--</span></small>
+                                                    <small class="text-muted">Original dimensions: <span id="imageDimensions">--</span></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="setting-item mb-3">
+                                            <label class="form-label text-white">Post Image (Facebook Optimized):</label>
+                                            <div id="postImageContainer" class="text-center">
+                                                <div class="bg-secondary text-white p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
+                                                    <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                                                    <div class="ms-2">No image selected</div>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <small class="text-muted">Facebook dimensions: <span id="facebookImageDimensions">1200 × 630 px</span></small>
                                                 </div>
                                             </div>
                                         </div>
@@ -918,6 +932,7 @@
         function updateSectionImage(sectionId) {
             const imageContainer = document.getElementById('sectionImageContainer');
             const imageDimensions = document.getElementById('imageDimensions');
+            const postImageContainer = document.getElementById('postImageContainer');
             
             if (sectionId) {
                 // Get section data to find the image
@@ -929,11 +944,11 @@
                         const sectionData = JSON.parse(selectedOption.dataset.sectionData);
                         
                         if (sectionData.image_path) {
-                            // Display the actual image
+                            // Display the actual image in left column
                             imageContainer.innerHTML = `
                                 <img src="${sectionData.image_path}" alt="Section Image" style="width: 300px; height: auto; max-height: 200px; object-fit: cover; border-radius: 8px;">
                                 <div class="mt-2">
-                                    <small class="text-muted">Image dimensions: <span id="imageDimensions">Loading...</span></small>
+                                    <small class="text-muted">Original dimensions: <span id="imageDimensions">Loading...</span></small>
                                 </div>
                             `;
                             
@@ -944,12 +959,17 @@
                                 if (dimensionsSpan) {
                                     dimensionsSpan.textContent = `${this.naturalWidth} × ${this.naturalHeight} px`;
                                 }
+                                
+                                // Trigger Facebook image resize
+                                resizeImageForFacebook(sectionData.image_path);
                             };
                             img.onerror = function() {
                                 const dimensionsSpan = document.getElementById('imageDimensions');
                                 if (dimensionsSpan) {
                                     dimensionsSpan.textContent = 'Error loading image';
                                 }
+                                // Clear post image container on error
+                                clearPostImageContainer();
                             };
                             img.src = sectionData.image_path;
                         } else {
@@ -960,9 +980,10 @@
                                     <div class="ms-2">No image available</div>
                                 </div>
                                 <div class="mt-2">
-                                    <small class="text-muted">Image dimensions: <span id="imageDimensions">--</span></small>
+                                    <small class="text-muted">Original dimensions: <span id="imageDimensions">--</span></small>
                                 </div>
                             `;
+                            clearPostImageContainer();
                         }
                     } catch (e) {
                         console.error('Error parsing section data:', e);
@@ -973,9 +994,10 @@
                                 <div class="ms-2">Error loading image</div>
                             </div>
                             <div class="mt-2">
-                                <small class="text-muted">Image dimensions: <span id="imageDimensions">--</span></small>
+                                <small class="text-muted">Original dimensions: <span id="imageDimensions">--</span></small>
                             </div>
                         `;
+                        clearPostImageContainer();
                     }
                 } else {
                     // Show placeholder when no section data
@@ -985,9 +1007,10 @@
                             <div class="ms-2">No image available</div>
                         </div>
                         <div class="mt-2">
-                            <small class="text-muted">Image dimensions: <span id="imageDimensions">--</span></small>
+                            <small class="text-muted">Original dimensions: <span id="imageDimensions">--</span></small>
                         </div>
                     `;
+                    clearPostImageContainer();
                 }
             } else {
                 // Show placeholder when no section selected
@@ -997,10 +1020,79 @@
                         <div class="ms-2">No image selected</div>
                     </div>
                     <div class="mt-2">
-                        <small class="text-muted">Image dimensions: <span id="imageDimensions">--</span></small>
+                        <small class="text-muted">Original dimensions: <span id="imageDimensions">--</span></small>
+                    </div>
+                `;
+                clearPostImageContainer();
+            }
+        }
+        
+        // Resize image for Facebook dimensions
+        async function resizeImageForFacebook(imageUrl) {
+            const postImageContainer = document.getElementById('postImageContainer');
+            
+            // Show loading state
+            postImageContainer.innerHTML = `
+                <div class="bg-info text-white p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
+                    <i class="fas fa-spinner fa-spin text-white" style="font-size: 2rem;"></i>
+                    <div class="ms-2">Resizing for Facebook...</div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">Facebook dimensions: <span id="facebookImageDimensions">Processing...</span></small>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/syndication/resize-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        image_url: imageUrl
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Display the resized image
+                    postImageContainer.innerHTML = `
+                        <img src="${result.resized_url}" alt="Facebook Optimized Image" style="width: 300px; height: auto; max-height: 200px; object-fit: cover; border-radius: 8px;">
+                        <div class="mt-2">
+                            <small class="text-muted">Facebook dimensions: <span id="facebookImageDimensions">${result.dimensions.width} × ${result.dimensions.height} px</span></small>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(result.error || 'Failed to resize image');
+                }
+            } catch (error) {
+                console.error('Error resizing image:', error);
+                // Show error state
+                postImageContainer.innerHTML = `
+                    <div class="bg-warning text-dark p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
+                        <i class="fas fa-exclamation-triangle text-dark" style="font-size: 2rem;"></i>
+                        <div class="ms-2">Resize failed</div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Facebook dimensions: <span id="facebookImageDimensions">Error</span></small>
                     </div>
                 `;
             }
+        }
+        
+        // Clear post image container
+        function clearPostImageContainer() {
+            const postImageContainer = document.getElementById('postImageContainer');
+            postImageContainer.innerHTML = `
+                <div class="bg-secondary text-white p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
+                    <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+                    <div class="ms-2">No image selected</div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">Facebook dimensions: <span id="facebookImageDimensions">1200 × 630 px</span></small>
+                </div>
+            `;
         }
         
         function updateValidationStatus() {
