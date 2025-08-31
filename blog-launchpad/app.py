@@ -854,7 +854,12 @@ def clan_api_data(post_id):
     # Get the actual API request data that would be sent to Clan.com
     try:
         # This will generate the same data structure that gets sent to Clan.com
+        logger.info(f"Calling _prepare_api_data for post {post_id}")
+        logger.info(f"Post data keys: {list(post.keys()) if post else 'NO POST'}")
+        logger.info(f"Post summary: {post.get('summary')}")
+        logger.info(f"Post subtitle: {post.get('subtitle')}")
         api_data = publisher._prepare_api_data(post, sections)
+        logger.info(f"API data returned: {api_data}")
         return jsonify(api_data)
     except Exception as e:
         logger.error(f"Error preparing API data for post {post_id}: {e}")
@@ -862,14 +867,14 @@ def clan_api_data(post_id):
         fallback_data = {
             'title': post.get('title', 'Untitled Post'),
             'url_key': publisher._generate_url_key(post),
-            'short_content': post.get('summary', 'No summary available')[:200] if post.get('summary') else 'No summary available',
+            'short_content': post.get('summary') or post.get('subtitle') or 'No summary available',
             'status': 2,
             'categories': [14, 15],  # Default clan.com categories
             'list_thumbnail': '/blog/placeholder.jpg',
             'post_thumbnail': '/blog/placeholder.jpg',
             'meta_title': post.get('meta_title') or post.get('title', 'Untitled Post'),
             'meta_tags': post.get('meta_tags') or 'scottish,heritage,celtic',
-            'meta_description': post.get('meta_description') or (post.get('summary', 'No description available')[:160] if post.get('summary') else 'No description available')
+            'meta_description': post.get('meta_description') or (post.get('summary') or post.get('subtitle') or 'No description available')
         }
         return jsonify(fallback_data)
 
