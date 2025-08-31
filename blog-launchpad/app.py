@@ -880,6 +880,43 @@ def clan_api_data(post_id):
         }
         return jsonify(fallback_data)
 
+@app.route('/api/syndication/resize-image', methods=['POST'])
+def resize_image_for_facebook():
+    """Resize an image to Facebook's recommended dimensions (1200x630)."""
+    try:
+        data = request.get_json()
+        image_url = data.get('image_url')
+        
+        if not image_url:
+            return jsonify({'error': 'Missing image_url'}), 400
+        
+        # For now, return a mock response with the resized image URL
+        # In a real implementation, this would call the blog-images service
+        # and return the actual resized image URL
+        
+        # Extract filename from URL for demo purposes
+        import urllib.parse
+        parsed_url = urllib.parse.urlparse(image_url)
+        filename = os.path.basename(parsed_url.path)
+        
+        # Mock resized image URL (in reality, this would be the processed image)
+        resized_url = f"{image_url}?resized=1200x630"
+        
+        return jsonify({
+            'success': True,
+            'original_url': image_url,
+            'resized_url': resized_url,
+            'dimensions': {
+                'width': 1200,
+                'height': 630,
+                'aspect_ratio': '1.91:1'
+            },
+            'message': 'Image resized for Facebook (mock response)'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 def get_post_with_development(post_id):
     """Fetch post with development data."""
     with get_db_connection() as conn:
