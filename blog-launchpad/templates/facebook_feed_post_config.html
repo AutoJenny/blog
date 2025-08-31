@@ -1000,8 +1000,8 @@
                                     dimensionsSpan.textContent = `${this.naturalWidth} × ${this.naturalHeight} px`;
                                 }
                                 
-                                // Trigger Facebook image resize
-                                resizeImageForFacebook(sectionData.image_path);
+                                // Trigger Facebook image resize with live URL lookup
+                                resizeImageForFacebook(sectionData.image_path, sectionId);
                             };
                             img.onerror = function() {
                                 const dimensionsSpan = document.getElementById('imageDimensions');
@@ -1067,15 +1067,16 @@
             }
         }
         
-        // Resize image for Facebook dimensions
-        async function resizeImageForFacebook(imageUrl) {
+        // Resize image for Facebook dimensions and get live URL
+        async function resizeImageForFacebook(imageUrl, sectionId) {
             const postImageContainer = document.getElementById('postImageContainer');
+            const postId = document.getElementById('blogPostSelect').value;
             
             // Show loading state
             postImageContainer.innerHTML = `
                 <div class="bg-info text-white p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
                     <i class="fas fa-spinner fa-spin text-white" style="font-size: 2rem;"></i>
-                    <div class="ms-2">Resizing for Facebook...</div>
+                    <div class="ms-2">Getting live image URL...</div>
                 </div>
                 <div class="mt-2">
                     <small class="text-muted">Facebook dimensions: <span id="facebookImageDimensions">Processing...</span></small>
@@ -1083,36 +1084,64 @@
             `;
             
             try {
-                const response = await fetch('/api/syndication/resize-image', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        image_url: imageUrl
-                    })
-                });
+                // First, get the live Clan.com URL for this section image
+                const mappingsResponse = await fetch(`/api/syndication/image-mappings/${postId}`);
+                const mappingsResult = await mappingsResponse.json();
                 
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Display the resized image
+                if (mappingsResult.status === 'success' && mappingsResult.mappings[sectionId]) {
+                    const liveUrl = mappingsResult.mappings[sectionId].clan_uploaded_url;
+                    const dimensions = mappingsResult.mappings[sectionId].image_dimensions || '1200x630';
+                    
+                    // Display the live image (which is already Facebook-sized)
                     postImageContainer.innerHTML = `
-                        <img src="${result.resized_url}" alt="Facebook Optimized Image" style="width: 300px; height: auto; max-height: 200px; object-fit: cover; border-radius: 8px;">
+                        <img src="${liveUrl}" alt="Facebook Optimized Image (Live)" style="width: 300px; height: auto; max-height: 200px; object-fit: cover; border-radius: 8px;">
                         <div class="mt-2">
-                            <small class="text-muted">Facebook dimensions: <span id="facebookImageDimensions">${result.dimensions.width} × ${result.dimensions.height} px</span></small>
+                            <small class="text-muted">Facebook dimensions: <span id="facebookImageDimensions">${dimensions}</span></small>
+                        </div>
+                        <div class="mt-1">
+                            <small class="text-success">✅ Live Clan.com URL</small>
                         </div>
                     `;
+                    
+                    // Store the live URL for use in the Facebook payload
+                    postImageContainer.dataset.liveUrl = liveUrl;
+                    
                 } else {
-                    throw new Error(result.error || 'Failed to resize image');
+                    // Fallback to mock resize if no live URL found
+                    const response = await fetch('/api/syndication/resize-image', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            image_url: imageUrl
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        postImageContainer.innerHTML = `
+                            <img src="${result.resized_url}" alt="Facebook Optimized Image (Mock)" style="width: 300px; height: auto; max-height: 200px; object-fit: cover; border-radius: 8px;">
+                            <div class="mt-2">
+                                <small class="text-muted">Facebook dimensions: <span id="facebookImageDimensions">${result.dimensions.width} × ${result.dimensions.height} px</span></small>
+                            </div>
+                            <div class="mt-1">
+                                <small class="text-warning">⚠️ Mock URL (not live)</small>
+                            </div>
+                        `;
+                        postImageContainer.dataset.liveUrl = result.resized_url;
+                    } else {
+                        throw new Error(result.error || 'Failed to resize image');
+                    }
                 }
             } catch (error) {
-                console.error('Error resizing image:', error);
+                console.error('Error getting live image URL:', error);
                 // Show error state
                 postImageContainer.innerHTML = `
                     <div class="bg-warning text-dark p-4 rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 200px; margin: 0 auto;">
                         <i class="fas fa-exclamation-triangle text-dark" style="font-size: 2rem;"></i>
-                        <div class="ms-2">Resize failed</div>
+                        <div class="ms-2">Live URL lookup failed</div>
                     </div>
                     <div class="mt-2">
                         <small class="text-muted">Facebook dimensions: <span id="facebookImageDimensions">Error</span></small>
@@ -1144,17 +1173,22 @@
             
             // Only update if we have the basic required data
             if (blogPost && sectionType && caption.trim()) {
-                // Get the Facebook-optimized image URL from the post image container
+                // Get the live Clan.com image URL from the post image container
                 const postImageContainer = document.getElementById('postImageContainer');
                 let imageUrl = '';
                 
-                // Try to extract the image URL from the post image container
-                const imgElement = postImageContainer.querySelector('img');
-                if (imgElement && imgElement.src) {
-                    imageUrl = imgElement.src;
+                // Try to get the live URL from the dataset first
+                if (postImageContainer.dataset.liveUrl) {
+                    imageUrl = postImageContainer.dataset.liveUrl;
                 } else {
-                    // Show placeholder text if no resized image available
-                    imageUrl = "Image will be available after section selection";
+                    // Fallback to img src if no live URL stored
+                    const imgElement = postImageContainer.querySelector('img');
+                    if (imgElement && imgElement.src) {
+                        imageUrl = imgElement.src;
+                    } else {
+                        // Show placeholder text if no image available
+                        imageUrl = "Image will be available after section selection";
+                    }
                 }
                 
                 // Format caption with "Read more: <url>" before first hashtag

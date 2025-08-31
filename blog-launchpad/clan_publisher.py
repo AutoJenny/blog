@@ -427,7 +427,74 @@ class ClanPublisher:
         logger.info(f"Final uploaded_images dictionary: {uploaded_images}")
         logger.info(f"Final uploaded_images count: {len(uploaded_images)}")
         
+        # Save image mappings to database for future reference
+        if uploaded_images:
+            self._save_image_mappings_to_db(post, sections, uploaded_images)
+        
         return uploaded_images
+    
+    def _save_image_mappings_to_db(self, post, sections, uploaded_images):
+        """Save section image mappings to database for future reference."""
+        try:
+            from app import get_db_connection
+            import os
+            
+            with get_db_connection() as conn:
+                cur = conn.cursor()
+                
+                # Clear existing mappings for this post
+                cur.execute("""
+                    DELETE FROM section_image_mappings 
+                    WHERE post_id = %s
+                """, (post['id'],))
+                
+                # Insert new mappings
+                for local_path, clan_url in uploaded_images.items():
+                    # Find which section this image belongs to
+                    section_id = None
+                    for section in sections:
+                        if section.get('image') and section['image'].get('path') == local_path:
+                            section_id = section['id']
+                            break
+                    
+                    if section_id:
+                        # Extract filename and get file info
+                        filename = os.path.basename(local_path)
+                        
+                        # Get file size and dimensions if possible
+                        file_size = None
+                        dimensions = None
+                        
+                        # Convert web path to file system path for file info
+                        if local_path.startswith('http://localhost:5005'):
+                            # Extract the local file path
+                            fs_path = local_path.replace('http://localhost:5005', '/Users/nickfiddes/Code/projects/blog/blog-images')
+                            if os.path.exists(fs_path):
+                                file_size = os.path.getsize(fs_path)
+                                # Try to get dimensions using PIL
+                                try:
+                                    from PIL import Image
+                                    with Image.open(fs_path) as img:
+                                        dimensions = f"{img.width}x{img.height}"
+                                except:
+                                    dimensions = "Unknown"
+                        
+                        # Insert the mapping
+                        cur.execute("""
+                            INSERT INTO section_image_mappings 
+                            (post_id, section_id, local_image_path, clan_uploaded_url, image_filename, image_size_bytes, image_dimensions)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        """, (post['id'], section_id, local_path, clan_url, filename, file_size, dimensions))
+                        
+                        logger.info(f"✅ Saved image mapping: {local_path} -> {clan_url}")
+                
+                conn.commit()
+                logger.info(f"✅ Saved {len(uploaded_images)} image mappings to database")
+                
+        except Exception as e:
+            logger.error(f"❌ Error saving image mappings to database: {str(e)}")
+            # Don't fail the upload process if database save fails
+            pass
     
     def render_post_html(self, post, sections, uploaded_images=None):
         """REMOVED: This method should not exist. The script should use the preview HTML template verbatim."""
