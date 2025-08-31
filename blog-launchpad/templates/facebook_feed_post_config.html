@@ -852,9 +852,25 @@
                 imageUrl = "https://via.placeholder.com/1200x630/3b82f6/ffffff?text=Facebook+Image";
             }
             
+            // Format caption with "Read more: <url>" before first hashtag
+            let formattedCaption = caption;
+            if (blogUrl) {
+                // Find the first hashtag
+                const hashtagIndex = caption.indexOf('#');
+                if (hashtagIndex !== -1) {
+                    // Insert "Read more: <url>" before the first hashtag
+                    formattedCaption = caption.substring(0, hashtagIndex) + 
+                                     `Read more: ${blogUrl} ` + 
+                                     caption.substring(hashtagIndex);
+                } else {
+                    // No hashtags found, append at the end
+                    formattedCaption = caption + ` Read more: ${blogUrl}`;
+                }
+            }
+            
             // Build the Facebook API payload with actual data
             const payload = {
-                caption: caption + (blogUrl ? ` ${blogUrl}` : ""),
+                caption: formattedCaption,
                 url: imageUrl,
                 published: false,
                 access_token: "PAGE_ACCESS_TOKEN"
@@ -1141,9 +1157,25 @@
                     imageUrl = "Image will be available after section selection";
                 }
                 
+                // Format caption with "Read more: <url>" before first hashtag
+                let formattedCaption = caption;
+                if (blogUrl) {
+                    // Find the first hashtag
+                    const hashtagIndex = caption.indexOf('#');
+                    if (hashtagIndex !== -1) {
+                        // Insert "Read more: <url>" before the first hashtag
+                        formattedCaption = caption.substring(0, hashtagIndex) + 
+                                         `Read more: ${blogUrl} ` + 
+                                         caption.substring(hashtagIndex);
+                    } else {
+                        // No hashtags found, append at the end
+                        formattedCaption = caption + ` Read more: ${blogUrl}`;
+                    }
+                }
+                
                 // Build the Facebook API payload with actual data
                 const payload = {
-                    caption: caption + (blogUrl ? ` ${blogUrl}` : ""),
+                    caption: formattedCaption,
                     url: imageUrl,
                     published: false,
                     access_token: "PAGE_ACCESS_TOKEN"
