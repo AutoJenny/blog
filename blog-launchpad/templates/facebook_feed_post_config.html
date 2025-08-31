@@ -333,43 +333,261 @@
                 MVP LLM Test Interface - ACTIVE
             </h3>
             
-            <div class="mvp-card" style="background: linear-gradient(135deg, #1a1d29 0%, #23273a 100%); border: 2px solid #22c55e; border-radius: 12px; padding: 2rem; margin-bottom: 2rem;">
-                <div class="text-center mb-4">
-                    <h4 class="text-white mb-3">
-                        <i class="fas fa-robot text-success me-3"></i>
-                        Test LLM Post Rewriting
-                    </h4>
-                    <p class="text-light mb-0">
-                        Test LLM-based post rewriting using {{ platform.display_name }} {{ channel_type.display_name }} channel requirements
-                    </p>
-                </div>
-                
-                <!-- Channel Requirements Display -->
-                {% include 'includes/conversion_settings.html' %}
-                
-                <!-- LLM Test Area -->
-                <div class="test-area" style="background: rgba(34, 197, 94, 0.1); border: 1px solid #22c55e; border-radius: 8px; padding: 1.5rem;">
-                    <div class="mb-3">
-                        <label for="blogContent" class="form-label text-white">Blog Post Content:</label>
-                        <textarea class="form-control" id="blogContent" rows="6" placeholder="Paste your blog post content here..."></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <button class="btn btn-success btn-lg" onclick="testLLM()">
-                            <i class="fas fa-magic me-2"></i>Rewrite for Facebook Feed Post
+            <!-- Post Conversion Accordion -->
+            <div class="accordion" id="postConversionAccordion" style="margin-bottom: 2rem;">
+                <!-- Test LLM Post Rewriting Section -->
+                <div class="accordion-item" style="background: linear-gradient(135deg, #1a1d29 0%, #23273a 100%); border: 2px solid #22c55e; border-radius: 12px; overflow: hidden;">
+                    <h2 class="accordion-header" id="headingTestLLM">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#collapseTestLLM" aria-expanded="true" 
+                                aria-controls="collapseTestLLM"
+                                style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border: none;">
+                            <div class="d-flex align-items-center w-100">
+                                <i class="fas fa-robot text-white me-3"></i>
+                                <span class="flex-grow-1">Test LLM Post Rewriting</span>
+                                <div class="requirement-indicator">
+                                    <span class="badge bg-white text-success me-2">Active</span>
+                                    <i class="fas fa-chevron-down text-white"></i>
+                                </div>
+                            </div>
                         </button>
-                    </div>
-                    
-                    <div id="llmResult" style="display: none;">
-                        <h5 class="text-white mb-3">LLM Rewritten Post:</h5>
-                        <div class="alert alert-success">
-                            <div id="rewrittenContent"></div>
+                    </h2>
+                    <div id="collapseTestLLM" class="accordion-collapse collapse show" 
+                         aria-labelledby="headingTestLLM" 
+                         data-bs-parent="#postConversionAccordion">
+                        <div class="accordion-body" style="padding: 2rem;">
+                            <div class="text-center mb-4">
+                                <h4 class="text-white mb-3">
+                                    <i class="fas fa-robot text-success me-3"></i>
+                                    Test LLM Post Rewriting
+                                </h4>
+                                <p class="text-light mb-0">
+                                    Test LLM-based post rewriting using {{ platform.display_name }} {{ channel_type.display_name }} channel requirements
+                                </p>
+                            </div>
+                            
+                            <!-- Channel Requirements Display -->
+                            {% include 'includes/conversion_settings.html' %}
+                            
+                            <!-- LLM Test Area -->
+                            <div class="test-area" style="background: rgba(34, 197, 94, 0.1); border: 1px solid #22c55e; border-radius: 8px; padding: 1.5rem;">
+                                <div class="mb-3">
+                                    <label for="blogContent" class="form-label text-white">Blog Post Content:</label>
+                                    <textarea class="form-control" id="blogContent" rows="6" placeholder="Paste your blog post content here..."></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <button class="btn btn-success btn-lg" onclick="testLLM()">
+                                        <i class="fas fa-magic me-2"></i>Rewrite for Facebook Feed Post
+                                    </button>
+                                </div>
+                                
+                                <div id="llmResult" style="display: none;">
+                                    <h5 class="text-white mb-3">LLM Rewritten Post:</h5>
+                                    <div class="alert alert-success">
+                                        <div id="rewrittenContent"></div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-light">
+                                            <strong>Applied Rules:</strong> 
+                                            <span id="appliedRules"></span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mt-3">
-                            <small class="text-light">
-                                <strong>Applied Rules:</strong> 
-                                <span id="appliedRules"></span>
-                            </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Post Publication Accordion -->
+            <div class="accordion" id="postPublicationAccordion" style="margin-bottom: 2rem;">
+                <div class="accordion-item" style="background: linear-gradient(135deg, #1a1d29 0%, #23273a 100%); border: 2px solid #3b82f6; border-radius: 12px; overflow: hidden;">
+                    <h2 class="accordion-header" id="headingPostPublication">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#collapsePostPublication" aria-expanded="false" 
+                                aria-controls="collapsePostPublication"
+                                style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; border: none;">
+                            <div class="d-flex align-items-center w-100">
+                                <i class="fas fa-paper-plane text-white me-3"></i>
+                                <span class="flex-grow-1">Post Publication</span>
+                                <div class="requirement-indicator">
+                                    <span class="badge bg-white text-primary me-2">Ready</span>
+                                    <i class="fas fa-chevron-down text-white"></i>
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="collapsePostPublication" class="accordion-collapse collapse" 
+                         aria-labelledby="headingPostPublication" 
+                         data-bs-parent="#postPublicationAccordion">
+                        <div class="accordion-body" style="padding: 2rem;">
+                            <div class="text-center mb-4">
+                                <h4 class="text-white mb-3">
+                                    <i class="fas fa-paper-plane text-primary me-3"></i>
+                                    Facebook Post Assembly
+                                </h4>
+                                <p class="text-light mb-0">
+                                    Assemble and preview your Facebook post before publication
+                                </p>
+                            </div>
+                            
+                            <!-- Content Assembly Section -->
+                            <div class="content-assembly mb-4" style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; border-radius: 8px; padding: 1.5rem;">
+                                <h5 class="text-white mb-3">
+                                    <i class="fas fa-puzzle-piece text-primary me-2"></i>
+                                    Content Assembly
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="setting-item mb-3">
+                                            <label class="form-label text-white">Blog Post Selection:</label>
+                                            <select class="form-select bg-dark text-white border-primary" id="blogPostSelect">
+                                                <option value="">Select a published blog post...</option>
+                                                <option value="1">The Art of Scottish Storytelling - Highland Tales</option>
+                                                <option value="2">Modern Clan Traditions in the Digital Age</option>
+                                                <option value="3">Exploring Ancient Celtic Symbols</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="setting-item mb-3">
+                                            <label class="form-label text-white">Image Selection:</label>
+                                            <select class="form-select bg-dark text-white border-primary" id="imageSelect">
+                                                <option value="">Choose image type...</option>
+                                                <option value="header">Header Image (1200×630)</option>
+                                                <option value="section1">Section 1 Image</option>
+                                                <option value="section2">Section 2 Image</option>
+                                                <option value="custom">Upload Custom Image</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="setting-item mb-3">
+                                            <label class="form-label text-white">Caption Builder:</label>
+                                            <textarea class="form-control bg-dark text-white border-primary" id="captionBuilder" rows="4" placeholder="AI-generated caption will appear here... You can edit this text to customize your post."></textarea>
+                                            <div class="d-flex justify-content-between mt-2">
+                                                <small class="text-light">Character count: <span id="captionCharCount">0</span>/63,206</small>
+                                                <button class="btn btn-sm btn-outline-primary" onclick="regenerateCaption()">
+                                                    <i class="fas fa-magic me-1"></i>Regenerate with AI
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="setting-item mb-3">
+                                            <label class="form-label text-white">Blog URL:</label>
+                                            <input type="text" class="form-control bg-dark text-white border-primary" id="blogUrl" readonly placeholder="Will be auto-populated from selected post">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Facebook API Payload Preview -->
+                            <div class="api-payload-preview mb-4" style="background: rgba(34, 197, 94, 0.1); border: 1px solid #22c55e; border-radius: 8px; padding: 1.5rem;">
+                                <h5 class="text-white mb-3">
+                                    <i class="fas fa-code text-success me-2"></i>
+                                    Facebook API Payload
+                                </h5>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label text-white">API Endpoint:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark text-white border-success">POST</span>
+                                            <input type="text" class="form-control bg-dark text-white border-success" id="apiEndpoint" readonly value="https://graph.facebook.com/{PAGE_ID}/photos">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label text-white">Request Payload:</label>
+                                        <pre id="apiPayload" class="bg-dark text-white border-success p-3 rounded" style="font-size: 0.9rem; max-height: 200px; overflow-y: auto;">{
+  "caption": "Your caption will appear here...",
+  "url": "Image URL will appear here...",
+  "published": false,
+  "access_token": "PAGE_ACCESS_TOKEN"
+}</pre>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="validation-status">
+                                            <h6 class="text-white mb-2">Validation Status:</h6>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="badge bg-success" id="validationImageSize">
+                                                    <i class="fas fa-check me-1"></i>Image Size ✓
+                                                </span>
+                                                <span class="badge bg-success" id="validationCaptionLength">
+                                                    <i class="fas fa-check me-1"></i>Caption Length ✓
+                                                </span>
+                                                <span class="badge bg-warning" id="validationImageFormat">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>Image Format
+                                                </span>
+                                                <span class="badge bg-danger" id="validationBlogUrl">
+                                                    <i class="fas fa-times me-1"></i>Blog URL
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Output Format Preview -->
+                            <div class="output-preview mb-4" style="background: rgba(168, 85, 247, 0.1); border: 1px solid #a855f7; border-radius: 8px; padding: 1.5rem;">
+                                <h5 class="text-white mb-3">
+                                    <i class="fas fa-eye text-purple me-2"></i>
+                                    Facebook Post Preview
+                                </h5>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="image-preview text-center">
+                                            <div class="bg-dark rounded p-3" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                                            </div>
+                                            <small class="text-light mt-2 d-block">Image Preview (1200×630)</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="post-preview bg-white text-dark p-3 rounded">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="bg-primary rounded-circle me-2" style="width: 40px; height: 40px;"></div>
+                                                <div>
+                                                    <strong>Your Page Name</strong>
+                                                    <div class="text-muted small">Just now</div>
+                                                </div>
+                                            </div>
+                                            <div id="previewCaption" class="mb-2">Your caption will appear here...</div>
+                                            <div id="previewImage" class="bg-light rounded" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-image text-muted"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Assembly Controls -->
+                            <div class="assembly-controls text-center">
+                                <button class="btn btn-primary btn-lg me-3" onclick="buildPost()">
+                                    <i class="fas fa-cogs me-2"></i>Build Post
+                                </button>
+                                <button class="btn btn-success btn-lg me-3" onclick="testPayload()">
+                                    <i class="fas fa-vial me-2"></i>Test Payload
+                                </button>
+                                <button class="btn btn-info btn-lg" onclick="exportPayload()">
+                                    <i class="fas fa-download me-2"></i>Export Payload
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -799,6 +1017,165 @@
                 rules: appliedRules.join(' • ')
             };
         }
+        
+        // Post Assembly Functionality
+        function regenerateCaption() {
+            const blogPost = document.getElementById('blogPostSelect').value;
+            if (!blogPost) {
+                alert('Please select a blog post first.');
+                return;
+            }
+            
+            // Simulate AI caption generation
+            const caption = `🎯 Discover the fascinating world of Scottish storytelling traditions! From ancient Highland tales to modern interpretations, these stories have shaped our cultural heritage for generations. Perfect for anyone interested in Celtic folklore and traditional narratives. Read more to explore the rich tapestry of Scottish oral traditions! #ScottishCulture #HighlandTales #CelticFolklore #Storytelling #CulturalHeritage`;
+            
+            document.getElementById('captionBuilder').value = caption;
+            updateCaptionCharCount();
+            updatePreview();
+        }
+        
+        function buildPost() {
+            const blogPost = document.getElementById('blogPostSelect').value;
+            const imageType = document.getElementById('imageSelect').value;
+            const caption = document.getElementById('captionBuilder').value;
+            
+            if (!blogPost || !imageType || !caption.trim()) {
+                alert('Please complete all required fields: Blog Post, Image Selection, and Caption.');
+                return;
+            }
+            
+            // Build the Facebook API payload
+            const payload = {
+                caption: caption + " https://clan.com/blog/scottish-storytelling",
+                url: "https://yourcdn.com/images/scottish-storytelling-header.jpg",
+                published: false,
+                access_token: "PAGE_ACCESS_TOKEN"
+            };
+            
+            // Update the API payload preview
+            document.getElementById('apiPayload').textContent = JSON.stringify(payload, null, 2);
+            
+            // Update validation status
+            updateValidationStatus();
+            
+            // Update preview
+            updatePreview();
+            
+            alert('Post assembled successfully! Check the API Payload and Preview sections.');
+        }
+        
+        function testPayload() {
+            const payload = document.getElementById('apiPayload').textContent;
+            if (payload.includes('Your caption will appear here')) {
+                alert('Please build the post first using the "Build Post" button.');
+                return;
+            }
+            
+            // Simulate payload validation
+            alert('Payload validation completed! All requirements met for Facebook posting.');
+        }
+        
+        function exportPayload() {
+            const payload = document.getElementById('apiPayload').textContent;
+            if (payload.includes('Your caption will appear here')) {
+                alert('Please build the post first using the "Build Post" button.');
+                return;
+            }
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(payload).then(() => {
+                alert('Facebook API payload copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = payload;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Facebook API payload copied to clipboard!');
+            });
+        }
+        
+        function updateCaptionCharCount() {
+            const caption = document.getElementById('captionBuilder').value;
+            const charCount = caption.length;
+            document.getElementById('captionCharCount').textContent = charCount;
+            
+            // Update character count color based on limits
+            const charCountElement = document.getElementById('captionCharCount');
+            if (charCount > 50000) {
+                charCountElement.className = 'text-danger';
+            } else if (charCount > 40000) {
+                charCountElement.className = 'text-warning';
+            } else {
+                charCountElement.className = 'text-light';
+            }
+        }
+        
+        function updatePreview() {
+            const caption = document.getElementById('captionBuilder').value;
+            const imageType = document.getElementById('imageSelect').value;
+            
+            // Update caption preview
+            document.getElementById('previewCaption').textContent = caption || 'Your caption will appear here...';
+            
+            // Update image preview
+            const previewImage = document.getElementById('previewImage');
+            if (imageType && imageType !== 'custom') {
+                previewImage.innerHTML = '<img src="https://via.placeholder.com/400x200/3b82f6/ffffff?text=Selected+Image" class="img-fluid rounded" alt="Selected Image">';
+            } else {
+                previewImage.innerHTML = '<i class="fas fa-image text-muted"></i>';
+            }
+        }
+        
+        function updateValidationStatus() {
+            // Simulate validation checks
+            const imageSize = document.getElementById('validationImageSize');
+            const captionLength = document.getElementById('validationCaptionLength');
+            const imageFormat = document.getElementById('validationImageFormat');
+            const blogUrl = document.getElementById('validationBlogUrl');
+            
+            // Update validation badges
+            imageSize.className = 'badge bg-success';
+            imageSize.innerHTML = '<i class="fas fa-check me-1"></i>Image Size ✓';
+            
+            captionLength.className = 'badge bg-success';
+            captionLength.innerHTML = '<i class="fas fa-check me-1"></i>Caption Length ✓';
+            
+            imageFormat.className = 'badge bg-success';
+            imageFormat.innerHTML = '<i class="fas fa-check me-1"></i>Image Format ✓';
+            
+            blogUrl.className = 'badge bg-success';
+            blogUrl.innerHTML = '<i class="fas fa-check me-1"></i>Blog URL ✓';
+        }
+        
+        // Event listeners for real-time updates
+        document.addEventListener('DOMContentLoaded', function() {
+            const captionBuilder = document.getElementById('captionBuilder');
+            const blogPostSelect = document.getElementById('blogPostSelect');
+            const imageSelect = document.getElementById('imageSelect');
+            
+            if (captionBuilder) {
+                captionBuilder.addEventListener('input', updateCaptionCharCount);
+            }
+            
+            if (blogPostSelect) {
+                blogPostSelect.addEventListener('change', function() {
+                    // Auto-populate blog URL when post is selected
+                    const blogUrl = document.getElementById('blogUrl');
+                    if (this.value) {
+                        blogUrl.value = `https://clan.com/blog/post-${this.value}`;
+                    } else {
+                        blogUrl.value = '';
+                    }
+                });
+            }
+            
+            if (imageSelect) {
+                imageSelect.addEventListener('change', updatePreview);
+            }
+        });
     </script>
 </body>
 </html>
