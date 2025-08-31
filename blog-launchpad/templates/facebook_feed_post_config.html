@@ -1053,6 +1053,225 @@
                 updateCaptionCharCount();
             }
         }
+
+        // Remote execution of Process Checked Sections script for selected section
+        async function regenerateWithAI() {
+            const sectionSelect = document.getElementById('sectionSelect');
+            const captionBuilder = document.getElementById('captionBuilder');
+            
+            if (!sectionSelect.value) {
+                alert('Please select a section first.');
+                return;
+            }
+            
+            const postId = document.getElementById('blogPostSelect').value;
+            const sectionId = sectionSelect.value;
+            
+            // Get the button and show loading state
+            const regenerateBtn = document.querySelector('button[onclick="regenerateWithAI()"]');
+            const originalText = regenerateBtn.textContent;
+            regenerateBtn.textContent = 'Regenerating...';
+            regenerateBtn.disabled = true;
+            
+            try {
+                // Step 1: Get LLM settings from the create-piece page
+                const llmSettings = await getLLMSettings();
+                if (!llmSettings.provider_id || !llmSettings.model_id) {
+                    throw new Error('LLM settings not configured. Please configure LLM settings on the create-piece page first.');
+                }
+                
+                // Step 2: Get process configuration for Facebook feed_post
+                const processConfig = await getProcessConfig();
+                
+                // Step 3: Get section content
+                const sectionContent = await getSectionContent(sectionId);
+                if (!sectionContent) {
+                    throw new Error('Could not retrieve section content.');
+                }
+                
+                // Step 4: Assemble the LLM prompt (same logic as create-piece page)
+                const fullPrompt = assembleLLMPrompt(processConfig, sectionContent, llmSettings);
+                
+                // Step 5: Prepare LLM request
+                const llmRequest = {
+                    provider: llmSettings.provider_name || 'ollama',
+                    model: llmSettings.model_name || 'mistral',
+                    prompt: fullPrompt,
+                    temperature: parseFloat(llmSettings.temperature),
+                    max_tokens: parseInt(llmSettings.max_tokens)
+                };
+                
+                // Step 6: Send to LLM service
+                const response = await fetch('/api/syndication/ollama/direct', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(llmRequest)
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                // Step 7: Extract response content
+                const responseContent = result.output || result.result || result.response || result.content || 'No response received';
+                
+                // Step 8: Update Caption Builder
+                captionBuilder.value = responseContent;
+                updateCaptionCharCount();
+                
+                // Step 9: Save to syndication pieces database
+                await saveSyndicationPiece(sectionId, responseContent, llmRequest, result);
+                
+                // Success feedback
+                alert('Content regenerated successfully!');
+                
+            } catch (error) {
+                console.error('Error regenerating content:', error);
+                alert(`Error regenerating content: ${error.message}`);
+            } finally {
+                // Restore button state
+                regenerateBtn.textContent = originalText;
+                regenerateBtn.disabled = false;
+            }
+        }
+        
+        // Helper function to get LLM settings
+        async function getLLMSettings() {
+            // Try to get from the current page first, then fall back to defaults
+            const providerSelect = document.getElementById('llmProviderSelect');
+            const modelSelect = document.getElementById('llmModelSelect');
+            const temperatureInput = document.getElementById('llmTemperature');
+            const maxTokensInput = document.getElementById('llmMaxTokens');
+            const systemPromptInput = document.getElementById('llmSystemPrompt');
+            const userPromptInput = document.getElementById('llmUserPromptTemplate');
+            
+            if (providerSelect && modelSelect) {
+                return {
+                    provider_id: providerSelect.value,
+                    model_id: modelSelect.value,
+                    provider_name: providerSelect.options[providerSelect.selectedIndex]?.textContent || 'ollama',
+                    model_name: modelSelect.options[modelSelect.selectedIndex]?.textContent || 'mistral',
+                    temperature: temperatureInput?.value || '0.7',
+                    max_tokens: maxTokensInput?.value || '1000',
+                    system_prompt: systemPromptInput?.value || '',
+                    user_prompt_template: userPromptInput?.value || ''
+                };
+            }
+            
+            // Fallback to default settings (these should match create-piece page defaults)
+            return {
+                provider_id: '1',
+                model_id: '1',
+                provider_name: 'ollama',
+                model_name: 'mistral',
+                temperature: '0.7',
+                max_tokens: '1000',
+                system_prompt: 'You are a social media content creator specializing in converting blog content into engaging social media posts.',
+                user_prompt_template: 'Convert the following blog section into a {platform} {channel_type} post following these requirements:\n{requirements}'
+            };
+        }
+        
+        // Helper function to get process configuration
+        async function getProcessConfig() {
+            // For Facebook feed_post, we'll use default configuration
+            return {
+                process_name: 'Facebook Feed Post Conversion',
+                description: 'Convert blog sections into Facebook feed posts',
+                platform: 'Facebook',
+                channel_type: 'feed post'
+            };
+        }
+        
+        // Helper function to get section content
+        async function getSectionContent(sectionId) {
+            const postId = document.getElementById('blogPostSelect').value;
+            
+            try {
+                const response = await fetch(`/api/syndication/post-sections/${postId}`);
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.sections) {
+                    const section = data.sections.find(s => s.id == sectionId);
+                    if (section) {
+                        return {
+                            title: section.title || 'Unknown Section Title',
+                            content: section.content || '',
+                            polished: section.polished || ''
+                        };
+                    }
+                }
+                throw new Error('Section not found');
+            } catch (error) {
+                console.error('Error fetching section content:', error);
+                throw new Error('Could not retrieve section content');
+            }
+        }
+        
+        // Helper function to assemble LLM prompt (same logic as create-piece page)
+        function assembleLLMPrompt(processConfig, sectionContent, llmSettings) {
+            const systemPrompt = llmSettings.system_prompt || 'You are a social media content creator specializing in converting blog content into engaging social media posts.';
+            const userPrompt = llmSettings.user_prompt_template || 'Convert the following blog section into a {platform} {channel_type} post following these requirements:\n{requirements}';
+            
+            // Replace placeholders
+            let finalUserPrompt = userPrompt
+                .replace('{platform}', processConfig.platform)
+                .replace('{channel_type}', processConfig.channel_type)
+                .replace('{requirements}', 'Create engaging, platform-appropriate content');
+            
+            // Build blog details
+            const blogTitle = document.getElementById('blogPostSelect').options[document.getElementById('blogPostSelect').selectedIndex]?.textContent || 'Unknown Blog Title';
+            const blogDetails = `POST TITLE: ${blogTitle}\nSECTION TITLE: ${sectionContent.title}\nSECTION TEXT: ${sectionContent.polished || sectionContent.content}`;
+            
+            // Assemble final prompt
+            return `${systemPrompt}\n\n${finalUserPrompt}\n\n=== BLOG DETAILS ===\n${blogDetails}\n\n=== REQUIREMENTS ===\n- Create engaging, platform-appropriate content\n- Use appropriate tone and style for Facebook\n- Include relevant hashtags if appropriate\n- Keep content concise and engaging`;
+        }
+        
+        // Helper function to save syndication piece
+        async function saveSyndicationPiece(sectionId, generatedContent, llmRequest, llmResult) {
+            const postId = document.getElementById('blogPostSelect').value;
+            
+            const pieceData = {
+                post_id: postId,
+                section_id: sectionId,
+                platform_id: '1', // Facebook
+                channel_type_id: '1', // feed_post
+                process_id: '1', // Default process
+                original_content: JSON.stringify({ title: 'Section content', content: 'Original section content' }),
+                generated_content: generatedContent,
+                llm_model: llmRequest.model,
+                llm_temperature: llmRequest.temperature,
+                llm_max_tokens: llmRequest.max_tokens,
+                llm_provider: llmRequest.provider,
+                prompt_used: llmRequest.prompt,
+                processing_time_ms: 0,
+                platform_name: 'Facebook',
+                channel_type_name: 'feed_post',
+                requirements: 'Facebook feed post conversion'
+            };
+            
+            try {
+                const response = await fetch('/api/syndication/pieces', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(pieceData)
+                });
+                
+                const result = await response.json();
+                if (result.status === 'success') {
+                    console.log('Syndication piece saved successfully');
+                } else {
+                    console.warn('Failed to save syndication piece:', result);
+                }
+            } catch (error) {
+                console.error('Error saving syndication piece:', error);
+            }
+        }
     </script>
 </body>
 </html>
