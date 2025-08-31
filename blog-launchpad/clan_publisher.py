@@ -109,6 +109,56 @@ class ClanPublisher:
             # Fallback to default tags
             return 'scottish,heritage,culture,blog'
     
+    def _prepare_api_data(self, post, sections):
+        """Prepare the API data structure that gets sent to Clan.com"""
+        # Get header image path for thumbnails
+        header_image_path = None
+        if post.get('header_image') and post['header_image'].get('path'):
+            header_image_path = post['header_image']['path']
+        
+        # Set thumbnails - use placeholder for now since we don't have uploaded_images in this context
+        list_thumbnail = '/blog/placeholder.jpg'
+        post_thumbnail = '/blog/placeholder.jpg'
+        
+        # Common post metadata - using new database meta fields for proper OG tags
+        try:
+            meta_title = post.get('meta_title') or post.get('title', 'Untitled Post')
+            meta_tags = post.get('meta_tags') or self._generate_meta_tags(post)
+            # Clean meta_description - use subtitle as fallback if meta_description is empty
+            raw_description = post.get('meta_description') or post.get('subtitle') or post.get('summary', '') or 'No description available'
+            # Strip HTML tags and limit to 160 characters
+            import re
+            clean_description = re.sub(r'<[^>]+>', '', raw_description)
+            meta_description = clean_description[:160] if clean_description else 'No description available'
+            
+            # Ensure all meta fields are strings and not None
+            meta_title = str(meta_title) if meta_title else 'Untitled Post'
+            meta_tags = str(meta_tags) if meta_tags else 'scottish,heritage,culture,blog'
+            meta_description = str(meta_description) if meta_description else 'No description available'
+            
+        except Exception as e:
+            logger.error(f"Error processing meta data: {str(e)}")
+            # Fallback to safe defaults
+            meta_title = post.get('title', 'Untitled Post')
+            meta_tags = 'scottish,heritage,culture,blog'
+            meta_description = 'No description available'
+        
+        # Build the API data structure
+        api_data = {
+            'title': post.get('title', 'Untitled Post'),
+            'url_key': self._generate_url_key(post),
+            'short_content': post.get('summary', '')[:200] if post.get('summary') else 'No summary available',
+            'status': 2,  # 2 = enabled
+            'categories': [14, 15],  # Default clan.com categories
+            'list_thumbnail': list_thumbnail,
+            'post_thumbnail': post_thumbnail,
+            'meta_title': meta_title,
+            'meta_tags': meta_tags,
+            'meta_description': meta_description
+        }
+        
+        return api_data
+    
     def upload_image(self, image_path, filename=None):
         """Upload an image to clan.com and return the uploaded URL"""
         try:

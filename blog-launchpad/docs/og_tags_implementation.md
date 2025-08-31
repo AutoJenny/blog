@@ -132,3 +132,5 @@ The ClanPublisher automatically sends:
 - Meta fields are properly sanitized before database storage
 - No XSS vulnerabilities in meta data
 - Input validation on all meta fields
+
+
