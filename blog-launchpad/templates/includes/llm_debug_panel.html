@@ -4,11 +4,12 @@
                 <div class="accordion" id="llmDebugAccordion">
                     <div class="accordion-item bg-dark border-secondary">
                         <h2 class="accordion-header" id="llmDebugHeader">
-                            <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#llmDebugCollapse" aria-expanded="false" aria-controls="llmDebugCollapse">
+                            <button class="accordion-button bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#llmDebugCollapse" aria-expanded="true" aria-controls="llmDebugCollapse">
                                 <i class="fas fa-brain me-2"></i>LLM Processing Debug Panel
+                                <span class="text-info ms-2">(Always Open)</span>
                             </button>
                         </h2>
-                        <div id="llmDebugCollapse" class="accordion-collapse collapse" aria-labelledby="llmDebugHeader" data-bs-parent="#llmDebugAccordion">
+                        <div id="llmDebugCollapse" class="accordion-collapse collapse show" aria-labelledby="llmDebugHeader" data-bs-parent="#llmDebugAccordion">
                             <div class="accordion-body text-white">
                                 <!-- Process Execution Controls -->
                                 <div class="execution-controls mb-4">
