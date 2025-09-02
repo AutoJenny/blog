@@ -35,3 +35,5 @@ COMMENT ON COLUMN section_image_mappings.clan_uploaded_url IS 'Live Clan.com URL
 COMMENT ON COLUMN section_image_mappings.image_filename IS 'Filename used when uploading to Clan.com';
 COMMENT ON COLUMN section_image_mappings.image_size_bytes IS 'Size of the uploaded image in bytes';
 COMMENT ON COLUMN section_image_mappings.image_dimensions IS 'Dimensions of the uploaded image (e.g., 1200x630)';
+
+
