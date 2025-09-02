@@ -126,18 +126,18 @@ async function processSectionWithLLM(sectionId, sectionIndex) {
         
         // Send to LLM service
         const response = await fetch('/api/syndication/ollama/direct', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
             body: JSON.stringify(llmRequest)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const result = await response.json();
         
         if (result.status === 'success') {
             // Update piece content with LLM response
@@ -148,7 +148,7 @@ async function processSectionWithLLM(sectionId, sectionIndex) {
             throw new Error(result.error || 'Unknown error');
         }
         
-    } catch (error) {
+        } catch (error) {
         console.error('Error processing section with LLM:', error);
         showErrorNotification('AI processing failed. Please try again.');
     }
@@ -563,7 +563,7 @@ console.log('LLM response:', result);
 // Performance tracking
 const startTime = performance.now();
 const result = await processWithLLM(content, requirements);
-const endTime = performance.now();
+        const endTime = performance.now();
 const processingTime = endTime - startTime;
 
 console.log(`LLM processing completed in ${processingTime.toFixed(2)}ms`);

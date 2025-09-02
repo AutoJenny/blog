@@ -37,3 +37,5 @@ COMMENT ON COLUMN section_image_mappings.image_size_bytes IS 'Size of the upload
 COMMENT ON COLUMN section_image_mappings.image_dimensions IS 'Dimensions of the uploaded image (e.g., 1200x630)';
 
 
+
+
