@@ -139,7 +139,7 @@ function assembleLLMPrompt(processConfig, sectionContent) {
     
     const blogDetails = `Title: ${sectionContent.title || 'No title'}\nContent: ${sectionContent.content || 'No content'}`;
     
-    const structuredRequirements = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a clear call-to-action\n- Use up to 3 relevant hashtags\n\nReturn only the final Facebook post text, with no explanations or extra commentary.`;
+    const structuredRequirements = `- Tone: Conversational and engaging\n- Length: 150-200 characters\n- Include a clear call-to-action\n\nReturn only the final Facebook post text, with no explanations or extra commentary.`;
     
     // Update the structured display
     if (typeof updateStructuredPromptDisplay === 'function') {
