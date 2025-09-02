@@ -835,11 +835,8 @@
                 // Get final instruction from database (dynamic)
                 const finalInstruction = channelRequirements.find(req => req.includes('final_instruction'))?.split(': ')[1] || `Create the ${platformName} ${channelType} now:`;
                 
-                // Add output format instructions from system prompt (dynamic)
-                const outputFormatInstructions = systemPrompt.includes('IMPORTANT:') ? 
-                    '\n\nOUTPUT FORMAT: Return ONLY the social media post text with hashtags. Do NOT include:\n- Character counts\n- Image descriptions\n- Engagement prompts (like "comment below")\n- Meta-information or instructions\n- Any text in brackets or parentheses\n\nThe response should be clean, ready-to-post content that users can copy and paste directly.' : '';
-                
-                const finalRequirements = `${requirements}\n\n${finalInstruction}${outputFormatInstructions}`;
+                // Don't add duplicate output format instructions - they're already in the system prompt
+                const finalRequirements = `${requirements}\n\n${finalInstruction}`;
                 
                 // Assemble the final prompt using the working structure
                 const finalPrompt = `${systemPrompt}\n\n${finalUserPrompt}\n\n=== BLOG DETAILS ===\n${blogDetails}\n\n=== REQUIREMENTS ===\n${finalRequirements}`;
