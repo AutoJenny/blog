@@ -73,37 +73,28 @@
         <strong>AI Configuration:</strong> Configure the language model settings for content conversion.
     </p>
     
-    <!-- LLM Settings Accordion -->
-    <div class="accordion" id="llmSettingsAccordion">
+    <!-- LLM Settings Panel -->
+    <div class="llm-settings-panel" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(34, 197, 94, 0.3); margin-bottom: 0.5rem; border-radius: 8px;">
         <!-- Model Configuration -->
-        <div class="accordion-item" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(34, 197, 94, 0.3); margin-bottom: 0.5rem;">
-            <h2 class="accordion-header" id="headingModelConfig">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                        data-bs-target="#collapseModelConfig" 
-                        aria-expanded="false" 
-                        aria-controls="collapseModelConfig"
-                        style="background: rgba(34, 197, 94, 0.1); color: white; border: none;">
-                    <div class="d-flex align-items-center w-100">
-                        <i class="fas fa-cog me-3 text-success"></i>
-                        <span class="flex-grow-1">Model Configuration</span>
-                        <div class="requirement-indicator">
-                            <span class="badge bg-success me-2">3 Settings</span>
-                            <i class="fas fa-chevron-down text-muted"></i>
-                        </div>
-                    </div>
-                </button>
-            </h2>
-            <div id="collapseModelConfig" 
-                 class="accordion-collapse collapse" 
-                 aria-labelledby="headingModelConfig" 
-                 data-bs-parent="#llmSettingsAccordion">
-                <div class="accordion-body" style="background: rgba(255, 255, 255, 0.02); padding: 1rem;">
+            <div class="panel-header" style="background: rgba(34, 197, 94, 0.1); color: white; padding: 1rem; border-radius: 8px 8px 0 0;">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-cog me-3 text-success"></i>
+                    <span class="flex-grow-1">Model Configuration</span>
+                    <span class="badge bg-success me-2">3 Settings</span>
+                </div>
+            </div>
+            <div class="panel-body" style="background: rgba(255, 255, 255, 0.02); padding: 1rem;">
                     <div class="row">
                         <div class="col-md-4">
                             <div class="setting-item mb-3">
                                 <label class="form-label text-white">Model Provider:</label>
                                 <select class="form-select bg-dark text-white border-success" id="llmProviderSelect">
-                                    <option value="">Loading providers...</option>
+                                    <option value="">Select a provider...</option>
+                                    <option value="1">Ollama (local)</option>
+                                    <option value="2">OpenAI</option>
+                                    <option value="3">Anthropic</option>
+                                    <option value="4">Gemini</option>
+                                    <option value="5">ollama</option>
                                 </select>
                             </div>
                         </div>
@@ -246,10 +237,27 @@
 
 <!-- LLM Configuration JavaScript -->
 <script>
+console.log('LLM Configuration JavaScript is loading...');
+
 // Load LLM providers on page load
 document.addEventListener("DOMContentLoaded", function() {
+    console.log('DOMContentLoaded fired in LLM config script');
     loadLLMProviders();
 });
+
+// Fallback - try to load immediately
+setTimeout(function() {
+    console.log('Fallback: trying to load providers after timeout');
+    if (document.getElementById('llmProviderSelect') && document.getElementById('llmProviderSelect').innerHTML.includes('Loading providers')) {
+        loadLLMProviders();
+    }
+}, 1000);
+
+// Immediate fallback - try right now
+if (document.getElementById('llmProviderSelect')) {
+    console.log('Immediate fallback: calling loadLLMProviders now');
+    loadLLMProviders();
+}
 
 async function loadLLMProviders() {
     try {

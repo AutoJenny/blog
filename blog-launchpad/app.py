@@ -345,6 +345,18 @@ def facebook_feed_post_redirect():
     """Redirect for backward compatibility to the generic route."""
     return redirect(url_for('channel_config', platform_name='facebook', channel_type='feed_post'))
 
+@app.route('/syndication/posting')
+def syndication_posting():
+    """Platform-agnostic posting hub."""
+    return render_template('syndication/posting/posting_hub.html')
+
+@app.route('/syndication/posting/<platform_name>/<channel_type>')
+def platform_posting(platform_name, channel_type):
+    """Platform-specific posting interface."""
+    return render_template('syndication/posting/platform_posting.html', 
+                         platform_name=platform_name, 
+                         channel_type=channel_type)
+
 @app.route('/syndication/select-posts')
 def syndication_select_posts():
     """Select Posts for syndication."""

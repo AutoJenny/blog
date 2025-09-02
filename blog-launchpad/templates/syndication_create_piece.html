@@ -36,15 +36,11 @@
         <!-- Post Selection Area -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="accordion" id="postSelectionAccordion">
-                    <div class="accordion-item bg-dark text-white border-secondary">
-                        <h2 class="accordion-header" id="postSelectionHeader">
-                            <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#postSelectionCollapse" aria-expanded="false" aria-controls="postSelectionCollapse">
-                                <i class="fas fa-list me-2"></i><span id="accordionTitle">Select Post for Syndication</span>
-                            </button>
-                        </h2>
-                        <div id="postSelectionCollapse" class="accordion-collapse collapse" aria-labelledby="postSelectionHeader" data-bs-parent="#postSelectionAccordion">
-                            <div class="accordion-body">
+                <div class="bg-dark text-white border border-secondary p-3 mb-3">
+                    <h5 class="text-white mb-3">
+                        <i class="fas fa-list me-2"></i><span id="accordionTitle">Select Post for Syndication</span>
+                    </h5>
+                    <div>
                                 <!-- Post Dropdown -->
                                 <div class="mb-3">
                                     <label for="postSelector" class="form-label">Choose a published post:</label>
@@ -71,8 +67,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -81,15 +75,11 @@
         <!-- Conversion Selection Panel -->
         <div id="conversionPanel" style="display: block;">
             <div class="conversion-container">
-                <div class="accordion" id="conversionSettingsAccordion">
-                    <div class="accordion-item bg-dark border-secondary">
-                        <h2 class="accordion-header" id="conversionSettingsHeader">
-                            <button class="accordion-button collapsed bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#conversionSettingsCollapse" aria-expanded="false" aria-controls="conversionSettingsCollapse">
-                                <i class="fas fa-exchange-alt me-2"></i>Conversion Settings: <span id="conversionHeaderDisplay" class="text-info ms-2">Select platform and process...</span>
-                            </button>
-                        </h2>
-                        <div id="conversionSettingsCollapse" class="accordion-collapse collapse" aria-labelledby="conversionSettingsHeader" data-bs-parent="#conversionSettingsAccordion">
-                            <div class="accordion-body text-white">
+                <div class="bg-dark border border-secondary p-3 mb-3">
+                    <h5 class="text-white mb-3">
+                        <i class="fas fa-exchange-alt me-2"></i>Conversion Settings: <span id="conversionHeaderDisplay" class="text-info ms-2">Select platform and process...</span>
+                    </h5>
+                    <div class="text-white">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group mb-3">
@@ -140,26 +130,19 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- LLM Processing Debug Panel -->
-        <div id="llmDebugPanel" style="display: none;">
+        <div id="llmDebugPanel" style="display: block;">
             <div class="llm-debug-container">
-                <div class="accordion" id="llmDebugAccordion">
-                    <div class="accordion-item bg-dark border-secondary">
-                        <h2 class="accordion-header" id="llmDebugHeader">
-                            <button class="accordion-button bg-dark text-white border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#llmDebugCollapse" aria-expanded="true" aria-controls="llmDebugCollapse">
-                                <i class="fas fa-brain me-2"></i>LLM Processing Debug Panel
-                                <span class="text-info ms-2">(Always Open)</span>
-                            </button>
-                        </h2>
-                        <div id="llmDebugCollapse" class="accordion-collapse collapse show" aria-labelledby="llmDebugHeader" data-bs-parent="#llmDebugAccordion">
-                            <div class="accordion-body text-white">
+                <div class="bg-dark border-secondary p-3">
+                    <h5 class="text-white mb-3">
+                        <i class="fas fa-brain me-2"></i>LLM Processing Debug Panel
+                    </h5>
+                    <div class="text-white">
                                 <!-- Process Execution Controls -->
                                 <div class="execution-controls mb-4">
                                     <div class="d-flex gap-2 mb-3">
@@ -383,7 +366,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Syndication Create Piece JavaScript -->
-    <script src="/static/js/syndication_create_piece.js"></script>
+    <script src="/static/js/syndication_create_piece.js?v=3"></script>
     
 </body>
 </html>

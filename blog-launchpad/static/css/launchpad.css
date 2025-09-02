@@ -608,11 +608,35 @@
 .full-content-display {
     padding: 0.75rem;
     background-color: #2d3748;
-    border-radius: 0.375rem;
-    border: 1px solid #495057;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #ced4da;
+}
+
+/* Additional utility classes for posting pages */
+.text-dark-text {
+    color: #e0e0e0;
+}
+
+.text-dark-accent {
+    color: #a5b4fc;
+}
+
+.hover\:text-dark-accent:hover {
+    color: #a5b4fc;
+}
+
+.hover\:bg-dark-bg:hover {
+    background: #23273a;
+}
+
+.bg-dark-accent {
+    background: #a5b4fc;
+}
+
+.bg-dark-bg {
+    background: #23273a;
+}
+
+.border-dark-border {
+    border-color: #31364a;
 }
 
 .full-content-display::-webkit-scrollbar {

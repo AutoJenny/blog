@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Posting Hub - Blog Launchpad</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/launchpad.css') }}">
+    <style>
+        /* Posting Hub Specific Styles */
+        .posting-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .post-queue-card {
+            background: #1a1f2e;
+            border: 1px solid #2d3748;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .post-queue-card:hover {
+            border-color: #4a5568;
+            transform: translateY(-2px);
+        }
+        
+        .post-item {
+            background: #23273a;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .post-item:hover {
+            border-color: #667eea;
+            background: #2a2f42;
+        }
+        
+        .post-item.selected {
+            border-color: #667eea;
+            background: #2a2f42;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
+        }
+        
+        .platform-selector {
+            background: #1a1f2e;
+            border: 1px solid #2d3748;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .platform-option {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: #23273a;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .platform-option:hover {
+            border-color: #667eea;
+            background: #2a2f42;
+        }
+        
+        .platform-option.selected {
+            border-color: #667eea;
+            background: #2a2f42;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
+        }
+        
+        .platform-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+            margin-right: 1rem;
+        }
+        
+        .batch-actions {
+            background: #1a1f2e;
+            border: 1px solid #2d3748;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: sticky;
+            top: 2rem;
+        }
+        
+        .preview-panel {
+            background: #1a1f2e;
+            border: 1px solid #2d3748;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .preview-post {
+            background: #23273a;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-ready {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .status-pending {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .status-error {
+            background: #f56565;
+            color: white;
+        }
+        
+        .action-button {
+            background: #667eea;
+            border: 1px solid #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .action-button:hover {
+            background: #5a67d8;
+            border-color: #5a67d8;
+            color: white;
+        }
+        
+        .action-button:disabled {
+            background: #4a5568;
+            border-color: #4a5568;
+            cursor: not-allowed;
+        }
+        
+        .action-button.secondary {
+            background: #2d3748;
+            border-color: #4a5568;
+            color: #a0aec0;
+        }
+        
+        .action-button.secondary:hover {
+            background: #4a5568;
+            border-color: #667eea;
+            color: #e0e0e0;
+        }
+        
+        .filter-controls {
+            background: #1a1f2e;
+            border: 1px solid #2d3748;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-control, .form-select {
+            background: #23273a;
+            border: 1px solid #2d3748;
+            color: #e0e0e0;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: #23273a;
+            border-color: #667eea;
+            color: #e0e0e0;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .form-label {
+            color: #a0aec0;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-dark">
+    {% include 'shared/header.html' %}
+
+    <!-- Posting Header -->
+    <div class="posting-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <h1 class="mb-2">
+                        <i class="fas fa-paper-plane me-3"></i>Social Media Posting Hub
+                    </h1>
+                    <p class="mb-0 opacity-75">Manage and publish content across all platforms</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <!-- Left Column: Post Queue -->
+            <div class="col-lg-8">
+                <!-- Filter Controls -->
+                <div class="filter-controls">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="form-label">Filter by Status</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="all">All Statuses</option>
+                                <option value="ready">Ready to Post</option>
+                                <option value="pending">Pending Review</option>
+                                <option value="error">Error</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Filter by Platform</label>
+                            <select class="form-select" id="platformFilter">
+                                <option value="all">All Platforms</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="twitter">Twitter</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sort by</label>
+                            <select class="form-select" id="sortBy">
+                                <option value="created">Created Date</option>
+                                <option value="priority">Priority</option>
+                                <option value="platform">Platform</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button class="action-button secondary" onclick="refreshQueue()">
+                                    <i class="fas fa-sync-alt me-2"></i>Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post Queue -->
+                <div class="post-queue-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Post Queue
+                            <span class="badge bg-secondary ms-2" id="queueCount">0</span>
+                        </h4>
+                        <div>
+                            <button class="action-button secondary me-2" onclick="selectAll()">
+                                <i class="fas fa-check-square me-2"></i>Select All
+                            </button>
+                            <button class="action-button secondary" onclick="clearSelection()">
+                                <i class="fas fa-square me-2"></i>Clear All
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="postQueue">
+                        <!-- Post items will be loaded here -->
+                        <div class="post-item">
+                            <div class="d-flex align-items-start">
+                                <input type="checkbox" class="form-check-input me-3 mt-1" onchange="togglePostSelection(this)">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-0">The Art of Scottish Storytelling: Oral Traditions and Modern Literature</h6>
+                                        <span class="status-badge status-ready">Ready</span>
+                                    </div>
+                                    <p class="text-muted mb-2">Section: Story-telling in Scotland Today</p>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">Facebook</span>
+                                        <span class="badge bg-info me-2">Feed Post</span>
+                                        <small class="text-muted">Created: 2 hours ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="post-item">
+                            <div class="d-flex align-items-start">
+                                <input type="checkbox" class="form-check-input me-3 mt-1" onchange="togglePostSelection(this)">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-0">Celtic Mythology and Modern Scotland</h6>
+                                        <span class="status-badge status-pending">Pending</span>
+                                    </div>
+                                    <p class="text-muted mb-2">Section: Ancient Celtic Traditions</p>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">Instagram</span>
+                                        <span class="badge bg-info me-2">Story</span>
+                                        <small class="text-muted">Created: 1 day ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="post-item">
+                            <div class="d-flex align-items-start">
+                                <input type="checkbox" class="form-check-input me-3 mt-1" onchange="togglePostSelection(this)">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-0">Scottish Literature Through the Ages</h6>
+                                        <span class="status-badge status-error">Error</span>
+                                    </div>
+                                    <p class="text-muted mb-2">Section: Medieval Literature</p>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">Twitter</span>
+                                        <span class="badge bg-info me-2">Tweet</span>
+                                        <small class="text-muted">Created: 3 days ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Platform Selector & Actions -->
+            <div class="col-lg-4">
+                <!-- Platform Selector -->
+                <div class="platform-selector">
+                    <h5 class="mb-3">
+                        <i class="fas fa-globe me-2"></i>Select Platforms
+                    </h5>
+                    
+                    <div class="platform-option" onclick="togglePlatform(this, 'facebook')">
+                        <div class="platform-icon" style="background: #1877f2;">
+                            <i class="fab fa-facebook-f"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold">Facebook</div>
+                            <small class="text-muted">Feed Posts, Stories</small>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="facebookCheck">
+                        </div>
+                    </div>
+
+                    <div class="platform-option" onclick="togglePlatform(this, 'instagram')">
+                        <div class="platform-icon" style="background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);">
+                            <i class="fab fa-instagram"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold">Instagram</div>
+                            <small class="text-muted">Posts, Stories, Reels</small>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="instagramCheck">
+                        </div>
+                    </div>
+
+                    <div class="platform-option" onclick="togglePlatform(this, 'twitter')">
+                        <div class="platform-icon" style="background: #1da1f2;">
+                            <i class="fab fa-twitter"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold">Twitter</div>
+                            <small class="text-muted">Tweets, Threads</small>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="twitterCheck">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Actions -->
+                <div class="batch-actions">
+                    <h5 class="mb-3">
+                        <i class="fas fa-tasks me-2"></i>Batch Actions
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Selected Posts: <span id="selectedCount">0</span></label>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="action-button" onclick="previewSelected()" disabled id="previewBtn">
+                            <i class="fas fa-eye me-2"></i>Preview Selected
+                        </button>
+                        <button class="action-button" onclick="publishSelected()" disabled id="publishBtn">
+                            <i class="fas fa-paper-plane me-2"></i>Publish Now
+                        </button>
+                        <button class="action-button secondary" onclick="scheduleSelected()" disabled id="scheduleBtn">
+                            <i class="fas fa-calendar me-2"></i>Schedule for Later
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preview Panel -->
+                <div class="preview-panel">
+                    <h5 class="mb-3">
+                        <i class="fas fa-eye me-2"></i>Preview
+                    </h5>
+                    
+                    <div id="previewContent">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-info-circle fa-2x mb-2"></i>
+                            <p>Select posts and platforms to see preview</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Global state
+        let selectedPosts = new Set();
+        let selectedPlatforms = new Set();
+
+        // Post selection management
+        function togglePostSelection(checkbox) {
+            const postItem = checkbox.closest('.post-item');
+            const postId = postItem.dataset.postId || Math.random().toString(36);
+            
+            if (checkbox.checked) {
+                selectedPosts.add(postId);
+                postItem.classList.add('selected');
+            } else {
+                selectedPosts.delete(postId);
+                postItem.classList.remove('selected');
+            }
+            
+            updateSelectedCount();
+            updateActionButtons();
+        }
+
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('#postQueue input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                togglePostSelection(checkbox);
+            });
+        }
+
+        function clearSelection() {
+            const checkboxes = document.querySelectorAll('#postQueue input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                togglePostSelection(checkbox);
+            });
+        }
+
+        // Platform selection management
+        function togglePlatform(element, platform) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                selectedPlatforms.add(platform);
+                element.classList.add('selected');
+            } else {
+                selectedPlatforms.delete(platform);
+                element.classList.remove('selected');
+            }
+            
+            updateActionButtons();
+            updatePreview();
+        }
+
+        // UI updates
+        function updateSelectedCount() {
+            document.getElementById('selectedCount').textContent = selectedPosts.size;
+        }
+
+        function updateActionButtons() {
+            const hasSelection = selectedPosts.size > 0 && selectedPlatforms.size > 0;
+            const buttons = ['previewBtn', 'publishBtn', 'scheduleBtn'];
+            
+            buttons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                btn.disabled = !hasSelection;
+            });
+        }
+
+        function updatePreview() {
+            const previewContent = document.getElementById('previewContent');
+            
+            if (selectedPosts.size === 0 || selectedPlatforms.size === 0) {
+                previewContent.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-info-circle fa-2x mb-2"></i>
+                        <p>Select posts and platforms to see preview</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Generate preview content (placeholder)
+            let previewHtml = '';
+            selectedPlatforms.forEach(platform => {
+                previewHtml += `
+                    <div class="preview-post">
+                        <h6 class="mb-2">
+                            <i class="fab fa-${platform} me-2"></i>${platform.charAt(0).toUpperCase() + platform.slice(1)}
+                        </h6>
+                        <div class="text-muted">
+                            <small>${selectedPosts.size} post(s) will be published to ${platform}</small>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            previewContent.innerHTML = previewHtml;
+        }
+
+        // Action handlers
+        function previewSelected() {
+            // Placeholder: Show detailed preview modal
+            alert(`Preview ${selectedPosts.size} posts on ${Array.from(selectedPlatforms).join(', ')}`);
+        }
+
+        function publishSelected() {
+            // Placeholder: Publish posts immediately
+            if (confirm(`Publish ${selectedPosts.size} posts to ${Array.from(selectedPlatforms).join(', ')} now?`)) {
+                alert('Publishing posts... (This would call the backend API)');
+            }
+        }
+
+        function scheduleSelected() {
+            // Placeholder: Open scheduling interface
+            alert('Opening scheduling interface... (This would redirect to /syndication/scheduling)');
+        }
+
+        function refreshQueue() {
+            // Placeholder: Refresh post queue
+            alert('Refreshing post queue... (This would call the backend API)');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSelectedCount();
+            updateActionButtons();
+            updatePreview();
+        });
+    </script>
+</body>
+</html>
