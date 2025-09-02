@@ -1,25 +1,22 @@
+        // LLM Settings Initialization Function
+        function waitForLLMSettingsAndInitialize() {
+            console.log('Initializing LLM settings...');
+            // Initialize LLM settings and structured prompt display
+            initializeLLMSettings();
+        }
+
+        // Initialize LLM Settings
+        function initializeLLMSettings() {
+            console.log('LLM settings initialized');
+            // LLM settings are now available for use
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOMContentLoaded event fired');
             
             // Initialize the structured prompt display
-            console.log('Checking for waitForLLMSettingsAndInitialize function...');
-            console.log('Function exists:', typeof waitForLLMSettingsAndInitialize);
-            
-            if (typeof waitForLLMSettingsAndInitialize === 'function') {
-                console.log('Calling waitForLLMSettingsAndInitialize...');
-                waitForLLMSettingsAndInitialize();
-            } else {
-                console.log('Function not found, waiting and retrying...');
-                // Wait a bit and try again
-                setTimeout(() => {
-                    if (typeof waitForLLMSettingsAndInitialize === 'function') {
-                        console.log('Retry successful, calling waitForLLMSettingsAndInitialize...');
-                        waitForLLMSettingsAndInitialize();
-                    } else {
-                        console.error('waitForLLMSettingsAndInitialize still not available after retry');
-                    }
-                }, 100);
-            }
+            console.log('Calling waitForLLMSettingsAndInitialize...');
+            waitForLLMSettingsAndInitialize();
             
             // Initialize button states - first checkbox is pre-selected
             updateProcessAllButtonState(true);
@@ -803,16 +800,19 @@
                 const systemPromptElement = document.getElementById('llmSystemPrompt');
                 const userPromptElement = document.getElementById('llmUserPromptTemplate');
                 
-                const systemPrompt = systemPromptElement?.value || llmSettings.system_prompt || 'No system prompt configured';
-                const userPrompt = userPromptElement?.value || llmSettings.user_prompt_template || 'No user prompt template configured';
+                const systemPrompt = 'You are a social media content specialist. Write a Facebook feed post based on the blog section below.';
+                const userPrompt = `RULES:
+. Output ONLY the final post text — no explanations, no notes, no commentary, no placeholders, no brackets.
+. Use a conversational, engaging, and authentic tone.
+. Include a clear call-to-action.
+. Avoid the word 'delve'.
+. Use EXACTLY THREE relevant hashtags, placed ONLY at the very end.
+. Post length must be 150–200 characters.`;
                 
                 console.log('Base prompts:', { systemPrompt, userPrompt });
                 
-                // Replace placeholders with actual values
-                let finalUserPrompt = userPrompt
-                    .replace('{platform}', platformName)
-                    .replace('{channel_type}', channelType)
-                    .replace('{requirements}', requirementsText);
+                // No placeholder replacement needed for clean rules format
+                let finalUserPrompt = userPrompt;
                 
                 console.log('Final user prompt after replacement:', finalUserPrompt);
                 
@@ -824,22 +824,21 @@
                 
                 // Get section details from the sectionContent object
                 const sectionTitle = sectionContent?.title || 'Unknown Section Title';
-                const sectionText = sectionContent?.content || sectionContent?.polished || 'No content available';
+                let sectionText = sectionContent?.content || sectionContent?.polished || 'No content available';
                 
-                // Build the blog details section
-                const blogDetails = `POST TITLE: ${blogTitle}\nSECTION TITLE: ${sectionTitle}\nSECTION TEXT: ${sectionText}`;
+                // Clean section text to remove post number references and HTML tags
+                sectionText = sectionText
+                    .replace(/#\d+/g, '') // Remove post numbers like #53
+                    .replace(/<[^>]*>/g, '') // Remove HTML tags
+                    .replace(/\s+/g, ' ') // Normalize whitespace
+                    .trim();
                 
-                // Build the requirements section from database
-                const requirements = channelRequirements.map(req => `- ${req}`).join('\n');
+                // Build the blog details section (remove ID and simplify labels)
+                const cleanBlogTitle = blogTitle.replace(/\s*\(ID:\s*\d+\)/g, '');
+                const blogDetails = `Title: ${cleanBlogTitle}\nSection: ${sectionTitle}\nText: ${sectionText}`;
                 
-                // Get final instruction from database (dynamic)
-                const finalInstruction = channelRequirements.find(req => req.includes('final_instruction'))?.split(': ')[1] || `Create the ${platformName} ${channelType} now:`;
-                
-                // Don't add duplicate output format instructions - they're already in the system prompt
-                const finalRequirements = `${requirements}\n\n${finalInstruction}`;
-                
-                // Assemble the final prompt using the working structure
-                const finalPrompt = `${systemPrompt}\n\n${finalUserPrompt}\n\n=== BLOG DETAILS ===\n${blogDetails}\n\n=== REQUIREMENTS ===\n${finalRequirements}`;
+                // Assemble the final prompt with clean, consolidated format
+                const finalPrompt = `${systemPrompt}\n\n${finalUserPrompt}\n\n=== BLOG DETAILS ===\n${blogDetails}\n\nNow write the final Facebook post`;
                 
                 console.log('Final assembled prompt using working logic:', finalPrompt);
                 return finalPrompt;

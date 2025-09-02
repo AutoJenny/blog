@@ -458,6 +458,14 @@
                                     </div>
                                 </div>
                                 
+                                <!-- Hidden selectors for shared function compatibility -->
+                                <select id="platformSelector" style="display: none;">
+                                    <option value="1">Facebook</option>
+                                </select>
+                                <select id="processSelector" style="display: none;">
+                                    <option value="1">Facebook Feed Post (feed_post)</option>
+                                </select>
+                                
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="setting-item mb-3">
@@ -1566,7 +1574,7 @@
                 }
                 
                 // Step 4: Assemble the LLM prompt (same logic as create-piece page)
-                const fullPrompt = assembleLLMPrompt(processConfig, sectionContent, llmSettings);
+                const fullPrompt = assembleLLMPrompt(processConfig, sectionContent);
                 
                 // Step 5: Prepare LLM request
                 const llmRequest = {
@@ -1687,24 +1695,7 @@
             }
         }
         
-        // Helper function to assemble LLM prompt (same logic as create-piece page)
-        function assembleLLMPrompt(processConfig, sectionContent, llmSettings) {
-            const systemPrompt = llmSettings.system_prompt || 'You are a social media content creator specializing in converting blog content into engaging social media posts.';
-            const userPrompt = llmSettings.user_prompt_template || 'Convert the following blog section into a {platform} {channel_type} post following these requirements:\n{requirements}';
-            
-            // Replace placeholders
-            let finalUserPrompt = userPrompt
-                .replace('{platform}', processConfig.platform)
-                .replace('{channel_type}', processConfig.channel_type)
-                .replace('{requirements}', 'Create engaging, platform-appropriate content');
-            
-            // Build blog details
-            const blogTitle = document.getElementById('blogPostSelect').options[document.getElementById('blogPostSelect').selectedIndex]?.textContent || 'Unknown Blog Title';
-            const blogDetails = `POST TITLE: ${blogTitle}\nSECTION TITLE: ${sectionContent.title}\nSECTION TEXT: ${sectionContent.polished || sectionContent.content}`;
-            
-            // Assemble final prompt
-            return `${systemPrompt}\n\n${finalUserPrompt}\n\n=== BLOG DETAILS ===\n${blogDetails}\n\n=== REQUIREMENTS ===\n- Create engaging, platform-appropriate content\n- Use appropriate tone and style for Facebook\n- Include relevant hashtags if appropriate\n- Keep content concise and engaging`;
-        }
+
         
         // Helper function to save syndication piece
         async function saveSyndicationPiece(sectionId, generatedContent, llmRequest, llmResult) {
@@ -1749,5 +1740,8 @@
             }
         }
     </script>
+    
+    <!-- Syndication Create Piece JavaScript -->
+    <script src="/static/js/syndication_create_piece.js"></script>
 </body>
 </html>
