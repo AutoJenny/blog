@@ -756,11 +756,7 @@ def clan_post_html(post_id):
         with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             cur.execute("""
-                SELECT header_image_caption, header_image_title, header_image_width, header_image_height,
-                       cross_promotion_category_id, cross_promotion_category_title,
-                       cross_promotion_product_id, cross_promotion_product_title,
-                       cross_promotion_category_position, cross_promotion_product_position,
-                       cross_promotion_category_widget_html, cross_promotion_product_widget_html
+                SELECT header_image_caption, header_image_title, header_image_width, header_image_height
                 FROM post WHERE id = %s
             """, (post_id,))
             header_data = cur.fetchone()
@@ -773,18 +769,6 @@ def clan_post_html(post_id):
             'title': header_data['header_image_title'] if header_data and header_data['header_image_title'] else None,
             'width': header_data['header_image_width'] if header_data and header_data['header_image_width'] else None,
             'height': header_data['header_image_height'] if header_data and header_data['header_image_height'] else None
-        }
-        
-        # Add cross-promotion data
-        post['cross_promotion'] = {
-            'category_id': header_data['cross_promotion_category_id'] if header_data and header_data['cross_promotion_category_id'] else None,
-            'category_title': header_data['cross_promotion_category_title'] if header_data and header_data['cross_promotion_category_title'] else None,
-            'product_id': header_data['cross_promotion_product_id'] if header_data and header_data['cross_promotion_product_id'] else None,
-            'product_title': header_data['cross_promotion_product_title'] if header_data and header_data['cross_promotion_product_title'] else None,
-            'category_position': header_data.get('cross_promotion_category_position'),
-            'product_position': header_data.get('cross_promotion_product_position'),
-            'category_widget_html': header_data.get('cross_promotion_category_widget_html'),
-            'product_widget_html': header_data.get('cross_promotion_product_widget_html')
         }
     
     # Generate the actual HTML that will be uploaded to clan.com
@@ -988,7 +972,11 @@ def get_post_with_development(post_id):
         cur.execute("""
             SELECT p.id AS post_id, p.title, p.subtitle, p.created_at, p.updated_at, p.status, p.slug, p.summary, p.title_choices,
                    p.clan_post_id, p.clan_uploaded_url,
-                   pd.idea_seed, pd.intro_blurb, pd.main_title
+                   pd.idea_seed, pd.intro_blurb, pd.main_title,
+                   p.cross_promotion_category_id, p.cross_promotion_category_title,
+                   p.cross_promotion_product_id, p.cross_promotion_product_title,
+                   p.cross_promotion_category_position, p.cross_promotion_product_position,
+                   p.cross_promotion_category_widget_html, p.cross_promotion_product_widget_html
             FROM post p
             LEFT JOIN post_development pd ON pd.post_id = p.id
             WHERE p.id = %s
@@ -1010,6 +998,19 @@ def get_post_with_development(post_id):
         post_dict = dict(post)
         # Always use post_id for the edit link
         post_dict['id'] = post_dict['post_id']
+        
+        # Add cross-promotion data structure
+        post_dict['cross_promotion'] = {
+            'category_id': post_dict.get('cross_promotion_category_id'),
+            'category_title': post_dict.get('cross_promotion_category_title'),
+            'product_id': post_dict.get('cross_promotion_product_id'),
+            'product_title': post_dict.get('cross_promotion_product_title'),
+            'category_position': post_dict.get('cross_promotion_category_position'),
+            'product_position': post_dict.get('cross_promotion_product_position'),
+            'category_widget_html': post_dict.get('cross_promotion_category_widget_html'),
+            'product_widget_html': post_dict.get('cross_promotion_product_widget_html')
+        }
+        
         return post_dict
 
 def find_header_image(post_id):

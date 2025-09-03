@@ -1,0 +1,52 @@
+{
+  "timestamp": "2025-09-03T17:43:57.657529",
+  "call_type": "post_create_update",
+  "url": "https://clan.com/clan/blog_api/editPost",
+  "data": {
+    "api_user": "blog",
+    "api_key": "AC%7ef2a5A!24bd*E844a83f9F$49a02",
+    "json_args": "{\"post_id\": 399, \"title\": \"The Art of Scottish Storytelling: Oral Traditions and Modern Literature\", \"url_key\": \"the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000\", \"short_content\": \"Discover the captivating tales that have shaped Scotland's unique cultural heritage\", \"status\": 2, \"categories\": [14, 15], \"list_thumbnail\": \"/blog/header_53_1756917828.jpg\", \"post_thumbnail\": \"/blog/header_53_1756917828.jpg\", \"meta_title\": \"The Art of Scottish Storytelling: Oral Traditions and Modern Literature\", \"meta_tags\": \"Scottish Heritage, Celtic Traditions, Cultural Identity\", \"meta_description\": \"Discover the captivating tales that have shaped Scotland's unique cultural heritage\"}"
+  },
+  "files_info": {
+    "html_file": {
+      "filename": "post_53_1756917837.html",
+      "mime_type": "text/html",
+      "content_length": 12488
+    }
+  },
+  "json_args_raw": {
+    "post_id": 399,
+    "title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature",
+    "url_key": "the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000",
+    "short_content": "Discover the captivating tales that have shaped Scotland's unique cultural heritage",
+    "status": 2,
+    "categories": [
+      14,
+      15
+    ],
+    "list_thumbnail": "/blog/header_53_1756917828.jpg",
+    "post_thumbnail": "/blog/header_53_1756917828.jpg",
+    "meta_title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature",
+    "meta_tags": "Scottish Heritage, Celtic Traditions, Cultural Identity",
+    "meta_description": "Discover the captivating tales that have shaped Scotland's unique cultural heritage"
+  },
+  "html_content_length": 12488,
+  "image_info": null,
+  "json_args_parsed": {
+    "post_id": 399,
+    "title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature",
+    "url_key": "the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000",
+    "short_content": "Discover the captivating tales that have shaped Scotland's unique cultural heritage",
+    "status": 2,
+    "categories": [
+      14,
+      15
+    ],
+    "list_thumbnail": "/blog/header_53_1756917828.jpg",
+    "post_thumbnail": "/blog/header_53_1756917828.jpg",
+    "meta_title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature",
+    "meta_tags": "Scottish Heritage, Celtic Traditions, Cultural Identity",
+    "meta_description": "Discover the captivating tales that have shaped Scotland's unique cultural heritage"
+  },
+  "html_content_preview": "<div class=\"mp-content std fix-me\">\n    <header class=\"blog-post__header\">\n        \n        <p class=\"blog-post__subtitle\">Discover the captivating tales that have shaped Scotland's unique cultural heritage</p>\n        \n        \n        <div class=\"post-meta\">\n            <span class=\"post-meta__date\">Published on <time datetime=\"2025-07-17\">July 17, 2025</time></span>\n            <span class=\"post-meta__separator\"> | </span>\n            <span class=\"post-meta__author\">By Caitrin Stewart</span>\n        </div>\n        \n        \n    </header>\n    \n    \n    <div class=\"blog-sections\">\n    \n    <section class=\"blog-section\" id=\"section-1\">\n        <h2>Ancient Celtic Story-telling</h2>\n        <div class=\"section-text\">\n            \n                <p>In ancient Scotland, story-telling was deeply rooted in Celtic tradition. The Picts and Scotts, inhabiting Scotland from around 400 BC to AD, orally passed down tales grounded in nature, mythology, and the supernatural.</p> <p>Storytelling tec..."
+}
