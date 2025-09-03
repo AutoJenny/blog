@@ -35,6 +35,91 @@ class ClanPublisher:
         if not self.api_base_url.endswith('/'):
             self.api_base_url += '/'
     
+    def _dump_api_call(self, call_type, url, data, files=None, filename=None, json_args=None, html_content=None, image_info=None):
+        """Dump exact API call data to diagnostic file"""
+        try:
+            import json
+            import os
+            from datetime import datetime
+            
+            # Create log directory if it doesn't exist
+            log_dir = "/Users/nickfiddes/Code/projects/blog/blog-launchpad/log"
+            os.makedirs(log_dir, exist_ok=True)
+            
+            # Create diagnostic data
+            diagnostic_data = {
+                'timestamp': datetime.now().isoformat(),
+                'call_type': call_type,
+                'url': url,
+                'data': data,
+                'files_info': {},
+                'json_args_raw': json_args,
+                'html_content_length': len(html_content) if html_content else 0,
+                'image_info': image_info
+            }
+            
+            # Parse and add the actual JSON args if provided
+            if json_args:
+                try:
+                    parsed_args = json.loads(json_args) if isinstance(json_args, str) else json_args
+                    diagnostic_data['json_args_parsed'] = parsed_args
+                except:
+                    diagnostic_data['json_args_parsed'] = "Failed to parse JSON"
+            
+            # Add file information if files are provided
+            if files:
+                for key, file_tuple in files.items():
+                    if isinstance(file_tuple, tuple) and len(file_tuple) >= 2:
+                        file_info = {
+                            'filename': file_tuple[0],
+                            'mime_type': file_tuple[2] if len(file_tuple) > 2 else 'unknown'
+                        }
+                        
+                        # For image files, try to get file size and path info
+                        if key == 'image' and hasattr(file_tuple[1], 'name'):
+                            try:
+                                file_path = file_tuple[1].name
+                                if os.path.exists(file_path):
+                                    file_info['file_size'] = os.path.getsize(file_path)
+                                    file_info['file_path'] = file_path
+                            except:
+                                pass
+                        
+                        # For HTML files, capture content length
+                        elif key == 'html_file':
+                            try:
+                                if hasattr(file_tuple[1], 'read'):
+                                    current_pos = file_tuple[1].tell()
+                                    file_tuple[1].seek(0, 2)  # Seek to end
+                                    file_size = file_tuple[1].tell()
+                                    file_tuple[1].seek(current_pos)  # Restore position
+                                    file_info['content_length'] = file_size
+                            except:
+                                pass
+                        
+                        diagnostic_data['files_info'][key] = file_info
+            
+            # Add HTML content preview if provided
+            if html_content:
+                diagnostic_data['html_content_preview'] = html_content[:1000] + "..." if len(html_content) > 1000 else html_content
+            
+            # Write to diagnostic file (overwrites previous)
+            diagnostic_file = os.path.join(log_dir, f"clan_api_diagnostic_{call_type}.json")
+            with open(diagnostic_file, 'w') as f:
+                json.dump(diagnostic_data, f, indent=2)
+            
+            # Also write a separate HTML content file for post creation
+            if call_type == 'post_create_update' and html_content:
+                html_file = os.path.join(log_dir, f"clan_api_diagnostic_html_content.html")
+                with open(html_file, 'w', encoding='utf-8') as f:
+                    f.write(html_content)
+                logger.info(f"DIAGNOSTIC: HTML content dumped to {html_file}")
+            
+            logger.info(f"DIAGNOSTIC: API call data dumped to {diagnostic_file}")
+            
+        except Exception as e:
+            logger.error(f"Failed to dump API call data: {e}")
+    
     def _generate_url_key(self, post):
         """Generate a URL-friendly key for the post"""
         import re
@@ -209,6 +294,16 @@ class ClanPublisher:
                     'api_key': self.api_key,
                     'json_args': '[]'  # Required by clan.com API (empty array for image uploads)
                 }
+                
+                # DIAGNOSTIC LOGGING: Dump exact API data being sent
+                # Capture image file info for diagnostic
+                image_info = {
+                    'original_path': image_path,
+                    'filename': filename,
+                    'file_size': os.path.getsize(image_path) if os.path.exists(image_path) else 0,
+                    'mime_type': mime_type
+                }
+                self._dump_api_call('image_upload', upload_url, data, files, filename, image_info=image_info)
                 
                 logger.info(f"Uploading image: {filename} to {upload_url}")
                 logger.info(f"MIME type: {mime_type}")
@@ -684,6 +779,10 @@ class ClanPublisher:
                 # Send the request with the actual HTML file content
                 with open(html_filepath, 'rb') as html_file:
                     files = {'html_file': (html_filename, html_file, 'text/html')}
+                    
+                    # DIAGNOSTIC LOGGING: Dump exact API data being sent
+                    self._dump_api_call('post_create_update', endpoint, api_data, files, html_filename, json_args, html_content)
+                    
                     response = requests.post(endpoint, data=api_data, files=files, timeout=15)
                 
             finally:

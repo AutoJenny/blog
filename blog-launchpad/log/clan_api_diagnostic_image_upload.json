@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-09-03T17:43:56.168761",
+  "call_type": "image_upload",
+  "url": "https://clan.com/clan/blog_api/uploadImage",
+  "data": {
+    "api_user": "blog",
+    "api_key": "AC%7ef2a5A!24bd*E844a83f9F$49a02",
+    "json_args": "[]"
+  },
+  "files_info": {
+    "image": {
+      "filename": "section_53_7_1756917836.jpg",
+      "mime_type": "image/jpeg",
+      "file_size": 4304882,
+      "file_path": "/var/folders/1j/zvhfy8wn27l2gxxg5lkljgs40000gn/T/tmp3lw4ea00.jpg"
+    }
+  },
+  "json_args_raw": null,
+  "html_content_length": 0,
+  "image_info": {
+    "original_path": "/var/folders/1j/zvhfy8wn27l2gxxg5lkljgs40000gn/T/tmp3lw4ea00.jpg",
+    "filename": "section_53_7_1756917836.jpg",
+    "file_size": 4304882,
+    "mime_type": "image/jpeg"
+  }
+}
