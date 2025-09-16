@@ -236,6 +236,73 @@ def list_tables():
     else:
         return jsonify({"tables": tables})
 
+@bp.route("/search")
+def db_search():
+    """Search across all database tables for a given term"""
+    search_term = request.args.get('q', '').strip()
+    if not search_term:
+        return jsonify({"error": "No search term provided"}), 400
+    
+    results = []
+    try:
+        with get_db_conn() as conn:
+            with conn.cursor() as cur:
+                # Get all tables
+                cur.execute("""
+                    SELECT table_name FROM information_schema.tables
+                    WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+                """)
+                table_names = [row['table_name'] for row in cur.fetchall()]
+                
+                # Search each table
+                for table_name in table_names:
+                    # Get columns for this table
+                    cur.execute("""
+                        SELECT column_name, data_type
+                        FROM information_schema.columns
+                        WHERE table_name = %s AND table_schema = 'public'
+                    """, (table_name,))
+                    columns = [{'name': r['column_name'], 'type': r['data_type']} for r in cur.fetchall()]
+                    
+                    # Build search query for text columns only
+                    text_columns = [col['name'] for col in columns if 'text' in col['type'].lower() or 'varchar' in col['type'].lower() or 'char' in col['type'].lower()]
+                    
+                    if text_columns:
+                        # Create WHERE clause for text columns
+                        where_conditions = []
+                        for col in text_columns:
+                            where_conditions.append(f'"{col}" ILIKE %s')
+                        
+                        where_clause = " OR ".join(where_conditions)
+                        search_pattern = f"%{search_term}%"
+                        
+                        # Execute search
+                        cur.execute(f"""
+                            SELECT * FROM "{table_name}" 
+                            WHERE {where_clause}
+                            LIMIT 50
+                        """, [search_pattern] * len(text_columns))
+                        
+                        rows = cur.fetchall()
+                        if rows:
+                            results.append({
+                                'table': table_name,
+                                'columns': columns,
+                                'rows': rows,
+                                'count': len(rows)
+                            })
+                            
+    except Exception as e:
+        logging.error(f"Error in database search: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+    return jsonify({
+        "search_term": search_term,
+        "results": results,
+        "total_tables_searched": len(table_names),
+        "tables_with_matches": len(results)
+    })
+
 @bp.route("/debug")
 def db_debug():
     debug_info = {}

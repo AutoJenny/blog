@@ -1,17 +1,17 @@
 {
-  "timestamp": "2025-09-03T17:43:57.657529",
+  "timestamp": "2025-09-16T15:36:39.335620",
   "call_type": "post_create_update",
   "url": "https://clan.com/clan/blog_api/editPost",
   "data": {
     "api_user": "blog",
     "api_key": "AC%7ef2a5A!24bd*E844a83f9F$49a02",
-    "json_args": "{\"post_id\": 399, \"title\": \"The Art of Scottish Storytelling: Oral Traditions and Modern Literature\", \"url_key\": \"the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000\", \"short_content\": \"Discover the captivating tales that have shaped Scotland's unique cultural heritage\", \"status\": 2, \"categories\": [14, 15], \"list_thumbnail\": \"/blog/header_53_1756917828.jpg\", \"post_thumbnail\": \"/blog/header_53_1756917828.jpg\", \"meta_title\": \"The Art of Scottish Storytelling: Oral Traditions and Modern Literature\", \"meta_tags\": \"Scottish Heritage, Celtic Traditions, Cultural Identity\", \"meta_description\": \"Discover the captivating tales that have shaped Scotland's unique cultural heritage\"}"
+    "json_args": "{\"post_id\": 399, \"title\": \"The Art of Scottish Storytelling: Oral Traditions and Modern Literature\", \"url_key\": \"the-art-of-scottish-storytelling-oral-traditions-and-modern-literature-53-1755653000\", \"short_content\": \"Discover the captivating tales that have shaped Scotland's unique cultural heritage\", \"status\": 2, \"categories\": [14, 15], \"list_thumbnail\": \"/blog/header_53_1758033385.jpg\", \"post_thumbnail\": \"/blog/header_53_1758033385.jpg\", \"meta_title\": \"The Art of Scottish Storytelling: Oral Traditions and Modern Literature\", \"meta_tags\": \"Scottish Heritage, Celtic Traditions, Cultural Identity\", \"meta_description\": \"Discover the captivating tales that have shaped Scotland's unique cultural heritage\"}"
   },
   "files_info": {
     "html_file": {
-      "filename": "post_53_1756917837.html",
+      "filename": "post_53_1758033399.html",
       "mime_type": "text/html",
-      "content_length": 12488
+      "content_length": 12751
     }
   },
   "json_args_raw": {
@@ -24,13 +24,13 @@
       14,
       15
     ],
-    "list_thumbnail": "/blog/header_53_1756917828.jpg",
-    "post_thumbnail": "/blog/header_53_1756917828.jpg",
+    "list_thumbnail": "/blog/header_53_1758033385.jpg",
+    "post_thumbnail": "/blog/header_53_1758033385.jpg",
     "meta_title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature",
     "meta_tags": "Scottish Heritage, Celtic Traditions, Cultural Identity",
     "meta_description": "Discover the captivating tales that have shaped Scotland's unique cultural heritage"
   },
-  "html_content_length": 12488,
+  "html_content_length": 12751,
   "image_info": null,
   "json_args_parsed": {
     "post_id": 399,
@@ -42,8 +42,8 @@
       14,
       15
     ],
-    "list_thumbnail": "/blog/header_53_1756917828.jpg",
-    "post_thumbnail": "/blog/header_53_1756917828.jpg",
+    "list_thumbnail": "/blog/header_53_1758033385.jpg",
+    "post_thumbnail": "/blog/header_53_1758033385.jpg",
     "meta_title": "The Art of Scottish Storytelling: Oral Traditions and Modern Literature",
     "meta_tags": "Scottish Heritage, Celtic Traditions, Cultural Identity",
     "meta_description": "Discover the captivating tales that have shaped Scotland's unique cultural heritage"

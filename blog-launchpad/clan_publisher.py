@@ -941,14 +941,20 @@ class ClanPublisher:
             
             # Step 2: Mapping cross-promotion data
             logger.info("Step 2: Mapping cross-promotion data...")
-            if full_post_data.get('cross_promotion_category_id'):
+            if full_post_data.get('cross_promotion_category_id') or full_post_data.get('cross_promotion_product_id'):
                 full_post_data['cross_promotion'] = {
-                    'category_id': full_post_data['cross_promotion_category_id'],
+                    'category_id': full_post_data.get('cross_promotion_category_id'),
                     'category_title': full_post_data.get('cross_promotion_category_title', ''),
                     'product_id': full_post_data.get('cross_promotion_product_id'),
-                    'product_title': full_post_data.get('cross_promotion_product_title', '')
+                    'product_title': full_post_data.get('cross_promotion_product_title', ''),
+                    'category_position': full_post_data.get('cross_promotion_category_position'),
+                    'product_position': full_post_data.get('cross_promotion_product_position'),
+                    'category_widget_html': full_post_data.get('cross_promotion_category_widget_html'),
+                    'product_widget_html': full_post_data.get('cross_promotion_product_widget_html')
                 }
                 logger.info(f"✅ Mapped cross-promotion data: category_id={full_post_data['cross_promotion']['category_id']}, title='{full_post_data['cross_promotion']['category_title']}'")
+                logger.info(f"✅ Product widget: {full_post_data['cross_promotion']['product_widget_html']}")
+                logger.info(f"✅ Category widget: {full_post_data['cross_promotion']['category_widget_html']}")
             else:
                 logger.info("No cross-promotion data found")
             

@@ -742,6 +742,9 @@ def preview_post(post_id):
 @app.route('/clan-post-html/<int:post_id>')
 def clan_post_html(post_id):
     """View the clan_post HTML that will be uploaded to Clan.com."""
+    # Get view type parameter (default to 'local')
+    view_type = request.args.get('view', 'local')
+    
     # Get post data from database
     post = get_post_with_development(post_id)
     if not post:
@@ -771,22 +774,53 @@ def clan_post_html(post_id):
             'height': header_data['header_image_height'] if header_data and header_data['header_image_height'] else None
         }
     
-    # Generate the actual HTML that will be uploaded to clan.com
-    # This should match exactly what the upload script uses
-    from clan_publisher import ClanPublisher
-    publisher = ClanPublisher()
-    
-    # Get the exact same HTML that gets uploaded
-    upload_html = publisher.get_preview_html_content(post, sections)
-    
-    if upload_html:
-        # Return the actual upload HTML as raw text - NO RENDERING
-        # Set content type to text/plain so browser shows source code
-        return upload_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
-    else:
-        # Fallback to raw template if preview HTML fails
+    if view_type == 'local':
+        # Return raw HTML with local paths (for development/debugging)
         raw_html = render_template('clan_post_raw.html', post=post, sections=sections)
         return raw_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    else:
+        # Return processed HTML with CDN URLs (what gets sent to Clan.com)
+        from clan_publisher import ClanPublisher
+        publisher = ClanPublisher()
+        
+        # Get uploaded images mapping from database
+        uploaded_images = {}
+        try:
+            with get_db_connection() as conn:
+                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                cur.execute("""
+                    SELECT local_image_path, clan_uploaded_url 
+                    FROM section_image_mappings 
+                    WHERE post_id = %s
+                """, (post_id,))
+                
+                for row in cur.fetchall():
+                    uploaded_images[row['local_image_path']] = row['clan_uploaded_url']
+                    
+                # Also get header image mapping if it exists
+                cur.execute("""
+                    SELECT local_image_path, clan_uploaded_url 
+                    FROM section_image_mappings 
+                    WHERE post_id = %s AND section_id IS NULL
+                """, (post_id,))
+                
+                for row in cur.fetchall():
+                    uploaded_images[row['local_image_path']] = row['clan_uploaded_url']
+                    
+        except Exception as e:
+            print(f"Warning: Could not load image mappings: {e}")
+        
+        # Get the exact same HTML that gets uploaded
+        upload_html = publisher.get_preview_html_content(post, sections, uploaded_images)
+        
+        if upload_html:
+            # Return the actual upload HTML as raw text - NO RENDERING
+            # Set content type to text/plain so browser shows source code
+            return upload_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+        else:
+            # Fallback to raw template if preview HTML fails
+            raw_html = render_template('clan_post_raw.html', post=post, sections=sections)
+            return raw_html, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/clan-api-data/<int:post_id>')
 def clan_api_data(post_id):
@@ -1315,6 +1349,7 @@ def clan_widget_products():
         widget_products = []
         for detailed_product in detailed_products:
             widget_product = {
+                "id": detailed_product.get('id'),
                 "name": detailed_product.get('name', 'Product Name'),
                 "sku": detailed_product.get('sku', ''),
                 "url": detailed_product.get('url', ''),
