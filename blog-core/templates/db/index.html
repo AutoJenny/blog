@@ -75,6 +75,36 @@
                 </div>
             </div>
 
+            <!-- Global Database Search -->
+            <div class="admin-card mb-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-search text-indigo-400"></i> Global Database Search
+                </h2>
+                <div class="flex items-center gap-4">
+                    <div class="flex-1">
+                        <input 
+                            type="text" 
+                            id="globalDbSearch" 
+                            placeholder="Search across all database tables (e.g., Dagda, Morrigan, etc.)" 
+                            class="form-input w-full px-3 py-2 rounded border border-gray-600 bg-dark-card text-white"
+                        >
+                        <p class="text-xs text-gray-400 mt-1">Searches all text columns in all tables</p>
+                    </div>
+                    <button id="executeDbSearch" class="btn btn-primary flex items-center gap-2">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <button id="clearDbSearch" class="btn btn-secondary flex items-center gap-2">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+                <div id="searchResults" class="mt-4 hidden">
+                    <div class="bg-gray-800 rounded p-4">
+                        <h3 class="text-lg font-semibold mb-2 text-white">Search Results</h3>
+                        <div id="searchResultsContent"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Global Field Name Filter -->
             <div class="admin-card mb-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -672,8 +702,109 @@
             }
         }
 
+        // Global database search functionality
+        async function executeGlobalSearch(searchTerm) {
+            if (!searchTerm.trim()) {
+                document.getElementById('searchResults').classList.add('hidden');
+                return;
+            }
+            
+            const searchResults = document.getElementById('searchResults');
+            const searchResultsContent = document.getElementById('searchResultsContent');
+            
+            // Show loading state
+            searchResultsContent.innerHTML = '<div class="text-gray-400 py-4 text-center">Searching database...</div>';
+            searchResults.classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`/db/search?q=${encodeURIComponent(searchTerm)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    searchResultsContent.innerHTML = `<div class="text-red-500 py-4 text-center">Error: ${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.results.length === 0) {
+                    searchResultsContent.innerHTML = `<div class="text-gray-400 py-4 text-center">No results found for "${searchTerm}"</div>`;
+                    return;
+                }
+                
+                // Render results
+                let html = `<div class="text-sm text-gray-300 mb-4">
+                    Found ${data.tables_with_matches} table(s) with matches for "${searchTerm}" 
+                    (searched ${data.total_tables_searched} tables)
+                </div>`;
+                
+                data.results.forEach(result => {
+                    html += `<div class="mb-6 border border-gray-600 rounded p-4">`;
+                    html += `<h4 class="text-lg font-semibold text-white mb-2">${result.table} (${result.count} matches)</h4>`;
+                    html += `<div class="overflow-x-auto">`;
+                    html += `<table class="w-full border-collapse text-sm">`;
+                    html += `<thead><tr>`;
+                    result.columns.forEach(col => {
+                        html += `<th class="p-2 text-left border-b border-gray-600 text-gray-300">${col.name}<br><span class="text-xs text-gray-500">${col.type}</span></th>`;
+                    });
+                    html += `</tr></thead><tbody>`;
+                    
+                    result.rows.forEach(row => {
+                        html += `<tr class="border-b border-gray-700">`;
+                        result.columns.forEach(col => {
+                            let val = row && row[col.name] !== undefined && row[col.name] !== null ? row[col.name] : '';
+                            
+                            // Highlight search term in results
+                            if (typeof val === 'string' && val.toLowerCase().includes(searchTerm.toLowerCase())) {
+                                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                                val = val.replace(regex, '<mark class="bg-yellow-200 text-black">$1</mark>');
+                            }
+                            
+                            // Pretty-print JSON/JSONB columns
+                            if ((col.type && (col.type.toLowerCase().includes('json'))) && (typeof val === 'object')) {
+                                try {
+                                    val = JSON.stringify(val, null, 2);
+                                } catch (e) {
+                                    val = String(val);
+                                }
+                            }
+                            
+                            html += `<td class="p-2 font-mono text-gray-300 max-w-xs truncate">${val}</td>`;
+                        });
+                        html += `</tr>`;
+                    });
+                    
+                    html += `</tbody></table></div></div>`;
+                });
+                
+                searchResultsContent.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                searchResultsContent.innerHTML = `<div class="text-red-500 py-4 text-center">Search failed: ${error.message}</div>`;
+            }
+        }
+
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
+            // Global database search
+            const globalDbSearch = document.getElementById('globalDbSearch');
+            const executeDbSearch = document.getElementById('executeDbSearch');
+            const clearDbSearch = document.getElementById('clearDbSearch');
+            
+            executeDbSearch.addEventListener('click', function() {
+                executeGlobalSearch(globalDbSearch.value);
+            });
+            
+            globalDbSearch.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    executeGlobalSearch(this.value);
+                }
+            });
+            
+            clearDbSearch.addEventListener('click', function() {
+                globalDbSearch.value = '';
+                document.getElementById('searchResults').classList.add('hidden');
+            });
+            
             // Global field filter
             const globalFieldFilter = document.getElementById('globalFieldFilter');
             const clearFieldFilter = document.getElementById('clearFieldFilter');

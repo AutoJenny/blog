@@ -149,9 +149,9 @@ class ClanAPIClient:
         if result.get('success', True):
             products = result.get('data', [])
             for product in products:
-                if isinstance(product, list) and len(product) > 1:
-                    # Generate ID from SKU hash
-                    if hash(product[1]) % 100000 == product_id:
+                if isinstance(product, list) and len(product) > 5:
+                    # Use actual product ID from API response
+                    if int(product[5]) == product_id:
                         if include_categories:
                             # Get detailed product data with categories
                             return self.get_product_data(product[1], include_categories=True)

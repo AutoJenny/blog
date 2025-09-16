@@ -279,7 +279,7 @@ class ClanCache:
                 try:
                     # Extract basic info from clan.com API response
                     product_data = {
-                        'id': i + 1,  # Generate sequential ID
+                        'id': int(product[5]) if len(product) > 5 and product[5] else i + 1,  # Use actual product ID from API
                         'name': product[0],  # title
                         'sku': product[1],   # sku
                         'url': product[2],   # product_url - use actual URL from API
@@ -334,6 +334,7 @@ class ClanCache:
                         if product_data.get('success') and product_data.get('data'):
                             # Extract detailed info
                             detailed_product = {
+                                'id': int(product_data['data'].get('product_id', 0)) if product_data['data'].get('product_id') else None,
                                 'sku': sku,
                                 'name': product_data['data'].get('title', ''),
                                 'price': str(product_data['data'].get('price', '29.99')),

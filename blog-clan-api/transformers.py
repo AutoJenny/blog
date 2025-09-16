@@ -45,7 +45,7 @@ def transform_product_for_ui(product: Dict) -> Dict:
             base_price = random.randint(30, 100)
         
         return {
-            'id': hash(product[1]) % 100000,  # Generate ID from SKU hash
+            'id': int(product[5]) if len(product) > 5 and product[5] else hash(product[1]) % 100000,  # Use actual product ID from API
             'name': product[0],
             'sku': product[1],
             'price': f'£{base_price}.99',
@@ -77,7 +77,7 @@ def transform_product_for_ui(product: Dict) -> Dict:
             image_url = product['images'][0].get('url', '')
         
         return {
-            'id': hash(product.get('sku', '')) % 100000,  # Generate ID from SKU hash
+            'id': int(product.get('product_id', 0)) if product.get('product_id') else hash(product.get('sku', '')) % 100000,  # Use actual product ID from API
             'name': product.get('title', ''),
             'sku': product.get('sku', ''),
             'price': f'£{base_price}.99',
