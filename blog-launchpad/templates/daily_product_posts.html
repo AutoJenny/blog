@@ -814,6 +814,12 @@
                     displayProduct(selectedProduct);
                     generateContentBtn.disabled = false;
                     
+                    // Show selected category information
+                    if (data.selected_category) {
+                        console.log(`Selected from category: ${data.selected_category.name} (ID: ${data.selected_category.id})`);
+                        // You could add a visual indicator here if desired
+                    }
+                    
                     // Hide Add to Queue button until content is generated
                     addToQueueBtn.style.display = 'none';
                     addToQueueBtn.disabled = true;
