@@ -1252,7 +1252,7 @@
                 const data = await response.json();
                 
                 if (data.success && data.post) {
-                    selectedProduct = data.post.product;
+                    selectedProduct = data.post; // Product data is directly in data.post, not data.post.product
                     generatedContent = data.post.content_text;
                     selectedContentType = data.post.content_type;
                     
