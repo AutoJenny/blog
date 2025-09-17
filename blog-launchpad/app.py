@@ -304,11 +304,15 @@ def generate_product_content():
             if not template:
                 return jsonify({'success': False, 'error': 'Content template not found'})
             
-            # Prepare prompt
+            # Format price with pound sign
+            formatted_price = f"£{product['price']}" if product['price'] else "Price on request"
+            
+            # Prepare prompt with URL for call to action
             prompt = template['template_prompt'].format(
                 product_name=product['name'],
                 product_description=product['description'] or 'No description available',
-                product_price=product['price']
+                product_price=formatted_price,
+                product_url=product['url'] or 'https://clan.com'
             )
             
             # Call LLM
