@@ -1637,29 +1637,77 @@
         const queueTableBody = document.getElementById('queue-table-body');
         
         // Add to Queue button handler
-        addToQueueBtn.addEventListener('click', () => {
+        addToQueueBtn.addEventListener('click', async () => {
             if (!selectedProduct || !generatedContent) return;
             
-            // Add to local queue
-            const queueItem = {
-                id: Date.now(),
-                product: selectedProduct,
-                content: generatedContent,
-                scheduled: null
-            };
-            
-            queueData.push(queueItem);
-            renderQueue();
-            
-            // Show success message
-            alert('Post added to queue!');
+            try {
+                // Calculate next available posting time
+                const postingTimes = generateSequentialTimes(queueData.length + 1);
+                const nextTime = postingTimes[queueData.length];
+                
+                const response = await fetch('/api/daily-product-posts/queue', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        product_id: selectedProduct.id,
+                        generated_content: generatedContent,
+                        scheduled_date: nextTime.date.toISOString().split('T')[0],
+                        scheduled_time: nextTime.schedule.time,
+                        schedule_name: nextTime.schedule.name,
+                        timezone: nextTime.schedule.timezone
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Add to local queue data
+                    queueData.push({
+                        id: data.queue_item.id,
+                        product: selectedProduct,
+                        content: generatedContent,
+                        scheduled: {
+                            date: data.queue_item.scheduled_date,
+                            time: data.queue_item.scheduled_time,
+                            schedule_name: data.queue_item.schedule_name,
+                            timezone: data.queue_item.timezone
+                        }
+                    });
+                    
+                    renderQueue();
+                    alert('Post added to queue!');
+                } else {
+                    alert('Error adding to queue: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error adding to queue:', error);
+                alert('Error adding to queue. Please try again.');
+            }
         });
         
         // Clear queue button handler
-        clearQueueBtn.addEventListener('click', () => {
+        clearQueueBtn.addEventListener('click', async () => {
             if (confirm('Clear all items from queue?')) {
-                queueData = [];
-                renderQueue();
+                try {
+                    const response = await fetch('/api/daily-product-posts/queue/clear', {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        queueData = [];
+                        renderQueue();
+                        alert('Queue cleared successfully!');
+                    } else {
+                        alert('Error clearing queue: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Error clearing queue:', error);
+                    alert('Error clearing queue. Please try again.');
+                }
             }
         });
         
@@ -1674,6 +1722,41 @@
                 }
             } catch (error) {
                 console.error('Error loading schedules:', error);
+            }
+        }
+        
+        // Load queue data from database
+        async function loadQueueData() {
+            try {
+                const response = await fetch('/api/daily-product-posts/queue');
+                const data = await response.json();
+                
+                if (data.success) {
+                    queueData = data.queue_items.map(item => ({
+                        id: item.id,
+                        product: {
+                            id: item.product_id,
+                            name: item.product_name,
+                            image_url: item.product_image,
+                            sku: item.sku,
+                            price: item.price,
+                            categories: item.categories
+                        },
+                        content: item.generated_content,
+                        scheduled: {
+                            date: item.scheduled_date,
+                            time: item.scheduled_time,
+                            schedule_name: item.schedule_name,
+                            timezone: item.timezone
+                        }
+                    }));
+                    
+                    renderQueue();
+                } else {
+                    console.error('Error loading queue:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading queue:', error);
             }
         }
         
@@ -1783,9 +1866,25 @@
         }
         
         // Remove from queue
-        function removeFromQueue(itemId) {
-            queueData = queueData.filter(item => item.id !== itemId);
-            renderQueue();
+        async function removeFromQueue(itemId) {
+            try {
+                const response = await fetch(`/api/daily-product-posts/queue/${itemId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Remove from local data
+                    queueData = queueData.filter(item => item.id !== itemId);
+                    renderQueue();
+                } else {
+                    alert('Error removing from queue: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error removing from queue:', error);
+                alert('Error removing from queue. Please try again.');
+            }
         }
         
         // Add drag and drop functionality
@@ -1829,7 +1928,7 @@
             this.closest('.queue-table-row').classList.remove('drag-over');
         }
         
-        function handleDrop(e) {
+        async function handleDrop(e) {
             e.preventDefault();
             this.closest('.queue-table-row').classList.remove('drag-over');
             
@@ -1846,14 +1945,58 @@
                     const draggedItemData = queueData.splice(draggedIndex, 1)[0];
                     queueData.splice(targetIndex, 0, draggedItemData);
                     
+                    // Update database with new order and recalculated times
+                    await updateQueueOrder();
+                    
                     // Re-render queue
                     renderQueue();
                 }
             }
         }
         
-        // Load schedule data on page load
+        // Update queue order in database
+        async function updateQueueOrder() {
+            try {
+                // Generate new sequential times for all items
+                const postingTimes = generateSequentialTimes(queueData.length);
+                
+                // Update each item with new schedule
+                for (let i = 0; i < queueData.length; i++) {
+                    const item = queueData[i];
+                    const newTime = postingTimes[i];
+                    
+                    const response = await fetch(`/api/daily-product-posts/queue/${item.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            scheduled_date: newTime.date.toISOString().split('T')[0],
+                            scheduled_time: newTime.schedule.time,
+                            schedule_name: newTime.schedule.name,
+                            timezone: newTime.schedule.timezone
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        // Update local data
+                        item.scheduled = {
+                            date: newTime.date.toISOString().split('T')[0],
+                            time: newTime.schedule.time,
+                            schedule_name: newTime.schedule.name,
+                            timezone: newTime.schedule.timezone
+                        };
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating queue order:', error);
+                alert('Error updating queue order. Please try again.');
+            }
+        }
+        
+        // Load schedule data and queue data on page load
         loadScheduleData();
+        loadQueueData();
         
         // Show Add to Queue button after content generation
         // We'll add this functionality to the existing generate content handler

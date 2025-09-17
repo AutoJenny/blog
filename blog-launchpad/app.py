@@ -3814,6 +3814,233 @@ def test_schedules():
             'error': f'Failed to test schedules: {str(e)}'
         }), 500
 
+# Queue Management API Endpoints
+@app.route('/api/daily-product-posts/queue', methods=['GET'])
+def get_queue():
+    """Get all items in the posting queue."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            cur.execute("""
+                SELECT pq.*, cp.name as product_name, cp.image_url as product_image, 
+                       cp.sku, cp.price, cp.category_ids as categories
+                FROM posting_queue pq
+                LEFT JOIN clan_products cp ON pq.product_id = cp.id
+                ORDER BY pq.queue_order ASC, pq.created_at ASC
+            """)
+            
+            items = cur.fetchall()
+            
+            queue_items = []
+            for item in items:
+                queue_items.append({
+                    'id': item[0],
+                    'product_id': item[1],
+                    'scheduled_date': item[2].isoformat() if item[2] else None,
+                    'scheduled_time': str(item[3]) if item[3] else None,
+                    'schedule_name': item[4],
+                    'timezone': item[5],
+                    'generated_content': item[6],
+                    'queue_order': item[7],
+                    'status': item[8],
+                    'created_at': item[9].isoformat() if item[9] else None,
+                    'updated_at': item[10].isoformat() if item[10] else None,
+                    'product_name': item[11],
+                    'product_image': item[12],
+                    'sku': item[13],
+                    'price': str(item[14]) if item[14] else None,
+                    'categories': item[15] if item[15] else []
+                })
+            
+            return jsonify({
+                'success': True,
+                'queue_items': queue_items
+            })
+        
+    except Exception as e:
+        logger.error(f"Error getting queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to get queue: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/queue', methods=['POST'])
+def add_to_queue():
+    """Add an item to the posting queue."""
+    try:
+        data = request.get_json()
+        product_id = data.get('product_id')
+        generated_content = data.get('generated_content')
+        scheduled_date = data.get('scheduled_date')
+        scheduled_time = data.get('scheduled_time')
+        schedule_name = data.get('schedule_name')
+        timezone = data.get('timezone')
+        
+        if not product_id or not generated_content:
+            return jsonify({
+                'success': False,
+                'error': 'Product ID and generated content are required'
+            }), 400
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Get next queue order
+            cur.execute("SELECT COALESCE(MAX(queue_order), 0) + 1 FROM posting_queue")
+            next_order = cur.fetchone()[0]
+            
+            # Insert new queue item
+            cur.execute("""
+                INSERT INTO posting_queue 
+                (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
+                 generated_content, queue_order, status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, 'ready')
+                RETURNING id, created_at
+            """, (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
+                  generated_content, next_order))
+            
+            result = cur.fetchone()
+            queue_id = result[0]
+            created_at = result[1]
+            
+            # Get product details
+            cur.execute("""
+                SELECT name, image_url, sku, price, category_ids
+                FROM clan_products WHERE id = %s
+            """, (product_id,))
+            
+            product = cur.fetchone()
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Item added to queue successfully',
+                'queue_item': {
+                    'id': queue_id,
+                    'product_id': product_id,
+                    'scheduled_date': scheduled_date,
+                    'scheduled_time': scheduled_time,
+                    'schedule_name': schedule_name,
+                    'timezone': timezone,
+                    'generated_content': generated_content,
+                    'queue_order': next_order,
+                    'status': 'ready',
+                    'created_at': created_at.isoformat(),
+                    'updated_at': created_at.isoformat(),
+                    'product_name': product[0] if product else None,
+                    'product_image': product[1] if product else None,
+                    'sku': product[2] if product else None,
+                    'price': str(product[3]) if product and product[3] else None,
+                    'categories': product[4] if product and product[4] else []
+                }
+            })
+        
+    except Exception as e:
+        logger.error(f"Error adding to queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to add to queue: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/queue/<int:item_id>', methods=['PUT'])
+def update_queue_item(item_id):
+    """Update a queue item's schedule information."""
+    try:
+        data = request.get_json()
+        scheduled_date = data.get('scheduled_date')
+        scheduled_time = data.get('scheduled_time')
+        schedule_name = data.get('schedule_name')
+        timezone = data.get('timezone')
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Check if item exists
+            cur.execute("SELECT id FROM posting_queue WHERE id = %s", (item_id,))
+            if not cur.fetchone():
+                return jsonify({
+                    'success': False,
+                    'error': 'Queue item not found'
+                }), 404
+            
+            # Update the item
+            cur.execute("""
+                UPDATE posting_queue 
+                SET scheduled_date = %s, scheduled_time = %s, schedule_name = %s, 
+                    timezone = %s, updated_at = NOW()
+                WHERE id = %s
+            """, (scheduled_date, scheduled_time, schedule_name, timezone, item_id))
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Queue item updated successfully'
+            })
+        
+    except Exception as e:
+        logger.error(f"Error updating queue item: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to update queue item: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/queue/<int:item_id>', methods=['DELETE'])
+def remove_from_queue(item_id):
+    """Remove an item from the posting queue."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Check if item exists
+            cur.execute("SELECT id FROM posting_queue WHERE id = %s", (item_id,))
+            if not cur.fetchone():
+                return jsonify({
+                    'success': False,
+                    'error': 'Queue item not found'
+                }), 404
+            
+            # Delete the item
+            cur.execute("DELETE FROM posting_queue WHERE id = %s", (item_id,))
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Item removed from queue successfully'
+            })
+        
+    except Exception as e:
+        logger.error(f"Error removing from queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to remove from queue: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/queue/clear', methods=['DELETE'])
+def clear_queue():
+    """Clear all items from the posting queue."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Delete all items
+            cur.execute("DELETE FROM posting_queue")
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Queue cleared successfully'
+            })
+        
+    except Exception as e:
+        logger.error(f"Error clearing queue: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to clear queue: {str(e)}'
+        }), 500
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(debug=True, host='0.0.0.0', port=port) 
