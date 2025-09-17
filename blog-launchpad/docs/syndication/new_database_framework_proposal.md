@@ -20,13 +20,20 @@ This document outlines our database framework strategy for the Social Media Synd
 - **Timeline**: Immediate implementation
 - **Status**: **IMPLEMENTED AND WORKING**
 
-### **Phase 2: Enhanced MVP Database (Next 2-4 weeks) 📋**
-- **Goal**: Expand to multiple Facebook channels and add Twitter
-- **Scope**: 2-3 platforms, 3-5 channel types
-- **Approach**: Extend current MVP framework systematically
-- **Timeline**: Short-term development
+### **Phase 2: Pathfinder Project - Product Content Database (CURRENT) 🚀**
+- **Goal**: Support automated daily product posts from Clan.com catalogue
+- **Scope**: Product integration, content generation, and automated posting
+- **Approach**: Extend existing database with product-specific tables
+- **Timeline**: Next 2-4 weeks
+- **Status**: **PLANNING PHASE** - Ready for implementation
 
-### **Phase 3: Enterprise Database Framework (Long-term) 🚀**
+### **Phase 3: Enhanced Product Database (Short-term) 📋**
+- **Goal**: Expand product content to multiple platforms and channels
+- **Scope**: Instagram, Twitter, LinkedIn with product-focused content
+- **Approach**: Extend product database framework systematically
+- **Timeline**: 1-2 months development
+
+### **Phase 4: Enterprise Database Framework (Long-term) 🚀**
 - **Goal**: Full multi-platform, multi-channel system with advanced features
 - **Scope**: 8+ platforms, 20+ channel types, advanced analytics
 - **Approach**: Complete database redesign with proper normalization
@@ -81,27 +88,71 @@ ORDER BY cr.requirement_category, cr.requirement_key
 
 ---
 
-## 🔄 **MVP DATABASE EXPANSION PATH**
+## 🔄 **PATHFINDER PROJECT: PRODUCT CONTENT DATABASE**
 
-### **Next Steps (Phase 2)**
+### **Product Integration Database Extensions (Phase 2)**
 
-#### **1. Facebook Story Post Channel**
-- **Database**: Same `channel_requirements` table, different filters
-- **Query**: `WHERE p.name = 'facebook' AND ct.name = 'story_post'`
-- **Data**: Story-specific requirements (aspect ratio, duration, etc.)
-- **Pattern**: Reuse successful MVP database structure
+#### **1. Product Management Tables**
+```sql
+-- Product catalogue integration
+CREATE TABLE products (
+    id SERIAL PRIMARY KEY,
+    clan_product_id VARCHAR(100) UNIQUE NOT NULL,  -- Clan.com product ID
+    name VARCHAR(255) NOT NULL,                    -- Product name
+    description TEXT,                              -- Product description
+    category VARCHAR(100),                         -- Product category
+    price DECIMAL(10,2),                          -- Product price
+    image_url VARCHAR(500),                       -- Product image URL
+    product_url VARCHAR(500),                     -- Clan.com product URL
+    is_active BOOLEAN DEFAULT true,               -- Whether product is available
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-#### **2. Twitter Feed Post Channel**
-- **Database**: Add Twitter platform and channel data
-- **Tables**: Extend existing `platforms` and `channel_types`
-- **Requirements**: Twitter-specific constraints (280 char limit, etc.)
-- **Approach**: Same MVP pattern, different platform
+-- Product selection history for daily posts
+CREATE TABLE product_selections (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER REFERENCES products(id),
+    selected_date DATE NOT NULL,                  -- Date product was selected
+    platform_id INTEGER REFERENCES platforms(id), -- Platform for posting
+    content_generated TEXT,                       -- Generated content
+    posted_at TIMESTAMP,                          -- When it was posted
+    engagement_metrics JSONB,                     -- Likes, shares, comments
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-#### **3. Enhanced Data Management**
-- **Validation**: Ensure data integrity across platforms
-- **Relationships**: Maintain proper foreign key constraints
-- **Performance**: Optimize queries for multiple platforms
-- **Monitoring**: Track data quality and usage patterns
+#### **2. Product Content Templates**
+```sql
+-- Product content generation templates
+CREATE TABLE product_content_templates (
+    id SERIAL PRIMARY KEY,
+    template_name VARCHAR(100) NOT NULL,          -- Template name
+    product_category VARCHAR(100),                -- Category-specific templates
+    content_type VARCHAR(50),                     -- 'feature', 'benefit', 'story'
+    template_prompt TEXT NOT NULL,                -- LLM prompt template
+    facebook_optimized BOOLEAN DEFAULT true,      -- Facebook-specific optimization
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### **3. Product Performance Tracking**
+```sql
+-- Product post performance analytics
+CREATE TABLE product_post_performance (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER REFERENCES products(id),
+    platform_id INTEGER REFERENCES platforms(id),
+    post_date DATE NOT NULL,
+    likes_count INTEGER DEFAULT 0,
+    shares_count INTEGER DEFAULT 0,
+    comments_count INTEGER DEFAULT 0,
+    reach_count INTEGER DEFAULT 0,
+    engagement_rate DECIMAL(5,2),                 -- Calculated engagement rate
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
 ### **Technical Approach for Expansion**
 - **Pattern Replication**: Copy successful MVP database structure

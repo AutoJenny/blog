@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Product Posts - Blog Launchpad</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .section-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .product-display {
+            background: #23273a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .product-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 20px;
+        }
+        
+        .product-info {
+            flex: 1;
+        }
+        
+        .product-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 5px;
+        }
+        
+        .product-price {
+            font-size: 1.1rem;
+            color: #10b981;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .product-description {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .content-preview {
+            background: #23273a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 120px;
+        }
+        
+        .content-text {
+            color: #e0e0e0;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: 1px solid #1d4ed8;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+            border-color: #1e40af;
+        }
+        
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+            border: 1px solid #475569;
+        }
+        
+        .btn-secondary:hover {
+            background: #475569;
+            border-color: #334155;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+            border: 1px solid #059669;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+            border-color: #047857;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-ready {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-posted {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .status-draft {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .content-type-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .content-type-btn {
+            padding: 8px 16px;
+            border: 1px solid #475569;
+            background: #23273a;
+            color: #94a3b8;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .content-type-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #1d4ed8;
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    {% include 'shared/header.html' %}
+    
+    <div class="container">
+        <div class="header">
+            <h1>🛍️ Daily Product Posts</h1>
+            <p>Automated daily Facebook posts featuring Clan.com products</p>
+        </div>
+        
+        <!-- Product Selection Section -->
+        <div class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-shopping-bag"></i>
+                Product Selection
+            </h2>
+            
+            <!-- Available Categories Info -->
+            <div style="background: #23273a; border: 1px solid #475569; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="color: #f1f5f9; font-size: 1.1rem; margin: 0;">Available Categories</h3>
+                    <span id="category-count" style="color: #10b981; font-weight: 600;">Loading...</span>
+                </div>
+                <div style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 10px; margin-bottom: 10px;">
+                    <div style="color: #f59e0b; font-size: 0.8rem; margin-bottom: 5px;">
+                        <i class="fas fa-exclamation-triangle"></i> Note: Product-category links not yet established
+                    </div>
+                    <div style="color: #94a3b8; font-size: 0.8rem;">
+                        All 1,114 products currently have no category associations. This will be resolved via Clan.com API integration.
+                    </div>
+                </div>
+                <div id="category-list" style="color: #94a3b8; font-size: 0.8rem; max-height: 200px; overflow-y: auto;">
+                    Loading categories...
+                </div>
+            </div>
+            
+            <div id="product-display" class="product-display" style="display: none;">
+                <div style="display: flex; align-items: flex-start;">
+                    <img id="product-image" class="product-image" src="" alt="Product Image">
+                    <div class="product-info">
+                        <div id="product-name" class="product-name"></div>
+                        <div id="product-price" class="product-price"></div>
+                        <div id="product-categories" class="product-categories" style="color: #10b981; font-size: 0.9rem; margin: 5px 0; display: none;"></div>
+                        <div id="product-description" class="product-description"></div>
+                        <div style="margin-top: 10px;">
+                            <a id="product-url" href="#" target="_blank" class="btn btn-secondary">
+                                <i class="fas fa-external-link-alt"></i>
+                                View on Clan.com
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="no-product" style="text-align: center; padding: 40px; color: #94a3b8;">
+                <i class="fas fa-shopping-bag fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+                <p>No product selected for today</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="select-product-btn" class="btn btn-primary">
+                    <i class="fas fa-random"></i>
+                    Select Random Product
+                </button>
+            </div>
+        </div>
+        
+        <!-- Content Generation Section -->
+        <div class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-robot"></i>
+                AI Content Generation
+            </h2>
+            
+            <div class="content-type-buttons">
+                <button class="content-type-btn active" data-type="feature">Feature Focus</button>
+                <button class="content-type-btn" data-type="benefit">Benefit Focus</button>
+                <button class="content-type-btn" data-type="story">Story Focus</button>
+            </div>
+            
+            <div class="content-preview">
+                <div id="content-text" class="content-text">
+                    Select a product and click "Generate Post" to create AI-powered content.
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button id="generate-content-btn" class="btn btn-primary" disabled>
+                    <i class="fas fa-magic"></i>
+                    Generate Post
+                </button>
+                <button id="edit-content-btn" class="btn btn-secondary" disabled>
+                    <i class="fas fa-edit"></i>
+                    Edit Content
+                </button>
+            </div>
+        </div>
+        
+        <!-- Posting Control Section -->
+        <div class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-paper-plane"></i>
+                Posting Control
+            </h2>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 5px;">Today's Post Status</div>
+                    <div id="post-status" class="status-indicator status-draft">Draft</div>
+                </div>
+                <div id="last-post-info" style="color: #94a3b8; font-size: 0.9rem;">
+                    No posts today
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button id="post-now-btn" class="btn btn-success" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                    Post Now
+                </button>
+                <button id="schedule-tomorrow-btn" class="btn btn-secondary" disabled>
+                    <i class="fas fa-calendar-plus"></i>
+                    Schedule for Tomorrow
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global state
+        let selectedProduct = null;
+        let generatedContent = '';
+        let selectedContentType = 'feature';
+        
+        // DOM elements
+        const productDisplay = document.getElementById('product-display');
+        const noProduct = document.getElementById('no-product');
+        const selectProductBtn = document.getElementById('select-product-btn');
+        const generateContentBtn = document.getElementById('generate-content-btn');
+        const editContentBtn = document.getElementById('edit-content-btn');
+        const postNowBtn = document.getElementById('post-now-btn');
+        const scheduleTomorrowBtn = document.getElementById('schedule-tomorrow-btn');
+        const contentText = document.getElementById('content-text');
+        const postStatus = document.getElementById('post-status');
+        
+        // Content type buttons
+        const contentTypeButtons = document.querySelectorAll('.content-type-btn');
+        contentTypeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                contentTypeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedContentType = btn.dataset.type;
+            });
+        });
+        
+        // Select random product
+        selectProductBtn.addEventListener('click', async () => {
+            selectProductBtn.classList.add('loading');
+            selectProductBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Selecting...';
+            
+            try {
+                const response = await fetch('/api/daily-product-posts/select-product', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    selectedProduct = data.product;
+                    displayProduct(selectedProduct);
+                    generateContentBtn.disabled = false;
+                } else {
+                    alert('Error selecting product: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error selecting product:', error);
+                alert('Error selecting product. Please try again.');
+            } finally {
+                selectProductBtn.classList.remove('loading');
+                selectProductBtn.innerHTML = '<i class="fas fa-random"></i> Select Random Product';
+            }
+        });
+        
+        // Generate content
+        generateContentBtn.addEventListener('click', async () => {
+            if (!selectedProduct) return;
+            
+            generateContentBtn.classList.add('loading');
+            generateContentBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            
+            try {
+                const response = await fetch('/api/daily-product-posts/generate-content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        product_id: selectedProduct.id,
+                        content_type: selectedContentType
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    generatedContent = data.content;
+                    contentText.textContent = generatedContent;
+                    editContentBtn.disabled = false;
+                    postNowBtn.disabled = false;
+                    scheduleTomorrowBtn.disabled = false;
+                    postStatus.textContent = 'Ready to Post';
+                    postStatus.className = 'status-indicator status-ready';
+                } else {
+                    alert('Error generating content: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error generating content:', error);
+                alert('Error generating content. Please try again.');
+            } finally {
+                generateContentBtn.classList.remove('loading');
+                generateContentBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Post';
+            }
+        });
+        
+        // Post now
+        postNowBtn.addEventListener('click', async () => {
+            if (!selectedProduct || !generatedContent) return;
+            
+            postNowBtn.classList.add('loading');
+            postNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+            
+            try {
+                const response = await fetch('/api/daily-product-posts/post-now', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        product_id: selectedProduct.id,
+                        content: generatedContent,
+                        content_type: selectedContentType
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    postStatus.textContent = 'Posted';
+                    postStatus.className = 'status-indicator status-posted';
+                    alert('Post published successfully!');
+                } else {
+                    alert('Error posting: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error posting:', error);
+                alert('Error posting. Please try again.');
+            } finally {
+                postNowBtn.classList.remove('loading');
+                postNowBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Post Now';
+            }
+        });
+        
+        // Display product
+        function displayProduct(product) {
+            document.getElementById('product-name').textContent = product.name;
+            document.getElementById('product-price').textContent = `£${product.price}`;
+            document.getElementById('product-description').textContent = product.description || 'No description available';
+            
+            // Handle image - most products have placeholder, show a fallback
+            const imageUrl = product.image_url;
+            if (imageUrl && !imageUrl.includes('essential.jpg')) {
+                document.getElementById('product-image').src = imageUrl;
+            } else {
+                // Use a generic product placeholder for products without real images
+                document.getElementById('product-image').src = 'https://via.placeholder.com/400x400/8B4513/FFFFFF?text=Clan.com+Product';
+            }
+            
+            document.getElementById('product-url').href = product.url || '#';
+            
+            // Display categories if available
+            displayProductCategories(product);
+            
+            productDisplay.style.display = 'block';
+            noProduct.style.display = 'none';
+        }
+        
+        // Display product categories
+        function displayProductCategories(product) {
+            const categoryContainer = document.getElementById('product-categories');
+            if (!categoryContainer) return;
+            
+            if (product.category_ids && Array.isArray(product.category_ids)) {
+                categoryContainer.innerHTML = '<strong>Categories:</strong> ' + product.category_ids.join(', ');
+                categoryContainer.style.display = 'block';
+            } else if (product.category_ids && typeof product.category_ids === 'string') {
+                try {
+                    const categories = JSON.parse(product.category_ids);
+                    categoryContainer.innerHTML = '<strong>Categories:</strong> ' + categories.join(', ');
+                    categoryContainer.style.display = 'block';
+                } catch (e) {
+                    categoryContainer.style.display = 'none';
+                }
+            } else {
+                categoryContainer.style.display = 'none';
+            }
+        }
+        
+        // Load categories
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/daily-product-posts/categories');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const categoryCount = document.getElementById('category-count');
+                    const categoryList = document.getElementById('category-list');
+                    
+                    categoryCount.textContent = `${data.categories.length} categories`;
+                    
+                    // Display categories with hierarchy (grouped by level)
+                    let html = '';
+                    const categoriesByLevel = {};
+                    
+                    data.categories.forEach(cat => {
+                        if (!categoriesByLevel[cat.level]) {
+                            categoriesByLevel[cat.level] = [];
+                        }
+                        categoriesByLevel[cat.level].push(cat);
+                    });
+                    
+                    // Show first 3 levels to avoid overwhelming display
+                    for (let level = 0; level <= 2; level++) {
+                        if (categoriesByLevel[level]) {
+                            html += `<div style="margin-bottom: 8px;"><strong>Level ${level}:</strong></div>`;
+                            categoriesByLevel[level].forEach(cat => {
+                                const indent = '&nbsp;'.repeat(4);
+                                html += `<div style="margin-left: 10px;">${indent}• ${cat.name}</div>`;
+                            });
+                            html += '<br>';
+                        }
+                    }
+                    
+                    html += `<div style="color: #64748b; font-style: italic;">... and ${data.categories.length - Object.values(categoriesByLevel).slice(0, 3).flat().length} more categories</div>`;
+                    
+                    categoryList.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                document.getElementById('category-list').innerHTML = 'Error loading categories';
+            }
+        }
+        
+        // Load today's status on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load categories first
+            await loadCategories();
+            
+            try {
+                const response = await fetch('/api/daily-product-posts/today-status');
+                const data = await response.json();
+                
+                if (data.success && data.post) {
+                    selectedProduct = data.post.product;
+                    generatedContent = data.post.content_text;
+                    selectedContentType = data.post.content_type;
+                    
+                    displayProduct(selectedProduct);
+                    contentText.textContent = generatedContent;
+                    
+                    generateContentBtn.disabled = false;
+                    editContentBtn.disabled = false;
+                    postNowBtn.disabled = false;
+                    scheduleTomorrowBtn.disabled = false;
+                    
+                    if (data.post.status === 'posted') {
+                        postStatus.textContent = 'Posted';
+                        postStatus.className = 'status-indicator status-posted';
+                    } else {
+                        postStatus.textContent = 'Ready to Post';
+                        postStatus.className = 'status-indicator status-ready';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading today\'s status:', error);
+            }
+        });
+    </script>
+</body>
+</html>

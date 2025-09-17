@@ -35,13 +35,20 @@ Transform our sophisticated database architecture into an intuitive, beautiful i
 - **Approach**: MVP elements integrated into existing pages, not separate
 - **Status**: **IMPLEMENTED AND INTEGRATED**
 
-### **Phase 2: Enhanced MVP UI (Next 2-4 weeks) 📋**
-- **Goal**: Expand interface for multiple Facebook channels and Twitter
-- **Scope**: 2-3 platforms, 3-5 channel types
-- **Approach**: Extend current MVP patterns systematically
-- **Timeline**: Short-term development
+### **Phase 2: Pathfinder Project - Product Content UI (CURRENT) 🚀**
+- **Goal**: UI for automated daily product posts from Clan.com catalogue
+- **Scope**: Product selection, content generation, and automated posting interfaces
+- **Approach**: Extend existing UI patterns for product-focused content
+- **Timeline**: Next 2-4 weeks
+- **Status**: **PLANNING PHASE** - Ready for implementation
 
-### **Phase 3: Enterprise UI (Long-term) 🚀**
+### **Phase 3: Enhanced Product UI (Short-term) 📋**
+- **Goal**: Expand product content UI to multiple platforms and channels
+- **Scope**: Instagram, Twitter, LinkedIn with product-focused interfaces
+- **Approach**: Extend product UI framework systematically
+- **Timeline**: 1-2 months development
+
+### **Phase 4: Enterprise UI (Long-term) 🚀**
 - **Goal**: Full multi-platform, multi-channel interface with advanced features
 - **Scope**: 8+ platforms, 20+ channel types, advanced analytics
 - **Approach**: Complete UI redesign with component-based architecture
@@ -140,26 +147,79 @@ Transform our sophisticated database architecture into an intuitive, beautiful i
 
 ---
 
-## 🔄 **MVP UI EXPANSION PATH**
+## 🔄 **PATHFINDER PROJECT: PRODUCT CONTENT UI**
 
-### **Next Steps (Phase 2)**
-1. **Facebook Story Post Channel**
-   - Extend existing MVP framework
-   - Add new route and template
-   - Reuse conversion_settings component
-   - Maintain consistent UI patterns
+### **Product Content Management Interface (Phase 2)**
 
-2. **Twitter Feed Post Channel**
-   - New platform integration
-   - Twitter-specific requirements
-   - Same MVP pattern and component reuse
-   - Consistent styling and behavior
+#### **1. Product Selection Dashboard**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 🛍️ Daily Product Selection Dashboard                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Selected Product for Today:                            │ │
+│ │ 🏷️ Highland Kilt - Traditional Tartan                  │ │
+│ │ 💰 £89.99 | 📸 Image Available | 🔗 View on Clan.com   │ │
+│ │ 📝 "Perfect for special occasions and traditional..."   │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ [🔄 Select New Product] [📊 View Performance] [⚙️ Settings] │
+└─────────────────────────────────────────────────────────────┘
+```
 
-3. **Enhanced LLM Integration**
-   - Replace mock responses with real API calls
-   - Add error handling and validation
-   - Implement response caching
-   - Maintain UI consistency
+#### **2. Product Content Generation Panel**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 🤖 AI Content Generation for Product Posts                 │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ Content Type: [Feature Focus ▼] [Benefit Focus] [Story]    │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ Generated Content Preview:                             │ │
+│ │ "Discover the timeless elegance of our Highland Kilt!  │ │
+│ │  Crafted from premium tartan, this traditional piece   │ │
+│ │  brings Scottish heritage to your wardrobe. Perfect    │ │
+│ │  for weddings, ceilidhs, and special occasions.        │ │
+│ │  #HighlandKilt #ScottishHeritage #TraditionalWear"     │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ [🔄 Regenerate] [✏️ Edit] [📤 Post to Facebook]            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### **3. Daily Posting Schedule Interface**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 📅 Daily Posting Schedule                                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│ Today's Schedule:                                           │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ 09:00 AM - Highland Kilt Product Post                  │ │
+│ │ Status: ✅ Ready to Post | Last Run: 2 hours ago       │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│                                                             │
+│ [⏰ Schedule Post] [📊 View Analytics] [⚙️ Auto-Posting]   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### **Technical Implementation (Phase 2)**
+1. **Product Selection Interface**
+   - Clan.com product API integration
+   - Random product selection algorithm
+   - Product information display and management
+
+2. **Content Generation UI**
+   - Product-focused LLM prompts
+   - Content template selection
+   - Real-time content preview and editing
+
+3. **Automated Posting Interface**
+   - Daily posting schedule management
+   - Facebook API integration
+   - Performance tracking and analytics
 
 ### **Technical Approach for Expansion**
 - **Pattern Replication**: Copy successful MVP structure

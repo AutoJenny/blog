@@ -56,13 +56,20 @@ This directory contains comprehensive documentation for the Blog Launchpad syste
 - **LLM Settings Panel**: UI complete with 3 accordion sections
 - **Reusable Components**: `conversion_settings.html` component created
 - **Database Integration**: Real-time requirements from `channel_requirements` table
-- **Status**: **READY FOR LLM INTEGRATION**
+- **Status**: **READY FOR PATHFINDER PROJECT**
 
 ### **LLM Integration** ✅
 - **Strategy**: Direct Ollama integration (port 11434)
 - **Current State**: Working AI-powered content generation
-- **Next Phase**: Enhanced features and optimization
+- **Next Phase**: Product-focused content generation
 - **Status**: **IMPLEMENTED** - Working system with real AI responses
+
+### **Pathfinder Project: Daily Product Posts** 🚀
+- **Goal**: Randomly select Clan.com products and create daily Facebook posts
+- **Content Source**: Clan.com product catalogue integration
+- **Platform**: Facebook (daily posting)
+- **AI Processing**: LLM-powered product content generation
+- **Status**: **PLANNING PHASE** - Ready for implementation
 
 ---
 
@@ -74,17 +81,24 @@ This directory contains comprehensive documentation for the Blog Launchpad syste
 3. **Error Handling**: Comprehensive error handling for connection issues
 4. **UI Integration**: Connected frontend to working backend
 
-### **Phase 2: Enhanced Features (Short-term)**
-1. **Configuration Persistence**: Save/load LLM settings
-2. **Provider Selection**: Dynamic provider/model selection
-3. **Performance Monitoring**: Response time tracking and optimization
-4. **Advanced Prompts**: Enhanced prompt engineering capabilities
+### **Phase 2: Pathfinder Project - Daily Product Posts (CURRENT)**
+1. **Clan.com Product Integration**: API connection to product catalogue
+2. **Random Product Selection**: Daily automated product selection algorithm
+3. **Product Content Generation**: LLM-powered product post creation
+4. **Facebook Daily Posting**: Automated daily Facebook post publishing
+5. **Product Content Templates**: Specialized prompts for product-focused content
 
-### **Phase 3: Production Optimization (Medium-term)**
-1. **Analytics Integration**: Performance tracking and insights
-2. **Batch Processing**: Multi-content generation capabilities
-3. **Advanced Workflows**: Integration with syndication workflows
-4. **User Experience**: Enhanced UI and interaction patterns
+### **Phase 3: Enhanced Product Content (Short-term)**
+1. **Product Image Integration**: Automatic product image selection and optimization
+2. **Product Category Targeting**: Category-specific content generation
+3. **Performance Tracking**: Product post engagement analytics
+4. **Content Optimization**: A/B testing for product post performance
+
+### **Phase 4: Multi-Platform Product Content (Medium-term)**
+1. **Instagram Product Posts**: Visual product content for Instagram
+2. **Twitter Product Threads**: Product storytelling on Twitter
+3. **LinkedIn Product Articles**: Professional product content
+4. **Cross-Platform Scheduling**: Coordinated product content across platforms
 
 ---
 
@@ -142,6 +156,12 @@ This directory contains comprehensive documentation for the Blog Launchpad syste
 ---
 
 ## 📝 **RECENT CHANGES**
+
+### **2025-01-27 - Pathfinder Project: Daily Product Posts**
+- ✅ **Updated development roadmap** - Focus on Clan.com product integration
+- ✅ **Defined pathfinder project scope** - Daily Facebook product posts
+- ✅ **Product content strategy** - LLM-powered product content generation
+- ✅ **Implementation planning** - Ready for product catalogue integration
 
 ### **2025-01-27 - LLM Integration Documentation Complete**
 - ✅ **Created LLM integration strategy document** - Strategic approach and rationale

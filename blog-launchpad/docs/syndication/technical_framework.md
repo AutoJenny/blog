@@ -11,13 +11,19 @@ This document outlines the technical framework for our Social Media Syndication 
 - **Approach**: MVP elements integrated into existing pages, not separate
 - **Timeline**: Immediate implementation
 
-### **Phase 2: Enhanced MVP (Next 2-4 weeks) 📋**
-- **Goal**: Expand to multiple Facebook channels and add Twitter
-- **Scope**: 2-3 platforms, 3-5 channel types
-- **Approach**: Extend current MVP framework systematically
-- **Timeline**: Short-term development
+### **Phase 2: Pathfinder Project - Daily Product Posts (CURRENT) 🚀**
+- **Goal**: Automated daily Facebook posts featuring Clan.com products
+- **Scope**: Product catalogue integration with AI-powered content generation
+- **Approach**: Random product selection + LLM content creation + automated posting
+- **Timeline**: Next 2-4 weeks
 
-### **Phase 3: Enterprise Framework (Long-term) 🚀**
+### **Phase 3: Enhanced Product Content (Short-term) 📋**
+- **Goal**: Expand product content to multiple platforms and channels
+- **Scope**: Instagram, Twitter, LinkedIn with product-focused content
+- **Approach**: Extend product content framework systematically
+- **Timeline**: 1-2 months development
+
+### **Phase 4: Enterprise Framework (Long-term) 🚀**
 - **Goal**: Full multi-platform, multi-channel system with advanced features
 - **Scope**: 8+ platforms, 20+ channel types, advanced analytics
 - **Approach**: Complete database redesign with proper normalization
@@ -99,23 +105,32 @@ AND ct.name = 'feed_post'
 
 ---
 
-## 🔄 **MVP EXPANSION PATH**
+## 🔄 **PATHFINDER PROJECT: DAILY PRODUCT POSTS**
 
-### **Next Steps (Phase 2)**
-1. **Add Facebook Story Post Channel**
-   - Extend existing MVP framework
-   - Add new route and template
-   - Reuse database structure and conversion_settings component
+### **Project Architecture (Phase 2)**
 
-2. **Add Twitter Feed Post Channel**
-   - New platform integration
-   - Twitter-specific requirements
-   - Same MVP pattern and component reuse
+#### **1. Clan.com Product Integration**
+- **API Connection**: Direct integration with Clan.com product catalogue
+- **Product Selection**: Random selection algorithm with category filtering
+- **Data Processing**: Product information extraction and formatting
+- **Image Handling**: Product image retrieval and optimization
 
-3. **Enhance LLM Integration**
-   - Replace mock responses with real API calls
-   - Add error handling and validation
-   - Implement response caching
+#### **2. Product Content Generation**
+- **Specialized Prompts**: Product-focused LLM prompts for engaging content
+- **Content Templates**: Pre-defined templates for different product types
+- **Facebook Optimization**: Character limits, hashtags, and engagement tactics
+- **Image Integration**: Automatic product image selection and sizing
+
+#### **3. Automated Daily Posting**
+- **Scheduling System**: Daily automated post creation and publishing
+- **Facebook API**: Direct posting to Facebook pages
+- **Error Handling**: Robust error handling and retry logic
+- **Performance Tracking**: Engagement metrics and content optimization
+
+#### **4. Database Extensions**
+- **Product Tables**: Store product information and selection history
+- **Content Templates**: Product-specific content generation templates
+- **Performance Metrics**: Track product post engagement and success rates
 
 ### **Technical Approach for Expansion**
 - **Pattern Replication**: Copy successful MVP structure

@@ -32,6 +32,9 @@ function makeApiRequest($endpoint, $params = []) {
             'message' => 'cURL error: ' . curl_error($ch)
         ];
     } else {
+        // Debug: Show raw response
+        echo "Raw response: " . substr($response, 0, 500) . "...\n";
+        
         // Decode JSON response
         $result = json_decode($response, true);
 
@@ -39,7 +42,8 @@ function makeApiRequest($endpoint, $params = []) {
         if (json_last_error() !== JSON_ERROR_NONE) {
             $result = [
                 'success' => false,
-                'message' => 'JSON decoding error: ' . json_last_error_msg()
+                'message' => 'JSON decoding error: ' . json_last_error_msg(),
+                'raw_response' => substr($response, 0, 200)
             ];
         }
     }

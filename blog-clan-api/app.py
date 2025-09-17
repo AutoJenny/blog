@@ -30,6 +30,40 @@ def test():
     """Simple test endpoint"""
     return jsonify({'message': 'Test endpoint working'})
 
+@app.route('/api/test-product')
+def test_single_product():
+    """Test endpoint to get a single product with images and categories"""
+    try:
+        # Test with a known SKU
+        test_sku = 'sr_swhdr_eightyardkilt_flashes'
+        logger.info(f"Testing single product fetch for SKU: {test_sku}")
+        
+        result = clan_api.get_product_data(test_sku, all_images=True, include_categories=True)
+        
+        if result.get('success', True):
+            product_data = result.get('data', {})
+            logger.info(f"Successfully fetched product: {product_data.get('title', 'Unknown')}")
+            
+            return jsonify({
+                'success': True,
+                'product': product_data,
+                'images_count': len(product_data.get('images', [])),
+                'categories_count': len(product_data.get('categories', []))
+            })
+        else:
+            logger.error(f"API error: {result.get('message', 'Unknown error')}")
+            return jsonify({
+                'success': False,
+                'error': result.get('message', 'Unknown error')
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Exception in test_single_product: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/api/categories')
 def get_categories():
     """Get all categories from clan.com"""
