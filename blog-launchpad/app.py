@@ -79,6 +79,114 @@ def get_db_connection():
         password=os.getenv('DB_PASSWORD', '')
     )
 
+def get_category_hierarchy(category_ids):
+    """Convert category IDs to breadcrumb-style hierarchy with product categories first."""
+    if not category_ids:
+        return []
+    
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get all categories with their full hierarchy path
+            cur.execute("""
+                WITH RECURSIVE category_paths AS (
+                    -- Base case: get all requested categories
+                    SELECT id, name, level, parent_id, 
+                           ARRAY[id] as path_ids,
+                           ARRAY[name] as path_names
+                    FROM clan_categories
+                    WHERE id = ANY(%s)
+                    
+                    UNION ALL
+                    
+                    -- Recursive case: get parent categories
+                    SELECT c.id, c.name, c.level, c.parent_id,
+                           c.id || cp.path_ids as path_ids,
+                           c.name || cp.path_names as path_names
+                    FROM clan_categories c
+                    JOIN category_paths cp ON c.id = cp.parent_id
+                    WHERE c.level >= 0
+                )
+                SELECT DISTINCT id, name, level, parent_id, path_ids, path_names
+                FROM category_paths
+                WHERE id = ANY(%s)
+                ORDER BY level, name
+            """, (category_ids, category_ids))
+            
+            categories = cur.fetchall()
+            
+            # Build breadcrumb paths for each category
+            breadcrumbs = []
+            seen_categories = set()
+            
+            for cat in categories:
+                # Skip if we've already processed this category
+                if cat['id'] in seen_categories:
+                    continue
+                seen_categories.add(cat['id'])
+                
+                # Build the full breadcrumb path
+                path_names = cat['path_names']
+                if len(path_names) > 1:
+                    # Create breadcrumb from the path, skipping the root level
+                    breadcrumb_parts = []
+                    for i, name in enumerate(path_names[1:], 1):  # Skip first (root level)
+                        breadcrumb_parts.append(name)
+                    breadcrumb = ' > '.join(breadcrumb_parts)
+                else:
+                    breadcrumb = cat['name']
+                
+                # Determine if this is a product category (under "Products") or other department
+                is_product_category = False
+                if cat['level'] > 1:
+                    # Check if this category is under "Products" (id 267)
+                    cur.execute("""
+                        WITH RECURSIVE parent_chain AS (
+                            SELECT id, name, level, parent_id
+                            FROM clan_categories
+                            WHERE id = %s
+                            
+                            UNION ALL
+                            
+                            SELECT c.id, c.name, c.level, c.parent_id
+                            FROM clan_categories c
+                            JOIN parent_chain pc ON c.id = pc.parent_id
+                            WHERE c.level >= 0
+                        )
+                        SELECT COUNT(*) as count
+                        FROM parent_chain
+                        WHERE id = 267
+                    """, (cat['id'],))
+                    
+                    result = cur.fetchone()
+                    is_product_category = result and result[0] > 0
+                
+                breadcrumbs.append({
+                    'id': cat['id'],
+                    'name': cat['name'],
+                    'breadcrumb': breadcrumb,
+                    'level': cat['level'],
+                    'is_product_category': is_product_category
+                })
+            
+            # Sort: product categories first, then others, both by level then name
+            product_categories = [b for b in breadcrumbs if b['is_product_category']]
+            other_categories = [b for b in breadcrumbs if not b['is_product_category']]
+            
+            # Sort each group by level (deeper first), then by name
+            product_categories.sort(key=lambda x: (-x['level'], x['name']))
+            other_categories.sort(key=lambda x: (-x['level'], x['name']))
+            
+            # Combine: product categories first, then others
+            result = product_categories + other_categories
+            
+            return result
+            
+    except Exception as e:
+        logger.error(f"Error getting category hierarchy: {e}")
+        return []
+
 @app.route('/')
 def index():
     """Main launchpad page."""
@@ -167,13 +275,34 @@ def select_random_product():
             existing_post = cur.fetchone()
             
             if existing_post:
+                # Parse category_ids if available for existing post
+                product_dict = dict(product)
+                category_ids = product_dict.get('category_ids')
+                
+                if category_ids:
+                    try:
+                        if isinstance(category_ids, str):
+                            parsed_category_ids = json.loads(category_ids)
+                        else:
+                            parsed_category_ids = category_ids
+                        
+                        # Convert to human-readable hierarchy
+                        product_dict['category_hierarchy'] = get_category_hierarchy(parsed_category_ids)
+                        product_dict['category_ids'] = parsed_category_ids
+                    except:
+                        product_dict['category_ids'] = None
+                        product_dict['category_hierarchy'] = []
+                else:
+                    product_dict['category_ids'] = None
+                    product_dict['category_hierarchy'] = []
+                
                 return jsonify({
                     'success': True, 
-                    'product': dict(product),
+                    'product': product_dict,
                     'message': 'Product already selected for today'
                 })
             
-            # Parse category_ids if available
+            # Parse category_ids if available and convert to human-readable format
             product_dict = dict(product)
             category_ids = product_dict.get('category_ids')
             
@@ -181,13 +310,19 @@ def select_random_product():
                 try:
                     # Try to parse as JSON if it's a string
                     if isinstance(category_ids, str):
-                        product_dict['category_ids'] = json.loads(category_ids)
+                        parsed_category_ids = json.loads(category_ids)
                     else:
-                        product_dict['category_ids'] = category_ids
+                        parsed_category_ids = category_ids
+                    
+                    # Convert to human-readable hierarchy
+                    product_dict['category_hierarchy'] = get_category_hierarchy(parsed_category_ids)
+                    product_dict['category_ids'] = parsed_category_ids
                 except:
                     product_dict['category_ids'] = None
+                    product_dict['category_hierarchy'] = []
             else:
                 product_dict['category_ids'] = None
+                product_dict['category_hierarchy'] = []
             
             return jsonify({
                 'success': True, 
@@ -3181,6 +3316,504 @@ def syndication_piece(piece_id):
     except Exception as e:
         logger.error(f"Error handling syndication piece {piece_id}: {e}")
         return jsonify({'error': f'Failed to handle syndication piece: {str(e)}'}), 500
+
+@app.route('/api/daily-product-posts/update-products', methods=['POST'])
+def update_products():
+    """Check for and update products with changes from Clan.com API"""
+    try:
+        logger.info("Starting incremental product update...")
+        
+        # Import the update classes
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), 'scripts'))
+        
+        from update_product_images import ProductImageUpdater
+        from update_product_categories import ProductCategoryUpdater
+        from update_product_prices import ProductPriceUpdater
+        
+        stats = {
+            'images_updated': 0,
+            'categories_updated': 0,
+            'prices_updated': 0,
+            'total_products_checked': 0,
+            'errors': []
+        }
+        
+        # Check for products that need updates (older than 1 day or missing data)
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Find products that need updates
+            cur.execute("""
+                SELECT sku, name, last_updated,
+                       CASE WHEN image_url IS NULL OR image_url = '' THEN 1 ELSE 0 END as needs_image,
+                       CASE WHEN category_ids IS NULL OR category_ids = '[]'::jsonb THEN 1 ELSE 0 END as needs_categories,
+                       CASE WHEN price IS NULL OR price = '' OR price = '0.00' THEN 1 ELSE 0 END as needs_price
+                FROM clan_products 
+                WHERE last_updated < NOW() - INTERVAL '1 day' 
+                   OR image_url IS NULL OR image_url = ''
+                   OR category_ids IS NULL OR category_ids = '[]'::jsonb
+                   OR price IS NULL OR price = '' OR price = '0.00'
+                ORDER BY last_updated ASC
+                LIMIT 50
+            """)
+            
+            products_to_update = cur.fetchall()
+            stats['total_products_checked'] = len(products_to_update)
+            
+            if not products_to_update:
+                return jsonify({
+                    'success': True,
+                    'message': 'All products are up to date! No updates needed.',
+                    'stats': stats
+                })
+            
+            logger.info(f"Found {len(products_to_update)} products that need updates")
+            
+            # Update images if needed
+            products_needing_images = [p for p in products_to_update if p['needs_image']]
+            if products_needing_images:
+                logger.info(f"Updating images for {len(products_needing_images)} products...")
+                try:
+                    image_updater = ProductImageUpdater()
+                    # Get fresh data from API for these products
+                    products_with_images = image_updater.fetch_products_by_sku([p['sku'] for p in products_needing_images])
+                    if products_with_images:
+                        image_stats = image_updater.update_product_images(products_with_images)
+                        stats['images_updated'] = image_stats.get('successful_updates', 0)
+                        stats['errors'].extend(image_stats.get('errors', []))
+                except Exception as e:
+                    logger.error(f"Error updating images: {e}")
+                    stats['errors'].append(f"Image update error: {str(e)}")
+            
+            # Update categories if needed
+            products_needing_categories = [p for p in products_to_update if p['needs_categories']]
+            if products_needing_categories:
+                logger.info(f"Updating categories for {len(products_needing_categories)} products...")
+                try:
+                    category_updater = ProductCategoryUpdater()
+                    # Get fresh data from API for these products
+                    products_with_categories = category_updater.fetch_products_by_sku([p['sku'] for p in products_needing_categories])
+                    if products_with_categories:
+                        category_stats = category_updater.update_product_categories(products_with_categories)
+                        stats['categories_updated'] = category_stats.get('successful_updates', 0)
+                        stats['errors'].extend(category_stats.get('errors', []))
+                except Exception as e:
+                    logger.error(f"Error updating categories: {e}")
+                    stats['errors'].append(f"Category update error: {str(e)}")
+            
+            # Update prices if needed
+            products_needing_prices = [p for p in products_to_update if p['needs_price']]
+            if products_needing_prices:
+                logger.info(f"Updating prices for {len(products_needing_prices)} products...")
+                try:
+                    price_updater = ProductPriceUpdater()
+                    # Get fresh data from API for these products
+                    products_with_prices = price_updater.fetch_products_by_sku([p['sku'] for p in products_needing_prices])
+                    if products_with_prices:
+                        price_stats = price_updater.update_product_prices(products_with_prices)
+                        stats['prices_updated'] = price_stats.get('successful_updates', 0)
+                        stats['errors'].extend(price_stats.get('errors', []))
+                except Exception as e:
+                    logger.error(f"Error updating prices: {e}")
+                    stats['errors'].append(f"Price update error: {str(e)}")
+        
+        total_updates = stats['images_updated'] + stats['categories_updated'] + stats['prices_updated']
+        
+        if total_updates > 0:
+            message = f"Successfully updated {total_updates} products: {stats['images_updated']} images, {stats['categories_updated']} categories, {stats['prices_updated']} prices"
+        else:
+            message = "No products needed updates, but checked for changes"
+        
+        if stats['errors']:
+            message += f" (with {len(stats['errors'])} errors)"
+        
+        return jsonify({
+            'success': True,
+            'message': message,
+            'stats': stats
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in update_products: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to update products: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/start-ollama', methods=['POST'])
+def start_ollama_daily_posts():
+    """Start the Ollama service for AI content generation."""
+    try:
+        import subprocess
+        import os
+        
+        # Check if Ollama is already running
+        try:
+            result = subprocess.run(['pgrep', '-f', 'ollama'], 
+                                  capture_output=True, text=True, timeout=5)
+            if result.returncode == 0:
+                return jsonify({
+                    'success': True,
+                    'message': 'Ollama is already running'
+                })
+        except subprocess.TimeoutExpired:
+            pass
+        except Exception:
+            pass
+        
+        # Start Ollama in the background
+        try:
+            # Try to start Ollama serve
+            subprocess.Popen(['ollama', 'serve'], 
+                           stdout=subprocess.DEVNULL, 
+                           stderr=subprocess.DEVNULL,
+                           preexec_fn=os.setsid if hasattr(os, 'setsid') else None)
+            
+            # Give it a moment to start
+            import time
+            time.sleep(2)
+            
+            # Verify it's running
+            result = subprocess.run(['pgrep', '-f', 'ollama'], 
+                                  capture_output=True, text=True, timeout=5)
+            
+            if result.returncode == 0:
+                return jsonify({
+                    'success': True,
+                    'message': 'Ollama service started successfully'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to start Ollama service'
+                })
+                
+        except FileNotFoundError:
+            return jsonify({
+                'success': False,
+                'error': 'Ollama not found. Please install Ollama first.'
+            })
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to start Ollama: {str(e)}'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error starting Ollama: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to start Ollama: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/add-schedule', methods=['POST'])
+def add_schedule():
+    """Add a new posting schedule for daily product posts."""
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        time = data.get('time', '17:00')
+        timezone = data.get('timezone', 'GMT')
+        days = data.get('days', [1,2,3,4,5])  # Default to weekdays
+        
+        # Validate input
+        if not name:
+            return jsonify({
+                'success': False,
+                'error': 'Schedule name is required'
+            }), 400
+            
+        if not days or len(days) == 0:
+            return jsonify({
+                'success': False,
+                'error': 'At least one day must be selected'
+            }), 400
+        
+        # Store schedule in database
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Check if name already exists
+            cur.execute("SELECT id FROM daily_posts_schedule WHERE name = %s AND is_active = true", (name,))
+            if cur.fetchone():
+                return jsonify({
+                    'success': False,
+                    'error': 'A schedule with this name already exists'
+                }), 400
+            
+            # Create new schedule record
+            cur.execute("""
+                INSERT INTO daily_posts_schedule (name, time, timezone, days, is_active, display_order, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+            """, (name, time, timezone, json.dumps(days), True, 0))
+            
+            conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Schedule "{name}" added successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error adding schedule: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to add schedule: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/set-schedule', methods=['POST'])
+def set_schedule():
+    """Set the posting schedule for daily product posts (legacy endpoint)."""
+    try:
+        data = request.get_json()
+        time = data.get('time', '17:00')
+        timezone = data.get('timezone', 'GMT')
+        days = data.get('days', [1,2,3,4,5])  # Default to weekdays
+        
+        # Validate input
+        if not days or len(days) == 0:
+            return jsonify({
+                'success': False,
+                'error': 'At least one day must be selected'
+            }), 400
+        
+        # Store schedule in database (using a simple approach for now)
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Create or update schedule record
+            cur.execute("""
+                INSERT INTO daily_posts_schedule (name, time, timezone, days, is_active, display_order, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+                ON CONFLICT (id) DO UPDATE SET
+                    time = EXCLUDED.time,
+                    timezone = EXCLUDED.timezone,
+                    days = EXCLUDED.days,
+                    is_active = EXCLUDED.is_active,
+                    updated_at = NOW()
+            """, ('Default Schedule', time, timezone, json.dumps(days), True, 0))
+            
+            conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Schedule set for {len(days)} days at {time} {timezone}'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error setting schedule: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to set schedule: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/clear-schedule', methods=['POST'])
+def clear_schedule():
+    """Clear the posting schedule for daily product posts."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Deactivate all schedules
+            cur.execute("""
+                UPDATE daily_posts_schedule 
+                SET is_active = false, updated_at = NOW()
+                WHERE is_active = true
+            """)
+            
+            conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Schedule cleared successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error clearing schedule: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to clear schedule: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/schedule-status')
+def get_schedule_status():
+    """Get the current posting schedule status."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get active schedule
+            cur.execute("""
+                SELECT time, timezone, days, is_active, created_at, updated_at
+                FROM daily_posts_schedule
+                WHERE is_active = true
+                ORDER BY created_at DESC
+                LIMIT 1
+            """)
+            
+            schedule = cur.fetchone()
+            
+            if schedule:
+                return jsonify({
+                    'success': True,
+                    'schedule': {
+                        'time': str(schedule['time']),
+                        'timezone': schedule['timezone'],
+                        'days': schedule['days'] if isinstance(schedule['days'], list) else json.loads(schedule['days']) if schedule['days'] else [],
+                        'is_active': schedule['is_active'],
+                        'created_at': schedule['created_at'].isoformat() if schedule['created_at'] else None,
+                        'updated_at': schedule['updated_at'].isoformat() if schedule['updated_at'] else None
+                    }
+                })
+            else:
+                return jsonify({
+                    'success': True,
+                    'schedule': None
+                })
+        
+    except Exception as e:
+        logger.error(f"Error getting schedule status: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to get schedule status: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/schedules')
+def get_all_schedules():
+    """Get all active posting schedules."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get all active schedules
+            cur.execute("""
+                SELECT id, name, time, timezone, days, is_active, created_at, updated_at
+                FROM daily_posts_schedule
+                WHERE is_active = true
+                ORDER BY display_order ASC, created_at ASC
+            """)
+            
+            schedules = cur.fetchall()
+            
+            # Convert to list of dictionaries
+            schedule_list = []
+            for schedule in schedules:
+                schedule_list.append({
+                    'id': schedule['id'],
+                    'name': schedule['name'],
+                    'time': str(schedule['time']),
+                    'timezone': schedule['timezone'],
+                    'days': schedule['days'] if isinstance(schedule['days'], list) else json.loads(schedule['days']) if schedule['days'] else [],
+                    'is_active': schedule['is_active'],
+                    'created_at': schedule['created_at'].isoformat() if schedule['created_at'] else None,
+                    'updated_at': schedule['updated_at'].isoformat() if schedule['updated_at'] else None
+                })
+            
+            return jsonify({
+                'success': True,
+                'schedules': schedule_list
+            })
+        
+    except Exception as e:
+        logger.error(f"Error getting schedules: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to get schedules: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/delete-schedule/<int:schedule_id>', methods=['DELETE'])
+def delete_schedule(schedule_id):
+    """Delete a specific posting schedule."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            
+            # Check if schedule exists
+            cur.execute("SELECT name FROM daily_posts_schedule WHERE id = %s", (schedule_id,))
+            schedule = cur.fetchone()
+            
+            if not schedule:
+                return jsonify({
+                    'success': False,
+                    'error': 'Schedule not found'
+                }), 404
+            
+            # Delete the schedule
+            cur.execute("DELETE FROM daily_posts_schedule WHERE id = %s", (schedule_id,))
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': f'Schedule "{schedule[0]}" deleted successfully'
+            })
+        
+    except Exception as e:
+        logger.error(f"Error deleting schedule: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to delete schedule: {str(e)}'
+        }), 500
+
+@app.route('/api/daily-product-posts/test-schedules')
+def test_schedules():
+    """Test all schedules and return a preview of next 7 days."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get all active schedules
+            cur.execute("""
+                SELECT name, time, timezone, days
+                FROM daily_posts_schedule
+                WHERE is_active = true
+                ORDER BY display_order ASC, created_at ASC
+            """)
+            
+            schedules = cur.fetchall()
+            
+            if not schedules:
+                return jsonify({
+                    'success': True,
+                    'preview': 'No schedules active'
+                })
+            
+            # Generate preview for next 7 days
+            from datetime import datetime, timedelta
+            now = datetime.now()
+            preview_lines = []
+            
+            for i in range(7):
+                date = now + timedelta(days=i)
+                dayOfWeek = date.weekday() + 1  # Convert Monday=0 to Monday=1, Sunday=6 to Sunday=7
+                dateStr = date.strftime('%m/%d/%Y')
+                
+                day_schedules = []
+                for schedule in schedules:
+                    days = schedule['days'] if isinstance(schedule['days'], list) else json.loads(schedule['days']) if schedule['days'] else []
+                    if dayOfWeek in days:
+                        time_formatted = str(schedule['time'])[:5]  # HH:MM format
+                        day_schedules.append(f"{schedule['name']} at {time_formatted} {schedule['timezone']}")
+                
+                if day_schedules:
+                    day_name = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday()]
+                    preview_lines.append(f"{day_name} {dateStr}: {', '.join(day_schedules)}")
+            
+            preview = '\n'.join(preview_lines) if preview_lines else 'No posts scheduled in the next 7 days'
+            
+            return jsonify({
+                'success': True,
+                'preview': preview
+            })
+        
+    except Exception as e:
+        logger.error(f"Error testing schedules: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to test schedules: {str(e)}'
+        }), 500
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(debug=True, host='0.0.0.0', port=port) 
