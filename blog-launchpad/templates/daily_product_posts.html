@@ -1970,7 +1970,7 @@
                 // Generate new sequential times for all items
                 const postingTimes = generateSequentialTimes(queueData.length);
                 
-                // Update each item with new schedule
+                // Update each item with new schedule and queue order
                 const updatePromises = queueData.map(async (item, i) => {
                     const newTime = postingTimes[i];
                     
@@ -1983,7 +1983,8 @@
                             scheduled_date: newTime.date.toISOString().split('T')[0],
                             scheduled_time: newTime.schedule.time,
                             schedule_name: newTime.schedule.name,
-                            timezone: newTime.schedule.timezone
+                            timezone: newTime.schedule.timezone,
+                            queue_order: i + 1  // Add queue order to the update
                         })
                     });
                     
