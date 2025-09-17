@@ -4021,7 +4021,7 @@ def generate_batch_items():
             current_count = cur.fetchone()['count']
             
             # Get available content types
-            cur.execute("SELECT id, template_name, content_type FROM product_content_templates WHERE is_active = true")
+            cur.execute("SELECT id, template_name, content_type, template_prompt FROM product_content_templates WHERE is_active = true")
             content_types = cur.fetchall()
             
             if not content_types:
@@ -4078,21 +4078,30 @@ def generate_batch_items():
                     
                     # Select random content type
                     content_type = random.choice(content_types)
+                    logger.debug(f"Selected content type: {content_type}")
                     
-                    # Generate content using Ollama
+                    # Generate content using Ollama - MUST succeed or skip this item
+                    formatted_price = f"£{selected_product['price']}" if selected_product['price'] else "Price on request"
+                    
+                    # Prepare prompt with URL for call to action
                     try:
-                        # Format price with pound sign
-                        formatted_price = f"£{selected_product['price']}" if selected_product['price'] else "Price on request"
-                        
-                        # Prepare prompt with URL for call to action
                         prompt = content_type['template_prompt'].format(
                             product_name=selected_product['name'],
                             product_description=selected_product['description'] or 'No description available',
                             product_price=formatted_price,
                             product_url=selected_product['url'] or 'https://clan.com'
                         )
-                        
-                        # Call Ollama API
+                    except KeyError as e:
+                        logger.error(f"Missing field in content_type for item {i+1}: {e}")
+                        errors.append(f"Item {i+1}: Missing field in content_type - {str(e)}")
+                        continue
+                    except Exception as e:
+                        logger.error(f"Error formatting prompt for item {i+1}: {e}")
+                        errors.append(f"Item {i+1}: Error formatting prompt - {str(e)}")
+                        continue
+                    
+                    # Call Ollama API - this MUST work or we skip this item
+                    try:
                         ollama_response = requests.post('http://localhost:11434/api/generate', 
                             json={
                                 'model': 'mistral',
@@ -4102,16 +4111,26 @@ def generate_batch_items():
                             timeout=30
                         )
                         
-                        if ollama_response.status_code == 200:
-                            generated_content = ollama_response.json().get('response', '').strip()
-                        else:
-                            generated_content = f"Check out this amazing {selected_product['name']} - {formatted_price}! {selected_product['url'] or 'https://clan.com'}"
+                        if ollama_response.status_code != 200:
+                            logger.error(f"Ollama API returned status {ollama_response.status_code} for item {i+1}")
+                            errors.append(f"Item {i+1}: Ollama API failed with status {ollama_response.status_code}")
+                            continue
                             
+                        generated_content = ollama_response.json().get('response', '').strip()
+                        
+                        if not generated_content or len(generated_content) < 10:
+                            logger.error(f"Ollama returned empty or too short content for item {i+1}")
+                            errors.append(f"Item {i+1}: Ollama returned empty content")
+                            continue
+                            
+                    except requests.exceptions.ConnectionError:
+                        logger.error(f"Cannot connect to Ollama for item {i+1} - is Ollama running?")
+                        errors.append(f"Item {i+1}: Cannot connect to Ollama - please start Ollama first")
+                        continue
                     except Exception as e:
-                        logger.warning(f"Ollama generation failed for item {i+1}: {e}")
-                        # Fallback content
-                        formatted_price = f"£{selected_product['price']}" if selected_product['price'] else "Price on request"
-                        generated_content = f"Check out this amazing {selected_product['name']} - {formatted_price}! {selected_product['url'] or 'https://clan.com'}"
+                        logger.error(f"Ollama generation failed for item {i+1}: {e}")
+                        errors.append(f"Item {i+1}: Ollama generation failed - {str(e)}")
+                        continue
                     
                     # Calculate next available posting time
                     # Simple approach: spread items across next few days
