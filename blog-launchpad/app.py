@@ -142,68 +142,71 @@ def daily_product_posts_select():
     return redirect('/daily-product-posts')
 
 # Daily Product Posts API Endpoints
+@app.route('/api/daily-product-posts/test-categories', methods=['GET'])
+def test_categories():
+    """Test category query to debug DictCursor issue."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            cur.execute("""
+                SELECT id, name FROM clan_categories 
+                WHERE parent_id = 267
+                ORDER BY RANDOM()
+                LIMIT 1
+            """)
+            category = cur.fetchone()
+            
+            if category:
+                return jsonify({
+                    'success': True,
+                    'category': dict(category),
+                    'type': str(type(category))
+                })
+            else:
+                return jsonify({'success': False, 'error': 'No categories found'})
+                
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 @app.route('/api/daily-product-posts/select-product', methods=['POST'])
 def select_random_product():
     """Select a random product from Clan.com catalogue using category-first approach."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
-            # Initialize variables
-            category_id = None
-            category_name = None
+            # Top-level category IDs under Products (ID: 267)
+            top_level_category_ids = [20, 328, 18, 37, 19, 21, 100, 16]
+            category_names = {
+                20: 'Children', 328: 'Clearance', 18: 'Gifts', 37: 'Homeware',
+                19: 'Jewellery', 21: 'Kilts & Highlandwear', 100: 'Men', 16: 'Women'
+            }
             
-            # First, get top-level categories under Products (ID: 267)
+            # Randomly select one category
+            import random
+            selected_category_id = random.choice(top_level_category_ids)
+            
+            # Find products that belong to this category
             cur.execute("""
-                SELECT id, name FROM clan_categories 
-                WHERE parent_id = 267
-                ORDER BY RANDOM()
-            """)
-            top_level_categories = cur.fetchall()
-            print(f"DEBUG: Found {len(top_level_categories)} top-level categories")
-            if top_level_categories:
-                print(f"DEBUG: First category type: {type(top_level_categories[0])}")
-                print(f"DEBUG: First category content: {top_level_categories[0]}")
+                SELECT id, name, sku, price, description, image_url, url, category_ids
+                FROM clan_products 
+                WHERE price IS NOT NULL AND price != ''
+                AND category_ids @> %s
+                ORDER BY 
+                    CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
+                    RANDOM() 
+                LIMIT 1
+            """, (json.dumps([selected_category_id]),))
+            product = cur.fetchone()
             
-            if not top_level_categories:
-                # Fallback to original random selection if no categories found
-                cur.execute("""
-                    SELECT * FROM clan_products 
-                    WHERE price IS NOT NULL AND price != ''
-                    ORDER BY 
-                        CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
-                        RANDOM() 
-                    LIMIT 1
-                """)
-                product = cur.fetchone()
-            else:
-                # Select a random top-level category
-                selected_category = top_level_categories[0]
-                print(f"DEBUG: Selected category type: {type(selected_category)}")
-                print(f"DEBUG: Selected category content: {selected_category}")
-                category_id = selected_category[0]  # id is first column
-                category_name = selected_category[1]  # name is second column
-                print(f"DEBUG: Category ID: {category_id}, Name: {category_name}")
-                
-                # Find products that belong to this category
-                cur.execute("""
-                    SELECT * FROM clan_products 
-                    WHERE price IS NOT NULL AND price != ''
-                    AND category_ids @> %s
-                    ORDER BY 
-                        CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
-                        RANDOM() 
-                    LIMIT 1
-                """, (json.dumps([category_id]),))
-                product = cur.fetchone()
-                
-                # If no products found in this category, try other categories
-                if not product:
-                    for category in top_level_categories[1:]:
-                        cat_id = category[0]  # id is first column
-                        cat_name = category[1]  # name is second column
+            # If no products found in this category, try other categories
+            if not product:
+                for cat_id in top_level_category_ids:
+                    if cat_id != selected_category_id:
                         cur.execute("""
-                            SELECT * FROM clan_products 
+                            SELECT id, name, sku, price, description, image_url, url, category_ids
+                            FROM clan_products 
                             WHERE price IS NOT NULL AND price != ''
                             AND category_ids @> %s
                             ORDER BY 
@@ -213,95 +216,38 @@ def select_random_product():
                         """, (json.dumps([cat_id]),))
                         product = cur.fetchone()
                         if product:
-                            # Update selected category info
-                            category_id = cat_id
-                            category_name = cat_name
+                            selected_category_id = cat_id
                             break
-                
-                # Final fallback to any product if no category-based selection worked
-                if not product:
-                    cur.execute("""
-                        SELECT * FROM clan_products 
-                        WHERE price IS NOT NULL AND price != ''
-                        ORDER BY 
-                            CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
-                            RANDOM() 
-                        LIMIT 1
-                    """)
-                    product = cur.fetchone()
+            
+            # Final fallback to any product
+            if not product:
+                cur.execute("""
+                    SELECT id, name, sku, price, description, image_url, url, category_ids
+                    FROM clan_products 
+                    WHERE price IS NOT NULL AND price != ''
+                    ORDER BY 
+                        CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
+                        RANDOM() 
+                    LIMIT 1
+                """)
+                product = cur.fetchone()
             
             if not product:
                 return jsonify({'success': False, 'error': 'No products available'})
             
-            # Check if we already have a post for today
-            today = datetime.now().date()
-            cur.execute("""
-                SELECT * FROM daily_posts 
-                WHERE post_date = %s AND product_id = %s
-            """, (today, product['id']))
-            existing_post = cur.fetchone()
-            
-            if existing_post:
-                # Parse category_ids if available for existing post
-                product_dict = dict(product)
-                category_ids = product_dict.get('category_ids')
-                
-                if category_ids:
-                    try:
-                        if isinstance(category_ids, str):
-                            parsed_category_ids = json.loads(category_ids)
-                        else:
-                            parsed_category_ids = category_ids
-                        
-                        # Convert to human-readable hierarchy
-                        product_dict['category_hierarchy'] = []  # Temporarily disable
-                        product_dict['category_ids'] = parsed_category_ids
-                    except:
-                        product_dict['category_ids'] = None
-                        product_dict['category_hierarchy'] = []
-                else:
-                    product_dict['category_ids'] = None
-                    product_dict['category_hierarchy'] = []
-                
-                return jsonify({
-                    'success': True, 
-                    'product': product_dict,
-                    'message': 'Product already selected for today'
-                })
-            
-            # Parse category_ids if available and convert to human-readable format
+            # Simple product data conversion - no complex hierarchy processing
             product_dict = dict(product)
-            category_ids = product_dict.get('category_ids')
+            product_dict['category_hierarchy'] = []  # Keep it simple
             
-            if category_ids:
-                try:
-                    # Try to parse as JSON if it's a string
-                    if isinstance(category_ids, str):
-                        parsed_category_ids = json.loads(category_ids)
-                    else:
-                        parsed_category_ids = category_ids
-                    
-                    # Convert to human-readable hierarchy
-                    product_dict['category_hierarchy'] = []  # Temporarily disable
-                    product_dict['category_ids'] = parsed_category_ids
-                except:
-                    product_dict['category_ids'] = None
-                    product_dict['category_hierarchy'] = []
-            else:
-                product_dict['category_ids'] = None
-                product_dict['category_hierarchy'] = []
-            
-            # Add selected category information to response
+            # Response with selected category info
             response_data = {
                 'success': True, 
-                'product': product_dict
-            }
-            
-            if category_id and category_name:
-                response_data['selected_category'] = {
-                    'id': category_id,
-                    'name': category_name
+                'product': product_dict,
+                'selected_category': {
+                    'id': selected_category_id,
+                    'name': category_names.get(selected_category_id, 'Unknown')
                 }
+            }
             
             return jsonify(response_data)
             
