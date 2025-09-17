@@ -187,17 +187,17 @@ def select_random_product():
             import random
             selected_category_id = random.choice(top_level_category_ids)
             
-            # Find products that belong to this category
+            # Find products that belong to this category using a simpler approach
             cur.execute("""
                 SELECT id, name, sku, price, description, image_url, url, category_ids
                 FROM clan_products 
                 WHERE price IS NOT NULL AND price != ''
-                AND category_ids @> %s
+                AND category_ids::text LIKE %s
                 ORDER BY 
                     CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
                     RANDOM() 
                 LIMIT 1
-            """, (json.dumps([selected_category_id]),))
+            """, (f'%{selected_category_id}%',))
             product = cur.fetchone()
             
             # If no products found in this category, try other categories
@@ -208,12 +208,12 @@ def select_random_product():
                             SELECT id, name, sku, price, description, image_url, url, category_ids
                             FROM clan_products 
                             WHERE price IS NOT NULL AND price != ''
-                            AND category_ids @> %s
+                            AND category_ids::text LIKE %s
                             ORDER BY 
                                 CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
                                 RANDOM() 
                             LIMIT 1
-                        """, (json.dumps([cat_id]),))
+                        """, (f'%{cat_id}%',))
                         product = cur.fetchone()
                         if product:
                             selected_category_id = cat_id
