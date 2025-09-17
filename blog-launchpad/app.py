@@ -203,8 +203,21 @@ def select_random_product():
         with get_db_connection() as conn:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
-            # Top-level category IDs under Products (ID: 267)
-            top_level_category_ids = [20, 328, 18, 37, 19, 21, 100, 16]
+            # First, get all products and filter by category (simple approach)
+            cur.execute("""
+                SELECT id, name, sku, price, description, image_url, url, category_ids
+                FROM clan_products 
+                WHERE price IS NOT NULL AND price != ''
+                ORDER BY RANDOM() 
+                LIMIT 100
+            """)
+            all_products = cur.fetchall()
+            
+            if not all_products:
+                return jsonify({'success': False, 'error': 'No products available'})
+            
+            # Top-level category IDs and names
+            category_ids = [20, 328, 18, 37, 19, 21, 100, 16]
             category_names = {
                 20: 'Children', 328: 'Clearance', 18: 'Gifts', 37: 'Homeware',
                 19: 'Jewellery', 21: 'Kilts & Highlandwear', 100: 'Men', 16: 'Women'
@@ -212,69 +225,48 @@ def select_random_product():
             
             # Randomly select one category
             import random
-            selected_category_id = random.choice(top_level_category_ids)
+            selected_category_id = random.choice(category_ids)
             
-            # Find products that belong to this category
-            cur.execute("""
-                SELECT id, name, sku, price, description, image_url, url, category_ids
-                FROM clan_products 
-                WHERE price IS NOT NULL AND price != ''
-                AND category_ids::text LIKE %s
-                ORDER BY 
-                    CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
-                    RANDOM() 
-                LIMIT 1
-            """, (f'%{selected_category_id}%',))
-            product = cur.fetchone()
+            # Filter products by selected category
+            matching_products = []
+            for product in all_products:
+                if product['category_ids'] and selected_category_id in product['category_ids']:
+                    matching_products.append(product)
             
             # If no products found in this category, try other categories
-            if not product:
-                for cat_id in top_level_category_ids:
+            if not matching_products:
+                for cat_id in category_ids:
                     if cat_id != selected_category_id:
-                        cur.execute("""
-                            SELECT id, name, sku, price, description, image_url, url, category_ids
-                            FROM clan_products 
-                            WHERE price IS NOT NULL AND price != ''
-                            AND category_ids::text LIKE %s
-                            ORDER BY 
-                                CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
-                                RANDOM() 
-                            LIMIT 1
-                        """, (f'%{cat_id}%',))
-                        product = cur.fetchone()
-                        if product:
-                            selected_category_id = cat_id
+                        for product in all_products:
+                            if product['category_ids'] and cat_id in product['category_ids']:
+                                matching_products.append(product)
+                                selected_category_id = cat_id
+                                break
+                        if matching_products:
                             break
             
-            # Final fallback to any product
-            if not product:
-                cur.execute("""
-                    SELECT id, name, sku, price, description, image_url, url, category_ids
-                    FROM clan_products 
-                    WHERE price IS NOT NULL AND price != ''
-                    ORDER BY 
-                        CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
-                        RANDOM() 
-                    LIMIT 1
-                """)
-                product = cur.fetchone()
+            # If still no matches, just pick any product
+            if not matching_products:
+                selected_product = random.choice(all_products)
+                selected_category_id = None
+            else:
+                selected_product = random.choice(matching_products)
             
-            if not product:
-                return jsonify({'success': False, 'error': 'No products available'})
-            
-            # Simple product data conversion - no complex hierarchy processing
-            product_dict = dict(product)
-            product_dict['category_hierarchy'] = []  # Keep it simple
+            # Simple product data conversion
+            product_dict = dict(selected_product)
+            product_dict['category_hierarchy'] = []
             
             # Response with selected category info
             response_data = {
                 'success': True, 
-                'product': product_dict,
-                'selected_category': {
+                'product': product_dict
+            }
+            
+            if selected_category_id:
+                response_data['selected_category'] = {
                     'id': selected_category_id,
                     'name': category_names.get(selected_category_id, 'Unknown')
                 }
-            }
             
             return jsonify(response_data)
             
