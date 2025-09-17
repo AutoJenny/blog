@@ -3997,6 +3997,183 @@ def clear_queue():
             'error': f'Failed to clear queue: {str(e)}'
         }), 500
 
+@app.route('/api/daily-product-posts/generate-batch', methods=['POST'])
+def generate_batch_items():
+    """Generate multiple items for the posting queue automatically."""
+    try:
+        data = request.get_json()
+        count = data.get('count', 10)
+        
+        if count < 1 or count > 50:
+            return jsonify({
+                'success': False,
+                'error': 'Count must be between 1 and 50'
+            }), 400
+        
+        generated_items = []
+        errors = []
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get current queue count for scheduling
+            cur.execute("SELECT COUNT(*) as count FROM posting_queue WHERE status = 'pending'")
+            current_count = cur.fetchone()['count']
+            
+            # Get available content types
+            cur.execute("SELECT id, template_name, content_type FROM product_content_templates WHERE is_active = true")
+            content_types = cur.fetchall()
+            
+            if not content_types:
+                return jsonify({
+                    'success': False,
+                    'error': 'No content templates available'
+                }), 400
+            
+            # Generate items
+            for i in range(count):
+                try:
+                    # Select random product using existing logic
+                    cur.execute("""
+                        SELECT id, name, sku, price, description, image_url, url, category_ids
+                        FROM clan_products
+                        WHERE price IS NOT NULL AND price != ''
+                        ORDER BY RANDOM()
+                        LIMIT 100
+                    """)
+                    all_products = cur.fetchall()
+                    
+                    if not all_products:
+                        errors.append(f"Item {i+1}: No products available")
+                        continue
+                    
+                    # Category-first selection
+                    category_ids = [20, 328, 18, 37, 19, 21, 100, 16]
+                    import random
+                    selected_category_id = random.choice(category_ids)
+                    
+                    # Filter products by selected category
+                    matching_products = []
+                    for product in all_products:
+                        if product['category_ids'] and selected_category_id in product['category_ids']:
+                            matching_products.append(product)
+                    
+                    # If no products found in this category, try other categories
+                    if not matching_products:
+                        for cat_id in category_ids:
+                            if cat_id != selected_category_id:
+                                for product in all_products:
+                                    if product['category_ids'] and cat_id in product['category_ids']:
+                                        matching_products.append(product)
+                                        selected_category_id = cat_id
+                                        break
+                                if matching_products:
+                                    break
+                    
+                    # If still no matches, just pick any product
+                    if not matching_products:
+                        selected_product = random.choice(all_products)
+                    else:
+                        selected_product = random.choice(matching_products)
+                    
+                    # Select random content type
+                    content_type = random.choice(content_types)
+                    
+                    # Generate content using Ollama
+                    try:
+                        # Format price with pound sign
+                        formatted_price = f"£{selected_product['price']}" if selected_product['price'] else "Price on request"
+                        
+                        # Prepare prompt with URL for call to action
+                        prompt = content_type['template_prompt'].format(
+                            product_name=selected_product['name'],
+                            product_description=selected_product['description'] or 'No description available',
+                            product_price=formatted_price,
+                            product_url=selected_product['url'] or 'https://clan.com'
+                        )
+                        
+                        # Call Ollama API
+                        ollama_response = requests.post('http://localhost:11434/api/generate', 
+                            json={
+                                'model': 'mistral',
+                                'prompt': prompt,
+                                'stream': False
+                            },
+                            timeout=30
+                        )
+                        
+                        if ollama_response.status_code == 200:
+                            generated_content = ollama_response.json().get('response', '').strip()
+                        else:
+                            generated_content = f"Check out this amazing {selected_product['name']} - {formatted_price}! {selected_product['url'] or 'https://clan.com'}"
+                            
+                    except Exception as e:
+                        logger.warning(f"Ollama generation failed for item {i+1}: {e}")
+                        # Fallback content
+                        formatted_price = f"£{selected_product['price']}" if selected_product['price'] else "Price on request"
+                        generated_content = f"Check out this amazing {selected_product['name']} - {formatted_price}! {selected_product['url'] or 'https://clan.com'}"
+                    
+                    # Calculate next available posting time
+                    # Simple approach: spread items across next few days
+                    from datetime import datetime, timedelta
+                    base_date = datetime.now() + timedelta(days=1)  # Start tomorrow
+                    item_date = base_date + timedelta(days=i // 3)  # 3 items per day
+                    scheduled_date = item_date.strftime('%Y-%m-%d')
+                    
+                    # Distribute times throughout the day
+                    time_slots = ['09:00:00', '13:00:00', '17:00:00']
+                    scheduled_time = time_slots[i % 3]
+                    
+                    # Add to queue (using same structure as existing add_to_queue function)
+                    cur.execute("""
+                        INSERT INTO posting_queue 
+                        (product_id, scheduled_date, scheduled_time, schedule_name, timezone, 
+                         generated_content, queue_order, status)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending')
+                        RETURNING id, created_at
+                    """, (
+                        selected_product['id'],
+                        scheduled_date,
+                        scheduled_time,
+                        f"Auto-generated {content_type['template_name']}",
+                        'GMT',  # Default timezone
+                        generated_content,
+                        current_count + i + 1
+                    ))
+                    
+                    result = cur.fetchone()
+                    queue_id = result[0]
+                    created_at = result[1]
+                    
+                    generated_items.append({
+                        'product_name': selected_product['name'],
+                        'content_type': content_type['template_name'],
+                        'scheduled_date': scheduled_date,
+                        'scheduled_time': scheduled_time
+                    })
+                    
+                except Exception as e:
+                    logger.error(f"Error generating item {i+1}: {e}")
+                    errors.append(f"Item {i+1}: {str(e)}")
+                    continue
+            
+            conn.commit()
+            
+            return jsonify({
+                'success': True,
+                'generated_count': len(generated_items),
+                'total_requested': count,
+                'errors': errors,
+                'items': generated_items
+            })
+        
+    except Exception as e:
+        logger.error(f"Error generating batch items: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Failed to generate batch items: {str(e)}'
+        }), 500
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5001))
     app.run(debug=True, host='0.0.0.0', port=port) 
