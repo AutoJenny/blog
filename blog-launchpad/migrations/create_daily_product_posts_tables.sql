@@ -5,7 +5,7 @@
 
 -- Products table - Store Clan.com product information
 CREATE TABLE IF NOT EXISTS products (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     clan_product_id VARCHAR(100) UNIQUE NOT NULL,  -- Clan.com product ID
     name VARCHAR(255) NOT NULL,                    -- Product name
     description TEXT,                              -- Product description
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS products (
 
 -- Daily posts table - Track what was posted when
 CREATE TABLE IF NOT EXISTS daily_posts (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id INTEGER REFERENCES products(id),
     post_date DATE NOT NULL,                      -- Date the post was made
     content_text TEXT NOT NULL,                   -- Generated post content
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS daily_posts (
 
 -- Post performance table - Basic engagement metrics
 CREATE TABLE IF NOT EXISTS post_performance (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     daily_post_id INTEGER REFERENCES daily_posts(id),
     likes_count INTEGER DEFAULT 0,
     shares_count INTEGER DEFAULT 0,
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS post_performance (
 
 -- Product content templates - Simple templates for different content types
 CREATE TABLE IF NOT EXISTS product_content_templates (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     template_name VARCHAR(100) NOT NULL,          -- Template name
     content_type VARCHAR(50) NOT NULL,            -- 'feature', 'benefit', 'story'
     template_prompt TEXT NOT NULL,                -- LLM prompt template
