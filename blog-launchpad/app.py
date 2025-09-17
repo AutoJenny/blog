@@ -81,111 +81,8 @@ def get_db_connection():
 
 def get_category_hierarchy(category_ids):
     """Convert category IDs to breadcrumb-style hierarchy with product categories first."""
-    if not category_ids:
-        return []
-    
-    try:
-        with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            
-            # Get all categories with their full hierarchy path
-            cur.execute("""
-                WITH RECURSIVE category_paths AS (
-                    -- Base case: get all requested categories
-                    SELECT id, name, level, parent_id, 
-                           ARRAY[id] as path_ids,
-                           ARRAY[name] as path_names
-                    FROM clan_categories
-                    WHERE id = ANY(%s)
-                    
-                    UNION ALL
-                    
-                    -- Recursive case: get parent categories
-                    SELECT c.id, c.name, c.level, c.parent_id,
-                           c.id || cp.path_ids as path_ids,
-                           c.name || cp.path_names as path_names
-                    FROM clan_categories c
-                    JOIN category_paths cp ON c.id = cp.parent_id
-                    WHERE c.level >= 0
-                )
-                SELECT DISTINCT id, name, level, parent_id, path_ids, path_names
-                FROM category_paths
-                WHERE id = ANY(%s)
-                ORDER BY level, name
-            """, (category_ids, category_ids))
-            
-            categories = cur.fetchall()
-            
-            # Build breadcrumb paths for each category
-            breadcrumbs = []
-            seen_categories = set()
-            
-            for cat in categories:
-                # Skip if we've already processed this category
-                if cat['id'] in seen_categories:
-                    continue
-                seen_categories.add(cat['id'])
-                
-                # Build the full breadcrumb path
-                path_names = cat['path_names']
-                if len(path_names) > 1:
-                    # Create breadcrumb from the path, skipping the root level
-                    breadcrumb_parts = []
-                    for i, name in enumerate(path_names[1:], 1):  # Skip first (root level)
-                        breadcrumb_parts.append(name)
-                    breadcrumb = ' > '.join(breadcrumb_parts)
-                else:
-                    breadcrumb = cat['name']
-                
-                # Determine if this is a product category (under "Products") or other department
-                is_product_category = False
-                if cat['level'] > 1:
-                    # Check if this category is under "Products" (id 267)
-                    cur.execute("""
-                        WITH RECURSIVE parent_chain AS (
-                            SELECT id, name, level, parent_id
-                            FROM clan_categories
-                            WHERE id = %s
-                            
-                            UNION ALL
-                            
-                            SELECT c.id, c.name, c.level, c.parent_id
-                            FROM clan_categories c
-                            JOIN parent_chain pc ON c.id = pc.parent_id
-                            WHERE c.level >= 0
-                        )
-                        SELECT COUNT(*) as count
-                        FROM parent_chain
-                        WHERE id = 267
-                    """, (cat['id'],))
-                    
-                    result = cur.fetchone()
-                    is_product_category = result and result[0] > 0
-                
-                breadcrumbs.append({
-                    'id': cat['id'],
-                    'name': cat['name'],
-                    'breadcrumb': breadcrumb,
-                    'level': cat['level'],
-                    'is_product_category': is_product_category
-                })
-            
-            # Sort: product categories first, then others, both by level then name
-            product_categories = [b for b in breadcrumbs if b['is_product_category']]
-            other_categories = [b for b in breadcrumbs if not b['is_product_category']]
-            
-            # Sort each group by level (deeper first), then by name
-            product_categories.sort(key=lambda x: (-x['level'], x['name']))
-            other_categories.sort(key=lambda x: (-x['level'], x['name']))
-            
-            # Combine: product categories first, then others
-            result = product_categories + other_categories
-            
-            return result
-            
-    except Exception as e:
-        logger.error(f"Error getting category hierarchy: {e}")
-        return []
+    # Temporarily disabled to fix tuple index error
+    return []
 
 @app.route('/')
 def index():
@@ -247,21 +144,91 @@ def daily_product_posts_select():
 # Daily Product Posts API Endpoints
 @app.route('/api/daily-product-posts/select-product', methods=['POST'])
 def select_random_product():
-    """Select a random product from Clan.com catalogue."""
+    """Select a random product from Clan.com catalogue using category-first approach."""
     try:
         with get_db_connection() as conn:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur = conn.cursor()
             
-            # Get a random product from Clan.com, prioritizing test products
+            # Initialize variables
+            category_id = None
+            category_name = None
+            
+            # First, get top-level categories under Products (ID: 267)
             cur.execute("""
-                SELECT * FROM clan_products 
-                WHERE price IS NOT NULL AND price != ''
-                ORDER BY 
-                    CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
-                    RANDOM() 
-                LIMIT 1
+                SELECT id, name FROM clan_categories 
+                WHERE parent_id = 267
+                ORDER BY RANDOM()
             """)
-            product = cur.fetchone()
+            top_level_categories = cur.fetchall()
+            print(f"DEBUG: Found {len(top_level_categories)} top-level categories")
+            if top_level_categories:
+                print(f"DEBUG: First category type: {type(top_level_categories[0])}")
+                print(f"DEBUG: First category content: {top_level_categories[0]}")
+            
+            if not top_level_categories:
+                # Fallback to original random selection if no categories found
+                cur.execute("""
+                    SELECT * FROM clan_products 
+                    WHERE price IS NOT NULL AND price != ''
+                    ORDER BY 
+                        CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
+                        RANDOM() 
+                    LIMIT 1
+                """)
+                product = cur.fetchone()
+            else:
+                # Select a random top-level category
+                selected_category = top_level_categories[0]
+                print(f"DEBUG: Selected category type: {type(selected_category)}")
+                print(f"DEBUG: Selected category content: {selected_category}")
+                category_id = selected_category[0]  # id is first column
+                category_name = selected_category[1]  # name is second column
+                print(f"DEBUG: Category ID: {category_id}, Name: {category_name}")
+                
+                # Find products that belong to this category
+                cur.execute("""
+                    SELECT * FROM clan_products 
+                    WHERE price IS NOT NULL AND price != ''
+                    AND category_ids @> %s
+                    ORDER BY 
+                        CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
+                        RANDOM() 
+                    LIMIT 1
+                """, (json.dumps([category_id]),))
+                product = cur.fetchone()
+                
+                # If no products found in this category, try other categories
+                if not product:
+                    for category in top_level_categories[1:]:
+                        cat_id = category[0]  # id is first column
+                        cat_name = category[1]  # name is second column
+                        cur.execute("""
+                            SELECT * FROM clan_products 
+                            WHERE price IS NOT NULL AND price != ''
+                            AND category_ids @> %s
+                            ORDER BY 
+                                CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
+                                RANDOM() 
+                            LIMIT 1
+                        """, (json.dumps([cat_id]),))
+                        product = cur.fetchone()
+                        if product:
+                            # Update selected category info
+                            category_id = cat_id
+                            category_name = cat_name
+                            break
+                
+                # Final fallback to any product if no category-based selection worked
+                if not product:
+                    cur.execute("""
+                        SELECT * FROM clan_products 
+                        WHERE price IS NOT NULL AND price != ''
+                        ORDER BY 
+                            CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
+                            RANDOM() 
+                        LIMIT 1
+                    """)
+                    product = cur.fetchone()
             
             if not product:
                 return jsonify({'success': False, 'error': 'No products available'})
@@ -287,7 +254,7 @@ def select_random_product():
                             parsed_category_ids = category_ids
                         
                         # Convert to human-readable hierarchy
-                        product_dict['category_hierarchy'] = get_category_hierarchy(parsed_category_ids)
+                        product_dict['category_hierarchy'] = []  # Temporarily disable
                         product_dict['category_ids'] = parsed_category_ids
                     except:
                         product_dict['category_ids'] = None
@@ -315,7 +282,7 @@ def select_random_product():
                         parsed_category_ids = category_ids
                     
                     # Convert to human-readable hierarchy
-                    product_dict['category_hierarchy'] = get_category_hierarchy(parsed_category_ids)
+                    product_dict['category_hierarchy'] = []  # Temporarily disable
                     product_dict['category_ids'] = parsed_category_ids
                 except:
                     product_dict['category_ids'] = None
@@ -324,13 +291,24 @@ def select_random_product():
                 product_dict['category_ids'] = None
                 product_dict['category_hierarchy'] = []
             
-            return jsonify({
+            # Add selected category information to response
+            response_data = {
                 'success': True, 
                 'product': product_dict
-            })
+            }
+            
+            if category_id and category_name:
+                response_data['selected_category'] = {
+                    'id': category_id,
+                    'name': category_name
+                }
+            
+            return jsonify(response_data)
             
     except Exception as e:
+        import traceback
         logger.error(f"Error selecting random product: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/daily-product-posts/generate-content', methods=['POST'])
