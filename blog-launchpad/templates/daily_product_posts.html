@@ -1937,19 +1937,29 @@
                 const targetRow = this.closest('.queue-table-row');
                 const targetIndex = parseInt(targetRow.dataset.rowIndex);
                 
+                console.log('Drag and drop:', { draggedId, targetIndex });
+                
                 // Find current position of dragged item
                 const draggedIndex = queueData.findIndex(item => item.id === draggedId);
                 
+                console.log('Current positions:', { draggedIndex, targetIndex });
+                
                 if (draggedIndex !== -1 && targetIndex !== -1 && draggedIndex !== targetIndex) {
+                    console.log('Reordering items...');
+                    
                     // Reorder queue data
                     const draggedItemData = queueData.splice(draggedIndex, 1)[0];
                     queueData.splice(targetIndex, 0, draggedItemData);
+                    
+                    console.log('New queue order:', queueData.map(item => ({ id: item.id, name: item.product.name })));
                     
                     // Update database with new order and recalculated times
                     await updateQueueOrder();
                     
                     // Re-render queue
                     renderQueue();
+                } else {
+                    console.log('No reorder needed or invalid positions');
                 }
             }
         }
@@ -1961,8 +1971,7 @@
                 const postingTimes = generateSequentialTimes(queueData.length);
                 
                 // Update each item with new schedule
-                for (let i = 0; i < queueData.length; i++) {
-                    const item = queueData[i];
+                const updatePromises = queueData.map(async (item, i) => {
                     const newTime = postingTimes[i];
                     
                     const response = await fetch(`/api/daily-product-posts/queue/${item.id}`, {
@@ -1979,15 +1988,30 @@
                     });
                     
                     if (response.ok) {
-                        // Update local data
-                        item.scheduled = {
-                            date: newTime.date.toISOString().split('T')[0],
-                            time: newTime.schedule.time,
-                            schedule_name: newTime.schedule.name,
-                            timezone: newTime.schedule.timezone
-                        };
+                        const data = await response.json();
+                        if (data.success) {
+                            // Update local data
+                            item.scheduled = {
+                                date: newTime.date.toISOString().split('T')[0],
+                                time: newTime.schedule.time,
+                                schedule_name: newTime.schedule.name,
+                                timezone: newTime.schedule.timezone
+                            };
+                            return true;
+                        }
                     }
+                    return false;
+                });
+                
+                // Wait for all updates to complete
+                const results = await Promise.all(updatePromises);
+                const successCount = results.filter(r => r).length;
+                
+                if (successCount < queueData.length) {
+                    console.warn(`Only ${successCount} of ${queueData.length} items updated successfully`);
                 }
+                
+                console.log('Queue order updated successfully');
             } catch (error) {
                 console.error('Error updating queue order:', error);
                 alert('Error updating queue order. Please try again.');
