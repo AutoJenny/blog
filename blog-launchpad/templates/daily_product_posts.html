@@ -222,6 +222,77 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Queue Styles */
+        .queue-item {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+        
+        .queue-item:hover {
+            border-color: #475569;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .queue-item-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            cursor: pointer;
+        }
+        
+        .queue-item-thumbnail {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid #334155;
+        }
+        
+        .queue-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .queue-item-title {
+            color: #f1f5f9;
+            font-weight: 600;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .queue-item-schedule {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .queue-item-content {
+            display: none;
+            padding: 0 15px 15px 15px;
+            border-top: 1px solid #334155;
+            margin-top: 10px;
+        }
+        
+        .queue-item-content.expanded {
+            display: block;
+        }
+        
+        .queue-content-text {
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #334155;
+        }
     </style>
 </head>
 <body>
@@ -341,6 +412,33 @@
                     <i class="fas fa-edit"></i>
                     Edit Content
                 </button>
+                <button id="add-to-queue-btn" class="btn btn-success" disabled style="display: none;">
+                    <i class="fas fa-plus"></i>
+                    Add to Queue
+                </button>
+            </div>
+        </div>
+        
+        <!-- Posting Queue Section -->
+        <div class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-list-alt"></i>
+                Posting Queue
+                <span id="queue-count" class="badge" style="background: #f59e0b; color: #0f172a; margin-left: 10px;">0</span>
+                <button id="clear-queue-btn" class="btn btn-sm btn-secondary" style="margin-left: auto; display: none;">
+                    <i class="fas fa-trash"></i>
+                    Clear All
+                </button>
+            </h2>
+            
+            <div id="queue-container" style="min-height: 100px;">
+                <div id="empty-queue" style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
+                    <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    No posts in queue
+                </div>
+                <div id="queue-items" style="display: none;">
+                    <!-- Queue items will be dynamically loaded here -->
+                </div>
             </div>
         </div>
         
@@ -564,6 +662,10 @@
                     selectedProduct = data.product;
                     displayProduct(selectedProduct);
                     generateContentBtn.disabled = false;
+                    
+                    // Hide Add to Queue button until content is generated
+                    addToQueueBtn.style.display = 'none';
+                    addToQueueBtn.disabled = true;
                 } else {
                     alert('Error selecting product: ' + data.error);
                 }
@@ -708,6 +810,10 @@
                     scheduleTomorrowBtn.disabled = false;
                     postStatus.textContent = 'Ready to Post';
                     postStatus.className = 'status-indicator status-ready';
+                    
+                    // Show Add to Queue button
+                    addToQueueBtn.style.display = 'inline-block';
+                    addToQueueBtn.disabled = false;
                 } else {
                     alert('Error generating content: ' + data.error);
                 }
@@ -1365,6 +1471,102 @@
             
             nextPostsList.innerHTML = nextPosts.join('<br>');
         }
+        
+        // Simple Queue Management
+        let queueData = [];
+        
+        // DOM elements
+        const addToQueueBtn = document.getElementById('add-to-queue-btn');
+        const clearQueueBtn = document.getElementById('clear-queue-btn');
+        const queueCount = document.getElementById('queue-count');
+        const emptyQueue = document.getElementById('empty-queue');
+        const queueItems = document.getElementById('queue-items');
+        
+        // Add to Queue button handler
+        addToQueueBtn.addEventListener('click', () => {
+            if (!selectedProduct || !generatedContent) return;
+            
+            // Add to local queue
+            const queueItem = {
+                id: Date.now(),
+                product: selectedProduct,
+                content: generatedContent,
+                scheduled: null
+            };
+            
+            queueData.push(queueItem);
+            renderQueue();
+            
+            // Show success message
+            alert('Post added to queue!');
+        });
+        
+        // Clear queue button handler
+        clearQueueBtn.addEventListener('click', () => {
+            if (confirm('Clear all items from queue?')) {
+                queueData = [];
+                renderQueue();
+            }
+        });
+        
+        // Render queue
+        function renderQueue() {
+            if (queueData.length === 0) {
+                emptyQueue.style.display = 'block';
+                queueItems.style.display = 'none';
+                clearQueueBtn.style.display = 'none';
+                queueCount.textContent = '0';
+                return;
+            }
+            
+            emptyQueue.style.display = 'none';
+            queueItems.style.display = 'block';
+            clearQueueBtn.style.display = 'inline-block';
+            queueCount.textContent = queueData.length;
+            
+            let html = '';
+            queueData.forEach((item, index) => {
+                html += `
+                    <div class="queue-item" data-id="${item.id}">
+                        <div class="queue-item-header" onclick="toggleQueueItem(${item.id})">
+                            <img src="${item.product.image_url || '/static/images/placeholder.jpg'}" 
+                                 alt="${item.product.name}" 
+                                 class="queue-item-thumbnail">
+                            <div class="queue-item-info">
+                                <div class="queue-item-title">${item.product.name}</div>
+                                <div class="queue-item-schedule">${item.product.sku}</div>
+                            </div>
+                            <button onclick="event.stopPropagation(); removeFromQueue(${item.id})" 
+                                    style="background: #ef4444; border: none; border-radius: 4px; padding: 6px 10px; color: white; cursor: pointer;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="queue-item-content" id="content-${item.id}">
+                            <div class="queue-content-text">${item.content}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            queueItems.innerHTML = html;
+        }
+        
+        // Toggle queue item
+        function toggleQueueItem(itemId) {
+            const content = document.getElementById(`content-${itemId}`);
+            if (content) {
+                content.classList.toggle('expanded');
+            }
+        }
+        
+        // Remove from queue
+        function removeFromQueue(itemId) {
+            queueData = queueData.filter(item => item.id !== itemId);
+            renderQueue();
+        }
+        
+        // Show Add to Queue button after content generation
+        // We'll add this functionality to the existing generate content handler
     </script>
 </body>
 </html>
