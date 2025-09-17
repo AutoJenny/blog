@@ -169,6 +169,33 @@ def test_categories():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+@app.route('/api/daily-product-posts/test-simple', methods=['GET'])
+def test_simple():
+    """Test simple product selection without category filtering."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            cur.execute("""
+                SELECT id, name, sku, price, description, image_url, url, category_ids
+                FROM clan_products 
+                WHERE price IS NOT NULL AND price != ''
+                ORDER BY RANDOM() 
+                LIMIT 1
+            """)
+            product = cur.fetchone()
+            
+            if product:
+                return jsonify({
+                    'success': True,
+                    'product': dict(product)
+                })
+            else:
+                return jsonify({'success': False, 'error': 'No products found'})
+                
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 @app.route('/api/daily-product-posts/select-product', methods=['POST'])
 def select_random_product():
     """Select a random product from Clan.com catalogue using category-first approach."""
@@ -187,7 +214,7 @@ def select_random_product():
             import random
             selected_category_id = random.choice(top_level_category_ids)
             
-            # Find products that belong to this category using a simpler approach
+            # Find products that belong to this category
             cur.execute("""
                 SELECT id, name, sku, price, description, image_url, url, category_ids
                 FROM clan_products 
