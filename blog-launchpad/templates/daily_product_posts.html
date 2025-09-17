@@ -293,6 +293,147 @@
             border-radius: 4px;
             border: 1px solid #334155;
         }
+        
+        /* Table-based Queue Styles */
+        .queue-table-row {
+            border-bottom: 1px solid #334155;
+            transition: background-color 0.3s ease;
+        }
+        
+        .queue-table-row:hover {
+            background-color: #1e293b;
+        }
+        
+        .queue-table-row.drag-over {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+        }
+        
+        .schedule-cell {
+            padding: 15px;
+            vertical-align: top;
+            border-right: 1px solid #334155;
+            background: #0f172a;
+        }
+        
+        .schedule-time {
+            color: #f1f5f9;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        .schedule-date {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .schedule-name {
+            color: #64748b;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+        
+        .queue-items-cell {
+            padding: 15px;
+            vertical-align: top;
+            min-height: 80px;
+        }
+        
+        .queue-item-table {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+        
+        .queue-item-table:hover {
+            border-color: #475569;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .queue-item-table.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+        
+        .queue-item-table-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            cursor: pointer;
+        }
+        
+        .queue-item-table-thumbnail {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid #334155;
+        }
+        
+        .queue-item-table-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .queue-item-table-title {
+            color: #f1f5f9;
+            font-weight: 600;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.9rem;
+        }
+        
+        .queue-item-table-sku {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+        
+        .queue-item-table-content {
+            display: none;
+            padding: 0 15px 15px 15px;
+            border-top: 1px solid #334155;
+            margin-top: 10px;
+        }
+        
+        .queue-item-table-content.expanded {
+            display: block;
+        }
+        
+        .queue-item-table-content-text {
+            color: #e2e8f0;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            background: #0f172a;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #334155;
+        }
+        
+        .queue-item-table-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .queue-item-table-delete {
+            background: #ef4444;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .queue-item-table-delete:hover {
+            background: #dc2626;
+        }
     </style>
 </head>
 <body>
@@ -436,8 +577,18 @@
                     <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
                     No posts in queue
                 </div>
-                <div id="queue-items" style="display: none;">
-                    <!-- Queue items will be dynamically loaded here -->
+                <div id="queue-table-container" style="display: none;">
+                    <table id="queue-table" style="width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px; overflow: hidden;">
+                        <thead>
+                            <tr style="background: #0f172a; border-bottom: 2px solid #334155;">
+                                <th style="padding: 15px; text-align: left; color: #f1f5f9; font-weight: 600; width: 200px;">Scheduled Posting</th>
+                                <th style="padding: 15px; text-align: left; color: #f1f5f9; font-weight: 600;">Queue Items</th>
+                            </tr>
+                        </thead>
+                        <tbody id="queue-table-body">
+                            <!-- Table rows will be dynamically generated here -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -1472,15 +1623,18 @@
             nextPostsList.innerHTML = nextPosts.join('<br>');
         }
         
-        // Simple Queue Management
+        // Table-based Queue Management
         let queueData = [];
+        let scheduleData = [];
+        let draggedItem = null;
         
         // DOM elements
         const addToQueueBtn = document.getElementById('add-to-queue-btn');
         const clearQueueBtn = document.getElementById('clear-queue-btn');
         const queueCount = document.getElementById('queue-count');
         const emptyQueue = document.getElementById('empty-queue');
-        const queueItems = document.getElementById('queue-items');
+        const queueTableContainer = document.getElementById('queue-table-container');
+        const queueTableBody = document.getElementById('queue-table-body');
         
         // Add to Queue button handler
         addToQueueBtn.addEventListener('click', () => {
@@ -1509,51 +1663,120 @@
             }
         });
         
-        // Render queue
+        // Load schedule data
+        async function loadScheduleData() {
+            try {
+                const response = await fetch('/api/daily-product-posts/schedules');
+                const data = await response.json();
+                
+                if (data.success) {
+                    scheduleData = data.schedules || [];
+                }
+            } catch (error) {
+                console.error('Error loading schedules:', error);
+            }
+        }
+        
+        // Generate sequential posting times
+        function generateSequentialTimes(count) {
+            const times = [];
+            const now = new Date();
+            
+            // Generate next 30 days of posting opportunities
+            const allSlots = [];
+            for (let i = 0; i < 30; i++) {
+                const date = new Date(now);
+                date.setDate(now.getDate() + i);
+                const dayOfWeek = date.getDay() || 7; // Convert Sunday (0) to 7
+                
+                // Find schedules for this day
+                const daySchedules = scheduleData.filter(schedule => {
+                    const days = schedule.days || [];
+                    return days.includes(dayOfWeek);
+                });
+                
+                daySchedules.forEach(schedule => {
+                    const slotDate = new Date(date);
+                    const [hours, minutes] = schedule.time.split(':');
+                    slotDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                    
+                    allSlots.push({
+                        date: slotDate,
+                        schedule: schedule
+                    });
+                });
+            }
+            
+            // Sort by date/time and take first 'count' slots
+            allSlots.sort((a, b) => a.date - b.date);
+            return allSlots.slice(0, count);
+        }
+        
+        // Render queue as table
         function renderQueue() {
             if (queueData.length === 0) {
                 emptyQueue.style.display = 'block';
-                queueItems.style.display = 'none';
+                queueTableContainer.style.display = 'none';
                 clearQueueBtn.style.display = 'none';
                 queueCount.textContent = '0';
                 return;
             }
             
             emptyQueue.style.display = 'none';
-            queueItems.style.display = 'block';
+            queueTableContainer.style.display = 'block';
             clearQueueBtn.style.display = 'inline-block';
             queueCount.textContent = queueData.length;
             
+            // Generate sequential posting times
+            const postingTimes = generateSequentialTimes(queueData.length);
+            
             let html = '';
             queueData.forEach((item, index) => {
+                const postingTime = postingTimes[index];
+                const dateStr = postingTime.date.toLocaleDateString();
+                const timeStr = postingTime.date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
                 html += `
-                    <div class="queue-item" data-id="${item.id}">
-                        <div class="queue-item-header" onclick="toggleQueueItem(${item.id})">
-                            <img src="${item.product.image_url || '/static/images/placeholder.jpg'}" 
-                                 alt="${item.product.name}" 
-                                 class="queue-item-thumbnail">
-                            <div class="queue-item-info">
-                                <div class="queue-item-title">${item.product.name}</div>
-                                <div class="queue-item-schedule">${item.product.sku}</div>
+                    <tr class="queue-table-row" data-row-index="${index}">
+                        <td class="schedule-cell">
+                            <div class="schedule-time">${timeStr}</div>
+                            <div class="schedule-date">${dateStr}</div>
+                            <div class="schedule-name">${postingTime.schedule.name}</div>
+                        </td>
+                        <td class="queue-items-cell">
+                            <div class="queue-item-table" data-item-id="${item.id}" draggable="true">
+                                <div class="queue-item-table-header" onclick="toggleQueueItemTable(${item.id})">
+                                    <img src="${item.product.image_url || '/static/images/placeholder.jpg'}" 
+                                         alt="${item.product.name}" 
+                                         class="queue-item-table-thumbnail">
+                                    <div class="queue-item-table-info">
+                                        <div class="queue-item-table-title">${item.product.name}</div>
+                                        <div class="queue-item-table-sku">${item.product.sku}</div>
+                                    </div>
+                                    <div class="queue-item-table-actions">
+                                        <button class="queue-item-table-delete" onclick="event.stopPropagation(); removeFromQueue(${item.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="queue-item-table-content" id="content-table-${item.id}">
+                                    <div class="queue-item-table-content-text">${item.content}</div>
+                                </div>
                             </div>
-                            <button onclick="event.stopPropagation(); removeFromQueue(${item.id})" 
-                                    style="background: #ef4444; border: none; border-radius: 4px; padding: 6px 10px; color: white; cursor: pointer;">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                        <div class="queue-item-content" id="content-${item.id}">
-                            <div class="queue-content-text">${item.content}</div>
-                        </div>
-                    </div>
+                        </td>
+                    </tr>
                 `;
             });
             
-            queueItems.innerHTML = html;
+            queueTableBody.innerHTML = html;
+            
+            // Add drag and drop listeners
+            addDragAndDropListeners();
         }
         
-        // Toggle queue item
-        function toggleQueueItem(itemId) {
-            const content = document.getElementById(`content-${itemId}`);
+        // Toggle queue item (table version)
+        function toggleQueueItemTable(itemId) {
+            const content = document.getElementById(`content-table-${itemId}`);
             if (content) {
                 content.classList.toggle('expanded');
             }
@@ -1564,6 +1787,73 @@
             queueData = queueData.filter(item => item.id !== itemId);
             renderQueue();
         }
+        
+        // Add drag and drop functionality
+        function addDragAndDropListeners() {
+            const queueItems = document.querySelectorAll('.queue-item-table');
+            
+            queueItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+            
+            const tableRows = document.querySelectorAll('.queue-table-row');
+            
+            tableRows.forEach(row => {
+                const cell = row.querySelector('.queue-items-cell');
+                cell.addEventListener('dragover', handleDragOver);
+                cell.addEventListener('dragleave', handleDragLeave);
+                cell.addEventListener('drop', handleDrop);
+            });
+        }
+        
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.outerHTML);
+        }
+        
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            draggedItem = null;
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.closest('.queue-table-row').classList.add('drag-over');
+        }
+        
+        function handleDragLeave(e) {
+            this.closest('.queue-table-row').classList.remove('drag-over');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            this.closest('.queue-table-row').classList.remove('drag-over');
+            
+            if (draggedItem) {
+                const draggedId = parseInt(draggedItem.dataset.itemId);
+                const targetRow = this.closest('.queue-table-row');
+                const targetIndex = parseInt(targetRow.dataset.rowIndex);
+                
+                // Find current position of dragged item
+                const draggedIndex = queueData.findIndex(item => item.id === draggedId);
+                
+                if (draggedIndex !== -1 && targetIndex !== -1 && draggedIndex !== targetIndex) {
+                    // Reorder queue data
+                    const draggedItemData = queueData.splice(draggedIndex, 1)[0];
+                    queueData.splice(targetIndex, 0, draggedItemData);
+                    
+                    // Re-render queue
+                    renderQueue();
+                }
+            }
+        }
+        
+        // Load schedule data on page load
+        loadScheduleData();
         
         // Show Add to Queue button after content generation
         // We'll add this functionality to the existing generate content handler
