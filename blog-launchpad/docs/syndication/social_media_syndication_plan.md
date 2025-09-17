@@ -21,13 +21,20 @@ The Social Media Syndication System is designed to automatically adapt blog post
 - **Timeline**: Immediate implementation
 - **Status**: **IMPLEMENTED AND WORKING**
 
-### **Phase 2: Enhanced MVP (Next 2-4 weeks) 📋**
-- **Goal**: Expand to multiple Facebook channels and add Twitter
-- **Scope**: 2-3 platforms, 3-5 channel types
-- **Approach**: Extend current MVP framework systematically
-- **Timeline**: Short-term development
+### **Phase 2: Pathfinder Project - Daily Product Posts (CURRENT) 🚀**
+- **Goal**: Automated daily Facebook posts featuring Clan.com products
+- **Scope**: Product catalogue integration with AI-powered content generation
+- **Approach**: Random product selection + LLM content creation + automated posting
+- **Timeline**: Next 2-4 weeks
+- **Status**: **PLANNING PHASE** - Ready for implementation
 
-### **Phase 3: Multi-Platform System (Long-term) 🚀**
+### **Phase 3: Enhanced Product Content (Short-term) 📋**
+- **Goal**: Expand product content to multiple platforms and channels
+- **Scope**: Instagram, Twitter, LinkedIn with product-focused content
+- **Approach**: Extend product content framework systematically
+- **Timeline**: 1-2 months development
+
+### **Phase 4: Multi-Platform System (Long-term) 🚀**
 - **Goal**: Full multi-platform, multi-channel system with advanced features
 - **Scope**: 8+ platforms, 20+ channel types, advanced analytics
 - **Approach**: Complete system redesign with proper architecture
@@ -66,38 +73,35 @@ The Social Media Syndication System is designed to automatically adapt blog post
 
 ---
 
-## 🔄 **MVP EXPANSION PATH**
+## 🔄 **PATHFINDER PROJECT: DAILY PRODUCT POSTS**
 
-### **Next Steps (Phase 2)**
+### **Project Overview (Phase 2)**
 
-#### **1. Facebook Story Post Channel**
-- **Content Type**: Vertical image/video stories
-- **Aspect Ratio**: 9:16 (1080×1920)
-- **Duration**: 15 seconds maximum
-- **Style/Tone**: Visual storytelling, casual, engaging
-- **Hashtag Strategy**: 5-8 relevant hashtags
-- **Example CTA**: "Swipe up for more!"
-- **Posting Frequency**: 1 section per day
-- **Optimal Timing**: 11:00 AM
-- **Implementation**: Extend existing MVP framework
+The pathfinder project focuses on creating an automated system that randomly selects Clan.com products and creates engaging daily Facebook posts. This project will serve as a proof-of-concept for product-focused content generation and automated social media posting.
 
-#### **2. Twitter Feed Post Channel**
-- **Content Type**: Tweets with images
-- **Character Limit**: ≤280 characters
-- **Image Requirements**: 1200×675 (landscape, 16:9 ratio)
-- **Style/Tone**: Newsy, concise, trending
-- **Hashtag Strategy**: 2-3 relevant hashtags
-- **Example CTA**: "Thread continues in our latest blog post"
-- **Posting Frequency**: 1 section per day
-- **Optimal Timing**: 10:00 AM
-- **Implementation**: New platform integration using MVP pattern
+#### **1. Clan.com Product Integration**
+- **API Connection**: Direct integration with Clan.com product catalogue
+- **Product Selection**: Random selection algorithm with category filtering
+- **Data Processing**: Product information extraction and formatting
+- **Image Handling**: Product image retrieval and optimization for Facebook
 
-#### **3. Enhanced LLM Integration**
-- **Real API Calls**: Replace mock responses with actual LLM API
-- **Error Handling**: User-friendly error messages and retry options
-- **Response Caching**: Store and display previous results
-- **Validation**: Input validation and content length checking
-- **Performance**: Response time optimization and monitoring
+#### **2. Product Content Generation**
+- **Specialized Prompts**: Product-focused LLM prompts for engaging content
+- **Content Templates**: Pre-defined templates for different product types
+- **Facebook Optimization**: Character limits, hashtags, and engagement tactics
+- **Image Integration**: Automatic product image selection and sizing
+
+#### **3. Automated Daily Posting**
+- **Scheduling System**: Daily automated post creation and publishing
+- **Facebook API**: Direct posting to Facebook pages
+- **Error Handling**: Robust error handling and retry logic
+- **Performance Tracking**: Engagement metrics and content optimization
+
+#### **4. Product Content Strategy**
+- **Content Types**: Product features, benefits, stories, and customer testimonials
+- **Engagement Tactics**: Questions, polls, and calls-to-action
+- **Visual Elements**: Product images, lifestyle shots, and infographics
+- **Hashtag Strategy**: Product-specific and trending hashtags
 
 ---
 

@@ -125,6 +125,244 @@ def publishing():
     """Publishing management page."""
     return render_template('publishing.html')
 
+# Daily Product Posts Routes
+@app.route('/daily-product-posts')
+def daily_product_posts():
+    """Daily Product Posts management page."""
+    return render_template('daily_product_posts.html')
+
+@app.route('/daily-product-posts/select')
+def daily_product_posts_select():
+    """Redirect to main daily product posts page."""
+    return redirect('/daily-product-posts')
+
+# Daily Product Posts API Endpoints
+@app.route('/api/daily-product-posts/select-product', methods=['POST'])
+def select_random_product():
+    """Select a random product from Clan.com catalogue."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get a random product from Clan.com, prioritizing test products
+            cur.execute("""
+                SELECT * FROM clan_products 
+                WHERE price IS NOT NULL AND price != ''
+                ORDER BY 
+                    CASE WHEN sku LIKE 'TEST_%' THEN 0 ELSE 1 END,
+                    RANDOM() 
+                LIMIT 1
+            """)
+            product = cur.fetchone()
+            
+            if not product:
+                return jsonify({'success': False, 'error': 'No products available'})
+            
+            # Check if we already have a post for today
+            today = datetime.now().date()
+            cur.execute("""
+                SELECT * FROM daily_posts 
+                WHERE post_date = %s AND product_id = %s
+            """, (today, product['id']))
+            existing_post = cur.fetchone()
+            
+            if existing_post:
+                return jsonify({
+                    'success': True, 
+                    'product': dict(product),
+                    'message': 'Product already selected for today'
+                })
+            
+            # Parse category_ids if available
+            product_dict = dict(product)
+            category_ids = product_dict.get('category_ids')
+            
+            if category_ids:
+                try:
+                    # Try to parse as JSON if it's a string
+                    if isinstance(category_ids, str):
+                        product_dict['category_ids'] = json.loads(category_ids)
+                    else:
+                        product_dict['category_ids'] = category_ids
+                except:
+                    product_dict['category_ids'] = None
+            else:
+                product_dict['category_ids'] = None
+            
+            return jsonify({
+                'success': True, 
+                'product': product_dict
+            })
+            
+    except Exception as e:
+        logger.error(f"Error selecting random product: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/daily-product-posts/generate-content', methods=['POST'])
+def generate_product_content():
+    """Generate AI content for selected product."""
+    try:
+        data = request.get_json()
+        product_id = data.get('product_id')
+        content_type = data.get('content_type', 'feature')
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get product details
+            cur.execute("SELECT * FROM clan_products WHERE id = %s", (product_id,))
+            product = cur.fetchone()
+            
+            if not product:
+                return jsonify({'success': False, 'error': 'Product not found'})
+            
+            # Get content template
+            cur.execute("""
+                SELECT template_prompt FROM product_content_templates 
+                WHERE content_type = %s AND is_active = true
+            """, (content_type,))
+            template = cur.fetchone()
+            
+            if not template:
+                return jsonify({'success': False, 'error': 'Content template not found'})
+            
+            # Prepare prompt
+            prompt = template['template_prompt'].format(
+                product_name=product['name'],
+                product_description=product['description'] or 'No description available',
+                product_price=product['price']
+            )
+            
+            # Call LLM
+            llm_request = {
+                'provider': 'ollama',
+                'model': 'mistral',
+                'prompt': prompt,
+                'temperature': 0.8,
+                'max_tokens': 200
+            }
+            
+            response = requests.post('http://localhost:11434/api/generate', 
+                                   json=llm_request, timeout=30)
+            
+            if response.status_code == 200:
+                # Parse streaming response
+                response_lines = response.text.strip().split('\n')
+                generated_text = ""
+                
+                for line in response_lines:
+                    if line.strip():
+                        try:
+                            line_data = json.loads(line)
+                            if 'response' in line_data:
+                                generated_text += line_data['response']
+                        except json.JSONDecodeError:
+                            continue
+                
+                # Save to database
+                today = datetime.now().date()
+                cur.execute("""
+                    INSERT INTO daily_posts (product_id, post_date, content_text, content_type, status)
+                    VALUES (%s, %s, %s, %s, 'draft')
+                """, (product_id, today, generated_text, content_type))
+                conn.commit()
+                
+                return jsonify({
+                    'success': True, 
+                    'content': generated_text
+                })
+            else:
+                return jsonify({'success': False, 'error': 'LLM service unavailable'})
+                
+    except Exception as e:
+        logger.error(f"Error generating content: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/daily-product-posts/post-now', methods=['POST'])
+def post_to_facebook():
+    """Post content to Facebook."""
+    try:
+        data = request.get_json()
+        product_id = data.get('product_id')
+        content = data.get('content')
+        content_type = data.get('content_type')
+        
+        # For now, just mark as posted in database
+        # TODO: Implement actual Facebook API posting
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            today = datetime.now().date()
+            cur.execute("""
+                UPDATE daily_posts 
+                SET status = 'posted', posted_at = NOW()
+                WHERE product_id = %s AND post_date = %s
+            """, (product_id, today))
+            conn.commit()
+            
+            return jsonify({
+                'success': True, 
+                'message': 'Post marked as posted (Facebook API not implemented yet)'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error posting to Facebook: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/daily-product-posts/categories')
+def get_categories():
+    """Get available product categories."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get categories with hierarchy (all 258 categories)
+            cur.execute("""
+                SELECT id, name, level, parent_id, description
+                FROM clan_categories 
+                ORDER BY level, name
+            """)
+            categories = cur.fetchall()
+            
+            return jsonify({
+                'success': True,
+                'categories': [dict(cat) for cat in categories]
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting categories: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/daily-product-posts/today-status')
+def get_today_status():
+    """Get today's post status."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            today = datetime.now().date()
+            cur.execute("""
+                SELECT dp.*, p.* FROM daily_posts dp
+                JOIN clan_products p ON dp.product_id = p.id
+                WHERE dp.post_date = %s
+            """, (today,))
+            post = cur.fetchone()
+            
+            if post:
+                return jsonify({
+                    'success': True,
+                    'post': dict(post)
+                })
+            else:
+                return jsonify({
+                    'success': True,
+                    'post': None
+                })
+                
+    except Exception as e:
+        logger.error(f"Error getting today's status: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
 @app.route('/syndication')
 def syndication():
     """Social Media Syndication homepage."""

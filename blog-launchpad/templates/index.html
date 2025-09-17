@@ -274,10 +274,10 @@
         <nav class="main-nav">
             <div class="nav-links">
                 <a href="/" class="nav-link active">Dashboard</a>
-                <a href="/cross-promotion" class="nav-link">Cross-Promotion</a>
-                <a href="/publishing" class="nav-link">Publishing</a>
+                <a href="/publishing" class="nav-link">Publish post</a>
                 <a href="/syndication" class="nav-link">Syndication</a>
-                <a href="/syndication/create-piece" class="nav-link highlight">Create Piece</a>
+                <a href="/syndication/create-piece" class="nav-link highlight">Convert to Piece</a>
+                <a href="/cross-promotion" class="nav-link">Cross-Promotion</a>
             </div>
         </nav>
         
@@ -287,34 +287,34 @@
         </div>
         
         <div class="modules-grid">
-            <!-- Cross-Promotion Module (Active) -->
-            <div class="module-card active">
-                <div class="module-icon">
-                    <i class="fas fa-handshake"></i>
+            <!-- Daily Product Posts Module (Pathfinder Project) -->
+            <div class="module-card active" style="border: 3px solid #f59e0b;">
+                <div class="module-icon" style="background: linear-gradient(135deg, #f59e0b, #f97316);">
+                    <i class="fas fa-shopping-bag"></i>
                 </div>
-                <h2 class="module-title">Cross-Promotion</h2>
+                <h2 class="module-title">Daily Product Posts</h2>
                 <p class="module-description">
-                    Manage product and category cross-promotion widgets for blog posts. 
-                    Configure marketing elements that appear between sections and at the end of posts.
+                    Automated daily Facebook posts featuring Clan.com products. 
+                    AI-powered content generation with random product selection.
                 </p>
                 <div class="module-stats">
                     <div class="stat">
-                        <i class="fas fa-file-alt"></i>
-                        <span id="total-posts">Loading...</span> posts
+                        <i class="fas fa-calendar-day"></i>
+                        <span id="daily-posts-count">Loading...</span> today
                     </div>
                     <div class="stat">
-                        <i class="fas fa-check-circle"></i>
-                        <span id="configured-posts">Loading...</span> configured
+                        <i class="fas fa-robot"></i>
+                        <span id="ai-generated-posts">Loading...</span> AI generated
                     </div>
                 </div>
                 <div class="module-actions">
-                    <a href="/cross-promotion" class="btn btn-primary">
+                    <a href="/daily-product-posts" class="btn btn-primary">
                         <i class="fas fa-cog"></i>
-                        Manage Cross-Promotion
+                        Manage Daily Posts
                     </a>
-                    <a href="/preview/53" class="btn btn-secondary" target="_blank">
-                        <i class="fas fa-eye"></i>
-                        View Example
+                    <a href="/daily-product-posts/select" class="btn btn-secondary">
+                        <i class="fas fa-random"></i>
+                        Select Product
                     </a>
                 </div>
             </div>
@@ -324,7 +324,7 @@
                 <div class="module-icon">
                     <i class="fas fa-upload"></i>
                 </div>
-                <h2 class="module-title">Clan.com Publishing</h2>
+                <h2 class="module-title">Publish post to Clan.com</h2>
                 <p class="module-description">
                     Publish blog posts directly to clan.com via their API. Upload images, 
                     process content, and manage post lifecycle with automated workflows.
@@ -388,7 +388,7 @@
                 <div class="module-icon">
                     <i class="fas fa-plus-circle"></i>
                 </div>
-                <h2 class="module-title">Create Piece</h2>
+                <h2 class="module-title">Convert to Piece</h2>
                 <p class="module-description">
                     Create engaging social media content pieces from your blog posts. 
                     Convert posts, highlight products, feature tartans, and showcase famous clans.
@@ -411,6 +411,38 @@
                     <a href="/syndication" class="btn btn-secondary">
                         <i class="fas fa-cog"></i>
                         Manage Syndication
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Cross-Promotion Module (Active) -->
+            <div class="module-card active">
+                <div class="module-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h2 class="module-title">Cross-Promotion</h2>
+                <p class="module-description">
+                    Manage product and category cross-promotion widgets for blog posts. 
+                    Configure marketing elements that appear between sections and at the end of posts.
+                </p>
+                <div class="module-stats">
+                    <div class="stat">
+                        <i class="fas fa-file-alt"></i>
+                        <span id="total-posts">Loading...</span> posts
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="configured-posts">Loading...</span> configured
+                    </div>
+                </div>
+                <div class="module-actions">
+                    <a href="/cross-promotion" class="btn btn-primary">
+                        <i class="fas fa-cog"></i>
+                        Manage Cross-Promotion
+                    </a>
+                    <a href="/preview/53" class="btn btn-secondary" target="_blank">
+                        <i class="fas fa-eye"></i>
+                        View Example
                     </a>
                 </div>
             </div>

@@ -55,6 +55,13 @@ This directory contains comprehensive documentation for our Social Media Syndica
 - **Timeline**: Immediate implementation
 - **Status**: **IMPLEMENTED AND INTEGRATED**
 
+### **Phase 2: Pathfinder Project - Daily Product Posts (CURRENT) 🚀**
+- **Goal**: Automated daily Facebook posts featuring Clan.com products
+- **Scope**: Product catalogue integration with AI-powered content generation
+- **Approach**: Random product selection + LLM content creation + automated posting
+- **Timeline**: Next 2-4 weeks
+- **Status**: **PLANNING PHASE** - Ready for implementation
+
 ### **What We Have Working Now ✅**
 1. **Integrated MVP Interface** (`/syndication/facebook/feed-post`)
    - **Purpose**: Main Facebook Feed Post configuration with MVP LLM test interface
@@ -86,23 +93,35 @@ This directory contains comprehensive documentation for our Social Media Syndica
 
 ---
 
-## 🔄 **MVP EXPANSION PATH**
+## 🔄 **PATHFINDER PROJECT: DAILY PRODUCT POSTS**
 
-### **Next Steps (Phase 2)**
-1. **Facebook Story Post Channel**
-   - Extend existing MVP framework
-   - Add new route and template
-   - Reuse database structure
+### **Project Overview**
+The pathfinder project focuses on creating an automated system that:
+1. **Randomly selects** a product from the Clan.com product catalogue
+2. **Generates engaging content** about the product using AI
+3. **Posts daily** to Facebook with optimized product-focused content
+4. **Tracks performance** and optimizes content based on engagement
 
-2. **Twitter Feed Post Channel**
-   - New platform integration
-   - Twitter-specific requirements
-   - Same MVP pattern
+### **Technical Implementation (Phase 2)**
+1. **Clan.com Product API Integration**
+   - Connect to Clan.com product catalogue API
+   - Random product selection algorithm
+   - Product data extraction and processing
 
-3. **Enhance LLM Integration** (Database Architecture Confirmed)
-   - Replace mock responses with real LLM API calls
-   - Add error handling and validation
-   - Implement response caching
+2. **Product Content Generation**
+   - Specialized LLM prompts for product content
+   - Product image integration and optimization
+   - Facebook-optimized content formatting
+
+3. **Automated Daily Posting**
+   - Scheduled daily product post creation
+   - Facebook API integration for posting
+   - Error handling and retry logic
+
+4. **Performance Tracking**
+   - Product post engagement analytics
+   - A/B testing for content optimization
+   - Performance-based product selection
 
 ### **Technical Approach for Expansion**
 - **Pattern Replication**: Copy successful MVP structure
