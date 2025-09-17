@@ -12,6 +12,51 @@ import psycopg2.extras
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def ensure_ollama_running():
+    """Check if Ollama is running and start it if needed."""
+    try:
+        # Check if Ollama is already running
+        response = requests.get('http://localhost:11434/api/tags', timeout=5)
+        if response.status_code == 200:
+            logger.info("Ollama is already running")
+            return True
+    except requests.exceptions.ConnectionError:
+        logger.info("Ollama is not running, attempting to start it...")
+    except Exception as e:
+        logger.warning(f"Error checking Ollama status: {e}")
+    
+    try:
+        # Try to start Ollama
+        import subprocess
+        import time
+        
+        logger.info("Starting Ollama service...")
+        # Start Ollama in the background
+        subprocess.Popen(['ollama', 'serve'], 
+                        stdout=subprocess.DEVNULL, 
+                        stderr=subprocess.DEVNULL)
+        
+        # Wait for Ollama to start up
+        for attempt in range(30):  # Wait up to 30 seconds
+            time.sleep(1)
+            try:
+                response = requests.get('http://localhost:11434/api/tags', timeout=2)
+                if response.status_code == 200:
+                    logger.info("Ollama started successfully")
+                    return True
+            except requests.exceptions.ConnectionError:
+                continue
+        
+        logger.error("Failed to start Ollama after 30 seconds")
+        return False
+        
+    except FileNotFoundError:
+        logger.error("Ollama not found in PATH. Please install Ollama first.")
+        return False
+    except Exception as e:
+        logger.error(f"Error starting Ollama: {e}")
+        return False
+
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
 # Custom Jinja2 filter to strip HTML document structure
@@ -308,9 +353,12 @@ def generate_product_content():
             formatted_price = f"£{product['price']}" if product['price'] else "Price on request"
             
             # Prepare prompt with URL for call to action
+            if not product['description']:
+                raise ValueError(f"Product {product['name']} has no description")
+            
             prompt = template['template_prompt'].format(
                 product_name=product['name'],
-                product_description=product['description'] or 'No description available',
+                product_description=product['description'],
                 product_price=formatted_price,
                 product_url=product['url'] or 'https://clan.com'
             )
@@ -1158,7 +1206,9 @@ def clan_api_data(post_id):
     
     # Ensure summary field exists and has content
     if not post.get('summary'):
-        post['summary'] = post.get('intro_blurb', 'No summary available')
+        post['summary'] = post.get('intro_blurb')
+        if not post['summary']:
+            raise ValueError("Post must have either summary or intro_blurb")
     
     # Ensure created_at is handled properly
     if post.get('created_at') and not isinstance(post['created_at'], str):
@@ -1215,20 +1265,7 @@ def clan_api_data(post_id):
         return jsonify(api_data)
     except Exception as e:
         logger.error(f"Error preparing API data for post {post_id}: {e}")
-        # Fallback to basic data structure
-        fallback_data = {
-            'title': post.get('title', 'Untitled Post'),
-            'url_key': publisher._generate_url_key(post),
-            'short_content': post.get('summary') or post.get('subtitle') or 'No summary available',
-            'status': 2,
-            'categories': [14, 15],  # Default clan.com categories
-            'list_thumbnail': '/blog/placeholder.jpg',
-            'post_thumbnail': '/blog/placeholder.jpg',
-            'meta_title': post.get('meta_title') or post.get('title', 'Untitled Post'),
-            'meta_tags': post.get('meta_tags') or 'scottish,heritage,celtic',
-            'meta_description': post.get('meta_description') or (post.get('summary') or post.get('subtitle') or 'No description available')
-        }
-        return jsonify(fallback_data)
+        return jsonify({'error': f'Failed to prepare API data: {str(e)}'}), 500
 
 @app.route('/api/syndication/resize-image', methods=['POST'])
 def resize_image_for_facebook():
@@ -1673,7 +1710,7 @@ def clan_widget_products():
                 "name": detailed_product.get('name', 'Product Name'),
                 "sku": detailed_product.get('sku', ''),
                 "url": detailed_product.get('url', ''),
-                "description": detailed_product.get('description', 'No description available'),
+                "description": detailed_product.get('description'),
                 "image_url": detailed_product.get('image_url', 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg'),
                 "price": detailed_product.get('price', '29.99')
             }
@@ -1751,7 +1788,9 @@ def publish_post_to_clan(post_id):
         
         # Ensure summary field exists and has content
         if not post.get('summary'):
-            post['summary'] = post.get('intro_blurb', 'No summary available')
+            post['summary'] = post.get('intro_blurb')
+            if not post['summary']:
+                raise ValueError("Post must have either summary or intro_blurb")
         
         # Ensure created_at is handled properly
         if post.get('created_at') and not isinstance(post['created_at'], str):
@@ -2722,6 +2761,12 @@ def execute_llm_request():
         
         if not prompt:
             return jsonify({'error': 'No prompt provided'}), 400
+        
+        # Ensure Ollama is running before starting
+        if not ensure_ollama_running():
+            return jsonify({
+                'error': 'Failed to start Ollama service. Please ensure Ollama is installed and try again.'
+            }), 500
         
         # Call Ollama directly
         import requests
@@ -4000,6 +4045,10 @@ def clear_queue():
 @app.route('/api/daily-product-posts/generate-batch', methods=['POST'])
 def generate_batch_items():
     """Generate multiple items for the posting queue automatically."""
+    import time
+    start_time = time.time()
+    max_processing_time = 120  # 2 minutes max
+    
     try:
         data = request.get_json()
         count = data.get('count', 10)
@@ -4009,6 +4058,13 @@ def generate_batch_items():
                 'success': False,
                 'error': 'Count must be between 1 and 50'
             }), 400
+        
+        # Ensure Ollama is running before starting
+        if not ensure_ollama_running():
+            return jsonify({
+                'success': False,
+                'error': 'Failed to start Ollama service. Please ensure Ollama is installed and try again.'
+            }), 500
         
         generated_items = []
         errors = []
@@ -4032,6 +4088,12 @@ def generate_batch_items():
             
             # Generate items
             for i in range(count):
+                # Check if we're running out of time
+                if time.time() - start_time > max_processing_time:
+                    logger.warning(f"Processing timeout reached after {i} items")
+                    errors.append(f"Processing timeout reached after {i} items")
+                    break
+                    
                 try:
                     # Select random product using existing logic
                     cur.execute("""
@@ -4085,9 +4147,12 @@ def generate_batch_items():
                     
                     # Prepare prompt with URL for call to action
                     try:
+                        if not selected_product['description']:
+                            raise ValueError(f"Product {selected_product['name']} has no description")
+                        
                         prompt = content_type['template_prompt'].format(
                             product_name=selected_product['name'],
-                            product_description=selected_product['description'] or 'No description available',
+                            product_description=selected_product['description'],
                             product_price=formatted_price,
                             product_url=selected_product['url'] or 'https://clan.com'
                         )
@@ -4108,7 +4173,7 @@ def generate_batch_items():
                                 'prompt': prompt,
                                 'stream': False
                             },
-                            timeout=30
+                            timeout=10  # Reduced timeout to prevent browser timeout
                         )
                         
                         if ollama_response.status_code != 200:

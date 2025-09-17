@@ -243,7 +243,7 @@ class ClanCache:
                     'price': row.get('price', '29.99'),
                     'image_url': row.get('image_url', 'https://static.clan.com/media/catalog/product/cache/5/image/9df78eab33525d08d6e5fb8d27136e95/e/s/essential.jpg'),
                     'url': row.get('url', ''),
-                    'description': row.get('description', 'No description available'),
+                    'description': row.get('description'),
                     'category_ids': row.get('category_ids', []) if row.get('category_ids') else []
                 })
             

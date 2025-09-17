@@ -135,7 +135,9 @@ class ClanPublisher:
                 return url_key
         
         # Generate from title for new posts
-        title = post.get('title', 'Untitled Post')
+        title = post.get('title')
+        if not title:
+            raise ValueError("Post title is required but not provided")
         # Convert to lowercase, replace spaces with hyphens, remove special chars
         url_key = re.sub(r'[^a-z0-9\s-]', '', title.lower())
         url_key = re.sub(r'\s+', '-', url_key).strip('-')
@@ -206,33 +208,32 @@ class ClanPublisher:
         post_thumbnail = '/blog/placeholder.jpg'
         
         # Common post metadata - using new database meta fields for proper OG tags
-        try:
-            meta_title = post.get('meta_title') or post.get('title', 'Untitled Post')
-            meta_tags = post.get('meta_tags') or self._generate_meta_tags(post)
-            # Clean meta_description - use subtitle as fallback if meta_description is empty
-            raw_description = post.get('meta_description') or post.get('subtitle') or post.get('summary', '') or 'No description available'
-            # Strip HTML tags and limit to 160 characters
-            import re
-            clean_description = re.sub(r'<[^>]+>', '', raw_description)
-            meta_description = clean_description[:160] if clean_description else 'No description available'
-            
-            # Ensure all meta fields are strings and not None
-            meta_title = str(meta_title) if meta_title else 'Untitled Post'
-            meta_tags = str(meta_tags) if meta_tags else 'scottish,heritage,culture,blog'
-            meta_description = str(meta_description) if meta_description else 'No description available'
-            
-        except Exception as e:
-            logger.error(f"Error processing meta data: {str(e)}")
-            # Fallback to safe defaults
-            meta_title = post.get('title', 'Untitled Post')
-            meta_tags = 'scottish,heritage,culture,blog'
-            meta_description = 'No description available'
+        meta_title = post.get('meta_title') or post.get('title')
+        if not meta_title:
+            raise ValueError("Post title is required but not provided")
+        
+        meta_tags = post.get('meta_tags') or self._generate_meta_tags(post)
+        
+        # Clean meta_description - require at least one description field
+        raw_description = post.get('meta_description') or post.get('subtitle') or post.get('summary', '')
+        if not raw_description:
+            raise ValueError("Post must have meta_description, subtitle, or summary")
+        
+        # Strip HTML tags and limit to 160 characters
+        import re
+        clean_description = re.sub(r'<[^>]+>', '', raw_description)
+        meta_description = clean_description[:160] if clean_description else raw_description[:160]
+        
+        # Ensure all meta fields are strings and not None
+        meta_title = str(meta_title)
+        meta_tags = str(meta_tags) if meta_tags else 'scottish,heritage,culture,blog'
+        meta_description = str(meta_description)
         
         # Build the API data structure
         api_data = {
-            'title': post.get('title', 'Untitled Post'),
+            'title': post.get('title'),
             'url_key': self._generate_url_key(post),
-            'short_content': post.get('subtitle') or post.get('summary') or 'No summary available',  # prioritize subtitle over summary
+            'short_content': post.get('subtitle') or post.get('summary'),  # prioritize subtitle over summary
             'status': 2,  # 2 = enabled
             'categories': [14, 15],  # Default clan.com categories
             'list_thumbnail': list_thumbnail,
@@ -654,27 +655,26 @@ class ClanPublisher:
                 logger.info("No images available, using default placeholder thumbnails")
             
             # Common post metadata - using new database meta fields for proper OG tags
-            try:
-                meta_title = post.get('meta_title') or post.get('title', 'Untitled Post')
-                meta_tags = post.get('meta_tags') or self._generate_meta_tags(post)
-                # Clean meta_description - use subtitle as fallback if meta_description is empty
-                raw_description = post.get('meta_description') or post.get('subtitle') or post.get('summary', '') or 'No description available'
-                # Strip HTML tags and limit to 160 characters
-                import re
-                clean_description = re.sub(r'<[^>]+>', '', raw_description)
-                meta_description = clean_description[:160] if clean_description else 'No description available'
-                
-                # Ensure all meta fields are strings and not None
-                meta_title = str(meta_title) if meta_title else 'Untitled Post'
-                meta_tags = str(meta_tags) if meta_tags else 'scottish,heritage,culture,blog'
-                meta_description = str(meta_description) if meta_description else 'No description available'
-                
-            except Exception as e:
-                logger.error(f"Error processing meta data: {str(e)}")
-                # Fallback to safe defaults
-                meta_title = post.get('title', 'Untitled Post')
-                meta_tags = 'scottish,heritage,culture,blog'
-                meta_description = 'No description available'
+            meta_title = post.get('meta_title') or post.get('title')
+            if not meta_title:
+                raise ValueError("Post title is required but not provided")
+            
+            meta_tags = post.get('meta_tags') or self._generate_meta_tags(post)
+            
+            # Clean meta_description - require at least one description field
+            raw_description = post.get('meta_description') or post.get('subtitle') or post.get('summary', '')
+            if not raw_description:
+                raise ValueError("Post must have meta_description, subtitle, or summary")
+            
+            # Strip HTML tags and limit to 160 characters
+            import re
+            clean_description = re.sub(r'<[^>]+>', '', raw_description)
+            meta_description = clean_description[:160] if clean_description else raw_description[:160]
+            
+            # Ensure all meta fields are strings and not None
+            meta_title = str(meta_title)
+            meta_tags = str(meta_tags) if meta_tags else 'scottish,heritage,culture,blog'
+            meta_description = str(meta_description)
             
             # Log the meta data being sent for debugging
             logger.info(f"Meta data for post {post.get('id')}:")
@@ -690,20 +690,20 @@ class ClanPublisher:
             # Validate meta data before sending
             if not isinstance(meta_title, str) or len(meta_title) > 200:
                 logger.error(f"Invalid meta_title: {type(meta_title)}, length: {len(meta_title) if isinstance(meta_title, str) else 'N/A'}")
-                meta_title = str(meta_title)[:200] if meta_title else 'Untitled Post'
+                raise ValueError(f"Invalid meta_title: must be string under 200 chars, got {type(meta_title)} with length {len(meta_title) if isinstance(meta_title, str) else 'N/A'}")
             
             if not isinstance(meta_tags, str) or len(meta_tags) > 500:
                 logger.error(f"Invalid meta_tags: {type(meta_tags)}, length: {len(meta_tags) if isinstance(meta_tags, str) else 'N/A'}")
-                meta_tags = str(meta_tags)[:500] if meta_tags else 'scottish,heritage,culture,blog'
+                raise ValueError(f"Invalid meta_tags: must be string under 500 chars, got {type(meta_tags)} with length {len(meta_tags) if isinstance(meta_tags, str) else 'N/A'}")
             
             if not isinstance(meta_description, str) or len(meta_description) > 160:
                 logger.error(f"Invalid meta_description: {type(meta_description)}, length: {len(meta_description) if isinstance(meta_description, str) else 'N/A'}")
-                meta_description = str(meta_description)[:160] if meta_description else 'No description available'
+                raise ValueError(f"Invalid meta_description: must be string under 160 chars, got {type(meta_description)} with length {len(meta_description) if isinstance(meta_description, str) else 'N/A'}")
             
             json_args.update({
-                'title': post.get('title', 'Untitled Post'),  # required
+                'title': post.get('title'),  # required
                 'url_key': self._generate_url_key(post),  # required - use slug or generate from title
-                'short_content': post.get('subtitle') or post.get('summary') or 'No summary available',  # prioritize subtitle over summary
+                'short_content': post.get('subtitle') or post.get('summary'),  # prioritize subtitle over summary
                 'status': 2,  # required - 2 = enabled (not 'published' string)
                 'categories': [14, 15],  # required - note: 'categories' not 'category_ids'
                 'list_thumbnail': list_thumbnail,  # required - path from /media (now uses real uploaded image)
