@@ -254,6 +254,40 @@ class ProductCategoryUpdater:
         
         return stats
     
+    def fetch_products_by_sku(self, skus: List[str]) -> List[Dict]:
+        """Fetch specific products by SKU from Clan.com API"""
+        logger.info(f"Fetching {len(skus)} products by SKU from Clan.com API...")
+        
+        products = []
+        for sku in skus:
+            try:
+                # Get detailed product data with categories
+                detail_url = f"{self.api_base_url}/getProductData"
+                detail_params = {
+                    'sku': sku,
+                    'include_categories': '1'
+                }
+                
+                detail_response = self.session.get(detail_url, params=detail_params, timeout=30)
+                detail_response.raise_for_status()
+                
+                detail_data = detail_response.json()
+                if detail_data.get('success') and detail_data.get('data'):
+                    products.append(detail_data['data'])
+                    logger.info(f"✅ Fetched category data for SKU: {sku}")
+                else:
+                    logger.warning(f"⚠️ No category data for SKU: {sku}")
+                
+                # Rate limiting delay
+                time.sleep(0.5)
+                
+            except Exception as e:
+                logger.error(f"❌ Error fetching categories for SKU {sku}: {e}")
+                continue
+        
+        logger.info(f"Successfully fetched {len(products)} products by SKU")
+        return products
+    
     def extract_category_ids(self, product: Dict) -> List[int]:
         """Extract category IDs from product data"""
         category_ids = []

@@ -168,6 +168,40 @@ class ProductImageUpdater:
         
         return stats
     
+    def fetch_products_by_sku(self, skus: List[str]) -> List[Dict]:
+        """Fetch specific products by SKU from Clan.com API"""
+        logger.info(f"Fetching {len(skus)} products by SKU from Clan.com API...")
+        
+        products = []
+        for sku in skus:
+            try:
+                # Get detailed product data with images
+                detail_url = f"{self.api_base_url}/getProductData"
+                detail_params = {
+                    'sku': sku,
+                    'all_images': '1'
+                }
+                
+                detail_response = self.session.get(detail_url, params=detail_params, timeout=30)
+                detail_response.raise_for_status()
+                
+                detail_data = detail_response.json()
+                if detail_data.get('success') and detail_data.get('data'):
+                    products.append(detail_data['data'])
+                    logger.info(f"✅ Fetched data for SKU: {sku}")
+                else:
+                    logger.warning(f"⚠️ No data for SKU: {sku}")
+                
+                # Rate limiting delay
+                time.sleep(0.5)
+                
+            except Exception as e:
+                logger.error(f"❌ Error fetching SKU {sku}: {e}")
+                continue
+        
+        logger.info(f"Successfully fetched {len(products)} products by SKU")
+        return products
+    
     def get_best_image_url(self, product: Dict) -> Optional[str]:
         """Get the best available image URL from product data"""
         # Try different image sources in order of preference
