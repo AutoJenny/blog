@@ -3953,6 +3953,7 @@ def update_queue_item(item_id):
         scheduled_time = data.get('scheduled_time')
         schedule_name = data.get('schedule_name')
         timezone = data.get('timezone')
+        queue_order = data.get('queue_order')
         
         with get_db_connection() as conn:
             cur = conn.cursor()
@@ -3966,12 +3967,20 @@ def update_queue_item(item_id):
                 }), 404
             
             # Update the item
-            cur.execute("""
-                UPDATE posting_queue 
-                SET scheduled_date = %s, scheduled_time = %s, schedule_name = %s, 
-                    timezone = %s, updated_at = NOW()
-                WHERE id = %s
-            """, (scheduled_date, scheduled_time, schedule_name, timezone, item_id))
+            if queue_order is not None:
+                cur.execute("""
+                    UPDATE posting_queue 
+                    SET scheduled_date = %s, scheduled_time = %s, schedule_name = %s, 
+                        timezone = %s, queue_order = %s, updated_at = NOW()
+                    WHERE id = %s
+                """, (scheduled_date, scheduled_time, schedule_name, timezone, queue_order, item_id))
+            else:
+                cur.execute("""
+                    UPDATE posting_queue 
+                    SET scheduled_date = %s, scheduled_time = %s, schedule_name = %s, 
+                        timezone = %s, updated_at = NOW()
+                    WHERE id = %s
+                """, (scheduled_date, scheduled_time, schedule_name, timezone, item_id))
             
             conn.commit()
             
