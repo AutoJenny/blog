@@ -1,0 +1,44 @@
+<!-- Posting Queue Section -->
+<div class="section-card">
+    <div class="section-title" onclick="toggleAccordion('posting-queue')">
+        <i class="fas fa-list-alt"></i>
+        Posting Queue
+        <span id="queue-count" class="badge" style="background: #f59e0b; color: #0f172a; margin-left: 10px;">0</span>
+        <i class="fas fa-chevron-right accordion-chevron" id="posting-queue-chevron"></i>
+    </div>
+    <div class="section-content" id="posting-queue-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div></div>
+            <div>
+                <button id="add-10-items-btn" class="btn btn-primary" style="margin-right: 10px;">
+                    <i class="fas fa-plus-circle"></i>
+                    Add 10 Items
+                </button>
+                <button id="clear-queue-btn" class="btn btn-sm btn-secondary" style="display: none;">
+                    <i class="fas fa-trash"></i>
+                    Clear All
+                </button>
+            </div>
+        </div>
+    
+        <div id="queue-container" style="min-height: 100px;">
+            <div id="empty-queue" style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
+                <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                No posts in queue
+            </div>
+            <div id="queue-table-container" style="display: none;">
+                    <table id="queue-table" style="width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px; overflow: hidden;">
+                        <thead>
+                            <tr style="background: #0f172a; border-bottom: 2px solid #334155;">
+                                <th style="padding: 15px; text-align: left; color: #f1f5f9; font-weight: 600; width: 200px;">Scheduled Posting</th>
+                                <th style="padding: 15px; text-align: left; color: #f1f5f9; font-weight: 600;">Queue Items</th>
+                            </tr>
+                        </thead>
+                    <tbody id="queue-table-body">
+                        <!-- Table rows will be dynamically generated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -43,19 +43,48 @@
             background: #1e293b;
             border: 1px solid #334155;
             border-radius: 12px;
-            padding: 30px;
             margin-bottom: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
         
         .section-title {
             font-size: 1.5rem;
             font-weight: 600;
-            margin-bottom: 20px;
             color: #f1f5f9;
             display: flex;
             align-items: center;
             gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            padding: 30px;
+            margin: 0;
+            transition: background-color 0.2s ease;
+        }
+        
+        .section-title:hover {
+            background-color: #334155;
+        }
+        
+        .section-content {
+            padding: 0 30px 30px 30px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        
+        .section-content.expanded {
+            max-height: 2000px;
+            padding: 0 30px 30px 30px;
+        }
+        
+        .accordion-chevron {
+            transition: transform 0.3s ease;
+            margin-left: auto;
+        }
+        
+        .accordion-chevron.expanded {
+            transform: rotate(90deg);
         }
         
         .product-display {
@@ -447,16 +476,19 @@
         
         <!-- Product Selection Section -->
         <div class="section-card">
-            <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
-                <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-shopping-bag"></i>
-                    Product Selection
-                </h2>
-                <button id="update-products-btn" class="btn btn-secondary" style="margin: 0;">
-                    <i class="fas fa-sync-alt"></i>
-                    Check for Updates
-                </button>
+            <div class="section-title" onclick="toggleAccordion('product-selection')">
+                <i class="fas fa-shopping-bag"></i>
+                Product Selection
+                <i class="fas fa-chevron-right accordion-chevron" id="product-selection-chevron"></i>
             </div>
+            <div class="section-content" id="product-selection-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div></div>
+                    <button id="update-products-btn" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                        Check for Updates
+                    </button>
+                </div>
             
             <!-- Available Categories Accordion -->
             <div style="background: #23273a; border: 1px solid #475569; border-radius: 8px; margin-bottom: 20px;">
@@ -517,20 +549,24 @@
                     <div id="update-progress-text" style="color: #94a3b8; font-size: 0.8rem; margin-top: 5px; text-align: center;"></div>
                 </div>
             </div>
+            </div>
         </div>
         
         <!-- Content Generation Section -->
         <div class="section-card">
-            <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
-                <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-robot"></i>
-                    AI Content Generation
-                </h2>
-                <button id="start-ollama-btn" class="btn btn-secondary" style="margin: 0;">
-                    <i class="fas fa-play"></i>
-                    Start Ollama
-                </button>
+            <div class="section-title" onclick="toggleAccordion('content-generation')">
+                <i class="fas fa-robot"></i>
+                AI Content Generation
+                <i class="fas fa-chevron-right accordion-chevron" id="content-generation-chevron"></i>
             </div>
+            <div class="section-content" id="content-generation-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div></div>
+                    <button id="start-ollama-btn" class="btn btn-secondary">
+                        <i class="fas fa-play"></i>
+                        Start Ollama
+                    </button>
+                </div>
             
             <div class="content-type-buttons">
                 <button class="content-type-btn active" data-type="feature">Feature Focus</button>
@@ -558,51 +594,20 @@
                     Add to Queue
                 </button>
             </div>
-        </div>
-        
-        <!-- Posting Queue Section -->
-        <div class="section-card">
-            <h2 class="section-title">
-                <i class="fas fa-list-alt"></i>
-                Posting Queue
-                <span id="queue-count" class="badge" style="background: #f59e0b; color: #0f172a; margin-left: 10px;">0</span>
-                <button id="add-10-items-btn" class="btn btn-primary" style="margin-left: auto; margin-right: 10px;">
-                    <i class="fas fa-plus-circle"></i>
-                    Add 10 Items
-                </button>
-                <button id="clear-queue-btn" class="btn btn-sm btn-secondary" style="display: none;">
-                    <i class="fas fa-trash"></i>
-                    Clear All
-                </button>
-            </h2>
-            
-            <div id="queue-container" style="min-height: 100px;">
-                <div id="empty-queue" style="text-align: center; color: #94a3b8; padding: 40px 20px; font-style: italic;">
-                    <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                    No posts in queue
-                </div>
-                <div id="queue-table-container" style="display: none;">
-                    <table id="queue-table" style="width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 8px; overflow: hidden;">
-                        <thead>
-                            <tr style="background: #0f172a; border-bottom: 2px solid #334155;">
-                                <th style="padding: 15px; text-align: left; color: #f1f5f9; font-weight: 600; width: 200px;">Scheduled Posting</th>
-                                <th style="padding: 15px; text-align: left; color: #f1f5f9; font-weight: 600;">Queue Items</th>
-                            </tr>
-                        </thead>
-                        <tbody id="queue-table-body">
-                            <!-- Table rows will be dynamically generated here -->
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
         
+        <!-- Posting Queue Section -->
+        {% include 'includes/posting_queue.html' %}
+        
         <!-- Posting Control Section -->
         <div class="section-card">
-            <h2 class="section-title">
+            <div class="section-title" onclick="toggleAccordion('posting-control')">
                 <i class="fas fa-paper-plane"></i>
                 Posting Control
-            </h2>
+                <i class="fas fa-chevron-right accordion-chevron" id="posting-control-chevron"></i>
+            </div>
+            <div class="section-content" id="posting-control-content">
             
             <!-- Current Status -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -757,6 +762,7 @@
                         Schedule for Tomorrow
                     </button>
                 </div>
+            </div>
             </div>
         </div>
     </div>
@@ -2091,6 +2097,20 @@
             } catch (error) {
                 console.error('Error updating queue order:', error);
                 alert('Error updating queue order. Please try again.');
+            }
+        }
+        
+        // Accordion functionality
+        function toggleAccordion(sectionId) {
+            const content = document.getElementById(`${sectionId}-content`);
+            const chevron = document.getElementById(`${sectionId}-chevron`);
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                chevron.classList.remove('expanded');
+            } else {
+                content.classList.add('expanded');
+                chevron.classList.add('expanded');
             }
         }
         
