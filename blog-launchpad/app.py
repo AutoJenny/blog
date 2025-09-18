@@ -826,6 +826,126 @@ def channel_config(platform_name, channel_type):
         logger.error(f"Error in channel_config: {e}")
         return f"Error loading configuration: {str(e)}", 500
 
+@app.route('/syndication/facebook')
+def facebook_posting_hub():
+    """Consolidated Facebook posting hub with credentials and content management."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            # Get Facebook platform data
+            cur.execute("""
+                SELECT 
+                    p.id, p.name, p.display_name, p.description, p.status, p.development_status,
+                    p.total_posts_count, p.success_rate_percentage, p.average_response_time_ms,
+                    p.last_activity_at, p.last_post_at, p.last_api_call_at
+                FROM platforms p 
+                WHERE p.name = 'facebook'
+            """)
+            platform = cur.fetchone()
+            
+            if not platform:
+                return "Facebook platform not found", 404
+            
+            # Get platform capabilities
+            cur.execute("""
+                SELECT capability_name, capability_value, description, unit
+                FROM platform_capabilities 
+                WHERE platform_id = %s AND is_active = true
+                ORDER BY display_order
+            """, (platform['id'],))
+            capabilities = cur.fetchall()
+            
+            # Get platform credentials (if any)
+            cur.execute("""
+                SELECT credential_type, credential_key, credential_value, is_encrypted
+                FROM platform_credentials 
+                WHERE platform_id = %s AND is_active = true
+            """, (platform['id'],))
+            credentials = cur.fetchall()
+            
+            # Get recent posts from posting queue
+            cur.execute("""
+                SELECT pq.id, pq.platform, pq.channel_type, pq.content_type,
+                       pq.scheduled_timestamp, pq.generated_content, pq.status,
+                       pq.platform_post_id, pq.error_message, pq.created_at, pq.updated_at
+                FROM posting_queue pq
+                WHERE pq.platform = 'facebook'
+                ORDER BY pq.scheduled_timestamp ASC, pq.created_at ASC
+                LIMIT 20
+            """)
+            recent_posts = cur.fetchall()
+            
+            return render_template('syndication/facebook_posting_hub.html', 
+                                platform=platform,
+                                capabilities=capabilities,
+                                credentials=credentials,
+                                recent_posts=recent_posts)
+                                
+    except Exception as e:
+        logger.error(f"Error in facebook_posting_hub: {e}")
+        return f"Error loading Facebook hub: {str(e)}", 500
+
+@app.route('/api/syndication/facebook/credentials', methods=['GET', 'POST'])
+def facebook_credentials():
+    """Get or save Facebook API credentials."""
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            
+            if request.method == 'GET':
+                # Get existing credentials
+                cur.execute("""
+                    SELECT credential_type, credential_key, credential_value
+                    FROM platform_credentials 
+                    WHERE platform_id = (SELECT id FROM platforms WHERE name = 'facebook')
+                    AND is_active = true
+                """)
+                credentials = cur.fetchall()
+                
+                # Convert to dictionary format
+                creds_dict = {}
+                for cred in credentials:
+                    creds_dict[cred['credential_key']] = cred['credential_value']
+                
+                return jsonify({
+                    'success': True,
+                    'credentials': creds_dict
+                })
+            
+            elif request.method == 'POST':
+                # Save new credentials
+                data = request.get_json()
+                
+                # Get Facebook platform ID
+                cur.execute("SELECT id FROM platforms WHERE name = 'facebook'")
+                platform = cur.fetchone()
+                if not platform:
+                    return jsonify({'success': False, 'error': 'Facebook platform not found'})
+                
+                platform_id = platform['id']
+                
+                # Save each credential
+                for key, value in data.items():
+                    if value:  # Only save non-empty values
+                        cur.execute("""
+                            INSERT INTO platform_credentials (platform_id, credential_type, credential_key, credential_value, is_active)
+                            VALUES (%s, 'api_key', %s, %s, true)
+                            ON CONFLICT (platform_id, credential_type, credential_key)
+                            DO UPDATE SET credential_value = EXCLUDED.credential_value, updated_at = NOW()
+                        """, (platform_id, key, value))
+                
+                conn.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Credentials saved successfully'
+                })
+                
+    except Exception as e:
+        logger.error(f"Error in facebook_credentials: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
 @app.route('/syndication/facebook/feed-post')
 def facebook_feed_post_redirect():
     """Redirect for backward compatibility to the generic route."""
