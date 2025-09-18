@@ -750,7 +750,7 @@
                 return;
             }
             
-            if (confirm(`Are you sure you want to post this ${item.platform} ${item.content_type} post now?\n\n"${item.content.substring(0, 100)}..."`)) {
+            if (confirm(`⚠️ WARNING: This will post LIVE to your Facebook page!\n\nAre you sure you want to publish this ${item.platform} ${item.content_type} post now?\n\n"${item.content.substring(0, 100)}..."`)) {
                 postNowConfirmed(id);
             }
         }
