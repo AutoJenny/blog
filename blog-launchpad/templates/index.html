@@ -377,11 +377,11 @@
                     <!-- KPI Preview -->
                     <div class="kpi-preview">
                         <div class="kpi-item">
-                            <div class="kpi-value">0</div>
+                            <div class="kpi-value" id="scheduled-posts-count">0</div>
                             <div class="kpi-label">Scheduled Posts</div>
                         </div>
                         <div class="kpi-item">
-                            <div class="kpi-value">0</div>
+                            <div class="kpi-value" id="published-today-count">0</div>
                             <div class="kpi-label">Published Today</div>
                         </div>
                         <div class="kpi-item">
@@ -711,6 +711,39 @@
                     document.getElementById('ai-rewrites').textContent = '0';
                 }
                 
+                // Load Social Media Command Center stats
+                try {
+                    const timelineResponse = await fetch('/api/social-media/timeline');
+                    const timelineData = await timelineResponse.json();
+                    
+                    if (timelineData.success) {
+                        const timeline = timelineData.timeline || [];
+                        
+                        // Count scheduled posts (ready + pending)
+                        const scheduledPosts = timeline.filter(item => 
+                            item.status === 'ready' || item.status === 'pending'
+                        ).length;
+                        
+                        // Count published today
+                        const today = new Date().toISOString().split('T')[0];
+                        const publishedToday = timeline.filter(item => 
+                            item.status === 'published' && 
+                            item.updated_at && 
+                            item.updated_at.startsWith(today)
+                        ).length;
+                        
+                        document.getElementById('scheduled-posts-count').textContent = scheduledPosts;
+                        document.getElementById('published-today-count').textContent = publishedToday;
+                    } else {
+                        document.getElementById('scheduled-posts-count').textContent = '0';
+                        document.getElementById('published-today-count').textContent = '0';
+                    }
+                } catch (error) {
+                    console.error('Error loading Social Media Command Center stats:', error);
+                    document.getElementById('scheduled-posts-count').textContent = '0';
+                    document.getElementById('published-today-count').textContent = '0';
+                }
+                
             } catch (error) {
                 console.error('Error loading stats:', error);
                 document.getElementById('total-posts').textContent = '0';
@@ -719,6 +752,8 @@
                 document.getElementById('ai-generated-posts').textContent = '0';
                 document.getElementById('blog-posts-converted').textContent = '0';
                 document.getElementById('ai-rewrites').textContent = '0';
+                document.getElementById('scheduled-posts-count').textContent = '0';
+                document.getElementById('published-today-count').textContent = '0';
             }
         }
         
