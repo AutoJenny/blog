@@ -540,58 +540,24 @@ def post_to_facebook():
                 post_content = queue_item['generated_content']
                 product_image = queue_item['product_image']
                 
-                # Two-step approach: Upload photo first, then create feed post
+                # Use link sharing approach for better visibility in Posts feed
                 import requests
                 
-                # Step 1: Upload photo as unpublished to get media_fbid
-                upload_url = f"https://graph.facebook.com/v18.0/{page_id}/photos"
-                upload_payload = {
-                    'url': product_image,
-                    'published': 'false',  # Important: just stage it
-                    'temporary': 'false',
-                    'access_token': access_token
-                }
-                
-                print(f"DEBUG: Step 1 - Upload photo - URL: {upload_url}")
-                print(f"DEBUG: Step 1 - Upload payload: {upload_payload}")
-                upload_response = requests.post(upload_url, data=upload_payload, timeout=30)
-                print(f"DEBUG: Step 1 - Upload response - Status: {upload_response.status_code}")
-                print(f"DEBUG: Step 1 - Upload response - Content: {upload_response.text}")
-                
-                if upload_response.status_code != 200:
-                    error_data = upload_response.json() if upload_response.content else {}
-                    error_msg = error_data.get('error', {}).get('message', 'Upload failed')
-                    return jsonify({
-                        'success': False, 
-                        'error': f'Photo upload failed: {upload_response.status_code}',
-                        'details': error_msg
-                    })
-                
-                upload_result = upload_response.json()
-                media_fbid = upload_result.get('id')
-                
-                if not media_fbid:
-                    return jsonify({
-                        'success': False, 
-                        'error': 'Photo upload failed - no media_fbid returned',
-                        'details': upload_result
-                    })
-                
-                print(f"DEBUG: Step 1 - Got media_fbid: {media_fbid}")
-                
-                # Step 2: Create feed post with attached media
+                # Create feed post with link to image (creates shared_story status_type)
                 feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
                 feed_payload = {
                     'message': post_content,
-                    'attached_media[0]': f'{{"media_fbid": "{media_fbid}"}}',
+                    'link': product_image,  # Use link parameter for better visibility
                     'access_token': access_token
                 }
                 
-                print(f"DEBUG: Step 2 - Create feed post - URL: {feed_url}")
-                print(f"DEBUG: Step 2 - Feed payload: {feed_payload}")
+                print(f"DEBUG: Facebook API call - URL: {feed_url}")
+                print(f"DEBUG: Facebook API call - Payload: {feed_payload}")
+                print(f"DEBUG: Product image URL: {product_image}")
+                print(f"DEBUG: Access token being used: {access_token[:20]}...")
                 response = requests.post(feed_url, data=feed_payload, timeout=30)
-                print(f"DEBUG: Step 2 - Feed response - Status: {response.status_code}")
-                print(f"DEBUG: Step 2 - Feed response - Content: {response.text}")
+                print(f"DEBUG: Facebook API response - Status: {response.status_code}")
+                print(f"DEBUG: Facebook API response - Content: {response.text}")
                 
                 if response.status_code == 200:
                     result = response.json()
@@ -678,58 +644,24 @@ def post_to_facebook():
                 post_content = content or f"Check out {product['name']} - £{product['price']}"
                 product_image = product['image_url']
                 
-                # Two-step approach: Upload photo first, then create feed post
+                # Use link sharing approach for better visibility in Posts feed
                 import requests
                 
-                # Step 1: Upload photo as unpublished to get media_fbid
-                upload_url = f"https://graph.facebook.com/v18.0/{page_id}/photos"
-                upload_payload = {
-                    'url': product_image,
-                    'published': 'false',  # Important: just stage it
-                    'temporary': 'false',
-                    'access_token': access_token
-                }
-                
-                print(f"DEBUG: Step 1 - Upload photo - URL: {upload_url}")
-                print(f"DEBUG: Step 1 - Upload payload: {upload_payload}")
-                upload_response = requests.post(upload_url, data=upload_payload, timeout=30)
-                print(f"DEBUG: Step 1 - Upload response - Status: {upload_response.status_code}")
-                print(f"DEBUG: Step 1 - Upload response - Content: {upload_response.text}")
-                
-                if upload_response.status_code != 200:
-                    error_data = upload_response.json() if upload_response.content else {}
-                    error_msg = error_data.get('error', {}).get('message', 'Upload failed')
-                    return jsonify({
-                        'success': False, 
-                        'error': f'Photo upload failed: {upload_response.status_code}',
-                        'details': error_msg
-                    })
-                
-                upload_result = upload_response.json()
-                media_fbid = upload_result.get('id')
-                
-                if not media_fbid:
-                    return jsonify({
-                        'success': False, 
-                        'error': 'Photo upload failed - no media_fbid returned',
-                        'details': upload_result
-                    })
-                
-                print(f"DEBUG: Step 1 - Got media_fbid: {media_fbid}")
-                
-                # Step 2: Create feed post with attached media
+                # Create feed post with link to image (creates shared_story status_type)
                 feed_url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
                 feed_payload = {
                     'message': post_content,
-                    'attached_media[0]': f'{{"media_fbid": "{media_fbid}"}}',
+                    'link': product_image,  # Use link parameter for better visibility
                     'access_token': access_token
                 }
                 
-                print(f"DEBUG: Step 2 - Create feed post - URL: {feed_url}")
-                print(f"DEBUG: Step 2 - Feed payload: {feed_payload}")
+                print(f"DEBUG: Facebook API call - URL: {feed_url}")
+                print(f"DEBUG: Facebook API call - Payload: {feed_payload}")
+                print(f"DEBUG: Product image URL: {product_image}")
+                print(f"DEBUG: Access token being used: {access_token[:20]}...")
                 response = requests.post(feed_url, data=feed_payload, timeout=30)
-                print(f"DEBUG: Step 2 - Feed response - Status: {response.status_code}")
-                print(f"DEBUG: Step 2 - Feed response - Content: {response.text}")
+                print(f"DEBUG: Facebook API response - Status: {response.status_code}")
+                print(f"DEBUG: Facebook API response - Content: {response.text}")
                 
                 if response.status_code == 200:
                     result = response.json()
