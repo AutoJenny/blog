@@ -176,6 +176,11 @@ def publishing():
     return render_template('publishing.html')
 
 # Daily Product Posts Routes
+@app.route('/social-media-command-center')
+def social_media_command_center():
+    """Main Social Media Command Center dashboard."""
+    return render_template('social_media_command_center.html')
+
 @app.route('/daily-product-posts')
 def daily_product_posts():
     """Daily Product Posts management page."""
