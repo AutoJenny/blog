@@ -433,6 +433,38 @@
                 </div>
             </div>
             
+            <!-- Facebook Blog Posts Module (Active) -->
+            <div class="module-card active" style="border: 3px solid #1877f2;">
+                <div class="module-icon" style="background: linear-gradient(135deg, #1877f2, #42a5f5);">
+                    <i class="fab fa-facebook"></i>
+                </div>
+                <h2 class="module-title">Facebook Blog Posts</h2>
+                <p class="module-description">
+                    Convert blog posts into engaging Facebook posts. AI-powered content rewriting 
+                    with platform-specific requirements and automated publishing workflows.
+                </p>
+                <div class="module-stats">
+                    <div class="stat">
+                        <i class="fas fa-robot"></i>
+                        <span id="blog-posts-converted">Loading...</span> converted
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-magic"></i>
+                        <span id="ai-rewrites">Loading...</span> AI rewrites
+                    </div>
+                </div>
+                <div class="module-actions">
+                    <a href="/syndication/facebook/feed-post" class="btn btn-primary">
+                        <i class="fas fa-cog"></i>
+                        Manage Blog Posts
+                    </a>
+                    <a href="/syndication/create-piece" class="btn btn-secondary">
+                        <i class="fas fa-plus"></i>
+                        Create New Post
+                    </a>
+                </div>
+            </div>
+            
             <!-- Clan.com Publishing (Active Development) -->
             <div class="module-card active">
                 <div class="module-icon">
@@ -625,6 +657,7 @@
         // Load module statistics
         async function loadModuleStats() {
             try {
+                // Load blog posts stats
                 const response = await fetch('/api/posts');
                 const posts = await response.json();
                 
@@ -635,10 +668,57 @@
                 
                 document.getElementById('total-posts').textContent = totalPosts;
                 document.getElementById('configured-posts').textContent = configuredPosts;
+                
+                // Load daily product posts stats
+                try {
+                    const dailyResponse = await fetch('/api/daily-product-posts/today-status');
+                    const dailyData = await dailyResponse.json();
+                    
+                    if (dailyData.success) {
+                        document.getElementById('daily-posts-count').textContent = dailyData.post ? '1' : '0';
+                        document.getElementById('ai-generated-posts').textContent = dailyData.post ? '1' : '0';
+                    } else {
+                        document.getElementById('daily-posts-count').textContent = '0';
+                        document.getElementById('ai-generated-posts').textContent = '0';
+                    }
+                } catch (error) {
+                    console.error('Error loading daily posts stats:', error);
+                    document.getElementById('daily-posts-count').textContent = '0';
+                    document.getElementById('ai-generated-posts').textContent = '0';
+                }
+                
+                // Load Facebook blog posts stats
+                try {
+                    const syndicationResponse = await fetch('/api/syndication/pieces');
+                    const syndicationData = await syndicationResponse.json();
+                    
+                    if (syndicationData.status === 'success') {
+                        const facebookPieces = syndicationData.pieces.filter(piece => 
+                            piece.platform_name === 'Facebook' && piece.channel_type_name === 'feed_post'
+                        );
+                        
+                        document.getElementById('blog-posts-converted').textContent = facebookPieces.length;
+                        document.getElementById('ai-rewrites').textContent = facebookPieces.filter(piece => 
+                            piece.llm_provider && piece.llm_provider !== 'none'
+                        ).length;
+                    } else {
+                        document.getElementById('blog-posts-converted').textContent = '0';
+                        document.getElementById('ai-rewrites').textContent = '0';
+                    }
+                } catch (error) {
+                    console.error('Error loading Facebook blog posts stats:', error);
+                    document.getElementById('blog-posts-converted').textContent = '0';
+                    document.getElementById('ai-rewrites').textContent = '0';
+                }
+                
             } catch (error) {
                 console.error('Error loading stats:', error);
                 document.getElementById('total-posts').textContent = '0';
                 document.getElementById('configured-posts').textContent = '0';
+                document.getElementById('daily-posts-count').textContent = '0';
+                document.getElementById('ai-generated-posts').textContent = '0';
+                document.getElementById('blog-posts-converted').textContent = '0';
+                document.getElementById('ai-rewrites').textContent = '0';
             }
         }
         
