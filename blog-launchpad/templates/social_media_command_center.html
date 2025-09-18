@@ -285,11 +285,18 @@
             padding: 6px 10px;
             font-size: 0.8rem;
             cursor: pointer;
-            transition: background 0.2s ease;
+            transition: all 0.2s ease;
+            position: relative;
         }
         
         .action-btn:hover {
             background: #475569;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .action-btn:active {
+            transform: translateY(0);
         }
         
         .action-btn.danger {
@@ -299,6 +306,18 @@
         
         .action-btn.danger:hover {
             background: #dc2626;
+        }
+        
+        .action-btn[disabled] {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .action-btn[disabled]:hover {
+            background: #334155;
+            transform: none;
+            box-shadow: none;
         }
         
         .empty-state {
@@ -721,6 +740,13 @@
                 return;
             }
             
+            // Disable all action buttons for this row
+            const buttons = document.querySelectorAll(`button[onclick*="${id}"]`);
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            });
+            
             // Route to appropriate module's delete API
             const deleteUrl = getDeleteUrl(item.platform, item.content_type);
             if (deleteUrl) {
@@ -740,14 +766,29 @@
                         console.log('Post cancelled successfully');
                     } else {
                         alert('Failed to cancel post: ' + (data.error || 'Unknown error'));
+                        // Re-enable buttons
+                        buttons.forEach(btn => {
+                            btn.disabled = false;
+                            btn.innerHTML = btn.innerHTML.replace('fa-spinner fa-spin', 'fa-times');
+                        });
                     }
                 })
                 .catch(error => {
                     console.error('Error cancelling post:', error);
                     alert('Error cancelling post: ' + error.message);
+                    // Re-enable buttons
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.innerHTML = btn.innerHTML.replace('fa-spinner fa-spin', 'fa-times');
+                    });
                 });
             } else {
                 alert(`Cancel functionality not available for ${item.platform} ${item.content_type} posts`);
+                // Re-enable buttons
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.innerHTML = btn.innerHTML.replace('fa-spinner fa-spin', 'fa-times');
+                });
             }
         }
         
