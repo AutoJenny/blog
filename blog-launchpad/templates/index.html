@@ -504,27 +504,27 @@
                 </div>
                 <h2 class="module-title">Social Media Syndication</h2>
                 <p class="module-description">
-                    Automatically share blog posts across social media platforms. 
-                    Schedule posts, customize content for each platform, and track engagement.
+                    Facebook posting hub with real API integration. Manage credentials, 
+                    create posts, and schedule content with automated workflows.
                 </p>
                 <div class="module-stats">
                     <div class="stat">
-                        <i class="fas fa-check-circle"></i>
-                        MVP Ready
+                        <i class="fas fa-rocket"></i>
+                        <span id="facebook-posts-ready">Loading...</span> ready
                     </div>
                     <div class="stat">
                         <i class="fas fa-facebook"></i>
-                        Facebook First
+                        <span id="facebook-credentials">Loading...</span> configured
                     </div>
                 </div>
                 <div class="module-actions">
-                    <a href="/syndication" class="btn btn-primary">
+                    <a href="/syndication/facebook" class="btn btn-primary">
                         <i class="fas fa-cog"></i>
-                        Manage Syndication
+                        Facebook Hub
                     </a>
-                    <a href="/docs/social_media_syndication_plan.md" class="btn btn-secondary" target="_blank">
-                        <i class="fas fa-book"></i>
-                        View Plan
+                    <a href="/social-media-command-center" class="btn btn-secondary">
+                        <i class="fas fa-chart-line"></i>
+                        Command Center
                     </a>
                 </div>
             </div>
@@ -734,14 +734,42 @@
                         
                         document.getElementById('scheduled-posts-count').textContent = scheduledPosts;
                         document.getElementById('published-today-count').textContent = publishedToday;
+                        
+                        // Load Social Media Syndication stats (using timeline data)
+                        try {
+                            // Count Facebook posts ready to post
+                            const facebookPosts = timeline.filter(item => 
+                                item.platform === 'facebook' && item.status === 'ready'
+                            ).length;
+                            
+                            document.getElementById('facebook-posts-ready').textContent = facebookPosts;
+                        } catch (error) {
+                            console.error('Error loading Facebook posts count:', error);
+                            document.getElementById('facebook-posts-ready').textContent = '0';
+                        }
                     } else {
                         document.getElementById('scheduled-posts-count').textContent = '0';
                         document.getElementById('published-today-count').textContent = '0';
+                        document.getElementById('facebook-posts-ready').textContent = '0';
                     }
                 } catch (error) {
                     console.error('Error loading Social Media Command Center stats:', error);
                     document.getElementById('scheduled-posts-count').textContent = '0';
                     document.getElementById('published-today-count').textContent = '0';
+                    document.getElementById('facebook-posts-ready').textContent = '0';
+                }
+                
+                // Load Facebook credentials status
+                try {
+                    const credentialsResponse = await fetch('/api/syndication/facebook/credentials');
+                    const credentialsData = await credentialsResponse.json();
+                    const hasCredentials = credentialsData.success && credentialsData.credentials && 
+                        credentialsData.credentials.app_id && credentialsData.credentials.page_access_token;
+                    
+                    document.getElementById('facebook-credentials').textContent = hasCredentials ? 'Yes' : 'No';
+                } catch (error) {
+                    console.error('Error loading Facebook credentials status:', error);
+                    document.getElementById('facebook-credentials').textContent = 'No';
                 }
                 
             } catch (error) {
@@ -754,6 +782,8 @@
                 document.getElementById('ai-rewrites').textContent = '0';
                 document.getElementById('scheduled-posts-count').textContent = '0';
                 document.getElementById('published-today-count').textContent = '0';
+                document.getElementById('facebook-posts-ready').textContent = '0';
+                document.getElementById('facebook-credentials').textContent = 'No';
             }
         }
         
