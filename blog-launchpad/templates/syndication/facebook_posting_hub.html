@@ -525,55 +525,27 @@
                     </div>
                 </div>
 
-                <!-- Test Posting Section -->
+                <!-- Connection Test Section -->
                 <div class="settings-card">
                     <div class="section-title">
-                        <i class="fas fa-flask"></i>
-                        Test Posting
+                        <i class="fas fa-plug"></i>
+                        Connection Test
                     </div>
                     
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Test your Facebook posting setup</strong> before going live. Test posts will be published to your Facebook page with a "TEST POST" indicator.
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Test your Facebook API connection</strong> to verify credentials are working correctly.
                     </div>
                     
-                    <form id="test-post-form">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="form-group">
-                                    <label class="form-label">Test Content</label>
-                                    <textarea class="form-control" id="test-content" rows="3" placeholder="Enter test post content...">🚀 Testing Facebook posting from Blog Launchpad!
-
-This is a test post to verify our Facebook API integration is working correctly. 
-
-#TestPost #BlogLaunchpad #FacebookAPI</textarea>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label">Test Mode</label>
-                                    <select class="form-control" id="test-mode">
-                                        <option value="draft">Test Post (with TEST indicator)</option>
-                                        <option value="live">Live Post (normal)</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-warning">
-                                <i class="fas fa-flask me-2"></i>
-                                Send Test Post
-                            </button>
-                            <button type="button" class="btn btn-outline-info ms-2" onclick="testConnection()">
-                                <i class="fas fa-check me-2"></i>
-                                Test Connection Only
-                            </button>
-                        </div>
-                    </form>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-outline-info" onclick="testConnection()">
+                            <i class="fas fa-check me-2"></i>
+                            Test Facebook API Connection
+                        </button>
+                    </div>
                     
-                    <div id="test-results" style="display: none;">
-                        <!-- Test results will appear here -->
+                    <div id="connection-results" style="display: none;">
+                        <!-- Connection test results will appear here -->
                     </div>
                 </div>
 
@@ -853,89 +825,7 @@ This is a test post to verify our Facebook API integration is working correctly.
         // Load existing credentials on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadExistingCredentials();
-            setupTestPosting();
         });
-
-        // Setup test posting functionality
-        function setupTestPosting() {
-            const testForm = document.getElementById('test-post-form');
-            if (testForm) {
-                testForm.addEventListener('submit', handleTestPost);
-            }
-        }
-
-        // Handle test post submission
-        async function handleTestPost(e) {
-            e.preventDefault();
-            
-            const content = document.getElementById('test-content').value.trim();
-            const testMode = document.getElementById('test-mode').value;
-            
-            if (!content) {
-                alert('Please enter test content');
-                return;
-            }
-            
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending Test Post...';
-            submitBtn.disabled = true;
-            
-            try {
-                const response = await fetch('/api/syndication/facebook/test-post', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        content: content,
-                        image_url: '', // No image for test
-                        test_mode: testMode
-                    })
-                });
-                
-                const data = await response.json();
-                showTestResults(data, testMode);
-                
-            } catch (error) {
-                console.error('Error sending test post:', error);
-                showTestResults({
-                    success: false,
-                    error: 'Network error: ' + error.message
-                }, testMode);
-            } finally {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
-        }
-
-        // Show test results
-        function showTestResults(data, testMode) {
-            const resultsDiv = document.getElementById('test-results');
-            resultsDiv.style.display = 'block';
-            
-            if (data.success) {
-                resultsDiv.innerHTML = `
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <strong>Test Post Successful!</strong><br>
-                        <strong>Mode:</strong> ${testMode === 'draft' ? 'Draft (Unpublished)' : 'Live Post'}<br>
-                        <strong>Post ID:</strong> ${data.post_id || 'N/A'}<br>
-                        <strong>Message:</strong> ${data.message}
-                    </div>
-                `;
-            } else {
-                resultsDiv.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Test Post Failed!</strong><br>
-                        <strong>Error:</strong> ${data.error}<br>
-                        ${data.details ? `<strong>Details:</strong> ${data.details}` : ''}
-                    </div>
-                `;
-            }
-        }
 
         // Test connection only
         async function testConnection() {
@@ -956,19 +846,55 @@ This is a test post to verify our Facebook API integration is working correctly.
                     const testData = await testResponse.json();
                     
                     if (testData.name) {
-                        alert(`✅ Connection successful!\n\nPage: ${testData.name}\nPage ID: ${testData.id}\n\nYour Facebook API is working correctly!`);
+                        showConnectionResults({
+                            success: true,
+                            message: `✅ Connection successful!\n\nPage: ${testData.name}\nPage ID: ${testData.id}\n\nYour Facebook API is working correctly!`
+                        });
                     } else {
-                        alert('❌ Connection failed: Invalid response from Facebook API');
+                        showConnectionResults({
+                            success: false,
+                            error: 'Invalid response from Facebook API'
+                        });
                     }
                 } else {
-                    alert('❌ Connection failed: No credentials found');
+                    showConnectionResults({
+                        success: false,
+                        error: 'No credentials found'
+                    });
                 }
             } catch (error) {
                 console.error('Connection test error:', error);
-                alert('❌ Connection failed: ' + error.message);
+                showConnectionResults({
+                    success: false,
+                    error: 'Connection failed: ' + error.message
+                });
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
+            }
+        }
+
+        // Show connection test results
+        function showConnectionResults(data) {
+            const resultsDiv = document.getElementById('connection-results');
+            resultsDiv.style.display = 'block';
+            
+            if (data.success) {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Connection Test Successful!</strong><br>
+                        ${data.message.replace(/\n/g, '<br>')}
+                    </div>
+                `;
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Connection Test Failed!</strong><br>
+                        <strong>Error:</strong> ${data.error}
+                    </div>
+                `;
             }
         }
 
